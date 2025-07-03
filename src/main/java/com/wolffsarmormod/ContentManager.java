@@ -315,6 +315,10 @@ public class ContentManager
     {
         for (TypeFile typeFile : files.get(contentPack))
         {
+            //TODO: remove when other types are ready
+            if (typeFile.getType() != EnumType.ARMOR)
+                continue;
+
             try
             {
                 Class<? extends InfoType> typeClass = typeFile.getType().getTypeClass();
