@@ -62,6 +62,13 @@ description='''This Mod adds armors from content packs designed for legacy Flan'
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.wolffsarmormod]]
+    modId="wolffsarmorpacks"
+    mandatory=false
+    # This version range declares a minimum of the current minecraft version up to but not including the next major version
+    versionRange=""
+    ordering="BEFORE"
+    side="SERVER"
 
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't

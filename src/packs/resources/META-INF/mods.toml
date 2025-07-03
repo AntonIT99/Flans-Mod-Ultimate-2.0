@@ -37,6 +37,7 @@ authors="Wolff" #optional
 # NONE means that no display test is set on your mod. You need to do this yourself, see IExtensionPoint.DisplayTest for more information. You can define any scheme you wish with this value.
 # IMPORTANT NOTE: this is NOT an instruction as to which environments (CLIENT or DEDICATED SERVER) your mod loads on. Your mod should load (and maybe do nothing!) whereever it finds itself.
 #displayTest="MATCH_VERSION" # MATCH_VERSION is the default if nothing is specified (#optional)
+displayTest = "NONE"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''This Mod adds armors from content packs designed for legacy Flan's Mod'''
@@ -60,13 +61,6 @@ description='''This Mod adds armors from content packs designed for legacy Flan'
     mandatory=true
     # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.20,1.21)"
-    ordering="NONE"
-    side="BOTH"
-[[dependencies.wolffsarmorpacks]]
-    modId="wolffsarmormod"
-    mandatory=true
-    # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange=""
     ordering="NONE"
     side="BOTH"
 
