@@ -110,21 +110,22 @@ public class PacksMod
     @SuppressWarnings("StatementWithEmptyBody")
     private static byte[] hashStream(InputStream input) throws IOException
     {
-        MessageDigest digest;
         try
         {
-            digest = MessageDigest.getInstance("SHA-1");
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            try (DigestInputStream dis = new DigestInputStream(input, digest))
+            {
+                byte[] buffer = new byte[4096];
+                while (dis.read(buffer) != -1)
+                {
+                    // Read to compute hash
+                }
+                return digest.digest();
+            }
         }
         catch (Exception e)
         {
-            throw new IOException("Unable to get SHA-1 MessageDigest", e);
+            throw new IOException("Unable to compute MD5 hash", e);
         }
-
-        try (DigestInputStream dis = new DigestInputStream(input, digest))
-        {
-            byte[] buffer = new byte[4096];
-            while (dis.read(buffer) != -1) {}
-        }
-        return digest.digest();
     }
 }
