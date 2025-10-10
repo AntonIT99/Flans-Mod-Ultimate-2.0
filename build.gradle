@@ -194,7 +194,7 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
 
-    implementation fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-20240709')
+    implementation fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-20250830')
 }
 
 shadowJar {
