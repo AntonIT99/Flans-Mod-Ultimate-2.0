@@ -2,6 +2,7 @@ package com.flansmod.client.tmt;
 
 import com.wolffsmod.client.model.ModelRenderer;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -480,12 +481,12 @@ public class Bone
 
     protected void setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
     {
-        float xC = (float) Math.cos(xRot);
-        float xS = (float) Math.sin(xRot);
-        float yC = (float) Math.cos(yRot);
-        float yS = (float) Math.sin(yRot);
-        float zC = (float) Math.cos(zRot);
-        float zS = (float) Math.sin(zRot);
+        float xC = Mth.cos(xRot);
+        float xS = Mth.sin(xRot);
+        float yC = Mth.cos(yRot);
+        float yS = Mth.sin(yRot);
+        float zC = Mth.cos(zRot);
+        float zS = Mth.sin(zRot);
 
         double xVec = vector.x;
         double yVec = vector.y;

@@ -1,8 +1,5 @@
 package com.wolffsmod.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -35,6 +32,4 @@ public interface IModelBase
     List<ModelRenderer> getBoxList();
 
     Map<String, TextureOffset> getModelTextureMap();
-
-    void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha);
 }

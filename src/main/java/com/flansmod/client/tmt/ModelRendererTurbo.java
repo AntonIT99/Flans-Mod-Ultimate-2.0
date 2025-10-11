@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -837,9 +838,9 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addBox(float x, float y, float z, float w, float h, float d)
     {
-        int rw = (int) Math.ceil(w);
-        int rh = (int) Math.ceil(h);
-        int rd = (int) Math.ceil(d);
+        int rw = Mth.ceil(w);
+        int rh = Mth.ceil(h);
+        int rd = Mth.ceil(d);
         w -= rw;
         h -= rh;
         d -= rd;
@@ -1438,10 +1439,10 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int i = 0; i < segs; i++)
             {
-                float yWidth = (float) Math.cos(-PI / 2 + (PI / rings) * j);
-                float yHeight = (float) Math.sin(-PI / 2 + (PI / rings) * j);
-                float xSize = (float) (Math.sin((PI / segs) * i * 2F + PI) * yWidth);
-                float zSize = (float) (-Math.cos((PI / segs) * i * 2F + PI) * yWidth);
+                float yWidth = Mth.cos(-PI / 2 + (PI / rings) * j);
+                float yHeight = Mth.sin(-PI / 2 + (PI / rings) * j);
+                float xSize = Mth.sin((PI / segs) * i * 2F + PI) * yWidth;
+                float zSize = -Mth.cos((PI / segs) * i * 2F + PI) * yWidth;
                 int curVert = 1 + i + segs * (j - 1);
                 tempVerts[curVert] = new PositionTextureVertex(x + xSize * r, y + yHeight * r, z + zSize * r, 0, 0);
                 if(i > 0)
@@ -1553,7 +1554,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addCone(float x, float y, float z, float radius, float length, int segments, float baseScale, int baseDirection)
     {
-        addCone(x, y, z, radius, length, segments, baseScale, baseDirection, (int)Math.floor(radius * 2F), (int)Math.floor(radius * 2F));
+        addCone(x, y, z, radius, length, segments, baseScale, baseDirection, Mth.floor(radius * 2F), Mth.floor(radius * 2F));
     }
 
     /**
@@ -1638,7 +1639,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addCylinder(float x, float y, float z, float radius, float length, int segments, float baseScale, float topScale, int baseDirection)
     {
-        addCylinder(x, y, z, radius, length, segments, baseScale, topScale, baseDirection, (int)Math.floor(radius * 2F), (int)Math.floor(radius * 2F), (int)Math.floor(length));
+        addCylinder(x, y, z, radius, length, segments, baseScale, topScale, baseDirection, Mth.floor(radius * 2F), Mth.floor(radius * 2F), Mth.floor(length));
     }
 
     /**
@@ -1707,8 +1708,8 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int index = 0; index < segments; index++)
             {
-                float xSize = (float) ((mirror ^ dirMirror ? -1 : 1) * Math.sin((PI / segments) * index * 2F + PI) * radius * sCur);
-                float zSize = (float) (-Math.cos((PI / segments) * index * 2F + PI) * radius * sCur);
+                float xSize = (mirror ^ dirMirror ? -1 : 1) * Mth.sin((PI / segments) * index * 2F + PI) * radius * sCur;
+                float zSize = -Mth.cos((PI / segments) * index * 2F + PI) * radius * sCur;
 
                 float xPlace = xCur + (!dirSide ? xSize : 0);
                 float yPlace = yCur + (!dirTop ? zSize : 0);
@@ -1737,10 +1738,10 @@ public class ModelRendererTurbo extends ModelRenderer
         for(int index = 0; index < segments; index++)
         {
             int index2 = (index + 1) % segments;
-            float uSize = (float) (Math.sin((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset));
-            float vSize = (float) (Math.cos((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset));
-            float uSize1 = (float) (Math.sin((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset));
-            float vSize1 = (float) (Math.cos((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset));
+            float uSize = Mth.sin((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize = Mth.cos((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset);
+            float uSize1 = Mth.sin((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize1 = Mth.cos((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset);
             vert = new PositionTextureVertex[3];
 
             vert[0] = tempVerts[0].setTexturePosition(uStart + 0.5F * uCircle, vStart + 0.5F * vCircle);

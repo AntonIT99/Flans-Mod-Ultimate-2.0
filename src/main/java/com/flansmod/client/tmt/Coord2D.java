@@ -1,5 +1,7 @@
 package com.flansmod.client.tmt;
 
+import net.minecraft.util.Mth;
+
 /**
  * This class represents a coordinate space and its UV coordinates. This allows for
  * easier flat shape planning.
@@ -17,8 +19,8 @@ public class Coord2D
     {
         xCoord = x;
         yCoord = y;
-        uCoord = (int)Math.floor(x);
-        vCoord = (int)Math.floor(y);
+        uCoord = Mth.floor(x);
+        vCoord = Mth.floor(y);
     }
 
     public Coord2D(double x, double y, int u, int v)

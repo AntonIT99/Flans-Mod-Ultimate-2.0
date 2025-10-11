@@ -13,6 +13,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,10 +83,10 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
                 float f = 1.5F / babyHeadScale;
                 pPoseStack.scale(f, f, f);
             }
-
             pPoseStack.translate(0.0F, babyYHeadOffset * 0.0625F, babyZHeadOffset * 0.0625F);
             renderHeadModels(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
             pPoseStack.popPose();
+
             pPoseStack.pushPose();
             float f1 = 1.0F / babyBodyScale;
             pPoseStack.scale(f1, f1, f1);
@@ -98,6 +99,12 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             renderHeadModels(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
             renderBodyModels(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
         }
+    }
+
+    @Override
+    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    {
+        renderToBuffer(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     protected void renderHeadModels(PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale)
