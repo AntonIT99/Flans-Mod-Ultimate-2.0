@@ -2,6 +2,7 @@ package com.wolffsarmormod.common.item;
 
 import com.flansmod.client.model.ModelGun;
 import com.wolffsarmormod.common.types.GunType;
+import com.wolffsarmormod.common.types.PaintableType;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,8 +20,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-@Getter
-public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOverlayItem<GunType>
+public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOverlayItem<GunType>, IPaintableItem<GunType>
 {
     @Getter
     protected final GunType configType;
@@ -41,13 +41,6 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
-    {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
-        appendHoverText(tooltipComponents);
-    }
-
-    @Override
     public void clientSideInit()
     {
         loadModelAndTexture(null);
@@ -64,5 +57,17 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     public Optional<ResourceLocation> getOverlay()
     {
         return Optional.ofNullable(overlay);
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    {
+        appendHoverText(tooltipComponents);
+    }
+
+    @Override
+    public PaintableType GetPaintableType()
+    {
+        return null;
     }
 }

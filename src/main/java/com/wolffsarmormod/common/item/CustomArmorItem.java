@@ -137,7 +137,6 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
         appendHoverText(tooltipComponents);
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)

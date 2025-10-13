@@ -1,9 +1,11 @@
 package com.wolffsarmormod.common.types;
 
 import com.wolffsarmormod.ContentManager;
+import com.wolffsarmormod.common.item.BulletItem;
 import com.wolffsarmormod.common.item.CustomArmorItem;
+import com.wolffsarmormod.common.item.GrenadeItem;
 import com.wolffsarmormod.common.item.GunItem;
-import com.wolffsarmormod.common.item.IConfigurableItem;
+import com.wolffsarmormod.common.item.IFlanItem;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,17 +18,19 @@ import java.util.Optional;
 public enum EnumType
 {
     ARMOR("armor", "armorFiles", ContentManager.TEXTURES_ARMOR_FOLDER, ArmorType.class, CustomArmorItem.class, false),
+    BULLET("bullet", "bullets", "", BulletType.class, BulletItem.class, false),
+    GRENADE("grenade", "grenades", "", GrenadeType.class, GrenadeItem.class, false),
     GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, false);
 
     private final String displayName;
     private final String configFolderName;
     private final String textureFolderName;
     private final Class<? extends InfoType> typeClass;
-    private final Class<? extends IConfigurableItem<?>> itemClass;
+    private final Class<? extends IFlanItem<?>> itemClass;
     private final boolean itemType;
     private final boolean blockType;
 
-    EnumType(String name, String configFolder, String textureFolder, Class<? extends InfoType> type, @Nullable Class<? extends IConfigurableItem<?>> item, boolean isBlock)
+    EnumType(String name, String configFolder, String textureFolder, Class<? extends InfoType> type, @Nullable Class<? extends IFlanItem<?>> item, boolean isBlock)
     {
         displayName = name;
         configFolderName = configFolder;

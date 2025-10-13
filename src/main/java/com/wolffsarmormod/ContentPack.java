@@ -1,47 +1,40 @@
 package com.wolffsarmormod;
 
-import com.google.common.base.Objects;
 import lombok.Getter;
 
 import java.nio.file.Path;
 
+@Getter
 public class ContentPack implements IContentProvider
 {
-    @Getter
     private String name;
-    @Getter
     private Path path;
-
-    private final int hashCode;
 
     public ContentPack(String name, Path path)
     {
         this.name = name;
-        this.path = path;
-        hashCode = Objects.hashCode(path);
+        this.path = path.toAbsolutePath().normalize();
     }
 
     @Override
     public void update(String name, Path path)
     {
         this.name = name;
-        this.path = path;
+        this.path = path.toAbsolutePath().normalize();
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(Object o)
     {
-        if (obj instanceof IContentProvider provider)
-        {
-            return hashCode == provider.hashCode();
-        }
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof IContentProvider other)) return false;
+        return path.equals(other.getPath().toAbsolutePath().normalize());
     }
 
     @Override
     public int hashCode()
     {
-        return hashCode;
+        return path.hashCode();
     }
 
     @Override

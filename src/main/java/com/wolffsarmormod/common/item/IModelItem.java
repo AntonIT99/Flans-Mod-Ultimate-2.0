@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 
-public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends IConfigurableItem<T>
+public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends IFlanItem<T>
 {
     T getConfigType();
 

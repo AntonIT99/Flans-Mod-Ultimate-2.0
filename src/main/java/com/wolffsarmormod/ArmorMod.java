@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @Mod(ArmorMod.MOD_ID)
 public class ArmorMod
@@ -35,6 +36,9 @@ public class ArmorMod
     public static final String MOD_ID = "wolffsarmormod";
     public static final String FLANSMOD_ID = "flansmod";
     public static final Logger log = LogUtils.getLogger();
+    //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
+    //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
+    public static final boolean forceRecompileAllPacks = false;
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, ArmorMod.FLANSMOD_ID);
@@ -62,7 +66,7 @@ public class ArmorMod
     private void registerCreativeModeTabs()
     {
         registerCreativeTab("armors", items.get(EnumType.ARMOR));
-        registerCreativeTab("guns", items.get(EnumType.GUN));
+        registerCreativeTab("guns", Stream.of(items.get(EnumType.GUN), items.get(EnumType.BULLET), items.get(EnumType.GRENADE)).flatMap(List::stream).toList());
     }
 
     private void registerCreativeTab(String name, List<RegistryObject<Item>> itemsForTab) {

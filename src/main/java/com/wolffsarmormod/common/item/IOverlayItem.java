@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
 
-public interface IOverlayItem<T extends InfoType> extends IConfigurableItem<T>
+public interface IOverlayItem<T extends InfoType> extends IFlanItem<T>
 {
     @OnlyIn(Dist.CLIENT)
     Optional<ResourceLocation> getOverlay();

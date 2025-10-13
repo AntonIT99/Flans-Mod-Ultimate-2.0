@@ -13,7 +13,8 @@ import net.minecraft.world.item.ItemStack;
 public final class AimPoseHandler {
 
     @SubscribeEvent
-    public static void onPre(RenderLivingEvent.Pre<?, ?> event) {
+    public static void onPre(RenderLivingEvent.Pre<?, ?> event)
+    {
         var model = event.getRenderer().getModel();
         if (!(model instanceof HumanoidModel<?> humanoid)) return;
 
@@ -27,7 +28,8 @@ public final class AimPoseHandler {
         humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
     }
 
-    private static boolean isGunItem(ItemStack s) {
+    private static boolean isGunItem(ItemStack s)
+    {
         return !s.isEmpty() && s.getItem() instanceof GunItem;
     }
 }

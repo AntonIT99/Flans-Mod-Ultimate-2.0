@@ -4,6 +4,7 @@ import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.ItemLike;
 
 import java.util.List;
 
-public interface IConfigurableItem<T extends InfoType> extends ItemLike
+public interface IFlanItem<T extends InfoType> extends ItemLike
 {
     T getConfigType();
 
@@ -20,7 +21,7 @@ public interface IConfigurableItem<T extends InfoType> extends ItemLike
         return FilenameUtils.getBaseName(getConfigType().getContentPack().getName());
     }
 
-    default void appendHoverText(List<Component> tooltipComponents)
+    default void appendHoverText(@NotNull List<Component> tooltipComponents)
     {
         if (BooleanUtils.isTrue(ModClientConfigs.showPackNameInItemDescriptions.get()) && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.GRAY));

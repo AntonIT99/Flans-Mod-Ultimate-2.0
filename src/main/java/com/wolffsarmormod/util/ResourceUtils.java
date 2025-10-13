@@ -12,14 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Serializable;
 import java.nio.file.Path;
 
 public class ResourceUtils
 {
     private ResourceUtils() {}
 
-    public static class ItemModel implements Serializable
+    public static class ItemModel
     {
         String parent;
         @SerializedName("gui_light")
@@ -39,7 +38,7 @@ public class ResourceUtils
         }
     }
 
-    public static class Textures implements Serializable
+    public static class Textures
     {
         String layer0;
 
