@@ -669,7 +669,7 @@ public class ModelGun extends Model implements IFlanModel<GunType>
             poseStack.popPose();
 
             //Render the minigun barrels
-            if(type.getMode() == EnumFireMode.MINIGUN)
+            if (type.getMode() == EnumFireMode.MINIGUN)
             {
                 poseStack.pushPose();
                 poseStack.translate(minigunBarrelOrigin.x, minigunBarrelOrigin.y, minigunBarrelOrigin.z);

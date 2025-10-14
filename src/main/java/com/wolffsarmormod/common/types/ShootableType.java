@@ -12,6 +12,11 @@ public abstract class ShootableType extends InfoType
      */
     protected String trailParticleType = "smoke";
 
+    // hasLight controls whether it has full luminescence.
+    // hasDynamicLight controls if it lights up the area around it.
+    protected boolean hasLight = false;
+    protected boolean hasDynamicLight = false;
+
     //Item Stuff
     /**
      * The maximum number of grenades that can be stacked together
@@ -47,16 +52,30 @@ public abstract class ShootableType extends InfoType
      * Hit box size
      */
     protected float hitBoxSize = 0.5F;
+    /**
+     * Upon hitting a block or entity, the grenade will be deflected and its motion will be multiplied by this constant
+     */
+    protected float bounciness = 0.9F;
 
     //Damage to hit entities
     /**
      * Amount of damage to impart upon various entities
      */
-    protected float damageVsLiving = 1, damageVsDriveable = 1;
+    protected float damageVsPlayer = 1.0F;
+    protected float damageVsEntity = 1.0F;
+    protected float damageVsLiving = 1.0F;
+    protected float damageVsVehicles = 1.0F;
+    protected float damageVsPlanes = 1.0F;
+    protected boolean readDamageVsPlayer = false;
+    protected boolean readDamageVsEntity = false;
+    protected boolean readDamageVsPlanes = false;
     /**
      * Whether this grenade will break glass when thrown against it
      */
     protected boolean breaksGlass = false;
+    protected float ignoreArmorProbability = 0;
+    protected float ignoreArmorDamageFactor = 0;
+    protected float blockPenetrationModifier = -1;
 
     //Detonation Conditions
     /**
@@ -82,9 +101,21 @@ public abstract class ShootableType extends InfoType
      */
     protected float explosionRadius = 0F;
     /**
+     * Power of explosion. Multiplier, 1 = vanilla behaviour
+     */
+    protected float explosionPower = 1F;
+    /**
      * Whether the explosion can destroy blocks
      */
     protected boolean explosionBreaksBlocks = true;
+    /**
+     * Explosion damage vs various classes of entities
+     */
+    protected float explosionDamageVsLiving = 1.0F;
+    protected float explosionDamageVsDriveable = 1.0F;
+    protected float explosionDamageVsPlayer = 1.0F;
+    protected float explosionDamageVsPlane = 1.0F;
+    protected float explosionDamageVsVehicle = 1.0F;
     /**
      * The name of the item to drop upon detonating
      */
@@ -93,4 +124,14 @@ public abstract class ShootableType extends InfoType
      * Sound to play upon detonation
      */
     protected String detonateSound = "";
+
+    protected boolean hasSubmunitions = false;
+    protected String submunition = "";
+    protected int numSubmunitions = 0;
+    protected int subMunitionTimer = 0;
+    protected float submunitionSpread = 1;
+    protected boolean destroyOnDeploySubmunition = false;
+
+    protected int smokeParticleCount = 0;
+    protected int debrisParticleCount = 0;
 }
