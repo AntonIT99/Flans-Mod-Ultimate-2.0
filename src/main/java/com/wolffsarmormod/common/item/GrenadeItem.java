@@ -10,7 +10,7 @@ public class GrenadeItem extends ShootableItem
 
     public GrenadeItem(GrenadeType configType)
     {
-        super();
+        super(configType);
         this.configType = configType;
     }
 }

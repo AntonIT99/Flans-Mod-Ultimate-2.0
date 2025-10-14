@@ -1,5 +1,7 @@
 package com.wolffsarmormod.common.types;
 
+import lombok.Getter;
+
 public abstract class ShootableType extends InfoType
 {
     //Aesthetics
@@ -21,6 +23,7 @@ public abstract class ShootableType extends InfoType
     /**
      * The maximum number of grenades that can be stacked together
      */
+    @Getter
     protected int maxStackSize = 1;
     /**
      * Items dropped on various events
@@ -29,7 +32,8 @@ public abstract class ShootableType extends InfoType
     /**
      * The number of rounds fired by a gun per item
      */
-    protected int roundsPerItem = 1;
+    @Getter
+    protected int roundsPerItem = 0;
     /**
      * The number of bullet entities to create per round
      */

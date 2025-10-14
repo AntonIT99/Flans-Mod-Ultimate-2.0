@@ -1,78 +1,101 @@
 package com.wolffsarmormod.event;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.wolffsarmormod.ArmorMod;
-import com.wolffsarmormod.ContentManager;
-import com.wolffsarmormod.client.CustomArmorLayer;
+import com.wolffsarmormod.common.item.CustomArmorItem;
+import com.wolffsarmormod.common.item.GunItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
-import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientEventHandler
 {
+    /**
+     * Set gui overlay for armors
+     */
     @SubscribeEvent
-    public static void clientSetup(FMLClientSetupEvent event)
+    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
     {
-        // Client Setup
-    }
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
 
-    @SubscribeEvent
-    public static void registerPack(AddPackFindersEvent event)
-    {
-        if (Files.exists(ContentManager.getFlanFolder()))
+        if (player == null || mc.options.getCameraType() != CameraType.FIRST_PERSON || event.getOverlay() != VanillaGuiOverlay.HOTBAR.type())
         {
-            event.addRepositorySource(new ModRepositorySource(ContentManager.getFlanFolder()));
+            return;
+        }
+
+        GuiGraphics guiGraphics = event.getGuiGraphics();
+        int screenWidth = mc.getWindow().getGuiScaledWidth();
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
+
+        for (EquipmentSlot slot : Arrays.stream(EquipmentSlot.values()).filter(EquipmentSlot::isArmor).toList())
+        {
+            if (player.getItemBySlot(slot).getItem() instanceof CustomArmorItem armorItem)
+            {
+                Optional<ResourceLocation> overlayTexture = armorItem.getOverlay();
+                if (overlayTexture.isEmpty())
+                    continue;
+
+                RenderSystem.disableDepthTest();
+                RenderSystem.depthMask(false);
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                RenderSystem.disableCull();
+                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShaderTexture(0, overlayTexture.get());
+
+                guiGraphics.blit(overlayTexture.get(), 0, 0, 0, 0, screenWidth, screenHeight, screenWidth, screenHeight);
+
+                RenderSystem.depthMask(true);
+                RenderSystem.enableDepthTest();
+                RenderSystem.enableCull();
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            }
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    /**
+     * Aim Pose when GunItem is held by a humanoid entity
+     */
     @SubscribeEvent
-    public static void registerArmorLayer(EntityRenderersEvent.AddLayers event)
+    public static void onLiving(RenderLivingEvent.Pre<?, ?> event)
     {
-        for (String skin : event.getSkins())
-        {
-            LivingEntityRenderer<?, ?> renderer = event.getSkin(skin);
-            if (renderer instanceof PlayerRenderer playerRenderer)
-            {
-                playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
-            }
-        }
+        var model = event.getRenderer().getModel();
+        if (!(model instanceof HumanoidModel<?> humanoid)) return;
 
-        for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES.getValues())
-        {
-            try
-            {
-                EntityRenderer<?> renderer = event.getRenderer((EntityType)entityType);
+        ItemStack main = event.getEntity().getMainHandItem();
+        ItemStack off  = event.getEntity().getOffhandItem();
+        boolean force = isGunItem(main) || isGunItem(off);
+        if (!force) return;
 
-                if (renderer instanceof LivingEntityRenderer<?, ?> livingEntityRenderer && livingEntityRenderer.getModel() instanceof HumanoidModel)
-                {
-                    livingEntityRenderer.addLayer(new CustomArmorLayer<>((RenderLayerParent) livingEntityRenderer));
-                }
-            }
-            catch (ClassCastException e)
-            {
-                // Ignoring (Entity is not a LivingEntity)
-            }
-            catch (Exception e)
-            {
-                ArmorMod.log.error("Could not add armor layer to {}", entityType.getDescriptionId(), e);
-            }
-        }
+        // Force the bow-aiming arm pose on both arms
+        humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+    }
+
+    private static boolean isGunItem(ItemStack s)
+    {
+        return !s.isEmpty() && s.getItem() instanceof GunItem;
     }
 }

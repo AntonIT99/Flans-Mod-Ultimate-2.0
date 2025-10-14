@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -33,7 +34,7 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
 
     public GunItem(GunType configType)
     {
-        super(new Item.Properties());
+        super(new Properties());
         this.configType = configType;
 
         if (FMLEnvironment.dist == Dist.CLIENT)
@@ -68,6 +69,38 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     @Override
     public PaintableType GetPaintableType()
     {
-        return null;
+        return configType;
+    }
+
+    /**
+     * Deployable guns only
+     */
+    //TODO: implement
+    /*@Override
+    @NotNull
+    public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
+    {
+
+        ItemStack stack = player.getItemInHand(hand);
+        return InteractionResultHolder.pass(stack);
+    }*/
+
+    //TODO: Implement this -> ClientEventHandler.onLiving()
+    /*
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.BOW; // equivalent of EnumAction.BOW
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        return 72000; // typical “bow draw” duration, if needed
+    }
+    */
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected)
+    {
+        // per-tick logic while in any inventory
     }
 }

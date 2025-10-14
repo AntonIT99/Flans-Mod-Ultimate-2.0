@@ -2,18 +2,25 @@ package com.wolffsarmormod.event;
 
 import com.wolffsarmormod.ArmorMod;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonEventHandler
 {
+    @Getter
+    private static long ticker;
+
     @SubscribeEvent
-    public static void commonSetup(FMLCommonSetupEvent event)
+    public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        // Common Setup
+        if (event.phase == TickEvent.Phase.END)
+        {
+            ticker++;
+        }
     }
 }

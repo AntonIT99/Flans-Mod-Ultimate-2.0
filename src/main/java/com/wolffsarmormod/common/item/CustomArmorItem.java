@@ -6,7 +6,7 @@ import com.google.common.collect.Multimap;
 import com.wolffsarmormod.client.model.armor.DefaultArmor;
 import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsarmormod.config.ModCommonConfigs;
-import com.wolffsarmormod.event.ServerTickEventHandler;
+import com.wolffsarmormod.event.CommonEventHandler;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
@@ -29,7 +29,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -55,7 +54,7 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
 
     public CustomArmorItem(ArmorType configType)
     {
-        super(new CustomArmorMaterial(configType), configType.getArmorItemType(), new Item.Properties());
+        super(new CustomArmorMaterial(configType), configType.getArmorItemType(), new Properties());
         this.configType = configType;
 
         if (FMLEnvironment.dist == Dist.CLIENT)
@@ -76,21 +75,21 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
 
         if (!level.isClientSide && isArmorSlot(slotIndex, player.getInventory()))
         {
-            if (configType.hasNightVision() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasNightVision() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 250, 0, true, false));
-            if (configType.hasInvisiblility() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasInvisiblility() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 250, 0, true, false));
-            if (configType.getJumpModifier() > 1.01F && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.getJumpModifier() > 1.01F && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.JUMP, 250, (int) ((configType.getJumpModifier() - 1F) * 2F), true, false));
-            if (configType.hasFireResistance() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasFireResistance() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 250, 0, true, false));
-            if (configType.hasWaterBreathing() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasWaterBreathing() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 250, 0, true, false));
-            if (configType.hasHunger() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasHunger() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.HUNGER, 250, 0, true, false));
-            if (configType.hasRegeneration() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (configType.hasRegeneration() && CommonEventHandler.getTicker() % 25 == 0)
                 player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 250, 0, true, false));
-            if (!configType.getEffects().isEmpty() && ServerTickEventHandler.getTicker() % 25 == 0)
+            if (!configType.getEffects().isEmpty() && CommonEventHandler.getTicker() % 25 == 0)
             {
                 configType.getEffects().forEach((effect, amplifier) -> player.addEffect(new MobEffectInstance(effect, 250, amplifier, true, false)));
             }
