@@ -10,7 +10,7 @@ public class BulletItem extends ShootableItem
 
     public BulletItem(BulletType configType)
     {
-        super();
+        super(configType);
         this.configType = configType;
     }
 }

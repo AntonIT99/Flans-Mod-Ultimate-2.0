@@ -1,6 +1,7 @@
 package com.wolffsarmormod.event;
 
 import com.wolffsarmormod.ArmorMod;
+import com.wolffsarmormod.network.PacketHandler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -14,6 +15,6 @@ public class ModCommonEventHandler
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event)
     {
-        // Common Setup
+        PacketHandler.registerPackets();
     }
 }

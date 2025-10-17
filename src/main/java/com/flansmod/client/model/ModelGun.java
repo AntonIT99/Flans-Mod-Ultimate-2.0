@@ -20,6 +20,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import java.util.ArrayList;
@@ -167,7 +168,13 @@ public class ModelGun extends Model implements IFlanModel<GunType>
     /** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
     protected float numBulletsInReloadAnimation = 1;
     /** For shotgun pump handles, rifle bolts and hammer pullbacks */
-    protected int pumpDelay = 0, pumpDelayAfterReload = 0, pumpTime = 1, hammerDelay = 0;
+    @Getter
+    protected int pumpDelay = 0;
+    @Getter
+    protected int pumpDelayAfterReload = 0;
+    @Getter
+    protected int pumpTime = 1;
+    protected int hammerDelay = 0;
     /** For shotgun pump handle */
     protected float pumpHandleDistance = 4F / 16F;
     /** For end loaded projectiles */
@@ -380,7 +387,8 @@ public class ModelGun extends Model implements IFlanModel<GunType>
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         float modelScale = type != null ? type.getModelScale() : 1F;
-        GunAnimations animations = ModClient.getGunAnimations(leftHanded, data);
+        GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
+
         smoothing = Minecraft.getInstance().getFrameTime();
         //Get the reload animation rotation
         reloadRotate = 0F;

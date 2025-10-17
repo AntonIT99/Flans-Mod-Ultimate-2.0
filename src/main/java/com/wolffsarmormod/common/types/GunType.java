@@ -8,6 +8,7 @@ import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.Random;
 public class GunType extends PaintableType implements IScope
 {
     protected static final Random rand = new Random();
-    private static final int DEFAULT_SHOOT_DELAY = 2;
+    protected static final int DEFAULT_SHOOT_DELAY = 2;
 
     /**Extended Recoil System
      * ported by SecretAgent12
@@ -99,6 +100,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The time (in ticks) it takes to reload this gun
      */
+    @Getter
     protected int reloadTime;
     /**
      * Number of ammo items that the gun may hold. Most guns will hold one magazine.
@@ -148,7 +150,8 @@ public class GunType extends PaintableType implements IScope
      * Number of ammo items that the gun may hold. Most guns will hold one magazine.
      * Some may hold more, such as Nerf pistols, revolvers or shotguns
      */
-    public int numAmmoItemsInGun = 1;
+    @Getter
+    protected int numAmmoItemsInGun = 1;
     /**
      * The fire rate of the gun in RPM, 1200 = MAX
      */
@@ -167,11 +170,13 @@ public class GunType extends PaintableType implements IScope
     /**
      * The required speed for minigun mode guns to start firing
      */
+    @Getter
     protected float minigunStartSpeed = 15F;
     /**
      * The maximum speed a minigun mode gun can reach
      */
-    public float minigunMaxSpeed = 30F;
+    @Getter
+    protected float minigunMaxSpeed = 30F;
     /**
      * Whether this gun can be used underwater
      */
@@ -183,12 +188,14 @@ public class GunType extends PaintableType implements IScope
     /**
      * The secondary function of this gun. By default, the left mouse button triggers this
      */
+    @Getter
     protected EnumSecondaryFunction secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
     protected EnumSecondaryFunction secondaryFunctionWhenShoot = null;
     /**
      * If true, then this gun can be dual wielded
      */
-    private boolean oneHanded = false;
+    @Getter
+    protected boolean oneHanded = false;
     /**
      * For one shot items like a panzerfaust
      */
@@ -204,7 +211,9 @@ public class GunType extends PaintableType implements IScope
     /**
      * Set these to make guns only usable by a certain type of entity
      */
-    protected boolean usableByPlayers = true, usableByMechas = true;
+    @Getter
+    protected boolean usableByPlayers = true;
+    protected boolean usableByMechas = true;
     /**
      * If false, then attachments wil not be listed in item GUI
      */
@@ -283,6 +292,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether to distort the sound or not. Generally only set to false for looping sounds
      */
+    @Getter
     protected String reloadSound;
     /**
      * The sound to play upon reloading when empty
@@ -299,6 +309,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The sound to play while holding the weapon in the hand
      */
+    @Getter
     protected String idleSound;
 
     //Sound Modifiers
@@ -309,6 +320,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The length of the idle sound for looping sounds (miniguns)
      */
+    @Getter
     protected int idleSoundLength;
     /**
      * The block range for idle sounds (for miniguns etc)
@@ -344,16 +356,21 @@ public class GunType extends PaintableType implements IScope
     /**
      * Played when the player starts to hold shoot
      */
+    @Getter
     protected String warmupSound;
+    @Getter
     protected int warmupSoundLength = 20;
     /**
      * Played in a loop until player stops holding shoot
      */
+    @Getter
     protected String loopedSound;
+    @Getter
     protected int loopedSoundLength = 20;
     /**
      * Played when the player stops holding shoot
      */
+    @Getter
     protected String cooldownSound;
 
     //Custom Melee Stuff
@@ -379,6 +396,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * If true, then the bullet does not shoot when right-clicked, but must instead be placed on the ground
      */
+    @Getter
     protected boolean deployable = false;
     /**
      * The deployable model
@@ -452,8 +470,8 @@ public class GunType extends PaintableType implements IScope
 
     protected String muzzleFlashParticle = "flansmod.muzzleflash";
     protected float muzzleFlashParticleSize = 1F;
-    private Boolean useMuzzleFlashDefaults = true;
-    private Boolean showMuzzleFlashParticles = true;
+    protected Boolean useMuzzleFlashDefaults = true;
+    protected Boolean showMuzzleFlashParticles = true;
     protected Boolean showMuzzleFlashParticlesFirstPerson = false;
     protected Vector3f muzzleFlashParticlesHandOffset = new Vector3f();
     protected Vector3f muzzleFlashParticlesShoulderOffset = new Vector3f();
@@ -500,7 +518,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Default spread of the gun. Do not modify.
      */
-    private float defaultSpread = 0F;
+    protected float defaultSpread = 0F;
     // Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg
     protected float adsSpreadModifier = -1F;
     // Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg. For shotguns.
@@ -508,10 +526,10 @@ public class GunType extends PaintableType implements IScope
 
     protected float switchDelay = 0;
 
-    private boolean hasVariableZoom = false;
-    private float minZoom = 1;
-    private float maxZoom = 4;
-    private float zoomAugment = 1;
+    protected boolean hasVariableZoom = false;
+    protected float minZoom = 1;
+    protected float maxZoom = 4;
+    protected float zoomAugment = 1;
 
     /**
      * Whether the default scope has an overlay
@@ -542,5 +560,73 @@ public class GunType extends PaintableType implements IScope
     public String getZoomOverlay()
     {
         return "";
+    }
+
+    public boolean useLoopingSounds()
+    {
+        return useLoopingSounds;
+    }
+
+    /**
+     * Return the currently active scope on this gun. Search attachments, and by default, simply give the gun
+     */
+    public IScope getCurrentScope(ItemStack gunStack)
+    {
+        //TODO: implement attachments
+        /*IScope attachedScope = getScope(gunStack);
+        return attachedScope == null ? this : attachedScope;*/
+        return this;
+    }
+
+    /*public AttachmentType getScope(ItemStack gun)
+    {
+        return getAttachment(gun, "scope");
+    }*/
+
+    /**
+     * Get the firing mode of a specific gun, taking into account attachments
+     */
+    public EnumFireMode getFireMode(ItemStack stack)
+    {
+        //TODO: implement attachments
+        /*for(AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if(attachment.modeOverride != null)
+                return attachment.modeOverride;
+        }*/
+        return mode;
+    }
+
+    /**
+     * @return Returns the pumpDelayAfterReload if a model exits, otherwise 0
+     */
+    public Integer getPumpDelayAfterReload()
+    {
+        if (model != null)
+            return model.getPumpDelayAfterReload();
+
+        return 0;
+    }
+
+    /**
+     * @return Returns the pumpDelay if a model exits, otherwise 0
+     */
+    public Integer getPumpDelay()
+    {
+        if (model != null)
+            return model.getPumpDelay();
+
+        return 0;
+    }
+
+    /**
+     * @return the pump time if a model exits, otherwise 1
+     */
+    public Integer getPumpTime()
+    {
+        if (model != null)
+            return model.getPumpTime();
+
+        return 0;
     }
 }
