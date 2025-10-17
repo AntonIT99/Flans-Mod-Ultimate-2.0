@@ -3,17 +3,9 @@ package com.wolffsmod.client.model;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+/**
+ * @param textureOffsetX The x coordinate offset of the texture
+ * @param textureOffsetY The y coordinate offset of the texture
+ */
 @OnlyIn(Dist.CLIENT)
-public class TextureOffset
-{
-    /** The x coordinate offset of the texture */
-    public final int textureOffsetX;
-    /** The y coordinate offset of the texture */
-    public final int textureOffsetY;
-
-    public TextureOffset(int textureOffsetXIn, int textureOffsetYIn)
-    {
-        this.textureOffsetX = textureOffsetXIn;
-        this.textureOffsetY = textureOffsetYIn;
-    }
-}
+public record TextureOffset(int textureOffsetX, int textureOffsetY) {}

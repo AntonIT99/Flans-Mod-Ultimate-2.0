@@ -91,7 +91,7 @@ public class ModelRenderer
     {
         partName = boxName + "." + partName;
         TextureOffset textureoffset = baseModel.getTextureOffset(partName);
-        setTextureOffset(textureoffset.textureOffsetX, textureoffset.textureOffsetY);
+        setTextureOffset(textureoffset.textureOffsetX(), textureoffset.textureOffsetY());
         addBox(offX, offY, offZ, width, height, depth, 0.0F, mirror);
         return this;
     }

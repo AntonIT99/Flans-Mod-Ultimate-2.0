@@ -3,12 +3,14 @@ package com.wolffsmod.client.model;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class Tessellator
 {
+    @Getter
     private final BufferBuilder buffer;
     private final VertexBuffer vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
     /** The static instance of the Tessellator. */
@@ -38,10 +40,5 @@ public class Tessellator
         // Set OpenGL states and render the buffer
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-    }
-
-    public BufferBuilder getBuffer()
-    {
-        return buffer;
     }
 }
