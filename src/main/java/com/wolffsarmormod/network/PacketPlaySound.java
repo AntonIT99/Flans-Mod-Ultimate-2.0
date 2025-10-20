@@ -8,18 +8,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 @NoArgsConstructor
 public class PacketPlaySound extends PacketBase
 {
-    public float posX, posY, posZ;
-    public String sound;
-    public boolean distort, silenced;
+    private float posX;
+    private float posY;
+    private float posZ;
+    private String sound;
+    private boolean distort;
+    private boolean silenced;
 
     public PacketPlaySound(double x, double y, double z, String s)
     {
@@ -81,7 +84,7 @@ public class PacketPlaySound extends PacketBase
         mc.level.playLocalSound(posX, posY, posZ, event, SoundSource.PLAYERS, volume, pitch, false);
     }
 
-    public static void sendSoundPacket(ServerPlayer player, double range, String sound, boolean distort)
+    public static void sendSoundPacket(Player player, double range, String sound, boolean distort)
     {
         sendSoundPacket(player.getX(), player.getY(), player.getZ(), range, player.level().dimension(), sound, distort, false);
     }

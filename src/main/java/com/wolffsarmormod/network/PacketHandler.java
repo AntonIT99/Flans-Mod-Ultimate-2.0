@@ -49,6 +49,7 @@ public final class PacketHandler {
     {
         registerS2C(PacketGunAnimation.class);
         registerS2C(PacketPlaySound.class);
+        registerC2S(PacketGunFire.class);
         registerC2S(PacketReload.class);
         initAndRegister();
     }

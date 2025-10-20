@@ -54,7 +54,9 @@ public class PlayerData
     /** Stops player shooting immediately after swapping weapons */
     private int shootClickDelay;
     /** True if this player is shooting */
+    @Getter @Setter
     private boolean isShootingRight;
+    @Getter @Setter
     private boolean isShootingLeft;
     /** The speed of the minigun the player is using */
     @Getter @Setter
@@ -140,16 +142,22 @@ public class PlayerData
     public static PlayerData getInstance(UUID playerId, LogicalSide side)
     {
         if (side.isClient())
-        {
-            if(!clientSideData.containsKey(playerId))
-                clientSideData.put(playerId, new PlayerData(playerId));
-        }
+            return clientSideData.computeIfAbsent(playerId, PlayerData::new);
         else
-        {
-            if(!serverSideData.containsKey(playerId))
-                serverSideData.put(playerId, new PlayerData(playerId));
-        }
-        return side.isClient() ? clientSideData.get(playerId) : serverSideData.get(playerId);
+            return serverSideData.computeIfAbsent(playerId, PlayerData::new);
+    }
+
+    public float getShootTime(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+    }
+
+    public void setShootTime(InteractionHand hand, float set)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            shootTimeLeft = set;
+        else
+            shootTimeRight = set;
     }
 
     public int getBurstRoundsRemaining(InteractionHand hand)

@@ -28,7 +28,10 @@ public abstract class ShootableType extends InfoType
     /**
      * Items dropped on various events
      */
-    protected String dropItemOnReload = null, dropItemOnShoot = null, dropItemOnHit = null;
+    protected String dropItemOnReload = null;
+    @Getter
+    protected String dropItemOnShoot = null;
+    protected String dropItemOnHit = null;
     /**
      * The number of rounds fired by a gun per item
      */
@@ -37,6 +40,7 @@ public abstract class ShootableType extends InfoType
     /**
      * The number of bullet entities to create per round
      */
+    @Getter
     protected int numBullets = 1;
     /**
      * Bullet spread multiplier to be applied to gun's bullet spread

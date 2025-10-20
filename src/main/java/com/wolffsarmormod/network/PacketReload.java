@@ -18,8 +18,8 @@ import net.minecraft.world.item.ItemStack;
 @NoArgsConstructor
 public class PacketReload extends PacketBase
 {
-    public boolean isOffHand;
-    public boolean isForced;
+    private boolean isOffHand;
+    private boolean isForced;
 
     public PacketReload(InteractionHand hand, boolean isForced)
     {
@@ -46,8 +46,8 @@ public class PacketReload extends PacketBase
     {
         InteractionHand hand = isOffHand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
         PlayerData data = PlayerData.getInstance(player);
-        ItemStack main = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack off = player.getItemInHand(InteractionHand.OFF_HAND);
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
         ItemStack stack = isOffHand ? off : main;
         boolean hasOffHand = !main.isEmpty() && !off.isEmpty();
         ItemStack otherHand = isOffHand ? main : off;

@@ -8,12 +8,16 @@ import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @NoArgsConstructor
@@ -133,10 +137,12 @@ public class GunType extends PaintableType implements IScope
     /**
      * The speed of bullets upon leaving this gun. 0.0f means instant.
      */
+    @Getter
     protected float bulletSpeed = 5.0F;
     /**
      * The number of bullet entities created by each shot
      */
+    @Getter
     protected int numBullets = 1;
     /**
      * Allows you to set how many bullet entities are fired per shot via the ammo used
@@ -184,7 +190,8 @@ public class GunType extends PaintableType implements IScope
     /**
      * The amount of knockback to impact upon the player per shot
      */
-    public float knockback = 0F;
+    @Getter
+    protected float knockback = 0F;
     /**
      * The secondary function of this gun. By default, the left mouse button triggers this
      */
@@ -199,6 +206,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * For one shot items like a panzerfaust
      */
+    @Getter
     protected boolean consumeGunUponUse = false;
     /**
      * Show the crosshair when holding this weapon
@@ -207,6 +215,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Item to drop on shooting
      */
+    @Getter
     protected String dropItemOnShoot = null;
     /**
      * Set these to make guns only usable by a certain type of entity
@@ -264,6 +273,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The sound played upon shooting
      */
+    @Getter
     protected String shootSound;
     /**
      * Bullet insert reload sound
@@ -584,17 +594,247 @@ public class GunType extends PaintableType implements IScope
     }*/
 
     /**
+     * Returns all attachments currently attached to the specified gun
+     */
+    public List<AttachmentType> getCurrentAttachments(ItemStack gun)
+    {
+        //TODO: implement attachments
+        /*
+        checkForTags(gun);
+        ArrayList<AttachmentType> attachments = new ArrayList<>();
+        NBTTagCompound attachmentTags = gun.getTagCompound().getCompoundTag("attachments");
+        NBTTagList genericsList = attachmentTags.getTagList("generics", (byte)10); //TODO : Check this 10 is correct
+        for(int i = 0; i < numGenericAttachmentSlots; i++)
+        {
+            appendToList(gun, "generic_" + i, attachments);
+        }
+        appendToList(gun, "barrel", attachments);
+        appendToList(gun, "scope", attachments);
+        appendToList(gun, "stock", attachments);
+        appendToList(gun, "grip", attachments);
+        return attachments;
+        */
+        return Collections.emptyList();
+    }
+
+    //Attachment getter methods
+    public AttachmentType getBarrel(ItemStack gun)
+    {
+        return getAttachment(gun, "barrel");
+    }
+
+    public AttachmentType getScope(ItemStack gun)
+    {
+        return getAttachment(gun, "scope");
+    }
+
+    public AttachmentType getStock(ItemStack gun)
+    {
+        return getAttachment(gun, "stock");
+    }
+
+    public AttachmentType getGrip(ItemStack gun)
+    {
+        return getAttachment(gun, "grip");
+    }
+
+    public AttachmentType getGeneric(ItemStack gun, int i)
+    {
+        return getAttachment(gun, "generic_" + i);
+    }
+
+    //Attachment ItemStack getter methods
+    public ItemStack getBarrelItemStack(ItemStack gun)
+    {
+        return getAttachmentItemStack(gun, "barrel");
+    }
+
+    public ItemStack getScopeItemStack(ItemStack gun)
+    {
+        return getAttachmentItemStack(gun, "scope");
+    }
+
+    public ItemStack getStockItemStack(ItemStack gun)
+    {
+        return getAttachmentItemStack(gun, "stock");
+    }
+
+    public ItemStack getGripItemStack(ItemStack gun)
+    {
+        return getAttachmentItemStack(gun, "grip");
+    }
+
+    public ItemStack getGenericItemStack(ItemStack gun, int i)
+    {
+        return getAttachmentItemStack(gun, "generic_" + i);
+    }
+
+    /**
+     * Generalised attachment getter method
+     */
+    public AttachmentType getAttachment(ItemStack gun, String name)
+    {
+        checkForTags(gun);
+        CompoundTag tag = Objects.requireNonNull(gun.getTag()); // non-null because checkForTags used getOrCreateTag()
+        CompoundTag attachments = tag.getCompound("attachments");
+        CompoundTag data = attachments.getCompound(name);
+        return AttachmentType.getFromNBT(data);
+    }
+
+    /**
+     * Generalised attachment ItemStack getter method
+     */
+    public ItemStack getAttachmentItemStack(ItemStack gun, String name)
+    {
+        checkForTags(gun);
+        CompoundTag tag = Objects.requireNonNull(gun.getTag());
+        CompoundTag attachments = tag.getCompound("attachments");
+        CompoundTag stackTag = attachments.getCompound(name);
+        return ItemStack.of(stackTag); // Empty tag -> ItemStack.EMPTY
+    }
+
+    /**
+     * Method to check for null tags and assign default empty tags in that case
+     */
+    private void checkForTags(ItemStack gun)
+    {
+        // Ensure the root tag exists
+        CompoundTag tag = gun.getOrCreateTag();
+
+        // If there's no "attachments" compound, create and populate it
+        if (!tag.contains("attachments", Tag.TAG_COMPOUND))
+        {
+            CompoundTag attachments = new CompoundTag();
+            for (int i = 0; i < numGenericAttachmentSlots; i++)
+            {
+                attachments.put("generic_" + i, new CompoundTag());
+            }
+            attachments.put("barrel", new CompoundTag());
+            attachments.put("scope", new CompoundTag());
+            attachments.put("stock", new CompoundTag());
+            attachments.put("grip", new CompoundTag());
+
+            tag.put("attachments", attachments);
+        }
+    }
+
+    /**
+     * Get the melee damage of a specific gun, taking into account attachments
+     */
+    public float getMeleeDamage(ItemStack stack)
+    {
+        float stackMeleeDamage = meleeDamage;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackMeleeDamage *= attachment.meleeDamageMultiplier;
+        }
+        return stackMeleeDamage;
+    }
+
+    /**
+     * Get the damage of a specific gun, taking into account attachments
+     */
+    public float getDamage(ItemStack stack)
+    {
+        float stackDamage = damage;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackDamage *= attachment.damageMultiplier;
+        }
+        return stackDamage;
+    }
+
+    /**
+     * Get the bullet spread of a specific gun, taking into account attachments
+     */
+    public float getSpread(ItemStack stack)
+    {
+        float stackSpread = bulletSpread;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackSpread *= attachment.spreadMultiplier;
+        }
+        return stackSpread;
+    }
+
+    public EnumSpreadPattern getSpreadPattern(ItemStack stack)
+    {
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (attachment.spreadPattern != null)
+                return attachment.spreadPattern;
+        }
+        return spreadPattern;
+    }
+
+    /**
+     * Get the recoil of a specific gun, taking into account attachments
+     */
+    public float getRecoil(ItemStack stack)
+    {
+        float stackRecoil = recoil;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackRecoil *= attachment.recoilMultiplier;
+        }
+        return stackRecoil;
+    }
+
+    /**
+     * Get the bullet speed of a specific gun, taking into account attachments
+     */
+    public float getBulletSpeed(ItemStack stack)
+    {
+        float stackBulletSpeed = bulletSpeed;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackBulletSpeed *= attachment.bulletSpeedMultiplier;
+        }
+        return stackBulletSpeed;
+    }
+
+    /**
+     * Get the reload time of a specific gun, taking into account attachments
+     */
+    public float getReloadTime(ItemStack stack)
+    {
+        float stackReloadTime = reloadTime;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackReloadTime *= attachment.reloadTimeMultiplier;
+        }
+        return stackReloadTime;
+    }
+
+    /**
      * Get the firing mode of a specific gun, taking into account attachments
      */
     public EnumFireMode getFireMode(ItemStack stack)
     {
-        //TODO: implement attachments
-        /*for(AttachmentType attachment : getCurrentAttachments(stack))
+        for(AttachmentType attachment : getCurrentAttachments(stack))
         {
-            if(attachment.modeOverride != null)
+            if (attachment.modeOverride != null)
                 return attachment.modeOverride;
-        }*/
+        }
         return mode;
+    }
+
+
+    public float getShootDelay(ItemStack stack)
+    {
+        //TODO: implement attachments
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (attachment.modeOverride == EnumFireMode.BURST)
+                return Math.max(shootDelay, 3);
+        }
+
+        float stackShootDelay = shootDelay;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackShootDelay *= attachment.shootDelayMultiplier;
+        }
+        return stackShootDelay;
     }
 
     /**
