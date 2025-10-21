@@ -6,11 +6,14 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.ModConstants;
 import com.wolffsarmormod.common.PlayerData;
+import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.guns.ShootBulletHandler;
+import com.wolffsarmormod.common.guns.ShotHandler;
 import com.wolffsarmormod.common.types.BulletType;
+import com.wolffsarmormod.common.types.DropableType;
 import com.wolffsarmormod.common.types.GrenadeType;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
@@ -279,14 +282,9 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
         IScope scope = configType.getCurrentScope(gunstack);
         // Your original logic: press opposite hand to toggle scope
 
-        if (hand == InteractionHand.MAIN_HAND) {
-            if (getMouseHeld(InteractionHand.OFF_HAND) && !getLastMouseHeld(InteractionHand.OFF_HAND))
-                ModClient.setScope(scope);
-        }
-        else if (hand == InteractionHand.OFF_HAND) {
-            if (getMouseHeld(InteractionHand.MAIN_HAND) && !getLastMouseHeld(InteractionHand.MAIN_HAND))
-                ModClient.setScope(scope);
-        }
+        if ((hand == InteractionHand.MAIN_HAND && getMouseHeld(InteractionHand.OFF_HAND) && !getLastMouseHeld(InteractionHand.OFF_HAND))
+            || (hand == InteractionHand.OFF_HAND && getMouseHeld(InteractionHand.MAIN_HAND) && !getLastMouseHeld(InteractionHand.MAIN_HAND)))
+            ModClient.setScope(scope);
     }
 
     protected boolean shouldBlockFireAtCrosshair()
@@ -297,8 +295,9 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
             return false;
         Entity hit = ehr.getEntity();
 
+        return hit instanceof Grenade grenade && grenade.getConfigType().isDeployableBag();
+
         //TODO uncomment
-        return false;
         /*return hit instanceof EntityFlagpole
             || hit instanceof EntityFlag
             || hit instanceof EntityGunItem
@@ -575,12 +574,11 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
                 if (!isExtraBullet)
                 {
                     // Drop item on shooting if bullet requires it
-                    if (shootableType.getDropItemOnShoot() != null && !player.isCreative())
-                        dropItem(level, player, shootableType.getDropItemOnShoot());
+                    if (!player.isCreative())
+                        dropItem(level, player, shootableType);
 
                     // Drop item on shooting if gun requires it
-                    if (configType.getDropItemOnShoot() != null)
-                        dropItem(level, player, configType.getDropItemOnShoot());
+                    dropItem(level, player, configType);
 
                     //TODO : Apply knockback
                     //if (configType.getKnockback() > 0F) {}
@@ -661,11 +659,11 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     /**
      * Method for dropping items on reload and on shoot
      */
-    public static void dropItem(Level level, Entity entity, String itemName)
+    public static void dropItem(Level level, Entity entity, InfoType type)
     {
-        if(itemName != null && !level.isClientSide)
+        if (!level.isClientSide && type instanceof DropableType dropableType && dropableType.getDropItemOnShoot() != null)
         {
-            ItemStack dropStack = InfoType.getRecipeElement(itemName);
+            ItemStack dropStack = InfoType.getRecipeElement(dropableType.getDropItemOnShoot(), type.getContentPack());
             entity.spawnAtLocation(dropStack, 0.5F);
         }
     }

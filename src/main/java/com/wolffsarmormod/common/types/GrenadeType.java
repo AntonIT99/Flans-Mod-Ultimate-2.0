@@ -1,5 +1,7 @@
 package com.wolffsarmormod.common.types;
 
+import lombok.Getter;
+
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
@@ -96,6 +98,7 @@ public class GrenadeType extends ShootableType
 
     //Deployed bag functionality
     /** If true, then right clicking this "grenade" will give the player health or buffs or ammo as defined below */
+    @Getter
     protected boolean isDeployableBag = false;
     /** The number of times players can use this bag before it runs out */
     protected int numUses = 1;

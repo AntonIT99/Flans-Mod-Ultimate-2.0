@@ -324,7 +324,7 @@ public class ContentManager
                 Class<? extends InfoType> typeClass = typeFile.getType().getTypeClass();
                 InfoType config = typeClass.getConstructor().newInstance();
                 config.read(typeFile);
-                String shortName = config.getShortName();
+                String shortName = config.getOriginalShortName();
                 boolean isItem = typeFile.getType().isItemType();
                 if (!shortName.isBlank())
                 {
@@ -371,7 +371,7 @@ public class ContentManager
         {
             String otherFile = registeredItems.get(originalShortname);
 
-            // Conflict is in same content pack -> Ignore file
+            // Conflict is in the same Content Pack -> Ignore file
             if (provider.getName().equals(TypeFile.getContentPackName(otherFile)))
             {
                 ArmorMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFile, file.getName());
@@ -566,7 +566,7 @@ public class ContentManager
 
         for (InfoType config : listItems(provider))
         {
-            generateItemJson(config, jsonItemFolderPath, provider);
+            generateItemJson(config, jsonItemFolderPath);
         }
     }
 
@@ -609,17 +609,16 @@ public class ContentManager
                 .toList();
     }
 
-    private void generateItemJson(InfoType config, Path outputFolder, IContentProvider provider)
+    private void generateItemJson(InfoType config, Path outputFolder)
     {
         ResourceUtils.ItemModel model = ResourceUtils.ItemModel.create(config);
 
         String jsonContent = gson.toJson(model);
         String shortName = config.getShortName();
 
-        if (shortnameReferences.get(provider).containsKey(shortName))
+        if (!shortName.equals(config.getOriginalShortName()))
         {
-            shortName = shortnameReferences.get(provider).get(config.getShortName()).get();
-            Path oldFile = outputFolder.resolve(config.getShortName() + ".json");
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
             try
             {
                 Files.deleteIfExists(oldFile);
@@ -743,16 +742,15 @@ public class ContentManager
         for (InfoType config : configs.get(provider))
         {
             String shortName = config.getShortName();
-            if (shortnameReferences.get(provider).containsKey(shortName) && !shortName.equals(shortnameReferences.get(provider).get(shortName).get()))
+            if (!shortName.equals(config.getOriginalShortName()))
             {
-                shortName = shortnameReferences.get(provider).get(shortName).get();
                 String keyToAdd = generateTranslationKey(shortName, config.getType().isBlockType());
-                String keyToRemove = generateTranslationKey(config.getShortName(), config.getType().isBlockType());
+                String keyToRemove = generateTranslationKey(config.getOriginalShortName(), config.getType().isBlockType());
                 translations.putIfAbsent(keyToAdd, config.getName());
                 translations.remove(keyToRemove);
-
             }
-            else {
+            else
+            {
                 translations.putIfAbsent(generateTranslationKey(shortName, config.getType().isBlockType()), config.getName());
             }
         }
@@ -932,5 +930,16 @@ public class ContentManager
     private boolean isTextureNameAlreadyRegistered(String name, String folderName, IContentProvider provider)
     {
         return textures.get(folderName).containsKey(name) && !textures.get(folderName).get(name).contentPack().equals(provider);
+    }
+
+    public static String getShortnameAliasInContentPack(String shortname, @Nullable IContentProvider provider)
+    {
+        if (provider != null) {
+            DynamicReference ref = shortnameReferences.get(provider).get(shortname);
+            if (ref != null) {
+                return ref.get();
+            }
+        }
+        return shortname;
     }
 }

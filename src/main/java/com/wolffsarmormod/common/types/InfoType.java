@@ -11,7 +11,14 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -19,6 +26,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
@@ -35,7 +44,7 @@ public abstract class InfoType
     @Getter
     protected String name = StringUtils.EMPTY;
     @Getter
-    protected String shortName = StringUtils.EMPTY;
+    protected String originalShortName = StringUtils.EMPTY;
     @Getter
     protected String description = StringUtils.EMPTY;
     protected String modelName = StringUtils.EMPTY;
@@ -66,7 +75,7 @@ public abstract class InfoType
     protected void readLine(String line, String[] split, TypeFile file)
     {
         name = readValues(split, "Name", name, file);
-        shortName = readValue(split, "ShortName", shortName, file).toLowerCase();
+        originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase();
         description = readValues(split, "Description", description, file);
         icon = readValue(split, "Icon", icon, file).toLowerCase();
         textureName = readValue(split, "Texture", textureName, file).toLowerCase();
@@ -85,7 +94,6 @@ public abstract class InfoType
             if (!overlayName.isBlank())
                 ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
         }
-
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -195,6 +203,11 @@ public abstract class InfoType
         return modelClassName;
     }
 
+    public String getShortName()
+    {
+        return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
+    }
+
     @Nullable
     @OnlyIn(Dist.CLIENT)
     public DynamicReference getActualModelClassName()
@@ -231,6 +244,98 @@ public abstract class InfoType
     @Override
     public String toString()
     {
-        return String.format("%s item '%s' [%s] in [%s]", type, shortName, fileName, contentPack.getName());
+        return String.format("%s item '%s' [%s] in [%s]", type, getShortName(), fileName, contentPack.getName());
+    }
+
+    public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
+    {
+        String[] split = str.split("\\.");
+        if (split.length == 0)
+            return ItemStack.EMPTY;
+
+        String id = split[0];
+        int damage = split.length > 1 ? Short.parseShort(split[1]) : Short.MAX_VALUE;
+        int amount = 1;
+
+        return getRecipeElement(id, amount, damage, provider);
+    }
+
+    public static ItemStack getRecipeElement(String id, int amount, int damage, @Nullable IContentProvider provider)
+    {
+        // Do a handful of special cases, mostly legacy recipes
+        switch (id)
+        {
+            case "doorIron":
+                return new ItemStack(Items.IRON_DOOR, amount);
+            case "clayItem":
+                return new ItemStack(Items.CLAY_BALL, amount);
+            case "iron_trapdoor":
+                return new ItemStack(Blocks.IRON_TRAPDOOR, amount);
+            case "trapdoor":
+                return new ItemStack(Blocks.OAK_TRAPDOOR, amount);
+            case "gunpowder":
+                return new ItemStack(Items.GUNPOWDER, amount);
+            case "ingotIron", "iron":
+                return new ItemStack(Items.IRON_INGOT, amount);
+            case "boat":
+                return new ItemStack(Items.OAK_BOAT, amount);
+            default:
+                break;
+        }
+
+        // Try a "modid:itemid" style lookup, default to "minecraft:itemid" if no modid
+        Optional<ItemStack> stack = getItemStack(id, amount, damage);
+        if (stack.isPresent())
+            return stack.get();
+
+
+        // Then fallback to "flansmod:itemid" (get shortname alias if the item is in the same content pack)
+        id = ContentManager.getShortnameAliasInContentPack(id, provider);
+        stack = getItemStack(id, amount, damage);
+        if (stack.isPresent())
+            return stack.get();
+
+        //TODO: special ingredients
+        // OreIngredients, just pick an ingot
+        /*if (SPECIAL_INGREDIENTS.containsKey(id))
+        {
+            Ingredient ing = SPECIAL_INGREDIENTS.get(id);
+            if (ing.getMatchingStacks().length > 0)
+                return ing.getMatchingStacks()[0];
+        }*/
+
+        ArmorMod.log.warn("Could not find {} in recipe", id);
+        return ItemStack.EMPTY;
+    }
+
+    protected static Optional<ItemStack> getItemStack(@Nullable String id, int amount, int damage)
+    {
+        Optional<Item> item = getItemById(id);
+        if (item.isPresent())
+        {
+            ItemStack stack = new ItemStack(item.get(), amount);
+            if (damage > 0)
+                stack.setDamageValue(damage);
+            return Optional.of(stack);
+        }
+        return Optional.empty();
+    }
+
+    protected static Optional<Item> getItemById(@Nullable String id)
+    {
+        if (id == null || id.isBlank())
+            return Optional.empty();
+
+        id = id.trim().toLowerCase();
+
+        // If no namespace, assume minecraft
+        if (!id.contains(":"))
+            id = "minecraft:" + id;
+
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        if (rl == null)
+            return Optional.empty();
+
+        return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl));
     }
 }

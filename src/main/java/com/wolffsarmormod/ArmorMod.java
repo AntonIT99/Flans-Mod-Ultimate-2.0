@@ -1,6 +1,7 @@
 package com.wolffsarmormod;
 
 import com.mojang.logging.LogUtils;
+import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.config.ModCommonConfigs;
@@ -17,6 +18,9 @@ import org.spongepowered.asm.mixin.Mixins;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -41,8 +45,17 @@ public class ArmorMod
     public static final boolean forceRecompileAllPacks = false;
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, ArmorMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArmorMod.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> entities = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ArmorMod.MOD_ID);
+
+    public static final RegistryObject<EntityType<Bullet>> bullet = entities.register("bullet", () ->
+        EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
+            .sized(0.25F, 0.25F)
+            .clientTrackingRange(64)   // how far clients track it
+            .updateInterval(1)              // ticks between velocity/pos updates; 1 for projectiles
+            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
 
     public ArmorMod(FMLJavaModLoadingContext context)
     {

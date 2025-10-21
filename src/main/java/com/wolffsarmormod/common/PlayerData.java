@@ -36,6 +36,7 @@ public class PlayerData
     private float rotationRoll;
     /** Snapshots for bullet hit detection. Array size is set to number of snapshots required. When a new one is taken,
      * each snapshot is moved along one place and new one is added at the start, so that when the array fills up, the oldest one is lost */
+    @Getter
     private PlayerSnapshot[] snapshots;
 
     //Gun-related fields

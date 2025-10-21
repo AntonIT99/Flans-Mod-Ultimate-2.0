@@ -87,13 +87,21 @@ public class ModelGun extends Model implements IFlanModel<GunType>
     protected float minigunBarrelSpinSpeed = 1F;
 
     /** These designate the locations of 3D attachment models on the gun */
+    @Getter
     protected Vector3f barrelAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f scopeAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f stockAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f gripAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f gadgetAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f slideAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f pumpAttachPoint = new Vector3f();
+    @Getter
     protected Vector3f accessoryAttachPoint = new Vector3f();
 
     /** Muzzle flash models */

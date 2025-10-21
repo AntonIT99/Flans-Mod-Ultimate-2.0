@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.Objects;
 
 @Mixin(ItemRenderer.class)
-public class ItemRendererMixin
+public abstract class ItemRendererMixin
 {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void onRender(ItemStack stack, ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, MultiBufferSource buffer, int light, int overlay, BakedModel model, CallbackInfo ci)

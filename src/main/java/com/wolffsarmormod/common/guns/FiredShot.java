@@ -6,6 +6,7 @@ import lombok.Getter;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -91,25 +92,25 @@ public class FiredShot {
     /**
      * @return the matching DamageSource for the shot
      */
-    public DamageSource getDamageSource()
+    public DamageSource getDamageSource(Level level)
     {
-        return getDamageSource(false);
+        return getDamageSource(false, level);
     }
 
     /**
      * @return the matching DamageSource for the shot with the additional 'headshot' information
      */
-    public DamageSource getDamageSource(Boolean headshot)
+    public DamageSource getDamageSource(boolean headshot, Level level)
     {
         if (player != null)
         {
-            return new EntityDamageSourceFlan(fireableGun.getShortName(), player, player, fireableGun.getType(), headshot).setProjectile();
+            return new FlanDamageSource(fireableGun.getShortName(), player, player, fireableGun.getType(), headshot).setProjectile();
         }
         else if (shooter != null)
         {
-            return new EntityDamageSourceFlan(fireableGun.getShortName(), null, null, fireableGun.getType(), headshot).setProjectile();
+            return new FlanDamageSource(fireableGun.getShortName(), null, null, fireableGun.getType(), headshot).setProjectile();
         }
-        return DamageSource.GENERIC;
+        return level.damageSources().generic();
     }
 
     /**

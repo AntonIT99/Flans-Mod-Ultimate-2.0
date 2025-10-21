@@ -1,18 +1,24 @@
 package com.wolffsarmormod.common.types;
 
+import lombok.Getter;
+
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BulletType extends ShootableType
 {
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
+    @Getter
     protected int flak = 0;
     /** The type of flak particles to spawn */
+    @Getter
     protected String flakParticles = "largesmoke";
 
     /** If true then this bullet will burn entites it hits */
+    @Getter
     protected boolean setEntitiesOnFire = false;
 
     /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
@@ -31,11 +37,14 @@ public class BulletType extends ShootableType
     //TODO: Uncomment for driveables
     //protected EnumWeaponType weaponType = EnumWeaponType.NONE;
 
+    @Getter
     protected String hitSound;
+    @Getter
     protected float hitSoundRange = 64;
     protected boolean hitSoundEnable = false;
     protected boolean entityHitSoundEnable = false;
 
+    @Getter
     protected float penetratingPower = 1F;
     // In % of penetration to remove per tick.
     protected float penetrationDecay = 0F;
@@ -57,6 +66,7 @@ public class BulletType extends ShootableType
     protected float maxLockOnAngle = 45F;
     /** Lock on force that pulls the bullet towards its prey */
     protected float lockOnForce = 1F;
+    @Getter
     protected String trailTexture = "defaultBulletTrail";
     protected int maxDegreeOfMissile = 20;
     protected int tickStartHoming = 5;
@@ -70,11 +80,13 @@ public class BulletType extends ShootableType
     protected boolean manualGuidance = false;
     protected int lockOnFuse = 10;
 
-    protected ArrayList<MobEffectInstance> hitEffects = new ArrayList<>();
+    @Getter
+    protected List<MobEffectInstance> hitEffects = new ArrayList<>();
 
     /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
     protected int numBullets = -1;
     /** Ammo based spread setting if allowSpreadByBullet = true */
+    @Getter
     protected float bulletSpread = -1;
 
     protected float dragInAir   = 0.99F;

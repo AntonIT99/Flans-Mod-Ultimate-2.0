@@ -2,7 +2,7 @@ package com.wolffsarmormod.common.types;
 
 import lombok.Getter;
 
-public abstract class ShootableType extends InfoType
+public abstract class ShootableType extends InfoType implements DropableType
 {
     //Aesthetics
     /**
@@ -31,6 +31,7 @@ public abstract class ShootableType extends InfoType
     protected String dropItemOnReload = null;
     @Getter
     protected String dropItemOnShoot = null;
+    @Getter
     protected String dropItemOnHit = null;
     /**
      * The number of rounds fired by a gun per item
@@ -71,6 +72,7 @@ public abstract class ShootableType extends InfoType
      */
     protected float damageVsPlayer = 1.0F;
     protected float damageVsEntity = 1.0F;
+    @Getter
     protected float damageVsLiving = 1.0F;
     protected float damageVsVehicles = 1.0F;
     protected float damageVsPlanes = 1.0F;
@@ -80,6 +82,7 @@ public abstract class ShootableType extends InfoType
     /**
      * Whether this grenade will break glass when thrown against it
      */
+    @Getter
     protected boolean breaksGlass = false;
     protected float ignoreArmorProbability = 0;
     protected float ignoreArmorDamageFactor = 0;
@@ -97,16 +100,19 @@ public abstract class ShootableType extends InfoType
     /**
      * If true, then this will explode upon hitting something
      */
+    @Getter
     protected boolean explodeOnImpact = false;
 
     //Detonation Stuff
     /**
      * The radius in which to spread fire
      */
+    @Getter
     protected float fireRadius = 0F;
     /**
      * The radius of explosion upon detonation
      */
+    @Getter
     protected float explosionRadius = 0F;
     /**
      * Power of explosion. Multiplier, 1 = vanilla behaviour
@@ -115,6 +121,7 @@ public abstract class ShootableType extends InfoType
     /**
      * Whether the explosion can destroy blocks
      */
+    @Getter
     protected boolean explosionBreaksBlocks = true;
     /**
      * Explosion damage vs various classes of entities

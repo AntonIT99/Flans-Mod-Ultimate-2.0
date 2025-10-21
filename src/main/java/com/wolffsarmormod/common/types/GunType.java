@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Random;
 
 @NoArgsConstructor
-public class GunType extends PaintableType implements IScope
+public class GunType extends PaintableType implements IScope, DropableType
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
@@ -259,14 +259,19 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether or not this gun has a shield piece
      */
+    @Getter
     protected boolean shield = false;
     /**
      * Shield collision box definition. In model co-ordinates
      */
-    protected Vector3f shieldOrigin, shieldDimensions;
+    @Getter
+    protected Vector3f shieldOrigin;
+    @Getter
+    protected Vector3f shieldDimensions;
     /**
      * Percentage of damage blocked between 0.00-1.00 (0.50F = 50%)
      */
+    @Getter
     protected float shieldDamageAbsorption = 0F;
 
     //Sounds
@@ -450,6 +455,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * For guns with 3D models
      */
+    @Getter
     protected ModelGun model;
 
     /**

@@ -1,7 +1,6 @@
 package com.wolffsarmormod.common.item;
 
 import com.wolffsarmormod.common.types.ShootableType;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.chat.Component;
@@ -15,13 +14,9 @@ import java.util.List;
 
 public abstract class ShootableItem extends Item implements IFlanItem<ShootableType>
 {
-    @Getter
-    protected final ShootableType configType;
-
     protected ShootableItem(ShootableType configType)
     {
         super(createProperties(configType));
-        this.configType = configType;
     }
 
     @Override
