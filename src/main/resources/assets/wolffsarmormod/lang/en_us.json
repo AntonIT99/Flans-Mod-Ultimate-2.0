@@ -1,7 +1,10 @@
 {
   "creativetab.wolffsarmormod.armors": "Flan's Armors",
   "creativetab.wolffsarmormod.guns": "Flan's Guns",
-  "death.attack.wolffsarmormod": "%1$s was shot by %2$s (%3$s)",
-  "death.attack.wolffsarmormod.headshot": "%1$s was headshot by %2$s (%3$s)",
-  "death.attack.wolffsarmormod.noshooter": "%1$s was shot"
+  "death.attack.flans_gun": "%1$s was shot",
+  "death.attack.flans_gun.player": "%1$s was shot by %2$s",
+  "death.attack.flans_gun_headshot": "%1$s was headshotted",
+  "death.attack.flans_gun_headshot.player": "%1$s was headshotted by %2$s",
+  "death.attack.flans_explosion": "%1$s was blown up",
+  "death.attack.flans_explosion.player": "%1$s was blown up by %2$s"
 }

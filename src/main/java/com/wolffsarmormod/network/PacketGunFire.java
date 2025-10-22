@@ -41,7 +41,7 @@ public class PacketGunFire extends PacketBase
         }
         else
         {
-            ArmorMod.log.warn("Received invalid PacketGunFire. Item in hand is not an instance of ItemGun");
+            ArmorMod.log.warn("Received invalid PacketGunFire. Item in hand is not an instance of {}", GunItem.class.getSimpleName());
         }
     }
 }
