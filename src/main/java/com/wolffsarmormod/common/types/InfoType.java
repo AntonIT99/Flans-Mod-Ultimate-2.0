@@ -74,6 +74,7 @@ public abstract class InfoType
 
     protected void readLine(String line, String[] split, TypeFile file)
     {
+        //TODO: Recipes
         name = readValues(split, "Name", name, file);
         originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase();
         description = readValues(split, "Description", description, file);

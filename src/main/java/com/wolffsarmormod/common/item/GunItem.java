@@ -3,6 +3,7 @@ package com.wolffsarmormod.common.item;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.ModConstants;
 import com.wolffsarmormod.common.PlayerData;
@@ -10,10 +11,10 @@ import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
+import com.wolffsarmormod.common.guns.InventoryHelper;
 import com.wolffsarmormod.common.guns.ShootBulletHandler;
 import com.wolffsarmormod.common.guns.ShotHandler;
 import com.wolffsarmormod.common.types.BulletType;
-import com.wolffsarmormod.common.types.DropableType;
 import com.wolffsarmormod.common.types.GrenadeType;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
@@ -575,10 +576,10 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
                 {
                     // Drop item on shooting if bullet requires it
                     if (!player.isCreative())
-                        dropItem(level, player, shootableType);
+                        dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
 
                     // Drop item on shooting if gun requires it
-                    dropItem(level, player, configType);
+                    dropItem(level, player, configType.getDropItemOnShoot(), configType.getContentPack());
 
                     //TODO : Apply knockback
                     //if (configType.getKnockback() > 0F) {}
@@ -659,11 +660,11 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     /**
      * Method for dropping items on reload and on shoot
      */
-    public static void dropItem(Level level, Entity entity, InfoType type)
+    public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
     {
-        if (!level.isClientSide && type instanceof DropableType dropableType && dropableType.getDropItemOnShoot() != null)
+        if (!level.isClientSide && itemName != null)
         {
-            ItemStack dropStack = InfoType.getRecipeElement(dropableType.getDropItemOnShoot(), type.getContentPack());
+            ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
             entity.spawnAtLocation(dropStack, 0.5F);
         }
     }
@@ -694,40 +695,37 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
 
     public boolean reload(ItemStack gunstack, Level level, Entity entity, Inventory inventory, InteractionHand hand, boolean hasOffHand, boolean forceReload, boolean isCreative)
     {
-        //TODO: implement
-        return true;
-        /*
         //Deployable guns cannot be reloaded in the inventory
 
         //TODO investigate if this code can can actually be called by an deployable
-        if(type.deployable)
+        if (configType.isDeployable())
             return false;
 
         //If you cannot reload half way through a clip, reject the player for trying to do so
-        if(forceReload && !type.canForceReload)
+        if (forceReload && !configType.isCanForceReload())
             return false;
 
         //For playing sounds afterwards
         boolean reloadedSomething = false;
         //Check each ammo slot, one at a time
-        for(int i = 0; i < type.numAmmoItemsInGun; i++)
+        for (int i = 0; i < configType.getNumAmmoItemsInGun(); i++)
         {
             //Get the stack in the slot
             ItemStack bulletStack = getBulletItemStack(gunstack, i);
 
             //If there is no magazine, if the magazine is empty or if this is a forced reload
-            if(bulletStack == null || bulletStack.isEmpty() || bulletStack.getItemDamage() == bulletStack.getMaxDamage() || forceReload)
+            if (bulletStack == null || bulletStack.isEmpty() || bulletStack.getDamageValue() == bulletStack.getMaxDamage() || forceReload)
             {
                 //Iterate over all inventory slots and find the magazine / bullet item with the most bullets
                 int bestSlot = -1;
                 int bulletsInBestSlot = 0;
-                for(int j = 0; j < inventory.getSizeInventory(); j++)
+                for (int j = 0; j < inventory.getContainerSize(); j++)
                 {
-                    ItemStack item = inventory.getStackInSlot(j);
-                    if(item.getItem() instanceof ItemShootable && type.isCorrectAmmo(((ItemShootable)(item.getItem())).type))
+                    ItemStack item = inventory.getItem(j);
+                    if (item.getItem() instanceof ShootableItem shootableItem && configType.isCorrectAmmo(shootableItem.getConfigType()))
                     {
-                        int bulletsInThisSlot = item.getMaxDamage() - item.getItemDamage();
-                        if(bulletsInThisSlot > bulletsInBestSlot)
+                        int bulletsInThisSlot = item.getMaxDamage() - item.getDamageValue();
+                        if (bulletsInThisSlot > bulletsInBestSlot)
                         {
                             bestSlot = j;
                             bulletsInBestSlot = bulletsInThisSlot;
@@ -735,26 +733,20 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
                     }
                 }
                 //If there was a valid non-empty magazine / bullet item somewhere in the inventory, load it
-                if(bestSlot != -1)
+                if (bestSlot != -1)
                 {
-                    ItemStack newBulletStack = inventory.getStackInSlot(bestSlot);
-                    ShootableType newBulletType = ((ItemShootable)newBulletStack.getItem()).type;
+                    ItemStack newBulletStack = inventory.getItem(bestSlot);
 
                     //Unload the old magazine (Drop an item if it is required and the player is not in creative mode)
-                    if(bulletStack != null && bulletStack.getItem() instanceof ItemShootable && ((ItemShootable)bulletStack.getItem()).type.dropItemOnReload != null && !isCreative && bulletStack.getItemDamage() == bulletStack.getMaxDamage())
+                    if (bulletStack != null && bulletStack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType().getDropItemOnReload() != null && !isCreative && bulletStack.getDamageValue() == bulletStack.getMaxDamage())
                     {
-                        if(!world.isRemote)
-                            dropItem(world, entity, ((ItemShootable)bulletStack.getItem()).type.dropItemOnReload);
+                        dropItem(level, entity, ((ShootableItem) bulletStack.getItem()).getConfigType().getDropItemOnReload(), ((ShootableItem) bulletStack.getItem()).getConfigType().getContentPack());
                     }
 
                     //The magazine was not finished, pull it out and give it back to the player or, failing that, drop it
-                    if(bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItemDamage() < bulletStack.getMaxDamage())
+                    if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getDamageValue() < bulletStack.getMaxDamage() && !InventoryHelper.addItemStackToInventory(inventory, bulletStack, isCreative))
                     {
-                        if(!InventoryHelper.addItemStackToInventory(inventory, bulletStack, isCreative))
-                        {
-                            if(!world.isRemote)
-                                entity.entityDropItem(bulletStack, 0.5F);
-                        }
+                        entity.spawnAtLocation(bulletStack, 0.5F);
                     }
 
                     //Load the new magazine
@@ -767,8 +759,7 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
                         newBulletStack.setCount(newBulletStack.getCount() - 1);
                     if(newBulletStack.getCount() <= 0)
                         newBulletStack = ItemStack.EMPTY.copy();
-                    inventory.setInventorySlotContents(bestSlot, newBulletStack);
-
+                    inventory.setItem(bestSlot, newBulletStack);
 
                     //Tell the sound player that we reloaded something
                     reloadedSomething = true;
@@ -776,6 +767,5 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
             }
         }
         return reloadedSomething;
-         */
     }
 }

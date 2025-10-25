@@ -5,6 +5,8 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
+import com.wolffsarmormod.common.item.BulletItem;
+import com.wolffsarmormod.common.item.GrenadeItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,7 +23,7 @@ import java.util.Objects;
 import java.util.Random;
 
 @NoArgsConstructor
-public class GunType extends PaintableType implements IScope, DropableType
+public class GunType extends PaintableType implements IScope
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
@@ -96,6 +98,7 @@ public class GunType extends PaintableType implements IScope, DropableType
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
+    @Getter
     protected boolean canForceReload = true;
     /**
      * Whether the player can receive ammo for this gun from an ammo mag
@@ -581,6 +584,26 @@ public class GunType extends PaintableType implements IScope, DropableType
     public boolean useLoopingSounds()
     {
         return useLoopingSounds;
+    }
+
+    public boolean isCorrectAmmo(ShootableType type)
+    {
+        return ammo.contains(type);
+    }
+
+    public boolean isCorrectAmmo(ItemStack stack)
+    {
+        if (stack == null || stack.isEmpty())
+            return false;
+        else if(stack.getItem() instanceof BulletItem bulletItem)
+        {
+            return isCorrectAmmo(bulletItem.getConfigType());
+        }
+        else if(stack.getItem() instanceof GrenadeItem grenadeItem)
+        {
+            return isCorrectAmmo(grenadeItem.getConfigType());
+        }
+        return false;
     }
 
     /**

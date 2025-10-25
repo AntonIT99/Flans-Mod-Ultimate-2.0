@@ -7,5 +7,5 @@ public interface ShootBulletHandler {
     /**
      * @param isExtraBullet is true whenever the current bullet is not the last one to be shot in this batch
      */
-    void shooting(Boolean isExtraBullet);
+    void shooting(boolean isExtraBullet);
 }

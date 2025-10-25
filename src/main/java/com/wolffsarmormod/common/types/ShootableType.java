@@ -2,7 +2,7 @@ package com.wolffsarmormod.common.types;
 
 import lombok.Getter;
 
-public abstract class ShootableType extends InfoType implements DropableType
+public abstract class ShootableType extends InfoType
 {
     //Aesthetics
     /**
@@ -28,6 +28,7 @@ public abstract class ShootableType extends InfoType implements DropableType
     /**
      * Items dropped on various events
      */
+    @Getter
     protected String dropItemOnReload = null;
     @Getter
     protected String dropItemOnShoot = null;
