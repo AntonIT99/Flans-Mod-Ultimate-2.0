@@ -606,7 +606,7 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
 
                 animations.doShoot(configType.getPumpDelay(), configType.getPumpTime());
                 float recoil = configType.getRecoil(gunstack);
-                ModClient.playerRecoil += recoil;
+                ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
 
             }

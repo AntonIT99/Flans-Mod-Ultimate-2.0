@@ -5,7 +5,8 @@ import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.common.PlayerData;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -20,14 +21,14 @@ public class PacketGunAnimation extends PacketBase
 
     private AnimationType type;
     private AnimationType type2 = AnimationType.NONE;
-    private Float minigunRotationAddSpeed;
-    private Integer pumpdelay;
-    private Integer pumptime;
-    private Float recoil;
-    private Integer reloadtime;
+    private float minigunRotationAddSpeed;
+    private int pumpdelay;
+    private int pumptime;
+    private float recoil;
+    private float reloadtime;
     private InteractionHand hand;
 
-    public PacketGunAnimation(InteractionHand hand, Integer pumpdelay, Integer pumptime, Float recoil)
+    public PacketGunAnimation(InteractionHand hand, int pumpdelay, int pumptime, float recoil)
     {
         this.type = AnimationType.SHOOT;
         this.pumpdelay = pumpdelay;
@@ -36,21 +37,21 @@ public class PacketGunAnimation extends PacketBase
         this.hand = hand;
     }
 
-    public PacketGunAnimation(InteractionHand hand, Integer pumpdelay, Integer pumptime, Float recoil, Float minigunAddSpeed)
+    public PacketGunAnimation(InteractionHand hand, int pumpdelay, int pumptime, float recoil, float minigunAddSpeed)
     {
         this(hand,pumpdelay,pumptime,recoil);
         this.type2 = AnimationType.ROTATION;
         this.minigunRotationAddSpeed = minigunAddSpeed;
     }
 
-    public PacketGunAnimation(InteractionHand hand, Float minigunAddSpeed)
+    public PacketGunAnimation(InteractionHand hand, float minigunAddSpeed)
     {
         this.type = AnimationType.ROTATION;
         this.hand = hand;
         this.minigunRotationAddSpeed = minigunAddSpeed;
     }
 
-    public PacketGunAnimation(InteractionHand hand, Integer reloadtime, Integer pumpdelay, Integer pumptime)
+    public PacketGunAnimation(InteractionHand hand, float reloadtime, int pumpdelay, int pumptime)
     {
         this.type = AnimationType.RELOAD;
         this.hand = hand;
@@ -82,7 +83,7 @@ public class PacketGunAnimation extends PacketBase
             case RELOAD -> {
                 data.writeInt(pumpdelay);
                 data.writeInt(pumptime);
-                data.writeInt(reloadtime);
+                data.writeFloat(reloadtime);
             }
         }
     }
@@ -110,17 +111,17 @@ public class PacketGunAnimation extends PacketBase
             case RELOAD -> {
                 pumpdelay = data.readInt();
                 pumptime = data.readInt();
-                reloadtime = data.readInt();
+                reloadtime = data.readFloat();
             }
         }
     }
 
     @Override
-    public void handleClientSide(Minecraft mc)
+    public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
-        GunAnimations animations = ModClient.getGunAnimations(mc.player, hand);
-        handleAnimation(animations, type, mc.player);
-        handleAnimation(animations, type2, mc.player);
+        GunAnimations animations = ModClient.getGunAnimations(player, hand);
+        handleAnimation(animations, type, player);
+        handleAnimation(animations, type2, player);
     }
 
     private void handleAnimation(GunAnimations animations, AnimationType type, Player player)
@@ -144,7 +145,7 @@ public class PacketGunAnimation extends PacketBase
                 //TODO lookatstate not send by Server, may cause problems in future
                 animations.lookAt = GunAnimations.LookAtState.NONE;
                 animations.doShoot(pumpdelay, pumptime);
-                ModClient.playerRecoil += recoil;
+                ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
                 break;
 

@@ -2,15 +2,17 @@ package com.wolffsarmormod.event;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ContentManager;
+import com.wolffsarmormod.client.ClientHudOverlays;
 import com.wolffsarmormod.client.CustomArmorLayer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import net.minecraft.client.model.HumanoidModel;
@@ -26,12 +28,6 @@ import java.nio.file.Files;
 @Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModClientEventHandler
 {
-    @SubscribeEvent
-    public static void clientSetup(FMLClientSetupEvent event)
-    {
-        // Client Setup
-    }
-
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
     {
@@ -74,5 +70,13 @@ public class ModClientEventHandler
                 ArmorMod.log.error("Could not add armor layer to {}", entityType.getDescriptionId(), e);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRegisterOverlays(RegisterGuiOverlaysEvent e)
+    {
+        // Draw scope/armor after everything else
+        e.registerAboveAll("scope", ClientHudOverlays.SCOPE);
+        e.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
     }
 }

@@ -846,7 +846,7 @@ public class GunType extends PaintableType implements IScope, DropableType
     /**
      * @return Returns the pumpDelayAfterReload if a model exits, otherwise 0
      */
-    public Integer getPumpDelayAfterReload()
+    public int getPumpDelayAfterReload()
     {
         if (model != null)
             return model.getPumpDelayAfterReload();
@@ -857,7 +857,7 @@ public class GunType extends PaintableType implements IScope, DropableType
     /**
      * @return Returns the pumpDelay if a model exits, otherwise 0
      */
-    public Integer getPumpDelay()
+    public int getPumpDelay()
     {
         if (model != null)
             return model.getPumpDelay();
@@ -868,7 +868,7 @@ public class GunType extends PaintableType implements IScope, DropableType
     /**
      * @return the pump time if a model exits, otherwise 1
      */
-    public Integer getPumpTime()
+    public int getPumpTime()
     {
         if (model != null)
             return model.getPumpTime();

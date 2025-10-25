@@ -4,13 +4,13 @@ import com.wolffsarmormod.ArmorMod;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -50,7 +50,7 @@ public class PacketPlaySound extends PacketBase
         data.writeFloat(posX);
         data.writeFloat(posY);
         data.writeFloat(posZ);
-        writeUTF(data, sound);
+        data.writeUtf(sound);
         data.writeBoolean(distort);
         data.writeBoolean(silenced);
     }
@@ -61,27 +61,24 @@ public class PacketPlaySound extends PacketBase
         posX = data.readFloat();
         posY = data.readFloat();
         posZ = data.readFloat();
-        sound = readUTF(data);
+        sound = data.readUtf();
         distort = data.readBoolean();
         silenced = data.readBoolean();
     }
 
     @Override
-    public void handleClientSide(Minecraft mc)
+    public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
-        if (mc.level == null)
-            return;
 
         SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, sound));
         if (event == null)
             return;
 
         float volume = silenced ? 2.0F : 4.0F;
-        RandomSource rng = mc.level.random;
-        float pitchBase = distort ? (1.0F / (rng.nextFloat() * 0.4F + 0.8F)) : 1.0F;
+        float pitchBase = distort ? (1.0F / (level.random.nextFloat() * 0.4F + 0.8F)) : 1.0F;
         float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 
-        mc.level.playLocalSound(posX, posY, posZ, event, SoundSource.PLAYERS, volume, pitch, false);
+        level.playLocalSound(posX, posY, posZ, event, SoundSource.PLAYERS, volume, pitch, false);
     }
 
     public static void sendSoundPacket(Player player, double range, String sound, boolean distort)

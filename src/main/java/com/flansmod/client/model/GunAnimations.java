@@ -165,7 +165,7 @@ public class GunAnimations
         muzzleFlash = 2;
     }
 
-    public void doReload(int reloadTime, int pumpDelay, int pumpTime)
+    public void doReload(float reloadTime, int pumpDelay, int pumpTime)
     {
         reloading = true;
         lastReloadAnimationProgress = reloadAnimationProgress = 0F;

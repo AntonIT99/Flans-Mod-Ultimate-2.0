@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -294,7 +295,7 @@ public class ContentManager
             }
             catch (IOException e)
             {
-                ArmorMod.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName());
+                ArmorMod.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
             }
         }
     }
@@ -303,11 +304,35 @@ public class ContentManager
     {
         try
         {
-            files.get(provider).add(new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, Files.readAllLines(file)));
+            List<String> lines = readAllLinesUtf8OrLatin1(file);
+            stripBomInPlace(lines);
+            files.get(provider).add(new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines));
         }
         catch (IOException e)
         {
-            ArmorMod.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName());
+            ArmorMod.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName(), e);
+        }
+    }
+
+    private static List<String> readAllLinesUtf8OrLatin1(Path file) throws IOException {
+        try
+        {
+            return Files.readAllLines(file, StandardCharsets.UTF_8);
+        }
+        catch (MalformedInputException e)
+        {
+            // Legacy/Windows encodings often decode fine as ISO-8859-1
+            return Files.readAllLines(file, StandardCharsets.ISO_8859_1);
+        }
+    }
+
+    private static void stripBomInPlace(List<String> lines)
+    {
+        if (!lines.isEmpty())
+        {
+            String s0 = lines.get(0);
+            if (s0 != null && !s0.isEmpty() && s0.charAt(0) == '\uFEFF')
+                lines.set(0, s0.substring(1));
         }
     }
 
@@ -358,6 +383,7 @@ public class ContentManager
     private String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
     {
         String shortname = originalShortname;
+        // Item shortname already registered and this content pack already has an alias shortname for this item
         if (registeredItems.containsKey(originalShortname) && shortnameReferences.get(provider).containsKey(originalShortname))
         {
             shortname = shortnameReferences.get(provider).get(originalShortname).get();
@@ -369,16 +395,29 @@ public class ContentManager
 
         if (!shortname.equals(newShortname))
         {
-            String otherFile = registeredItems.get(originalShortname);
+            // This file
+            String contentPackName = provider.getName();
+            String fileName = file.getName();
+            // otherFileOriginal -> the file that registered the original shortname
+            // otherFileAlias -> in case another file of the same pack already registered the existing alias
+            String otherFileOriginal = registeredItems.get(originalShortname);
+            Optional<String> otherFileAlias = Optional.empty();
+            if (shortnameReferences.get(provider).containsKey(originalShortname))
+                otherFileAlias = Optional.ofNullable(registeredItems.get(shortnameReferences.get(provider).get(originalShortname).get()));
 
             // Conflict is in the same Content Pack -> Ignore file
-            if (provider.getName().equals(TypeFile.getContentPackName(otherFile)))
+            if (contentPackName.equals(TypeFile.getContentPackName(otherFileOriginal)))
             {
-                ArmorMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFile, file.getName());
+                ArmorMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFileOriginal, fileName);
+                return StringUtils.EMPTY;
+            }
+            else if (otherFileAlias.isPresent() && contentPackName.equals(TypeFile.getContentPackName(otherFileAlias.get())))
+            {
+                ArmorMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFileAlias.get(), fileName);
                 return StringUtils.EMPTY;
             }
 
-            ArmorMod.log.warn("Detected conflict for item id '{}': {} and {}. Creating id alias '{}' in [{}]", originalShortname, file, otherFile, newShortname, provider.getName());
+            ArmorMod.log.warn("Detected conflict for item id '{}': {} and {}. Creating id alias '{}' in [{}]", originalShortname, file, otherFileOriginal, newShortname, contentPackName);
             shortname = newShortname;
         }
 

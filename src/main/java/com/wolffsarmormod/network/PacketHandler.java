@@ -11,6 +11,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -47,10 +49,16 @@ public final class PacketHandler {
      */
     public static void registerPackets()
     {
+        registerS2C(PacketBlockHitEffect.class);
+        registerS2C(PacketBulletTrail.class);
+        registerS2C(PacketFlak.class);
         registerS2C(PacketGunAnimation.class);
+        registerS2C(PacketHitMarker.class);
         registerS2C(PacketPlaySound.class);
+
         registerC2S(PacketGunFire.class);
         registerC2S(PacketReload.class);
+
         initAndRegister();
     }
 
@@ -121,13 +129,19 @@ public final class PacketHandler {
                     ctx.enqueueWork(() -> {
                         if (ctx.getDirection().getReceptionSide().isServer())
                         {
-                            ServerPlayer sender = ctx.getSender(); // non-null on server
+                            // Server
+                            ServerPlayer sender = ctx.getSender();
                             if (sender != null)
                                 msg.handleServerSide(sender);
                         }
                         else
                         {
-                            msg.handleClientSide(Minecraft.getInstance());
+                            // Client
+                            Minecraft mc = Minecraft.getInstance();
+                            ClientLevel level = mc.level;
+                            LocalPlayer player = mc.player;
+                            if (level != null && player != null)
+                                msg.handleClientSide(player, level);
                         }
                     });
                     ctx.setPacketHandled(true);

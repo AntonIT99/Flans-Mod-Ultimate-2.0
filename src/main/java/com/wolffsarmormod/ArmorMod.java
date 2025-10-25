@@ -42,6 +42,7 @@ public class ArmorMod
     public static final Logger log = LogUtils.getLogger();
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
+    //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
     public static final boolean forceRecompileAllPacks = false;
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);

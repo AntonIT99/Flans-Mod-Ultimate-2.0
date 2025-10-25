@@ -432,7 +432,7 @@ public class ModelGun extends Model implements IFlanModel<GunType>
                     return;
                 }*/
 
-                float adsSwitch = ModClient.lastZoomProgress + (ModClient.zoomProgress - ModClient.lastZoomProgress) * smoothing;
+                float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
 
                 if (leftHanded)
                 {

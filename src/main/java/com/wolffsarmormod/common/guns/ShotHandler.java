@@ -11,7 +11,11 @@ import com.wolffsarmormod.common.guns.raytracing.DriveableHit;
 import com.wolffsarmormod.common.guns.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
+import com.wolffsarmormod.network.PacketBlockHitEffect;
+import com.wolffsarmormod.network.PacketBulletTrail;
+import com.wolffsarmormod.network.PacketFlak;
 import com.wolffsarmormod.network.PacketHandler;
+import com.wolffsarmormod.network.PacketHitMarker;
 import com.wolffsarmormod.network.PacketPlaySound;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -108,10 +112,9 @@ public class ShotHandler
         Vector3f previousHitPos = rayTraceOrigin;
         Vector3f finalhit = null;
 
-        for (int i = 0;i<hits.size();i++)
+        for (BulletHit hit : hits)
         {
-            BulletHit hit = hits.get(i);
-            Vector3f shotVector = (Vector3f) new Vector3f(shootingDirection).scale(hit.intersectTime);
+            Vector3f shotVector = new Vector3f(shootingDirection).scale(hit.intersectTime);
             Vector3f hitPos = Vector3f.add(rayTraceOrigin, shotVector, null);
 
             //TODO: debug
@@ -130,7 +133,8 @@ public class ShotHandler
             previousHitPos = hitPos;
 
             penetrationPower = onHit(level, hitPos, shootingDirection, shot, hit, penetrationPower);
-            if (penetrationPower <= 0f) {
+            if (penetrationPower <= 0f)
+            {
                 onDetonate(level, shot, hitPos);
                 finalhit = hitPos;
                 break;
@@ -143,7 +147,7 @@ public class ShotHandler
         }
         //Animation
         //TODO should this be send to all Players?
-        PacketHandler.sendToAllAround(new PacketBulletTrail(rayTraceOrigin, finalhit, 0.05f, 10f, 10f, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500f, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBulletTrail(rayTraceOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
     }
 
     /**
@@ -155,14 +159,13 @@ public class ShotHandler
      * @param penetratingPower  Power of the bullet to penetrate objects
      * @return The remaining penetrationPower after hitting the object specified in the BulletHit
      */
-    public static Float onHit(Level level, Vector3f hit, Vector3f shootingDirection, FiredShot shot, BulletHit bulletHit, float penetratingPower)
+    public static float onHit(Level level, Vector3f hit, Vector3f shootingDirection, FiredShot shot, BulletHit bulletHit, float penetratingPower)
     {
         float damage = shot.getFireableGun().getDamage();
 
         BulletType bulletType = shot.getBulletType();
-        if (bulletHit instanceof DriveableHit)
+        if (bulletHit instanceof DriveableHit driveableHit)
         {
-            DriveableHit driveableHit = (DriveableHit) bulletHit;
             penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamageAgainstVehicles(), driveableHit, penetratingPower);
             //TODO: Debug Mode
             /*if(FlansMod.DEBUG)
@@ -278,7 +281,7 @@ public class ShotHandler
             PacketPlaySound.sendSoundPacket(hit.x, hit.y, hit.z, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), false);
         }
 
-        if(penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
+        if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
         {
             return -1f;
         }

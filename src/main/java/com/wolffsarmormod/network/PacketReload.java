@@ -75,7 +75,7 @@ public class PacketReload extends PacketBase
                 if (type.getReloadSound() != null)
                     PacketPlaySound.sendSoundPacket(player, ModConstants.soundRange, type.getReloadSound(), false);
 
-                PacketHandler.sendTo(new PacketGunAnimation(hand, (int) reloadDelay, type.getPumpDelayAfterReload(), type.getPumpTime()), player);
+                PacketHandler.sendTo(new PacketGunAnimation(hand, reloadDelay, type.getPumpDelayAfterReload(), type.getPumpTime()), player);
             }
         }
     }

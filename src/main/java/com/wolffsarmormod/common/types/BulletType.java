@@ -67,7 +67,7 @@ public class BulletType extends ShootableType
     /** Lock on force that pulls the bullet towards its prey */
     protected float lockOnForce = 1F;
     @Getter
-    protected String trailTexture = "defaultBulletTrail";
+    protected String trailTexture = "defaultbullettrail";
     protected int maxDegreeOfMissile = 20;
     protected int tickStartHoming = 5;
     protected boolean enableSACLOS = false;
