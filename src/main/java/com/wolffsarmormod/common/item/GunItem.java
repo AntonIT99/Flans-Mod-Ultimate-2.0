@@ -1,9 +1,9 @@
 package com.wolffsarmormod.common.item;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelGun;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.ModConstants;
+import com.wolffsarmormod.client.anim.GunAnimations;
+import com.wolffsarmormod.client.model.ModelGun;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireDecision;

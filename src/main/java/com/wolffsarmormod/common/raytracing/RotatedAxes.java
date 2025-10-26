@@ -1,7 +1,7 @@
 package com.wolffsarmormod.common.raytracing;
 
-import com.flansmod.common.vector.Matrix4f;
-import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.common.vector.Matrix4f;
+import com.wolffsarmormod.common.vector.Vector3f;
 
 public class RotatedAxes
 {

@@ -83,6 +83,7 @@ public class ArmorMod
 
     private void registerCreativeModeTabs()
     {
+        //TODO: put bullets that are used for driveables in driveable tab (weaponType)
         registerCreativeTab("armors", items.get(EnumType.ARMOR));
         registerCreativeTab("guns", Stream.of(items.get(EnumType.GUN), items.get(EnumType.BULLET), items.get(EnumType.GRENADE)).flatMap(List::stream).toList());
     }

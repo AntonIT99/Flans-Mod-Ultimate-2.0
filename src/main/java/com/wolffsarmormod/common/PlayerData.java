@@ -1,6 +1,5 @@
 package com.wolffsarmormod.common;
 
-import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ModUtils;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.entity.MachineGun;
@@ -8,6 +7,7 @@ import com.wolffsarmormod.common.guns.QueuedReload;
 import com.wolffsarmormod.common.raytracing.PlayerSnapshot;
 import com.wolffsarmormod.common.raytracing.RotatedAxes;
 import com.wolffsarmormod.common.types.GunType;
+import com.wolffsarmormod.common.vector.Vector3f;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;

@@ -1,9 +1,9 @@
 package com.wolffsarmormod.common.item;
 
-import com.flansmod.client.model.ModelCustomArmour;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.wolffsarmormod.client.model.armor.DefaultArmor;
+import com.wolffsarmormod.client.model.DefaultArmor;
+import com.wolffsarmormod.client.model.ModelCustomArmour;
 import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsarmormod.config.ModCommonConfigs;
 import com.wolffsarmormod.event.CommonEventHandler;

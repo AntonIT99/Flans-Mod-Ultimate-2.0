@@ -1,7 +1,7 @@
 package com.wolffsarmormod.common.guns;
 
-import com.flansmod.client.model.GunAnimations;
 import com.wolffsarmormod.ModConstants;
+import com.wolffsarmormod.client.anim.GunAnimations;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.GunType;

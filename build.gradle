@@ -160,8 +160,8 @@ repositories {
 }
 
 mixin {
-    add sourceSets.main, "wolffsarmormod.refmap.json"
-    config "wolffsarmormod.mixins.json"
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
     debug.verbose = true
     debug.export = true
 }

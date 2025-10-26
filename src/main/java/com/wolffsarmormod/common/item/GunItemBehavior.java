@@ -1,10 +1,9 @@
 package com.wolffsarmormod.common.item;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.ModConstants;
+import com.wolffsarmormod.client.anim.GunAnimations;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
@@ -19,6 +18,7 @@ import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
 import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.common.types.ShootableType;
+import com.wolffsarmormod.common.vector.Vector3f;
 import com.wolffsarmormod.network.PacketGunFire;
 import com.wolffsarmormod.network.PacketHandler;
 import com.wolffsarmormod.network.PacketPlaySound;

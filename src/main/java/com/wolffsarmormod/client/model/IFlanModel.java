@@ -3,7 +3,7 @@ package com.wolffsarmormod.client.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.common.types.InfoType;
-import com.wolffsmod.client.model.IModelBase;
+import com.wolffsmod.api.client.model.IModelBase;
 
 import net.minecraft.world.item.ItemDisplayContext;
 

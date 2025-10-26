@@ -1,12 +1,12 @@
 package com.wolffsarmormod.common.types;
 
-import com.flansmod.client.model.ModelGun;
-import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.client.model.ModelGun;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import com.wolffsarmormod.common.item.BulletItem;
 import com.wolffsarmormod.common.item.GrenadeItem;
+import com.wolffsarmormod.common.vector.Vector3f;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

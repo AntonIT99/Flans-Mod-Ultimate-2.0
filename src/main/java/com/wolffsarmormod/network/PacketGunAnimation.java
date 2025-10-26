@@ -1,7 +1,7 @@
 package com.wolffsarmormod.network;
 
-import com.flansmod.client.model.GunAnimations;
 import com.wolffsarmormod.ModClient;
+import com.wolffsarmormod.client.anim.GunAnimations;
 import com.wolffsarmormod.common.PlayerData;
 import lombok.NoArgsConstructor;
 

@@ -1,6 +1,5 @@
 package com.wolffsarmormod.common.guns;
 
-import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.FlansExplosion;
 import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.EntityHit;
@@ -11,6 +10,7 @@ import com.wolffsarmormod.common.raytracing.DriveableHit;
 import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
+import com.wolffsarmormod.common.vector.Vector3f;
 import com.wolffsarmormod.network.PacketBlockHitEffect;
 import com.wolffsarmormod.network.PacketBulletTrail;
 import com.wolffsarmormod.network.PacketFlak;

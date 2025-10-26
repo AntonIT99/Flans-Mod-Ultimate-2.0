@@ -1,6 +1,6 @@
 package com.wolffsarmormod;
 
-import com.flansmod.client.model.GunAnimations;
+import com.wolffsarmormod.client.anim.GunAnimations;
 import com.wolffsarmormod.common.types.IScope;
 import lombok.AccessLevel;
 import lombok.Getter;

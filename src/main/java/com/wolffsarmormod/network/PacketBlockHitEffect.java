@@ -1,6 +1,6 @@
 package com.wolffsarmormod.network;
 
-import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.common.vector.Vector3f;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

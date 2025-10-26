@@ -2,7 +2,7 @@ package com.wolffsarmormod.util;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
-import com.wolffsmod.client.model.IModelBase;
+import com.wolffsmod.api.client.model.IModelBase;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -127,7 +127,7 @@ public class ClassLoaderUtils
         ReferenceModifierClassVisitor classVisitor = new ReferenceModifierClassVisitor(
                 classWriter, (newClassName != null) ? newClassName.replace(".", "/") : null,
                 "net/minecraft/client/model/ModelBase",
-                "com/wolffsmod/client/model/IModelBase",
+                "com/wolffsmod/api/client/model/IModelBase",
                 minecraftMethodMappings, minecraftFieldMappings);
 
         classReader.accept(classVisitor, 0);
