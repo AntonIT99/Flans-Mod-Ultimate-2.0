@@ -1,9 +1,9 @@
 package com.wolffsarmormod.network;
 
+import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.client.InstantBulletRenderer;
 import com.wolffsarmormod.client.InstantShotTrail;
-import com.wolffsarmormod.common.vector.Vector3f;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

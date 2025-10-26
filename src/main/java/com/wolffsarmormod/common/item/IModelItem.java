@@ -2,11 +2,12 @@ package com.wolffsarmormod.common.item;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
-import com.wolffsarmormod.client.model.IFlanModel;
+import com.wolffsarmormod.client.model.IFlanItemModel;
 import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.LogUtils;
+import com.wolffsmod.api.client.model.IModelBase;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 
-public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends IFlanItem<T>
+public interface IModelItem<T extends InfoType, M extends IModelBase> extends IFlanItem<T>
 {
     T getConfigType();
 
@@ -44,6 +45,7 @@ public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends
         loadTexture();
     }
 
+    @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
     default void loadModel(@Nullable M defaultModel)
     {
@@ -59,7 +61,10 @@ public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends
                 {
                     @SuppressWarnings("unchecked")
                     M model = (M) ClassLoaderUtils.loadAndModifyClass(contentPack, className, actualClassName.get()).getConstructor().newInstance();
-                    model.setType(configType);
+                    if (model instanceof IFlanItemModel<?> flanItemModel)
+                    {
+                        ((IFlanItemModel<T>) flanItemModel).setType(configType);
+                    }
                     setModel(model);
                 }
                 catch (Exception | NoClassDefFoundError | ClassFormatError e)
@@ -71,7 +76,10 @@ public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends
         }
         if (getModel() == null && defaultModel != null)
         {
-            defaultModel.setType(configType);
+            if (defaultModel instanceof IFlanItemModel<?> flanItemModel)
+            {
+                ((IFlanItemModel<T>) flanItemModel).setType(configType);
+            }
             setModel(defaultModel);
         }
     }

@@ -1,6 +1,7 @@
 package com.wolffsarmormod.client.model;
 
-import com.wolffsarmormod.client.tmt.ModelRendererTurbo;
+import com.flansmod.client.model.ModelCustomArmour;
+import com.flansmod.client.tmt.ModelRendererTurbo;
 
 import net.minecraft.world.item.ArmorItem;
 

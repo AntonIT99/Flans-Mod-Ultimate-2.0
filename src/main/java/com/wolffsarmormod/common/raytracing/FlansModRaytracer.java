@@ -1,5 +1,6 @@
 package com.wolffsarmormod.common.raytracing;
 
+import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.AAGun;
 import com.wolffsarmormod.common.entity.Driveable;
@@ -9,7 +10,6 @@ import com.wolffsarmormod.common.guns.ShotHandler;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.AttachmentType;
 import com.wolffsarmormod.common.types.GunType;
-import com.wolffsarmormod.common.vector.Vector3f;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

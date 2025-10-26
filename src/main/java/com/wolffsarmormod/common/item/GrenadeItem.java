@@ -1,10 +1,12 @@
 package com.wolffsarmormod.common.item;
 
-import com.wolffsarmormod.client.model.ModelGrenade;
 import com.wolffsarmormod.common.types.GrenadeType;
+import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
+import lombok.Setter;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,45 +17,28 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType, ModelGrenade>
+public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType, ModelBase>
 {
     @Getter
     protected final GrenadeType configType;
+    @Getter @Setter
+    protected ModelBase model;
+    @Getter @Setter
+    protected ResourceLocation texture;
 
     public GrenadeItem(GrenadeType configType)
     {
         super(configType);
         this.configType = configType;
+
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            clientSideInit();
     }
 
     @Override
     public void clientSideInit()
     {
-
-    }
-
-    @Override
-    public ResourceLocation getTexture()
-    {
-        return null;
-    }
-
-    @Override
-    public void setTexture(ResourceLocation texture)
-    {
-
-    }
-
-    @Override
-    public @Nullable ModelGrenade getModel()
-    {
-        return null;
-    }
-
-    @Override
-    public void setModel(ModelGrenade model)
-    {
-
+        loadModelAndTexture(null);
     }
 
     @Override

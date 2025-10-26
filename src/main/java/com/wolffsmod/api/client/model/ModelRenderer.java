@@ -72,6 +72,21 @@ public class ModelRenderer
         setTextureOffset(texOffX, texOffY);
     }
 
+    public ModelRenderer(ModelBase model)
+    {
+        this((IModelBase)model);
+    }
+
+    public ModelRenderer(ModelBase model, String boxNameIn)
+    {
+        this((IModelBase)model, boxNameIn);
+    }
+
+    public ModelRenderer(ModelBase model, int texOffX, int texOffY)
+    {
+        this((IModelBase)model, texOffX, texOffY);
+    }
+
     /**
      * Sets the current box's rotation points and rotation angles to another box.
      */

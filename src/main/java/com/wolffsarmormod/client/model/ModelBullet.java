@@ -3,14 +3,14 @@ package com.wolffsarmormod.client.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.common.types.BulletType;
+import com.wolffsmod.api.client.model.ModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 
@@ -19,10 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelBullet extends Model implements IFlanModel<BulletType>
+@NoArgsConstructor
+public class ModelBullet extends ModelBase implements IFlanItemModel<BulletType>
 {
     @Setter
     protected BulletType type;
+
+    protected ModelRenderer bulletModel;
 
     @Getter
     private final List<ModelRenderer> boxList = new ArrayList<>();
@@ -31,16 +34,8 @@ public class ModelBullet extends Model implements IFlanModel<BulletType>
     @Getter @Setter
     private ResourceLocation texture;
 
-    public ModelBullet()
-    {
-        super(RenderType::entityTranslucent);
-    }
-
     @Override
-    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
-    {
-
-    }
+    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data) {}
 
     @Override
     public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)

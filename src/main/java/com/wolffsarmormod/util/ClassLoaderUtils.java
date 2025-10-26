@@ -4,7 +4,11 @@ import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.SimpleRemapper;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -16,6 +20,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ClassLoaderUtils
@@ -64,6 +69,14 @@ public class ClassLoaderUtils
         Map.entry("field_82907_q", "offsetZ,0"),
         Map.entry("field_82908_p", "offsetY,0")
     );
+
+    private static final Map<String, String> classMappings = Map.ofEntries(
+        Map.entry("net/minecraft/client/model/ModelRenderer", "com/wolffsmod/api/client/model/ModelRenderer")
+    );
+
+    private static final String LEGACY_MODELBASE = "net/minecraft/client/model/ModelBase";
+    private static final String NEW_MODELBASE = "com/wolffsmod/api/client/model/ModelBase";
+    private static final String INTERFACE_MODELBASE = "com/wolffsmod/api/client/model/IModelBase";
 
     /**
      * Loads a compiled Java class (.class file) from a given file path.
@@ -121,22 +134,65 @@ public class ClassLoaderUtils
 
     private static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)
     {
-        ClassReader classReader = new ClassReader(classData);
-        ClassWriter classWriter = new ClassWriter(classReader, 0);
+        ClassReader cr = new ClassReader(classData);
 
-        ReferenceModifierClassVisitor classVisitor = new ReferenceModifierClassVisitor(
-                classWriter, (newClassName != null) ? newClassName.replace(".", "/") : null,
-                "net/minecraft/client/model/ModelBase",
-                "com/wolffsmod/api/client/model/IModelBase",
-                minecraftMethodMappings, minecraftFieldMappings);
+        Map<String,String> map = new HashMap<>();
+        if (newClassName != null)
+            map.put(cr.getClassName(), newClassName.replace('.', '/'));
+        map.put(LEGACY_MODELBASE, INTERFACE_MODELBASE);
+        map.putAll(classMappings);
 
-        classReader.accept(classVisitor, 0);
+        ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
+        ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(map));
+        ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
 
-        return classWriter.toByteArray();
+        cr.accept(superAndOwnerFixVisitor, 0);
+        return cw.toByteArray();
+    }
+
+    /** ClassWriter that resolves common super classes using the current loader (helps COMPUTE_FRAMES). */
+    private static final class SafeClassWriter extends ClassWriter
+    {
+        SafeClassWriter(ClassReader cr, int flags)
+        {
+            super(cr, flags);
+        }
+
+        @Override
+        protected String getCommonSuperClass(String t1, String t2)
+        {
+            final String objectClassName = "java/lang/Object";
+            try
+            {
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                Class<?> c1 = Class.forName(t1.replace('/', '.'), false, cl);
+                Class<?> c2 = Class.forName(t2.replace('/', '.'), false, cl);
+
+                if (c1.isAssignableFrom(c2))
+                    return t1;
+                if (c2.isAssignableFrom(c1))
+                    return t2;
+
+                while (!c1.isInterface())
+                {
+                    c1 = c1.getSuperclass();
+                    if (c1 == null)
+                        return objectClassName;
+                    if (c1.isAssignableFrom(c2))
+                        return c1.getName().replace('.', '/');
+                }
+                return objectClassName;
+            }
+            catch (Throwable ex)
+            {
+                return objectClassName;
+            }
+        }
     }
 
     // Custom ClassLoader to define classes
-    private static class CustomClassLoader extends ClassLoader
+    private static final class CustomClassLoader extends ClassLoader
     {
         public CustomClassLoader()
         {

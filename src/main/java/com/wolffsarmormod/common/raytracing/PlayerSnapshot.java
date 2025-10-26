@@ -1,10 +1,10 @@
 package com.wolffsarmormod.common.raytracing;
 
+import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.AttachmentType;
 import com.wolffsarmormod.common.types.GunType;
-import com.wolffsarmormod.common.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
