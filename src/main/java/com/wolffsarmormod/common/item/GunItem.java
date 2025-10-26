@@ -40,7 +40,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -78,6 +77,11 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
             clientSideInit();
 
         behavior = new GunItemBehavior(this);
+    }
+
+    public boolean useAimingAnimation()
+    {
+        return true;
     }
 
     @Override
@@ -263,46 +267,6 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     public boolean isCorrectToolForDrops(ItemStack stack, BlockState state)
     {
         return false;
-    }
-
-    /**
-     * Populates creative tabs with variants of this item.
-     * In 1.20+, the recommended way is via the CreativeModeTabEvent.BuildContents event.
-     * This fallback still runs for vanilla tabs that include this item.
-     */
-    //TODO: implement
-    /*@Override
-    public void fillItemCategory(CreativeModeTab tab, net.minecraft.core.NonNullList<ItemStack> items) {
-        // If you restrict to certain tabs:
-        // if (tab != FlansModTabs.GUNS && tab != CreativeModeTabs.SEARCH) return;
-
-        PaintableType pType = ((IPaintableItem) this).GetPaintableType();
-        if (FlansMod.addAllPaintjobsToCreative) {
-            for (Paintjob pj : pType.paintjobs) {
-                addPaintjobToList(this, pType, pj, items);
-            }
-        } else {
-            addPaintjobToList(this, pType, pType.defaultPaintjob, items);
-        }
-    }*/
-
-    /**
-     * Max use duration (in ticks) for continuous use (e.g., bow drawing).
-     */
-    @Override
-    public int getUseDuration(@NotNull ItemStack stack) {
-        return 100;
-    }
-
-    //TODO: Implement this -> ClientEventHandler.onLiving()
-    /**
-     * Use animation shown while the item is being used.
-     * (Replacement for 1.12's EnumAction.)
-     */
-    @Override
-    public UseAnim getUseAnimation(@NotNull ItemStack stack)
-    {
-        return UseAnim.BOW;
     }
 
     /**

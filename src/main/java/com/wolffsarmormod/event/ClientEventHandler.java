@@ -16,6 +16,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -40,29 +42,32 @@ public class ClientEventHandler
     }
 
     /**
-     * Aim Pose when GunItem is held by a humanoid entity
+     * Aim Pose when GunItem is held by players
      */
     @SubscribeEvent
     public static void onLiving(RenderLivingEvent.Pre<?, ?> event)
     {
-        /*var model = event.getRenderer().getModel();
+        if (!(event.getEntity() instanceof Player))
+            return;
+
+        var model = event.getRenderer().getModel();
         if (!(model instanceof HumanoidModel<?> humanoid))
             return;
 
         ItemStack main = event.getEntity().getMainHandItem();
         ItemStack off  = event.getEntity().getOffhandItem();
-        boolean force = isGunItem(main) || isGunItem(off);
+        boolean force = isGunItemWithAiming(main) || isGunItemWithAiming(off);
         if (!force)
             return;
 
         // Force the bow-aiming arm pose on both arms
         humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;*/
+        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
     }
 
-    private static boolean isGunItem(ItemStack s)
+    private static boolean isGunItemWithAiming(ItemStack s)
     {
-        return !s.isEmpty() && s.getItem() instanceof GunItem;
+        return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation();
     }
 
     // Render world-space geometry AFTER particles/translucents so the trail blends nicely.
