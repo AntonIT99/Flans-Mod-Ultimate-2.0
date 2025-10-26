@@ -1,6 +1,6 @@
 package com.wolffsarmormod.common.entity;
 
-import com.wolffsarmormod.common.guns.raytracing.DriveableHit;
+import com.wolffsarmormod.common.raytracing.DriveableHit;
 import com.wolffsarmormod.common.types.BulletType;
 
 import net.minecraft.nbt.CompoundTag;

@@ -37,7 +37,7 @@ public class PacketGunFire extends PacketBase
         ItemStack itemstack = player.getItemInHand(hand);
         if (!itemstack.isEmpty() && itemstack.getItem() instanceof GunItem gun)
         {
-            gun.shootServer(hand, player, itemstack);
+            gun.getBehavior().shootServer(hand, player, itemstack);
         }
         else
         {

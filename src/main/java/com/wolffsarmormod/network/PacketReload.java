@@ -56,7 +56,7 @@ public class PacketReload extends PacketBase
         {
             GunType type = gunItem.getConfigType();
 
-            if (gunItem.reload(stack, player.level(), player, player.getInventory(), hand, hasOffHand, isForced, player.isCreative()))
+            if (gunItem.getBehavior().reload(stack, player.level(), player, player.getInventory(), hand, hasOffHand, isForced, player.isCreative()))
             {
                 //TODO: implement Enchantments
                 //float reloadDelay = EnchantmentModule.ModifyReloadTime(type.getReloadTime(), player, otherHand);
@@ -73,7 +73,7 @@ public class PacketReload extends PacketBase
 
                 //Play reload sound
                 if (type.getReloadSound() != null)
-                    PacketPlaySound.sendSoundPacket(player, ModConstants.soundRange, type.getReloadSound(), false);
+                    PacketPlaySound.sendSoundPacket(player, ModConstants.SOUND_RANGE, type.getReloadSound(), false);
 
                 PacketHandler.sendTo(new PacketGunAnimation(hand, reloadDelay, type.getPumpDelayAfterReload(), type.getPumpTime()), player);
             }

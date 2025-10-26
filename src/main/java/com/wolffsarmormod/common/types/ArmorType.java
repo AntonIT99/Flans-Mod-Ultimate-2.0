@@ -8,13 +8,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ArmorItem;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,26 +141,27 @@ public class ArmorType extends InfoType
                 break;
         }
 
-        if (FMLEnvironment.dist == Dist.CLIENT)
-        {
-            findModelClass();
-            if (!textureName.isBlank())
-                ContentManager.getArmorTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
-            if (!overlayName.isBlank())
-                ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
-        }
+        super.postRead();
     }
 
-    @Nullable
     @OnlyIn(Dist.CLIENT)
     @Override
-    public DynamicReference getTexture()
+    public ResourceLocation getTexture()
     {
         if (!textureName.isBlank())
         {
-            return ContentManager.getArmorTextureReferences().get(contentPack).get(textureName);
+            DynamicReference ref = ContentManager.getArmorTextureReferences().get(contentPack).get(textureName);
+            if (ref != null)
+                return ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, getTexturePath(ref.get()));
         }
-        return null;
+        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    protected String getTexturePath(String textureName)
+    {
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
     }
 
     public boolean hasDurability()

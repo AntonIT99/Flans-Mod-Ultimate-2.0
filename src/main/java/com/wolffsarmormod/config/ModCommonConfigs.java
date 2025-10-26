@@ -12,6 +12,7 @@ public class ModCommonConfigs
 
     public static final ForgeConfigSpec.IntValue breakableArmor;
     public static final ForgeConfigSpec.IntValue defaultArmorDurability;
+    public static final ForgeConfigSpec.BooleanValue addAllPaintjobsToCreative;
 
     static {
         BUILDER.push("General Settings");
@@ -22,6 +23,9 @@ public class ModCommonConfigs
         defaultArmorDurability = BUILDER
                 .comment("Default durability if breakableArmor = 1")
                 .defineInRange("defaultArmorDurability", 500, 1, 10000);
+        addAllPaintjobsToCreative = BUILDER
+                .comment("Whether all paintjobs should appear in creative")
+                .define("addAllPaintjobsToCreative", true);
 
         BUILDER.pop();
         CONFIG = BUILDER.build();

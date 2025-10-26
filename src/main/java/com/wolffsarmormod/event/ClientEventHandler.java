@@ -16,7 +16,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,7 +45,7 @@ public class ClientEventHandler
     @SubscribeEvent
     public static void onLiving(RenderLivingEvent.Pre<?, ?> event)
     {
-        var model = event.getRenderer().getModel();
+        /*var model = event.getRenderer().getModel();
         if (!(model instanceof HumanoidModel<?> humanoid))
             return;
 
@@ -58,7 +57,7 @@ public class ClientEventHandler
 
         // Force the bow-aiming arm pose on both arms
         humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;*/
     }
 
     private static boolean isGunItem(ItemStack s)

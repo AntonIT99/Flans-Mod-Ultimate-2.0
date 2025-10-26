@@ -1,7 +1,9 @@
 package com.wolffsarmormod.common.paintjob;
 
 import com.wolffsarmormod.common.types.PaintableType;
+import lombok.Getter;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public class Paintjob
@@ -15,29 +17,28 @@ public class Paintjob
         LEGENDARY,
     }
 
-    public int id;
-    public PaintableType parent;
-    public String displayName;
-    public String iconName;
-    public String textureName;
-    public ItemStack[] dyesNeeded;
-    public Boolean addToTables;
-    public EnumPaintjobRarity rarity;
+    @Getter
+    private final int id;
+    private final PaintableType parent;
+    private final String displayName;
+    private final String iconName;
+    private final ResourceLocation texture;
+    private final ItemStack[] dyesNeeded;
+    private final EnumPaintjobRarity rarity;
 
-    public Paintjob(PaintableType parent, int id, String iconName, String textureName, ItemStack[] dyesNeeded, boolean addToTables)
+    public Paintjob(PaintableType parent, int id, String iconName, ResourceLocation texture, ItemStack[] dyesNeeded)
     {
-        this(parent, id, "", iconName, textureName, dyesNeeded, addToTables);
+        this(parent, id, "", iconName, texture, dyesNeeded);
     }
 
-    public Paintjob(PaintableType parent, int id, String displayName, String iconName, String textureName, ItemStack[] dyesNeeded, boolean addToTables)
+    public Paintjob(PaintableType parent, int id, String displayName, String iconName, ResourceLocation texture, ItemStack[] dyesNeeded)
     {
         this.parent = parent;
         this.id = id;
         this.displayName = displayName;
         this.iconName = iconName;
-        this.textureName = textureName;
+        this.texture = texture;
         this.dyesNeeded = dyesNeeded;
-        this.addToTables = addToTables;
         this.rarity = EnumPaintjobRarity.UNKNOWN;
     }
 
@@ -50,6 +51,14 @@ public class Paintjob
                 return true;
         }*/
         return false;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof Paintjob otherPaintjob))
+            return false;
+        return parent.equals(otherPaintjob.parent) && id == otherPaintjob.id;
     }
 
     @Override

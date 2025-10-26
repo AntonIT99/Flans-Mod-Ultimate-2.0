@@ -1,6 +1,6 @@
 package com.wolffsarmormod.common.guns;
 
-import com.wolffsarmormod.common.guns.damagesource.FlansDamageSources;
+import com.wolffsarmormod.common.damagesource.FlansDamageSources;
 import com.wolffsarmormod.common.types.BulletType;
 import lombok.Getter;
 

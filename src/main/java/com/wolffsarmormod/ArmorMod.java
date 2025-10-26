@@ -2,7 +2,10 @@ package com.wolffsarmormod;
 
 import com.mojang.logging.LogUtils;
 import com.wolffsarmormod.common.entity.Bullet;
+import com.wolffsarmormod.common.item.IPaintableItem;
+import com.wolffsarmormod.common.paintjob.Paintjob;
 import com.wolffsarmormod.common.types.EnumType;
+import com.wolffsarmormod.common.types.PaintableType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.config.ModCommonConfigs;
 import net.minecraftforge.common.MinecraftForge;
@@ -13,6 +16,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixins;
 
@@ -89,8 +93,34 @@ public class ArmorMod
         creativeModeTabRegistry.register(name, () -> CreativeModeTab.builder()
                 .title(Component.translatable("creativetab." + MOD_ID + "." + name))
                 .icon(() -> new ItemStack(itemsForTab.get(ThreadLocalRandom.current().nextInt(0, items.size())).get()))
-                .displayItems((parameters, output) -> itemsForTab.forEach(item -> output.accept(item.get())))
                 .withSearchBar()
+                .displayItems((parameters, output) -> {
+                    for (RegistryObject<Item> ro : itemsForTab)
+                    {
+                        Item item = ro.get();
+
+                        // If it’s paintable, emit stacks for each paintjob
+                        if (item instanceof IPaintableItem<?> paintableItem)
+                        {
+                            PaintableType type = paintableItem.getPaintableType();
+                            if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()))
+                            {
+                                for (Paintjob pj : type.getPaintjobs())
+                                {
+                                    output.accept(paintableItem.makePaintjobStack(pj));
+                                }
+                            }
+                            else
+                            {
+                                output.accept(paintableItem.makeDefaultPaintjobStack());
+                            }
+                        }
+                        else
+                        {
+                            output.accept(item);
+                        }
+                    }
+                })
                 .build());
     }
 

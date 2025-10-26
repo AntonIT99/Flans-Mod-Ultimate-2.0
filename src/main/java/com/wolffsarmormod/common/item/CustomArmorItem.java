@@ -190,13 +190,6 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
 
     @OnlyIn(Dist.CLIENT)
     @Override
-    public String getTexturePath(String textureName)
-    {
-        return "textures/" + configType.getType().getTextureFolderName() + "/" + textureName + (configType.getArmorItemType() != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
     public boolean useCustomItemRendering()
     {
         return false;

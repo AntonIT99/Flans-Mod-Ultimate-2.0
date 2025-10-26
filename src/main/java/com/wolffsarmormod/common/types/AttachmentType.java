@@ -5,7 +5,9 @@ import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import lombok.Getter;
 
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -126,9 +128,9 @@ public class AttachmentType extends PaintableType implements IScope
     }
 
     @Override
-    public String getZoomOverlay()
+    public ResourceLocation getZoomOverlay()
     {
-        return zoomOverlay;
+        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
     }
 
     @Nullable

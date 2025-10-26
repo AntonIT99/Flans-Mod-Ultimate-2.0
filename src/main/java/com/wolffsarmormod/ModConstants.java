@@ -1,6 +1,10 @@
 package com.wolffsarmormod;
 
-public class ModConstants
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ModConstants
 {
-    public static final float soundRange = 50F;
+    public static final float SOUND_RANGE = 50F;
 }

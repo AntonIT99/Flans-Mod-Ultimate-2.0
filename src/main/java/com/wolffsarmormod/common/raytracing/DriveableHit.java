@@ -1,4 +1,4 @@
-package com.wolffsarmormod.common.guns.raytracing;
+package com.wolffsarmormod.common.raytracing;
 
 import com.wolffsarmormod.common.entity.Driveable;
 

@@ -1,7 +1,7 @@
 package com.wolffsarmormod.common.entity;
 
-import com.wolffsarmormod.common.guns.raytracing.BulletHit;
-import com.wolffsarmormod.common.guns.raytracing.PlayerHitbox;
+import com.wolffsarmormod.common.raytracing.BulletHit;
+import com.wolffsarmormod.common.raytracing.PlayerHitbox;
 
 import net.minecraft.world.entity.Entity;
 

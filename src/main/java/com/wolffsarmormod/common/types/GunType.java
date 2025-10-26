@@ -10,8 +10,10 @@ import com.wolffsarmormod.common.item.GrenadeItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
@@ -229,11 +231,19 @@ public class GunType extends PaintableType implements IScope
     /**
      * If false, then attachments wil not be listed in item GUI
      */
-    public boolean showAttachments = true;
+    @Getter
+    protected boolean showAttachments = true;
     /**
      * Show statistics
      */
-    public boolean showDamage = false, showRecoil = false, showSpread = false, showReloadTime = false;
+    @Getter
+    protected boolean showDamage = false;
+    @Getter
+    protected boolean showRecoil = false;
+    @Getter
+    protected boolean showSpread = false;
+    @Getter
+    protected boolean showReloadTime = false;
     /**
      * Whether Gun makes players to be UseAnim.BOW
      */
@@ -370,6 +380,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether the looping sounds should be used. Automatically set if the player sets any one of the following sounds
      */
+    @Getter
     protected boolean useLoopingSounds = false;
     /**
      * Played when the player starts to hold shoot
@@ -395,18 +406,24 @@ public class GunType extends PaintableType implements IScope
     /**
      * The sound to play upon weapon swing
      */
+    @Getter
     protected String meleeSound;
     /**
      * The time delay between custom melee attacks
      */
+    @Getter
     protected int meleeTime = 1;
     /**
      * The path the melee weapon takes
      */
-    protected ArrayList<Vector3f> meleePath = new ArrayList<>(), meleePathAngles = new ArrayList<>();
+    @Getter
+    protected ArrayList<Vector3f> meleePath = new ArrayList<>();
+    @Getter
+    protected ArrayList<Vector3f> meleePathAngles = new ArrayList<>();
     /**
      * The points on the melee weapon that damage is actually done from.
      */
+    @Getter
     protected ArrayList<Vector3f> meleeDamagePoints = new ArrayList<>();
 
 
@@ -572,18 +589,13 @@ public class GunType extends PaintableType implements IScope
     @Override
     public boolean hasZoomOverlay()
     {
-        return false;
+        return getOverlay().isPresent();
     }
 
     @Override
-    public String getZoomOverlay()
+    public ResourceLocation getZoomOverlay()
     {
-        return "";
-    }
-
-    public boolean useLoopingSounds()
-    {
-        return useLoopingSounds;
+        return getOverlay().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
     }
 
     public boolean isCorrectAmmo(ShootableType type)

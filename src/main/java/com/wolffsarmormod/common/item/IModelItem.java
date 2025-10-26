@@ -10,7 +10,6 @@ import com.wolffsarmormod.util.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -21,12 +20,6 @@ public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends
 
     @OnlyIn(Dist.CLIENT)
     void clientSideInit();
-
-    @OnlyIn(Dist.CLIENT)
-    default String getTexturePath(String textureName)
-    {
-        return "textures/" + getConfigType().getType().getTextureFolderName() + "/" + textureName + ".png";
-    }
 
     @OnlyIn(Dist.CLIENT)
     ResourceLocation getTexture();
@@ -87,10 +80,9 @@ public interface IModelItem<T extends InfoType, M extends IFlanModel<T>> extends
     default void loadTexture()
     {
         T configType = getConfigType();
-        DynamicReference texture = configType.getTexture();
-        ResourceLocation textureRes = (texture != null) ? ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, getTexturePath(texture.get())) : TextureManager.INTENTIONAL_MISSING_TEXTURE;
-        setTexture(textureRes);
+        ResourceLocation texture = configType.getTexture();
+        setTexture(texture);
         if (getModel() != null)
-            getModel().setTexture(textureRes);
+            getModel().setTexture(texture);
     }
 }

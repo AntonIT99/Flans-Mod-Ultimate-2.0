@@ -7,8 +7,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class QueuedReload {
-
+public class QueuedReload
+{
     @Getter
     private float reloadTime = 0;
     private boolean didReload = false;
@@ -41,7 +41,8 @@ public class QueuedReload {
             reloadTime--;
     }
 
-    public void doReload() {
+    public void doReload()
+    {
         if (didReload || gunStack == null)
             return;
         didReload = true;

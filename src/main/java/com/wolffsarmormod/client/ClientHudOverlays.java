@@ -35,7 +35,7 @@ public final class ClientHudOverlays
         boolean zoomedIn = ModClient.getZoomProgress() > 0.8F;
 
         if (hasScope && noScreen && zoomedIn)
-            scopeTexture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + ModClient.getCurrentScope().getZoomOverlay() + ".png");
+            scopeTexture = ModClient.getCurrentScope().getZoomOverlay();
 
 
         if (scopeTexture != null)

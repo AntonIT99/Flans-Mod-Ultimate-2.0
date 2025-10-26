@@ -1,10 +1,13 @@
 package com.wolffsarmormod.common;
 
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.ModUtils;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.entity.MachineGun;
 import com.wolffsarmormod.common.guns.QueuedReload;
-import com.wolffsarmormod.common.guns.raytracing.PlayerSnapshot;
+import com.wolffsarmormod.common.raytracing.PlayerSnapshot;
+import com.wolffsarmormod.common.raytracing.RotatedAxes;
+import com.wolffsarmormod.common.types.GunType;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
@@ -172,5 +175,28 @@ public class PlayerData
             burstRoundsRemainingLeft = set;
         else
             burstRoundsRemainingRight = set;
+    }
+
+    public void doMelee(Player player, int meleeTime, GunType type)
+    {
+        meleeLength = meleeTime;
+        lastMeleePositions = new Vector3f[type.getMeleePath().size()];
+
+        for(int k = 0; k < type.getMeleeDamagePoints().size(); k++)
+        {
+            Vector3f meleeDamagePoint = type.getMeleeDamagePoints().get(k);
+            //Do a raytrace from the prev pos to the current pos and attack anything in the way
+            Vector3f nextPos = type.getMeleePath().get(0);
+            Vector3f nextAngles = type.getMeleePathAngles().get(0);
+            RotatedAxes nextAxes = new RotatedAxes(-nextAngles.y, -nextAngles.z, nextAngles.x);
+
+            Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
+            Vector3f.add(nextPos, nextPosInPlayerCoords, nextPosInPlayerCoords);
+
+            if(!ModUtils.isThePlayer(player))
+                nextPosInPlayerCoords.y += 1.6F;
+
+            lastMeleePositions[k] = new Vector3f(player.getX() + nextPosInPlayerCoords.x, player.getY() + nextPosInPlayerCoords.y, player.getZ() + nextPosInPlayerCoords.z);
+        }
     }
 }

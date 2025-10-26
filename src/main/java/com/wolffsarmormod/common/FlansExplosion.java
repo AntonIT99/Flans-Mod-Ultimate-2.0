@@ -2,7 +2,7 @@ package com.wolffsarmormod.common;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.wolffsarmormod.common.guns.damagesource.FlansDamageTypes;
+import com.wolffsarmormod.common.damagesource.FlansDamageTypes;
 import com.wolffsarmormod.common.types.InfoType;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.NotNull;

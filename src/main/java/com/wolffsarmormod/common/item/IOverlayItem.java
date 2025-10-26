@@ -1,8 +1,6 @@
 package com.wolffsarmormod.common.item;
 
-import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.types.InfoType;
-import com.wolffsarmormod.util.DynamicReference;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -22,10 +20,7 @@ public interface IOverlayItem<T extends InfoType> extends IFlanItem<T>
     default void loadOverlay()
     {
         InfoType configType = getConfigType();
-        DynamicReference overlay = configType.getOverlay();
-        if (overlay != null)
-        {
-            setOverlay(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + overlay.get() + ".png"));
-        }
+        Optional<ResourceLocation> overlay = configType.getOverlay();
+        overlay.ifPresent(this::setOverlay);
     }
 }

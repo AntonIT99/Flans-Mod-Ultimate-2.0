@@ -1,4 +1,4 @@
-package com.wolffsarmormod.common.guns.raytracing;
+package com.wolffsarmormod.common.raytracing;
 
 import com.flansmod.common.vector.Matrix4f;
 import com.flansmod.common.vector.Vector3f;

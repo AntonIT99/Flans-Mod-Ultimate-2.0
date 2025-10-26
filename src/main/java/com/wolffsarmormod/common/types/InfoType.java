@@ -14,6 +14,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -220,26 +221,34 @@ public abstract class InfoType
         return null;
     }
 
-    @Nullable
     @OnlyIn(Dist.CLIENT)
-    public DynamicReference getTexture()
+    public ResourceLocation getTexture()
     {
         if (!textureName.isBlank())
         {
-            return ContentManager.getSkinsTextureReferences().get(contentPack).get(textureName);
+            DynamicReference ref = ContentManager.getSkinsTextureReferences().get(contentPack).get(textureName);
+            if (ref != null)
+                return ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, getTexturePath(ref.get()));
         }
-        return null;
+        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
     }
 
-    @Nullable
     @OnlyIn(Dist.CLIENT)
-    public DynamicReference getOverlay()
+    protected String getTexturePath(String textureName)
+    {
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public Optional<ResourceLocation> getOverlay()
     {
         if (!overlayName.isBlank())
         {
-            return ContentManager.getGuiTextureReferences().get(contentPack).get(overlayName);
+            DynamicReference ref = ContentManager.getGuiTextureReferences().get(contentPack).get(overlayName);
+            if (ref != null)
+                return Optional.of(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

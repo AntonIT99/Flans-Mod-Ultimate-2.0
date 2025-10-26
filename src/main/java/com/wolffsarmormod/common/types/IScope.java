@@ -1,5 +1,7 @@
 package com.wolffsarmormod.common.types;
 
+import net.minecraft.resources.ResourceLocation;
+
 public interface IScope
 {
     float getFOVFactor();
@@ -8,5 +10,5 @@ public interface IScope
 
     boolean hasZoomOverlay();
 
-    String getZoomOverlay();
+    ResourceLocation getZoomOverlay();
 }
