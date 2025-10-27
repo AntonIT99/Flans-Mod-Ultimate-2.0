@@ -600,13 +600,9 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomI
      */
     public void renderGun(GunAnimations animations, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
-        
-
         //Render the gun and default attachment models
         poseStack.pushPose();
         {
-            poseStack.scale(type.getModelScale(), type.getModelScale(), type.getModelScale());
-
             //Get all the attachments that we may need to render
             /*AttachmentType scopeAttachment = type.getScope(item);
             AttachmentType barrelAttachment = type.getBarrel(item);

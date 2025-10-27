@@ -58,6 +58,7 @@ public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType
     @OnlyIn(Dist.CLIENT)
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
+        //TODO: find a way to get scaling from inside render() method
         for (ModelRenderer part : model.getBoxList())
         {
             part.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, configType.getModelScale());
