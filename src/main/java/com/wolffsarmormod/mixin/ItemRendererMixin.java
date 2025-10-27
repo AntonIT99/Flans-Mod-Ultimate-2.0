@@ -2,7 +2,6 @@ package com.wolffsarmormod.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsarmormod.client.model.IFlanItemModel;
 import com.wolffsarmormod.common.item.IModelItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,26 +23,22 @@ public abstract class ItemRendererMixin
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void onRender(ItemStack stack, ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, MultiBufferSource buffer, int light, int overlay, BakedModel model, CallbackInfo ci)
     {
-        if (shouldRenderFlanItemModel(stack, itemDisplayContext))
+        if (shouldUseCustomRendering(stack, itemDisplayContext))
         {
             IModelItem<?, ?> item = (IModelItem<?, ?>) stack.getItem();
-            if (item.getModel() instanceof IFlanItemModel<?> flanItemModel)
-            {
-                VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(item.getTexture()));
-                flanItemModel.renderItem(itemDisplayContext, leftHanded, poseStack, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-            }
+            VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(item.getTexture()));
+            item.renderItem(itemDisplayContext, leftHanded, poseStack, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
             ci.cancel();
         }
     }
 
     @Unique
-    private boolean shouldRenderFlanItemModel(ItemStack stack, ItemDisplayContext itemDisplayContext)
+    private boolean shouldUseCustomRendering(ItemStack stack, ItemDisplayContext itemDisplayContext)
     {
         return itemDisplayContext != ItemDisplayContext.NONE
             && itemDisplayContext != ItemDisplayContext.GUI
             && itemDisplayContext != ItemDisplayContext.HEAD
             && stack.getItem() instanceof IModelItem<?, ?> item
-            && item.useCustomItemRendering()
-            && item.getModel() != null;
+            && item.useCustomItemRendering();
     }
 }

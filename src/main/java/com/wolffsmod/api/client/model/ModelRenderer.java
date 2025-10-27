@@ -162,6 +162,9 @@ public class ModelRenderer
         pPoseStack.popPose();
     }
 
+    @OnlyIn(Dist.CLIENT)
+    public void render(float scale) {}
+
     public void translateAndRotate(PoseStack poseStack, float scale)
     {
         poseStack.translate(rotationPointX * 0.0625F, rotationPointY * 0.0625F, rotationPointZ * 0.0625F);

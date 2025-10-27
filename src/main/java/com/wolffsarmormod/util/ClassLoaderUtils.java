@@ -30,6 +30,11 @@ public class ClassLoaderUtils
     private static final CustomClassLoader classLoader = new CustomClassLoader();
 
     private static final Map<String, String> minecraftMethodMappings = Map.ofEntries(
+        Map.entry("func_78084_a", "getTextureOffset"),
+        Map.entry("func_78085_a", "setTextureOffset"),
+        Map.entry("func_78086_a", "setLivingAnimations"),
+        Map.entry("func_78087_a", "setRotationAngles"),
+        Map.entry("func_78088_a", "render"),
         Map.entry("func_78784_a", "setTextureOffset"),
         Map.entry("func_78785_a", "render"),
         Map.entry("func_78786_a", "addBox"),
@@ -40,7 +45,10 @@ public class ClassLoaderUtils
         Map.entry("func_78791_b", "renderWithRotation"),
         Map.entry("func_78792_a", "addChild"),
         Map.entry("func_78793_a", "setRotationPoint"),
-        Map.entry("func_78794_c", "postRender")
+        Map.entry("func_78794_c", "postRender"),
+        Map.entry("func_85181_a", "getRandomModelBox"),
+        Map.entry("func_178685_a", "copyModelAngles"),
+        Map.entry("func_178686_a", "setModelAttributes")
     );
 
     private static final Map<String, String> minecraftFieldMappings = Map.ofEntries(
@@ -71,7 +79,9 @@ public class ClassLoaderUtils
     );
 
     private static final Map<String, String> classMappings = Map.ofEntries(
-        Map.entry("net/minecraft/client/model/ModelRenderer", "com/wolffsmod/api/client/model/ModelRenderer")
+        Map.entry("net/minecraft/client/model/ModelRenderer", "com/wolffsmod/api/client/model/ModelRenderer"),
+        Map.entry("net/minecraft/entity/Entity", "net/minecraft/world/entity/Entity"),
+        Map.entry("net/minecraft/entity/EntityLivingBase", "net/minecraft/world/entity/LivingEntity")
     );
 
     private static final String LEGACY_MODELBASE = "net/minecraft/client/model/ModelBase";
@@ -129,7 +139,29 @@ public class ClassLoaderUtils
             throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
         }
 
-        return classLoader.defineClass(actualClassName, getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName));
+        byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
+
+        //In case there is a dependency to a super class which has not been loaded yet
+        ClassReader cr = new ClassReader(newClassData);
+        String superClassName = cr.getSuperName().replace('/', '.');
+        try
+        {
+            Class.forName(superClassName);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                loadAndModifyClass(contentProvider, superClassName, superClassName);
+            }
+            catch (Exception | NoClassDefFoundError | ClassFormatError e)
+            {
+                ArmorMod.log.error("Could not load super class {} for {}", superClassName, fileClassName);
+                LogUtils.logWithoutStacktrace(e);
+            }
+        }
+
+        return classLoader.defineClass(actualClassName, newClassData);
     }
 
     private static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)

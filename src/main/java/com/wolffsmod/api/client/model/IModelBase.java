@@ -1,14 +1,25 @@
 package com.wolffsmod.api.client.model;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public interface IModelBase
 {
     int TEXTURE_WIDTH = 64;
     int TEXTURE_HEIGHT = 32;
+
+    ResourceLocation getTexture();
+
+    void setTexture(ResourceLocation texture);
+
+    List<ModelRenderer> getBoxList();
+
+    Map<String, TextureOffset> getModelTextureMap();
 
     default int getTextureWidth()
     {
@@ -25,11 +36,29 @@ public interface IModelBase
         return getModelTextureMap().get(partName);
     }
 
-    ResourceLocation getTexture();
+    default void setTextureOffset(String partName, int x, int y)
+    {
+        getModelTextureMap().put(partName, new TextureOffset(x, y));
+    }
 
-    void setTexture(ResourceLocation texture);
+    default void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {}
 
-    List<ModelRenderer> getBoxList();
+    default void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {}
 
-    Map<String, TextureOffset> getModelTextureMap();
+    default void setLivingAnimations(LivingEntity entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTickTime) {}
+
+    default ModelRenderer getRandomModelBox(Random rand)
+    {
+        return getBoxList().get(rand.nextInt(getBoxList().size()));
+    }
+
+    static void copyModelAngles(ModelRenderer source, ModelRenderer dest)
+    {
+        dest.rotateAngleX = source.rotateAngleX;
+        dest.rotateAngleY = source.rotateAngleY;
+        dest.rotateAngleZ = source.rotateAngleZ;
+        dest.rotationPointX = source.rotationPointX;
+        dest.rotationPointY = source.rotationPointY;
+        dest.rotationPointZ = source.rotationPointZ;
+    }
 }

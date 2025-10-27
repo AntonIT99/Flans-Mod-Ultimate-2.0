@@ -1,8 +1,11 @@
 package com.wolffsarmormod.common.item;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
-import com.wolffsarmormod.client.model.IFlanItemModel;
+import com.wolffsarmormod.client.model.ICustomItemRender;
+import com.wolffsarmormod.client.model.IFlanModel;
 import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
@@ -12,8 +15,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 public interface IModelItem<T extends InfoType, M extends IModelBase> extends IFlanItem<T>
 {
@@ -36,7 +42,17 @@ public interface IModelItem<T extends InfoType, M extends IModelBase> extends IF
     void setModel(M model);
 
     @OnlyIn(Dist.CLIENT)
-    boolean useCustomItemRendering();
+    default boolean useCustomItemRendering()
+    {
+        return getModel() instanceof ICustomItemRender;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    default void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    {
+        if (getModel() instanceof ICustomItemRender itemRender)
+            itemRender.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+    }
 
     @OnlyIn(Dist.CLIENT)
     default void loadModelAndTexture(@Nullable M defaultModel)
@@ -59,26 +75,28 @@ public interface IModelItem<T extends InfoType, M extends IModelBase> extends IF
             {
                 try
                 {
-                    @SuppressWarnings("unchecked")
                     M model = (M) ClassLoaderUtils.loadAndModifyClass(contentPack, className, actualClassName.get()).getConstructor().newInstance();
-                    if (model instanceof IFlanItemModel<?> flanItemModel)
+                    if (model instanceof IFlanModel<?> flanItemModel)
                     {
-                        ((IFlanItemModel<T>) flanItemModel).setType(configType);
+                        ((IFlanModel<T>) flanItemModel).setType(configType);
                     }
                     setModel(model);
                 }
                 catch (Exception | NoClassDefFoundError | ClassFormatError e)
                 {
                     ArmorMod.log.error("Could not load model class {} for {}", className, configType);
-                    LogUtils.logWithoutStacktrace(e);
+                    if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
+                        ArmorMod.log.error("File not found: {}", noSuchFileException.getFile());
+                    else
+                        LogUtils.logWithoutStacktrace(e);
                 }
             }
         }
         if (getModel() == null && defaultModel != null)
         {
-            if (defaultModel instanceof IFlanItemModel<?> flanItemModel)
+            if (defaultModel instanceof IFlanModel<?> flanItemModel)
             {
-                ((IFlanItemModel<T>) flanItemModel).setType(configType);
+                ((IFlanModel<T>) flanItemModel).setType(configType);
             }
             setModel(defaultModel);
         }

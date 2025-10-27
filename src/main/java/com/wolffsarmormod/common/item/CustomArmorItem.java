@@ -61,6 +61,7 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
             clientSideInit();
     }
 
+    @Override
     @OnlyIn(Dist.CLIENT)
     public void clientSideInit()
     {
@@ -186,13 +187,6 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
         }
 
         return modifiers;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public boolean useCustomItemRendering()
-    {
-        return false;
     }
 
     @OnlyIn(Dist.CLIENT)

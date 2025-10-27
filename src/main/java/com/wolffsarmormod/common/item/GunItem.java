@@ -85,16 +85,11 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public void clientSideInit()
     {
         loadModelAndTexture(null);
         loadOverlay();
-    }
-
-    @Override
-    public boolean useCustomItemRendering()
-    {
-        return true;
     }
 
     @Override

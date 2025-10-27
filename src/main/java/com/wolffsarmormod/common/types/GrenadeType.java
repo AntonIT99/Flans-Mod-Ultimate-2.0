@@ -24,7 +24,8 @@ public class GrenadeType extends ShootableType
 
     //Physics
     /** Whether this grenade may pass through entities or blocks */
-    protected boolean penetratesEntities = false, penetratesBlocks = false;
+    protected boolean penetratesEntities = false;
+    protected boolean penetratesBlocks = false;
     /** The sound to play upon bouncing off a surface */
     protected String bounceSound = "";
     /** Whether the grenade should stick to surfaces */

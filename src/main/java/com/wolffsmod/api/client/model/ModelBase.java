@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelBase extends Model implements IModelBase
+public abstract class ModelBase extends Model implements IModelBase
 {
     @Getter
     private final List<ModelRenderer> boxList = new ArrayList<>();
@@ -24,7 +24,7 @@ public class ModelBase extends Model implements IModelBase
     @Getter @Setter
     private ResourceLocation texture;
 
-    public ModelBase()
+    protected ModelBase()
     {
         super(RenderType::entityTranslucent);
     }

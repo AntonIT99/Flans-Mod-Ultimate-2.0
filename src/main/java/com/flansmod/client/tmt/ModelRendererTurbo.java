@@ -2139,6 +2139,14 @@ public class ModelRendererTurbo extends ModelRenderer
         RenderSystem.disableBlend();
     }
 
+    @Override
+    public void render(float worldScale)
+    {
+        render(worldScale, false);
+    }
+
+    public void render(float worldScale, boolean oldRotateOrder) {}
+
     /**
      * Translate and rotate the shape
      *
