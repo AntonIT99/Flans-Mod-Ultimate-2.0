@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class CommonEventHandler
+public final class CommonEventHandler
 {
     @Getter
     private static long ticker;

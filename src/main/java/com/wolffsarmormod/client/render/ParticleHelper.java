@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client;
+package com.wolffsarmormod.client.render;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ParticleHelper
+public final class ParticleHelper
 {
     // TODO: FMU Particles
 

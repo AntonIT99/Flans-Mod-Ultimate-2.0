@@ -2,13 +2,15 @@ package com.wolffsarmormod.event;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ContentManager;
-import com.wolffsarmormod.client.ClientHudOverlays;
-import com.wolffsarmormod.client.CustomArmorLayer;
+import com.wolffsarmormod.client.input.KeyInputHandler;
+import com.wolffsarmormod.client.render.ClientHudOverlays;
+import com.wolffsarmormod.client.render.CustomArmorLayer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,7 +28,7 @@ import java.nio.file.Files;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-public class ModClientEventHandler
+public final class ModClientEventHandler
 {
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
@@ -78,5 +80,11 @@ public class ModClientEventHandler
         // Draw scope/armor after everything else
         e.registerAboveAll("scope", ClientHudOverlays.SCOPE);
         e.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event)
+    {
+        KeyInputHandler.registerKeys(event);
     }
 }

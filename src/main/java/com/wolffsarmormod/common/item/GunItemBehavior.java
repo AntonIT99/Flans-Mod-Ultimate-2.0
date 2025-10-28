@@ -26,6 +26,7 @@ import net.minecraftforge.fml.LogicalSide;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -360,5 +361,16 @@ public record GunItemBehavior(GunItem item)
             ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
             entity.spawnAtLocation(dropStack, 0.5F);
         }
+    }
+
+    public boolean canReload(Container inventory)
+    {
+        for (int i = 0; i < inventory.getContainerSize(); i++)
+        {
+            ItemStack stack = inventory.getItem(i);
+            if (item.getConfigType().isCorrectAmmo(stack))
+                return true;
+        }
+        return false;
     }
 }

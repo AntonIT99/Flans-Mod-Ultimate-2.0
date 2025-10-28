@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client;
+package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -38,7 +38,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @SuppressWarnings("unchecked")
-    protected void renderArmorPiece(PoseStack pPoseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int pPackedLight)
+    private void renderArmorPiece(PoseStack pPoseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int pPackedLight)
     {
         ItemStack itemStack = pLivingEntity.getItemBySlot(pSlot);
         Item item = itemStack.getItem();
@@ -50,7 +50,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         }
     }
 
-    protected void renderModel(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, Model pModel, ResourceLocation armorResource)
+    private void renderModel(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, Model pModel, ResourceLocation armorResource)
     {
         VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(armorResource));
         pModel.renderToBuffer(pPoseStack, vertexconsumer, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);

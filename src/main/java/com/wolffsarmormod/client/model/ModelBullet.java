@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 @NoArgsConstructor
 public class ModelBullet extends ModelBase implements IFlanModel<BulletType>
 {
+    //TODO: implement this as default bullet model
+
     @Setter
     protected BulletType type;
 

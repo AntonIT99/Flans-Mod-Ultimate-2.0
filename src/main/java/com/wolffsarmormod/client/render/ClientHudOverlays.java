@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client;
+package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.wolffsarmormod.ArmorMod;

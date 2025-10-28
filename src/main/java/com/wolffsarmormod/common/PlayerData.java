@@ -85,6 +85,7 @@ public class PlayerData
     private int meleeProgress, meleeLength;
     /** When the player shoots a burst fire weapon, one shot is fired immediately and this counter keeps track of how many more should be fired */
     private int burstRoundsRemainingLeft = 0;
+    @Getter @Setter
     private int burstRoundsRemainingRight = 0;
 
     private ItemStack gunToReload;

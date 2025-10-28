@@ -1,6 +1,9 @@
 {
   "creativetab.wolffsarmormod.armors": "Flan's Armors",
   "creativetab.wolffsarmormod.guns": "Flan's Guns",
+  "key.categories.wolffsarmormod": "Flan's Controls",
+  "key.wolffsarmormod.reload": "Reload",
+  "key.wolffsarmormod.lookAtGun": "Look at gun",
   "death.attack.flans_gun": "%1$s was shot",
   "death.attack.flans_gun.player": "%1$s was shot by %2$s",
   "death.attack.flans_gun_headshot": "%1$s was headshotted",

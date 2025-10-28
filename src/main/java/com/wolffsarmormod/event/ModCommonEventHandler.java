@@ -10,7 +10,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class ModCommonEventHandler
+public final class ModCommonEventHandler
 {
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event)

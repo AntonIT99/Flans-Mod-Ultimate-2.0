@@ -1,6 +1,6 @@
 package com.wolffsarmormod.network;
 
-import com.wolffsarmormod.client.ParticleHelper;
+import com.wolffsarmormod.client.render.ParticleHelper;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

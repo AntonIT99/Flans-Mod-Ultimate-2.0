@@ -26,6 +26,9 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomI
     protected static final Vector3f invalid = new Vector3f(0f, Float.MAX_VALUE, 0f);
 
     @Setter
+    protected static float smoothing;
+
+    @Setter
     protected GunType type;
 
     /** Static models with no animation */
@@ -269,7 +272,6 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomI
     /** Allows you to move the rotation helper to determine the required offsets for moving parts */
     protected Vector3f rotationToolOffset = new Vector3f(0F, 0F, 0F);
 
-    private float smoothing;
     private float reloadRotate;
 
     /**
@@ -375,7 +377,7 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomI
         float modelScale = type != null ? type.getModelScale() : 1F;
         GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
 
-        smoothing = Minecraft.getInstance().getFrameTime();
+        setSmoothing(Minecraft.getInstance().getFrameTime());;
         //Get the reload animation rotation
         reloadRotate = 0F;
 

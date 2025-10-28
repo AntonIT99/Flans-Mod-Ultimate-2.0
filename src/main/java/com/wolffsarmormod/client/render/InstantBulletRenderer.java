@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client;
+package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class InstantBulletRenderer
+public final class InstantBulletRenderer
 {
     private static final List<InstantShotTrail> trails = new ArrayList<>();
 

@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client;
+package com.wolffsarmormod.client.render;
 
 import com.flansmod.common.vector.Vector3f;
 import com.mojang.blaze3d.systems.RenderSystem;

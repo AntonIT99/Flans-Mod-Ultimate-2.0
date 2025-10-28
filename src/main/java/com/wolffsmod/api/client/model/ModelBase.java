@@ -23,6 +23,8 @@ public abstract class ModelBase extends Model implements IModelBase
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     @Getter @Setter
     private ResourceLocation texture;
+    @Setter
+    private float scale = 1F;
 
     protected ModelBase()
     {
@@ -30,5 +32,11 @@ public abstract class ModelBase extends Model implements IModelBase
     }
 
     @Override
-    public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha) {}
+    public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    {
+        for (ModelRenderer modelRenderer : boxList)
+        {
+            modelRenderer.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+        }
+    }
 }

@@ -178,4 +178,23 @@ public class ModClient
 
         p.setXRot(x);
     }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void updateCameraZoom(float smoothing)
+    {
+        // If the zoom has changed sufficiently, update it
+        if (Math.abs(zoomProgress - lastZoomProgress) > 0.0001F)
+        {
+            float actualZoomProgress = lastZoomProgress + (zoomProgress - lastZoomProgress) * smoothing;
+            float botchedZoomProgress = zoomProgress > 0.8F ? 1F : 0F;
+            float zoomLevel = botchedZoomProgress * lastZoomLevel + (1 - botchedZoomProgress);
+            float fovZoomLevel = actualZoomProgress * lastFOVZoomLevel + (1 - actualZoomProgress);
+            if (Math.abs(zoomLevel - 1F) < 0.01F)
+                zoomLevel = 1.0F;
+
+            float zoomToApply = Math.max(fovZoomLevel, zoomLevel);
+            int fovValue = Math.round((((originalFOV * 40 + 70) / zoomToApply) - 70) / 40);
+            Minecraft.getInstance().options.fov().set(fovValue);
+        }
+    }
 }
