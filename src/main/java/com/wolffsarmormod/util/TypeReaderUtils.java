@@ -159,7 +159,7 @@ public class TypeReaderUtils
 
     public static void logError(String s, TypeFile file)
     {
-        ArmorMod.log.error("Problem in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s);
+        ArmorMod.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s);
     }
 
     private static String incorrectFormat(String key, String valuePattern)

@@ -29,7 +29,7 @@ public final class KeyInputHandler
     private static final String CATEGORY = "key.categories." + ArmorMod.MOD_ID;
 
     private static final KeyMapping reloadKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".reload", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_R, CATEGORY);
-    private static final KeyMapping lookAtGunKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".lookAtGun", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_L, CATEGORY);
+    private static final KeyMapping lookAtGunKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".lookAtGun", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_M, CATEGORY);
 
     //TODO: implement all key bindings
 

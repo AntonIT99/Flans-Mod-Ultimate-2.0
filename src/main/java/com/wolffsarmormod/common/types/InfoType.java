@@ -68,7 +68,7 @@ public abstract class InfoType
             if (line.isBlank() || line.startsWith("//"))
                 continue;
 
-            String[] split = line.split(StringUtils.SPACE);
+            String[] split = line.trim().split("\\s+");
             if (split.length == 0)
                 continue;
 
