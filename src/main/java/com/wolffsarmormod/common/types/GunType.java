@@ -5,8 +5,6 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
-import com.wolffsarmormod.common.item.BulletItem;
-import com.wolffsarmormod.common.item.GrenadeItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -723,24 +721,9 @@ public class GunType extends PaintableType implements IScope
         return getOverlay().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
     }
 
-    public boolean isCorrectAmmo(ShootableType type)
+    public List<ShootableType> getAmmoTypes()
     {
-        return ShootableType.getAmmoTypes(ammo, contentPack).contains(type);
-    }
-
-    public boolean isCorrectAmmo(ItemStack stack)
-    {
-        if (stack == null || stack.isEmpty())
-            return false;
-        else if(stack.getItem() instanceof BulletItem bulletItem)
-        {
-            return isCorrectAmmo(bulletItem.getConfigType());
-        }
-        else if(stack.getItem() instanceof GrenadeItem grenadeItem)
-        {
-            return isCorrectAmmo(grenadeItem.getConfigType());
-        }
-        return false;
+        return ShootableType.getAmmoTypes(ammo, contentPack);
     }
 
     /**

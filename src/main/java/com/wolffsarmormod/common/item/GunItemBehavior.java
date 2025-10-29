@@ -37,6 +37,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public record GunItemBehavior(GunItem item)
 {
@@ -292,10 +293,15 @@ public record GunItemBehavior(GunItem item)
                 //Iterate over all inventory slots and find the magazine / bullet item with the most bullets
                 int bestSlot = -1;
                 int bulletsInBestSlot = 0;
+
+                List<ShootableType> allowedAmmoTypes = item.getConfigType().getAmmoTypes();
+
                 for (int j = 0; j < inventory.getContainerSize(); j++)
                 {
                     ItemStack item = inventory.getItem(j);
-                    if (item.getItem() instanceof ShootableItem shootableItem && configType.isCorrectAmmo(shootableItem.getConfigType()))
+                    if (item.isEmpty())
+                        continue;
+                    if (item.getItem() instanceof ShootableItem shootableItem && allowedAmmoTypes.contains(shootableItem.getConfigType()))
                     {
                         int bulletsInThisSlot = item.getMaxDamage() - item.getDamageValue();
                         if (bulletsInThisSlot > bulletsInBestSlot)
@@ -365,10 +371,14 @@ public record GunItemBehavior(GunItem item)
 
     public boolean canReload(Container inventory)
     {
+        List<ShootableType> allowedAmmoTypes = item.getConfigType().getAmmoTypes();
+
         for (int i = 0; i < inventory.getContainerSize(); i++)
         {
             ItemStack stack = inventory.getItem(i);
-            if (item.getConfigType().isCorrectAmmo(stack))
+            if (stack.isEmpty())
+                continue;
+            if (stack.getItem() instanceof ShootableItem shootableItem && allowedAmmoTypes.contains(shootableItem.getConfigType()))
                 return true;
         }
         return false;
