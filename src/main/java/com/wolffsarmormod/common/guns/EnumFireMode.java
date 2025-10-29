@@ -6,13 +6,12 @@ public enum EnumFireMode
 
     public static EnumFireMode getFireMode(String s)
     {
-        s = s.toLowerCase();
-        if(s.equals("fullauto"))
-            return FULLAUTO;
-        if(s.equals("minigun"))
-            return MINIGUN;
-        if(s.equals("burst"))
-            return BURST;
-        return SEMIAUTO;
+        return switch (s.toLowerCase())
+        {
+            case "fullauto" -> FULLAUTO;
+            case "minigun" -> MINIGUN;
+            case "burst" -> BURST;
+            default -> SEMIAUTO;
+        };
     }
 }

@@ -1,12 +1,15 @@
 package com.wolffsarmormod.common.types;
 
 import com.wolffsarmormod.common.paintjob.Paintjob;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PaintableType extends InfoType
 {
     //Paintjobs

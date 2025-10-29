@@ -33,9 +33,10 @@ public abstract class ItemRendererMixin
     }
 
     @Unique
-    private boolean shouldUseCustomRendering(ItemStack stack, ItemDisplayContext itemDisplayContext)
+    private static boolean shouldUseCustomRendering(ItemStack stack, ItemDisplayContext itemDisplayContext)
     {
-        return itemDisplayContext != ItemDisplayContext.NONE
+        return itemDisplayContext != null
+            && itemDisplayContext != ItemDisplayContext.NONE
             && itemDisplayContext != ItemDisplayContext.GUI
             && itemDisplayContext != ItemDisplayContext.HEAD
             && stack.getItem() instanceof IModelItem<?, ?> item

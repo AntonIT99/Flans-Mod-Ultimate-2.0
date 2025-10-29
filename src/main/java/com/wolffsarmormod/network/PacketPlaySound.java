@@ -74,7 +74,7 @@ public class PacketPlaySound extends PacketBase
         if (event == null)
             return;
 
-        float volume = silenced ? 2.0F : 4.0F;
+        float volume = silenced ? ArmorMod.SOUND_VOLUME / 2F : ArmorMod.SOUND_VOLUME;
         float pitchBase = distort ? (1.0F / (level.random.nextFloat() * 0.4F + 0.8F)) : 1.0F;
         float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 

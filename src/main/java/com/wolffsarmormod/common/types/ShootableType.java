@@ -1,9 +1,23 @@
 package com.wolffsarmormod.common.types;
 
+import com.wolffsarmormod.IContentProvider;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ShootableType extends InfoType
 {
+    private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
+
     //Aesthetics
     /**
      * Whether trail particles are given off
@@ -46,7 +60,9 @@ public abstract class ShootableType extends InfoType
     protected int numBullets = 1;
     /**
      * Bullet spread multiplier to be applied to gun's bullet spread
+     * Ammo-based spread setting if allowSpreadByBullet = true
      */
+    @Getter
     protected float bulletSpread = 1F;
 
     //Physics and Stuff
@@ -150,4 +166,46 @@ public abstract class ShootableType extends InfoType
 
     protected int smokeParticleCount = 0;
     protected int debrisParticleCount = 0;
+
+    @Override
+    protected void readLine(String line, String[] split, TypeFile file)
+    {
+        super.readLine(line, split, file);
+        maxStackSize = readValue(split, "StackSize", maxStackSize, file);
+        maxStackSize = readValue(split, "MaxStackSize", maxStackSize, file);
+        dropItemOnShoot = readValue(split, "DropItemOnShoot", dropItemOnShoot, file);
+        dropItemOnReload = readValue(split, "DropItemOnReload", dropItemOnReload, file);
+        dropItemOnHit = readValue(split, "DropItemOnHit", dropItemOnHit, file);
+        roundsPerItem = readValue(split, "RoundsPerItem", roundsPerItem, file);
+        numBullets = readValue(split, "NumBullets", numBullets, file);
+        bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
+        bulletSpread = readValue(split, "Spread", bulletSpread, file);
+
+        //TODO: continue (WIP)
+    }
+
+    public static void addToRegisteredAmmoList(ShootableType type)
+    {
+        registeredAmmoList.putIfAbsent(type.getContentPack(), new HashMap<>());
+        registeredAmmoList.get(type.getContentPack()).put(type.getOriginalShortName(), type);
+    }
+
+    public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)
+    {
+        ArrayList<ShootableType> list = new ArrayList<>();
+        for (String shortname : shortnames)
+        {
+            // Search for ammo with a corresponding shortname in the same content pack
+            // If no ammo is found, search for all ammos with a corresponding shortname in all content packs
+            if (registeredAmmoList.containsKey(contentPack) && registeredAmmoList.get(contentPack).containsKey(shortname))
+            {
+                list.add(registeredAmmoList.get(contentPack).get(shortname));
+            }
+            else
+            {
+                list.addAll(registeredAmmoList.values().stream().map(pack -> pack.get(shortname)).toList());
+            }
+        }
+        return list;
+    }
 }

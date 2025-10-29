@@ -1,11 +1,13 @@
 package com.wolffsarmormod.common.types;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
 
+@NoArgsConstructor
 public class GrenadeType extends ShootableType
 {
     //Misc

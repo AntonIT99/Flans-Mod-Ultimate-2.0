@@ -1,7 +1,7 @@
 package com.wolffsarmormod.common.guns;
 
 import com.flansmod.client.model.GunAnimations;
-import com.wolffsarmormod.ModConstants;
+import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.GunType;
@@ -108,7 +108,7 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
 
         data.setLoopedSoundDelay(type.getWarmupSoundLength());
-        PacketPlaySound.sendSoundPacket(player, ModConstants.SOUND_RANGE, type.getWarmupSound(), false);
+        PacketPlaySound.sendSoundPacket(player, ArmorMod.SOUND_RANGE, type.getWarmupSound(), false);
         data.setSpinning(true);
     }
 
@@ -123,14 +123,14 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
         if (data.getLoopedSoundDelay() <= 0 && data.getMinigunSpeed() > type.getMinigunStartSpeed())
         {
             data.setLoopedSoundDelay(type.getLoopedSoundLength());
-            PacketPlaySound.sendSoundPacket(player, ModConstants.SOUND_RANGE, type.getLoopedSound(), false);
+            PacketPlaySound.sendSoundPacket(player, ArmorMod.SOUND_RANGE, type.getLoopedSound(), false);
             data.setSpinning(true);
         }
 
         // cooldown when we drop below start speed
         if (data.isSpinning() && data.getMinigunSpeed() < type.getMinigunStartSpeed())
         {
-            PacketPlaySound.sendSoundPacket(player, ModConstants.SOUND_RANGE, type.getCooldownSound(), false);
+            PacketPlaySound.sendSoundPacket(player, ArmorMod.SOUND_RANGE, type.getCooldownSound(), false);
             data.setSpinning(true);
         }
     }

@@ -22,6 +22,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,7 +68,7 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onMouseScroll(InputEvent.MouseScrollingEvent event)
+    public static void onMouseScrolling(InputEvent.MouseScrollingEvent event)
     {
         Player player = Minecraft.getInstance().player;
         if (player == null)
@@ -100,28 +101,66 @@ public final class ClientEventHandler
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
     }
 
+    /** CROSSHAIR: pre = we can cancel vanilla*/
+    @SubscribeEvent
+    public static void onPreRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
+    {
+        Minecraft mc = Minecraft.getInstance();
+
+        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type() && ModClient.getCurrentScope() != null)
+        {
+            int w = mc.getWindow().getGuiScaledWidth();
+            int h = mc.getWindow().getGuiScaledHeight();
+            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
+            event.setCanceled(true);
+        }
+    }
+
+    /** CROSSHAIR: post = draw hit marker overlay even when not scoped */
+    @SubscribeEvent
+    public static void onPostRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
+    {
+        Minecraft mc = Minecraft.getInstance();
+
+        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type() && ModClient.getCurrentScope() == null)
+        {
+            int w = mc.getWindow().getGuiScaledWidth();
+            int h = mc.getWindow().getGuiScaledHeight();
+            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
+        }
+    }
+
     /**
-     * Set gui overlay for scopes and armors
+     * HELMET overlay (post) → scope overlay
+     * HOTBAR overlay (post) → ammo, team info, killfeed, vehicle debug
      */
     @SubscribeEvent
-    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
+    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
     {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()))
-            return;
+        Minecraft mc = Minecraft.getInstance();
+        GuiGraphics guiGraphics = event.getGuiGraphics();
+        int w = mc.getWindow().getGuiScaledWidth();
+        int h = mc.getWindow().getGuiScaledHeight();
 
-        // Cancel crosshair when scoped (your old behavior)
-        if (ModClient.getCurrentScope() != null)
-            event.setCanceled(true);
-
-        // Hit marker here (draws even if we canceled crosshair)
-        ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight());
+        /*if (event.getOverlay() == VanillaGuiOverlay.HELMET.type())
+        {
+            ClientHudOverlays.renderScopeOverlay(guiGraphics, w, h);
+        }*/
+        //TODO: check if it can be done via registration
+        if (event.getOverlay() == VanillaGuiOverlay.HOTBAR.type())
+        {
+            ClientHudOverlays.renderPlayerAmmo(guiGraphics, w, h);
+            ClientHudOverlays.renderTeamInfo(guiGraphics, w, h);
+            ClientHudOverlays.renderKillMessages(guiGraphics, w, h);
+            ClientHudOverlays.renderVehicleDebug(guiGraphics, w, h);
+        }
     }
 
     /**
      * Aim Pose when GunItem is held by players
      */
     @SubscribeEvent
-    public static void onLiving(RenderLivingEvent.Pre<?, ?> event)
+    public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event)
     {
         if (!(event.getEntity() instanceof Player))
             return;
@@ -145,4 +184,11 @@ public final class ClientEventHandler
     {
         return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation();
     }
+
+    //TODO:
+    //renderItemFrame()
+    //renderHeldItem()
+    //renderThirdPersonWeapons()
+    //renderPlayer()
+    //cameraSetup()
 }

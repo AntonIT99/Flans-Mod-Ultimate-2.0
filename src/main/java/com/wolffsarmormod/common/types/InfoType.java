@@ -5,6 +5,7 @@ import com.wolffsarmormod.ContentManager;
 import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.FileUtils;
+import com.wolffsarmormod.util.LogUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -64,10 +65,23 @@ public abstract class InfoType
 
         for (String line : file.getLines())
         {
-            if (line.startsWith("//"))
+            if (line.isBlank() || line.startsWith("//"))
                 continue;
 
-            readLine(line, line.split(StringUtils.SPACE), file);
+            String[] split = line.split(StringUtils.SPACE);
+            if (split.length == 0)
+                continue;
+
+            try
+            {
+                readLine(line, split, file);
+            }
+            catch (Exception e)
+            {
+                ArmorMod.log.error("Reading line failed: {}", line);
+                ArmorMod.log.error("In file: {}", file);
+                LogUtils.logWithoutStacktrace(e);
+            }
         }
 
         postRead();
@@ -96,6 +110,17 @@ public abstract class InfoType
             if (!overlayName.isBlank())
                 ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
         }
+    }
+
+    protected String readSound(String[] split, String key, String currentValue, TypeFile file)
+    {
+        String sound = readValue(split, key, currentValue, file);
+        if (StringUtils.isNotBlank(sound))
+        {
+            sound = sound.toLowerCase();
+            ArmorMod.register(sound);
+        }
+        return sound;
     }
 
     @OnlyIn(Dist.CLIENT)

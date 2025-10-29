@@ -4,7 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public interface IScope
 {
-    float getFOVFactor();
+    float getFovFactor();
 
     float getZoomFactor();
 

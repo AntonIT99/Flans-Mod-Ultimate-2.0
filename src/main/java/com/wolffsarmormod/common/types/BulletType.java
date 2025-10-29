@@ -1,12 +1,14 @@
 package com.wolffsarmormod.common.types;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
 public class BulletType extends ShootableType
 {
     protected float speedMultiplier = 1F;
@@ -85,9 +87,6 @@ public class BulletType extends ShootableType
 
     /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
     protected int numBullets = -1;
-    /** Ammo based spread setting if allowSpreadByBullet = true */
-    @Getter
-    protected float bulletSpread = -1;
 
     protected float dragInAir   = 0.99F;
     protected float dragInWater = 0.80F;

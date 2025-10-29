@@ -154,7 +154,7 @@ public class TypeReaderUtils
 
     public static boolean keyMatches(String[] split, String key)
     {
-        return split != null && split.length > 1 && split[0].equalsIgnoreCase(key);
+        return split != null && split.length > 0 && split[0].equalsIgnoreCase(key);
     }
 
     public static void logError(String s, TypeFile file)

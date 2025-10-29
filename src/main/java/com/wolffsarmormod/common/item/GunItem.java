@@ -2,8 +2,8 @@ package com.wolffsarmormod.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
+import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModClient;
-import com.wolffsarmormod.ModConstants;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireDecision;
@@ -215,7 +215,7 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
         if (configType.getMeleeSound() != null)
         {
             // Your packet/util for playing a sound (server -> clients near position)
-            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), ModConstants.SOUND_RANGE, level.dimension(), configType.getMeleeSound(), true);
+            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), ArmorMod.SOUND_RANGE, level.dimension(), configType.getMeleeSound(), true);
         }
 
         if (configType.getSecondaryFunction() == EnumSecondaryFunction.CUSTOM_MELEE)

@@ -49,13 +49,13 @@ public class FlansModRaytracer
         AABB search = new AABB(start, end).inflate(speed);
         List<Entity> candidates = level.getEntities((Entity) null, search, Objects::nonNull);
 
-        for (Entity obj : candidates)
+        for (Entity entity : candidates)
         {
             boolean shouldDoNormalHitDetect = true;
 
 
             //TODO: driveables
-            if (obj instanceof Driveable driveable)
+            if (entity instanceof Driveable driveable)
             {
                 /*shouldDoNormalHitDetect = false;
 
@@ -70,7 +70,7 @@ public class FlansModRaytracer
                     hits.addAll(driveableHits);
                 }*/
             }
-            else if (obj instanceof Player player)
+            else if (entity instanceof Player player)
             {
                 PlayerData data = PlayerData.getInstance(player);
                 shouldDoNormalHitDetect = false;
@@ -78,7 +78,7 @@ public class FlansModRaytracer
                 if(data != null)
                 {
                     //TODO: Teams
-                    if (player.isDeadOrDying() /*|| data.team == Team.spectators*/)
+                    if (!player.isAlive() /*|| data.team == Team.spectators*/)
                         continue;
 
                     if (player == playerToIgnore && !canHitSelf)
@@ -98,60 +98,54 @@ public class FlansModRaytracer
                 }
             }
 
-            if (shouldDoNormalHitDetect)
+            if (shouldDoNormalHitDetect
+                && entity != entityToIgnore
+                && entity != playerToIgnore
+                && entity.isAlive()
+                && (entity instanceof LivingEntity || entity instanceof AAGun || entity instanceof Grenade))
             {
-                Entity entity = obj;
-                boolean isDead = entity.isRemoved() || (entity instanceof LivingEntity le && le.isDeadOrDying());
+                Optional<Vec3> wholeHit = entity.getBoundingBox().clip(start, end);
 
-                if (entity != entityToIgnore
-                    && entity != playerToIgnore
-                    && !isDead
-                    && (entity instanceof LivingEntity || entity instanceof AAGun || entity instanceof Grenade))
+                if (wholeHit.isPresent())
                 {
+                    boolean hit = true;
+                    Entity hitEntity = entity;
+                    Entity[] parts = entity.getParts();
+                    Vec3 impact = wholeHit.get();
 
-                    Optional<Vec3> wholeHit = entity.getBoundingBox().clip(start, end);
-
-                    if (wholeHit.isPresent())
+                    // If parts exist, the intercepted part is calculated and used instead of the whole entity.
+                    // If no part is intercepted, the entity itself is not hit
+                    if (parts != null)
                     {
-                        boolean hit = true;
-                        Entity hitEntity = entity;
-                        Entity[] parts = entity.getParts();
-                        Vec3 impact = wholeHit.get();
-
-                        // If parts exist, the intercepted part is calculated and used instead of the whole entity.
-                        // If no part is intercepted, the entity itself is not hit
-                        if (parts != null)
+                        hit = false;
+                        for (Entity part : parts)
                         {
-                            hit = false;
-                            for (Entity part : parts)
+                            Optional<Vec3> partHit = part.getBoundingBox().clip(start, end);
+                            if (partHit.isPresent())
                             {
-                                Optional<Vec3> partHit = part.getBoundingBox().clip(start, end);
-                                if (partHit.isPresent())
-                                {
-                                    hitEntity = part;
-                                    impact = partHit.get();
-                                    hit = true;
-                                    break;
-                                }
+                                hitEntity = part;
+                                impact = partHit.get();
+                                hit = true;
+                                break;
                             }
                         }
+                    }
 
-                        if (hit)
-                        {
-                            Vec3 delta = impact.subtract(start);
+                    if (hit)
+                    {
+                        Vec3 delta = impact.subtract(start);
 
-                            float hitLambda = 1.0F;
-                            if (motion.x != 0F)
-                                hitLambda = (float) (delta.x / motion.x);
-                            else if (motion.y != 0F)
-                                hitLambda = (float) (delta.y / motion.y);
-                            else if (motion.z != 0F)
-                                hitLambda = (float) (delta.z / motion.z);
-                            if (hitLambda < 0F)
-                                hitLambda = -hitLambda;
+                        float hitLambda = 1.0F;
+                        if (motion.x != 0F)
+                            hitLambda = (float) (delta.x / motion.x);
+                        else if (motion.y != 0F)
+                            hitLambda = (float) (delta.y / motion.y);
+                        else if (motion.z != 0F)
+                            hitLambda = (float) (delta.z / motion.z);
+                        if (hitLambda < 0F)
+                            hitLambda = -hitLambda;
 
-                            hits.add(new EntityHit(hitEntity, hitLambda));
-                        }
+                        hits.add(new EntityHit(hitEntity, hitLambda));
                     }
                 }
             }

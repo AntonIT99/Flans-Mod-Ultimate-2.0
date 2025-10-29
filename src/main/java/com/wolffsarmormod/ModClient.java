@@ -1,6 +1,7 @@
 package com.wolffsarmormod;
 
 import com.flansmod.client.model.GunAnimations;
+import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.IScope;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,12 +18,22 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
 {
+    // Plane / Vehicle control handling
+    /** Whether the player has received the vehicle tutorial text */
+    public static boolean doneTutorial = false;
+    /** Whether the player is in mouse control mode */
+    public static boolean controlModeMouse = true;
+    /** A delayer on the mouse control switch */
+    public static int controlModeSwitchTimer = 20;
+
     // Recoil variables
     /** The recoil applied to the player view by shooting */
     @Getter @Setter
@@ -109,7 +120,7 @@ public class ModClient
                 // entering scope
                 currentScope = scope;
                 lastZoomLevel = scope.getZoomFactor();
-                lastFOVZoomLevel = scope.getFOVFactor();
+                lastFOVZoomLevel = scope.getFovFactor();
 
                 // save originals
                 originalMouseSensitivity = opts.sensitivity().get();
@@ -140,8 +151,9 @@ public class ModClient
     @OnlyIn(Dist.CLIENT)
     public static void tick()
     {
-        LocalPlayer player = Minecraft.getInstance().player;
-        ClientLevel level = Minecraft.getInstance().level;
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        ClientLevel level = mc.level;
 
         if (player == null || level  == null)
             return;
@@ -161,6 +173,39 @@ public class ModClient
             g.update();
         for(GunAnimations g : gunAnimationsLeft.values())
             g.update();
+
+        // If the currently held item is not a gun or is the wrong gun, unscope
+        ItemStack stackInHand = player.getMainHandItem();
+        Item itemInHand = stackInHand.getItem();
+
+        if (currentScope != null)
+        {
+            // If we've opened a GUI page, or we switched weapons, close the current scope
+            boolean guiOpen = mc.screen != null; // was currentScreen
+            boolean notAGun = !(itemInHand instanceof GunItem);
+            boolean differentScope = itemInHand instanceof GunItem gun && gun.getConfigType().getCurrentScope(stackInHand) != currentScope;
+
+            if (guiOpen || notAGun || differentScope)
+            {
+                currentScope = null;
+                mc.options.fov().set(originalFOV);
+                mc.options.sensitivity().set(originalMouseSensitivity);
+                mc.options.setCameraType(originalCameraType);
+            }
+        }
+
+        // Calculate new zoom variables
+        lastZoomProgress = zoomProgress;
+        if (currentScope == null)
+            zoomProgress *= 0.66F;
+        else
+            zoomProgress = 1F - (1F - zoomProgress) * 0.66F;
+
+        if (controlModeSwitchTimer > 0)
+            controlModeSwitchTimer--;
+
+        if (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive())
+            mc.setCameraEntity(player);
     }
 
     private static void updateRecoil(LocalPlayer p)

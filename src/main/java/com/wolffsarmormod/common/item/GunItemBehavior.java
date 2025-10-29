@@ -2,9 +2,9 @@ package com.wolffsarmormod.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
-import com.wolffsarmormod.ModConstants;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
@@ -105,7 +105,7 @@ public record GunItemBehavior(GunItem item)
         if (item.soundDelay > 0 || item.configType.getIdleSound() == null)
             return;
 
-        PacketPlaySound.sendSoundPacket(player.getX(), player.getY(), player.getZ(), ModConstants.SOUND_RANGE, level.dimension(), item.configType.getIdleSound(), false);
+        PacketPlaySound.sendSoundPacket(player.getX(), player.getY(), player.getZ(), ArmorMod.SOUND_RANGE, level.dimension(), item.configType.getIdleSound(), false);
         item.soundDelay = item.configType.getIdleSoundLength();
     }
 
@@ -346,7 +346,7 @@ public record GunItemBehavior(GunItem item)
         // Play shot sounds
         if (item.soundDelay <= 0 && item.configType.getShootSound() != null)
         {
-            PacketPlaySound.sendSoundPacket(position.x, position.y, position.z, ModConstants.SOUND_RANGE, level.dimension(), item.configType.getShootSound(), silenced);
+            PacketPlaySound.sendSoundPacket(position.x, position.y, position.z, ArmorMod.SOUND_RANGE, level.dimension(), item.configType.getShootSound(), silenced);
             item.soundDelay = item.configType.getIdleSoundLength();
         }
     }

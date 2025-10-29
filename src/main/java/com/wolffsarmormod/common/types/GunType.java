@@ -9,6 +9,7 @@ import com.wolffsarmormod.common.item.BulletItem;
 import com.wolffsarmormod.common.item.GrenadeItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -20,9 +21,13 @@ import net.minecraft.world.item.UseAnim;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
+
+import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 
 @NoArgsConstructor
 public class GunType extends PaintableType implements IScope
@@ -36,7 +41,7 @@ public class GunType extends PaintableType implements IScope
     //TODO GunRecoil
     //protected GunRecoil recoil = new GunRecoil();
     @Getter
-    protected int recoil;
+    protected float recoil;
     protected boolean useFancyRecoil = false;
 
     //Gun Behaviour Variables
@@ -95,8 +100,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The list of bullet types that can be used in this gun
      */
-    protected List<ShootableType> ammo = new ArrayList<>();
-    protected List<ShootableType> nonExplosiveAmmo = new ArrayList<>();
+    protected Set<String> ammo = new HashSet<>();
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -451,21 +455,15 @@ public class GunType extends PaintableType implements IScope
     //Default Scope Settings. Overriden by scope attachments
     //In many cases, this will simply be iron sights
     /**
-     * Default scope overlay texture
-     */
-    protected String defaultScopeTexture;
-    /**
-     * Whether the default scope has an overlay
-     */
-    protected boolean hasScopeOverlay = false;
-    /**
      * The zoom level of the default scope
      */
-    protected float zoomLevel = 1.0F;
+    @Getter
+    protected float zoomFactor = 1.0F;
     /**
      * The FOV zoom level of the default scope
      */
-    protected float FOVFactor = 1.5F;
+    @Getter
+    protected float fovFactor = 1.5F;
     /**
      * Gives night vision while scoped if true
      */
@@ -567,23 +565,150 @@ public class GunType extends PaintableType implements IScope
     protected float maxZoom = 4;
     protected float zoomAugment = 1;
 
-    /**
-     * Whether the default scope has an overlay
-     */
-    public boolean hasScopeOverlay() {
-        return hasScopeOverlay;
+    @Override
+    protected void readLine(String line, String[] split, TypeFile file)
+    {
+        super.readLine(line, split, file);
+
+        damage = readValue(split, "Damage", damage, file);
+        canForceReload = readValue(split, "CanForceReload", canForceReload, file);
+        reloadTime = readValue(split, "ReloadTime", reloadTime, file);
+        recoil = readValue(split, "Recoil", recoil, file);
+        knockback = readValue(split, "Knockback", knockback, file);
+        bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
+        bulletSpread = readValue(split, "Spread", bulletSpread, file);
+        numBullets = readValue(split, "NumBullets", numBullets, file);
+        consumeGunUponUse = readValue(split, "ConsumeGunOnUse", consumeGunUponUse, file);
+        dropItemOnShoot = readValue(split, "DropItemOnShoot", dropItemOnShoot, file);
+        numBurstRounds = readValue(split, "NumBurstRounds", numBurstRounds, file);
+        minigunStartSpeed = readValue(split, "MinigunStartSpeed", minigunStartSpeed, file);
+        meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
+        if (split[0].equalsIgnoreCase("MeleeDamage") && meleeDamage > 0F)
+            secondaryFunction = EnumSecondaryFunction.MELEE;
+
+        //Information
+        showAttachments = readValue(split, "ShowAttachments", showAttachments, file);
+        showDamage = readValue(split, "ShowDamage", showDamage, file);
+        showRecoil = readValue(split, "ShowRecoil", showRecoil, file);
+        showSpread = readValue(split, "ShowAccuracy", showSpread, file);
+        showReloadTime = readValue(split, "ShowReloadTime", showReloadTime, file);
+
+        //Sounds
+        shootDelay = readValue(split, "ShootDelay", shootDelay, file);
+        shootSoundLength = readValue(split, "SoundLength", shootSoundLength, file);
+        distortSound = readValue(split, "DistortSound", distortSound, file);
+        idleSoundLength = readValue(split, "IdleSoundLength", idleSoundLength, file);
+        warmupSoundLength = readValue(split, "WarmupSoundLength", warmupSoundLength, file);
+        loopedSoundLength = readValue(split, "LoopedSoundLength", loopedSoundLength, file);
+        loopedSoundLength = readValue(split, "SpinSoundLength", loopedSoundLength, file);
+        shootSound = readSound(split, "ShootSound", shootSound, file);
+        reloadSound = readSound(split, "ReloadSound", reloadSound, file);
+        idleSound = readSound(split, "IdleSound", idleSound, file);
+        meleeSound = readSound(split, "MeleeSound", meleeSound, file);
+
+        //Looping sounds
+        warmupSound = readValue(split, "WarmupSound", warmupSound, file);
+        loopedSound = readValue(split, "LoopedSound", loopedSound, file);
+        loopedSound = readValue(split, "SpinSound", loopedSound, file);
+        cooldownSound = readValue(split, "CooldownSound", cooldownSound, file);
+
+        //Modes and zoom settings
+        overlayName = readValue(split, "Scope", overlayName, file).toLowerCase();
+        if (split[0].equalsIgnoreCase("Mode") && split.length > 1)
+            mode = EnumFireMode.getFireMode(split[1]);
+        zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
+        if (split[0].equalsIgnoreCase("ZoomLevel") && zoomFactor > 1F)
+            secondaryFunction = EnumSecondaryFunction.MELEE;
+        fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
+        if (split[0].equalsIgnoreCase("FOVZoomLevel") && fovFactor > 1F)
+            secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
+        deployable = readValue(split, "Deployable", deployable, file);
+        //TODO: DeployedModel
+        //TODO: MuzzleFlashModel
+        deployableTexture = readValue(split, "DeployedTexture", deployableTexture, file);
+        standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
+        topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);
+        bottomViewLimit = readValue(split, "BottomViewLimit", bottomViewLimit, file);
+        sideViewLimit = readValue(split, "SideViewLimit", sideViewLimit, file);
+        pivotHeight = readValue(split, "PivotHeight", pivotHeight, file);
+        numAmmoItemsInGun = readValue(split, "NumAmmoSlots", numAmmoItemsInGun, file);
+        numAmmoItemsInGun = readValue(split, "NumAmmoItemsInGun", numAmmoItemsInGun, file);
+        numAmmoItemsInGun = readValue(split, "LoadIntoGun", numAmmoItemsInGun, file);
+        canShootUnderwater = readValue(split, "CanShootUnderwater", canShootUnderwater, file);
+        oneHanded = readValue(split, "OneHanded", oneHanded, file);
+        usableByPlayers = readValue(split, "UsableByPlayers", usableByPlayers, file);
+        usableByMechas = readValue(split, "UsableByMechas", usableByMechas, file);
+        if (split[0].equalsIgnoreCase("SpreadPattern") && split.length > 1)
+            spreadPattern = EnumSpreadPattern.get(split[1]);
+
+        if (split[0].equals("Ammo") && split.length > 1)
+        {
+            ammo.add(split[1]);
+        }
+
+        if (split[0].equalsIgnoreCase("BulletSpeed"))
+        {
+            if (split.length > 1 && split[1].equalsIgnoreCase("instant"))
+                bulletSpeed = 0F;
+
+            bulletSpeed = readValue(split, "BulletSpeed", bulletSpeed, file);
+        }
+        if (split[0].equalsIgnoreCase("SecondaryFunction"))
+            secondaryFunction = EnumSecondaryFunction.get(split[1]);
+        if (split[0].equalsIgnoreCase("UseCustomMelee") && split.length > 1 && Boolean.parseBoolean(split[1]))
+            secondaryFunction = EnumSecondaryFunction.CUSTOM_MELEE;
+        meleeTime = readValue(split, "MeleeTime", meleeTime, file);
+
+        if (split[0].equalsIgnoreCase("AddNode") && split.length > 6)
+        {
+            meleePath.add(new Vector3f(Float.parseFloat(split[1]) / 16F, Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F));
+            meleePathAngles.add(new Vector3f(Float.parseFloat(split[4]), Float.parseFloat(split[5]), Float.parseFloat(split[6])));
+        }
+        if ((split[0].equalsIgnoreCase("MeleeDamagePoint") || split[0].equalsIgnoreCase("MeleeDamageOffset")) && split.length > 3)
+        {
+            meleeDamagePoints.add(new Vector3f(Float.parseFloat(split[1]) / 16F, Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F));
+        }
+
+        //Player modifiers
+        moveSpeedModifier = readValue(split, "MoveSpeedModifier", moveSpeedModifier, file);
+        moveSpeedModifier = readValue(split, "Slowness", moveSpeedModifier, file);
+        knockbackModifier = readValue(split, "KnockbackReduction", knockbackModifier, file);
+        knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
+
+        //Attachment settings
+        allowAllAttachments = readValue(split, "AllowAllAttachments", allowAllAttachments, file);
+        //TODO: uncomment (AttachmentType)
+        /*if (split[0].equalsIgnoreCase("AllowAttachments"))
+        {
+            for (int i = 1; i < split.length; i++)
+                allowedAttachments.add(AttachmentType.getAttachment(split[i]));
+        }*/
+
+        allowBarrelAttachments = readValue(split, "AllowBarrelAttachments", allowBarrelAttachments, file);
+        allowScopeAttachments = readValue(split, "AllowScopeAttachments", allowScopeAttachments, file);
+        allowStockAttachments = readValue(split, "AllowStockAttachments", allowStockAttachments, file);
+        allowGripAttachments = readValue(split, "AllowGripAttachments", allowGripAttachments, file);
+        numGenericAttachmentSlots = readValue(split, "NumGenericAttachmentSlots", numGenericAttachmentSlots, file);
+
+        //Shield settings
+        if (split[0].equalsIgnoreCase("shield") && split.length > 7)
+        {
+            shield = true;
+            shieldDamageAbsorption = Float.parseFloat(split[1]);
+            shieldOrigin = new Vector3f(Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F, Float.parseFloat(split[4]) / 16F);
+            shieldDimensions = new Vector3f(Float.parseFloat(split[5]) / 16F, Float.parseFloat(split[6]) / 16F, Float.parseFloat(split[7]) / 16F);
+        }
     }
 
     @Override
-    public float getFOVFactor()
+    protected void postRead()
     {
-        return 0;
-    }
+        useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
-    @Override
-    public float getZoomFactor()
-    {
-        return 0;
+        if (overlayName.equals("none"))
+            overlayName = StringUtils.EMPTY;
+
+        super.postRead();
     }
 
     @Override
@@ -600,7 +725,7 @@ public class GunType extends PaintableType implements IScope
 
     public boolean isCorrectAmmo(ShootableType type)
     {
-        return ammo.contains(type);
+        return ShootableType.getAmmoTypes(ammo, contentPack).contains(type);
     }
 
     public boolean isCorrectAmmo(ItemStack stack)

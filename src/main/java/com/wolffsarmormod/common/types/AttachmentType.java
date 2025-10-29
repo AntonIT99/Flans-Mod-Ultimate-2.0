@@ -4,6 +4,7 @@ import com.wolffsarmormod.common.guns.EnumAttachmentType;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -14,6 +15,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
 public class AttachmentType extends PaintableType implements IScope
 {
     //TODO: implement attachment Item
@@ -87,9 +89,11 @@ public class AttachmentType extends PaintableType implements IScope
 
     //Scope variables (These variables only come into play for scope attachments)
     /** The zoomLevel of this scope */
-    protected float zoomLevel = 1F;
+    @Getter
+    protected float zoomFactor = 1F;
     /** The FOV zoom level of this scope */
-    protected float FOVZoomLevel = 1F;
+    @Getter
+    protected float fovFactor = 1F;
     /** The overlay to render when using this scope */
     protected String zoomOverlay;
     /** Whether to overlay a texture or not */
@@ -108,18 +112,6 @@ public class AttachmentType extends PaintableType implements IScope
     protected float minZoom = 1;
     protected float maxZoom = 4;
     protected float zoomAugment = 1;
-
-    @Override
-    public float getFOVFactor()
-    {
-        return FOVZoomLevel;
-    }
-
-    @Override
-    public float getZoomFactor()
-    {
-        return zoomLevel;
-    }
 
     @Override
     public boolean hasZoomOverlay()

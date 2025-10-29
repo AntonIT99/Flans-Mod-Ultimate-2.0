@@ -1,6 +1,6 @@
 package com.wolffsarmormod.network;
 
-import com.wolffsarmormod.ModConstants;
+import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.GunType;
@@ -73,7 +73,7 @@ public class PacketReload extends PacketBase
 
                 //Play reload sound
                 if (type.getReloadSound() != null)
-                    PacketPlaySound.sendSoundPacket(player, ModConstants.SOUND_RANGE, type.getReloadSound(), false);
+                    PacketPlaySound.sendSoundPacket(player, ArmorMod.SOUND_RANGE, type.getReloadSound(), false);
 
                 PacketHandler.sendTo(new PacketGunAnimation(hand, reloadDelay, type.getPumpDelayAfterReload(), type.getPumpTime()), player);
             }

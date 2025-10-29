@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.wolffsarmormod.common.item.ItemFactory;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.common.types.InfoType;
+import com.wolffsarmormod.common.types.ShootableType;
 import com.wolffsarmormod.common.types.TypeFile;
 import com.wolffsarmormod.util.AliasFileManager;
 import com.wolffsarmormod.util.DynamicReference;
@@ -360,6 +361,8 @@ public class ContentManager
                         {
                             registerItem(shortName, config, typeFile);
                             configs.get(contentPack).add(config);
+                            if (config instanceof ShootableType shootable)
+                                ShootableType.addToRegisteredAmmoList(shootable);
                         }
                     }
                     else
