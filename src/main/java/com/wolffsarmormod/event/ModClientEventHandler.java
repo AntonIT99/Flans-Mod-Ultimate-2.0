@@ -5,10 +5,12 @@ import com.wolffsarmormod.ContentManager;
 import com.wolffsarmormod.client.input.KeyInputHandler;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
 import com.wolffsarmormod.client.render.CustomArmorLayer;
+import com.wolffsarmormod.common.item.IModelItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -16,12 +18,14 @@ import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.world.entity.EntityType;
 
 import java.nio.file.Files;
@@ -37,6 +41,16 @@ public final class ModClientEventHandler
         {
             event.addRepositorySource(new ModRepositorySource(ContentManager.getFlanFolder()));
         }
+    }
+
+    @SubscribeEvent
+    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
+    {
+        ArmorMod.getItems().stream()
+            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof IModelItem<?, ?> modelItem && modelItem.useCustomItemRendering())
+            .map(RegistryObject::getId)
+            .map(id -> new ModelResourceLocation(id, "inventory"))
+            .forEach(mrl -> event.getModels().computeIfPresent(mrl, (loc, original) -> new BewlrRoutingModel(original)));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -75,7 +89,7 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onRegisterOverlays(RegisterGuiOverlaysEvent e)
+    public static void registerOverlays(RegisterGuiOverlaysEvent e)
     {
         // Draw scope/armor after everything else
         e.registerAboveAll("scope", ClientHudOverlays.SCOPE);
@@ -83,7 +97,7 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event)
+    public static void registerKeyMappings(RegisterKeyMappingsEvent event)
     {
         KeyInputHandler.registerKeys(event);
     }

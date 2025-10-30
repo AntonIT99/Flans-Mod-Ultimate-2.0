@@ -49,7 +49,7 @@ public class ArmorMod
     // Range for which sound packets are sent
     public static final float SOUND_RANGE = 64F;
     public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
-    //TODO: progressive sound model
+    //TODO: test progressive sound volume
 
     public static final Logger log = LogUtils.getLogger();
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
@@ -148,11 +148,16 @@ public class ArmorMod
         items.get(type).add(itemRegistry.register(itemName, initItem));
     }
 
-    public static void register(String name)
+    public static void registerSound(String name)
     {
         if (sounds.contains(name))
             return;
         sounds.add(name);
         soundEventRegistry.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, name)));
+    }
+
+    public static List<RegistryObject<Item>> getItems()
+    {
+        return items.values().stream().flatMap(List::stream).toList();
     }
 }

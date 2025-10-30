@@ -1,11 +1,9 @@
 package com.wolffsarmormod.common.item;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
-import com.wolffsarmormod.client.model.ICustomItemRender;
 import com.wolffsarmormod.client.model.IFlanModel;
+import com.wolffsarmormod.client.render.CustomBewlr;
 import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
@@ -13,13 +11,16 @@ import com.wolffsarmormod.util.LogUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.util.function.Consumer;
 
 public interface IModelItem<T extends InfoType, M extends IModelBase> extends IFlanItem<T>
 {
@@ -44,14 +45,7 @@ public interface IModelItem<T extends InfoType, M extends IModelBase> extends IF
     @OnlyIn(Dist.CLIENT)
     default boolean useCustomItemRendering()
     {
-        return getModel() instanceof ICustomItemRender;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    default void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
-    {
-        if (getModel() instanceof ICustomItemRender itemRender)
-            itemRender.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+        return this instanceof ICustomRendererItem;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -110,5 +104,22 @@ public interface IModelItem<T extends InfoType, M extends IModelBase> extends IF
         setTexture(texture);
         if (getModel() != null)
             getModel().setTexture(texture);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    default void initializeClient(Consumer<IClientItemExtensions> consumer)
+    {
+        if (useCustomItemRendering())
+        {
+            consumer.accept(new IClientItemExtensions()
+            {
+                @Override
+                public BlockEntityWithoutLevelRenderer getCustomRenderer()
+                {
+                    Minecraft mc = Minecraft.getInstance();
+                    return new CustomBewlr(mc.getBlockEntityRenderDispatcher(), mc.getEntityModels());
+                }
+            });
+        }
     }
 }

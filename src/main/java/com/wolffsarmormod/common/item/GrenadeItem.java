@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,8 +22,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType, ModelBase>
+public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType, ModelBase>, ICustomRendererItem
 {
     @Getter
     protected final GrenadeType configType;
@@ -48,14 +50,35 @@ public class GrenadeItem extends ShootableItem implements IModelItem<GrenadeType
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public boolean useCustomItemRendering()
+    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
     {
-        return model != null;
+        IModelItem.super.initializeClient(consumer);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
+    public boolean useCustomRendererInHand()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean useCustomRendererOnGround()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean useCustomRendererInFrame()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean useCustomRendererInGui()
+    {
+        return false;
+    }
+
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         //TODO: find a way to get scaling from inside render() method

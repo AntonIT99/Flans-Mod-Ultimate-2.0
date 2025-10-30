@@ -2,6 +2,8 @@ package com.wolffsarmormod.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.common.PlayerData;
@@ -19,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +41,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -46,8 +50,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOverlayItem<GunType>, IPaintableItem<GunType>
+public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOverlayItem<GunType>, IPaintableItem<GunType>, ICustomRendererItem
 {
     protected static final String NBT_TAG_AMMO = "ammo";
 
@@ -79,17 +84,54 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
         behavior = new GunItemBehavior(this);
     }
 
-    public boolean useAimingAnimation()
-    {
-        return true;
-    }
-
     @Override
     @OnlyIn(Dist.CLIENT)
     public void clientSideInit()
     {
         loadModelAndTexture(null);
         loadOverlay();
+    }
+
+    @Override
+    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
+    {
+        IModelItem.super.initializeClient(consumer);
+    }
+
+    @Override
+    public boolean useCustomRendererInHand()
+    {
+        return model != null;
+    }
+
+    @Override
+    public boolean useCustomRendererOnGround()
+    {
+        return model != null;
+    }
+
+    @Override
+    public boolean useCustomRendererInFrame()
+    {
+        return model != null;
+    }
+
+    @Override
+    public boolean useCustomRendererInGui()
+    {
+        return false;
+    }
+
+    @Override
+    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    {
+        if (model != null)
+            model.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+    }
+
+    public boolean useAimingAnimation()
+    {
+        return true;
     }
 
     @Override

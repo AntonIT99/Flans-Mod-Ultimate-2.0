@@ -118,7 +118,7 @@ public abstract class InfoType
         if (StringUtils.isNotBlank(sound))
         {
             sound = sound.toLowerCase();
-            ArmorMod.register(sound);
+            ArmorMod.registerSound(sound);
         }
         return sound;
     }

@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.wolffsarmormod.ModClient;
-import com.wolffsarmormod.client.model.ICustomItemRender;
 import com.wolffsarmormod.client.model.IFlanModel;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.types.GunType;
@@ -21,7 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 
 @NoArgsConstructor
-public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomItemRender
+public class ModelGun extends ModelBase implements IFlanModel<GunType>
 {
     protected static final Vector3f invalid = new Vector3f(0f, Float.MAX_VALUE, 0f);
 
@@ -371,13 +370,12 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>, ICustomI
         vector.z -= z / 16F;
     }
 
-    @Override
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         float modelScale = type != null ? type.getModelScale() : 1F;
         GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
 
-        setSmoothing(Minecraft.getInstance().getFrameTime());;
+        setSmoothing(Minecraft.getInstance().getFrameTime());
         //Get the reload animation rotation
         reloadRotate = 0F;
 
