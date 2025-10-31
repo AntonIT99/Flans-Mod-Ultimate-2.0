@@ -91,9 +91,9 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent e)
     {
-        // Draw scope/armor after everything else
-        e.registerAboveAll("scope", ClientHudOverlays.SCOPE);
+        e.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
         e.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
+        e.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
     }
 
     @SubscribeEvent

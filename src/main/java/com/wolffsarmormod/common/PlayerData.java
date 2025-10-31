@@ -152,6 +152,51 @@ public class PlayerData
             return serverSideData.computeIfAbsent(playerId, PlayerData::new);
     }
 
+    public void serverTick(Player player)
+    {
+        if(shootTimeRight > 0)
+            shootTimeRight--;
+        if(shootTimeRight == 0)
+            reloadingRight = false;
+
+        if(shootTimeLeft > 0)
+            shootTimeLeft--;
+        if(shootTimeLeft == 0)
+            reloadingLeft = false;
+
+        if(shootClickDelay > 0)
+            shootClickDelay--;
+
+        //Move all snapshots along one place
+        System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
+        //Take new snapshot
+        snapshots[0] = new PlayerSnapshot(player);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void clientTick(Player player)
+    {
+        serverTick(player);
+
+        if (loopedSoundDelay > 0)
+            loopedSoundDelay--;
+    }
+
+    public void resetScore()
+    {
+        score = zombieScore = kills = deaths = 0;
+        //TODO: Uncomment for Teams
+        /*team = newTeam = null;
+        playerClass = newPlayerClass = null;*/
+    }
+
+    public void playerKilled()
+    {
+        mountingGun = null;
+        isShootingRight = isShootingLeft = false;
+        snapshots = new PlayerSnapshot[PlayerSnapshot.numPlayerSnapshots];
+    }
+
     public float getShootTime(InteractionHand hand)
     {
         return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
@@ -200,4 +245,6 @@ public class PlayerData
             lastMeleePositions[k] = new Vector3f(player.getX() + nextPosInPlayerCoords.x, player.getY() + nextPosInPlayerCoords.y, player.getZ() + nextPosInPlayerCoords.z);
         }
     }
+
+    //TODO: Events from PlayerHandler
 }

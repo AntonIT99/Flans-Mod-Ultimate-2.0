@@ -641,7 +641,7 @@ public class GunType extends PaintableType implements IScope
 
         if (split[0].equals("Ammo") && split.length > 1)
         {
-            ammo.add(split[1]);
+            ammo.add(split[1].toLowerCase());
         }
 
         if (split[0].equalsIgnoreCase("BulletSpeed"))

@@ -106,6 +106,7 @@ public final class ClientEventHandler
     {
         Minecraft mc = Minecraft.getInstance();
 
+        // Remove crosshairs if looking down the sights of a gun
         if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type() && ModClient.getCurrentScope() != null)
         {
             int w = mc.getWindow().getGuiScaledWidth();
@@ -115,13 +116,13 @@ public final class ClientEventHandler
         }
     }
 
-    /** CROSSHAIR: post = draw hit marker overlay even when not scoped */
+    /** CROSSHAIR: post = draw hit marker overlay */
     @SubscribeEvent
     public static void onPostRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type() && ModClient.getCurrentScope() == null)
+        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();

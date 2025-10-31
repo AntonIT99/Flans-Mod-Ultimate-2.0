@@ -193,7 +193,7 @@ public record GunItemBehavior(GunItem item)
             {
 
                 int bulletAmount = configType.getNumBullets() * shootableType.getNumBullets();
-                for(int i = 0; i < bulletAmount; i++)
+                for (int i = 0; i < bulletAmount; i++)
                 {
                     //Smooth effects, no need to wait for the server response
                     handler.shooting(i < bulletAmount - 1);
