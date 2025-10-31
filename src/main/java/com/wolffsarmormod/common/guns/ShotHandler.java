@@ -2,7 +2,6 @@ package com.wolffsarmormod.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.FlansExplosion;
-import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.EntityHit;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
 import com.wolffsarmormod.common.raytracing.BlockHit;
@@ -73,7 +72,7 @@ public class ShotHandler
      */
     public static void fireGun(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootBulletHandler handler)
     {
-        if (shot.getFireableGun().getBulletSpeed() == 0f)
+        if (shot.getFireableGun().getBulletSpeed() == 0F)
         {
             //Raytrace
             createMultipleShots(world, shot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
@@ -83,7 +82,7 @@ public class ShotHandler
             //Spawn EntityBullet
             for(int i = 0; i < bulletAmount; i++)
             {
-                world.addFreshEntity(new Bullet(world, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
+                //world.addFreshEntity(new Bullet(world, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
                 handler.shooting(i < bulletAmount - 1);
             }
         }
@@ -91,7 +90,7 @@ public class ShotHandler
 
     private static void createMultipleShots(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootBulletHandler handler)
     {
-        Float bulletspread = 0.0025f * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
+        float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
         for(int i = 0; i < bulletAmount; i++)
         {
             createShot(world, shot, bulletspread, rayTraceOrigin, new Vector3f(shootingDirection));
@@ -99,7 +98,7 @@ public class ShotHandler
         }
     }
 
-    private static void createShot(Level level, FiredShot shot, Float bulletspread, Vector3f rayTraceOrigin, Vector3f shootingDirection)
+    private static void createShot(Level level, FiredShot shot, float bulletspread, Vector3f rayTraceOrigin, Vector3f shootingDirection)
     {
         randomizeVectorDirection(level, shootingDirection, bulletspread, shot.getFireableGun().getSpreadPattern());
         shootingDirection.scale(500.0f);

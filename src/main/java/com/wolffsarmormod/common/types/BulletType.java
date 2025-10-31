@@ -42,7 +42,7 @@ public class BulletType extends ShootableType
     @Getter
     protected String hitSound;
     @Getter
-    protected float hitSoundRange = 64;
+    protected float hitSoundRange = 64F;
     protected boolean hitSoundEnable = false;
     protected boolean entityHitSoundEnable = false;
 

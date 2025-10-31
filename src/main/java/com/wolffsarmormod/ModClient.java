@@ -29,11 +29,11 @@ public class ModClient
 {
     // Plane / Vehicle control handling
     /** Whether the player has received the vehicle tutorial text */
-    public static boolean doneTutorial = false;
+    private static boolean doneTutorial = false;
     /** Whether the player is in mouse control mode */
-    public static boolean controlModeMouse = true;
+    private static boolean controlModeMouse = true;
     /** A delayer on the mouse control switch */
-    public static int controlModeSwitchTimer = 20;
+    private static int controlModeSwitchTimer = 20;
 
     // Recoil variables
     /** The recoil applied to the player view by shooting */
@@ -41,6 +41,10 @@ public class ModClient
     private static float playerRecoil;
     /** The amount of compensation to apply to the recoil in order to bring it back to normal */
     private static float antiRecoil;
+    /** equals the old "minecraft.player.rotationPitch" delta */
+    private static float recoilOffset;
+    /** For interpolation */
+    private static float recoilOffsetPrev;
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
@@ -70,6 +74,7 @@ public class ModClient
     private static double originalFOV = 70.0;
     /** The original CameraType */
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
+    private static boolean changedCameraEntity;
 
     @Getter @Setter
     private static int hitMarkerTime = 0;
@@ -158,28 +163,60 @@ public class ModClient
         if (player == null || level  == null)
             return;
 
-        // Guns
-        if(scopeTime > 0)
+        updateScopeAndHitMarkerTime();
+        updateRecoil();
+        updateGunAnimations();
+        updateScopeState(mc, player);
+        updateZoom();
+
+        if (controlModeSwitchTimer > 0)
+            controlModeSwitchTimer--;
+
+        if (changedCameraEntity && (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive()))
+        {
+            mc.setCameraEntity(player);
+            changedCameraEntity = false;
+        }
+    }
+
+    private static void updateScopeAndHitMarkerTime()
+    {
+        if (scopeTime > 0)
             scopeTime--;
-        if(playerRecoil > 0)
-            playerRecoil *= 0.8F;
-        if(hitMarkerTime > 0)
+        if (hitMarkerTime > 0)
             hitMarkerTime--;
+    }
 
-        updateRecoil(player);
+    private static void updateRecoil()
+    {
+        if (playerRecoil > 0)
+            playerRecoil *= 0.8F;
 
-        // Update gun animations for the gun in hand
-        for(GunAnimations g : gunAnimationsRight.values())
+        recoilOffsetPrev = recoilOffset;
+
+        recoilOffset -= playerRecoil;
+        antiRecoil += playerRecoil;
+
+        recoilOffset += antiRecoil * 0.2F;
+        antiRecoil *= 0.8F;
+    }
+
+    private static void updateGunAnimations()
+    {
+        for (GunAnimations g : gunAnimationsRight.values())
             g.update();
-        for(GunAnimations g : gunAnimationsLeft.values())
+        for (GunAnimations g : gunAnimationsLeft.values())
             g.update();
+    }
 
-        // If the currently held item is not a gun or is the wrong gun, unscope
-        ItemStack stackInHand = player.getMainHandItem();
-        Item itemInHand = stackInHand.getItem();
-
+    private static void updateScopeState(Minecraft mc, LocalPlayer player)
+    {
         if (currentScope != null)
         {
+            ItemStack stackInHand = player.getMainHandItem();
+            Item itemInHand = stackInHand.getItem();
+
+            // If the currently held item is not a gun or is the wrong gun, unscope
             // If we've opened a GUI page, or we switched weapons, close the current scope
             boolean guiOpen = mc.screen != null;
             boolean notAGun = !(itemInHand instanceof GunItem);
@@ -192,35 +229,15 @@ public class ModClient
                 mc.options.setCameraType(originalCameraType);
             }
         }
+    }
 
-        // Calculate new zoom variables
+    private static void updateZoom()
+    {
         lastZoomProgress = zoomProgress;
         if (currentScope == null)
             zoomProgress *= 0.66F;
         else
             zoomProgress = 1F - (1F - zoomProgress) * 0.66F;
-
-        if (controlModeSwitchTimer > 0)
-            controlModeSwitchTimer--;
-
-        if (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive())
-            mc.setCameraEntity(player);
-    }
-
-    private static void updateRecoil(LocalPlayer p)
-    {
-        // recoil kick up
-        float x = p.getXRot() - playerRecoil;
-        antiRecoil += playerRecoil;
-
-        // recovery (spring back)
-        x += antiRecoil * 0.2F;
-        antiRecoil *= 0.8F;
-
-        // clamp to sensible pitch range
-        x = Mth.clamp(x, -90F, 90F);
-
-        p.setXRot(x);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -246,5 +263,12 @@ public class ModClient
             currentFOV = originalFOV / Math.max(lastZoomLevel, lastFOVZoomLevel);
             event.setFOV(currentFOV);
         }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void updateCameraAngles(ViewportEvent.ComputeCameraAngles event)
+    {
+        float angle = Mth.lerp((float) event.getPartialTick(), recoilOffsetPrev, recoilOffset);
+        event.setPitch(Mth.clamp(event.getPitch() + angle, -90F, 90F));
     }
 }

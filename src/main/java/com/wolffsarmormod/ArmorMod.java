@@ -33,10 +33,10 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -47,32 +47,32 @@ public class ArmorMod
     public static final String MOD_ID = "wolffsarmormod";
     public static final String FLANSMOD_ID = "flansmod";
     // Range for which sound packets are sent
+    //TODO: test progressive sound volume
     public static final float SOUND_RANGE = 64F;
     public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
-    //TODO: test progressive sound volume
+
+    public static final String SOUND_BULLET = "bullet";
+    public static final String SOUND_BULLETFLYBY = "bulletflyby";
+    public static final String SOUND_UNLOCKNOTCH = "unlocknotch";
+    public static final String SOUND_SKULLBOSSLAUGH = "skullboss_laugh";
+    public static final String SOUND_SKULLBOSSSPAWN = "skullboss_spawn";
 
     public static final Logger log = LogUtils.getLogger();
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
-    public static final boolean forceRecompileAllPacks = false;
+    public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
-    private static final Set<String> sounds = new HashSet<>();
+    private static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
 
-    // Registries
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, ArmorMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArmorMod.MOD_ID);
     private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ArmorMod.MOD_ID);
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, ArmorMod.FLANSMOD_ID);
 
-    // Register sound events
-    //TODO: add files
-    //private static final RegistryObject<SoundEvent> bulletFlyby = register("bulletFlyby");
-    //private static final RegistryObject<SoundEvent> unlockNotch = register("unlockNotch");
-
     // Register entities
-    public static final RegistryObject<EntityType<Bullet>> bullet = entityRegistry.register("bullet", () ->
+    public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
             .sized(0.25F, 0.25F)
             .clientTrackingRange(64)   // how far clients track it
@@ -81,19 +81,31 @@ public class ArmorMod
 
     public ArmorMod(FMLJavaModLoadingContext context)
     {
+        Arrays.stream(EnumType.values()).forEach(type -> items.put(type, new ArrayList<>()));
         Mixins.addConfiguration(MOD_ID + ".mixins.json");
 
-        IEventBus eventBus = context.getModEventBus();
+        IEventBus modEventBus = context.getModEventBus();
+
+        // Configs
         context.registerConfig(ModConfig.Type.COMMON, ModCommonConfigs.CONFIG);
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.CONFIG);
 
-        Arrays.stream(EnumType.values()).forEach(type -> items.put(type, new ArrayList<>()));
-        itemRegistry.register(eventBus);
-        creativeModeTabRegistry.register(eventBus);
+        // Registries
+        itemRegistry.register(modEventBus);
+        creativeModeTabRegistry.register(modEventBus);
+        entityRegistry.register(modEventBus);
+        soundEventRegistry.register(modEventBus);
 
+        // Read content packs and register items & sounds
         ContentManager.INSTANCE.findContentInFlanFolder();
         ContentManager.INSTANCE.readContentPacks();
+
         registerCreativeModeTabs();
+        registerSound(SOUND_BULLET);
+        registerSound(SOUND_BULLETFLYBY);
+        registerSound(SOUND_UNLOCKNOTCH);
+        registerSound(SOUND_SKULLBOSSLAUGH);
+        registerSound(SOUND_SKULLBOSSSPAWN);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -105,7 +117,8 @@ public class ArmorMod
         registerCreativeTab("guns", Stream.of(items.get(EnumType.GUN), items.get(EnumType.BULLET), items.get(EnumType.GRENADE)).flatMap(List::stream).toList());
     }
 
-    private void registerCreativeTab(String name, List<RegistryObject<Item>> itemsForTab) {
+    private void registerCreativeTab(String name, List<RegistryObject<Item>> itemsForTab)
+    {
         if (itemsForTab.isEmpty())
             return;
 
@@ -148,16 +161,22 @@ public class ArmorMod
         items.get(type).add(itemRegistry.register(itemName, initItem));
     }
 
-    public static void registerSound(String name)
+    public static void registerSound(String soundName)
     {
-        if (sounds.contains(name))
+        if (sounds.containsKey(soundName))
             return;
-        sounds.add(name);
-        soundEventRegistry.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, name)));
+
+        RegistryObject<SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, soundName)));
+        sounds.put(soundName, soundEvent);
     }
 
     public static List<RegistryObject<Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
+    }
+
+    public static Optional<RegistryObject<SoundEvent>> getSoundEvent(String soundName)
+    {
+        return Optional.ofNullable(sounds.get(soundName));
     }
 }

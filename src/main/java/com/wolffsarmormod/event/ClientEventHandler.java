@@ -22,7 +22,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,12 +31,18 @@ import net.minecraft.world.item.ItemStack;
 public final class ClientEventHandler
 {
     @SubscribeEvent
-    public static void onComputeCameraAngles(ViewportEvent.ComputeFov event)
+    public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
         ModelGun.setSmoothing((float) event.getPartialTick());
         ModClient.updateCameraZoom(event);
+    }
+
+    @SubscribeEvent
+    public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClient.updateCameraAngles(event);
         //TODO: for driveables
-        //renderHooks.updatePlayerView();
+        //updatePlayerView();
     }
 
     //TODO: complete commented code
@@ -75,8 +80,8 @@ public final class ClientEventHandler
 
         ItemStack mainHand = player.getMainHandItem();
 
-        if (mainHand.getItem() instanceof GunItem gunItem) {
-
+        if (mainHand.getItem() instanceof GunItem gunItem)
+        {
             boolean isOneHanded = gunItem.getConfigType().isOneHanded();
             boolean isSneakingKeyDown = Minecraft.getInstance().options.keyShift.isDown();
             double scrollDelta = event.getScrollDelta();
@@ -127,32 +132,6 @@ public final class ClientEventHandler
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();
             ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
-        }
-    }
-
-    /**
-     * HELMET overlay (post) → scope overlay
-     * HOTBAR overlay (post) → ammo, team info, killfeed, vehicle debug
-     */
-    @SubscribeEvent
-    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
-    {
-        Minecraft mc = Minecraft.getInstance();
-        GuiGraphics guiGraphics = event.getGuiGraphics();
-        int w = mc.getWindow().getGuiScaledWidth();
-        int h = mc.getWindow().getGuiScaledHeight();
-
-        /*if (event.getOverlay() == VanillaGuiOverlay.HELMET.type())
-        {
-            ClientHudOverlays.renderScopeOverlay(guiGraphics, w, h);
-        }*/
-        //TODO: check if it can be done via registration
-        if (event.getOverlay() == VanillaGuiOverlay.HOTBAR.type())
-        {
-            ClientHudOverlays.renderPlayerAmmo(guiGraphics, w, h);
-            ClientHudOverlays.renderTeamInfo(guiGraphics, w, h);
-            ClientHudOverlays.renderKillMessages(guiGraphics, w, h);
-            ClientHudOverlays.renderVehicleDebug(guiGraphics, w, h);
         }
     }
 

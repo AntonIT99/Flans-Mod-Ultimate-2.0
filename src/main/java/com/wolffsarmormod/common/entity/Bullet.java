@@ -49,7 +49,7 @@ public class Bullet extends Shootable
 
     public Bullet(Level level, FiredShot shot, Vec3 origin, Vec3 direction)
     {
-        this(ArmorMod.bullet.get(), level);
+        this(ArmorMod.bulletEntity.get(), level);
         ticksInAir = 0;
         this.shot = shot;
         this.entityData.set(BULLET_TYPE, shot.getBulletType().getShortName());

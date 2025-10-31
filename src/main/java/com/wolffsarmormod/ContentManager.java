@@ -554,7 +554,7 @@ public class ContentManager
         if (FMLEnvironment.dist != Dist.CLIENT)
             return false;
 
-        if (ArmorMod.forceRecompileAllPacks)
+        if (ArmorMod.FORCE_RECOMPILE_ALL_PACKS)
             return true;
 
         if (provider.isJarFile() // JAR File means it's the first time we've loaded the pack

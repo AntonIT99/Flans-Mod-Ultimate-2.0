@@ -2,7 +2,7 @@ package com.wolffsarmormod.network;
 
 import com.wolffsarmormod.ArmorMod;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -69,16 +69,18 @@ public class PacketPlaySound extends PacketBase
     @Override
     public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
-
-        SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, sound));
+        RegistryObject<SoundEvent> event = ArmorMod.getSoundEvent(sound).orElse(null);
         if (event == null)
+        {
+            ArmorMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, sound));
             return;
+        }
 
         float volume = silenced ? ArmorMod.SOUND_VOLUME / 2F : ArmorMod.SOUND_VOLUME;
         float pitchBase = distort ? (1.0F / (level.random.nextFloat() * 0.4F + 0.8F)) : 1.0F;
         float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 
-        level.playLocalSound(posX, posY, posZ, event, SoundSource.PLAYERS, volume, pitch, false);
+        level.playLocalSound(posX, posY, posZ, event.get(), SoundSource.PLAYERS, volume, pitch, false);
     }
 
     public static void sendSoundPacket(Player player, double range, String sound, boolean distort)
