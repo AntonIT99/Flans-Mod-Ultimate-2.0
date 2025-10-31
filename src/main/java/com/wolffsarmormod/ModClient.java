@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.ViewportEvent;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -60,12 +61,13 @@ public class ModClient
     /** The zoom level of the last scope used for transitioning out of being scoped, even after the scope is forgotten */
     private static float lastZoomLevel = 1F;
     private static float lastFOVZoomLevel = 1F;
+    private static double currentFOV = 1.0;
 
     // Variables to hold the state of some settings so that after being hacked for scopes, they may be restored
     /** The player's mouse sensitivity setting, as it was before being hacked by my mod */
     private static double originalMouseSensitivity = 0.5;
     /** The player's original FOV */
-    private static int originalFOV = 90;
+    private static double originalFOV = 70.0;
     /** The original CameraType */
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
 
@@ -125,7 +127,6 @@ public class ModClient
                 // save originals
                 originalMouseSensitivity = opts.sensitivity().get();
                 originalCameraType = opts.getCameraType();
-                originalFOV = opts.fov().get();
 
                 // adjust sensitivity by sqrt(zoom)
                 double newSensitivity = originalMouseSensitivity / Math.sqrt(scope.getZoomFactor());
@@ -142,7 +143,6 @@ public class ModClient
                 // restore
                 opts.sensitivity().set(originalMouseSensitivity);
                 opts.setCameraType(originalCameraType);
-                opts.fov().set(originalFOV);
             }
             scopeTime = 10;
         }
@@ -181,14 +181,13 @@ public class ModClient
         if (currentScope != null)
         {
             // If we've opened a GUI page, or we switched weapons, close the current scope
-            boolean guiOpen = mc.screen != null; // was currentScreen
+            boolean guiOpen = mc.screen != null;
             boolean notAGun = !(itemInHand instanceof GunItem);
             boolean differentScope = itemInHand instanceof GunItem gun && gun.getConfigType().getCurrentScope(stackInHand) != currentScope;
 
             if (guiOpen || notAGun || differentScope)
             {
                 currentScope = null;
-                mc.options.fov().set(originalFOV);
                 mc.options.sensitivity().set(originalMouseSensitivity);
                 mc.options.setCameraType(originalCameraType);
             }
@@ -225,21 +224,27 @@ public class ModClient
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void updateCameraZoom(float smoothing)
+    public static void updateCameraZoom(ViewportEvent.ComputeFov event)
     {
+        originalFOV = event.getFOV();
+
         // If the zoom has changed sufficiently, update it
         if (Math.abs(zoomProgress - lastZoomProgress) > 0.0001F)
         {
-            float actualZoomProgress = lastZoomProgress + (zoomProgress - lastZoomProgress) * smoothing;
+            float actualZoomProgress = lastZoomProgress + (zoomProgress - lastZoomProgress) * (float) event.getPartialTick();
             float botchedZoomProgress = zoomProgress > 0.8F ? 1F : 0F;
             float zoomLevel = botchedZoomProgress * lastZoomLevel + (1 - botchedZoomProgress);
             float fovZoomLevel = actualZoomProgress * lastFOVZoomLevel + (1 - actualZoomProgress);
             if (Math.abs(zoomLevel - 1F) < 0.01F)
                 zoomLevel = 1.0F;
 
-            float zoomToApply = Math.max(fovZoomLevel, zoomLevel);
-            int fovValue = Math.round((((originalFOV * 40 + 70) / zoomToApply) - 70) / 40);
-            Minecraft.getInstance().options.fov().set(fovValue);
+            currentFOV = originalFOV / Math.max(fovZoomLevel, zoomLevel);
+            event.setFOV(currentFOV);
+        }
+        else if (currentScope != null)
+        {
+            currentFOV = originalFOV / Math.max(lastZoomLevel, lastFOVZoomLevel);
+            event.setFOV(currentFOV);
         }
     }
 }

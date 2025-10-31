@@ -616,7 +616,7 @@ public class GunType extends PaintableType implements IScope
             mode = EnumFireMode.getFireMode(split[1]);
         zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
         if (split[0].equalsIgnoreCase("ZoomLevel") && zoomFactor > 1F)
-            secondaryFunction = EnumSecondaryFunction.MELEE;
+            secondaryFunction = EnumSecondaryFunction.ZOOM;
         fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
         if (split[0].equalsIgnoreCase("FOVZoomLevel") && fovFactor > 1F)
             secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;

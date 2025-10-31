@@ -32,11 +32,10 @@ import net.minecraft.world.item.ItemStack;
 public final class ClientEventHandler
 {
     @SubscribeEvent
-    public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
+    public static void onComputeCameraAngles(ViewportEvent.ComputeFov event)
     {
-        float partialTick = (float) event.getPartialTick();
-        ModelGun.setSmoothing(partialTick);
-        ModClient.updateCameraZoom(partialTick);
+        ModelGun.setSmoothing((float) event.getPartialTick());
+        ModClient.updateCameraZoom(event);
         //TODO: for driveables
         //renderHooks.updatePlayerView();
     }
