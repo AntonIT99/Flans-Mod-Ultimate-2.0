@@ -18,11 +18,9 @@ import com.wolffsarmormod.network.PacketHandler;
 import com.wolffsarmormod.network.PacketPlaySound;
 import com.wolffsarmormod.network.PacketReload;
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +31,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -49,10 +46,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
-public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOverlayItem<GunType>, IPaintableItem<GunType>, ICustomRendererItem
+public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
 {
     protected static final String NBT_TAG_AMMO = "ammo";
 
@@ -65,55 +61,37 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     protected final GunType configType;
     @Getter
     protected final GunItemBehavior behavior;
-    @Getter @Setter
-    protected ModelGun model;
-    @Getter @Setter
-    protected ResourceLocation texture;
-    @Setter
-    protected ResourceLocation overlay;
     protected int soundDelay = 0;
 
     public GunItem(GunType configType)
     {
         super(new Properties());
         this.configType = configType;
-
-        if (FMLEnvironment.dist == Dist.CLIENT)
-            clientSideInit();
-
         behavior = new GunItemBehavior(this);
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public void clientSideInit()
-    {
-        loadModelAndTexture(null);
-        loadOverlay();
     }
 
     @Override
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
     {
-        IModelItem.super.initializeClient(consumer);
+        ICustomRendererItem.super.initializeClient(consumer);
     }
 
     @Override
     public boolean useCustomRendererInHand()
     {
-        return model != null;
+        return configType.getModel() != null;
     }
 
     @Override
     public boolean useCustomRendererOnGround()
     {
-        return model != null;
+        return configType.getModel() != null;
     }
 
     @Override
     public boolean useCustomRendererInFrame()
     {
-        return model != null;
+        return configType.getModel() != null;
     }
 
     @Override
@@ -125,19 +103,14 @@ public class GunItem extends Item implements IModelItem<GunType, ModelGun>, IOve
     @Override
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
-        if (model != null)
-            model.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+        ModelGun modelGun = configType.getGunModel();
+        if (modelGun != null)
+            modelGun.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
     }
 
     public boolean useAimingAnimation()
     {
         return true;
-    }
-
-    @Override
-    public Optional<ResourceLocation> getOverlay()
-    {
-        return Optional.ofNullable(overlay);
     }
 
     @Override

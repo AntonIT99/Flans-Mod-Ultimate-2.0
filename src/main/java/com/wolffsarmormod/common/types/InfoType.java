@@ -1,23 +1,27 @@
 package com.wolffsarmormod.common.types;
 
+import com.flansmod.client.model.ModelBomb;
+import com.flansmod.client.model.ModelBullet;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ContentManager;
 import com.wolffsarmormod.IContentProvider;
+import com.wolffsarmormod.ModUtils;
+import com.wolffsarmormod.client.model.IFlanTypeModel;
+import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.FileUtils;
 import com.wolffsarmormod.util.LogUtils;
+import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -26,8 +30,11 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -37,6 +44,8 @@ import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class InfoType
 {
+    private static final Map<String, InfoType> infoTypes = new HashMap<>();
+
     @Getter
     protected String fileName;
     @Getter
@@ -48,14 +57,45 @@ public abstract class InfoType
     @Getter
     protected String originalShortName = StringUtils.EMPTY;
     @Getter
+    protected String icon = StringUtils.EMPTY;
+    @Getter
     protected String description = StringUtils.EMPTY;
     protected String modelName = StringUtils.EMPTY;
     protected String modelClassName = StringUtils.EMPTY;
-    protected String icon = StringUtils.EMPTY;
     protected String textureName = StringUtils.EMPTY;
     protected String overlayName = StringUtils.EMPTY;
     @Getter
     protected float modelScale = 1F;
+
+    @Getter @Nullable @OnlyIn(Dist.CLIENT)
+    protected IModelBase model;
+    @Getter @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation texture;
+    @Nullable @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation overlay;
+
+    public String getShortName()
+    {
+        return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public Optional<ResourceLocation> getOverlay()
+    {
+        return Optional.ofNullable(overlay);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public String getTexturePath(String textureName)
+    {
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%s item '%s' [%s] in [%s]", type, originalShortName, fileName, contentPack.getName());
+    }
 
     public void read(TypeFile file)
     {
@@ -85,6 +125,13 @@ public abstract class InfoType
         }
 
         postRead();
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            postReadClient();
+    }
+
+    public void onItemRegistration(String registeredItemId)
+    {
+        infoTypes.put(registeredItemId, this);
     }
 
     protected void readLine(String line, String[] split, TypeFile file)
@@ -100,18 +147,6 @@ public abstract class InfoType
         modelScale = readValue(split, "ModelScale", modelScale, file);
     }
 
-    protected void postRead()
-    {
-        if (FMLEnvironment.dist == Dist.CLIENT)
-        {
-            findModelClass();
-            if (!textureName.isBlank())
-                ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
-            if (!overlayName.isBlank())
-                ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
-        }
-    }
-
     protected String readSound(String[] split, String key, String currentValue, TypeFile file)
     {
         String sound = readValue(split, key, currentValue, file);
@@ -123,9 +158,25 @@ public abstract class InfoType
         return sound;
     }
 
+    protected void postRead() {}
+
     @OnlyIn(Dist.CLIENT)
-    protected void findModelClass()
+    protected void postReadClient()
     {
+        modelClassName = findModelClass(modelName, contentPack);
+        if (!textureName.isBlank())
+            ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
+        if (!overlayName.isBlank())
+            ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
+        model = loadModel(modelClassName, this).orElse(null);
+        texture = loadTexture(textureName, this, model).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+        overlay = loadOverlay(overlayName, this).orElse(null);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    protected static String findModelClass(String modelName, IContentProvider contentPack)
+    {
+        String modelClassName = StringUtils.EMPTY;
         if (!modelName.isBlank() && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
         {
             String[] modelNameSplit = modelName.split("\\.");
@@ -191,6 +242,7 @@ public abstract class InfoType
 
             FileUtils.closeFileSystem(fs, contentPack);
         }
+        return modelClassName;
     }
 
     protected static boolean modelClassAlreadyRegisteredForContentPack(String modelClassName, IContentProvider contentPack) {
@@ -208,7 +260,7 @@ public abstract class InfoType
         return ContentManager.getRegisteredModels().containsKey(modelClassName) && !contentPack.equals(ContentManager.getRegisteredModels().get(modelClassName));
     }
 
-    protected String findNewValidClassName(String className)
+    protected static String findNewValidClassName(String className)
     {
         String newClassName = className;
         for (int i = 2; ContentManager.getRegisteredModels().containsKey(newClassName); i++)
@@ -218,68 +270,83 @@ public abstract class InfoType
         return newClassName;
     }
 
+    @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
-    public String getIcon()
+    protected static Optional<IModelBase> loadModel(String modelClassName, InfoType type)
     {
-        return icon;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public String getModelClassName()
-    {
-        return modelClassName;
-    }
-
-    public String getShortName()
-    {
-        return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
-    }
-
-    @Nullable
-    @OnlyIn(Dist.CLIENT)
-    public DynamicReference getActualModelClassName()
-    {
+        IModelBase model = null;
         if (!modelClassName.isBlank())
         {
-            return ContentManager.getModelReferences().get(contentPack).get(modelClassName);
+            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
+                return Optional.of(loadModel(new ModelBullet(), type));
+            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
+                return Optional.of(loadModel(new ModelBomb(), type));
+
+
+            DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
+            if (actualClassName != null)
+            {
+                try
+                {
+                    IModelBase loadedModel = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
+                    if (loadedModel instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
+                        ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
+                    model = loadedModel;
+                }
+                catch (Exception | NoClassDefFoundError | ClassFormatError e)
+                {
+                    ArmorMod.log.error("Could not load model class {} for {}", modelClassName, type);
+                    if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
+                        ArmorMod.log.error("File not found: {}", noSuchFileException.getFile());
+                    else
+                        LogUtils.logWithoutStacktrace(e);
+                }
+            }
         }
-        return null;
+        return Optional.ofNullable(model);
+    }
+
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    protected static IModelBase loadModel(IModelBase model, InfoType type)
+    {
+        if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(model))
+                ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
+        return model;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public ResourceLocation getTexture()
+    protected static Optional<ResourceLocation> loadTexture(String textureName, InfoType type, @Nullable IModelBase model)
     {
+        ResourceLocation texture = null;
         if (!textureName.isBlank())
         {
-            DynamicReference ref = ContentManager.getSkinsTextureReferences().get(contentPack).get(textureName);
+            DynamicReference ref;
+            if (type instanceof ArmorType)
+                ref = ContentManager.getArmorTextureReferences().get(type.getContentPack()).get(textureName);
+            else
+                ref = ContentManager.getSkinsTextureReferences().get(type.getContentPack()).get(textureName);
+
             if (ref != null)
-                return ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, getTexturePath(ref.get()));
+                texture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
         }
-        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
+
+        if (model != null)
+            model.setTexture(texture);
+
+        return Optional.ofNullable(texture);
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected String getTexturePath(String textureName)
-    {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public Optional<ResourceLocation> getOverlay()
+    protected static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
         if (!overlayName.isBlank())
         {
-            DynamicReference ref = ContentManager.getGuiTextureReferences().get(contentPack).get(overlayName);
+            DynamicReference ref = ContentManager.getGuiTextureReferences().get(type.getContentPack()).get(overlayName);
             if (ref != null)
                 return Optional.of(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("%s item '%s' [%s] in [%s]", type, getShortName(), fileName, contentPack.getName());
     }
 
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
@@ -319,14 +386,14 @@ public abstract class InfoType
         }
 
         // Try a "modid:itemid" style lookup, default to "minecraft:itemid" if no modid
-        Optional<ItemStack> stack = getItemStack(id, amount, damage);
+        Optional<ItemStack> stack = ModUtils.getItemStack(id, amount, damage);
         if (stack.isPresent())
             return stack.get();
 
 
         // Then fallback to "flansmod:itemid" (get shortname alias if the item is in the same content pack)
         id = ContentManager.getShortnameAliasInContentPack(id, provider);
-        stack = getItemStack(id, amount, damage);
+        stack = ModUtils.getItemStack(id, amount, damage);
         if (stack.isPresent())
             return stack.get();
 
@@ -343,34 +410,8 @@ public abstract class InfoType
         return ItemStack.EMPTY;
     }
 
-    protected static Optional<ItemStack> getItemStack(@Nullable String id, int amount, int damage)
+    public static Optional<InfoType> getInfoType(String id)
     {
-        Optional<Item> item = getItemById(id);
-        if (item.isPresent())
-        {
-            ItemStack stack = new ItemStack(item.get(), amount);
-            if (damage > 0)
-                stack.setDamageValue(damage);
-            return Optional.of(stack);
-        }
-        return Optional.empty();
-    }
-
-    protected static Optional<Item> getItemById(@Nullable String id)
-    {
-        if (id == null || id.isBlank())
-            return Optional.empty();
-
-        id = id.trim().toLowerCase();
-
-        // If no namespace, assume minecraft
-        if (!id.contains(":"))
-            id = "minecraft:" + id;
-
-        ResourceLocation rl = ResourceLocation.tryParse(id);
-        if (rl == null)
-            return Optional.empty();
-
-        return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl));
+        return Optional.ofNullable(infoTypes.get(id));
     }
 }

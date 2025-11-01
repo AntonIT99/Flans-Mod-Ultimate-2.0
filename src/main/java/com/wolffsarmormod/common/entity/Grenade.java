@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
@@ -32,6 +33,18 @@ public class Grenade extends Shootable
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag pCompound)
+    {
+
+    }
+
+    @Override
+    public void writeSpawnData(FriendlyByteBuf buffer)
+    {
+
+    }
+
+    @Override
+    public void readSpawnData(FriendlyByteBuf additionalData)
     {
 
     }

@@ -1,12 +1,16 @@
 package com.wolffsarmormod.common.types;
 
 import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.ModelMG;
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
+import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -16,12 +20,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -435,16 +440,11 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected boolean deployable = false;
-    /**
-     * The deployable model
-     */
-    //TODO ModelMG
-    //protected ModelMG deployableModel;
-    protected String deployableModelString;
+    protected String deployableModelName = StringUtils.EMPTY;
     /**
      * The deployable model's texture
      */
-    protected String deployableTexture;
+    protected String deployableTextureName = StringUtils.EMPTY;
     /**
      * Various deployable settings controlling the player view limits and standing position
      */
@@ -466,13 +466,6 @@ public class GunType extends PaintableType implements IScope
      * Gives night vision while scoped if true
      */
     protected boolean allowNightVision = false;
-
-    //Model variables
-    /**
-     * For guns with 3D models
-     */
-    @Getter
-    protected ModelGun model;
 
     /**
      * For adding a bullet casing model to render
@@ -529,15 +522,6 @@ public class GunType extends PaintableType implements IScope
      */
     protected int numGenericAttachmentSlots = 0;
 
-    /**
-     * The static hashmap of all guns by shortName
-     */
-    protected static HashMap<String, GunType> guns = new HashMap<>();
-    /**
-     * The static list of all guns
-     */
-    protected static ArrayList<GunType> gunList = new ArrayList<>();
-
     //Modifiers
     /**
      * Speeds up or slows down player movement when this item is held
@@ -551,17 +535,25 @@ public class GunType extends PaintableType implements IScope
      * Default spread of the gun. Do not modify.
      */
     protected float defaultSpread = 0F;
-    // Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg
+    /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg */
     protected float adsSpreadModifier = -1F;
-    // Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg. For shotguns.
+    /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg. For shotguns. */
     protected float adsSpreadModifierShotgun = -1F;
 
     protected float switchDelay = 0;
 
     protected boolean hasVariableZoom = false;
-    protected float minZoom = 1;
-    protected float maxZoom = 4;
-    protected float zoomAugment = 1;
+    protected float minZoom = 1F;
+    protected float maxZoom = 4F;
+    protected float zoomAugment = 1F;
+
+    /** Models and Textures */
+    @Getter @Nullable @OnlyIn(Dist.CLIENT)
+    protected ModelGun gunModel;
+    @Getter @Nullable @OnlyIn(Dist.CLIENT)
+    protected ModelMG deployableModel;
+    @Getter @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation deployableTexture;
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
@@ -621,9 +613,9 @@ public class GunType extends PaintableType implements IScope
         if (split[0].equalsIgnoreCase("FOVZoomLevel") && fovFactor > 1F)
             secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
         deployable = readValue(split, "Deployable", deployable, file);
-        //TODO: DeployedModel
+        deployableModelName = readValue(split, "DeployedModel", deployableModelName, file);
+        deployableTextureName = readValue(split, "DeployedTexture", deployableTextureName, file);
         //TODO: MuzzleFlashModel
-        deployableTexture = readValue(split, "DeployedTexture", deployableTexture, file);
         standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
         topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);
         bottomViewLimit = readValue(split, "BottomViewLimit", bottomViewLimit, file);
@@ -701,12 +693,26 @@ public class GunType extends PaintableType implements IScope
     @Override
     protected void postRead()
     {
+        super.postRead();
         useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
         if (overlayName.equals("none"))
             overlayName = StringUtils.EMPTY;
+    }
 
-        super.postRead();
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    protected void postReadClient()
+    {
+        super.postReadClient();
+        if (model instanceof ModelGun modelGun)
+            gunModel = modelGun;
+
+        IModelBase loadedDeployableModel = loadModel(deployableModelName, this).orElse(null);
+        if (loadedDeployableModel instanceof ModelMG modelMG)
+            deployableModel = modelMG;
+
+        deployableTexture = loadTexture(deployableTextureName, this, deployableModel).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
     }
 
     @Override
@@ -718,7 +724,7 @@ public class GunType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return getOverlay().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+        return Optional.ofNullable(overlay).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
     }
 
     public List<ShootableType> getAmmoTypes()
@@ -991,8 +997,8 @@ public class GunType extends PaintableType implements IScope
      */
     public int getPumpDelayAfterReload()
     {
-        if (model != null)
-            return model.getPumpDelayAfterReload();
+        if (gunModel != null)
+            return gunModel.getPumpDelayAfterReload();
 
         return 0;
     }
@@ -1002,8 +1008,8 @@ public class GunType extends PaintableType implements IScope
      */
     public int getPumpDelay()
     {
-        if (model != null)
-            return model.getPumpDelay();
+        if (gunModel != null)
+            return gunModel.getPumpDelay();
 
         return 0;
     }
@@ -1013,8 +1019,8 @@ public class GunType extends PaintableType implements IScope
      */
     public int getPumpTime()
     {
-        if (model != null)
-            return model.getPumpTime();
+        if (gunModel != null)
+            return gunModel.getPumpTime();
 
         return 0;
     }

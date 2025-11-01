@@ -13,8 +13,6 @@ import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.guns.InventoryHelper;
 import com.wolffsarmormod.common.guns.ShootBulletHandler;
 import com.wolffsarmormod.common.guns.ShotHandler;
-import com.wolffsarmormod.common.types.BulletType;
-import com.wolffsarmormod.common.types.GrenadeType;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
 import com.wolffsarmormod.common.types.InfoType;
@@ -191,7 +189,6 @@ public record GunItemBehavior(GunItem item)
 
             if (level.isClientSide)
             {
-
                 int bulletAmount = configType.getNumBullets() * shootableType.getNumBullets();
                 for (int i = 0; i < bulletAmount; i++)
                 {
@@ -203,13 +200,12 @@ public record GunItemBehavior(GunItem item)
                 float recoil = configType.getRecoil(gunstack);
                 ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
-
             }
             else
             {
                 Vector3f rayTraceDirection = new Vector3f(player.getLookAngle());
 
-                if (shootableType instanceof BulletType bulletType)
+                if (shootableItem instanceof BulletItem bulletItem)
                 {
                     //Fire gun
                     FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunstack), configType.getSpread(gunstack), configType.getBulletSpeed(), configType.getSpreadPattern(gunstack));
@@ -220,15 +216,14 @@ public record GunItemBehavior(GunItem item)
                         EnchantmentModule.ModifyGun(fireableGun, player, otherHand);
                     }*/
 
-                    FiredShot shot = new FiredShot(fireableGun, bulletType, (ServerPlayer)player);
+                    FiredShot shot = new FiredShot(fireableGun, bulletItem.getConfigType(), (ServerPlayer)player);
                     //TODO gunOrigin? & animation origin
                     ShotHandler.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
                 }
-                else if (shootableType instanceof GrenadeType)
+                else if (shootableItem instanceof GrenadeItem grenadeItem)
                 {
                     //throw grenade
-                    GrenadeItem grenade = (GrenadeItem) shootableItem;
-                    grenade.throwGrenade(level, player);
+                    grenadeItem.throwGrenade(level, player);
                     handler.shooting(false);
                 }
 

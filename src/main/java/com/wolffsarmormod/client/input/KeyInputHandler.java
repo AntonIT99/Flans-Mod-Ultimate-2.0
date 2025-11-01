@@ -1,6 +1,7 @@
 package com.wolffsarmormod.client.input;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelGun;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModClient;
@@ -87,9 +88,10 @@ public final class KeyInputHandler
                 //float reloadDelay = EnchantmentModule.modifyReloadTime(type.reloadTime, player, player.getHeldItemOffhand());
 
                 GunAnimations animations = ModClient.getGunAnimations(player, InteractionHand.MAIN_HAND);
+                ModelGun modelGun = type.getGunModel();
 
-                int pumpDelay = type.getModel() == null ? 0 : type.getModel().getPumpDelayAfterReload();
-                int pumpTime = type.getModel() == null ? 1 : type.getModel().getPumpTime();
+                int pumpDelay = modelGun == null ? 0 : modelGun.getPumpDelayAfterReload();
+                int pumpTime = modelGun == null ? 1 : modelGun.getPumpTime();
                 animations.doReload(type.getReloadTime(), pumpDelay, pumpTime);
 
                 data.setReloadingRight(true);

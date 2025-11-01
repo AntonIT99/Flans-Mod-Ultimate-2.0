@@ -21,22 +21,22 @@ public class Paintjob
     private final int id;
     private final PaintableType parent;
     private final String displayName;
-    private final String iconName;
+    private final String icon;
     private final ResourceLocation texture;
     private final ItemStack[] dyesNeeded;
     private final EnumPaintjobRarity rarity;
 
-    public Paintjob(PaintableType parent, int id, String iconName, ResourceLocation texture, ItemStack[] dyesNeeded)
+    public Paintjob(PaintableType parent, int id, String icon, ResourceLocation texture, ItemStack[] dyesNeeded)
     {
-        this(parent, id, "", iconName, texture, dyesNeeded);
+        this(parent, id, "", icon, texture, dyesNeeded);
     }
 
-    public Paintjob(PaintableType parent, int id, String displayName, String iconName, ResourceLocation texture, ItemStack[] dyesNeeded)
+    public Paintjob(PaintableType parent, int id, String displayName, String icon, ResourceLocation texture, ItemStack[] dyesNeeded)
     {
         this.parent = parent;
         this.id = id;
         this.displayName = displayName;
-        this.iconName = iconName;
+        this.icon = icon;
         this.texture = texture;
         this.dyesNeeded = dyesNeeded;
         this.rarity = EnumPaintjobRarity.UNKNOWN;

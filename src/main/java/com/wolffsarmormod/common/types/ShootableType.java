@@ -19,13 +19,11 @@ public abstract class ShootableType extends InfoType
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
 
     //Aesthetics
-    /**
-     * Whether trail particles are given off
-     */
+    /** Whether trail particles are given off */
+    @Getter
     protected boolean trailParticles = false;
-    /**
-     * Trail particles given off by this while being thrown
-     */
+    /** Trail particles given off by this while being thrown */
+    @Getter
     protected String trailParticleType = "smoke";
 
     // hasLight controls whether it has full luminescence.
@@ -184,10 +182,11 @@ public abstract class ShootableType extends InfoType
         //TODO: continue (WIP)
     }
 
-    public static void addToRegisteredAmmoList(ShootableType type)
+    public void onItemRegistration(String registeredItemId)
     {
-        registeredAmmoList.putIfAbsent(type.getContentPack(), new HashMap<>());
-        registeredAmmoList.get(type.getContentPack()).put(type.getOriginalShortName(), type);
+        super.onItemRegistration(registeredItemId);
+        registeredAmmoList.putIfAbsent(contentPack, new HashMap<>());
+        registeredAmmoList.get(contentPack).put(originalShortName, this);
     }
 
     public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)

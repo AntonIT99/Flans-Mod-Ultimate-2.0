@@ -3,9 +3,10 @@ package com.wolffsarmormod.event;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ContentManager;
 import com.wolffsarmormod.client.input.KeyInputHandler;
+import com.wolffsarmormod.client.render.BulletRenderer;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
 import com.wolffsarmormod.client.render.CustomArmorLayer;
-import com.wolffsarmormod.common.item.IModelItem;
+import com.wolffsarmormod.common.item.ICustomRendererItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -47,7 +48,7 @@ public final class ModClientEventHandler
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
         ArmorMod.getItems().stream()
-            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof IModelItem<?, ?> modelItem && modelItem.useCustomItemRendering())
+            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendererItem<?>)
             .map(RegistryObject::getId)
             .map(id -> new ModelResourceLocation(id, "inventory"))
             .forEach(mrl -> event.getModels().computeIfPresent(mrl, (loc, original) -> new BewlrRoutingModel(original)));
@@ -86,6 +87,12 @@ public final class ModClientEventHandler
                 ArmorMod.log.error("Could not add armor layer to {}", entityType.getDescriptionId(), e);
             }
         }
+    }
+
+    @SubscribeEvent
+    static void registerRenderers(EntityRenderersEvent.RegisterRenderers e)
+    {
+        e.registerEntityRenderer(ArmorMod.bulletEntity.get(), BulletRenderer::new);
     }
 
     @SubscribeEvent

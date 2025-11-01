@@ -1,24 +1,17 @@
 package com.wolffsarmormod.common.item;
 
-import com.flansmod.client.model.ModelCustomArmour;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.wolffsarmormod.client.model.DefaultArmor;
 import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsarmormod.config.ModCommonConfigs;
 import com.wolffsarmormod.event.CommonEventHandler;
 import lombok.Getter;
-import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -35,38 +28,20 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, ModelCustomArmour>, IOverlayItem<ArmorType>
+public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 {
     protected static final UUID[] uuid = new UUID[] { UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID() };
 
     @Getter
     protected final ArmorType configType;
-    @Getter @Setter
-    protected ModelCustomArmour model;
-    @Getter @Setter
-    protected ResourceLocation texture;
-    @Setter
-    protected ResourceLocation overlay;
 
     public CustomArmorItem(ArmorType configType)
     {
         super(new CustomArmorMaterial(configType), configType.getArmorItemType(), new Properties());
         this.configType = configType;
-
-        if (FMLEnvironment.dist == Dist.CLIENT)
-            clientSideInit();
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public void clientSideInit()
-    {
-        loadModelAndTexture(new DefaultArmor(configType.getArmorItemType()));
-        loadOverlay();
     }
 
     @Override
@@ -165,7 +140,7 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
             @NotNull
             public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> defaultModel)
             {
-                return model;
+                return configType.getArmorModel();
             }
         });
     }
@@ -187,12 +162,5 @@ public class CustomArmorItem extends ArmorItem implements IModelItem<ArmorType, 
         }
 
         return modifiers;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public Optional<ResourceLocation> getOverlay()
-    {
-        return Optional.ofNullable(overlay);
     }
 }

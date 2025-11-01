@@ -1,5 +1,6 @@
 package com.wolffsarmormod.common.types;
 
+import com.flansmod.client.model.ModelBullet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -132,4 +133,12 @@ public class BulletType extends ShootableType
 
     // 0 = disable, otherwise sets velocity scale on block hit particle fx
     protected float blockHitFXScale;
+
+    @Override
+    protected void postReadClient()
+    {
+        super.postReadClient();
+        if (model == null)
+            model = loadModel(new ModelBullet(), this);
+    }
 }

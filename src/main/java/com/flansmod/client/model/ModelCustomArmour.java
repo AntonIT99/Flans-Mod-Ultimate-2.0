@@ -3,7 +3,7 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsarmormod.client.model.IFlanModel;
+import com.wolffsarmormod.client.model.IFlanTypeModel;
 import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanModel<ArmorType>
+public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanTypeModel<ArmorType>
 {
     protected ArmorType type;
 
@@ -53,6 +53,12 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         children.put("right_leg", new ModelPart(new ArrayList<>(), new HashMap<>()));
         children.put("left_leg", new ModelPart(new ArrayList<>(), new HashMap<>()));
         return new ModelPart(new ArrayList<>(), children);
+    }
+
+    @Override
+    public Class<ArmorType> typeClass()
+    {
+        return ArmorType.class;
     }
 
     @Override

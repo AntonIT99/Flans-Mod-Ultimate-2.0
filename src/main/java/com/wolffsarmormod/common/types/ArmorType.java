@@ -1,8 +1,8 @@
 package com.wolffsarmormod.common.types;
 
+import com.flansmod.client.model.ModelCustomArmour;
 import com.wolffsarmormod.ArmorMod;
-import com.wolffsarmormod.ContentManager;
-import com.wolffsarmormod.util.DynamicReference;
+import com.wolffsarmormod.client.model.DefaultArmor;
 import com.wolffsarmormod.util.TypeReaderUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +10,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ArmorItem;
 
@@ -60,6 +58,16 @@ public class ArmorType extends InfoType
     /** Map of effects and effect Amplifiers */
     @Getter
     protected Map<MobEffect, Integer> effects = new HashMap<>();
+
+    @Getter @OnlyIn(Dist.CLIENT)
+    protected ModelCustomArmour armorModel;
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public String getTexturePath(String textureName)
+    {
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
+    }
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
@@ -121,6 +129,7 @@ public class ArmorType extends InfoType
     @Override
     protected void postRead()
     {
+        super.postRead();
         switch (rawArmorItemType.toLowerCase())
         {
             case "helmet", "hat", "head":
@@ -140,28 +149,18 @@ public class ArmorType extends InfoType
                 armorItemType = ArmorItem.Type.HELMET;
                 break;
         }
-
-        super.postRead();
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public ResourceLocation getTexture()
+    @OnlyIn(Dist.CLIENT)
+    protected void postReadClient()
     {
-        if (!textureName.isBlank())
+        super.postReadClient();
+        if (!(model instanceof ModelCustomArmour))
         {
-            DynamicReference ref = ContentManager.getArmorTextureReferences().get(contentPack).get(textureName);
-            if (ref != null)
-                return ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, getTexturePath(ref.get()));
+            model = loadModel(new DefaultArmor(armorItemType), this);
         }
-        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    protected String getTexturePath(String textureName)
-    {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
+        armorModel = (ModelCustomArmour) model;
     }
 
     public boolean hasDurability()

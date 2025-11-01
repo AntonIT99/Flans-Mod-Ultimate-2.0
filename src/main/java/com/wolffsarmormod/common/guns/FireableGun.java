@@ -1,6 +1,6 @@
 package com.wolffsarmormod.common.guns;
 
-import com.wolffsarmormod.common.types.GunType;
+import com.wolffsarmormod.common.types.InfoType;
 import lombok.Getter;
 
 /**
@@ -17,9 +17,9 @@ public class FireableGun
     /** Speed a bullet fired from this gun will travel at. (0 means instant/raytraced) */
     @Getter
     private final float bulletSpeed;
-    /** the GunType of this gun */
+    /** the InfoType of this gun */
     @Getter
-    private final GunType type;
+    private final InfoType type;
     /** the damage this gun will cause */
     @Getter
     private float damage;
@@ -33,7 +33,7 @@ public class FireableGun
      * @param spread      Bullet spread of the gun
      * @param bulletSpeed Bullet speed of the gun (0 means instant/raytraced)
      */
-    public FireableGun(GunType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
+    public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this(type, damage, damage, spread, bulletSpeed, spreadPattern);
     }
@@ -45,7 +45,7 @@ public class FireableGun
      * @param spread                Bullet spread of the gun
      * @param bulletSpeed           Bullet speed of the gun (0 means instant/raytraced)
      */
-    public FireableGun(GunType type, float damage, float damageAgainstVehicles, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
+    public FireableGun(InfoType type, float damage, float damageAgainstVehicles, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this.type = type;
         this.damage = damage;

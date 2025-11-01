@@ -2,11 +2,12 @@ package com.wolffsarmormod.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.FlansExplosion;
-import com.wolffsarmormod.common.entity.EntityHit;
+import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
 import com.wolffsarmormod.common.raytracing.BlockHit;
 import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.DriveableHit;
+import com.wolffsarmormod.common.raytracing.EntityHit;
 import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
@@ -80,9 +81,9 @@ public class ShotHandler
         else
         {
             //Spawn EntityBullet
-            for(int i = 0; i < bulletAmount; i++)
+            for (int i = 0; i < bulletAmount; i++)
             {
-                //world.addFreshEntity(new Bullet(world, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
+                world.addFreshEntity(new Bullet(world, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
                 handler.shooting(i < bulletAmount - 1);
             }
         }
@@ -91,7 +92,7 @@ public class ShotHandler
     private static void createMultipleShots(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootBulletHandler handler)
     {
         float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
-        for(int i = 0; i < bulletAmount; i++)
+        for (int i = 0; i < bulletAmount; i++)
         {
             createShot(world, shot, bulletspread, rayTraceOrigin, new Vector3f(shootingDirection));
             handler.shooting(i < bulletAmount - 1);
@@ -173,9 +174,8 @@ public class ShotHandler
             //Send hit marker, if player is present
             shot.getPlayerOptional().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
         }
-        else if(bulletHit instanceof PlayerBulletHit)
+        else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
-            PlayerBulletHit playerHit = (PlayerBulletHit) bulletHit;
             penetratingPower = playerHit.hitbox.hitByBullet(shot, damage, penetratingPower);
 
             //TODO: debug mode

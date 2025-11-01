@@ -2,8 +2,8 @@ package com.wolffsarmormod.common;
 
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ModUtils;
+import com.wolffsarmormod.common.entity.DeployedGun;
 import com.wolffsarmormod.common.entity.Grenade;
-import com.wolffsarmormod.common.entity.MachineGun;
 import com.wolffsarmormod.common.guns.QueuedReload;
 import com.wolffsarmormod.common.raytracing.PlayerSnapshot;
 import com.wolffsarmormod.common.raytracing.RotatedAxes;
@@ -49,7 +49,7 @@ public class PlayerData
     @OnlyIn(Dist.CLIENT)
     private ItemStack offHandGunStack;
     /** The MG this player is using */
-    private MachineGun mountingGun;
+    private DeployedGun mountingGun;
     /** Tickers to stop shooting too fast */
     @Getter @Setter
     private float shootTimeRight;

@@ -40,19 +40,16 @@ public class FiredShot {
 
     /**
      * @param fireableGun weapon used to fire the shot
-     * @param bulletType BulletType of the fired bullet
+     * @param bulletType  BulletType of the fired bullet
      */
     public FiredShot(FireableGun fireableGun, BulletType bulletType)
     {
-        this.fireableGun = fireableGun;
-        this.bulletType = bulletType;
-        this.player = null;
-        this.shooter = null;
+        this(fireableGun, bulletType, null, null);
     }
 
     /**
      * @param fireableGun weapon used to fire the shot
-     * @param bulletType BulletType of the fired bullet
+     * @param bulletType  BulletType of the fired bullet
      * @param player The player who shot
      */
     public FiredShot(FireableGun fireableGun, BulletType bulletType, ServerPlayer player)
@@ -65,7 +62,7 @@ public class FiredShot {
      * e.g a zombie holding a gun or a sentry
      *
      * @param fireableGun weapon used to fire the shot
-     * @param bulletType BulletType of the fired bullet
+     * @param bulletType  BulletType of the fired bullet
      * @param shooter Entity which fired the shot
      */
     public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter)
@@ -103,17 +100,15 @@ public class FiredShot {
      */
     public DamageSource getDamageSource(boolean headshot, Level level)
     {
-        // If you do have a projectile entity (e.g., bullet), prefer:
-        // return FlansDamageSources.gun(level, bullet, shooter, headshot);
         if (player != null)
         {
             // hitscan: direct == attacker == player
-            return FlansDamageSources.gun(level, player, player, headshot);
+            return FlansDamageSources.createDamageSource(level, player, player, headshot);
         }
         else if (shooter != null)
         {
             // no distinct direct cause known – at least attribute to the shooter
-            return FlansDamageSources.gun(level, null, shooter, headshot);
+            return FlansDamageSources.createDamageSource(level, null, shooter, headshot);
         }
         return level.damageSources().generic();
     }

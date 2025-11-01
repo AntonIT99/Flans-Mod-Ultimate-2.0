@@ -1,6 +1,4 @@
-package com.wolffsarmormod.common.entity;
-
-import com.wolffsarmormod.common.raytracing.BulletHit;
+package com.wolffsarmormod.common.raytracing;
 
 import net.minecraft.world.entity.Entity;
 

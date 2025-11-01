@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.wolffsarmormod.ModClient;
-import com.wolffsarmormod.client.model.IFlanModel;
+import com.wolffsarmormod.client.model.IFlanTypeModel;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsmod.api.client.model.ModelBase;
@@ -20,7 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 
 @NoArgsConstructor
-public class ModelGun extends ModelBase implements IFlanModel<GunType>
+public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 {
     protected static final Vector3f invalid = new Vector3f(0f, Float.MAX_VALUE, 0f);
 
@@ -272,6 +272,12 @@ public class ModelGun extends ModelBase implements IFlanModel<GunType>
     protected Vector3f rotationToolOffset = new Vector3f(0F, 0F, 0F);
 
     private float reloadRotate;
+
+    @Override
+    public Class<GunType> typeClass()
+    {
+        return GunType.class;
+    }
 
     /**
      * Flips the  Generally only for backwards compatibility

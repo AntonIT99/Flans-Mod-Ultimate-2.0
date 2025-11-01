@@ -4,7 +4,6 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.AAGun;
 import com.wolffsarmormod.common.entity.Driveable;
-import com.wolffsarmormod.common.entity.EntityHit;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.ShotHandler;
 import com.wolffsarmormod.common.item.GunItem;

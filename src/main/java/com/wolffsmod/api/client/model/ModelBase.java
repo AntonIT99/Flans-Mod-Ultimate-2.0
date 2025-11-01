@@ -23,7 +23,7 @@ public abstract class ModelBase extends Model implements IModelBase
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     @Getter @Setter
     private ResourceLocation texture;
-    @Setter
+    @Getter @Setter
     private float scale = 1F;
 
     protected ModelBase()

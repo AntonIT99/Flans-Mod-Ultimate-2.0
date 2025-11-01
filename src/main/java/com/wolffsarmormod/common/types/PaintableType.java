@@ -27,9 +27,8 @@ public abstract class PaintableType extends InfoType
 
     protected void postRead()
     {
+        super.postRead();
         defaultPaintjob = new Paintjob(this, 0, getIcon(), getTexture(), new ItemStack[0]);
         paintjobs.add(defaultPaintjob);
-
-        super.postRead();
     }
 }

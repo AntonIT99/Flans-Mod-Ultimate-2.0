@@ -1,5 +1,8 @@
 package com.wolffsmod.api.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,6 +23,8 @@ public interface IModelBase
     List<ModelRenderer> getBoxList();
 
     Map<String, TextureOffset> getModelTextureMap();
+
+    void renderToBuffer(PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha);
 
     default int getTextureWidth()
     {

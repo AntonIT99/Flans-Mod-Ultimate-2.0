@@ -1,5 +1,6 @@
 package com.wolffsarmormod.common.raytracing;
 
+import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
 import com.wolffsarmormod.common.item.GunItem;
@@ -24,29 +25,31 @@ import java.util.List;
 public class PlayerSnapshot
 {
     public static final int numPlayerSnapshots = 20;
+
+    private static final float PI = (float) Math.PI;
+    
     /**
      * The player this snapshot is for
      */
-    public Player player;
+    public final Player player;
     /**
      * The player's position at the point the snapshot was taken
      */
-    public Vector3f pos;
+    public final Vector3f pos;
     /**
      * The hitboxes for this player
      */
-    public List<PlayerHitbox> hitboxes;
+    public final List<PlayerHitbox> hitboxes = new ArrayList<>();
     /**
      * The time at which this snapshot was taken
      */
-    public long time;
+    public final long time;
 
     public PlayerSnapshot(Player p)
     {
         player = p;
+        time = p.level().getGameTime();
         pos = new Vector3f(p.getX(), p.getY(), p.getZ());
-
-        hitboxes = new ArrayList<>();
 
         RotatedAxes bodyAxes = new RotatedAxes(p.yBodyRot, 0F, 0F);
         RotatedAxes headAxes = new RotatedAxes(p.getYHeadRot() - p.yBodyRot, p.getXRot(), 0F);
@@ -55,29 +58,29 @@ public class PlayerSnapshot
         hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(headAxes), new Vector3f(0.0F, 1.4F, 0F), new Vector3f(-0.25F, 0F, -0.25F), new Vector3f(0.5F, 0.5F, 0.5F), EnumHitboxType.HEAD));
 
         //Calculate rotation of arms using modified code from ModelBiped
-        float yHead = (p.getYHeadRot() - p.yBodyRot) / (180F / (float)Math.PI);
-        float xHead = p.getXRot() / (180F / (float)Math.PI);
+        float yHead = (p.getYHeadRot() - p.yBodyRot) / (180F / PI);
+        float xHead = p.getXRot() / (180F / PI);
 
         float zRight = 0.0F;
         float zLeft = 0.0F;
-        float yRight = -0.1F + yHead - ((float)Math.PI / 2F);
-        float yLeft = 0.1F + yHead + 0.4F - ((float)Math.PI / 2F);
-        float xRight = -((float)Math.PI / 2F) + xHead;
-        float xLeft = -((float)Math.PI / 2F) + xHead;
+        float yRight = -0.1F + yHead - (PI / 2F);
+        float yLeft = 0.1F + yHead + 0.4F - (PI / 2F);
+        float xRight = -(PI / 2F) + xHead;
+        float xLeft = -(PI / 2F) + xHead;
 
         zRight += Mth.cos(p.tickCount * 0.09F) * 0.05F + 0.05F;
         zLeft -= Mth.cos(p.tickCount * 0.09F) * 0.05F + 0.05F;
         xRight += Mth.sin(p.tickCount * 0.067F) * 0.05F;
         xLeft -= Mth.sin(p.tickCount * 0.067F) * 0.05F;
 
-        RotatedAxes leftArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xLeft).rotateGlobalYawInRads((float)Math.PI + yLeft).rotateGlobalRollInRads(-zLeft);
-        RotatedAxes rightArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xRight).rotateGlobalYawInRads((float)Math.PI + yRight).rotateGlobalRollInRads(-zRight);
+        RotatedAxes leftArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xLeft).rotateGlobalYawInRads(PI + yLeft).rotateGlobalRollInRads(-zLeft);
+        RotatedAxes rightArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xRight).rotateGlobalYawInRads(PI + yRight).rotateGlobalRollInRads(-zRight);
 
-        float originZRight = Mth.sin(-p.yBodyRot * 3.14159265F / 180F) * 5.0F / 16F;
-        float originXRight = -Mth.cos(-p.yBodyRot * 3.14159265F / 180F) * 5.0F / 16F;
+        float originZRight = Mth.sin(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
+        float originXRight = -Mth.cos(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
 
-        float originZLeft = -Mth.sin(-p.yBodyRot * 3.14159265F / 180F) * 5.0F / 16F;
-        float originXLeft = Mth.cos(-p.yBodyRot * 3.14159265F / 180F) * 5.0F / 16F;
+        float originZLeft = -Mth.sin(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
+        float originXLeft = Mth.cos(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
 
         hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(leftArmAxes), new Vector3f(originXLeft, 1.3F, originZLeft), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), EnumHitboxType.LEFTARM));
         hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), EnumHitboxType.RIGHTARM));
@@ -149,12 +152,10 @@ public class PlayerSnapshot
         PlayerHitbox hitbox = GetHitbox(hand == InteractionHand.OFF_HAND ? EnumHitboxType.LEFTARM : EnumHitboxType.RIGHTARM);
         Vector3f muzzlePos = new Vector3f(hitbox.o.x, hitbox.o.y + hitbox.d.y * 0.5f, hitbox.o.z + hitbox.d.z * 0.5f);
 
-        if (gunType != null && gunType.getModel() != null)
+        ModelGun modelGun = gunType.getGunModel();
+        if (modelGun != null)
         {
-            Vector3f barrelAttach = new Vector3f(
-                    gunType.getModel().getBarrelAttachPoint().z,
-                    -gunType.getModel().getBarrelAttachPoint().x,
-                    gunType.getModel().getBarrelAttachPoint().y);
+            Vector3f barrelAttach = new Vector3f(modelGun.getBarrelAttachPoint().z, -modelGun.getBarrelAttachPoint().x, modelGun.getBarrelAttachPoint().y);
             Vector3f.add(muzzlePos, barrelAttach, muzzlePos);
         }
 

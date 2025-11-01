@@ -1,5 +1,6 @@
 package com.wolffsarmormod.client.render;
 
+import com.flansmod.client.model.ModelCustomArmour;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.common.item.CustomArmorItem;
@@ -45,8 +46,10 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
 
         if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot)
         {
-            getParentModel().copyPropertiesTo((HumanoidModel<T>) armorItem.getModel());
-            renderModel(pPoseStack, pBuffer, pPackedLight, armorItem.getModel(), armorItem.getTexture());
+            ModelCustomArmour modelCustomArmour = armorItem.getConfigType().getArmorModel();
+            ResourceLocation texture = armorItem.getConfigType().getTexture();
+            getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
+            renderModel(pPoseStack, pBuffer, pPackedLight, modelCustomArmour, texture);
         }
     }
 

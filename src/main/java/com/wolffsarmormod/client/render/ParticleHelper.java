@@ -25,10 +25,20 @@ public final class ParticleHelper
 
     public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z)
     {
-        return spawnFromString(level, s, x, y, z, 0.0, 0.0, 0.0);
+        return spawnFromString(level, s, x, y, z, false);
+    }
+
+    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, boolean alwaysVisible)
+    {
+        return spawnFromString(level, s, x, y, z, 0.0, 0.0, 0.0, false);
     }
 
     public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz)
+    {
+        return spawnFromString(level, s, x, y, z, vx, vy, vz, false);
+    }
+
+    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz, boolean alwaysVisible)
     {
         Optional<ParticleOptions> opt = toOptions(s);
         if (opt.isEmpty())
@@ -37,7 +47,7 @@ public final class ParticleHelper
         return true;
     }
 
-    public static Optional<ParticleOptions> toOptions(String raw)
+    private static Optional<ParticleOptions> toOptions(String raw)
     {
         if (raw == null || raw.isEmpty())
             return Optional.empty();

@@ -21,7 +21,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
@@ -55,10 +54,7 @@ public final class ClientHudOverlays
             .filter(EquipmentSlot::isArmor)
             .forEach(slot -> {
                 if (player.getItemBySlot(slot).getItem() instanceof CustomArmorItem armorItem)
-                {
-                    Optional<ResourceLocation> overlayTexture = armorItem.getOverlay();
-                    overlayTexture.ifPresent(tex -> renderArmorOverlay(g, tex, sw, sh));
-                }
+                    armorItem.getConfigType().getOverlay().ifPresent(overlayTexture -> renderArmorOverlay(g, overlayTexture, sw, sh));
             });
     };
 

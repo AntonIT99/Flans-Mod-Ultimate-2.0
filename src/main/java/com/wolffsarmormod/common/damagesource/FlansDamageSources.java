@@ -1,5 +1,8 @@
 package com.wolffsarmormod.common.damagesource;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -7,11 +10,10 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlansDamageSources
 {
-    private FlansDamageSources() {}
-
-    public static DamageSource gun(Level level, @Nullable Entity direct, @Nullable Entity attacker, boolean headshot)
+    public static DamageSource createDamageSource(Level level, @Nullable Entity direct, @Nullable Entity attacker, boolean headshot)
     {
         var key = headshot ? FlansDamageTypes.FLANS_GUN_HEADSHOT : FlansDamageTypes.FLANS_GUN;
         var holder = level.registryAccess()

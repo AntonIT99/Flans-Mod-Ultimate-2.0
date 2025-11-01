@@ -3,7 +3,6 @@ package com.wolffsarmormod.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.common.item.ICustomRendererItem;
-import com.wolffsarmormod.common.item.IModelItem;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
@@ -33,9 +32,9 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
         poseStack.translate(0.5F, 0.5F, 0.5F);
 
         Item item = stack.getItem();
-        if (item instanceof IModelItem<?,?> modelItem && item instanceof ICustomRendererItem customRendererItem && modelItem.useCustomItemRendering())
+        if (item instanceof ICustomRendererItem<?> customRendererItem)
         {
-            VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(modelItem.getTexture()));
+            VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(customRendererItem.getConfigType().getTexture()));
 
             switch (itemDisplayContext)
             {
