@@ -67,6 +67,7 @@ public abstract class ShootableType extends InfoType
     /**
      * The speed at which the grenade should fall
      */
+    @Getter
     protected float fallSpeed = 1.0F;
     /**
      * The speed at which to throw the grenade. 0 will just drop it on the floor
@@ -107,6 +108,7 @@ public abstract class ShootableType extends InfoType
     /**
      * If 0, then the grenade will last until some other detonation condition is met, else the grenade will detonate after this time (in ticks)
      */
+    @Getter
     protected int fuse = 0;
     /**
      * After this time the grenade will despawn quietly. 0 means no despawn time

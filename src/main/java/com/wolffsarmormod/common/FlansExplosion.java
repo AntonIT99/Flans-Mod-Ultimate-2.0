@@ -2,6 +2,7 @@ package com.wolffsarmormod.common;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.wolffsarmormod.ModUtils;
 import com.wolffsarmormod.common.damagesource.FlansDamageTypes;
 import com.wolffsarmormod.common.types.InfoType;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -167,10 +168,10 @@ public class FlansExplosion extends Explosion
         int maxZ = Mth.floor(center.z + radius2 + 1.0D);
 
         AABB aabb = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
-        List<Entity> entities = level.getEntities(explosive, aabb);
+        List<Entity> entities = ModUtils.queryEntities(level, explosive, aabb, null);
 
         // Forge hook (still exists)
-        net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(level, this, entities, radius2);
+        ForgeEventFactory.onExplosionDetonate(level, this, entities, radius2);
 
         for (Entity e : entities)
         {

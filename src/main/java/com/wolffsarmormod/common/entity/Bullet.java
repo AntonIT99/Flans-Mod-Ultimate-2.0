@@ -1,10 +1,15 @@
 package com.wolffsarmormod.common.entity;
 
+import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ArmorMod;
+import com.wolffsarmormod.ModUtils;
 import com.wolffsarmormod.client.render.ParticleHelper;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
+import com.wolffsarmormod.common.guns.ShotHandler;
+import com.wolffsarmormod.common.raytracing.BulletHit;
+import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
 import lombok.Getter;
@@ -16,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,13 +30,19 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Bullet extends Shootable
@@ -111,6 +123,44 @@ public class Bullet extends Shootable
             setXRot(pitch);
             yRotO = yaw;
             xRotO = pitch;
+        }
+    }
+
+    /**
+     * Find the entity nearest to the missile's trajectory, anglewise
+     */
+    protected void getLockOnTarget()
+    {
+        BulletType type = firedShot.getBulletType();
+
+        if (type.isLockOnToPlanes() || type.isLockOnToVehicles() || type.isLockOnToMechas() || type.isLockOnToLivings() || type.isLockOnToPlayers())
+        {
+            Vector3f motionVec = new Vector3f(getDeltaMovement());
+            Entity closestEntity = null;
+            float closestAngle = type.getMaxLockOnAngle() * (float) Math.PI / 180F;
+
+            for (Entity entity : ModUtils.queryEntitiesInRange(level(), this, BulletType.LOCK_ON_RANGE, null))
+            {
+                //TODO: driveable entities
+                /*if (type.lockOnToMechas && entity instanceof EntityMecha
+                        || type.lockOnToVehicles && entity instanceof EntityVehicle
+                        || type.lockOnToPlanes && entity instanceof EntityPlane
+                        || type.lockOnToPlayers && entity instanceof EntityPlayer
+                        || type.lockOnToLivings && entity instanceof EntityLivingBase)*/
+                if (type.isLockOnToPlayers() && entity instanceof Player || type.isLockOnToLivings() && entity instanceof LivingEntity)
+                {
+                    Vector3f relPosVec = new Vector3f(entity.getX() - getX(), entity.getY() - getY(), entity.getZ() - getZ());
+                    float angle = Math.abs(Vector3f.angle(motionVec, relPosVec));
+                    if (angle < closestAngle)
+                    {
+                        closestEntity = entity;
+                        closestAngle = angle;
+                    }
+                }
+            }
+
+            if(closestEntity != null)
+                lockedOnTo = closestEntity;
         }
     }
 
@@ -232,27 +282,91 @@ public class Bullet extends Shootable
     @Override
     public void tick()
     {
+        super.tick();
+        try
+        {
+            if (checkforuuids)
+            {
+                resolvePendingUUIDs();
+                checkforuuids = false;
+            }
 
+            applyDragAndGravity();
+            move(MoverType.SELF, getDeltaMovement());
+            updateOrientationFromVelocity();
+
+            if (level().isClientSide)
+                clientTick();
+            else
+                serverTick();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            discard();
+        }
     }
+
+    /* ======================= Physics & Orientation ======================= */
+
+    protected void applyDragAndGravity()
+    {
+        float drag = isInWater() ? 0.8F : 0.99F;
+        float gravity = 0.02F * getFiredShot().getBulletType().getFallSpeed();
+
+        Vec3 v = getDeltaMovement().scale(drag).add(0.0, -gravity, 0.0);
+        setDeltaMovement(v);
+    }
+
+    protected void updateOrientationFromVelocity()
+    {
+        Vec3 v = getDeltaMovement();
+        float horiz = (float) Math.sqrt(v.x * v.x + v.z * v.z);
+        float targetYaw = (float) (Math.toDegrees(Math.atan2(v.x, v.z)));
+        float targetPitch = (float) (Math.toDegrees(Math.atan2(v.y, horiz)));
+
+        setYRot(net.minecraft.util.Mth.rotLerp(0.2F, getYRot(), targetYaw));
+        setXRot(net.minecraft.util.Mth.rotLerp(0.2F, getXRot(), targetPitch));
+        yRotO = getYRot();
+        xRotO = getXRot();
+    }
+
+    /* ======================= Water / Particles / Sound ======================= */
 
     @OnlyIn(Dist.CLIENT)
     protected void clientTick()
     {
+        if (isInWater())
+            spawnWaterBubbles();
+        if (getFiredShot().getBulletType().isTrailParticles()) {
+            spawnParticles();
+        }
+        playFlybyIfClose();
+    }
 
+    @OnlyIn(Dist.CLIENT)
+    protected void spawnWaterBubbles()
+    {
+        Vec3 v = getDeltaMovement();
+        for (int i = 0; i < 4; i++)
+        {
+            double t = 0.25;
+            level().addParticle(ParticleTypes.BUBBLE, getX() - v.x * t, getY() - v.y * t, getZ() - v.z * t, v.x, v.y, v.z);
+        }
     }
 
     @OnlyIn(Dist.CLIENT)
     protected void spawnParticles()
     {
-        if (!this.level().isClientSide)
+        if (!level().isClientSide)
             return;
 
-        ClientLevel client = (ClientLevel) this.level();
+        ClientLevel client = (ClientLevel) level();
 
         // segment between previous and current position
-        double dX = (this.getX() - this.xo) / 10.0;
-        double dY = (this.getY() - this.yo) / 10.0;
-        double dZ = (this.getZ() - this.zo) / 10.0;
+        double dX = (getX() - xo) / 10.0;
+        double dY = (getY() - yo) / 10.0;
+        double dZ = (getZ() - zo) / 10.0;
 
         float spread = 0.1F;
 
@@ -261,49 +375,163 @@ public class Bullet extends Shootable
 
         for (int i = 0; i < 10; i++)
         {
-            double x = this.xo + dX * i + this.random.nextGaussian() * spread;
-            double y = this.yo + dY * i + this.random.nextGaussian() * spread;
-            double z = this.zo + dZ * i + this.random.nextGaussian() * spread;
+            double x = xo + dX * i + random.nextGaussian() * spread;
+            double y = yo + dY * i + random.nextGaussian() * spread;
+            double z = zo + dZ * i + random.nextGaussian() * spread;
 
             ParticleHelper.spawnFromString(client, trailParticleType, x, y, z, fancyLike);
         }
     }
 
-    /**
-     * Find the entity nearest to the missile's trajectory, anglewise
-     */
-    protected void getLockOnTarget()
+    @OnlyIn(Dist.CLIENT)
+    protected void playFlybyIfClose()
     {
-        //TODO: implement
-        /*BulletType type = shot.getBulletType();
+        Minecraft mc = Minecraft.getInstance();
+        if (playedFlybySound || mc.player == null)
+            return;
+        if (distanceToSqr(mc.player) >= 25.0) // within 5 blocks
+            return;
 
-        if(type.lockOnToPlanes || type.lockOnToVehicles || type.lockOnToMechas || type.lockOnToLivings || type.lockOnToPlayers)
+        playedFlybySound = true;
+        float soundVolume = 10.0F;
+        float soundPitch = 1.0F / (random.nextFloat() * 0.4F + 0.8F);
+        ArmorMod.getSoundEvent(ArmorMod.SOUND_BULLETFLYBY).ifPresent(soundEvent ->
+                level().playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
+    }
+
+    /* ======================= Server Tick Orchestration ======================= */
+
+    protected void serverTick()
+    {
+        //TODO: Debug Mode
+        //if (FlansMod.DEBUG) spawnDebugVector();
+
+        if (handleFuseAndLifetime())
+            return; // may discard
+
+        performRaytraceAndApplyHits();
+        applyHomingIfLocked();
+    }
+
+    private void spawnDebugVector()
+    {
+        //TODO: Debug Mode
+        /*Vec3 v = getDeltaMovement();
+        level().addFreshEntity(new EntityDebugVector(level(),
+                new Vector3f((float)getX(), (float)getY(), (float)getZ()),
+                new Vector3f((float)v.x, (float)v.y, (float)v.z),
+                20));*/
+    }
+
+    /**
+     * @return true if entity was discarded
+     */
+    private boolean handleFuseAndLifetime()
+    {
+        ticksInAir++;
+        BulletType type = getFiredShot().getBulletType();
+
+        if (type.getFuse() > 0 && ticksInAir > type.getFuse() && !isRemoved())
         {
-            Vector3f motionVec = new Vector3f(motionX, motionY, motionZ);
-            Entity closestEntity = null;
-            float closestAngle = type.maxLockOnAngle * 3.14159265F / 180F;
+            discard();
+            return true;
+        }
+        if (tickCount > bulletLife)
+        {
+            discard();
+            return true;
+        }
+        return isRemoved();
+    }
 
-            for(Object obj : world.loadedEntityList)
+    /* ======================= Raytrace & Hit Handling ======================= */
+
+    private void performRaytraceAndApplyHits()
+    {
+        Vec3 dv = getDeltaMovement();
+        Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
+        Vector3f motion = new Vector3f((float)dv.x, (float)dv.y, (float)dv.z);
+
+        Entity ignore = firedShot.getPlayerOptional().isPresent() ? firedShot.getPlayerOptional().get() : firedShot.getShooterOptional().orElse(null);
+
+        int pingMs = firedShot.getPlayerOptional().map(p -> p.latency).orElse(0);
+
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level(), ignore, ticksInAir > 20, this, origin, motion, pingMs, 0f);
+
+        if (hits.isEmpty())
+            return;
+
+        for (BulletHit bulletHit : hits)
+        {
+            Vector3f hitPos = new Vector3f(origin.x + motion.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
+
+            currentPenetratingPower = ShotHandler.onHit(level(), hitPos, motion, firedShot, bulletHit, currentPenetratingPower);
+            if (currentPenetratingPower <= 0F)
             {
-                Entity entity = (Entity)obj;
-                if((type.lockOnToMechas && entity instanceof EntityMecha)
-                        || (type.lockOnToVehicles && entity instanceof EntityVehicle)
-                        || (type.lockOnToPlanes && entity instanceof EntityPlane)
-                        || (type.lockOnToPlayers && entity instanceof EntityPlayer)
-                        || (type.lockOnToLivings && entity instanceof EntityLivingBase))
-                {
-                    Vector3f relPosVec = new Vector3f(entity.posX - posX, entity.posY - posY, entity.posZ - posZ);
-                    float angle = Math.abs(Vector3f.angle(motionVec, relPosVec));
-                    if(angle < closestAngle)
-                    {
-                        closestEntity = entity;
-                        closestAngle = angle;
-                    }
-                }
+                ShotHandler.onDetonate(level(), firedShot, hitPos);
+                discard();
+                break;
             }
+        }
+    }
 
-            if(closestEntity != null)
-                lockedOnTo = closestEntity;
-        }*/
+    /* ======================= Homing ======================= */
+
+    protected void applyHomingIfLocked()
+    {
+        if (lockedOnTo == null || isRemoved()) return;
+
+        double dX = lockedOnTo.getX() - getX();
+        double dY = lockedOnTo.getY() - getY();
+        double dZ = lockedOnTo.getZ() - getZ();
+        double d2 = dX * dX + dY * dY + dZ * dZ;
+        if (d2 < 1.0e-6) return;
+
+        Vec3 vNow = getDeltaMovement();
+        Vector3f motion = new Vector3f((float)vNow.x, (float)vNow.y, (float)vNow.z);
+        Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
+
+        float angle = Math.abs(Vector3f.angle(motion, toTarget));
+        double pull = angle * getFiredShot().getBulletType().getLockOnForce();
+        pull = pull * pull;
+
+        Vec3 vv = vNow.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
+        setDeltaMovement(vv);
+    }
+
+    /* ======================= UUID Resolution ======================= */
+
+    protected void resolvePendingUUIDs()
+    {
+        if (level().isClientSide)
+            return;
+
+        ServerLevel sl = (ServerLevel) level();
+        ServerPlayer player = null;
+        Entity shooter = null;
+
+        if (playeruuid != null)
+        {
+            player = (ServerPlayer) sl.getPlayerByUUID(playeruuid);
+            playeruuid = null;
+        }
+
+        if (shooteruuid != null)
+        {
+            if (player != null && shooteruuid.equals(player.getUUID()))
+            {
+                shooter = player;
+            }
+            else
+            {
+                shooter = sl.getEntity(shooteruuid); // null if not loaded
+            }
+            shooteruuid = null;
+        }
+
+        if (shooter != null)
+        {
+            firedShot = new FiredShot(firedShot.getFireableGun(), firedShot.getBulletType(), shooter, player);
+        }
     }
 }

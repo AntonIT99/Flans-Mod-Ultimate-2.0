@@ -12,6 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 public class BulletType extends ShootableType
 {
+    public static final double LOCK_ON_RANGE = 128.0;
+
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
     @Getter
@@ -64,10 +66,21 @@ public class BulletType extends ShootableType
     // Knocback modifier. less gives less kb, more gives more kb, 1 = normal kb.
     protected float knockbackModifier;
     /** Lock on variables. If true, then the bullet will search for a target at the moment it is fired */
-    protected boolean lockOnToPlanes = false, lockOnToVehicles = false, lockOnToMechas = false, lockOnToPlayers = false, lockOnToLivings = false;
+    @Getter
+    protected boolean lockOnToPlanes = false;
+    @Getter
+    protected boolean lockOnToVehicles = false;
+    @Getter
+    protected boolean lockOnToMechas = false;
+    @Getter
+    protected boolean lockOnToPlayers = false;
+    @Getter
+    protected boolean lockOnToLivings = false;
     /** Lock on maximum angle for finding a target */
+    @Getter
     protected float maxLockOnAngle = 45F;
     /** Lock on force that pulls the bullet towards its prey */
+    @Getter
     protected float lockOnForce = 1F;
     @Getter
     protected String trailTexture = "defaultbullettrail";

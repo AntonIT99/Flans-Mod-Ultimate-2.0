@@ -9,12 +9,17 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModUtils
@@ -37,6 +42,28 @@ public final class ModUtils
             return local != null && local.getUUID().equals(player.getUUID());
         }
         return false;
+    }
+
+    public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box, @Nullable Predicate<? super Entity> filter)
+    {
+        return level.getEntities(except, box, e -> e != null && e.isAlive() && (except == null || e != except) && (filter == null || filter.test(e)));
+    }
+
+    public static <T extends Entity> List<T> queryEntities(Level level, @Nullable Entity except, AABB box, Class<T> type, @Nullable Predicate<? super T> filter)
+    {
+        return level.getEntitiesOfClass(type, box, e -> e != null && e.isAlive() && (except == null || e != except) && (filter == null || filter.test(e)));
+    }
+
+    public static List<Entity> queryEntitiesInRange(Level level, Entity source, double radius, @Nullable Predicate<? super Entity> filter)
+    {
+        AABB box = source.getBoundingBox().inflate(radius);
+        return queryEntities(level, source, box, filter);
+    }
+
+    public static <T extends Entity> List<T> queryEntitiesInRange(Level level, Entity source, double radius, Class<T> type, @Nullable Predicate<? super T> filter)
+    {
+        AABB box = source.getBoundingBox().inflate(radius);
+        return queryEntities(level, source, box, type, filter);
     }
 
     public static Optional<ItemStack> getItemStack(@Nullable String id, int amount, int damage)

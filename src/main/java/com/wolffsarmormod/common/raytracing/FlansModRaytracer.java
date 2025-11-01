@@ -1,6 +1,7 @@
 package com.wolffsarmormod.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.ModUtils;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.AAGun;
 import com.wolffsarmormod.common.entity.Driveable;
@@ -29,7 +30,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,9 +46,8 @@ public class FlansModRaytracer
 
         // Query only entities along the ray segment (plus some padding)
         AABB search = new AABB(start, end).inflate(speed);
-        List<Entity> candidates = level.getEntities((Entity) null, search, Objects::nonNull);
 
-        for (Entity entity : candidates)
+        for (Entity entity : ModUtils.queryEntities(level, null, search, null))
         {
             boolean shouldDoNormalHitDetect = true;
 
