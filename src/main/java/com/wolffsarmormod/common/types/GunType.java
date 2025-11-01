@@ -628,8 +628,7 @@ public class GunType extends PaintableType implements IScope
         oneHanded = readValue(split, "OneHanded", oneHanded, file);
         usableByPlayers = readValue(split, "UsableByPlayers", usableByPlayers, file);
         usableByMechas = readValue(split, "UsableByMechas", usableByMechas, file);
-        if (split[0].equalsIgnoreCase("SpreadPattern") && split.length > 1)
-            spreadPattern = EnumSpreadPattern.get(split[1]);
+        spreadPattern = readValue(split, "SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
 
         if (split[0].equals("Ammo") && split.length > 1)
         {
@@ -712,7 +711,7 @@ public class GunType extends PaintableType implements IScope
         if (loadedDeployableModel instanceof ModelMG modelMG)
             deployableModel = modelMG;
 
-        deployableTexture = loadTexture(deployableTextureName, this, deployableModel).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+        deployableTexture = loadTexture(deployableTextureName, this, deployableModel);
     }
 
     @Override

@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class TypeReaderUtils
 {
@@ -16,7 +18,7 @@ public class TypeReaderUtils
     {
         if (keyMatches(split, key))
         {
-            if (split.length == 2)
+            if (split.length >= 2)
             {
                 currentValue = split[1];
             }
@@ -64,7 +66,7 @@ public class TypeReaderUtils
     {
         if (keyMatches(split, key))
         {
-            if (split.length == 2)
+            if (split.length >= 2)
             {
                 try
                 {
@@ -87,7 +89,7 @@ public class TypeReaderUtils
     {
         if (keyMatches(split, key))
         {
-            if (split.length == 2)
+            if (split.length >= 2)
             {
                 try
                 {
@@ -110,7 +112,7 @@ public class TypeReaderUtils
     {
         if (keyMatches(split, key))
         {
-            if (split.length == 2)
+            if (split.length >= 2)
             {
                 try
                 {
@@ -133,7 +135,7 @@ public class TypeReaderUtils
     {
         if (keyMatches(split, key))
         {
-            if (split.length == 2)
+            if (split.length >= 2)
             {
                 try
                 {
@@ -147,6 +149,42 @@ public class TypeReaderUtils
             else
             {
                 logError(incorrectFormat(key, "<true/false>"), file);
+            }
+        }
+        return currentValue;
+    }
+
+    public static <E extends Enum<E>> E readValue(String[] split, String key, E currentValue, Class<E> enumType, TypeFile file)
+    {
+        if (keyMatches(split, key))
+        {
+            if (split.length >= 2)
+            {
+                String token = split[1];
+
+                // 1) exact, case-sensitive (fast path)
+                try
+                {
+                    return Enum.valueOf(enumType, token.toUpperCase(Locale.ROOT));
+                }
+                catch (IllegalArgumentException ignored)
+                {
+                    // 2) fallback: case-insensitive
+                    for (E e : enumType.getEnumConstants())
+                    {
+                        if (e.name().equalsIgnoreCase(token))
+                        {
+                            return e;
+                        }
+                    }
+                    String allowed = Arrays.stream(enumType.getEnumConstants()).map(Enum::name).collect(Collectors.joining(", "));
+                    logError(incorrectFormatWrongType(key, token, "one of: " + allowed), file);
+                }
+            }
+            else
+            {
+                String allowed = Arrays.stream(enumType.getEnumConstants()).map(Enum::name).collect(Collectors.joining("|"));
+                logError(incorrectFormat(key, "<" + allowed + ">"), file);
             }
         }
         return currentValue;

@@ -2,7 +2,10 @@ package com.wolffsarmormod.common.guns;
 
 public enum EnumFireMode
 {
-    SEMIAUTO, FULLAUTO, MINIGUN, BURST;
+    SEMIAUTO,
+    FULLAUTO,
+    MINIGUN,
+    BURST;
 
     public static EnumFireMode getFireMode(String s)
     {

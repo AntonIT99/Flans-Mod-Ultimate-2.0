@@ -159,6 +159,7 @@ public class ArmorType extends InfoType
         if (!(model instanceof ModelCustomArmour))
         {
             model = loadModel(new DefaultArmor(armorItemType), this);
+            texture = loadTexture(textureName, this, model);
         }
         armorModel = (ModelCustomArmour) model;
     }

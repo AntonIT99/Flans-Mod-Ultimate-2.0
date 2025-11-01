@@ -20,7 +20,7 @@ public class AttachmentType extends PaintableType implements IScope
 {
     //TODO: implement attachment Item
     /** The type of attachment. Each gun can have one barrel, one scope, one grip, one stock and some number of generics up to a limit set by the gun */
-    protected EnumAttachmentType type = EnumAttachmentType.GENERIC;
+    protected EnumAttachmentType attachmentType = EnumAttachmentType.GENERIC;
 
     //Attachment Function add-ons
     /** This variable controls whether or not bullet sounds should be muffled */

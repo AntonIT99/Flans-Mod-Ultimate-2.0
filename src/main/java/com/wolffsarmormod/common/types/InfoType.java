@@ -165,11 +165,17 @@ public abstract class InfoType
     {
         modelClassName = findModelClass(modelName, contentPack);
         if (!textureName.isBlank())
-            ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
+        {
+            if (this instanceof ArmorType)
+                ContentManager.getArmorTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
+            else
+                ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
+        }
+
         if (!overlayName.isBlank())
             ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
         model = loadModel(modelClassName, this).orElse(null);
-        texture = loadTexture(textureName, this, model).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+        texture = loadTexture(textureName, this, model);
         overlay = loadOverlay(overlayName, this).orElse(null);
     }
 
@@ -316,9 +322,9 @@ public abstract class InfoType
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected static Optional<ResourceLocation> loadTexture(String textureName, InfoType type, @Nullable IModelBase model)
+    protected static ResourceLocation loadTexture(String textureName, InfoType type, @Nullable IModelBase model)
     {
-        ResourceLocation texture = null;
+        ResourceLocation texture = TextureManager.INTENTIONAL_MISSING_TEXTURE;
         if (!textureName.isBlank())
         {
             DynamicReference ref;
@@ -334,7 +340,7 @@ public abstract class InfoType
         if (model != null)
             model.setTexture(texture);
 
-        return Optional.ofNullable(texture);
+        return texture;
     }
 
     @OnlyIn(Dist.CLIENT)

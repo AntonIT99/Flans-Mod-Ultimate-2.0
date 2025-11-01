@@ -1,6 +1,7 @@
 package com.wolffsarmormod.common.types;
 
 import com.flansmod.client.model.ModelBullet;
+import com.wolffsarmormod.common.driveables.EnumWeaponType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +9,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 
 @NoArgsConstructor
 public class BulletType extends ShootableType
@@ -39,8 +42,8 @@ public class BulletType extends ShootableType
     protected String explodeParticleType = "largesmoke";
 
     /** Exclusively for driveable usage. Replaces old isBomb and isShell booleans with something more flexible */
-    //TODO: Uncomment for driveables
-    //protected EnumWeaponType weaponType = EnumWeaponType.NONE;
+    @Getter
+    protected EnumWeaponType weaponType = EnumWeaponType.GUN;
 
     @Getter
     protected String hitSound;
@@ -148,10 +151,28 @@ public class BulletType extends ShootableType
     protected float blockHitFXScale;
 
     @Override
+    protected void readLine(String line, String[] split, TypeFile file)
+    {
+        super.readLine(line, split, file);
+
+        if (split[0].equalsIgnoreCase("Bomb"))
+            weaponType = EnumWeaponType.BOMB;
+        if (split[0].equalsIgnoreCase("Shell"))
+            weaponType = EnumWeaponType.SHELL;
+        if (split[0].equalsIgnoreCase("Missile"))
+            weaponType = EnumWeaponType.MISSILE;
+
+        weaponType = readValue(split, "WeaponType", weaponType, EnumWeaponType.class, file);
+    }
+
+    @Override
     protected void postReadClient()
     {
         super.postReadClient();
         if (model == null)
+        {
             model = loadModel(new ModelBullet(), this);
+            texture = loadTexture(textureName, this, model);
+        }
     }
 }
