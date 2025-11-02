@@ -2,6 +2,7 @@ package com.wolffsarmormod.common.raytracing;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.AttachmentType;
@@ -152,7 +153,7 @@ public class PlayerSnapshot
         PlayerHitbox hitbox = GetHitbox(hand == InteractionHand.OFF_HAND ? EnumHitboxType.LEFTARM : EnumHitboxType.RIGHTARM);
         Vector3f muzzlePos = new Vector3f(hitbox.o.x, hitbox.o.y + hitbox.d.y * 0.5f, hitbox.o.z + hitbox.d.z * 0.5f);
 
-        ModelGun modelGun = gunType.getGunModel();
+        ModelGun modelGun = (ModelGun) ModelCache.getOrLoadTypeModel(gunType);
         if (modelGun != null)
         {
             Vector3f barrelAttach = new Vector3f(modelGun.getBarrelAttachPoint().z, -modelGun.getBarrelAttachPoint().x, modelGun.getBarrelAttachPoint().y);

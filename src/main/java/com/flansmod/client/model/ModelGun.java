@@ -27,7 +27,6 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Setter
     protected static float smoothing;
 
-    @Setter
     protected GunType type;
 
     /** Static models with no animation */
@@ -171,11 +170,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
     protected float numBulletsInReloadAnimation = 1;
     /** For shotgun pump handles, rifle bolts and hammer pullbacks */
-    @Getter
     protected int pumpDelay = 0;
-    @Getter
     protected int pumpDelayAfterReload = 0;
-    @Getter
     protected int pumpTime = 1;
     protected int hammerDelay = 0;
     /** For shotgun pump handle */
@@ -272,6 +268,15 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected Vector3f rotationToolOffset = new Vector3f(0F, 0F, 0F);
 
     private float reloadRotate;
+
+    @Override
+    public void setType(GunType type)
+    {
+        this.type = type;
+        this.type.setPumpDelay(pumpDelay);
+        this.type.setPumpDelayAfterReload(pumpDelayAfterReload);
+        this.type.setPumpTime(pumpTime);
+    }
 
     @Override
     public Class<GunType> typeClass()

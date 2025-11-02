@@ -44,6 +44,7 @@ import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class InfoType
 {
+    @Getter
     private static final Map<String, InfoType> infoTypes = new HashMap<>();
 
     @Getter
@@ -61,14 +62,13 @@ public abstract class InfoType
     @Getter
     protected String description = StringUtils.EMPTY;
     protected String modelName = StringUtils.EMPTY;
+    @Getter
     protected String modelClassName = StringUtils.EMPTY;
     protected String textureName = StringUtils.EMPTY;
     protected String overlayName = StringUtils.EMPTY;
     @Getter
     protected float modelScale = 1F;
 
-    @Getter @Nullable @OnlyIn(Dist.CLIENT)
-    protected IModelBase model;
     @Getter @OnlyIn(Dist.CLIENT)
     protected ResourceLocation texture;
     @Nullable @OnlyIn(Dist.CLIENT)
@@ -83,12 +83,6 @@ public abstract class InfoType
     public Optional<ResourceLocation> getOverlay()
     {
         return Optional.ofNullable(overlay);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public String getTexturePath(String textureName)
-    {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
     }
 
     @Override
@@ -171,12 +165,23 @@ public abstract class InfoType
             else
                 ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
         }
-
         if (!overlayName.isBlank())
             ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
-        model = loadModel(modelClassName, this).orElse(null);
-        texture = loadTexture(textureName, this, model);
+
+        texture = loadTexture(textureName, this);
         overlay = loadOverlay(overlayName, this).orElse(null);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    protected String getTexturePath(String textureName)
+    {
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
+    }
+
+    @Nullable
+    protected IModelBase getDefaultModel()
+    {
+        return null;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -276,53 +281,8 @@ public abstract class InfoType
         return newClassName;
     }
 
-    @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
-    protected static Optional<IModelBase> loadModel(String modelClassName, InfoType type)
-    {
-        IModelBase model = null;
-        if (!modelClassName.isBlank())
-        {
-            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
-                return Optional.of(loadModel(new ModelBullet(), type));
-            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
-                return Optional.of(loadModel(new ModelBomb(), type));
-
-
-            DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
-            if (actualClassName != null)
-            {
-                try
-                {
-                    IModelBase loadedModel = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
-                    if (loadedModel instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
-                        ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
-                    model = loadedModel;
-                }
-                catch (Exception | NoClassDefFoundError | ClassFormatError e)
-                {
-                    ArmorMod.log.error("Could not load model class {} for {}", modelClassName, type);
-                    if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
-                        ArmorMod.log.error("File not found: {}", noSuchFileException.getFile());
-                    else
-                        LogUtils.logWithoutStacktrace(e);
-                }
-            }
-        }
-        return Optional.ofNullable(model);
-    }
-
-    @SuppressWarnings("unchecked")
-    @OnlyIn(Dist.CLIENT)
-    protected static IModelBase loadModel(IModelBase model, InfoType type)
-    {
-        if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(model))
-                ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
-        return model;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    protected static ResourceLocation loadTexture(String textureName, InfoType type, @Nullable IModelBase model)
+    protected static ResourceLocation loadTexture(String textureName, InfoType type)
     {
         ResourceLocation texture = TextureManager.INTENTIONAL_MISSING_TEXTURE;
         if (!textureName.isBlank())
@@ -336,10 +296,6 @@ public abstract class InfoType
             if (ref != null)
                 texture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
         }
-
-        if (model != null)
-            model.setTexture(texture);
-
         return texture;
     }
 
@@ -353,6 +309,49 @@ public abstract class InfoType
                 return Optional.of(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
         }
         return Optional.empty();
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    public static IModelBase loadModel(String modelClassName, InfoType type)
+    {
+        IModelBase model = null;
+        if (!modelClassName.isBlank())
+        {
+            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
+                model = new ModelBullet();
+            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
+                model = new ModelBomb();
+            else
+            {
+                DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
+                if (actualClassName != null)
+                {
+                    try
+                    {
+                        model = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
+                    }
+                    catch (Exception | NoClassDefFoundError | ClassFormatError e)
+                    {
+                        ArmorMod.log.error("Could not load model class {} for {}", modelClassName, type);
+                        if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
+                            ArmorMod.log.error("File not found: {}", noSuchFileException.getFile());
+                        else
+                            LogUtils.logWithoutStacktrace(e);
+                    }
+                }
+            }
+
+        }
+
+        if (model == null)
+            model = type.getDefaultModel();
+
+        if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
+            ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
+
+        return model;
     }
 
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
@@ -416,8 +415,9 @@ public abstract class InfoType
         return ItemStack.EMPTY;
     }
 
-    public static Optional<InfoType> getInfoType(String id)
+    @Nullable
+    public static InfoType getInfoType(String id)
     {
-        return Optional.ofNullable(infoTypes.get(id));
+        return infoTypes.get(id);
     }
 }

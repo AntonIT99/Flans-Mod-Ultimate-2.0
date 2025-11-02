@@ -2,7 +2,9 @@ package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.entity.Bullet;
+import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,6 +13,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 
 public class BulletRenderer extends EntityRenderer<Bullet>
@@ -23,7 +26,7 @@ public class BulletRenderer extends EntityRenderer<Bullet>
     @Override
     public void render(@NotNull Bullet bullet, float yaw, float pt, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
     {
-        IModelBase bulletModel = bullet.getFiredShot().getBulletType().getModel();
+        IModelBase bulletModel = ModelCache.getOrLoadTypeModel(bullet.getShortName());
         if (bulletModel != null)
         {
             VertexConsumer vertexconsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(bullet)));
@@ -35,6 +38,9 @@ public class BulletRenderer extends EntityRenderer<Bullet>
     @NotNull
     public ResourceLocation getTextureLocation(@NotNull Bullet bullet)
     {
-        return bullet.getFiredShot().getBulletType().getTexture();
+        InfoType infoType = InfoType.getInfoType(bullet.getShortName());
+        if (infoType != null)
+            return infoType.getTexture();
+        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
     }
 }

@@ -2,11 +2,13 @@ package com.wolffsarmormod.common.types;
 
 import com.flansmod.client.model.ModelBullet;
 import com.wolffsarmormod.common.driveables.EnumWeaponType;
+import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,13 +168,9 @@ public class BulletType extends ShootableType
     }
 
     @Override
-    protected void postReadClient()
+    @Nullable
+    protected IModelBase getDefaultModel()
     {
-        super.postReadClient();
-        if (model == null)
-        {
-            model = loadModel(new ModelBullet(), this);
-            texture = loadTexture(textureName, this, model);
-        }
+        return new ModelBullet();
     }
 }

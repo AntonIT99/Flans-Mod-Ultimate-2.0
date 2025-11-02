@@ -3,6 +3,7 @@ package com.wolffsarmormod.client.render;
 import com.flansmod.client.model.ModelCustomArmour;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.item.CustomArmorItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -46,16 +47,16 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
 
         if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot)
         {
-            ModelCustomArmour modelCustomArmour = armorItem.getConfigType().getArmorModel();
+            ModelCustomArmour modelCustomArmour = (ModelCustomArmour) ModelCache.getOrLoadTypeModel(armorItem.getConfigType());
             ResourceLocation texture = armorItem.getConfigType().getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
             renderModel(pPoseStack, pBuffer, pPackedLight, modelCustomArmour, texture);
         }
     }
 
-    private void renderModel(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, Model pModel, ResourceLocation armorResource)
+    private void renderModel(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, Model pModel, ResourceLocation armorTexture)
     {
-        VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(armorResource));
+        VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(armorTexture));
         pModel.renderToBuffer(pPoseStack, vertexconsumer, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

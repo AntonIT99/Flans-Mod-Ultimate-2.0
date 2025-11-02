@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModClient;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireDecision;
@@ -17,6 +18,7 @@ import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.network.PacketHandler;
 import com.wolffsarmormod.network.PacketPlaySound;
 import com.wolffsarmormod.network.PacketReload;
+import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -59,6 +61,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     @Getter
     protected final GunType configType;
+    protected final String shortname;
     @Getter
     protected final GunItemBehavior behavior;
     protected int soundDelay = 0;
@@ -67,6 +70,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         super(new Properties());
         this.configType = configType;
+        shortname = configType.getShortName();
         behavior = new GunItemBehavior(this);
     }
 
@@ -79,19 +83,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean useCustomRendererInHand()
     {
-        return configType.getModel() != null;
+        return ModelCache.getOrLoadTypeModel(configType) != null;
     }
 
     @Override
     public boolean useCustomRendererOnGround()
     {
-        return configType.getModel() != null;
+        return ModelCache.getOrLoadTypeModel(configType) != null;
     }
 
     @Override
     public boolean useCustomRendererInFrame()
     {
-        return configType.getModel() != null;
+        return ModelCache.getOrLoadTypeModel(configType) != null;
     }
 
     @Override
@@ -103,8 +107,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
-        ModelGun modelGun = configType.getGunModel();
-        if (modelGun != null)
+        IModelBase model = ModelCache.getOrLoadTypeModel(configType);
+        if (model instanceof ModelGun modelGun)
             modelGun.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
     }
 

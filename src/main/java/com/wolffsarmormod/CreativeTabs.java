@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -45,25 +46,27 @@ public final class CreativeTabs
 
         ArmorMod.creativeModeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + ArmorMod.MOD_ID + "." + tabName))
-            .icon(() -> new ItemStack(itemsForTab.get(ThreadLocalRandom.current().nextInt(0, ArmorMod.items.size())).get()))
+            .icon(createIcon(tabName, itemsForTab))
             .withSearchBar()
             .displayItems(displayItemsWithPaintjobsGenerator(tabName, itemsForTab))
             .build());
     }
 
-    public ItemStack createIcon(String tabName, List<RegistryObject<Item>> itemsForTab)
+    private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab)
     {
-        //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
-        List<RegistryObject<Item>> itemsForIcon = itemsForTab;
-        if (tabName.equals("guns"))
-            itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
-        if (tabName.equals("driveables"))
-            itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof Item).toList();
+        return () -> {
+            //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
+            List<RegistryObject<Item>> itemsForIcon = itemsForTab;
+            if (tabName.equals("guns"))
+                itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
+            if (tabName.equals("driveables"))
+                itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof Item).toList();
 
-        if (itemsForIcon.isEmpty())
-            return new ItemStack(Items.WHITE_WOOL);
+            if (itemsForIcon.isEmpty())
+                return new ItemStack(Items.WHITE_WOOL);
 
-        return new ItemStack(itemsForIcon.get(ThreadLocalRandom.current().nextInt(0, itemsForIcon.size())).get());
+            return new ItemStack(itemsForIcon.get(ThreadLocalRandom.current().nextInt(0, itemsForIcon.size())).get());
+        };
     }
 
     private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<RegistryObject<Item>> itemsForTab)

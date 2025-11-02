@@ -2,6 +2,7 @@ package com.wolffsarmormod.common.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsarmormod.config.ModCommonConfigs;
 import com.wolffsarmormod.event.CommonEventHandler;
@@ -37,11 +38,13 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     @Getter
     protected final ArmorType configType;
+    protected final String shortname;
 
     public CustomArmorItem(ArmorType configType)
     {
         super(new CustomArmorMaterial(configType), configType.getArmorItemType(), new Properties());
         this.configType = configType;
+        shortname = configType.getShortName();
     }
 
     @Override
@@ -140,7 +143,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             @NotNull
             public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> defaultModel)
             {
-                return configType.getArmorModel();
+                return (HumanoidModel<?>) ModelCache.getOrLoadTypeModel(configType);
             }
         });
     }

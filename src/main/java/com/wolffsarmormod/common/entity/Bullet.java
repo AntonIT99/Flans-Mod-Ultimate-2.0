@@ -16,6 +16,7 @@ import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.GraphicsStatus;
@@ -49,9 +50,11 @@ public class Bullet extends Shootable
 {
     private static final EntityDataAccessor<String> BULLET_TYPE = SynchedEntityData.defineId(Bullet.class, EntityDataSerializers.STRING);
 
+    /** shortname of the corresponding BulletType, synced between client and server */
+    protected String shortname;
+
     @Getter
     protected FiredShot firedShot;
-
     protected int bulletLife = 600; // Kill bullets after 30 seconds
     protected int ticksInAir;
 
@@ -75,14 +78,31 @@ public class Bullet extends Shootable
     public Bullet(Level level, FiredShot firedShot, Vec3 origin, Vec3 direction)
     {
         this(ArmorMod.bulletEntity.get(), level);
-        ticksInAir = 0;
         this.firedShot = firedShot;
-        this.entityData.set(BULLET_TYPE, firedShot.getBulletType().getShortName());
+        ticksInAir = 0;
+        shortname = firedShot.getBulletType().getShortName();
+        entityData.set(BULLET_TYPE, shortname);
 
         setPos(origin.x, origin.y, origin.z);
         setArrowHeading(direction.x, direction.y, direction.z, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
 
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
+    }
+
+    @Override
+    protected void defineSynchedData()
+    {
+        entityData.define(BULLET_TYPE, StringUtils.EMPTY);
+    }
+
+    public void setShortName(String s)
+    {
+        entityData.set(BULLET_TYPE, s == null ? "" : s);
+    }
+
+    public String getShortName()
+    {
+        return entityData.get(BULLET_TYPE);
     }
 
     public void setArrowHeading(double dx, double dy, double dz, float spread, float speed)
@@ -165,12 +185,6 @@ public class Bullet extends Shootable
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        entityData.define(BULLET_TYPE, "");
-    }
-
-    @Override
     public boolean fireImmune()
     {
         return true;
@@ -192,6 +206,7 @@ public class Bullet extends Shootable
     @Override
     public void writeSpawnData(FriendlyByteBuf buf)
     {
+        buf.writeUtf(shortname);
         Vec3 v = getDeltaMovement();
         buf.writeDouble(v.x);
         buf.writeDouble(v.y);
@@ -203,6 +218,7 @@ public class Bullet extends Shootable
     {
         try
         {
+            shortname = buf.readUtf();
             double vx = buf.readDouble();
             double vy = buf.readDouble();
             double vz = buf.readDouble();
@@ -221,7 +237,7 @@ public class Bullet extends Shootable
     @Override
     protected void addAdditionalSaveData(CompoundTag tag)
     {
-        tag.putString("type", firedShot.getBulletType().getShortName());
+        tag.putString("type", shortname);
 
         FireableGun gun = firedShot.getFireableGun();
 
@@ -245,7 +261,9 @@ public class Bullet extends Shootable
     protected void readAdditionalSaveData(CompoundTag tag)
     {
         String shortName = tag.getString("type");
-        InfoType.getInfoType(shortName).ifPresent(infoType -> {
+        InfoType infoType = InfoType.getInfoType(shortName);
+        if (infoType != null)
+        {
             if (!(infoType instanceof BulletType bulletType))
                 return;
 
@@ -260,10 +278,12 @@ public class Bullet extends Shootable
                 float spread = gun.getFloat("spread");
                 float speed = gun.getFloat("speed");
 
-                InfoType.getInfoType(gun.getString("infotype")).ifPresent(fireablegunInfoType -> {
+                InfoType fireablegunInfoType = InfoType.getInfoType(gun.getString("infotype"));
+                if (fireablegunInfoType != null)
+                {
                     FireableGun fireablegun = new FireableGun(fireablegunInfoType, damage, vDamage, spread, speed, EnumSpreadPattern.CIRCLE);
                     firedShot = new FiredShot(fireablegun, bulletType);
-                });
+                }
             }
 
             if (tag.hasUUID("player"))
@@ -276,7 +296,7 @@ public class Bullet extends Shootable
                 shooteruuid = tag.getUUID("shooter");
                 checkforuuids = true;
             }
-        });
+        }
     }
 
     @Override

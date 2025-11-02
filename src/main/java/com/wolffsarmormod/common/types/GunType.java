@@ -1,14 +1,12 @@
 package com.wolffsarmormod.common.types;
 
-import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelMG;
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +18,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -441,6 +438,10 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected boolean deployable = false;
     protected String deployableModelName = StringUtils.EMPTY;
+    @Getter
+    protected String deployableModelClassName = StringUtils.EMPTY;
+    @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation deployableTexture;
     /**
      * The deployable model's texture
      */
@@ -547,13 +548,13 @@ public class GunType extends PaintableType implements IScope
     protected float maxZoom = 4F;
     protected float zoomAugment = 1F;
 
-    /** Models and Textures */
-    @Getter @Nullable @OnlyIn(Dist.CLIENT)
-    protected ModelGun gunModel;
-    @Getter @Nullable @OnlyIn(Dist.CLIENT)
-    protected ModelMG deployableModel;
-    @Getter @OnlyIn(Dist.CLIENT)
-    protected ResourceLocation deployableTexture;
+    /** For shotgun pump handles and rifle bolts */
+    @Getter @Setter
+    protected int pumpDelay = 0;
+    @Getter @Setter
+    protected int pumpDelayAfterReload = 0;
+    @Getter @Setter
+    protected int pumpTime = 1;
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
@@ -704,14 +705,8 @@ public class GunType extends PaintableType implements IScope
     protected void postReadClient()
     {
         super.postReadClient();
-        if (model instanceof ModelGun modelGun)
-            gunModel = modelGun;
-
-        IModelBase loadedDeployableModel = loadModel(deployableModelName, this).orElse(null);
-        if (loadedDeployableModel instanceof ModelMG modelMG)
-            deployableModel = modelMG;
-
-        deployableTexture = loadTexture(deployableTextureName, this, deployableModel);
+        deployableModelClassName = findModelClass(deployableModelName, contentPack);
+        deployableTexture = loadTexture(deployableTextureName, this);
     }
 
     @Override
@@ -989,38 +984,5 @@ public class GunType extends PaintableType implements IScope
             stackShootDelay *= attachment.shootDelayMultiplier;
         }
         return stackShootDelay;
-    }
-
-    /**
-     * @return Returns the pumpDelayAfterReload if a model exits, otherwise 0
-     */
-    public int getPumpDelayAfterReload()
-    {
-        if (gunModel != null)
-            return gunModel.getPumpDelayAfterReload();
-
-        return 0;
-    }
-
-    /**
-     * @return Returns the pumpDelay if a model exits, otherwise 0
-     */
-    public int getPumpDelay()
-    {
-        if (gunModel != null)
-            return gunModel.getPumpDelay();
-
-        return 0;
-    }
-
-    /**
-     * @return the pump time if a model exits, otherwise 1
-     */
-    public int getPumpTime()
-    {
-        if (gunModel != null)
-            return gunModel.getPumpTime();
-
-        return 0;
     }
 }

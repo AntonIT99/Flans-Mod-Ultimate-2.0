@@ -2,6 +2,7 @@ package com.wolffsarmormod.event;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ContentManager;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.client.input.KeyInputHandler;
 import com.wolffsarmormod.client.render.BulletRenderer;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -27,6 +29,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.EntityType;
 
 import java.nio.file.Files;
@@ -90,22 +93,28 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    static void registerRenderers(EntityRenderersEvent.RegisterRenderers e)
+    static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
-        e.registerEntityRenderer(ArmorMod.bulletEntity.get(), BulletRenderer::new);
+        event.registerEntityRenderer(ArmorMod.bulletEntity.get(), BulletRenderer::new);
     }
 
     @SubscribeEvent
-    public static void registerOverlays(RegisterGuiOverlaysEvent e)
+    public static void registerOverlays(RegisterGuiOverlaysEvent event)
     {
-        e.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
-        e.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
-        e.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
+        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
+        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
     }
 
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event)
     {
         KeyInputHandler.registerKeys(event);
+    }
+
+    @SubscribeEvent
+    public static void onClientReload(RegisterClientReloadListenersEvent event)
+    {
+        event.registerReloadListener((ResourceManagerReloadListener) rm -> ModelCache.reload());
     }
 }

@@ -9,10 +9,7 @@ import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
 import org.joml.Quaternionf;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -2107,8 +2104,6 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         if (!isVisible()) return;
 
-        ResourceLocation texture = baseModel.getTexture();
-
         if (glow)
         {
             pPackedLight = LightTexture.FULL_BRIGHT;
@@ -2119,17 +2114,14 @@ public class ModelRendererTurbo extends ModelRenderer
         RenderSystem.depthMask(false);
         RenderSystem.enableDepthTest();
 
-        RenderType renderType = RenderType.entityTranslucent(texture);
-        VertexConsumer vertexConsumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
-
         pPoseStack.pushPose();
         pPoseStack.translate(offsetX, offsetY, offsetZ);
         translateAndRotate(pPoseStack, scale, rotateOrderZYX);
-        compile(pPoseStack.last(), vertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        compile(pPoseStack.last(), pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
 
         for (ModelRenderer childModel : childModels)
         {
-            childModel.render(pPoseStack, vertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            childModel.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
 
         pPoseStack.translate(-offsetX, -offsetY, -offsetZ);

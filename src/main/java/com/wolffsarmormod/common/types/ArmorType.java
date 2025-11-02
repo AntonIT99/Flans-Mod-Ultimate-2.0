@@ -1,9 +1,9 @@
 package com.wolffsarmormod.common.types;
 
-import com.flansmod.client.model.ModelCustomArmour;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.client.model.DefaultArmor;
 import com.wolffsarmormod.util.TypeReaderUtils;
+import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ArmorItem;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,16 +59,6 @@ public class ArmorType extends InfoType
     /** Map of effects and effect Amplifiers */
     @Getter
     protected Map<MobEffect, Integer> effects = new HashMap<>();
-
-    @Getter @OnlyIn(Dist.CLIENT)
-    protected ModelCustomArmour armorModel;
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public String getTexturePath(String textureName)
-    {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
-    }
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
@@ -151,17 +142,18 @@ public class ArmorType extends InfoType
         }
     }
 
-    @Override
     @OnlyIn(Dist.CLIENT)
-    protected void postReadClient()
+    @Override
+    protected String getTexturePath(String textureName)
     {
-        super.postReadClient();
-        if (!(model instanceof ModelCustomArmour))
-        {
-            model = loadModel(new DefaultArmor(armorItemType), this);
-            texture = loadTexture(textureName, this, model);
-        }
-        armorModel = (ModelCustomArmour) model;
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
+    }
+
+    @Override
+    @Nullable
+    protected IModelBase getDefaultModel()
+    {
+        return new DefaultArmor(armorItemType);
     }
 
     public boolean hasDurability()

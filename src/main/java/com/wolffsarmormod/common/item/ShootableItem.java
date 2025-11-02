@@ -6,9 +6,12 @@ import net.minecraft.world.item.Item;
 
 public abstract class ShootableItem extends Item
 {
+    protected final String shortname;
+
     protected ShootableItem(ShootableType configType)
     {
         super(createProperties(configType));
+        shortname = configType.getShortName();
     }
 
     public abstract ShootableType getConfigType();

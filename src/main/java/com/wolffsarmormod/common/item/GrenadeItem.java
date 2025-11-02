@@ -2,7 +2,9 @@ package com.wolffsarmormod.common.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.wolffsarmormod.client.ModelCache;
 import com.wolffsarmormod.common.types.GrenadeType;
+import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -62,7 +64,11 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         //TODO: find a way to get scaling from inside render() method
-        for (ModelRenderer part : getConfigType().getModel().getBoxList())
+        IModelBase model = ModelCache.getOrLoadTypeModel(configType);
+        if (model == null)
+            return;
+
+        for (ModelRenderer part : model.getBoxList())
         {
             part.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, configType.getModelScale());
         }
