@@ -1,18 +1,10 @@
 package com.wolffsarmormod.util;
 
 import com.google.gson.annotations.SerializedName;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.types.InfoType;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
-
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.file.Path;
 
 public class ResourceUtils
 {
@@ -45,35 +37,6 @@ public class ResourceUtils
         protected Textures(String layer0)
         {
             this.layer0 = layer0;
-        }
-    }
-
-    @Nullable
-    public static ResourceLocation loadExternalTexture(Path path, String resourceLocPath, String itemName)
-    {
-        try
-        {
-            File file = path.toFile();
-            if (!file.exists())
-            {
-                ArmorMod.log.error("File not found: {}", path);
-                return null;
-            }
-
-            FileInputStream fileInputStream = new FileInputStream(file);
-            NativeImage nativeImage = NativeImage.read(fileInputStream);
-            fileInputStream.close();
-
-            DynamicTexture texture = new DynamicTexture(nativeImage);
-            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(ArmorMod.MOD_ID, resourceLocPath + itemName);
-            Minecraft.getInstance().getTextureManager().register(location, texture);
-
-            return location;
-        }
-        catch (Exception e)
-        {
-            ArmorMod.log.error("Failed to load file: {}", path);
-            return null;
         }
     }
 }

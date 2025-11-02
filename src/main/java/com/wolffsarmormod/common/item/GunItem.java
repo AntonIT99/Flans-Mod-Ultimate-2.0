@@ -68,7 +68,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     public GunItem(GunType configType)
     {
-        super(new Properties());
+        super(new Properties().stacksTo(1));
         this.configType = configType;
         shortname = configType.getShortName();
         behavior = new GunItemBehavior(this);

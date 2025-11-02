@@ -72,10 +72,10 @@ public class Bullet extends Shootable
         this.firedShot = firedShot;
         ticksInAir = 0;
 
-        setPos(origin.x, origin.y, origin.z);
-        setDeltaMovement(direction);
-        setArrowHeading(direction.x, direction.y, direction.z, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
-
+        setPos(origin);
+        System.out.println("VORHER " + direction);
+        setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
+        System.out.println("NACHHER " + direction);
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
     }
 
@@ -93,50 +93,45 @@ public class Bullet extends Shootable
         return distSq < (RENDER_DISTANCE * RENDER_DISTANCE);
     }
 
-    public void setArrowHeading(double dx, double dy, double dz, float spread, float speed)
+    public void setArrowHeading(Vec3 direction, float spread, float speed)
     {
-        spread /= 5F;
-        float f2 = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        dx /= f2;
-        dy /= f2;
-        dz /= f2;
-        dx *= speed;
-        dy *= speed;
-        dz *= speed;
-        dx += random.nextGaussian() * 0.005 * spread * speed;
-        dy += random.nextGaussian() * 0.005 * spread * speed;
-        dz += random.nextGaussian() * 0.005 * spread * speed;
-        setDeltaMovement(dx, dy, dz);
-        computeRotations(dx, dy, dz);
+        final double SPREAD_DIVISOR = 5.0;
+        final double BASE_JITTER = 0.005;
+
+        double jitter = BASE_JITTER * (spread / SPREAD_DIVISOR) * speed;
+        Vec3 velocity = direction.normalize().scale(speed).add(random.nextGaussian() * jitter, random.nextGaussian() * jitter, random.nextGaussian() * jitter);
+        setDeltaMovement(velocity);
+        computeRotations(velocity);
         getLockOnTarget();
     }
 
-    public void setVelocity(double dx, double dy, double dz)
+    protected void computeRotations(Vec3 velocity)
     {
-        setDeltaMovement(dx, dy, dz);
+        final double RAD_TO_DEG = 180.0 / Math.PI;
 
-        // only initialize rotation once (same behavior as the old check)
-        if (xRotO == 0.0F && yRotO == 0.0F)
-        {
-            computeRotations(dx, dy, dz);
-            moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
-        }
-    }
-
-    protected void computeRotations(double dx, double dy, double dz)
-    {
-        // horizontal length
-        double f = Math.sqrt(dx * dx + dz * dz);
-
+        // horizontal length: sqrt(x^2 + z^2)
+        double lengthXZ = Math.hypot(velocity.x, velocity.z);
         // compute yaw/pitch in degrees
-        float yaw = (float) (Mth.atan2(dx, dz) * (180.0 / Math.PI));
-        float pitch = (float) (Mth.atan2(dy, f)  * (180.0 / Math.PI));
+        float yaw = (float) (Mth.atan2(velocity.x, velocity.z) * RAD_TO_DEG);
+        float pitch = (float) (Mth.atan2(velocity.y, lengthXZ) * RAD_TO_DEG);
 
         // set current + previous rotations
         setYRot(yaw);
         setXRot(pitch);
         yRotO = yaw;
         xRotO = pitch;
+    }
+
+    public void setVelocity(Vec3 velocity)
+    {
+        setDeltaMovement(velocity);
+
+        // only initialize rotation once (same behavior as the old check)
+        if (xRotO == 0.0F && yRotO == 0.0F)
+        {
+            computeRotations(velocity);
+            moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
+        }
     }
 
     /**
