@@ -19,7 +19,6 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
     @Override
     public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
     {
-        System.out.println("TEST " + bullet.getX());
         pose.pushPose();
 
         float yaw   = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());

@@ -208,7 +208,7 @@ public record GunItemBehavior(GunItem item)
                 if (shootableItem instanceof BulletItem bulletItem)
                 {
                     //Fire gun
-                    FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunstack), configType.getSpread(gunstack), configType.getBulletSpeed(), configType.getSpreadPattern(gunstack));
+                    FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunstack), configType.getSpread(gunstack), configType.getBulletSpeed(gunstack), configType.getSpreadPattern(gunstack));
 
                     //TODO: enchantments & gloves
                     /*if (otherHand.getItem() instanceof ShieldItem || otherHand.getItem() instanceof ItemGlove)

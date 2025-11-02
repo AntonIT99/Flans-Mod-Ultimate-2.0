@@ -152,7 +152,9 @@ public class BulletType extends ShootableType
         setEntitiesOnFire = readValue(split, "SetEntitiesOnFire", setEntitiesOnFire, file);
         hitSoundEnable = readValue(split, "HitSoundEnable", hitSoundEnable, file);
         entityHitSoundEnable = readValue(split, "EntityHitSoundEnable", entityHitSoundEnable, file);
-        hitSound = readSound(split, "HitSound", hitSound, file);
+        // Many content packs have a HitSound line with no parameter for no hit sound -> don't consider it a syntax error
+        if (split.length > 1)
+            hitSound = readSound(split, "HitSound", hitSound, file);
         hitSoundRange = readValue(split, "HitSoundRange", hitSoundRange, file);
 
         penetrates = readValue(split, "Penetrates", true, file);

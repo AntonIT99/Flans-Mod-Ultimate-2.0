@@ -129,13 +129,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
-        // Description lines (split on '_')
-        if (configType.getDescription() != null)
-        {
-            for (String part : configType.getDescription().split("_"))
-                tooltipComponents.add(Component.literal(part).withStyle(ChatFormatting.GRAY));
-        }
-
         // Stats
         if (configType.isShowDamage())
             tooltipComponents.add(statLine("Damage", String.valueOf(configType.getDamage(stack))));

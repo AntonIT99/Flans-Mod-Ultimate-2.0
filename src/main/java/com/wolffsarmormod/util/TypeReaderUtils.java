@@ -20,7 +20,10 @@ public class TypeReaderUtils
         {
             if (split.length >= 2)
             {
-                currentValue = split[1];
+                if (split[1].equals("=") && split.length > 2)
+                    currentValue = split[2];
+                else
+                    currentValue = split[1];
             }
             else
             {
@@ -70,7 +73,10 @@ public class TypeReaderUtils
             {
                 try
                 {
-                    currentValue = Integer.parseInt(split[1]);
+                    if (split[1].equals("=") && split.length > 2)
+                        currentValue = Integer.parseInt(split[2]);
+                    else
+                        currentValue = Integer.parseInt(split[1]);
                 }
                 catch (Exception e)
                 {
@@ -93,7 +99,10 @@ public class TypeReaderUtils
             {
                 try
                 {
-                    currentValue = Float.parseFloat(split[1]);
+                    if (split[1].equals("=") && split.length > 2)
+                        currentValue = Float.parseFloat(split[2]);
+                    else
+                        currentValue = Float.parseFloat(split[1]);
                 }
                 catch (Exception e)
                 {
@@ -116,7 +125,10 @@ public class TypeReaderUtils
             {
                 try
                 {
-                    currentValue = Double.parseDouble(split[1]);
+                    if (split[1].equals("=") && split.length > 2)
+                        currentValue = Double.parseDouble(split[2]);
+                    else
+                        currentValue = Double.parseDouble(split[1]);
                 }
                 catch (Exception e)
                 {
@@ -139,7 +151,10 @@ public class TypeReaderUtils
             {
                 try
                 {
-                    currentValue = Boolean.parseBoolean(split[1]);
+                    if (split[1].equals("=") && split.length > 2)
+                        currentValue = Boolean.parseBoolean(split[2]);
+                    else
+                        currentValue = Boolean.parseBoolean(split[1]);
                 }
                 catch (Exception e)
                 {
@@ -165,7 +180,10 @@ public class TypeReaderUtils
                 // 1) exact, case-sensitive (fast path)
                 try
                 {
-                    return Enum.valueOf(enumType, token.toUpperCase(Locale.ROOT));
+                    if (split[1].equals("=") && split.length > 2)
+                        token = split[2];
+
+                    currentValue = Enum.valueOf(enumType, token.toUpperCase(Locale.ROOT));
                 }
                 catch (IllegalArgumentException ignored)
                 {

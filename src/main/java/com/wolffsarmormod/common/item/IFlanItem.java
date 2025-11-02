@@ -29,7 +29,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         for (String line : getConfigType().getDescription().split("_"))
         {
             if (!line.isBlank())
-                tooltipComponents.add(Component.literal(line));
+                tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.WHITE));
         }
     }
 }
