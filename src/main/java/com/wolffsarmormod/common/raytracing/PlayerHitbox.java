@@ -10,7 +10,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -152,10 +151,9 @@ public class PlayerHitbox
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
             player.setSecondsOnFire(20);
-        for (MobEffectInstance effect : bulletType.getHitEffects())
-        {
-            player.addEffect(new MobEffectInstance(effect));
-        }
+        //TODO: Check origin code
+        bulletType.getHitEffects().forEach(player::addEffect);
+
         float damageModifier = bulletType.getPenetratingPower() < 0.1F ? penetratingPower / bulletType.getPenetratingPower() : 1;
 
         switch (type)

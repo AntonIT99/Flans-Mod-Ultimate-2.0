@@ -21,7 +21,7 @@ public abstract class ShootableType extends InfoType
     //Aesthetics
     /** Whether trail particles are given off */
     @Getter
-    protected boolean trailParticles = false;
+    protected boolean trailParticles;
     /** Trail particles given off by this while being thrown */
     @Getter
     protected String trailParticleType = "smoke";
@@ -29,8 +29,8 @@ public abstract class ShootableType extends InfoType
     // hasLight controls whether it has full luminescence.
     // hasDynamicLight controls if it lights up the area around it.
     @Getter
-    protected boolean hasLight = false;
-    protected boolean hasDynamicLight = false;
+    protected boolean hasLight;
+    protected boolean hasDynamicLight;
 
     //Item Stuff
     /**
@@ -52,9 +52,7 @@ public abstract class ShootableType extends InfoType
      */
     @Getter
     protected int roundsPerItem = 0;
-    /**
-     * The number of bullet entities to create per round
-     */
+    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
     @Getter
     protected int numBullets = 1;
     /**
@@ -87,20 +85,23 @@ public abstract class ShootableType extends InfoType
     /**
      * Amount of damage to impart upon various entities
      */
-    protected float damageVsPlayer = 1.0F;
-    protected float damageVsEntity = 1.0F;
+    protected float damage = 1.0F;
     @Getter
     protected float damageVsLiving = 1.0F;
+    protected float damageVsPlayer = 1.0F;
+    protected float damageVsEntity = 1.0F;
     protected float damageVsVehicles = 1.0F;
     protected float damageVsPlanes = 1.0F;
-    protected boolean readDamageVsPlayer = false;
-    protected boolean readDamageVsEntity = false;
-    protected boolean readDamageVsPlanes = false;
+    protected boolean readDamageVsLiving;
+    protected boolean readDamageVsPlayer;
+    protected boolean readDamageVsEntity;
+    protected boolean readDamageVsVehicles;
+    protected boolean readDamageVsPlanes;
     /**
      * Whether this grenade will break glass when thrown against it
      */
     @Getter
-    protected boolean breaksGlass = false;
+    protected boolean breaksGlass;
     protected float ignoreArmorProbability = 0;
     protected float ignoreArmorDamageFactor = 0;
     protected float blockPenetrationModifier = -1;
@@ -119,7 +120,7 @@ public abstract class ShootableType extends InfoType
      * If true, then this will explode upon hitting something
      */
     @Getter
-    protected boolean explodeOnImpact = false;
+    protected boolean explodeOnImpact;
 
     //Detonation Stuff
     /**
@@ -158,12 +159,12 @@ public abstract class ShootableType extends InfoType
      */
     protected String detonateSound = "";
 
-    protected boolean hasSubmunitions = false;
+    protected boolean hasSubmunitions;
     protected String submunition = "";
     protected int numSubmunitions = 0;
     protected int subMunitionTimer = 0;
     protected float submunitionSpread = 1;
-    protected boolean destroyOnDeploySubmunition = false;
+    protected boolean destroyOnDeploySubmunition;
 
     protected int smokeParticleCount = 0;
     protected int debrisParticleCount = 0;
@@ -191,11 +192,24 @@ public abstract class ShootableType extends InfoType
         hitBoxSize = readValue(split, "HitBoxSize", fallSpeed, file);
 
         //Hit stuff
-        //TODO Damage vs entites
-        damageVsLiving = readValue(split, "HitEntityDamage", damageVsLiving, file);
+        damage = readValue(split, "Damage", damage, file);
         damageVsLiving = readValue(split, "DamageVsLiving", damageVsLiving, file);
-        damageVsLiving = readValue(split, "DamageVsPlayer", damageVsLiving, file);
+        damageVsLiving = readValue(split, "HitEntityDamage", damageVsLiving, file);
+        if (split[0].equalsIgnoreCase("DamageVsLiving") || split[0].equalsIgnoreCase("HitEntityDamage"))
+            readDamageVsLiving = true;
+        damageVsPlayer = readValue(split, "DamageVsPlayer", damageVsPlayer, file);
+        if (split[0].equalsIgnoreCase("DamageVsPlayer"))
+            readDamageVsPlayer = true;
+        damageVsEntity = readValue(split, "DamageVsEntity", damageVsEntity, file);
+        if (split[0].equalsIgnoreCase("DamageVsEntity"))
+            readDamageVsEntity = true;
         damageVsVehicles = readValue(split, "DamageVsVehicles", damageVsVehicles, file);
+        if (split[0].equalsIgnoreCase("DamageVsVehicles"))
+            readDamageVsVehicles = true;
+        damageVsPlanes = readValue(split, "DamageVsPlanes", damageVsPlanes, file);
+        if (split[0].equalsIgnoreCase("DamageVsPlanes"))
+            readDamageVsPlanes = true;
+
         blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
         ignoreArmorProbability = readValue(split, "IgnoreArmorProbability", ignoreArmorProbability, file);
         ignoreArmorDamageFactor = readValue(split, "IgnoreArmorDamageFactor", ignoreArmorDamageFactor, file);
@@ -222,6 +236,7 @@ public abstract class ShootableType extends InfoType
         explosionBreaksBlocks = readValue(split, "ExplosionsBreakBlocks", explosionBreaksBlocks, file);
 
         explosionDamageVsLiving = readValue(split, "ExplosionDamageVsLiving", explosionDamageVsLiving, file);
+        explosionDamageVsDriveable = readValue(split, "ExplosionDamageVsDrivable", explosionDamageVsLiving, file);
         explosionDamageVsPlayer = readValue(split, "ExplosionDamageVsPlayer", explosionDamageVsPlayer, file);
         explosionDamageVsPlane = readValue(split, "ExplosionDamageVsPlane", explosionDamageVsPlane, file);
         explosionDamageVsVehicle = readValue(split, "ExplosionDamageVsVehicle", explosionDamageVsVehicle, file);
@@ -231,16 +246,34 @@ public abstract class ShootableType extends InfoType
         //Submunitions
         hasSubmunitions = readValue(split, "HasSubmunitions", hasSubmunitions, file);
         submunition = readValue(split, "Submunition", submunition, file);
-        numSubmunitions = readValue(split, "NumSubmunitions", numSubmunitions, file);;
+        numSubmunitions = readValue(split, "NumSubmunitions", numSubmunitions, file);
         subMunitionTimer = readValue(split, "SubmunitionDelay", subMunitionTimer, file);
         submunitionSpread = readValue(split, "SubmunitionSpread", submunitionSpread, file);
+        destroyOnDeploySubmunition = readValue(split, "DestroyOnDeploySubmunition", destroyOnDeploySubmunition, file);
         smokeParticleCount = readValue(split, "FlareParticleCount", smokeParticleCount, file);
-        debrisParticleCount = readValue(split, "DebrisParticleCount", debrisParticleCount, file);;
+        debrisParticleCount = readValue(split, "DebrisParticleCount", debrisParticleCount, file);
 
         //Particles
         trailParticles = readValue(split, "TrailParticles", trailParticles, file);
         trailParticles = readValue(split, "SmokeTrail", trailParticles, file);
         trailParticleType = readValue(split, "TrailParticleType", trailParticleType, file);
+    }
+
+    @Override
+    protected void postRead()
+    {
+        super.postRead();
+
+        if (!readDamageVsLiving)
+            damageVsLiving = damage;
+        if (!readDamageVsPlayer)
+            damageVsPlayer = damageVsLiving;
+        if (!readDamageVsVehicles)
+            damageVsVehicles = damage;
+        if (!readDamageVsEntity)
+            damageVsEntity = damageVsVehicles;
+        if (!readDamageVsPlanes)
+            damageVsPlanes = damageVsVehicles;
     }
 
     @Override

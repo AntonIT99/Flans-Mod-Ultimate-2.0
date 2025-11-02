@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
+import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
 
 @NoArgsConstructor
 public class BulletType extends ShootableType
@@ -56,6 +57,7 @@ public class BulletType extends ShootableType
     protected boolean hitSoundEnable = false;
     protected boolean entityHitSoundEnable = false;
 
+    protected boolean penetrates = true;
     @Getter
     protected float penetratingPower = 1F;
     // In % of penetration to remove per tick.
@@ -74,15 +76,15 @@ public class BulletType extends ShootableType
     protected float knockbackModifier;
     /** Lock on variables. If true, then the bullet will search for a target at the moment it is fired */
     @Getter
-    protected boolean lockOnToPlanes = false;
+    protected boolean lockOnToPlanes;
     @Getter
-    protected boolean lockOnToVehicles = false;
+    protected boolean lockOnToVehicles;
     @Getter
-    protected boolean lockOnToMechas = false;
+    protected boolean lockOnToMechas;
     @Getter
-    protected boolean lockOnToPlayers = false;
+    protected boolean lockOnToPlayers;
     @Getter
-    protected boolean lockOnToLivings = false;
+    protected boolean lockOnToLivings;
     /** Lock on maximum angle for finding a target */
     @Getter
     protected float maxLockOnAngle = 45F;
@@ -93,34 +95,23 @@ public class BulletType extends ShootableType
     protected String trailTexture = StringUtils.EMPTY;
     protected int maxDegreeOfMissile = 20;
     protected int tickStartHoming = 5;
-    protected boolean enableSACLOS = false;
+    protected boolean enableSACLOS;
     protected int maxDegreeOfSACLOS = 5;
     protected int maxRangeOfMissile = 150;
-    //protected int maxDegreeOfMissileXAxis = 10;
-    //protected int maxDegreeOfMissileYAxis = 10;
-    //protected int maxDegreeOfMissileZAxis = 10;
 
-    protected boolean manualGuidance = false;
+    protected boolean manualGuidance;
     protected int lockOnFuse = 10;
 
     @Getter
     protected List<MobEffectInstance> hitEffects = new ArrayList<>();
 
-    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
-    protected int numBullets = -1;
-
     protected float dragInAir   = 0.99F;
     protected float dragInWater = 0.80F;
-
-    protected boolean canSpotEntityDriveable = false;
-
+    protected boolean canSpotEntityDriveable;
     protected int maxRange = -1;
-
-    protected boolean shootForSettingPos = false;
+    protected boolean shootForSettingPos;
     protected int shootForSettingPosHeight = 100;
-
-    protected boolean isDoTopAttack = false;
-
+    protected boolean isDoTopAttack;
 
     //Smoke
     /** Time to remain after detonation */
@@ -130,49 +121,136 @@ public class BulletType extends ShootableType
     protected String smokeParticleType = "explode";
     /** The effects to be given to people coming too close */
 
-    protected ArrayList<MobEffectInstance> smokeEffects = new ArrayList<>();
+    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
     /** The radius for smoke effects to take place in */
 
     protected float smokeRadius = 5F;
-    protected boolean TVguide = true;
 
     //Other stuff
-    protected boolean VLS = false;
-    protected int VLSTime = 0;
-    protected boolean fixedDirection = false;
+    protected boolean vls;
+    protected int vlsTime = 0;
+    protected boolean fixedDirection;
     protected float turnRadius = 3;
     protected String boostPhaseParticle;
     protected float trackPhaseSpeed = 2;
     protected float trackPhaseTurn = 0.2F;
-
-    protected boolean torpedo = false;
-
+    protected boolean torpedo;
     protected boolean fancyDescription = true;
-
-    protected boolean laserGuidance = false;
+    protected boolean laserGuidance;
 
     // 0 = disable, otherwise sets velocity scale on block hit particle fx
     protected float blockHitFXScale;
+    protected boolean readBlockHitFXScale;
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
     {
         super.readLine(line, split, file);
 
-        if (split[0].equalsIgnoreCase("Bomb"))
-            weaponType = EnumWeaponType.BOMB;
-        if (split[0].equalsIgnoreCase("Shell"))
-            weaponType = EnumWeaponType.SHELL;
-        if (split[0].equalsIgnoreCase("Missile"))
-            weaponType = EnumWeaponType.MISSILE;
+        flak = readValue(split, "FlakParticles", flak, file);
+        flakParticles = readValue(split, "FlakParticleType", flakParticles, file);
+        setEntitiesOnFire = readValue(split, "SetEntitiesOnFire", setEntitiesOnFire, file);
+        hitSoundEnable = readValue(split, "HitSoundEnable", hitSoundEnable, file);
+        entityHitSoundEnable = readValue(split, "EntityHitSoundEnable", entityHitSoundEnable, file);
+        hitSound = readSound(split, "HitSound", hitSound, file);
+        hitSoundRange = readValue(split, "HitSoundRange", hitSoundRange, file);
 
+        penetrates = readValue(split, "Penetrates", true, file);
+        penetratingPower = readValue(split, "Penetration", penetratingPower, file);
+        penetratingPower = readValue(split, "PenetratingPower", penetratingPower, file);
+        penetrationDecay = readValue(split, "PenetrationDecay", penetrationDecay, file);
+
+        playerPenetrationEffectOnDamage = readValue(split, "PlayerPenetrationDamageEffect", playerPenetrationEffectOnDamage, file);
+        entityPenetrationEffectOnDamage = readValue(split, "EntityPenetrationDamageEffect", entityPenetrationEffectOnDamage, file);
+        blockPenetrationEffectOnDamage = readValue(split, "BlockPenetrationDamageEffect", blockPenetrationEffectOnDamage, file);
+        penetrationDecayEffectOnDamage = readValue(split, "PenetrationDecayDamageEffect", penetrationDecayEffectOnDamage, file);
+        
+        dragInAir = readValue(split, "DragInAir", dragInAir, file);
+        dragInWater = readValue(split, "DragInWater", dragInWater, file);
+
+        bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
+        bulletSpread = readValue(split, "Spread", bulletSpread, file);
+        livingProximityTrigger = readValue(split, "LivingProximityTrigger", livingProximityTrigger, file);
+        driveableProximityTrigger = readValue(split, "VehicleProximityTrigger", driveableProximityTrigger, file);
+        damageToTriggerer = readValue(split, "DamageToTriggerer", damageToTriggerer, file);
+        primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
+        primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
+        explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);
+        explodeParticleType = readValue(split, "ExplodeParticles", explodeParticleType, file);
+        smokeTime = readValue(split, "SmokeTime", smokeTime, file);
+        smokeParticleType = readValue(split, "SmokeParticles", smokeParticleType, file);
+        addEffects(readValues(split, "SmokeEffect", file), smokeEffects, line, file, false, false);
+
+        smokeRadius = readValue(split, "SmokeRadius", smokeRadius, file);
+        vls = readValue(split, "VLS", vls, file);
+        vls = readValue(split, "HasDeadZone", vls, file);
+        vlsTime = readValue(split, "DeadZoneTime", vlsTime, file);
+        fixedDirection = readValue(split, "FixedTrackDirection", fixedDirection, file);
+        turnRadius = readValue(split, "GuidedTurnRadius", turnRadius, file);
+        trackPhaseSpeed = readValue(split, "GuidedPhaseSpeed", trackPhaseSpeed, file);
+        trackPhaseTurn = readValue(split, "GuidedPhaseTurnSpeed", trackPhaseTurn, file);
+        boostPhaseParticle = readValue(split, "BoostParticle", boostPhaseParticle, file);
+        torpedo = readValue(split, "Torpedo", torpedo, file);
+
+        // Some content packs use 'true' and false after this, which confuses things...
+        if (split[0].equalsIgnoreCase("Bomb") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+            weaponType = EnumWeaponType.BOMB;
+        if (split[0].equalsIgnoreCase("Shell") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+            weaponType = EnumWeaponType.SHELL;
+        if (split[0].equalsIgnoreCase("Missile") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+            weaponType = EnumWeaponType.MISSILE;
         weaponType = readValue(split, "WeaponType", weaponType, EnumWeaponType.class, file);
+
+        if (split[0].equalsIgnoreCase("LockOnToDriveables"))
+            lockOnToPlanes = lockOnToVehicles = lockOnToMechas =  readValue(split, "LockOnToDriveables", lockOnToVehicles, file);
+
+        lockOnToVehicles = readValue(split, "LockOnToVehicles", lockOnToVehicles, file);
+        lockOnToPlanes = readValue(split, "LockOnToPlanes", lockOnToPlanes, file);
+        lockOnToMechas = readValue(split, "LockOnToMechas", lockOnToMechas, file);
+        lockOnToPlayers = readValue(split, "LockOnToPlayers", lockOnToPlayers, file);
+        lockOnToLivings = readValue(split, "LockOnToLivings", lockOnToLivings, file);
+
+        maxLockOnAngle = readValue(split, "MaxLockOnAngle", maxLockOnAngle, file);
+        lockOnForce = readValue(split, "LockOnForce", lockOnForce, file);
+        lockOnForce = readValue(split, "TurningForce", lockOnForce, file);
+        maxDegreeOfMissile = readValue(split, "MaxDegreeOfLockOnMissile", maxDegreeOfMissile, file);
+        tickStartHoming = readValue(split, "TickStartHoming", tickStartHoming, file);
+        enableSACLOS = readValue(split, "EnableSACLOS", enableSACLOS, file);
+        maxDegreeOfSACLOS = readValue(split, "MaxDegreeOFSACLOS", maxDegreeOfSACLOS, file);
+        maxRangeOfMissile = readValue(split, "MaxRangeOfMissile", maxRangeOfMissile, file);
+        canSpotEntityDriveable = readValue(split, "CanSpotEntityDriveable", canSpotEntityDriveable, file);
+        shootForSettingPos = readValue(split, "ShootForSettingPos", shootForSettingPos, file);
+        shootForSettingPosHeight = readValue(split, "ShootForSettingPosHeight", shootForSettingPosHeight, file);
+        isDoTopAttack = readValue(split, "IsDoTopAttack", isDoTopAttack, file);
+        knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
+        addEffects(readValues(split, "PotionEffect", file), hitEffects, line, file, false, false);
+
+        manualGuidance = readValue(split, "ManualGuidance", manualGuidance, file);
+        laserGuidance = readValue(split, "LaserGuidance", laserGuidance, file);
+        lockOnFuse = readValue(split, "LockOnFuse", lockOnFuse, file);
+        maxRange = readValue(split, "MaxRange", maxRange, file);
+        fancyDescription = readValue(split, "FancyDescription", fancyDescription, file);
+        speedMultiplier = readValue(split, "BulletSpeedMultiplier", speedMultiplier, file);
+
+        blockHitFXScale = readValue(split, "BlockHitFXScale", blockHitFXScale, file);
+        if (split[0].equalsIgnoreCase("BlockHitFXScale"))
+            readBlockHitFXScale = true;
     }
 
     @Override
     protected void postRead()
     {
         super.postRead();
+        
+        if (!penetrates)
+            penetratingPower = 0.7F;
+
+        // Clamp to [0, 1]
+        dragInAir = Math.max(0, Math.min(1, dragInAir)); 
+        dragInWater = Math.max(0, Math.min(1, dragInWater));
+        
+        if (!readBlockHitFXScale)
+            blockHitFXScale = (float) ((Math.log(explosionRadius + 2) / Math.log(2.15)) + 0.05);
 
         if (textureName.isBlank())
             textureName = ArmorMod.DEFAULT_BULLET_TEXTURE;

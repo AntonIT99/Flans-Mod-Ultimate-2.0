@@ -156,7 +156,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Allows you to set how many bullet entities are fired per shot via the ammo used
      */
-    protected boolean allowNumBulletsByBulletType = false;
+    protected boolean allowNumBulletsByBulletType = true;
     /**
      * The delay between shots in ticks (1/20ths of seconds) OUTDATED, USE RPM
      */
@@ -640,8 +640,8 @@ public class GunType extends PaintableType implements IScope
         {
             if (split.length > 1 && split[1].equalsIgnoreCase("instant"))
                 bulletSpeed = 0F;
-
-            bulletSpeed = readValue(split, "BulletSpeed", bulletSpeed, file);
+            else
+                bulletSpeed = readValue(split, "BulletSpeed", bulletSpeed, file);
         }
         if (split[0].equalsIgnoreCase("SecondaryFunction"))
             secondaryFunction = EnumSecondaryFunction.get(split[1]);

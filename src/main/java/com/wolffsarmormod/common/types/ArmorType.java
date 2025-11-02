@@ -2,7 +2,6 @@ package com.wolffsarmormod.common.types;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.client.model.DefaultArmor;
-import com.wolffsarmormod.util.TypeReaderUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,13 +9,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ArmorItem;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
@@ -58,7 +56,7 @@ public class ArmorType extends InfoType
     protected boolean regeneration;
     /** Map of effects and effect Amplifiers */
     @Getter
-    protected Map<MobEffect, Integer> effects = new HashMap<>();
+    protected List<MobEffectInstance> effects = new ArrayList<>();
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)
@@ -89,32 +87,7 @@ public class ArmorType extends InfoType
         onWaterWalking = readValue(split, "OnWaterWalking", onWaterWalking, file);
         hunger = readValue(split, "hunger", hunger, file);
         regeneration = readValue(split, "regenerate", regeneration, file);
-        addEffects(readValues(split, "AddEffect", file), line, file);
-    }
-
-    protected void addEffects(List<String> effectValues, String line, TypeFile file)
-    {
-        if (!effectValues.isEmpty())
-        {
-            try
-            {
-                int effectId = Integer.parseInt(effectValues.get(0));
-                int amplifier = (effectValues.size() > 1) ? Integer.parseInt(effectValues.get(1)) : 0;
-                MobEffect effect = MobEffect.byId(effectId);
-                if (effect != null)
-                {
-                    effects.put(effect, amplifier);
-                }
-                else
-                {
-                    TypeReaderUtils.logError(String.format("Potion ID %s does not exist in '%s'", effectId, line), file);
-                }
-            }
-            catch (NumberFormatException e)
-            {
-                TypeReaderUtils.logError(String.format("NumberFormatException in '%s'", line), file);
-            }
-        }
+        addEffects(readValues(split, "AddEffect", file), effects, line, file, true, false);
     }
 
     @Override

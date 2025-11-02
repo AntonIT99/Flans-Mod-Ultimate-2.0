@@ -25,7 +25,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -214,10 +213,8 @@ public class ShotHandler
             {
                 if (entityHit.entity.hurt(shot.getDamageSource(level), damage * bulletType.getDamageVsLiving()) && entityHit.entity instanceof LivingEntity living)
                 {
-                    for (MobEffectInstance effect : bulletType.getHitEffects())
-                    {
-                        living.addEffect(new MobEffectInstance(effect));
-                    }
+                    //TODO: Check origin code
+                    bulletType.getHitEffects().forEach(living::addEffect);
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = 0;
                 }

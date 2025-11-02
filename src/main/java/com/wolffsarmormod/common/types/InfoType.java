@@ -11,6 +11,7 @@ import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.FileUtils;
 import com.wolffsarmormod.util.LogUtils;
+import com.wolffsarmormod.util.TypeReaderUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -141,7 +144,7 @@ public abstract class InfoType
         modelScale = readValue(split, "ModelScale", modelScale, file);
     }
 
-    protected String readSound(String[] split, String key, String currentValue, TypeFile file)
+    protected static String readSound(String[] split, String key, String currentValue, TypeFile file)
     {
         String sound = readValue(split, key, currentValue, file);
         if (StringUtils.isNotBlank(sound))
@@ -150,6 +153,34 @@ public abstract class InfoType
             ArmorMod.registerSound(sound);
         }
         return sound;
+    }
+
+    protected static void addEffects(List<String> effectValues, List<MobEffectInstance> effects, String line, TypeFile file, boolean ambient, boolean visible)
+    {
+        if (!effectValues.isEmpty())
+        {
+            try
+            {
+                int effectId = Integer.parseInt(effectValues.get(0));
+                int duration = (effectValues.size() > 1) ? Integer.parseInt(effectValues.get(1)) : 250;
+                int amplifier = (effectValues.size() > 2) ? Integer.parseInt(effectValues.get(2)) : 0;
+                ambient = (effectValues.size() > 3) ? Boolean.parseBoolean(effectValues.get(3)) : ambient;
+                visible = (effectValues.size() > 4) ? Boolean.parseBoolean(effectValues.get(4)) : visible;
+                MobEffect effect = MobEffect.byId(effectId);
+                if (effect != null)
+                {
+                    effects.add(new MobEffectInstance(effect,  duration, amplifier, ambient, visible));
+                }
+                else
+                {
+                    TypeReaderUtils.logError(String.format("Potion ID %s does not exist in '%s'", effectId, line), file);
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                TypeReaderUtils.logError(String.format("NumberFormatException in '%s'", line), file);
+            }
+        }
     }
 
     protected void postRead() {}
