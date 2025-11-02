@@ -75,6 +75,7 @@ public abstract class ShootableType extends InfoType
     /**
      * Hit box size
      */
+    @Getter
     protected float hitBoxSize = 0.5F;
     /**
      * Upon hitting a block or entity, the grenade will be deflected and its motion will be multiplied by this constant

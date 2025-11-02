@@ -241,13 +241,13 @@ public class GunType extends PaintableType implements IScope
      * Show statistics
      */
     @Getter
-    protected boolean showDamage = false;
+    protected boolean showDamage = true;
     @Getter
-    protected boolean showRecoil = false;
+    protected boolean showRecoil = true;
     @Getter
-    protected boolean showSpread = false;
+    protected boolean showSpread = true;
     @Getter
-    protected boolean showReloadTime = false;
+    protected boolean showReloadTime = true;
     /**
      * Whether Gun makes players to be UseAnim.BOW
      */

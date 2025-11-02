@@ -24,8 +24,6 @@ public class ModelBullet extends ModelBase
     public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
         pPoseStack.pushPose();
-        // Spawns bullets further out from the player to avoid entities spawning in the face
-        pPoseStack.translate(-0.0F, 2.0F, 0.0F);
         bulletModel.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, getScale());
         pPoseStack.popPose();
     }

@@ -73,9 +73,7 @@ public class Bullet extends Shootable
         ticksInAir = 0;
 
         setPos(origin);
-        System.out.println("VORHER " + direction);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
-        System.out.println("NACHHER " + direction);
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
     }
 
@@ -103,6 +101,7 @@ public class Bullet extends Shootable
         setDeltaMovement(velocity);
         computeRotations(velocity);
         getLockOnTarget();
+
     }
 
     protected void computeRotations(Vec3 velocity)

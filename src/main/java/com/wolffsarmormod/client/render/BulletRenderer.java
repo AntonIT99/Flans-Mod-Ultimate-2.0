@@ -21,6 +21,8 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
     {
         pose.pushPose();
 
+        pose.scale(bullet.getModelScale(), bullet.getModelScale(), bullet.getModelScale());
+
         float yaw   = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
         float pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
 

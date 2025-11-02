@@ -2,6 +2,7 @@ package com.wolffsarmormod;
 
 import com.mojang.logging.LogUtils;
 import com.wolffsarmormod.common.entity.Bullet;
+import com.wolffsarmormod.common.entity.Shootable;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.config.ModCommonConfigs;
@@ -71,7 +72,7 @@ public class ArmorMod
     // Register entities
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
-            .sized(0.5F, 0.5F)
+            .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
             .clientTrackingRange(Bullet.RENDER_DISTANCE) // how far clients track it
             .updateInterval(20) // ticks between velocity/pos updates
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
