@@ -12,11 +12,9 @@ import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
-import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.GraphicsStatus;
@@ -28,9 +26,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -44,31 +39,27 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Bullet extends Shootable
 {
-    private static final EntityDataAccessor<String> BULLET_TYPE = SynchedEntityData.defineId(Bullet.class, EntityDataSerializers.STRING);
+    public static final int RENDER_DISTANCE = 128;
 
-    /** shortname of the corresponding BulletType, synced between client and server */
-    protected String shortname;
-
-    @Getter
+    /** Server side */
     protected FiredShot firedShot;
+    protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
     protected int ticksInAir;
-
-    /** For homing missiles */
-    protected Entity lockedOnTo;
     protected float currentPenetratingPower;
 
     @OnlyIn(Dist.CLIENT)
     protected boolean playedFlybySound;
 
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
+    protected boolean checkforuuids;
     protected UUID playeruuid;
     protected UUID shooteruuid;
-    protected boolean checkforuuids;
 
     public Bullet(EntityType<?> entityType, Level level)
     {
@@ -77,32 +68,29 @@ public class Bullet extends Shootable
 
     public Bullet(Level level, FiredShot firedShot, Vec3 origin, Vec3 direction)
     {
-        this(ArmorMod.bulletEntity.get(), level);
+        super(ArmorMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         ticksInAir = 0;
-        shortname = firedShot.getBulletType().getShortName();
-        entityData.set(BULLET_TYPE, shortname);
 
         setPos(origin.x, origin.y, origin.z);
+        setDeltaMovement(direction);
         setArrowHeading(direction.x, direction.y, direction.z, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
 
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
     }
 
     @Override
-    protected void defineSynchedData()
+    public void setDeltaMovement(double dx, double dy, double dz)
     {
-        entityData.define(BULLET_TYPE, StringUtils.EMPTY);
+        super.setDeltaMovement(dx, dy, dz);
+        // Immediately show motion
+        hasImpulse = true;
     }
 
-    public void setShortName(String s)
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        entityData.set(BULLET_TYPE, s == null ? "" : s);
-    }
-
-    public String getShortName()
-    {
-        return entityData.get(BULLET_TYPE);
+        return distSq < (RENDER_DISTANCE * RENDER_DISTANCE);
     }
 
     public void setArrowHeading(double dx, double dy, double dz, float spread, float speed)
@@ -115,35 +103,40 @@ public class Bullet extends Shootable
         dx *= speed;
         dy *= speed;
         dz *= speed;
-        dx += random.nextGaussian() * 0.005D * spread * speed;
-        dy += random.nextGaussian() * 0.005D * spread * speed;
-        dz += random.nextGaussian() * 0.005D * spread * speed;
+        dx += random.nextGaussian() * 0.005 * spread * speed;
+        dy += random.nextGaussian() * 0.005 * spread * speed;
+        dz += random.nextGaussian() * 0.005 * spread * speed;
         setDeltaMovement(dx, dy, dz);
+        computeRotations(dx, dy, dz);
         getLockOnTarget();
     }
 
-    @Override
-    public void setDeltaMovement(double dx, double dy, double dz)
+    public void setVelocity(double dx, double dy, double dz)
     {
-        super.setDeltaMovement(dx, dy, dz);
-        hasImpulse = true; //optional but helps clients notice an immediate motion change
+        setDeltaMovement(dx, dy, dz);
 
         // only initialize rotation once (same behavior as the old check)
         if (xRotO == 0.0F && yRotO == 0.0F)
         {
-            // horizontal length
-            double f = Math.sqrt(dx * dx + dz * dz);
-
-            // compute yaw/pitch in degrees
-            float yaw   = (float) (Mth.atan2(dx, dz) * (180.0F / Math.PI));
-            float pitch = (float) (Mth.atan2(dy, f)  * (180.0F / Math.PI));
-
-            // set current + previous rotations
-            setYRot(yaw);
-            setXRot(pitch);
-            yRotO = yaw;
-            xRotO = pitch;
+            computeRotations(dx, dy, dz);
+            moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
         }
+    }
+
+    protected void computeRotations(double dx, double dy, double dz)
+    {
+        // horizontal length
+        double f = Math.sqrt(dx * dx + dz * dz);
+
+        // compute yaw/pitch in degrees
+        float yaw = (float) (Mth.atan2(dx, dz) * (180.0 / Math.PI));
+        float pitch = (float) (Mth.atan2(dy, f)  * (180.0 / Math.PI));
+
+        // set current + previous rotations
+        setYRot(yaw);
+        setXRot(pitch);
+        yRotO = yaw;
+        xRotO = pitch;
     }
 
     /**
@@ -206,7 +199,7 @@ public class Bullet extends Shootable
     @Override
     public void writeSpawnData(FriendlyByteBuf buf)
     {
-        buf.writeUtf(shortname);
+        super.writeSpawnData(buf);
         Vec3 v = getDeltaMovement();
         buf.writeDouble(v.x);
         buf.writeDouble(v.y);
@@ -218,14 +211,12 @@ public class Bullet extends Shootable
     {
         try
         {
-            shortname = buf.readUtf();
+            super.readSpawnData(buf);
             double vx = buf.readDouble();
             double vy = buf.readDouble();
             double vz = buf.readDouble();
-            setDeltaMovement(vx, vy, vz);
 
-            // If you want the client to immediately show motion:
-            hasImpulse = true;
+            setDeltaMovement(vx, vy, vz);
         }
         catch (Exception e)
         {
@@ -253,22 +244,21 @@ public class Bullet extends Shootable
             tag.put("fireablegun", gunTag);
 
             firedShot.getPlayerOptional().ifPresent((ServerPlayer player) -> tag.putUUID("player", player.getUUID()));
-            firedShot.getShooterOptional().ifPresent((net.minecraft.world.entity.Entity shooter) -> tag.putUUID("shooter", shooter.getUUID()));
+            firedShot.getShooterOptional().ifPresent((Entity shooter) -> tag.putUUID("shooter", shooter.getUUID()));
         }
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag)
     {
-        String shortName = tag.getString("type");
-        InfoType infoType = InfoType.getInfoType(shortName);
+        FireableGun fireablegun = null;
+        setShortName(tag.getString("type"));
+        InfoType infoType = InfoType.getInfoType(shortname);
+
         if (infoType != null)
         {
             if (!(infoType instanceof BulletType bulletType))
                 return;
-
-            // sync your tracked data (String accessor you defined earlier)
-            entityData.set(BULLET_TYPE, shortName);
 
             if (tag.contains("fireablegun", Tag.TAG_COMPOUND))
             {
@@ -277,13 +267,10 @@ public class Bullet extends Shootable
                 float vDamage = gun.getFloat("vehicledamage");
                 float spread = gun.getFloat("spread");
                 float speed = gun.getFloat("speed");
-
                 InfoType fireablegunInfoType = InfoType.getInfoType(gun.getString("infotype"));
+
                 if (fireablegunInfoType != null)
-                {
-                    FireableGun fireablegun = new FireableGun(fireablegunInfoType, damage, vDamage, spread, speed, EnumSpreadPattern.CIRCLE);
-                    firedShot = new FiredShot(fireablegun, bulletType);
-                }
+                    fireablegun = new FireableGun(fireablegunInfoType, damage, vDamage, spread, speed, EnumSpreadPattern.CIRCLE);
             }
 
             if (tag.hasUUID("player"))
@@ -296,6 +283,8 @@ public class Bullet extends Shootable
                 shooteruuid = tag.getUUID("shooter");
                 checkforuuids = true;
             }
+
+            firedShot = new FiredShot(fireablegun, bulletType);
         }
     }
 
@@ -311,7 +300,7 @@ public class Bullet extends Shootable
                 checkforuuids = false;
             }
 
-            applyDragAndGravity();
+            applyDragAndGravity(fallSpeed);
             move(MoverType.SELF, getDeltaMovement());
             updateOrientationFromVelocity();
 
@@ -329,10 +318,10 @@ public class Bullet extends Shootable
 
     /* ======================= Physics & Orientation ======================= */
 
-    protected void applyDragAndGravity()
+    protected void applyDragAndGravity(float fallSpeed)
     {
         float drag = isInWater() ? 0.8F : 0.99F;
-        float gravity = 0.02F * getFiredShot().getBulletType().getFallSpeed();
+        float gravity = 0.02F * fallSpeed;
 
         Vec3 v = getDeltaMovement().scale(drag).add(0.0, -gravity, 0.0);
         setDeltaMovement(v);
@@ -358,7 +347,7 @@ public class Bullet extends Shootable
     {
         if (isInWater())
             spawnWaterBubbles();
-        if (getFiredShot().getBulletType().isTrailParticles()) {
+        if (trailParticles) {
             spawnParticles();
         }
         playFlybyIfClose();
@@ -390,7 +379,6 @@ public class Bullet extends Shootable
 
         float spread = 0.1F;
 
-        String trailParticleType = firedShot.getBulletType().getTrailParticleType();
         boolean fancyLike = Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FAST;
 
         for (int i = 0; i < 10; i++)
@@ -449,7 +437,7 @@ public class Bullet extends Shootable
     private boolean handleFuseAndLifetime()
     {
         ticksInAir++;
-        BulletType type = getFiredShot().getBulletType();
+        BulletType type = firedShot.getBulletType();
 
         if (type.getFuse() > 0 && ticksInAir > type.getFuse() && !isRemoved())
         {
@@ -472,7 +460,8 @@ public class Bullet extends Shootable
         Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
         Vector3f motion = new Vector3f((float)dv.x, (float)dv.y, (float)dv.z);
 
-        Entity ignore = firedShot.getPlayerOptional().isPresent() ? firedShot.getPlayerOptional().get() : firedShot.getShooterOptional().orElse(null);
+        Optional<ServerPlayer> playerOptional = firedShot.getPlayerOptional();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getShooterOptional().orElse(null);
 
         int pingMs = firedShot.getPlayerOptional().map(p -> p.latency).orElse(0);
 
@@ -512,7 +501,7 @@ public class Bullet extends Shootable
         Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
 
         float angle = Math.abs(Vector3f.angle(motion, toTarget));
-        double pull = angle * getFiredShot().getBulletType().getLockOnForce();
+        double pull = angle * firedShot.getBulletType().getLockOnForce();
         pull = pull * pull;
 
         Vec3 vv = vNow.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);

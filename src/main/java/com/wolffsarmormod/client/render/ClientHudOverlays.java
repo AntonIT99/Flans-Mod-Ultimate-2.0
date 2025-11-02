@@ -25,8 +25,6 @@ import java.util.Arrays;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
 {
-    private static final ResourceLocation HIT_MARKER = ResourceLocation.fromNamespaceAndPath(ArmorMod.MOD_ID, "textures/gui/hit_marker.png");
-
     public static final IGuiOverlay SCOPE = (gui, g, partialTick, sw, sh) -> {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
@@ -100,7 +98,7 @@ public final class ClientHudOverlays
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1f, 1f, 1f, a);
-        g.blit(HIT_MARKER, x, y, 0, 0, w, h, 16, 16);
+        g.blit(ArmorMod.hitmarkerTexture, x, y, 0, 0, w, h, 16, 16);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 

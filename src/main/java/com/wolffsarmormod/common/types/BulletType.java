@@ -1,10 +1,12 @@
 package com.wolffsarmormod.common.types;
 
 import com.flansmod.client.model.ModelBullet;
+import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.driveables.EnumWeaponType;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
@@ -88,7 +90,7 @@ public class BulletType extends ShootableType
     @Getter
     protected float lockOnForce = 1F;
     @Getter
-    protected String trailTexture = "defaultbullettrail";
+    protected String trailTexture = StringUtils.EMPTY;
     protected int maxDegreeOfMissile = 20;
     protected int tickStartHoming = 5;
     protected boolean enableSACLOS = false;
@@ -165,6 +167,17 @@ public class BulletType extends ShootableType
             weaponType = EnumWeaponType.MISSILE;
 
         weaponType = readValue(split, "WeaponType", weaponType, EnumWeaponType.class, file);
+    }
+
+    @Override
+    protected void postRead()
+    {
+        super.postRead();
+
+        if (textureName.isBlank())
+            textureName = ArmorMod.DEFAULT_BULLET_TEXTURE;
+        if (trailTexture.isBlank())
+            trailTexture = ArmorMod.DEFAULT_BULLET_TRAIL_TEXTURE;
     }
 
     @Override

@@ -48,6 +48,11 @@ public class ArmorMod
     public static final String SOUND_UNLOCKNOTCH = "unlocknotch";
     public static final String SOUND_SKULLBOSSLAUGH = "skullboss_laugh";
     public static final String SOUND_SKULLBOSSSPAWN = "skullboss_spawn";
+    public static final String DEFAULT_BULLET_TEXTURE = "defaultbullet";
+    public static final String DEFAULT_BULLET_TRAIL_TEXTURE = "defaultbullettrail";
+
+    public static final ResourceLocation muzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/skins/muzzleflash.png");
+    public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/hitmarker.png");
 
     public static final Logger log = LogUtils.getLogger();
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
@@ -66,9 +71,9 @@ public class ArmorMod
     // Register entities
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
-            .sized(0.25F, 0.25F)
-            .clientTrackingRange(64)   // how far clients track it
-            .updateInterval(1)              // ticks between velocity/pos updates; 1 for projectiles
+            .sized(0.5F, 0.5F)
+            .clientTrackingRange(Bullet.RENDER_DISTANCE) // how far clients track it
+            .updateInterval(20) // ticks between velocity/pos updates
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
 
     public ArmorMod(FMLJavaModLoadingContext context)

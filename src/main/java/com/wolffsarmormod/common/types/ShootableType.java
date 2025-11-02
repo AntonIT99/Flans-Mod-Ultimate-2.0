@@ -28,6 +28,7 @@ public abstract class ShootableType extends InfoType
 
     // hasLight controls whether it has full luminescence.
     // hasDynamicLight controls if it lights up the area around it.
+    @Getter
     protected boolean hasLight = false;
     protected boolean hasDynamicLight = false;
 
@@ -171,6 +172,8 @@ public abstract class ShootableType extends InfoType
     protected void readLine(String line, String[] split, TypeFile file)
     {
         super.readLine(line, split, file);
+
+        //Item Stuff
         maxStackSize = readValue(split, "StackSize", maxStackSize, file);
         maxStackSize = readValue(split, "MaxStackSize", maxStackSize, file);
         dropItemOnShoot = readValue(split, "DropItemOnShoot", dropItemOnShoot, file);
@@ -178,12 +181,69 @@ public abstract class ShootableType extends InfoType
         dropItemOnHit = readValue(split, "DropItemOnHit", dropItemOnHit, file);
         roundsPerItem = readValue(split, "RoundsPerItem", roundsPerItem, file);
         numBullets = readValue(split, "NumBullets", numBullets, file);
+
+        // Physics
         bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
         bulletSpread = readValue(split, "Spread", bulletSpread, file);
+        fallSpeed = readValue(split, "FallSpeed", fallSpeed, file);
+        throwSpeed = readValue(split, "ThrowSpeed", throwSpeed, file);
+        throwSpeed = readValue(split, "ShootSpeed", throwSpeed, file);
+        hitBoxSize = readValue(split, "HitBoxSize", fallSpeed, file);
 
-        //TODO: continue (WIP)
+        //Hit stuff
+        //TODO Damage vs entites
+        damageVsLiving = readValue(split, "HitEntityDamage", damageVsLiving, file);
+        damageVsLiving = readValue(split, "DamageVsLiving", damageVsLiving, file);
+        damageVsLiving = readValue(split, "DamageVsPlayer", damageVsLiving, file);
+        damageVsVehicles = readValue(split, "DamageVsVehicles", damageVsVehicles, file);
+        blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
+        ignoreArmorProbability = readValue(split, "IgnoreArmorProbability", ignoreArmorProbability, file);
+        ignoreArmorDamageFactor = readValue(split, "IgnoreArmorDamageFactor", ignoreArmorDamageFactor, file);
+        breaksGlass = readValue(split, "reaksGlass", breaksGlass, file);
+        bounciness = readValue(split, "Bounciness", bounciness, file);
+        hasLight = readValue(split, "HasLight", hasLight, file);
+        hasDynamicLight = readValue(split, "HasDynamicLight", hasDynamicLight, file);
+
+        // Detonation conditions etc
+        fuse = readValue(split, "Fuse", fuse, file);
+        despawnTime = readValue(split, "DespawnTime", despawnTime, file);
+        explodeOnImpact = readValue(split, "ExplodeOnImpact", explodeOnImpact, file);
+        explodeOnImpact = readValue(split, "DetonateOnImpact", explodeOnImpact, file);
+
+        //Detonation
+        fireRadius = readValue(split, "FireRadius", fireRadius, file);
+        fireRadius = readValue(split, "Fire", fireRadius, file);
+        explosionRadius = readValue(split, "ExplosionRadius", explosionRadius, file);
+        explosionRadius = readValue(split, "Explosion", explosionRadius, file);
+        explosionPower = readValue(split, "ExplosionPower", explosionPower, file);
+        explosionBreaksBlocks = readValue(split, "ExplosionBreaksBlocks", explosionBreaksBlocks, file);
+        explosionBreaksBlocks = readValue(split, "ExplosionsBreaksBlocks", explosionBreaksBlocks, file);
+        explosionBreaksBlocks = readValue(split, "ExplosionBreakBlocks", explosionBreaksBlocks, file);
+        explosionBreaksBlocks = readValue(split, "ExplosionsBreakBlocks", explosionBreaksBlocks, file);
+
+        explosionDamageVsLiving = readValue(split, "ExplosionDamageVsLiving", explosionDamageVsLiving, file);
+        explosionDamageVsPlayer = readValue(split, "ExplosionDamageVsPlayer", explosionDamageVsPlayer, file);
+        explosionDamageVsPlane = readValue(split, "ExplosionDamageVsPlane", explosionDamageVsPlane, file);
+        explosionDamageVsVehicle = readValue(split, "ExplosionDamageVsVehicle", explosionDamageVsVehicle, file);
+        dropItemOnDetonate = readValue(split, "DropItemOnDetonate", dropItemOnDetonate, file);
+        detonateSound = readValue(split, "DetonateSound", detonateSound, file);
+
+        //Submunitions
+        hasSubmunitions = readValue(split, "HasSubmunitions", hasSubmunitions, file);
+        submunition = readValue(split, "Submunition", submunition, file);
+        numSubmunitions = readValue(split, "NumSubmunitions", numSubmunitions, file);;
+        subMunitionTimer = readValue(split, "SubmunitionDelay", subMunitionTimer, file);
+        submunitionSpread = readValue(split, "SubmunitionSpread", submunitionSpread, file);
+        smokeParticleCount = readValue(split, "FlareParticleCount", smokeParticleCount, file);
+        debrisParticleCount = readValue(split, "DebrisParticleCount", debrisParticleCount, file);;
+
+        //Particles
+        trailParticles = readValue(split, "TrailParticles", trailParticles, file);
+        trailParticles = readValue(split, "SmokeTrail", trailParticles, file);
+        trailParticleType = readValue(split, "TrailParticleType", trailParticleType, file);
     }
 
+    @Override
     public void onItemRegistration(String registeredItemId)
     {
         super.onItemRegistration(registeredItemId);

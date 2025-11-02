@@ -14,15 +14,14 @@ public class Grenade extends Shootable
     @Getter
     protected GrenadeType configType;
 
-    protected Grenade(EntityType<?> entityType, Level level)
+    public Grenade(EntityType<?> entityType, Level level)
     {
         super(entityType, level);
     }
 
-    @Override
-    protected void defineSynchedData()
+    public Grenade(EntityType<?> entityType, Level level, GrenadeType grenadeType)
     {
-
+        super(entityType, level, grenadeType);
     }
 
     @Override
@@ -40,12 +39,12 @@ public class Grenade extends Shootable
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer)
     {
-
+        super.writeSpawnData(buffer);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData)
     {
-
+        super.readSpawnData(additionalData);
     }
 }

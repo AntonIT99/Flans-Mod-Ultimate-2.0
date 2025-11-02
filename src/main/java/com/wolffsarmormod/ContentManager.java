@@ -75,7 +75,7 @@ public class ContentManager
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
 
-    private static final Set<IContentProvider> contentPacks = new HashSet<>();
+    private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
 
@@ -110,6 +110,7 @@ public class ContentManager
             contentPacks.addAll(loadFoldersAndJarZipFiles(flanFolder)
                 .entrySet()
                 .stream()
+                .sorted(Map.Entry.comparingByKey())
                 .map(entry -> new ContentPack(entry.getKey(), entry.getValue()))
                 .toList());
         }

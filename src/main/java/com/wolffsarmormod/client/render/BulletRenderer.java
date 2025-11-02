@@ -1,22 +1,15 @@
 package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsarmormod.client.ModelCache;
+import com.mojang.math.Axis;
 import com.wolffsarmormod.common.entity.Bullet;
-import com.wolffsarmormod.common.types.InfoType;
-import com.wolffsmod.api.client.model.IModelBase;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
-public class BulletRenderer extends EntityRenderer<Bullet>
+public class BulletRenderer extends FlanEntityRenderer<Bullet>
 {
     public BulletRenderer(EntityRendererProvider.Context ctx)
     {
@@ -24,23 +17,19 @@ public class BulletRenderer extends EntityRenderer<Bullet>
     }
 
     @Override
-    public void render(@NotNull Bullet bullet, float yaw, float pt, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
     {
-        IModelBase bulletModel = ModelCache.getOrLoadTypeModel(bullet.getShortName());
-        if (bulletModel != null)
-        {
-            VertexConsumer vertexconsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(bullet)));
-            bulletModel.renderToBuffer(pose, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-        }
-    }
+        System.out.println("TEST " + bullet.getX());
+        pose.pushPose();
 
-    @Override
-    @NotNull
-    public ResourceLocation getTextureLocation(@NotNull Bullet bullet)
-    {
-        InfoType infoType = InfoType.getInfoType(bullet.getShortName());
-        if (infoType != null)
-            return infoType.getTexture();
-        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
+        float yaw   = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
+        float pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
+
+        pose.mulPose(Axis.YP.rotationDegrees(yaw));
+        pose.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
+
+        super.render(bullet, entityYaw, partialTicks, pose, buf, light);
+
+        pose.popPose();
     }
 }

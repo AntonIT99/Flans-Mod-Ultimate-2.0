@@ -3,6 +3,7 @@ package com.wolffsarmormod.network;
 import com.wolffsarmormod.ArmorMod;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.RegistryObject;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,6 +15,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @NoArgsConstructor
 public class PacketPlaySound extends PacketBase
 {
@@ -24,22 +28,22 @@ public class PacketPlaySound extends PacketBase
     private boolean distort;
     private boolean silenced;
 
-    public PacketPlaySound(double x, double y, double z, String s)
+    public PacketPlaySound(double x, double y, double z, @Nullable String s)
     {
         this(x, y, z, s, false);
     }
 
-    public PacketPlaySound(double x, double y, double z, String s, boolean distort)
+    public PacketPlaySound(double x, double y, double z, @Nullable String s, boolean distort)
     {
         this(x, y, z, s, distort, false);
     }
 
-    public PacketPlaySound(double x, double y, double z, String s, boolean distort, boolean silenced)
+    public PacketPlaySound(double x, double y, double z, @Nullable String s, boolean distort, boolean silenced)
     {
         posX = (float) x;
         posY = (float) y;
         posZ = (float) z;
-        sound = s;
+        sound = Objects.requireNonNullElse(s, StringUtils.EMPTY);
         this.distort = distort;
         this.silenced = silenced;
     }
@@ -69,6 +73,9 @@ public class PacketPlaySound extends PacketBase
     @Override
     public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
+        if (sound.isBlank())
+            return;
+
         RegistryObject<SoundEvent> event = ArmorMod.getSoundEvent(sound).orElse(null);
         if (event == null)
         {
