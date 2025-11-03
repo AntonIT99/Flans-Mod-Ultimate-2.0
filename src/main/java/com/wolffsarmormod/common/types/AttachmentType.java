@@ -5,6 +5,7 @@ import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -15,25 +16,28 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
+
 @NoArgsConstructor
 public class AttachmentType extends PaintableType implements IScope
 {
     //TODO: implement attachment Item
     /** The type of attachment. Each gun can have one barrel, one scope, one grip, one stock and some number of generics up to a limit set by the gun */
     protected EnumAttachmentType attachmentType = EnumAttachmentType.GENERIC;
+    protected String attachmentTypeString = StringUtils.EMPTY;
 
     //Attachment Function add-ons
     /** This variable controls whether or not bullet sounds should be muffled */
     @Getter
-    protected boolean silencer = false;
+    protected boolean silencer;
     /** If true, then this attachment will act like a flashlight */
-    protected boolean flashlight = false;
+    protected boolean flashlight;
     /** Flashlight range. How far away it lights things up */
     protected float flashlightRange = 10F;
     /** Flashlight strength between 0 and 15 */
     protected int flashlightStrength = 12;
     /** If true, disable the muzzle flash model */
-    protected boolean disableMuzzleFlash = false;
+    protected boolean disableMuzzleFlash;
 
     //Gun behaviour modifiers
     /** These stack between attachments and apply themselves to the gun's default spread */
@@ -57,11 +61,12 @@ public class AttachmentType extends PaintableType implements IScope
     protected float moveSpeedMultiplier = 1F;
     /** If set to anything other than null, then this attachment will override the weapon's default firing mode */
     protected EnumFireMode modeOverride = null;
+    protected String modeOverrideString = StringUtils.EMPTY;
     protected EnumSpreadPattern spreadPattern = null;
 
     //Underbarrel functions
     /** This variable controls whether the underbarrel is enabled */
-    protected boolean secondaryFire = false;
+    protected boolean secondaryFire;
     /** The list of bullet types that can be used in the secondary mode */
     protected List<String> secondaryAmmo = new ArrayList<>();
     /** The delay between shots in ticks (1/20ths of seconds) */
@@ -80,6 +85,7 @@ public class AttachmentType extends PaintableType implements IScope
     protected String secondaryReloadSound;
     /** The firing mode of the gun. One of semi-auto, full-auto, minigun or burst */
     protected EnumFireMode secondaryFireMode = EnumFireMode.SEMIAUTO;
+    protected String secondaryFireModeString = StringUtils.EMPTY;
     /** The sound to play if toggling between primary and underbarrel */
     protected String toggleSound;
     /** The number of bullet entities created by each shot */
@@ -94,29 +100,100 @@ public class AttachmentType extends PaintableType implements IScope
     /** The FOV zoom level of this scope */
     @Getter
     protected float fovFactor = 1F;
-    /** The overlay to render when using this scope */
-    protected String zoomOverlay;
-    /** Whether to overlay a texture or not */
-    protected boolean hasScopeOverlay = false;
     /** If true, then this scope will active night vision potion effect*/
-    protected boolean hasNightVision = false;
+    protected boolean hasNightVision;
 
-    //Some more mundane variables
-    /** The max stack size in the inventory */
-    protected int maxStackSize = 1;
-
-    /** Default spread of the underbarrel. Do not modify. */
-    protected float secondaryDefaultSpread = 0F;
-
-    protected boolean hasVariableZoom = false;
     protected float minZoom = 1;
     protected float maxZoom = 4;
     protected float zoomAugment = 1;
 
     @Override
+    protected void readLine(String line, String[] split, TypeFile file)
+    {
+        super.readLine(line, split, file);
+
+        attachmentTypeString = readValue(split, "AttachmentType", attachmentTypeString, file);
+
+        silencer = readValue(split, "Silencer", silencer, file);
+        disableMuzzleFlash = readValue(split, "DisableMuzzleFlash", disableMuzzleFlash, file);
+        disableMuzzleFlash = readValue(split, "DisableFlash", disableMuzzleFlash, file);
+
+        //Flashlight settings
+        flashlight = readValue(split, "Flashlight", flashlight, file);
+        flashlightRange = readValue(split, "FlashlightRange", flashlightRange, file);
+        flashlightStrength = readValue(split, "FlashlightStrength", flashlightStrength, file);
+
+        //Mode override
+        modeOverrideString = readValue(split, "ModeOverride", modeOverrideString, file);
+
+        //Secondary Stuff
+        secondaryFire = readValue(split, "SecondaryMode", secondaryFire, file);
+
+        String ammo = readValue(split, "SecondaryAmmo", StringUtils.EMPTY, file);
+        if (!ammo.isBlank())
+            secondaryAmmo.add(ammo);
+
+        secondaryDamage = readValue(split, "SecondaryDamage", secondaryDamage, file);
+        secondarySpread = readValue(split, "SecondarySpread", secondarySpread, file);
+        secondarySpread = readValue(split, "SecondaryAccuracy", secondarySpread, file);
+        secondarySpeed = readValue(split, "SecondaryBulletSpeed", secondarySpeed, file);
+        secondaryShootDelay = readValue(split, "SecondaryShootDelay", secondaryShootDelay, file);
+        secondaryReloadTime = readValue(split, "SecondaryReloadTime", secondaryReloadTime, file);
+        secondaryShootDelay = readValue(split, "SecondaryShootDelay", secondaryShootDelay, file);
+        secondaryNumBullets = readValue(split, "SecondaryNumBullets", secondaryNumBullets, file);
+        numSecAmmoItems = readValue(split, "LoadSecondaryIntoGun", numSecAmmoItems, file);
+
+        secondaryFireModeString = readValue(split, "SecondaryFireMode", secondaryFireModeString, file);
+
+        secondaryShootSound = readSound(split, "SecondaryShootSound", secondaryShootSound, file);
+        secondaryReloadSound = readSound(split, "SecondaryReloadSound", secondaryReloadSound, file);
+        toggleSound = readSound(split, "ModeSwitchSound", toggleSound, file);
+
+        //Multipliers
+        meleeDamageMultiplier = readValue(split, "MeleeDamageMultiplier", meleeDamageMultiplier, file);
+        damageMultiplier = readValue(split, "DamageMultiplier", damageMultiplier, file);
+        spreadMultiplier = readValue(split, "SpreadMultiplier", spreadMultiplier, file);
+        recoilMultiplier = readValue(split, "RecoilMultiplier", recoilMultiplier, file);
+        recoilControlMultiplier = readValue(split, "RecoilControlMultiplier", recoilControlMultiplier, file);
+        recoilControlMultiplierSneaking = readValue(split, "RecoilControlMultiplierSneaking", recoilControlMultiplierSneaking, file);
+        recoilControlMultiplierSprinting = readValue(split, "RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
+        bulletSpeedMultiplier = readValue(split, "BulletSpeedMultiplier", bulletSpeedMultiplier, file);
+        recoilControlMultiplierSprinting = readValue(split, "RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
+        moveSpeedMultiplier = readValue(split, "MovementSpeedMultiplier", moveSpeedMultiplier, file);
+        moveSpeedMultiplier = readValue(split, "MoveSpeedModifier", moveSpeedMultiplier, file);
+
+        //Scope Variables
+        minZoom = readValue(split, "MinZoom", minZoom, file);
+        maxZoom = readValue(split, "MaxZoom", maxZoom, file);
+        zoomAugment = readValue(split, "ZoomAugment", zoomAugment, file);
+        zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
+        fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
+
+        overlayName = readValue(split, "ZoomOverlay", overlayName, file).toLowerCase();
+
+        hasNightVision = readValue(split, "HasNightVision", hasNightVision, file);
+    }
+
+    @Override
+    protected void postRead()
+    {
+        super.postRead();
+
+        attachmentType = EnumAttachmentType.get(attachmentTypeString);
+
+        if (modeOverrideString != null)
+            modeOverride = EnumFireMode.getFireMode(modeOverrideString);
+        if (secondaryFireModeString != null)
+            secondaryFireMode = EnumFireMode.getFireMode(secondaryFireModeString);
+
+        if (overlayName.equals("none"))
+            overlayName = StringUtils.EMPTY;
+    }
+
+    @Override
     public boolean hasZoomOverlay()
     {
-        return hasScopeOverlay;
+        return getOverlay().isPresent();
     }
 
     @Override

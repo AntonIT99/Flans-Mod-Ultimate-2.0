@@ -11,4 +11,14 @@ public enum EnumAttachmentType
     PUMP,
     ACCESSORY,
     GENERIC;
+
+    public static EnumAttachmentType get(String s)
+    {
+        for (EnumAttachmentType type : values())
+        {
+            if (type.toString().equals(s))
+                return type;
+        }
+        return GENERIC;
+    }
 }
