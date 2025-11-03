@@ -37,8 +37,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -135,8 +139,15 @@ public class ContentManager
             skinsTextureReferences.putIfAbsent(provider, new HashMap<>());
             modelReferences.putIfAbsent(provider, new HashMap<>());
 
+            long st = System.currentTimeMillis();
             readFiles(provider);
+            long end = System.currentTimeMillis();
+            ArmorMod.log.debug("{}: Files read in {} ms", provider.getName(), String.format("%,d", end - st));
+
+            st = System.currentTimeMillis();
             registerConfigs(provider);
+            end = System.currentTimeMillis();
+            ArmorMod.log.debug("{}: Configs registered in {} ms", provider.getName(), String.format("%,d", end - st));
 
             if (FMLEnvironment.dist == Dist.CLIENT)
             {
@@ -285,33 +296,78 @@ public class ContentManager
         }
     }
 
-    private void readTypeFolder(Path folder, IContentProvider provider)
+    private static void readTypeFolder(Path folder, IContentProvider provider)
     {
         String folderName = folder.getFileName().toString();
-        if (EnumType.getFoldersList().contains(folderName))
+        if (!EnumType.getFoldersList().contains(folderName))
+            return;
+
+        final List<Path> txtFiles = new ArrayList<>();
+        try (DirectoryStream<Path> txtFileStream = Files.newDirectoryStream(folder, p -> Files.isRegularFile(p) && p.toString().toLowerCase().endsWith(".txt")))
         {
-            try (DirectoryStream<Path> txtFileStream = Files.newDirectoryStream(folder, p -> Files.isRegularFile(p) && p.toString().toLowerCase().endsWith(".txt")))
-            {
-                txtFileStream.forEach(file -> readTypeFile(file, folderName, provider));
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
-            }
+            txtFileStream.forEach(txtFiles::add);
         }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
+        }
+
+        readTypeFilesSinglethreaded(txtFiles, folderName, provider);
     }
 
-    private void readTypeFile(Path file, String folderName, IContentProvider provider)
+    private static void readTypeFilesSinglethreaded(List<Path> txtFiles, String folderName, IContentProvider provider)
+    {
+        files.get(provider).addAll(txtFiles.stream().map(txtFile -> readTypeFile(txtFile, folderName, provider)).filter(Objects::nonNull).toList());
+    }
+
+    //Multithreading did not bring any significant performance gain in this case
+    private static void readTypeFilesMultithreaded(List<Path> txtFiles, String folderName, IContentProvider provider)
+    {
+        // choose a small bounded pool
+        int threads = Math.max(1, Math.min(Runtime.getRuntime().availableProcessors() - 1, 4));
+        ExecutorService pool = Executors.newFixedThreadPool(threads, r -> {
+            Thread t = new Thread(r, ArmorMod.MOD_ID + "-io");
+            t.setDaemon(true);
+            return t;
+        });
+
+        // thread-safe bucket for parsed results; or return values from callables
+        List<TypeFile> parsed = Collections.synchronizedList(new ArrayList<>(txtFiles.size()));
+
+        try
+        {
+            List<CompletableFuture<Void>> futures = txtFiles.stream()
+                    .map(path -> CompletableFuture.runAsync(() -> {
+                        TypeFile tf = readTypeFile(path, folderName, provider);
+                        if (tf != null)
+                            parsed.add(tf);
+                    }, pool))
+                    .toList();
+
+            // wait for all
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        }
+        finally
+        {
+            pool.shutdown();
+        }
+
+        files.get(provider).addAll(parsed);
+    }
+
+    @Nullable
+    private static TypeFile readTypeFile(Path file, String folderName, IContentProvider provider)
     {
         try
         {
             List<String> lines = readAllLinesUtf8OrLatin1(file);
             stripBomInPlace(lines);
-            files.get(provider).add(new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines));
+            return new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines);
         }
         catch (IOException e)
         {
             ArmorMod.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName(), e);
+            return null;
         }
     }
 
