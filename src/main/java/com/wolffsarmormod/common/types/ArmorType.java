@@ -87,7 +87,10 @@ public class ArmorType extends InfoType
         onWaterWalking = readValue(split, "OnWaterWalking", onWaterWalking, file);
         hunger = readValue(split, "hunger", hunger, file);
         regeneration = readValue(split, "regenerate", regeneration, file);
+
         addEffects(readValues(split, "AddEffect", file), effects, line, file, true, false);
+        addEffects(readValues(split, "AddPotionEffect", file), effects, line, file, true, false);
+        addEffects(readValues(split, "PotionEffect", file), effects, line, file, true, false);
     }
 
     @Override

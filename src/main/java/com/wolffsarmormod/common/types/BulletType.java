@@ -181,6 +181,7 @@ public class BulletType extends ShootableType
         explodeParticleType = readValue(split, "ExplodeParticles", explodeParticleType, file);
         smokeTime = readValue(split, "SmokeTime", smokeTime, file);
         smokeParticleType = readValue(split, "SmokeParticles", smokeParticleType, file);
+
         addEffects(readValues(split, "SmokeEffect", file), smokeEffects, line, file, false, false);
 
         smokeRadius = readValue(split, "SmokeRadius", smokeRadius, file);
@@ -225,6 +226,8 @@ public class BulletType extends ShootableType
         shootForSettingPosHeight = readValue(split, "ShootForSettingPosHeight", shootForSettingPosHeight, file);
         isDoTopAttack = readValue(split, "IsDoTopAttack", isDoTopAttack, file);
         knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
+
+        addEffects(readValues(split, "AddPotionEffect", file), hitEffects, line, file, false, false);
         addEffects(readValues(split, "PotionEffect", file), hitEffects, line, file, false, false);
 
         manualGuidance = readValue(split, "ManualGuidance", manualGuidance, file);
