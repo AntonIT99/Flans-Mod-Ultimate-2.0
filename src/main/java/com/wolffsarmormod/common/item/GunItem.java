@@ -436,6 +436,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     /**
      * Get the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
+     * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
     public ItemStack getBulletItemStack(ItemStack gun, int id) {
         if (gun.isEmpty())
@@ -468,6 +469,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     /**
      * Set the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
+     * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
     public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id) {
         if (gun.isEmpty() || id < 0)

@@ -74,7 +74,7 @@ public class ArmorMod
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
             .clientTrackingRange(Bullet.RENDER_DISTANCE) // how far clients track it
-            .updateInterval(20) // ticks between velocity/pos updates
+            .updateInterval(1) // ticks between velocity/pos updates
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
 
     public ArmorMod(FMLJavaModLoadingContext context)

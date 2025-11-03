@@ -44,7 +44,7 @@ import java.util.Optional;
  * Class containing a bunch of shooting related functions
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ShotHandler
+public final class ShootingUtils
 {
     /**
      * For any kind of shooting this method should be used. It handles everything including the differentiation between spawning a EntityBullet and performing a raytrace
@@ -70,7 +70,7 @@ public class ShotHandler
      * @param shootingDirection Direction where the bullet will travel
      * @param handler           ShootBulletHandler which is called every time a shot is fired (bulletAmount times)
      */
-    public static void fireGun(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootBulletHandler handler)
+    public static void fireGun(Level world, FiredShot shot, int bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
     {
         if (shot.getFireableGun().getBulletSpeed() == 0F)
         {
@@ -88,7 +88,7 @@ public class ShotHandler
         }
     }
 
-    private static void createMultipleShots(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootBulletHandler handler)
+    private static void createMultipleShots(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
     {
         float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
         for (int i = 0; i < bulletAmount; i++)

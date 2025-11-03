@@ -6,7 +6,7 @@ import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.AAGun;
 import com.wolffsarmormod.common.entity.Driveable;
 import com.wolffsarmormod.common.entity.Grenade;
-import com.wolffsarmormod.common.guns.ShotHandler;
+import com.wolffsarmormod.common.guns.ShootingUtils;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.AttachmentType;
 import com.wolffsarmormod.common.types.GunType;
@@ -193,7 +193,7 @@ public class FlansModRaytracer
                     lambda = -lambda;
 
                 hits.add(new BlockHit(hit, lambda, blockState));
-                penetration -= ShotHandler.getBlockPenetrationDecrease(blockState, pos, level);
+                penetration -= ShootingUtils.getBlockPenetrationDecrease(blockState, pos, level);
             }
 
             if (penetration > 0)

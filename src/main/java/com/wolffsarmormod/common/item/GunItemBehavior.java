@@ -7,12 +7,13 @@ import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.Grenade;
+import com.wolffsarmormod.common.guns.DefaultShootingHandler;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.guns.InventoryHelper;
-import com.wolffsarmormod.common.guns.ShootBulletHandler;
-import com.wolffsarmormod.common.guns.ShotHandler;
+import com.wolffsarmormod.common.guns.ShootingHandler;
+import com.wolffsarmormod.common.guns.ShootingUtils;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
 import com.wolffsarmormod.common.types.InfoType;
@@ -36,6 +37,7 @@ import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public record GunItemBehavior(GunItem item)
 {
@@ -108,7 +110,7 @@ public record GunItemBehavior(GunItem item)
         item.soundDelay = item.configType.getIdleSoundLength();
     }
 
-    public void shoot(InteractionHand hand, Player player, ItemStack gunstack, PlayerData data, Level level, GunAnimations animations)
+    public void shoot(InteractionHand hand, Player player, ItemStack gunStack, PlayerData data, Level level, GunAnimations animations)
     {
         GunType configType = item.getConfigType();
 
@@ -139,53 +141,17 @@ public record GunItemBehavior(GunItem item)
         while (shootTime <= 0F)
         {
             // Add the delay for this shot and shoot it!
-            shootTime += configType.getShootDelay(gunstack);
+            shootTime += configType.getShootDelay(gunStack);
 
-            int bulletID = 0;
-            ItemStack bulletStack = ItemStack.EMPTY;
-            for (; bulletID < configType.getNumAmmoItemsInGun(); bulletID++)
-            {
-                ItemStack checkingStack = item.getBulletItemStack(gunstack, bulletID);
-                if (checkingStack != null && checkingStack.getDamageValue() < checkingStack.getMaxDamage())
-                {
-                    bulletStack = checkingStack;
-                    break;
-                }
-            }
+            Optional<AmmoSlot> slot = findUsableAmmo(item, gunStack, configType);
 
-            if (bulletStack.isEmpty())
+            if (slot.isEmpty())
                 continue;
 
-            final ItemStack bullet = bulletStack;
-            final int bulletid = bulletID;
-
-            ShootableItem shootableItem = (ShootableItem) bulletStack.getItem();
+            ShootableItem shootableItem = (ShootableItem) slot.get().stack().getItem();
             ShootableType shootableType = shootableItem.getConfigType();
             Vector3f rayTraceOrigin = new Vector3f(player.getEyePosition(0.0F));
-
-            ShootBulletHandler handler = isExtraBullet -> {
-                if (!isExtraBullet)
-                {
-                    // Drop item on shooting if bullet requires it
-                    if (!player.isCreative())
-                        dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
-
-                    // Drop item on shooting if gun requires it
-                    dropItem(level, player, configType.getDropItemOnShoot(), configType.getContentPack());
-
-                    //TODO : Apply knockback
-                    //if (configType.getKnockback() > 0F) {}
-
-                    //Damage the bullet item
-                    bullet.setDamageValue(bullet.getDamageValue() + 1);
-
-                    //Update the stack in the gun
-                    item.setBulletItemStack(gunstack, bullet, bulletid);
-
-                    if (configType.isConsumeGunUponUse())
-                        player.setItemInHand(hand, ItemStack.EMPTY);
-                }
-            };
+            ShootingHandler handler = new DefaultShootingHandler(level, player, gunStack, hand, slot.get());
 
             if (level.isClientSide)
             {
@@ -197,7 +163,7 @@ public record GunItemBehavior(GunItem item)
                 }
 
                 animations.doShoot(configType.getPumpDelay(), configType.getPumpTime());
-                float recoil = configType.getRecoil(gunstack);
+                float recoil = configType.getRecoil(gunStack);
                 ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
             }
@@ -208,7 +174,7 @@ public record GunItemBehavior(GunItem item)
                 if (shootableItem instanceof BulletItem bulletItem)
                 {
                     //Fire gun
-                    FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunstack), configType.getSpread(gunstack), configType.getBulletSpeed(gunstack), configType.getSpreadPattern(gunstack));
+                    FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunStack), configType.getSpread(gunStack), configType.getBulletSpeed(gunStack), configType.getSpreadPattern(gunStack));
 
                     //TODO: enchantments & gloves
                     /*if (otherHand.getItem() instanceof ShieldItem || otherHand.getItem() instanceof ItemGlove)
@@ -218,7 +184,7 @@ public record GunItemBehavior(GunItem item)
 
                     FiredShot shot = new FiredShot(fireableGun, bulletItem.getConfigType(), (ServerPlayer)player);
                     //TODO gunOrigin? & animation origin
-                    ShotHandler.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
+                    ShootingUtils.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
                 }
                 else if (shootableItem instanceof GrenadeItem grenadeItem)
                 {
@@ -227,7 +193,7 @@ public record GunItemBehavior(GunItem item)
                     handler.shooting(false);
                 }
 
-                boolean silenced = configType.getBarrel(gunstack) != null && configType.getBarrel(gunstack).isSilencer();
+                boolean silenced = configType.getBarrel(gunStack) != null && configType.getBarrel(gunStack).isSilencer();
                 playShotSound(level, rayTraceOrigin, silenced);
             }
 
@@ -355,7 +321,7 @@ public record GunItemBehavior(GunItem item)
     /**
      * Method for dropping items on reload and on shoot
      */
-    private static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
+    public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
     {
         if (!level.isClientSide && itemName != null)
         {
@@ -377,5 +343,21 @@ public record GunItemBehavior(GunItem item)
                 return true;
         }
         return false;
+    }
+
+    public record AmmoSlot(int index, ItemStack stack) {}
+
+    public static Optional<AmmoSlot> findUsableAmmo(GunItem item, ItemStack gunStack, GunType configType)
+    {
+        int slots = configType.getNumAmmoItemsInGun();
+        for (int i = 0; i < slots; i++)
+        {
+            ItemStack s = item.getBulletItemStack(gunStack, i);
+            if (s != null && !s.isEmpty() && s.getDamageValue() < s.getMaxDamage())
+            {
+                return Optional.of(new AmmoSlot(i, s));
+            }
+        }
+        return Optional.empty();
     }
 }

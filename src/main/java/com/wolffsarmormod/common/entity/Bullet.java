@@ -7,7 +7,7 @@ import com.wolffsarmormod.client.render.ParticleHelper;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
-import com.wolffsarmormod.common.guns.ShotHandler;
+import com.wolffsarmormod.common.guns.ShootingUtils;
 import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
@@ -33,7 +33,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -99,20 +98,17 @@ public class Bullet extends Shootable
         double jitter = BASE_JITTER * (spread / SPREAD_DIVISOR) * speed;
         Vec3 velocity = direction.normalize().scale(speed).add(random.nextGaussian() * jitter, random.nextGaussian() * jitter, random.nextGaussian() * jitter);
         setDeltaMovement(velocity);
-        computeRotations(velocity);
+        setOrientation(velocity);
         getLockOnTarget();
-
     }
 
-    protected void computeRotations(Vec3 velocity)
+    protected void setOrientation(Vec3 velocity)
     {
-        final double RAD_TO_DEG = 180.0 / Math.PI;
-
         // horizontal length: sqrt(x^2 + z^2)
         double lengthXZ = Math.hypot(velocity.x, velocity.z);
         // compute yaw/pitch in degrees
-        float yaw = (float) (Mth.atan2(velocity.x, velocity.z) * RAD_TO_DEG);
-        float pitch = (float) (Mth.atan2(velocity.y, lengthXZ) * RAD_TO_DEG);
+        float yaw = (float) Math.toDegrees(Mth.atan2(velocity.x, velocity.z));
+        float pitch = (float) Math.toDegrees(Mth.atan2(velocity.y, lengthXZ));
 
         // set current + previous rotations
         setYRot(yaw);
@@ -128,7 +124,7 @@ public class Bullet extends Shootable
         // only initialize rotation once (same behavior as the old check)
         if (xRotO == 0.0F && yRotO == 0.0F)
         {
-            computeRotations(velocity);
+            setOrientation(velocity);
             moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
         }
     }
@@ -294,10 +290,6 @@ public class Bullet extends Shootable
                 checkforuuids = false;
             }
 
-            applyDragAndGravity(fallSpeed);
-            move(MoverType.SELF, getDeltaMovement());
-            updateOrientationFromVelocity();
-
             if (level().isClientSide)
                 clientTick();
             else
@@ -321,15 +313,22 @@ public class Bullet extends Shootable
         setDeltaMovement(v);
     }
 
-    protected void updateOrientationFromVelocity()
-    {
+    protected void updateMovementAndOrientation() {
+        // move by current velocity
         Vec3 v = getDeltaMovement();
-        float horiz = (float) Math.sqrt(v.x * v.x + v.z * v.z);
+        System.out.println(level().isClientSide + " " + getDeltaMovement().normalize());
+        setPos(getX() + v.x, getY() + v.y, getZ() + v.z);
+
+        // recompute target angles from motion (same math as 1.7.10)
+        float horiz = (float) Math.hypot(v.x, v.z);
         float targetYaw = (float) (Math.toDegrees(Math.atan2(v.x, v.z)));
         float targetPitch = (float) (Math.toDegrees(Math.atan2(v.y, horiz)));
 
-        setYRot(net.minecraft.util.Mth.rotLerp(0.2F, getYRot(), targetYaw));
-        setXRot(net.minecraft.util.Mth.rotLerp(0.2F, getXRot(), targetPitch));
+        // smooth like old: prev + (curr - prev) * 0.2, but with proper wrap
+        setYRot(Mth.rotLerp(0.2F, yRotO, targetYaw));
+        setXRot(Mth.rotLerp(0.2F, xRotO, targetPitch));
+
+        // update "previous" fields for next tick interpolation
         yRotO = getYRot();
         xRotO = getXRot();
     }
@@ -405,6 +404,9 @@ public class Bullet extends Shootable
 
     protected void serverTick()
     {
+        applyDragAndGravity(firedShot.getBulletType().getFallSpeed());
+        updateMovementAndOrientation();
+
         //TODO: Debug Mode
         //if (FlansMod.DEBUG) spawnDebugVector();
 
@@ -413,6 +415,8 @@ public class Bullet extends Shootable
 
         performRaytraceAndApplyHits();
         applyHomingIfLocked();
+        if (getDeltaMovement().x > 0.01 && getDeltaMovement().y > 0.01 && getDeltaMovement().z > 0.01)
+            System.out.println(getDeltaMovement().normalize());
     }
 
     private void spawnDebugVector()
@@ -468,10 +472,10 @@ public class Bullet extends Shootable
         {
             Vector3f hitPos = new Vector3f(origin.x + motion.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
 
-            currentPenetratingPower = ShotHandler.onHit(level(), hitPos, motion, firedShot, bulletHit, currentPenetratingPower);
+            currentPenetratingPower = ShootingUtils.onHit(level(), hitPos, motion, firedShot, bulletHit, currentPenetratingPower);
             if (currentPenetratingPower <= 0F)
             {
-                ShotHandler.onDetonate(level(), firedShot, hitPos);
+                ShootingUtils.onDetonate(level(), firedShot, hitPos);
                 discard();
                 break;
             }

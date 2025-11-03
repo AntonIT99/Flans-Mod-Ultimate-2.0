@@ -381,8 +381,86 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
+    public void renderItem(ItemDisplayContext ctx, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    {
+        poseStack.pushPose();
+        float modelScale = type != null ? type.getModelScale() : 1F;
+        boolean leftHanded = false;
+        GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
+
+        // 0) Model-space fixups (constant)
+        // If your mesh was authored in 1.12 coordinates, you may need a one-time rotate/scale
+        // Example: face +Z, mirror Z, or apply uniform scale
+        // pose.mulPose(Axis.YP.rotationDegrees(180));
+        // pose.scale(1.0f, 1.0f, 1.0f);
+
+        // 1) Per-context nudge (small)
+        // Vanilla already does placement for: FIRST/THIRD_PERSON, GROUND, FIXED (frame), GUI.
+        // Only add minimal offsets to fit your mesh in hand/frame/GUI if needed.
+        switch (ctx)
+        {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
+            {
+                boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+                applyFirstPersonAdjustments(poseStack, left);
+            }
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
+            {
+                boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+                applyThirdPersonAdjustments(poseStack, left);
+            }
+            case GROUND ->
+            {
+                // Usually nothing; vanilla spins & lifts the item
+            }
+            case FIXED ->
+            {
+                // Item frame; usually nothing or very small scale tweak
+            }
+            case GUI ->
+            {
+                // Usually nothing; maybe tiny rotate/scale for your icon look
+            }
+            default ->
+            {
+            }
+        }
+        renderGun(animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+        poseStack.popPose();
+    }
+
+    private void applyFirstPersonAdjustments(PoseStack poseStack, boolean left)
+    {
+        /*
+        GlStateManager.rotate(90F, 0F, 0F, 1F);
+        GlStateManager.rotate(-90F, 1F, 0F, 0F);
+        GlStateManager.translate(0.2F, 0.05F, -0F);
+        GlStateManager.scale(1F, 1F, -1F);
+         */
+        // Keep these SMALL; vanilla hand placement is already applied.
+        // Only what you need to align the mesh (replace the huge 1.12 blocks).
+        // Example:
+        //poseStack.mulPose(Axis.YP.rotationDegrees(90F));
+        //poseStack.translate(0F, 0F, 0F);
+        //poseStack.translate(-1F, 0.675F, -1.8F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
+        //poseStack.mulPose(Axis.XP.rotationDegrees(-90F));
+        //poseStack.scale(1F, 1F, -1F);
+        poseStack.translate(0F , -0.05F, -0.2F);
+        if (!left) {
+            // tiny ADS roll will happen later in applyAdsOffsets()
+        }
+    }
+
+    private void applyThirdPersonAdjustments(PoseStack poseStack, boolean left) {
+        // Again: tiny tweaks only if the mesh looks off in third-person
+    }
+
     public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
+        /*renderItem(itemDisplayContext, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+        if (true)
+            return;*/
         float modelScale = type != null ? type.getModelScale() : 1F;
         GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
 

@@ -25,7 +25,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     /** Client and Server side */
     protected String shortname = StringUtils.EMPTY;
-    protected float fallSpeed;
+    //TODO: replace sync by lookup in getInfoType(String id)
     protected boolean hasLight;
     protected boolean trailParticles;
     protected String trailParticleType = StringUtils.EMPTY;
@@ -41,7 +41,6 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     {
         this(entityType, level);
         shortname = type.getShortName();
-        fallSpeed = type.getFallSpeed();
         hasLight = type.isHasLight();
         trailParticles = type.isTrailParticles();
         trailParticleType = type.getTrailParticleType();
@@ -102,7 +101,6 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
-        buf.writeFloat(fallSpeed);
         buf.writeBoolean(hasLight);
         buf.writeBoolean(trailParticles);
         buf.writeUtf(trailParticleType);
@@ -114,7 +112,6 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void readSpawnData(FriendlyByteBuf buf)
     {
         shortname = buf.readUtf();
-        fallSpeed = buf.readFloat();
         hasLight = buf.readBoolean();
         trailParticles = buf.readBoolean();
         trailParticleType = buf.readUtf();
