@@ -12,6 +12,7 @@ import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
+import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
@@ -45,20 +46,22 @@ public class Bullet extends Shootable
 {
     public static final int RENDER_DISTANCE = 128;
 
-    /** Server side */
+    @Getter
+    protected BulletType bulletType;
+    protected Vec3 velocity;
+
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
     protected int ticksInAir;
     protected float currentPenetratingPower;
-
-    @OnlyIn(Dist.CLIENT)
-    protected boolean playedFlybySound;
-
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
     protected boolean checkforuuids;
     protected UUID playeruuid;
     protected UUID shooteruuid;
+
+    @OnlyIn(Dist.CLIENT)
+    protected boolean playedFlybySound;
 
     public Bullet(EntityType<?> entityType, Level level)
     {
@@ -70,6 +73,7 @@ public class Bullet extends Shootable
         super(ArmorMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         ticksInAir = 0;
+        bulletType = firedShot.getBulletType();
 
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
@@ -77,11 +81,28 @@ public class Bullet extends Shootable
     }
 
     @Override
+    @NotNull
+    public Vec3 getDeltaMovement()
+    {
+        return velocity;
+    }
+
+    @Override
+    public void setDeltaMovement(@NotNull Vec3 deltaMovement)
+    {
+        //Does not allow the client to change the velocity from outside this class
+        if (!level().isClientSide)
+        {
+            super.setDeltaMovement(deltaMovement);
+            velocity = deltaMovement;
+        }
+        hasImpulse = true;
+    }
+
+    @Override
     public void setDeltaMovement(double dx, double dy, double dz)
     {
-        super.setDeltaMovement(dx, dy, dz);
-        // Immediately show motion
-        hasImpulse = true;
+        setDeltaMovement(new Vec3(dx, dy, dz));
     }
 
     @Override
@@ -96,7 +117,7 @@ public class Bullet extends Shootable
         final double BASE_JITTER = 0.005;
 
         double jitter = BASE_JITTER * (spread / SPREAD_DIVISOR) * speed;
-        Vec3 velocity = direction.normalize().scale(speed).add(random.nextGaussian() * jitter, random.nextGaussian() * jitter, random.nextGaussian() * jitter);
+        velocity = direction.normalize().scale(speed).add(random.nextGaussian() * jitter, random.nextGaussian() * jitter, random.nextGaussian() * jitter);
         setDeltaMovement(velocity);
         setOrientation(velocity);
         getLockOnTarget();
@@ -119,6 +140,7 @@ public class Bullet extends Shootable
 
     public void setVelocity(Vec3 velocity)
     {
+        this.velocity = velocity;
         setDeltaMovement(velocity);
 
         // only initialize rotation once (same behavior as the old check)
@@ -134,13 +156,11 @@ public class Bullet extends Shootable
      */
     protected void getLockOnTarget()
     {
-        BulletType type = firedShot.getBulletType();
-
-        if (type.isLockOnToPlanes() || type.isLockOnToVehicles() || type.isLockOnToMechas() || type.isLockOnToLivings() || type.isLockOnToPlayers())
+        if (bulletType.isLockOnToPlanes() || bulletType.isLockOnToVehicles() || bulletType.isLockOnToMechas() || bulletType.isLockOnToLivings() || bulletType.isLockOnToPlayers())
         {
-            Vector3f motionVec = new Vector3f(getDeltaMovement());
+            Vector3f motionVec = new Vector3f(velocity);
             Entity closestEntity = null;
-            float closestAngle = type.getMaxLockOnAngle() * (float) Math.PI / 180F;
+            float closestAngle = bulletType.getMaxLockOnAngle() * (float) Math.PI / 180F;
 
             for (Entity entity : ModUtils.queryEntitiesInRange(level(), this, BulletType.LOCK_ON_RANGE, null))
             {
@@ -150,7 +170,7 @@ public class Bullet extends Shootable
                         || type.lockOnToPlanes && entity instanceof EntityPlane
                         || type.lockOnToPlayers && entity instanceof EntityPlayer
                         || type.lockOnToLivings && entity instanceof EntityLivingBase)*/
-                if (type.isLockOnToPlayers() && entity instanceof Player || type.isLockOnToLivings() && entity instanceof LivingEntity)
+                if (bulletType.isLockOnToPlayers() && entity instanceof Player || bulletType.isLockOnToLivings() && entity instanceof LivingEntity)
                 {
                     Vector3f relPosVec = new Vector3f(entity.getX() - getX(), entity.getY() - getY(), entity.getZ() - getZ());
                     float angle = Math.abs(Vector3f.angle(motionVec, relPosVec));
@@ -190,10 +210,9 @@ public class Bullet extends Shootable
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
-        Vec3 v = getDeltaMovement();
-        buf.writeDouble(v.x);
-        buf.writeDouble(v.y);
-        buf.writeDouble(v.z);
+        buf.writeDouble(velocity.x);
+        buf.writeDouble(velocity.y);
+        buf.writeDouble(velocity.z);
     }
 
     @Override
@@ -202,11 +221,14 @@ public class Bullet extends Shootable
         try
         {
             super.readSpawnData(buf);
+            if (InfoType.getInfoType(shortname) instanceof BulletType type)
+                bulletType = type;
             double vx = buf.readDouble();
             double vy = buf.readDouble();
             double vz = buf.readDouble();
-
-            setDeltaMovement(vx, vy, vz);
+            velocity = new Vec3(vx, vy, vz);
+            setDeltaMovement(velocity);
+            setOrientation(velocity);
         }
         catch (Exception e)
         {
@@ -290,6 +312,9 @@ public class Bullet extends Shootable
                 checkforuuids = false;
             }
 
+            applyDragAndGravity();
+            updatePositionAndOrientation();
+
             if (level().isClientSide)
                 clientTick();
             else
@@ -304,25 +329,23 @@ public class Bullet extends Shootable
 
     /* ======================= Physics & Orientation ======================= */
 
-    protected void applyDragAndGravity(float fallSpeed)
+    protected void applyDragAndGravity()
     {
         float drag = isInWater() ? 0.8F : 0.99F;
-        float gravity = 0.02F * fallSpeed;
+        float gravity = 0.02F * bulletType.getFallSpeed();
 
-        Vec3 v = getDeltaMovement().scale(drag).add(0.0, -gravity, 0.0);
-        setDeltaMovement(v);
+        velocity = velocity.scale(drag).add(0.0, -gravity, 0.0);
+        setDeltaMovement(velocity);
     }
 
-    protected void updateMovementAndOrientation() {
+    protected void updatePositionAndOrientation() {
         // move by current velocity
-        Vec3 v = getDeltaMovement();
-        System.out.println(level().isClientSide + " " + getDeltaMovement().normalize());
-        setPos(getX() + v.x, getY() + v.y, getZ() + v.z);
+        setPos(getX() + velocity.x, getY() + velocity.y, getZ() + velocity.z);
 
         // recompute target angles from motion (same math as 1.7.10)
-        float horiz = (float) Math.hypot(v.x, v.z);
-        float targetYaw = (float) (Math.toDegrees(Math.atan2(v.x, v.z)));
-        float targetPitch = (float) (Math.toDegrees(Math.atan2(v.y, horiz)));
+        float horiz = (float) Math.hypot(velocity.x, velocity.z);
+        float targetYaw = (float) (Math.toDegrees(Math.atan2(velocity.x, velocity.z)));
+        float targetPitch = (float) (Math.toDegrees(Math.atan2(velocity.y, horiz)));
 
         // smooth like old: prev + (curr - prev) * 0.2, but with proper wrap
         setYRot(Mth.rotLerp(0.2F, yRotO, targetYaw));
@@ -340,7 +363,7 @@ public class Bullet extends Shootable
     {
         if (isInWater())
             spawnWaterBubbles();
-        if (trailParticles) {
+        if (bulletType.isTrailParticles()) {
             spawnParticles();
         }
         playFlybyIfClose();
@@ -349,11 +372,10 @@ public class Bullet extends Shootable
     @OnlyIn(Dist.CLIENT)
     protected void spawnWaterBubbles()
     {
-        Vec3 v = getDeltaMovement();
         for (int i = 0; i < 4; i++)
         {
             double t = 0.25;
-            level().addParticle(ParticleTypes.BUBBLE, getX() - v.x * t, getY() - v.y * t, getZ() - v.z * t, v.x, v.y, v.z);
+            level().addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * t, getY() - velocity.y * t, getZ() - velocity.z * t, velocity.x, velocity.y, velocity.z);
         }
     }
 
@@ -380,7 +402,7 @@ public class Bullet extends Shootable
             double y = yo + dY * i + random.nextGaussian() * spread;
             double z = zo + dZ * i + random.nextGaussian() * spread;
 
-            ParticleHelper.spawnFromString(client, trailParticleType, x, y, z, fancyLike);
+            ParticleHelper.spawnFromString(client, bulletType.getTrailParticleType(), x, y, z, fancyLike);
         }
     }
 
@@ -404,9 +426,6 @@ public class Bullet extends Shootable
 
     protected void serverTick()
     {
-        applyDragAndGravity(firedShot.getBulletType().getFallSpeed());
-        updateMovementAndOrientation();
-
         //TODO: Debug Mode
         //if (FlansMod.DEBUG) spawnDebugVector();
 
@@ -415,8 +434,6 @@ public class Bullet extends Shootable
 
         performRaytraceAndApplyHits();
         applyHomingIfLocked();
-        if (getDeltaMovement().x > 0.01 && getDeltaMovement().y > 0.01 && getDeltaMovement().z > 0.01)
-            System.out.println(getDeltaMovement().normalize());
     }
 
     private void spawnDebugVector()
@@ -435,9 +452,8 @@ public class Bullet extends Shootable
     private boolean handleFuseAndLifetime()
     {
         ticksInAir++;
-        BulletType type = firedShot.getBulletType();
 
-        if (type.getFuse() > 0 && ticksInAir > type.getFuse() && !isRemoved())
+        if (bulletType.getFuse() > 0 && ticksInAir > bulletType.getFuse() && !isRemoved())
         {
             discard();
             return true;
@@ -454,9 +470,8 @@ public class Bullet extends Shootable
 
     private void performRaytraceAndApplyHits()
     {
-        Vec3 dv = getDeltaMovement();
         Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
-        Vector3f motion = new Vector3f((float)dv.x, (float)dv.y, (float)dv.z);
+        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
 
         Optional<ServerPlayer> playerOptional = firedShot.getPlayerOptional();
         Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getShooterOptional().orElse(null);
@@ -494,16 +509,15 @@ public class Bullet extends Shootable
         double d2 = dX * dX + dY * dY + dZ * dZ;
         if (d2 < 1.0e-6) return;
 
-        Vec3 vNow = getDeltaMovement();
-        Vector3f motion = new Vector3f((float)vNow.x, (float)vNow.y, (float)vNow.z);
+        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
         Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
 
         float angle = Math.abs(Vector3f.angle(motion, toTarget));
-        double pull = angle * firedShot.getBulletType().getLockOnForce();
+        double pull = angle * bulletType.getLockOnForce();
         pull = pull * pull;
 
-        Vec3 vv = vNow.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
-        setDeltaMovement(vv);
+        velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
+        setDeltaMovement(velocity);
     }
 
     /* ======================= UUID Resolution ======================= */
@@ -538,7 +552,7 @@ public class Bullet extends Shootable
 
         if (shooter != null)
         {
-            firedShot = new FiredShot(firedShot.getFireableGun(), firedShot.getBulletType(), shooter, player);
+            firedShot = new FiredShot(firedShot.getFireableGun(), bulletType, shooter, player);
         }
     }
 }

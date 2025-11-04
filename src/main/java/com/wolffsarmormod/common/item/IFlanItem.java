@@ -32,4 +32,13 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
                 tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.WHITE));
         }
     }
+
+    /** Helper to render "BlueLabel: gray value" */
+    static Component statLine(String label, String value)
+    {
+        return Component.literal(label)
+            .withStyle(ChatFormatting.BLUE)
+            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
 }

@@ -153,6 +153,7 @@ public class ArmorType extends InfoType
         return invisible;
     }
 
+    // TODO: Implement Smoke Protection with Flan's grenades
     /**
      * If true, then smoke effects from grenades will have no effect on players wearing this
      */

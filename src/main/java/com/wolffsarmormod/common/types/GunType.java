@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -506,18 +505,22 @@ public class GunType extends PaintableType implements IScope
     /**
      * If this is true, then all attachments are allowed. Otherwise, the list is checked.
      */
-    protected boolean allowAllAttachments = false;
+    protected boolean allowAllAttachments = true;
     /**
      * The list of allowed attachments for this gun
      */
-    //TODO AttachmentType
-    //protected ArrayList<AttachmentType> allowedAttachments = new ArrayList<>();
+    protected List<AttachmentType> allowedAttachments = new ArrayList<>();
     /**
      * Whether each attachment slot is available
      */
-    protected boolean allowBarrelAttachments = false, allowScopeAttachments = false,
-            allowStockAttachments = false, allowGripAttachments = false, allowGadgetAttachments = false,
-            allowSlideAttachments = false, allowPumpAttachments = false, allowAccessoryAttachments = false;
+    protected boolean allowBarrelAttachments = false;
+    protected boolean allowScopeAttachments = false;
+    protected boolean allowStockAttachments = false;
+    protected boolean allowGripAttachments = false;
+    protected boolean allowGadgetAttachments = false;
+    protected boolean allowSlideAttachments = false;
+    protected boolean allowPumpAttachments = false;
+    protected boolean allowAccessoryAttachments = false;
     /**
      * The number of generic attachment slots there are on this gun
      */
@@ -667,12 +670,11 @@ public class GunType extends PaintableType implements IScope
 
         //Attachment settings
         allowAllAttachments = readValue(split, "AllowAllAttachments", allowAllAttachments, file);
-        //TODO: uncomment (AttachmentType)
-        /*if (split[0].equalsIgnoreCase("AllowAttachments"))
+        if (split[0].equalsIgnoreCase("AllowAttachments"))
         {
             for (int i = 1; i < split.length; i++)
                 allowedAttachments.add(AttachmentType.getAttachment(split[i]));
-        }*/
+        }
 
         allowBarrelAttachments = readValue(split, "AllowBarrelAttachments", allowBarrelAttachments, file);
         allowScopeAttachments = readValue(split, "AllowScopeAttachments", allowScopeAttachments, file);
@@ -731,10 +733,8 @@ public class GunType extends PaintableType implements IScope
      */
     public IScope getCurrentScope(ItemStack gunStack)
     {
-        //TODO: implement attachments
-        /*IScope attachedScope = getScope(gunStack);
-        return attachedScope == null ? this : attachedScope;*/
-        return this;
+        IScope attachedScope = getScope(gunStack);
+        return attachedScope == null ? this : attachedScope;
     }
 
     /*public AttachmentType getScope(ItemStack gun)
@@ -747,13 +747,9 @@ public class GunType extends PaintableType implements IScope
      */
     public List<AttachmentType> getCurrentAttachments(ItemStack gun)
     {
-        //TODO: implement attachments
-        /*
         checkForTags(gun);
-        ArrayList<AttachmentType> attachments = new ArrayList<>();
-        NBTTagCompound attachmentTags = gun.getTagCompound().getCompoundTag("attachments");
-        NBTTagList genericsList = attachmentTags.getTagList("generics", (byte)10); //TODO : Check this 10 is correct
-        for(int i = 0; i < numGenericAttachmentSlots; i++)
+        List<AttachmentType> attachments = new ArrayList<>();
+        for (int i = 0; i < numGenericAttachmentSlots; i++)
         {
             appendToList(gun, "generic_" + i, attachments);
         }
@@ -762,8 +758,16 @@ public class GunType extends PaintableType implements IScope
         appendToList(gun, "stock", attachments);
         appendToList(gun, "grip", attachments);
         return attachments;
-        */
-        return Collections.emptyList();
+    }
+
+    /**
+     * Private method for attaching attachments to a list of attachments with a null check
+     */
+    private void appendToList(ItemStack gun, String name, List<AttachmentType> attachments)
+    {
+        AttachmentType type = getAttachment(gun, name);
+        if (type != null)
+            attachments.add(type);
     }
 
     //Attachment getter methods
@@ -971,7 +975,6 @@ public class GunType extends PaintableType implements IScope
 
     public float getShootDelay(ItemStack stack)
     {
-        //TODO: implement attachments
         for (AttachmentType attachment : getCurrentAttachments(stack))
         {
             if (attachment.modeOverride == EnumFireMode.BURST)

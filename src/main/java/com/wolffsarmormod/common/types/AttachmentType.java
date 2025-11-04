@@ -15,13 +15,13 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 
 @NoArgsConstructor
 public class AttachmentType extends PaintableType implements IScope
 {
-    //TODO: implement attachment Item
     /** The type of attachment. Each gun can have one barrel, one scope, one grip, one stock and some number of generics up to a limit set by the gun */
     protected EnumAttachmentType attachmentType = EnumAttachmentType.GENERIC;
     protected String attachmentTypeString = StringUtils.EMPTY;
@@ -31,31 +31,40 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected boolean silencer;
     /** If true, then this attachment will act like a flashlight */
+    @Getter
     protected boolean flashlight;
     /** Flashlight range. How far away it lights things up */
     protected float flashlightRange = 10F;
     /** Flashlight strength between 0 and 15 */
+    @Getter
     protected int flashlightStrength = 12;
     /** If true, disable the muzzle flash model */
     protected boolean disableMuzzleFlash;
 
     //Gun behaviour modifiers
     /** These stack between attachments and apply themselves to the gun's default spread */
+    @Getter
     protected float spreadMultiplier = 1F;
     /** Likewise these stack and affect recoil */
+    @Getter
     protected float recoilMultiplier = 1F;
     /** The return to center force LOWER = BETTER */
     protected float recoilControlMultiplier = 1F;
     protected float recoilControlMultiplierSneaking = 1F;
     protected float recoilControlMultiplierSprinting = 1F;
     /** Another stacking variable for damage */
+    @Getter
     protected float damageMultiplier = 1F;
     /** Melee damage modifier */
+    @Getter
     protected float meleeDamageMultiplier = 1F;
     /** Bullet speed modifier */
+    @Getter
     protected float bulletSpeedMultiplier = 1F;
+    @Getter
     protected float shootDelayMultiplier = 1F;
     /** This modifies the reload time, which is then rounded down to the nearest tick */
+    @Getter
     protected float reloadTimeMultiplier = 1F;
     /** Movement speed modifier */
     protected float moveSpeedMultiplier = 1F;
@@ -199,7 +208,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return TextureManager.INTENTIONAL_MISSING_TEXTURE;
+        return Optional.ofNullable(overlay).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
     }
 
     @Nullable
@@ -209,6 +218,15 @@ public class AttachmentType extends PaintableType implements IScope
         /*if (!stack.isEmpty() && stack.getItem() instanceof ItemAttachment attachment) {
             return attachment.type;
         }*/
+        return null;
+    }
+
+    public static AttachmentType getAttachment(String s)
+    {
+        if (InfoType.getInfoType(s) instanceof AttachmentType attachmentType)
+        {
+            return attachmentType;
+        }
         return null;
     }
 }

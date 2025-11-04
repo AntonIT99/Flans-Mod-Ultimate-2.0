@@ -361,7 +361,7 @@ public class ContentManager
         try
         {
             List<String> lines = readAllLinesUtf8OrLatin1(file);
-            stripBomInPlace(lines);
+            stripBomIfPresent(lines);
             return new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines);
         }
         catch (IOException e)
@@ -383,13 +383,11 @@ public class ContentManager
         }
     }
 
-    private static void stripBomInPlace(List<String> lines)
+    private static void stripBomIfPresent(List<String> lines)
     {
-        if (!lines.isEmpty())
+        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '\uFEFF')
         {
-            String s0 = lines.get(0);
-            if (s0 != null && !s0.isEmpty() && s0.charAt(0) == '\uFEFF')
-                lines.set(0, s0.substring(1));
+            lines.set(0, lines.get(0).substring(1));
         }
     }
 
@@ -867,7 +865,18 @@ public class ContentManager
         Map<String, String> translations = new LinkedHashMap<>();
         try
         {
-            List<String> lines = Files.readAllLines(langFile, StandardCharsets.UTF_8);
+            List<String> lines;
+            try
+            {
+                lines = Files.readAllLines(langFile, StandardCharsets.UTF_8);
+                stripBomIfPresent(lines);
+            }
+            catch (MalformedInputException ex)
+            {
+                // UTF-8 failed: try UTF-16
+                lines = Files.readAllLines(langFile, StandardCharsets.UTF_16);
+                stripBomIfPresent(lines);
+            }
 
             for (String line : lines)
             {

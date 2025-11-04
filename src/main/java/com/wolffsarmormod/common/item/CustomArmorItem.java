@@ -119,9 +119,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
             tooltipComponents.add(Component.literal("+" + (int)((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
-        // TODO: Implement Smoke Protection with Flan's grenades
-        //if (type.hasSmokeProtection())
-        //    tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));
+
+        if (configType.hasSmokeProtection())
+            tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.hasNightVision())
             tooltipComponents.add(Component.literal("+Night Vision").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.hasInvisiblility())

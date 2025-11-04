@@ -1,7 +1,6 @@
 package com.wolffsarmormod.common.entity;
 
 import com.wolffsarmormod.common.types.ShootableType;
-import lombok.Getter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -23,14 +22,8 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected static final EntityDataAccessor<String> SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
 
-    /** Client and Server side */
+    /** Synced between Client and Server */
     protected String shortname = StringUtils.EMPTY;
-    //TODO: replace sync by lookup in getInfoType(String id)
-    protected boolean hasLight;
-    protected boolean trailParticles;
-    protected String trailParticleType = StringUtils.EMPTY;
-    @Getter
-    protected float modelScale = 1F;
 
     protected Shootable(EntityType<?> entityType, Level level)
     {
@@ -40,12 +33,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected Shootable(EntityType<?> entityType, Level level, ShootableType type)
     {
         this(entityType, level);
-        shortname = type.getShortName();
-        hasLight = type.isHasLight();
-        trailParticles = type.isTrailParticles();
-        trailParticleType = type.getTrailParticleType();
-        modelScale = type.getModelScale();
-        setShortName(shortname);
+        setShortName(type.getShortName());
         setHitboxSize(type.getHitBoxSize());
     }
 
@@ -101,10 +89,6 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
-        buf.writeBoolean(hasLight);
-        buf.writeBoolean(trailParticles);
-        buf.writeUtf(trailParticleType);
-        buf.writeFloat(modelScale);
         buf.writeFloat(getHitboxSize());
     }
 
@@ -112,10 +96,6 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void readSpawnData(FriendlyByteBuf buf)
     {
         shortname = buf.readUtf();
-        hasLight = buf.readBoolean();
-        trailParticles = buf.readBoolean();
-        trailParticleType = buf.readUtf();
-        modelScale = buf.readFloat();
         setHitboxSize(buf.readFloat());
     }
 }

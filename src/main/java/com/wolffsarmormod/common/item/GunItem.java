@@ -131,13 +131,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         // Stats
         if (configType.isShowDamage())
-            tooltipComponents.add(statLine("Damage", String.valueOf(configType.getDamage(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Damage", String.valueOf(configType.getDamage(stack))));
         if (configType.isShowRecoil())
-            tooltipComponents.add(statLine("Recoil", String.valueOf(configType.getRecoil(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Recoil", String.valueOf(configType.getRecoil(stack))));
         if (configType.isShowSpread())
-            tooltipComponents.add(statLine("Accuracy", String.valueOf(configType.getSpread(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Accuracy", String.valueOf(configType.getSpread(stack))));
         if (configType.isShowReloadTime())
-            tooltipComponents.add(statLine("Reload Time", (configType.getReloadTime(stack) / 20) + "s"));
+            tooltipComponents.add(IFlanItem.statLine("Reload Time", (configType.getReloadTime(stack) / 20F) + "s"));
 
         // Attachments
         if (configType.isShowAttachments())
@@ -162,15 +162,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_GRAY));
             }
         }
-    }
-
-    /** Helper to render "BlueLabel: gray value" */
-    protected static Component statLine(String label, String value)
-    {
-        return Component.literal(label)
-                .withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     @Override
