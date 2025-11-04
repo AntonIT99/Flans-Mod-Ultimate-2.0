@@ -85,6 +85,7 @@ public final class CreativeTabs
                         continue;
                 }
 
+                //TODO: implement Paintjobs
                 if (item instanceof IPaintableItem<?> paintableItem)
                 {
                     PaintableType type = paintableItem.getPaintableType();
