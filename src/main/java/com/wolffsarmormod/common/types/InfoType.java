@@ -71,6 +71,20 @@ public abstract class InfoType
     protected String overlayName = StringUtils.EMPTY;
     @Getter
     protected float modelScale = 1F;
+    protected int colour = 0xFFFFFF;
+    protected String[] recipeLine;
+    protected char[][] recipeGrid = new char[3][3];
+    protected int recipeOutput = 1;
+    protected boolean shapeless;
+    protected String smeltableFrom = StringUtils.EMPTY;
+    /** If this is set to false, then this item cannot be dropped */
+    protected boolean canDrop = true;
+    /**
+     * The probability that this item will appear in a dungeon chest.
+     * Scaled so that each chest is likely to have a fixed number of Flan's Mod items.
+     * Must be greater than or equal to 0, and should probably not exceed 100
+     */
+    protected int dungeonChance = 1;
 
     @Getter @OnlyIn(Dist.CLIENT)
     protected ResourceLocation texture;
@@ -133,7 +147,6 @@ public abstract class InfoType
 
     protected void readLine(String line, String[] split, TypeFile file)
     {
-        //TODO: Recipes
         name = readValues(split, "Name", name, file);
         originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase();
         description = readValues(split, "Description", description, file);
@@ -142,6 +155,50 @@ public abstract class InfoType
         overlayName = readValue(split, "Overlay", overlayName, file).toLowerCase();
         modelName = readValue(split, "Model", modelName, file);
         modelScale = readValue(split, "ModelScale", modelScale, file);
+
+        dungeonChance = readValue(split, "DungeonProbability", dungeonChance, file);
+        dungeonChance = readValue(split, "DungeonLootChance", dungeonChance, file);
+
+        recipeOutput = readValue(split, "RecipeOutput", recipeOutput, file);
+
+        smeltableFrom = readValue(split, "SmeltableFrom", smeltableFrom, file);
+        canDrop = readValue(split, "CanDrop", canDrop, file);
+
+        // More complicated line reads
+        if (split[0].equalsIgnoreCase("Colour") || split[0].equalsIgnoreCase("Color"))
+        {
+            colour = (Integer.parseInt(split[1]) << 16) + ((Integer.parseInt(split[2])) << 8) + ((Integer.parseInt(split[3])));
+        }
+
+        if (split[0].equalsIgnoreCase("Recipe"))
+        {
+            addToRecipeGrid(line, file);
+            recipeLine = split;
+            shapeless = false;
+        }
+        else if(split[0].equalsIgnoreCase("ShapelessRecipe"))
+        {
+            recipeLine = split;
+            shapeless = true;
+        }
+    }
+
+    private void addToRecipeGrid(String line, TypeFile file)
+    {
+        List<String> lines = file.getLines();
+        int recipeLineIndex = lines.indexOf(line);
+        int fromIndex = recipeLineIndex + 1;
+        int toIndex = Math.min(fromIndex + 3, lines.size());
+        String[] recipeRows = lines.subList(fromIndex, toIndex).toArray(new String[0]);
+
+        for (int i = 0; i < recipeRows.length; i++)
+        {
+            String recipeRow = recipeRows[i];
+            for (int j = 0; j < 3; j++)
+            {
+                recipeGrid[i][j] = j < recipeRow.length() ? recipeRow.charAt(j) : ' ';
+            }
+        }
     }
 
     protected static String readSound(String[] split, String key, String currentValue, TypeFile file)
