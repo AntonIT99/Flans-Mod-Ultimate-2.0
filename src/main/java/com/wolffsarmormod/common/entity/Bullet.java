@@ -472,7 +472,7 @@ public class Bullet extends Shootable
     {
         Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
         Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
-
+        System.out.println(velocity);
         Optional<ServerPlayer> playerOptional = firedShot.getPlayerOptional();
         Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getShooterOptional().orElse(null);
 

@@ -99,6 +99,7 @@ public class BulletType extends ShootableType
     protected int maxDegreeOfSACLOS = 5;
     protected int maxRangeOfMissile = 150;
 
+    @Getter
     protected boolean manualGuidance;
     protected int lockOnFuse = 10;
 
@@ -136,6 +137,7 @@ public class BulletType extends ShootableType
     protected float trackPhaseTurn = 0.2F;
     protected boolean torpedo;
     protected boolean fancyDescription = true;
+    @Getter
     protected boolean laserGuidance;
 
     // 0 = disable, otherwise sets velocity scale on block hit particle fx

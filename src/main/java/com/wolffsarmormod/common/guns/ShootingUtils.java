@@ -211,14 +211,14 @@ public final class ShootingUtils
         {
             if (entityHit.entity != null)
             {
-                if (entityHit.entity.hurt(shot.getDamageSource(level), damage * bulletType.getDamageVsLiving()) && entityHit.entity instanceof LivingEntity living)
+                if (entityHit.entity.hurt(shot.getDamageSource(level), damage * bulletType.getDamage(entityHit.entity)) && entityHit.entity instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
                     bulletType.getHitEffects().forEach(living::addEffect);
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = 0;
                 }
-                if(bulletType.isSetEntitiesOnFire())
+                if (bulletType.isSetEntitiesOnFire())
                     entityHit.entity.setSecondsOnFire(20);
                 penetratingPower -= 1F;
 
@@ -229,8 +229,6 @@ public final class ShootingUtils
 
             //Send hit marker, if player is present
             shot.getPlayerOptional().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
-
-
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {

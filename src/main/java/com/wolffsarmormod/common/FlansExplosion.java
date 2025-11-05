@@ -3,14 +3,12 @@ package com.wolffsarmormod.common;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.wolffsarmormod.ModUtils;
-import com.wolffsarmormod.common.damagesource.FlansDamageTypes;
 import com.wolffsarmormod.common.types.InfoType;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -204,14 +202,8 @@ public class FlansExplosion extends Explosion
             DamageSource src;
             if (player != null)
             {
-                // Use your custom DamageType/Source here
-                var holder = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(FlansDamageTypes.FLANS_EXPLOSION);
                 // direct cause = explosive (could be null), attacker = player
-                if (explosive != null)
-                    src = new DamageSource(holder, explosive, player);
-                else
-                    src = new DamageSource(holder, player);
+                src = FlansDamageSources.createDamageSource(level, explosive, player, FlansDamageSources.FLANS_EXPLOSION);
             }
             else
             {

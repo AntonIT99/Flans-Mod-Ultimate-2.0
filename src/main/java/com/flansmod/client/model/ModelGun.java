@@ -394,8 +394,6 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setSmoothing(Minecraft.getInstance().getFrameTime());
         reloadRotate = 0F;
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-
         switch (ctx)
         {
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
@@ -408,14 +406,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
                 boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
                 applyThirdPersonAdjustments(poseStack, left);
             }
-            case GROUND ->
-            {
-                // Usually nothing; vanilla spins & lifts the item
-            }
-            case FIXED ->
-            {
-                // Item frame; usually nothing or very small scale tweak
-            }
+            case GROUND, FIXED -> poseStack.translate(itemFrameOffset.x, itemFrameOffset.y, itemFrameOffset.z);
             default -> {}
         }
         renderGun(item, animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
@@ -426,6 +417,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     {
         float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
         boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && GunItem.isCrouching() && !animations.reloading;
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
         if (leftHand)
         {
@@ -611,6 +604,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 
     private void applyThirdPersonAdjustments(PoseStack poseStack, boolean leftHand)
     {
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
+
         poseStack.translate(-0.08F, -0.12F, 0F);
         poseStack.translate(thirdPersonOffset.x, thirdPersonOffset.y, thirdPersonOffset.z);
 

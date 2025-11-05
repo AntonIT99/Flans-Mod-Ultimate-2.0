@@ -47,7 +47,7 @@ public class FlansModRaytracer
         // Query only entities along the ray segment (plus some padding)
         AABB search = new AABB(start, end).inflate(speed);
 
-        for (Entity entity : ModUtils.queryEntities(level, null, search, null))
+        for (Entity entity : ModUtils.queryEntities(level, entityToIgnore, search, null))
         {
             boolean shouldDoNormalHitDetect = true;
 

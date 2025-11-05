@@ -1,9 +1,14 @@
 package com.wolffsarmormod.common.types;
 
 import com.wolffsarmormod.IContentProvider;
+import com.wolffsarmormod.common.entity.Driveable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +96,9 @@ public abstract class ShootableType extends InfoType
     protected float damageVsLiving = 1.0F;
     protected float damageVsPlayer = 1.0F;
     protected float damageVsEntity = 1.0F;
+    @Getter
     protected float damageVsVehicles = 1.0F;
+    @Getter
     protected float damageVsPlanes = 1.0F;
     protected boolean readDamageVsLiving;
     protected boolean readDamageVsPlayer;
@@ -137,6 +144,7 @@ public abstract class ShootableType extends InfoType
     /**
      * Power of explosion. Multiplier, 1 = vanilla behaviour
      */
+    @Getter
     protected float explosionPower = 1F;
     /**
      * Whether the explosion can destroy blocks
@@ -146,11 +154,15 @@ public abstract class ShootableType extends InfoType
     /**
      * Explosion damage vs various classes of entities
      */
+    protected float explosionDamage = 1.0F;
     protected float explosionDamageVsLiving = 1.0F;
-    protected float explosionDamageVsDriveable = 1.0F;
     protected float explosionDamageVsPlayer = 1.0F;
     protected float explosionDamageVsPlane = 1.0F;
     protected float explosionDamageVsVehicle = 1.0F;
+    protected boolean readExplosionDamageVsLiving;
+    protected boolean readExplosionDamageVsPlayer;
+    protected boolean readExplosionDamageVsVehicles;
+    protected boolean readExplosionDamageVsPlanes;
     /**
      * The name of the item to drop upon detonating
      */
@@ -194,22 +206,32 @@ public abstract class ShootableType extends InfoType
 
         //Hit stuff
         damage = readValue(split, "Damage", damage, file);
-        damageVsLiving = readValue(split, "DamageVsLiving", damageVsLiving, file);
-        damageVsLiving = readValue(split, "HitEntityDamage", damageVsLiving, file);
+
         if (split[0].equalsIgnoreCase("DamageVsLiving") || split[0].equalsIgnoreCase("HitEntityDamage"))
+        {
+            damageVsLiving = readValue(split, "DamageVsLiving", damageVsLiving, file);
+            damageVsLiving = readValue(split, "HitEntityDamage", damageVsLiving, file);
             readDamageVsLiving = true;
-        damageVsPlayer = readValue(split, "DamageVsPlayer", damageVsPlayer, file);
-        if (split[0].equalsIgnoreCase("DamageVsPlayer"))
+        }
+        else if (split[0].equalsIgnoreCase("DamageVsPlayer")) {
+            damageVsPlayer = readValue(split, "DamageVsPlayer", damageVsPlayer, file);
             readDamageVsPlayer = true;
-        damageVsEntity = readValue(split, "DamageVsEntity", damageVsEntity, file);
-        if (split[0].equalsIgnoreCase("DamageVsEntity"))
+        }
+        else if (split[0].equalsIgnoreCase("DamageVsEntity"))
+        {
+            damageVsEntity = readValue(split, "DamageVsEntity", damageVsEntity, file);
             readDamageVsEntity = true;
-        damageVsVehicles = readValue(split, "DamageVsVehicles", damageVsVehicles, file);
-        if (split[0].equalsIgnoreCase("DamageVsVehicles"))
+        }
+        else if (split[0].equalsIgnoreCase("DamageVsVehicles"))
+        {
+            damageVsVehicles = readValue(split, "DamageVsVehicles", damageVsVehicles, file);
             readDamageVsVehicles = true;
-        damageVsPlanes = readValue(split, "DamageVsPlanes", damageVsPlanes, file);
-        if (split[0].equalsIgnoreCase("DamageVsPlanes"))
+        }
+        else if (split[0].equalsIgnoreCase("DamageVsPlanes"))
+        {
+            damageVsPlanes = readValue(split, "DamageVsPlanes", damageVsPlanes, file);
             readDamageVsPlanes = true;
+        }
 
         blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
         ignoreArmorProbability = readValue(split, "IgnoreArmorProbability", ignoreArmorProbability, file);
@@ -236,11 +258,29 @@ public abstract class ShootableType extends InfoType
         explosionBreaksBlocks = readValue(split, "ExplosionBreakBlocks", explosionBreaksBlocks, file);
         explosionBreaksBlocks = readValue(split, "ExplosionsBreakBlocks", explosionBreaksBlocks, file);
 
-        explosionDamageVsLiving = readValue(split, "ExplosionDamageVsLiving", explosionDamageVsLiving, file);
-        explosionDamageVsDriveable = readValue(split, "ExplosionDamageVsDrivable", explosionDamageVsLiving, file);
-        explosionDamageVsPlayer = readValue(split, "ExplosionDamageVsPlayer", explosionDamageVsPlayer, file);
-        explosionDamageVsPlane = readValue(split, "ExplosionDamageVsPlane", explosionDamageVsPlane, file);
-        explosionDamageVsVehicle = readValue(split, "ExplosionDamageVsVehicle", explosionDamageVsVehicle, file);
+        explosionDamage = readValue(split, "ExplosionDamage", explosionDamage, file);
+        if (split[0].equalsIgnoreCase("ExplosionDamageVsLiving") || split[0].equalsIgnoreCase("ExplosionDamageVsDrivable"))
+        {
+            explosionDamageVsLiving = readValue(split, "ExplosionDamageVsLiving", explosionDamageVsLiving, file);
+            explosionDamageVsVehicle = readValue(split, "ExplosionDamageVsDrivable", explosionDamageVsVehicle, file);
+            readExplosionDamageVsLiving = true;
+        }
+        else if (split[0].equalsIgnoreCase("ExplosionDamageVsPlayer"))
+        {
+            explosionDamageVsPlane = readValue(split, "ExplosionDamageVsPlane", explosionDamageVsPlane, file);
+            readExplosionDamageVsPlayer = true;
+        }
+        else if (split[0].equalsIgnoreCase("ExplosionDamageVsPlane"))
+        {
+            explosionDamageVsPlayer = readValue(split, "ExplosionDamageVsPlayer", explosionDamageVsPlayer, file);
+            readExplosionDamageVsPlanes = true;
+        }
+        else if (split[0].equalsIgnoreCase("ExplosionDamageVsVehicle"))
+        {
+            explosionDamageVsVehicle = readValue(split, "ExplosionDamageVsVehicle", explosionDamageVsVehicle, file);
+            readExplosionDamageVsVehicles = true;
+        }
+
         dropItemOnDetonate = readValue(split, "DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readValue(split, "DetonateSound", detonateSound, file);
 
@@ -275,6 +315,15 @@ public abstract class ShootableType extends InfoType
             damageVsEntity = damageVsVehicles;
         if (!readDamageVsPlanes)
             damageVsPlanes = damageVsVehicles;
+
+        if (!readExplosionDamageVsLiving)
+            explosionDamageVsLiving = explosionDamage;
+        if (!readDamageVsPlayer)
+            explosionDamageVsPlayer = explosionDamageVsLiving;
+        if (!readDamageVsVehicles)
+            explosionDamageVsVehicle = explosionDamage;
+        if (!readDamageVsPlanes)
+            explosionDamageVsPlane = explosionDamageVsVehicle;
     }
 
     @Override
@@ -283,6 +332,21 @@ public abstract class ShootableType extends InfoType
         super.onItemRegistration(registeredItemId);
         registeredAmmoList.putIfAbsent(contentPack, new HashMap<>());
         registeredAmmoList.get(contentPack).put(originalShortName, this);
+    }
+
+    public float getDamage(Entity entity)
+    {
+        if (entity instanceof Player)
+            return damageVsPlayer;
+        //TODO: driveables
+        /*else if (entity instanceof Plane)
+            return damageVsPlanes;*/
+        else if (entity instanceof Driveable)
+            return damageVsVehicles;
+        else if (entity instanceof LivingEntity)
+            return damageVsLiving;
+        else
+            return damage;
     }
 
     public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)

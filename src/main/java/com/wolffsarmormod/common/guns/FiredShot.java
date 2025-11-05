@@ -1,6 +1,6 @@
 package com.wolffsarmormod.common.guns;
 
-import com.wolffsarmormod.common.damagesource.FlansDamageSources;
+import com.wolffsarmormod.common.FlansDamageSources;
 import com.wolffsarmormod.common.types.BulletType;
 import lombok.Getter;
 
@@ -103,12 +103,12 @@ public class FiredShot {
         if (player != null)
         {
             // hitscan: direct == attacker == player
-            return FlansDamageSources.createDamageSource(level, player, player, headshot);
+            return FlansDamageSources.createDamageSource(level, player, player, headshot ? FlansDamageSources.FLANS_GUN_HEADSHOT : FlansDamageSources.FLANS_GUN);
         }
         else if (shooter != null)
         {
             // no distinct direct cause known – at least attribute to the shooter
-            return FlansDamageSources.createDamageSource(level, null, shooter, headshot);
+            return FlansDamageSources.createDamageSource(level, null, shooter, headshot ? FlansDamageSources.FLANS_GUN_HEADSHOT : FlansDamageSources.FLANS_GUN);
         }
         return level.damageSources().generic();
     }

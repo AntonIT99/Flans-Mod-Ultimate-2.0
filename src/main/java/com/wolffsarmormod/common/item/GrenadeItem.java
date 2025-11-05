@@ -10,6 +10,10 @@ import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -78,6 +82,21 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     public void appendHoverText(@NotNull ItemStack stack, @javax.annotation.Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendHoverText(tooltipComponents);
+
+        if (!Screen.hasShiftDown())
+        {
+            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
+            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+
+            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+        }
+        else
+        {
+            if (configType.getExplosionRadius() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Explosion Radius", String.valueOf(configType.getExplosionRadius())));
+            if (configType.getExplosionPower() > 1F)
+                tooltipComponents.add(IFlanItem.statLine("Explosion Power", String.valueOf(configType.getExplosionPower())));
+        }
     }
 
     public void throwGrenade(Level level, LivingEntity thrower)
