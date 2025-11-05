@@ -21,8 +21,10 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -141,7 +143,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event)
     {
-        if (!(event.getEntity() instanceof Player))
+        if (!(event.getEntity() instanceof Player player))
             return;
 
         var model = event.getRenderer().getModel();
@@ -154,14 +156,36 @@ public final class ClientEventHandler
         if (!force)
             return;
 
-        // Force the bow-aiming arm pose on both arms
-        humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        if (player.getMainArm() == HumanoidArm.RIGHT)
+            humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        else
+            humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
     }
 
     private static boolean isGunItemWithAiming(ItemStack s)
     {
         return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation();
+    }
+
+    @SubscribeEvent
+    public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null)
+            return;
+
+        KeyMapping attack = mc.options.keyAttack;
+        if (event.getKeyMapping() != attack)
+            return;
+
+        ItemStack main = mc.player.getMainHandItem();
+        ItemStack off  = mc.player.getOffhandItem();
+        boolean holdingGun = (main.getItem() instanceof GunItem) || (off.getItem() instanceof GunItem);
+        if (!holdingGun)
+            return;
+
+        event.setCanceled(true);
+        event.setSwingHand(false);
     }
 
     //TODO:

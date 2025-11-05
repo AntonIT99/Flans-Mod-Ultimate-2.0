@@ -53,6 +53,7 @@ public class ContentManager
     public static final String TEXTURES_GUI_FOLDER = "gui";
     public static final String TEXTURES_SKINS_FOLDER = "skins";
 
+    //TODO: Make flan folder path configurable
     @Getter
     private static Path flanFolder;
     private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve("flan");
@@ -203,7 +204,7 @@ public class ContentManager
             }
             catch (Exception e)
             {
-                ArmorMod.log.error("Failed to create the flan directory.", e);
+                ArmorMod.log.error("Failed to create the flan directory at {}", defaultFlanPath, e);
                 return;
             }
             flanFolder = defaultFlanPath;

@@ -34,40 +34,25 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
         Item item = stack.getItem();
         if (item instanceof ICustomRendererItem<?> customRendererItem)
         {
-            VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(customRendererItem.getConfigType().getTexture()));
+            boolean useCustomRenderer;
 
             switch (itemDisplayContext)
             {
-                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
-                {
-                    boolean leftHanded = (itemDisplayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND) || (itemDisplayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-                    if (customRendererItem.useCustomRendererInHand())
-                        customRendererItem.renderItem(itemDisplayContext, leftHanded, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-                    else
-                        renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-                }
-                case GROUND ->
-                {
-                    if (customRendererItem.useCustomRendererOnGround())
-                        customRendererItem.renderItem(itemDisplayContext, false, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-                    else
-                        renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-                }
-                case FIXED ->
-                {
-                    if (customRendererItem.useCustomRendererInFrame())
-                        customRendererItem.renderItem(itemDisplayContext, false, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-                    else
-                        renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-                }
-                case GUI ->
-                {
-                    if (customRendererItem.useCustomRendererInGui())
-                        customRendererItem.renderItem(itemDisplayContext, false, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-                    else
-                        renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-                }
-                default -> renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> useCustomRenderer = customRendererItem.useCustomRendererInHand();
+                case GROUND -> useCustomRenderer = customRendererItem.useCustomRendererOnGround();
+                case FIXED -> useCustomRenderer = customRendererItem.useCustomRendererInFrame();
+                case GUI -> useCustomRenderer = customRendererItem.useCustomRendererInGui();
+                default -> useCustomRenderer = false;
+            }
+
+            if (useCustomRenderer)
+            {
+                VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(customRendererItem.getConfigType().getTexture()));
+                customRendererItem.renderItem(stack, itemDisplayContext, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+            }
+            else
+            {
+                renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
             }
         }
         else

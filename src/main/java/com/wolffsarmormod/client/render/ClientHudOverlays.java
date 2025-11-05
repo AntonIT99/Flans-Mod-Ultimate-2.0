@@ -147,8 +147,9 @@ public final class ClientHudOverlays
                     continue;
 
                 // Position: right of center for MAIN_HAND, left for OFF_HAND
-                int iconX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 16 + xAccum : sw / 2 - 32 - xAccum;
-                int iconY = sh - 65;
+                int iconX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 96 + xAccum : sw / 2 - 176 - xAccum;
+                //int iconY = sh - 65;
+                int iconY = sh - 19;
 
                 // Draw the item icon (no manual lighting/GL in 1.20+)
                 g.renderItem(bulletStack, iconX, iconY);
@@ -158,8 +159,8 @@ public final class ClientHudOverlays
                 // Text “remaining/max” unless it’s a 1-durability item (old behavior)
                 String s = (max == 1) ? "" : (remaining + "/" + max);
 
-                int textX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 32 + xAccum : sw / 2 - 16 - xAccum;
-                int textY = sh - 59;
+                int textX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 112 + xAccum : sw / 2 - 160 - xAccum;
+                int textY = sh - 13;
                 if (!s.isEmpty())
                 {
                     g.drawString(font, s, textX + 1, textY + 1, 0x000000, false);

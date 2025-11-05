@@ -61,7 +61,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
         return false;
     }
 
-    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         //TODO: find a way to get scaling from inside render() method
         IModelBase model = ModelCache.getOrLoadTypeModel(configType);

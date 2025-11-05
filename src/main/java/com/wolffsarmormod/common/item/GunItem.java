@@ -33,7 +33,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -58,6 +57,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     protected static boolean lastRightMouseHeld;
     protected static boolean leftMouseHeld;
     protected static boolean lastLeftMouseHeld;
+    @Getter
+    protected static boolean crouching;
 
     @Getter
     protected final GunType configType;
@@ -105,11 +106,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         IModelBase model = ModelCache.getOrLoadTypeModel(configType);
         if (model instanceof ModelGun modelGun)
-            modelGun.renderItem(itemDisplayContext, leftHanded, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+            modelGun.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
     }
 
     public boolean useAimingAnimation()
@@ -332,7 +333,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void onUpdateClient(ItemStack gunstack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
+    protected void onUpdateClient(ItemStack gunStack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
     {
         //TODO: implement FMU stuff
 
@@ -341,7 +342,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return;
 
         // Scope handling
-        behavior.handleScopeToggleIfNeeded(gunstack, hand, hasOffHand);
+        behavior.handleScopeToggleIfNeeded(gunStack, hand, hasOffHand);
 
         // Grab per-player data and input edge
         PlayerData data = PlayerData.getInstance(player);
@@ -364,28 +365,22 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         // Fire-mode decision
         GunAnimations anim = ModClient.getGunAnimations(player, hand);
-        FireDecision decision = FireDecision.computeFireDecision(this, gunstack, hand, data, hold, held, anim);
+        FireDecision decision = FireDecision.computeFireDecision(this, gunStack, hand, data, hold, held, anim);
 
         if (decision.needsReload())
             PacketHandler.sendToServer(new PacketReload(hand, false));
         else if (decision.shouldShoot())
-            behavior.shoot(hand, player, gunstack, data, level, anim);
+            behavior.shoot(hand, player, gunStack, data, level, anim);
     }
 
-    protected void onUpdateServer(ItemStack gunstack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
+    protected void onUpdateServer(ItemStack gunStack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
     {
         //TODO: implement FMU stuff
-
-        if(!(player instanceof ServerPlayer serverPlayer))
-            return;
-
         PlayerData data = PlayerData.getInstance(player);
 
         //If the player is no longer holding a gun, emulate a release of the shoot button
-
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-
         if (mainHand.isEmpty() || !(mainHand.getItem() instanceof GunItem))
             data.setShootingRight(false);
         if (offHand.isEmpty() || !(offHand.getItem() instanceof GunItem))

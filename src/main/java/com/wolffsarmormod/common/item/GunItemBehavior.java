@@ -106,7 +106,7 @@ public record GunItemBehavior(GunItem item)
         if (item.soundDelay > 0 || item.configType.getIdleSound() == null)
             return;
 
-        PacketPlaySound.sendSoundPacket(player.getX(), player.getY(), player.getZ(), ArmorMod.SOUND_RANGE, level.dimension(), item.configType.getIdleSound(), false);
+        PacketPlaySound.sendSoundPacket(player, ArmorMod.SOUND_RANGE, item.configType.getIdleSound(), false);
         item.soundDelay = item.configType.getIdleSoundLength();
     }
 

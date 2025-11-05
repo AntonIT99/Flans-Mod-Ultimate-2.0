@@ -8,7 +8,10 @@ import com.mojang.math.Axis;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.client.model.IFlanTypeModel;
 import com.wolffsarmormod.common.guns.EnumFireMode;
+import com.wolffsarmormod.common.item.GunItem;
+import com.wolffsarmormod.common.types.AttachmentType;
 import com.wolffsarmormod.common.types.GunType;
+import com.wolffsarmormod.common.types.IScope;
 import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor
 public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
@@ -381,28 +385,23 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void renderItem(ItemDisplayContext ctx, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    public void renderItem(ItemStack item, ItemDisplayContext ctx, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
     {
         poseStack.pushPose();
         float modelScale = type != null ? type.getModelScale() : 1F;
-        boolean leftHanded = false;
+        boolean leftHanded = (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND );
         GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
+        setSmoothing(Minecraft.getInstance().getFrameTime());
+        reloadRotate = 0F;
 
-        // 0) Model-space fixups (constant)
-        // If your mesh was authored in 1.12 coordinates, you may need a one-time rotate/scale
-        // Example: face +Z, mirror Z, or apply uniform scale
-        // pose.mulPose(Axis.YP.rotationDegrees(180));
-        // pose.scale(1.0f, 1.0f, 1.0f);
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
-        // 1) Per-context nudge (small)
-        // Vanilla already does placement for: FIRST/THIRD_PERSON, GROUND, FIXED (frame), GUI.
-        // Only add minimal offsets to fit your mesh in hand/frame/GUI if needed.
         switch (ctx)
         {
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
             {
                 boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-                applyFirstPersonAdjustments(poseStack, left);
+                applyFirstPersonAdjustments(item, poseStack, left, animations);
             }
             case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
             {
@@ -417,283 +416,216 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             {
                 // Item frame; usually nothing or very small scale tweak
             }
-            case GUI ->
-            {
-                // Usually nothing; maybe tiny rotate/scale for your icon look
-            }
-            default ->
-            {
-            }
+            default -> {}
         }
-        renderGun(animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+        renderGun(item, animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
         poseStack.popPose();
     }
 
-    private void applyFirstPersonAdjustments(PoseStack poseStack, boolean left)
+    private void applyFirstPersonAdjustments(ItemStack item, PoseStack poseStack, boolean leftHand, GunAnimations animations)
     {
-        /*
-        GlStateManager.rotate(90F, 0F, 0F, 1F);
-        GlStateManager.rotate(-90F, 1F, 0F, 0F);
-        GlStateManager.translate(0.2F, 0.05F, -0F);
-        GlStateManager.scale(1F, 1F, -1F);
-         */
-        // Keep these SMALL; vanilla hand placement is already applied.
-        // Only what you need to align the mesh (replace the huge 1.12 blocks).
-        // Example:
-        //poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-        //poseStack.translate(0F, 0F, 0F);
-        //poseStack.translate(-1F, 0.675F, -1.8F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-        //poseStack.mulPose(Axis.XP.rotationDegrees(-90F));
-        //poseStack.scale(1F, 1F, -1F);
-        poseStack.translate(0F , -0.05F, -0.2F);
-        if (!left) {
-            // tiny ADS roll will happen later in applyAdsOffsets()
-        }
-    }
+        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
+        boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && GunItem.isCrouching() && !animations.reloading;
 
-    private void applyThirdPersonAdjustments(PoseStack poseStack, boolean left) {
-        // Again: tiny tweaks only if the mesh looks off in third-person
-    }
-
-    public void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
-    {
-        /*renderItem(itemDisplayContext, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
-        if (true)
-            return;*/
-        float modelScale = type != null ? type.getModelScale() : 1F;
-        GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
-
-        setSmoothing(Minecraft.getInstance().getFrameTime());
-        //Get the reload animation rotation
-        reloadRotate = 0F;
-
-        poseStack.pushPose();
-        switch (itemDisplayContext)
+        if (leftHand)
         {
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
-                if (leftHanded)
-                {
-                    //TODO
-                    poseStack.mulPose(Axis.XP.rotationDegrees(-70F));
-                    poseStack.mulPose(Axis.ZP.rotationDegrees(48F));
-                    poseStack.mulPose(Axis.YP.rotationDegrees(105F));
-                    poseStack.translate(-0.1F, -0.22F, -0.15F);
-                }
-                else
-                {
-                    //poseStack.mulPose(Axis.ZP.rotationDegrees(90F));
-                    //poseStack.mulPose(Axis.XP.rotationDegrees(-90F));
-                    //poseStack.translate(0.2F, 0.05F, 0F);
-                    //poseStack.scale(1F, 1F, -1F);
-                    poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-                }
-                poseStack.translate(thirdPersonOffset.x, thirdPersonOffset.y, thirdPersonOffset.z);
+            poseStack.translate(0.25F, -0.05F, 0.155F);
+        }
+        else
+        {
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
+            poseStack.translate(-0.25F, -0.05F + 0.175F * adsSwitch, -0.155F - 0.405F * adsSwitch);
+            if (type.hasZoomOverlay() && !stillRenderGunWhenScopedOverlay)
+            {
+                poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
             }
-            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
-                // TODO
-                /*IScope scope = gunType.getCurrentScope(item);
-                if(FlansModClient.zoomProgress > 0.9F && scope.hasZoomOverlay())
-                {
-                    poseStack.popPose();
-                    return;
-                }*/
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(crouching ? crouchZoom : 0F, -0.03F * adsSwitch, 0F);
+        }
 
-                float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
+        IScope scope = type.getCurrentScope(item);
+        if (ModClient.getZoomProgress() > 0.9F && scope.hasZoomOverlay())
+        {
+            poseStack.popPose();
+            return;
+        }
 
-                if (leftHanded)
-                {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-                    //poseStack.mulPose(Axis.YP.rotationDegrees(45F));
-                    poseStack.translate(-1F, 0.675F, -1.8F);
-                }
-                else
-                {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-                    //poseStack.mulPose(Axis.YP.rotationDegrees(45F));
-                    //poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
-                    //poseStack.translate(-1F, 0.675F + 0.180F * adsSwitch, -1F - 0.395F * adsSwitch);
-                    //if (type.hasScopeOverlay())
-                        poseStack.translate(-0.7F * adsSwitch, -0.12F * adsSwitch, -0.05F * adsSwitch);
-                    //poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
-                    //poseStack.translate(0F, -0.03F * adsSwitch, 0F);
-                    poseStack.translate(0F, 0F, -0.15F);
-                }
+        /*if(animations.meleeAnimationProgress > 0 && animations.meleeAnimationProgress < gunType.meleePath.size())
+        {
+            Vector3f meleePos = gunType.meleePath.get(animations.meleeAnimationProgress);
+            Vector3f nextMeleePos = animations.meleeAnimationProgress + 1 < gunType.meleePath.size() ? gunType.meleePath.get(animations.meleeAnimationProgress + 1) : new Vector3f();
+            poseStack.translate(meleePos.x + (nextMeleePos.x - meleePos.x) * smoothing, meleePos.y + (nextMeleePos.y - meleePos.y) * smoothing, meleePos.z + (nextMeleePos.z - meleePos.z) * smoothing);
+            Vector3f meleeAngles = gunType.meleePathAngles.get(animations.meleeAnimationProgress);
+            Vector3f nextMeleeAngles = animations.meleeAnimationProgress + 1 < gunType.meleePathAngles.size() ? gunType.meleePathAngles.get(animations.meleeAnimationProgress + 1) : new Vector3f();
+            GlStateManager.rotate(meleeAngles.y + (nextMeleeAngles.y - meleeAngles.y) * smoothing, 0F, 1F, 0F);
+            GlStateManager.rotate(meleeAngles.z + (nextMeleeAngles.z - meleeAngles.z) * smoothing, 0F, 0F, 1F);
+            GlStateManager.rotate(meleeAngles.x + (nextMeleeAngles.x - meleeAngles.x) * smoothing, 1F, 0F, 0F);
+        }*/
 
-                /*if(animations.meleeAnimationProgress > 0 && animations.meleeAnimationProgress < gunType.meleePath.size())
-                {
-                    Vector3f meleePos = gunType.meleePath.get(animations.meleeAnimationProgress);
-                    Vector3f nextMeleePos = animations.meleeAnimationProgress + 1 < gunType.meleePath.size() ? gunType.meleePath.get(animations.meleeAnimationProgress + 1) : new Vector3f();
-                    poseStack.translate(meleePos.x + (nextMeleePos.x - meleePos.x) * smoothing, meleePos.y + (nextMeleePos.y - meleePos.y) * smoothing, meleePos.z + (nextMeleePos.z - meleePos.z) * smoothing);
-                    Vector3f meleeAngles = gunType.meleePathAngles.get(animations.meleeAnimationProgress);
-                    Vector3f nextMeleeAngles = animations.meleeAnimationProgress + 1 < gunType.meleePathAngles.size() ? gunType.meleePathAngles.get(animations.meleeAnimationProgress + 1) : new Vector3f();
-                    GlStateManager.rotate(meleeAngles.y + (nextMeleeAngles.y - meleeAngles.y) * smoothing, 0F, 1F, 0F);
-                    GlStateManager.rotate(meleeAngles.z + (nextMeleeAngles.z - meleeAngles.z) * smoothing, 0F, 0F, 1F);
-                    GlStateManager.rotate(meleeAngles.x + (nextMeleeAngles.x - meleeAngles.x) * smoothing, 1F, 0F, 0F);
-                }*/
+        // Look at gun stuff
+        float interp = animations.lookAtTimer + smoothing;
+        interp /= GunAnimations.lookAtTimes[animations.lookAt.ordinal()];
 
-                // Look at gun stuff
-                float interp = animations.lookAtTimer + smoothing;
-                interp /= GunAnimations.lookAtTimes[animations.lookAt.ordinal()];
+        final Vector3f idlePos = new Vector3f(0.0f, 0.0f, 0.0f);
+        final Vector3f look1Pos = new Vector3f(0.25f, 0.25f, 0.0f);
+        final Vector3f look2Pos = new Vector3f(0.25f, 0.25f, -0.5f);
+        final Vector3f idleAngles = new Vector3f(0.0f, 0.0f, 0.0f);
+        final Vector3f look1Angles = new Vector3f(0.0f, 70.0f, 0.0f);
+        final Vector3f look2Angles = new Vector3f(0.0f, -60.0f, 60.0f);
+        Vector3f startPos = new Vector3f();
+        Vector3f endPos = new Vector3f();
+        Vector3f startAngles = new Vector3f();
+        Vector3f endAngles = new Vector3f();
 
-                final Vector3f idlePos = new Vector3f(0.0f, 0.0f, 0.0f);
-                final Vector3f look1Pos = new Vector3f(0.25f, 0.25f, 0.0f);
-                final Vector3f look2Pos = new Vector3f(0.25f, 0.25f, -0.5f);
-                final Vector3f idleAngles = new Vector3f(0.0f, 0.0f, 0.0f);
-                final Vector3f look1Angles = new Vector3f(0.0f, 70.0f, 0.0f);
-                final Vector3f look2Angles = new Vector3f(0.0f, -60.0f, 60.0f);
-                Vector3f startPos = new Vector3f();
-                Vector3f endPos = new Vector3f();
-                Vector3f startAngles = new Vector3f();
-                Vector3f endAngles = new Vector3f();
-
-                switch(animations.lookAt)
-                {
-                    case NONE -> {
-                        startPos = endPos = idlePos;
-                        startAngles = endAngles = idleAngles;
-                    }
-                    case LOOK1 -> {
-                        startPos = endPos = look1Pos;
-                        startAngles = endAngles = look1Angles;
-                    }
-                    case LOOK2 -> {
-                        startPos = endPos = look2Pos;
-                        startAngles = endAngles = look2Angles;
-                    }
-                    case TILT1 -> {
-                        startPos = idlePos;
-                        startAngles = idleAngles;
-                        endPos = look1Pos;
-                        endAngles = look1Angles;
-                    }
-                    case TILT2 -> {
-                        startPos = look1Pos;
-                        startAngles = look1Angles;
-                        endPos = look2Pos;
-                        endAngles = look2Angles;
-                    }
-                    case UNTILT -> {
-                        startPos = look2Pos;
-                        startAngles = look2Angles;
-                        endPos = idlePos;
-                        endAngles = idleAngles;
-                    }
-                }
-
-                poseStack.mulPose(Axis.YP.rotationDegrees(startAngles.y + (endAngles.y - startAngles.y) * interp));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(startAngles.z + (endAngles.z - startAngles.z) * interp));
-                poseStack.translate(startPos.x + (endPos.x - startPos.x) * interp,
-                        startPos.y + (endPos.y - startPos.y) * interp,
-                        startPos.z + (endPos.z - startPos.z) * interp);
-
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
-                poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
-
-                /*if(spinningCocking)
-                {
-                    poseStack.translate(spinPoint.x, spinPoint.y, spinPoint.z);
-                    float pumped = (animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing);
-                    GlStateManager.rotate(pumped * 180F + 180F, 0F, 0F, 1F);
-                    poseStack.translate(-spinPoint.x, -spinPoint.y, -spinPoint.z);
-                }*/
-
-                /*if(animations.reloading)
-                {
-                    //Calculate the amount of tilt required for the reloading animation
-                    float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * smoothing;
-                    reloadRotate = 1F;
-                    if(effectiveReloadAnimationProgress < tiltGunTime)
-                        reloadRotate = effectiveReloadAnimationProgress / tiltGunTime;
-                    if(effectiveReloadAnimationProgress > tiltGunTime + unloadClipTime + loadClipTime)
-                        reloadRotate = 1F - (effectiveReloadAnimationProgress - (tiltGunTime + unloadClipTime + loadClipTime)) / untiltGunTime;
-
-                    //Rotate the gun dependent on the animation type
-                    switch(animationType)
-                    {
-                        case BOTTOM_CLIP: case PISTOL_CLIP: case SHOTGUN: case END_LOADED:
-                        {
-                            GlStateManager.rotate(60F * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(30F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.25F * reloadRotate, 0F, 0F);
-                            break;
-                        }
-                        case BACK_LOADED:
-                        {
-                            GlStateManager.rotate(-75F * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.5F * reloadRotate, 0F, 0F);
-                            break;
-                        }
-                        case BULLPUP:
-                        {
-                            GlStateManager.rotate(70F * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(10F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.5F * reloadRotate, -0.2F * reloadRotate, 0F);
-                            break;
-                        }
-                        case RIFLE:
-                        {
-                            GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.5F * reloadRotate, 0F, -0.5F * reloadRotate);
-                            break;
-                        }
-                        case RIFLE_TOP: case REVOLVER:
-                        {
-                            GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(10F * reloadRotate, 0F, 1F, 0F);
-                            GlStateManager.rotate(-10F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.1F * reloadRotate, -0.2F * reloadRotate, -0.1F * reloadRotate);
-                            break;
-                        }
-                        case ALT_PISTOL_CLIP:
-                        {
-                            GlStateManager.rotate(60F * reloadRotate * flip, 0F, 1F, 0F);
-                            poseStack.translate(0.15F * reloadRotate, 0.25F * reloadRotate, 0F);
-                            break;
-                        }
-                        case STRIKER:
-                        {
-                            GlStateManager.rotate(-35F * reloadRotate * flip, 1F, 0F, 0F);
-                            poseStack.translate(0.2F * reloadRotate, 0F, -0.1F * reloadRotate);
-                            break;
-                        }
-                        case GENERIC:
-                        {
-                            //Gun reloads partly or completely off-screen.
-                            GlStateManager.rotate(45F * reloadRotate, 0F, 0F, 1F);
-                            poseStack.translate(-0.2F * reloadRotate, -0.5F * reloadRotate, 0F);
-                            break;
-                        }
-                        case CUSTOM:
-                        {
-                            GlStateManager.rotate(rotateGunVertical * reloadRotate, 0F, 0F, 1F);
-                            GlStateManager.rotate(rotateGunHorizontal * reloadRotate, 0F, 1F, 0F);
-                            GlStateManager.rotate(tiltGun * reloadRotate, 1F, 0F, 0F);
-                            poseStack.translate(translateGun.x * reloadRotate, translateGun.y * reloadRotate, translateGun.z * reloadRotate);
-                            break;
-                        }
-                        default: break;
-                    }
-                }*/
+        switch(animations.lookAt)
+        {
+            case NONE -> {
+                startPos = endPos = idlePos;
+                startAngles = endAngles = idleAngles;
+            }
+            case LOOK1 -> {
+                startPos = endPos = look1Pos;
+                startAngles = endAngles = look1Angles;
+            }
+            case LOOK2 -> {
+                startPos = endPos = look2Pos;
+                startAngles = endAngles = look2Angles;
+            }
+            case TILT1 -> {
+                startPos = idlePos;
+                startAngles = idleAngles;
+                endPos = look1Pos;
+                endAngles = look1Angles;
+            }
+            case TILT2 -> {
+                startPos = look1Pos;
+                startAngles = look1Angles;
+                endPos = look2Pos;
+                endAngles = look2Angles;
+            }
+            case UNTILT -> {
+                startPos = look2Pos;
+                startAngles = look2Angles;
+                endPos = idlePos;
+                endAngles = idleAngles;
             }
         }
 
-        renderGun(animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
-        poseStack.popPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(startAngles.y + (endAngles.y - startAngles.y) * interp));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(startAngles.z + (endAngles.z - startAngles.z) * interp));
+        poseStack.translate(startPos.x + (endPos.x - startPos.x) * interp,
+                startPos.y + (endPos.y - startPos.y) * interp,
+                startPos.z + (endPos.z - startPos.z) * interp);
+
+        poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
+        poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
+
+        /*if(spinningCocking)
+        {
+            poseStack.translate(spinPoint.x, spinPoint.y, spinPoint.z);
+            float pumped = (animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing);
+            GlStateManager.rotate(pumped * 180F + 180F, 0F, 0F, 1F);
+            poseStack.translate(-spinPoint.x, -spinPoint.y, -spinPoint.z);
+        }*/
+
+        /*if(animations.reloading)
+        {
+            //Calculate the amount of tilt required for the reloading animation
+            float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * smoothing;
+            reloadRotate = 1F;
+            if(effectiveReloadAnimationProgress < tiltGunTime)
+                reloadRotate = effectiveReloadAnimationProgress / tiltGunTime;
+            if(effectiveReloadAnimationProgress > tiltGunTime + unloadClipTime + loadClipTime)
+                reloadRotate = 1F - (effectiveReloadAnimationProgress - (tiltGunTime + unloadClipTime + loadClipTime)) / untiltGunTime;
+
+            //Rotate the gun dependent on the animation type
+            switch(animationType)
+            {
+                case BOTTOM_CLIP: case PISTOL_CLIP: case SHOTGUN: case END_LOADED:
+                {
+                    GlStateManager.rotate(60F * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(30F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.25F * reloadRotate, 0F, 0F);
+                    break;
+                }
+                case BACK_LOADED:
+                {
+                    GlStateManager.rotate(-75F * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.5F * reloadRotate, 0F, 0F);
+                    break;
+                }
+                case BULLPUP:
+                {
+                    GlStateManager.rotate(70F * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(10F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.5F * reloadRotate, -0.2F * reloadRotate, 0F);
+                    break;
+                }
+                case RIFLE:
+                {
+                    GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.5F * reloadRotate, 0F, -0.5F * reloadRotate);
+                    break;
+                }
+                case RIFLE_TOP: case REVOLVER:
+                {
+                    GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(10F * reloadRotate, 0F, 1F, 0F);
+                    GlStateManager.rotate(-10F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.1F * reloadRotate, -0.2F * reloadRotate, -0.1F * reloadRotate);
+                    break;
+                }
+                case ALT_PISTOL_CLIP:
+                {
+                    GlStateManager.rotate(60F * reloadRotate * flip, 0F, 1F, 0F);
+                    poseStack.translate(0.15F * reloadRotate, 0.25F * reloadRotate, 0F);
+                    break;
+                }
+                case STRIKER:
+                {
+                    GlStateManager.rotate(-35F * reloadRotate * flip, 1F, 0F, 0F);
+                    poseStack.translate(0.2F * reloadRotate, 0F, -0.1F * reloadRotate);
+                    break;
+                }
+                case GENERIC:
+                {
+                    //Gun reloads partly or completely off-screen.
+                    GlStateManager.rotate(45F * reloadRotate, 0F, 0F, 1F);
+                    poseStack.translate(-0.2F * reloadRotate, -0.5F * reloadRotate, 0F);
+                    break;
+                }
+                case CUSTOM:
+                {
+                    GlStateManager.rotate(rotateGunVertical * reloadRotate, 0F, 0F, 1F);
+                    GlStateManager.rotate(rotateGunHorizontal * reloadRotate, 0F, 1F, 0F);
+                    GlStateManager.rotate(tiltGun * reloadRotate, 1F, 0F, 0F);
+                    poseStack.translate(translateGun.x * reloadRotate, translateGun.y * reloadRotate, translateGun.z * reloadRotate);
+                    break;
+                }
+                default: break;
+            }
+        }*/
+    }
+
+    private void applyThirdPersonAdjustments(PoseStack poseStack, boolean leftHand)
+    {
+        poseStack.translate(-0.08F, -0.12F, 0F);
+        poseStack.translate(thirdPersonOffset.x, thirdPersonOffset.y, thirdPersonOffset.z);
+
     }
 
     /**
      * Gun render method, seperated from transforms so that mecha renderer may also call this
      */
-    public void renderGun(GunAnimations animations, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public void renderGun(ItemStack item, GunAnimations animations, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
         //Render the gun and default attachment models
         poseStack.pushPose();
         {
             //Get all the attachments that we may need to render
-            /*AttachmentType scopeAttachment = type.getScope(item);
+            AttachmentType scopeAttachment = type.getScope(item);
             AttachmentType barrelAttachment = type.getBarrel(item);
             AttachmentType stockAttachment = type.getStock(item);
             AttachmentType gripAttachment = type.getGrip(item);
@@ -701,17 +633,17 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             ItemStack scopeItemStack = type.getScopeItemStack(item);
             ItemStack barrelItemStack = type.getBarrelItemStack(item);
             ItemStack stockItemStack = type.getStockItemStack(item);
-            ItemStack gripItemStack = type.getGripItemStack(item);*/
+            ItemStack gripItemStack = type.getGripItemStack(item);
 
             render(gunModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
             renderCustom(scale, animations);
-            //if (scopeAttachment == null && !scopeIsOnSlide && !scopeIsOnBreakAction)
+            if (scopeAttachment == null && !scopeIsOnSlide && !scopeIsOnBreakAction)
                 render(defaultScopeModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-            //if (barrelAttachment == null)
+            if (barrelAttachment == null)
                 render(defaultBarrelModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-            //if (stockAttachment == null)
+            if (stockAttachment == null)
                 render(defaultStockModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-            //if (gripAttachment == null && !gripIsOnPump)
+            if (gripAttachment == null && !gripIsOnPump)
                 render(defaultGripModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
 
             //Render various shoot / reload animated parts
@@ -720,7 +652,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             {
                 poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * smoothing) * gunSlideDistance, 0F, 0F);
                 render(slideModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-                //if (scopeAttachment == null && scopeIsOnSlide)
+                if (scopeAttachment == null && scopeIsOnSlide)
                     render(defaultScopeModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
             }
             poseStack.popPose();
@@ -732,7 +664,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
                 poseStack.mulPose(Axis.ZP.rotationDegrees(reloadRotate * -breakAngle));
                 poseStack.translate(-barrelBreakPoint.x, -barrelBreakPoint.y, -barrelBreakPoint.z);
                 render(breakActionModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-                //if (scopeAttachment == null && scopeIsOnBreakAction)
+                if (scopeAttachment == null && scopeIsOnBreakAction)
                     render(defaultScopeModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
             }
             poseStack.popPose();
@@ -742,7 +674,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             {
                 poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * pumpHandleDistance, 0F, 0F);
                 render(pumpModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-                //if (gripAttachment == null && gripIsOnPump)
+                if (gripAttachment == null && gripIsOnPump)
                     render(defaultGripModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
             }
             poseStack.popPose();

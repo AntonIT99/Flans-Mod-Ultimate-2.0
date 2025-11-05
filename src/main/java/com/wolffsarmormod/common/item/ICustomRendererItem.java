@@ -11,6 +11,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Consumer;
 
@@ -41,5 +42,5 @@ public interface ICustomRendererItem<T extends InfoType> extends IFlanItem<T>
 
     boolean useCustomRendererInGui();
 
-    void renderItem(ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data);
+    void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data);
 }
