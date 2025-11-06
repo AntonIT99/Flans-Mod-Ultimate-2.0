@@ -392,23 +392,32 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setSmoothing(Minecraft.getInstance().getFrameTime());
         reloadRotate = 0F;
 
-        switch (ctx)
+        if (shouldRenderGun(ctx, item))
         {
-            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
+            switch (ctx)
             {
-                boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-                applyFirstPersonAdjustments(item, poseStack, left, animations);
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
+                {
+                    boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+                    applyFirstPersonAdjustments(item, poseStack, left, animations);
+                }
+                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
+                {
+                    boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+                    applyThirdPersonAdjustments(poseStack, left);
+                }
+                case GROUND, FIXED -> poseStack.translate(itemFrameOffset.x, itemFrameOffset.y, itemFrameOffset.z);
+                default -> {}
             }
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
-            {
-                boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-                applyThirdPersonAdjustments(poseStack, left);
-            }
-            case GROUND, FIXED -> poseStack.translate(itemFrameOffset.x, itemFrameOffset.y, itemFrameOffset.z);
-            default -> {}
+            renderGun(item, animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
         }
-        renderGun(item, animations, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
         poseStack.popPose();
+    }
+
+    private boolean shouldRenderGun(ItemDisplayContext itemDisplayContext, ItemStack item) {
+        if (itemDisplayContext.firstPerson())
+            return !(ModClient.getZoomProgress() > 0.9F && type.getCurrentScope(item).hasZoomOverlay() && !stillRenderGunWhenScopedOverlay);
+        return true;
     }
 
     private void applyFirstPersonAdjustments(ItemStack item, PoseStack poseStack, boolean leftHand, GunAnimations animations)
@@ -435,11 +444,6 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
 
         IScope scope = type.getCurrentScope(item);
-        if (ModClient.getZoomProgress() > 0.9F && scope.hasZoomOverlay())
-        {
-            poseStack.popPose();
-            return;
-        }
 
         /*if(animations.meleeAnimationProgress > 0 && animations.meleeAnimationProgress < gunType.meleePath.size())
         {

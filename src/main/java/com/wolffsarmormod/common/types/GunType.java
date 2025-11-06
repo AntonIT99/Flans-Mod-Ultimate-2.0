@@ -10,6 +10,7 @@ import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -732,6 +733,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Return the currently active scope on this gun. Search attachments, and by default, simply give the gun
      */
+    @NotNull
     public IScope getCurrentScope(ItemStack gunStack)
     {
         IScope attachedScope = getScope(gunStack);

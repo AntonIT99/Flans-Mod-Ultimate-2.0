@@ -35,6 +35,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FlansModRaytracer
 {
+    //TODO: investigate why high speed bullets can not eliminate near targets
     public static List<BulletHit> raytrace(Level level, Entity playerToIgnore, boolean canHitSelf, Entity entityToIgnore, Vector3f origin, Vector3f motion, int pingOfShooter, float gunPenetration)
     {
         //Create a list for all bullet hits
