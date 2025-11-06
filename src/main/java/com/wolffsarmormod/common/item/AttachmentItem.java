@@ -1,6 +1,7 @@
 package com.wolffsarmormod.common.item;
 
 import com.wolffsarmormod.common.types.AttachmentType;
+import com.wolffsarmormod.common.types.PaintableType;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,9 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class AttachmentItem extends Item implements IFlanItem<AttachmentType>
+public class AttachmentItem extends Item implements IPaintableItem<AttachmentType>
 {
     @Getter
     protected final AttachmentType configType;
@@ -26,9 +28,19 @@ public class AttachmentItem extends Item implements IFlanItem<AttachmentType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @javax.annotation.Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public PaintableType getPaintableType()
+    {
+        return configType;
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendHoverText(tooltipComponents);
+
+        String paintjobName = getPaintjob(stack).getDisplayName();
+        if (!paintjobName.isEmpty())
+            tooltipComponents.add(Component.literal(paintjobName).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
 
         if (configType.getShootDelayMultiplier() != 1.0f)
             tooltipComponents.add(Component.literal("Rate of Fire x" + Mth.floor(100.0F / configType.getShootDelayMultiplier()) + "%").withStyle(ChatFormatting.BLUE));

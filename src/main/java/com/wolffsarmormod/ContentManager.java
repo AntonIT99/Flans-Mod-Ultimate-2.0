@@ -3,8 +3,10 @@ package com.wolffsarmormod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.wolffsarmormod.common.item.ItemFactory;
+import com.wolffsarmormod.common.paintjob.Paintjob;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.common.types.InfoType;
+import com.wolffsarmormod.common.types.PaintableType;
 import com.wolffsarmormod.common.types.TypeFile;
 import com.wolffsarmormod.util.AliasFileManager;
 import com.wolffsarmormod.util.DynamicReference;
@@ -597,9 +599,10 @@ public class ContentManager
         Path jsonBlockFolderPath = provider.getAssetsPath().resolve("models").resolve("block");
         Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
 
-        convertExistingJsonFiles(jsonItemFolderPath);
-        convertExistingJsonFiles(jsonBlockFolderPath);
-        convertExistingJsonFiles(jsonBlockstatesFolderPath);
+        //TODO: remove / conversion unnecessary?
+        //convertExistingJsonFiles(jsonItemFolderPath);
+        //convertExistingJsonFiles(jsonBlockFolderPath);
+        //convertExistingJsonFiles(jsonBlockstatesFolderPath);
 
         if (!Files.exists(jsonItemFolderPath))
         {
@@ -662,7 +665,6 @@ public class ContentManager
     private void generateItemJson(InfoType config, Path outputFolder)
     {
         ResourceUtils.ItemModel model = ResourceUtils.ItemModel.create(config);
-
         String jsonContent = gson.toJson(model);
         String shortName = config.getShortName();
 
@@ -687,6 +689,27 @@ public class ContentManager
         catch (IOException e)
         {
             ArmorMod.log.error("Could not create {}", outputFile, e);
+        }
+
+        if (config instanceof PaintableType paintableType)
+        {
+            for (Paintjob p : paintableType.getPaintjobs())
+            {
+                if (!p.equals(paintableType.getDefaultPaintjob()))
+                {
+                    outputFile = outputFolder.resolve(p.getIcon() + ".json");
+                    model = ResourceUtils.ItemModel.create(p);
+                    jsonContent = gson.toJson(model);
+                    try
+                    {
+                        Files.write(outputFile, jsonContent.getBytes());
+                    }
+                    catch (IOException e)
+                    {
+                        ArmorMod.log.error("Could not create {}", outputFile, e);
+                    }
+                }
+            }
         }
     }
 

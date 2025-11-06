@@ -34,6 +34,7 @@ public final class CreativeTabs
 {
     public static void registerCreativeModeTabs()
     {
+        registerCreativeTab("flansmod", List.of(ArmorMod.rainbowPaintcan));
         registerCreativeTab("armors", ArmorMod.items.get(EnumType.ARMOR));
         registerCreativeTab("attachments", ArmorMod.items.get(EnumType.ATTACHMENT));
         registerCreativeTab("guns", Stream.of(ArmorMod.items.get(EnumType.GUN), ArmorMod.items.get(EnumType.BULLET), ArmorMod.items.get(EnumType.GRENADE)).flatMap(List::stream).toList());
@@ -85,7 +86,6 @@ public final class CreativeTabs
                         continue;
                 }
 
-                //TODO: implement Paintjobs
                 if (item instanceof IPaintableItem<?> paintableItem)
                 {
                     PaintableType type = paintableItem.getPaintableType();

@@ -1,7 +1,6 @@
 package com.wolffsarmormod.common.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.client.render.CustomBewlr;
 import com.wolffsarmormod.common.types.InfoType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -10,6 +9,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -42,5 +42,6 @@ public interface ICustomRendererItem<T extends InfoType> extends IFlanItem<T>
 
     boolean useCustomRendererInGui();
 
-    void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data);
+    @OnlyIn(Dist.CLIENT)
+    void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay);
 }

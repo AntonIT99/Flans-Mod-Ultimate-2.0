@@ -183,6 +183,14 @@ public abstract class ShootableType extends InfoType
     protected int debrisParticleCount = 0;
 
     @Override
+    public void onItemRegistration(String registeredItemId)
+    {
+        super.onItemRegistration(registeredItemId);
+        registeredAmmoList.putIfAbsent(contentPack, new HashMap<>());
+        registeredAmmoList.get(contentPack).put(originalShortName, this);
+    }
+
+    @Override
     protected void readLine(String line, String[] split, TypeFile file)
     {
         super.readLine(line, split, file);
@@ -324,14 +332,6 @@ public abstract class ShootableType extends InfoType
             explosionDamageVsVehicle = explosionDamage;
         if (!readDamageVsPlanes)
             explosionDamageVsPlane = explosionDamageVsVehicle;
-    }
-
-    @Override
-    public void onItemRegistration(String registeredItemId)
-    {
-        super.onItemRegistration(registeredItemId);
-        registeredAmmoList.putIfAbsent(contentPack, new HashMap<>());
-        registeredAmmoList.get(contentPack).put(originalShortName, this);
     }
 
     public float getDamage(Entity entity)

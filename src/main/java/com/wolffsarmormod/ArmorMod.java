@@ -40,7 +40,6 @@ public class ArmorMod
     public static final String MOD_ID = "wolffsarmormod";
     public static final String FLANSMOD_ID = "flansmod";
     // Range for which sound packets are sent
-    //TODO: test progressive sound volume
     public static final float SOUND_RANGE = 64F;
     public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
 
@@ -52,6 +51,7 @@ public class ArmorMod
     public static final String DEFAULT_BULLET_TEXTURE = "defaultbullet";
     public static final String DEFAULT_BULLET_TRAIL_TEXTURE = "defaultbullettrail";
 
+    public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "paintjob");
     public static final ResourceLocation muzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/skins/muzzleflash.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/hitmarker.png");
 
@@ -59,7 +59,7 @@ public class ArmorMod
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
-    public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
+    public static final boolean FORCE_RECOMPILE_ALL_PACKS = true;
 
     static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
@@ -68,6 +68,8 @@ public class ArmorMod
     static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArmorMod.MOD_ID);
     static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ArmorMod.MOD_ID);
     static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, ArmorMod.FLANSMOD_ID);
+
+    public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbow_paintcan", () -> new Item(new Item.Properties()));
 
     // Register entities
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->

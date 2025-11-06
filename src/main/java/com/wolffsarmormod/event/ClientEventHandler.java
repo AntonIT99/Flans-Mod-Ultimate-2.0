@@ -96,9 +96,7 @@ public final class ClientEventHandler
         }
     }
 
-    /**
-     * Render world-space geometry AFTER particles/translucents so the trail blends nicely.
-     */
+    /** Render world-space geometry AFTER particles/translucents so the trail blends nicely. */
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event)
     {
@@ -137,12 +135,12 @@ public final class ClientEventHandler
         }
     }
 
-    /**
-     * Aim Pose when GunItem is held by players
-     */
+    /** Set up RenderContext for gun animations and set Aim Pose when GunItem is held by players */
     @SubscribeEvent
-    public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event)
+    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event)
     {
+        ModClient.entityRenderContext.set(event.getEntity());
+
         if (!(event.getEntity() instanceof Player player))
             return;
 
@@ -152,14 +150,34 @@ public final class ClientEventHandler
 
         ItemStack main = event.getEntity().getMainHandItem();
         ItemStack off  = event.getEntity().getOffhandItem();
-        boolean force = isGunItemWithAiming(main) || isGunItemWithAiming(off);
-        if (!force)
-            return;
+        boolean mainArmPose = isGunItemWithAiming(main);
+        boolean offArmPose = isGunItemWithAiming(off);
 
-        if (player.getMainArm() == HumanoidArm.RIGHT)
-            humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        else
-            humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        if (mainArmPose && offArmPose)
+        {
+            humanoid.leftArmPose  = ModClient.BOTH_ARMS_AIM;
+            humanoid.rightArmPose = ModClient.BOTH_ARMS_AIM;
+        }
+        else if (mainArmPose)
+        {
+            if (player.getMainArm() == HumanoidArm.RIGHT)
+                humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
+            else
+                humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        }
+        else if (offArmPose)
+        {
+            if (player.getMainArm() == HumanoidArm.RIGHT)
+                humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
+            else
+                humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> e)
+    {
+        ModClient.entityRenderContext.remove();
     }
 
     private static boolean isGunItemWithAiming(ItemStack s)

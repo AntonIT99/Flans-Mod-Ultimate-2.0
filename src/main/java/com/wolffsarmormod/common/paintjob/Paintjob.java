@@ -1,10 +1,20 @@
 package com.wolffsarmormod.common.paintjob;
 
+import com.wolffsarmormod.ArmorMod;
+import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.common.types.PaintableType;
 import lombok.Getter;
+import lombok.Setter;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 public class Paintjob
 {
@@ -17,39 +27,64 @@ public class Paintjob
         LEGENDARY,
     }
 
+    private final PaintableType type;
     @Getter
     private final int id;
-    private final PaintableType parent;
+    @Getter
     private final String displayName;
+    @Getter
     private final String icon;
-    private final ResourceLocation texture;
-    private final ItemStack[] dyesNeeded;
-    private final EnumPaintjobRarity rarity;
+    @Getter
+    private String textureName = StringUtils.EMPTY;
+    @Getter
+    private final List<Supplier<ItemStack>> dyesNeeded;
+    @Getter @Setter
+    private EnumPaintjobRarity rarity;
+    @Getter @Setter
+    private boolean addToTables;
 
-    public Paintjob(PaintableType parent, int id, String icon, ResourceLocation texture, ItemStack[] dyesNeeded)
+    @Getter @OnlyIn(Dist.CLIENT)
+    private ResourceLocation texture;
+
+    /**
+     * Constructor for the default Paintjob
+     */
+    public Paintjob(PaintableType type, int id, String icon, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {
-        this(parent, id, "", icon, texture, dyesNeeded);
+        this(type, id, StringUtils.EMPTY, icon, dyesNeeded);
+        if (FMLEnvironment.dist == Dist.CLIENT)
+        {
+            this.texture = texture;
+        }
     }
 
-    public Paintjob(PaintableType parent, int id, String displayName, String icon, ResourceLocation texture, ItemStack[] dyesNeeded)
+    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, List<Supplier<ItemStack>> dyesNeeded)
     {
-        this.parent = parent;
+        this(type, id, displayName, icon, dyesNeeded);
+        if (FMLEnvironment.dist == Dist.CLIENT)
+        {
+            this.textureName = textureName;
+            this.texture = InfoType.loadTexture(textureName, type);
+        }
+    }
+
+    private Paintjob(PaintableType type, int id, String displayName, String icon, List<Supplier<ItemStack>> dyesNeeded)
+    {
+        this.type = type;
         this.id = id;
         this.displayName = displayName;
         this.icon = icon;
-        this.texture = texture;
         this.dyesNeeded = dyesNeeded;
         this.rarity = EnumPaintjobRarity.UNKNOWN;
     }
 
     public boolean isLegendary()
     {
-        //TODO: uncomment this
-        /*for (ItemStack stack : dyesNeeded)
+        for (Supplier<ItemStack> stack : dyesNeeded)
         {
-            if (stack.getItem() == FlansMod.rainbowPaintcan)
+            if (stack.get().getItem() == ArmorMod.rainbowPaintcan.get())
                 return true;
-        }*/
+        }
         return false;
     }
 
@@ -58,12 +93,12 @@ public class Paintjob
     {
         if (!(obj instanceof Paintjob otherPaintjob))
             return false;
-        return parent.equals(otherPaintjob.parent) && id == otherPaintjob.id;
+        return type.equals(otherPaintjob.type) && id == otherPaintjob.id;
     }
 
     @Override
     public int hashCode()
     {
-        return parent.hashCode() ^ id;
+        return type.hashCode() ^ id;
     }
 }

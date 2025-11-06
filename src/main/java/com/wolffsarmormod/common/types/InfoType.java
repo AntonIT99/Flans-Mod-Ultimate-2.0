@@ -16,6 +16,7 @@ import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -49,6 +50,8 @@ public abstract class InfoType
 {
     @Getter
     private static final Map<String, InfoType> infoTypes = new HashMap<>();
+    @Getter @Setter
+    private static int totalDungeonChance = 0;
 
     @Getter
     protected String fileName;
@@ -108,6 +111,11 @@ public abstract class InfoType
         return String.format("%s item '%s' [%s] in [%s]", type, originalShortName, fileName, contentPack.getName());
     }
 
+    public void onItemRegistration(String registeredItemId)
+    {
+        infoTypes.put(registeredItemId, this);
+    }
+
     public void read(TypeFile file)
     {
         fileName = file.getName();
@@ -138,11 +146,6 @@ public abstract class InfoType
         postRead();
         if (FMLEnvironment.dist == Dist.CLIENT)
             postReadClient();
-    }
-
-    public void onItemRegistration(String registeredItemId)
-    {
-        infoTypes.put(registeredItemId, this);
     }
 
     protected void readLine(String line, String[] split, TypeFile file)
@@ -370,7 +373,7 @@ public abstract class InfoType
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected static ResourceLocation loadTexture(String textureName, InfoType type)
+    public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
         ResourceLocation texture = TextureManager.INTENTIONAL_MISSING_TEXTURE;
         if (!textureName.isBlank())
@@ -388,7 +391,7 @@ public abstract class InfoType
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
+    public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
         if (!overlayName.isBlank())
         {

@@ -19,7 +19,6 @@ import lombok.Setter;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -385,12 +384,11 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void renderItem(ItemStack item, ItemDisplayContext ctx, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    public void renderItem(ItemStack item, ItemDisplayContext ctx, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
         float modelScale = type != null ? type.getModelScale() : 1F;
-        boolean leftHanded = (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND );
-        GunAnimations animations = (data.length > 1 && data[1] instanceof LivingEntity living) ? ModClient.getGunAnimations(living, leftHanded) : new GunAnimations();
+        GunAnimations animations = ModClient.getGunAnimations(ctx);
         setSmoothing(Minecraft.getInstance().getFrameTime());
         reloadRotate = 0F;
 

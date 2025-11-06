@@ -14,6 +14,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -65,16 +67,19 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
         return false;
     }
 
-    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    @Override
+    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         //TODO: find a way to get scaling from inside render() method
         IModelBase model = ModelCache.getOrLoadTypeModel(configType);
         if (model == null)
             return;
 
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(configType.getTexture()));
+
         for (ModelRenderer part : model.getBoxList())
         {
-            part.render(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, configType.getModelScale());
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F, configType.getModelScale());
         }
     }
 

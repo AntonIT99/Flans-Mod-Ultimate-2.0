@@ -28,6 +28,8 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -106,11 +108,14 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, Object... data)
+    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         IModelBase model = ModelCache.getOrLoadTypeModel(configType);
         if (model instanceof ModelGun modelGun)
-            modelGun.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, data);
+        {
+            VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(getPaintjob(stack).getTexture()));
+            modelGun.renderItem(stack, itemDisplayContext, poseStack, vertexConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        }
     }
 
     public boolean useAimingAnimation()
@@ -122,6 +127,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendHoverText(tooltipComponents);
+
+        String paintjobName = getPaintjob(stack).getDisplayName();
+        if (!paintjobName.isEmpty())
+            tooltipComponents.add(Component.literal(paintjobName).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
 
         // Legendary crafter tag
         if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("LegendaryCrafter", net.minecraft.nbt.Tag.TAG_STRING))

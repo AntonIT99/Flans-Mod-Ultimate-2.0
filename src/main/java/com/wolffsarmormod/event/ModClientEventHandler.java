@@ -8,6 +8,7 @@ import com.wolffsarmormod.client.render.BulletRenderer;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
 import com.wolffsarmormod.client.render.CustomArmorLayer;
 import com.wolffsarmormod.common.item.ICustomRendererItem;
+import com.wolffsarmormod.common.item.IPaintableItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,6 +21,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -28,9 +30,12 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
 
 import java.nio.file.Files;
 
@@ -38,6 +43,22 @@ import java.nio.file.Files;
 @Mod.EventBusSubscriber(modid = ArmorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ModClientEventHandler
 {
+    /** Paintjob registrations */
+    @SubscribeEvent
+    public static void clientSetup(FMLClientSetupEvent event)
+    {
+        for (RegistryObject<Item> item : ArmorMod.getItems())
+        {
+            if (item.get() instanceof IPaintableItem<?>)
+            {
+                ItemProperties.register(item.get(), ArmorMod.paintjob, (stack, level, entity, seed) -> {
+                    CompoundTag tag = stack.getTag();
+                    return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
+                });
+            }
+        }
+    }
+
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
     {

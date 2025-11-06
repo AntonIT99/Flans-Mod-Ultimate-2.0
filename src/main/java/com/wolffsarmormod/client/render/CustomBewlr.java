@@ -1,7 +1,6 @@
 package com.wolffsarmormod.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsarmormod.common.item.ICustomRendererItem;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -47,8 +45,7 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
 
             if (useCustomRenderer)
             {
-                VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityTranslucent(customRendererItem.getConfigType().getTexture()));
-                customRendererItem.renderItem(stack, itemDisplayContext, poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+                customRendererItem.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
             }
             else
             {

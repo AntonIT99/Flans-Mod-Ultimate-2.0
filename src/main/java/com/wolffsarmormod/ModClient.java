@@ -10,23 +10,39 @@ import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
 {
+    public static final ThreadLocal<LivingEntity> entityRenderContext = new ThreadLocal<>();
+
+    public static final HumanoidModel.ArmPose BOTH_ARMS_AIM = HumanoidModel.ArmPose.create("both_arms_aim", true,
+        (model, entity, arm) -> {
+            model.rightArm.xRot = -(float)Math.PI / 2F;
+            model.rightArm.yRot = -0.05F;
+            model.rightArm.zRot = 0F;
+            model.leftArm.xRot = -(float)Math.PI / 2F;
+            model.leftArm.yRot = 0.05F;
+            model.leftArm.zRot = 0F;
+        });
+
     // Plane / Vehicle control handling
     /** Whether the player has received the vehicle tutorial text */
     private static boolean doneTutorial = false;
@@ -79,18 +95,23 @@ public class ModClient
     @Getter @Setter
     private static int hitMarkerTime = 0;
 
+    @NotNull
     @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(LivingEntity living, InteractionHand hand)
     {
-        return getGunAnimations(living, hand == InteractionHand.OFF_HAND);
-    }
+        GunAnimations animations = null;
 
-    @OnlyIn(Dist.CLIENT)
-    public static GunAnimations getGunAnimations(LivingEntity living, boolean leftHanded)
-    {
-        GunAnimations animations;
-
-        if (leftHanded)
+        if (hand == InteractionHand.MAIN_HAND)
+        {
+            if (gunAnimationsRight.containsKey(living))
+                animations = gunAnimationsRight.get(living);
+            else
+            {
+                animations = new GunAnimations();
+                gunAnimationsRight.put(living, animations);
+            }
+        }
+        else if (hand == InteractionHand.OFF_HAND)
         {
             if (gunAnimationsLeft.containsKey(living))
                 animations = gunAnimationsLeft.get(living);
@@ -100,7 +121,36 @@ public class ModClient
                 gunAnimationsLeft.put(living, animations);
             }
         }
+
+        return Objects.requireNonNullElse(animations, new GunAnimations());
+    }
+
+    @NotNull
+    @OnlyIn(Dist.CLIENT)
+    public static GunAnimations getGunAnimations(ItemDisplayContext context)
+    {
+        LivingEntity living;
+        if (context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            living = Minecraft.getInstance().player;
         else
+            living = entityRenderContext.get();
+
+        if (living == null)
+            return new GunAnimations();
+
+        GunAnimations animations = null;
+
+        if (context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND)
+        {
+            if (gunAnimationsLeft.containsKey(living))
+                animations = gunAnimationsLeft.get(living);
+            else
+            {
+                animations = new GunAnimations();
+                gunAnimationsLeft.put(living, animations);
+            }
+        }
+        else if (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)
         {
             if (gunAnimationsRight.containsKey(living))
                 animations = gunAnimationsRight.get(living);
@@ -111,7 +161,7 @@ public class ModClient
             }
         }
 
-        return animations;
+        return Objects.requireNonNullElse(animations, new GunAnimations());
     }
 
     @OnlyIn(Dist.CLIENT)
