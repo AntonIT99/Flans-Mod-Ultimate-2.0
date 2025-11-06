@@ -59,7 +59,7 @@ public class ArmorMod
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
-    public static final boolean FORCE_RECOMPILE_ALL_PACKS = true;
+    public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
 
     static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();

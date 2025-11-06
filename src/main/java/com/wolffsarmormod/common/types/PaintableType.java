@@ -6,8 +6,6 @@ import com.wolffsarmormod.common.paintjob.Paintjob;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.logError;
@@ -26,7 +25,6 @@ public abstract class PaintableType extends InfoType
     /** The list of all available paintjobs for this gun */
     @Getter
     protected List<Paintjob> paintjobs = new ArrayList<>();
-    protected List<Paintjob> nonlegendarypaintjobs = new ArrayList<>();
     /** The default paintjob for this gun. This is created automatically in the load process from existing info */
     @Getter
     protected Paintjob defaultPaintjob;
@@ -62,17 +60,17 @@ public abstract class PaintableType extends InfoType
                     split[1] = split[1].substring(indexOf + 1);
                 }
             }
-            paintjobs.add(new Paintjob(this, nextPaintjobId++, StringUtils.EMPTY, split[1], split[2], dyeStacks));
+            paintjobs.add(new Paintjob(this, nextPaintjobId++, StringUtils.EMPTY, split[1].toLowerCase(Locale.ROOT), split[2].toLowerCase(Locale.ROOT), dyeStacks));
         }
 
-        if (split[0].equalsIgnoreCase("AdvPaintJob") && split.length > 2)
+        if (split[0].equalsIgnoreCase("AdvPaintJob") && split.length > 3)
         {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 4) / 2);
             for (int i = 0; i < (split.length - 4) / 2; i++)
             {
                 dyeStacks.add(dyeNameToItemStack(split[i * 2 + 4], split[i * 2 + 5], line, file));
             }
-            paintjobs.add(new Paintjob(this, nextPaintjobId++, split[1], split[2], split[3], dyeStacks));
+            paintjobs.add(new Paintjob(this, nextPaintjobId++, split[1], split[2].toLowerCase(Locale.ROOT), split[3].toLowerCase(Locale.ROOT), dyeStacks));
         }
 
         if (split[0].equalsIgnoreCase("AddPaintableToTables"))
@@ -98,17 +96,12 @@ public abstract class PaintableType extends InfoType
     protected void postRead()
     {
         super.postRead();
-        defaultPaintjob = new Paintjob(this, 0, getIcon(), FMLEnvironment.dist == Dist.CLIENT ? getTexture() : null, Collections.emptyList());
+        defaultPaintjob = new Paintjob(this, 0, getIcon(), getTexture(), Collections.emptyList());
         paintjobs.add(defaultPaintjob);
 
-        for(Paintjob p : paintjobs)
-        {
-            if (!p.isLegendary())
-                nonlegendarypaintjobs.add(p);
-        }
-
+        //TODO: fix this (is legendary can not be invoked at this point)
         // Add all custom paintjobs to dungeon loot. Equal chance for each
-        InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonlegendarypaintjobs.size() - 1));
+        //InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonlegendarypaintjobs.size() - 1));
     }
 
     private static Supplier<ItemStack> dyeNameToItemStack(String dyeName, String stackSize, String line, TypeFile file)

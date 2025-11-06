@@ -6,7 +6,6 @@ import com.wolffsarmormod.common.types.PaintableType;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,8 +41,7 @@ public class Paintjob
     private EnumPaintjobRarity rarity;
     @Getter @Setter
     private boolean addToTables;
-
-    @Getter @OnlyIn(Dist.CLIENT)
+    @Getter
     private ResourceLocation texture;
 
     /**
@@ -52,18 +50,15 @@ public class Paintjob
     public Paintjob(PaintableType type, int id, String icon, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {
         this(type, id, StringUtils.EMPTY, icon, dyesNeeded);
-        if (FMLEnvironment.dist == Dist.CLIENT)
-        {
-            this.texture = texture;
-        }
+        this.texture = texture;
     }
 
     public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, List<Supplier<ItemStack>> dyesNeeded)
     {
         this(type, id, displayName, icon, dyesNeeded);
+        this.textureName = textureName;
         if (FMLEnvironment.dist == Dist.CLIENT)
         {
-            this.textureName = textureName;
             this.texture = InfoType.loadTexture(textureName, type);
         }
     }
