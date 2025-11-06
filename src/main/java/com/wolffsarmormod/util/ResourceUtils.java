@@ -59,7 +59,7 @@ public final class ResourceUtils
             List<Override> overrides = null;
             if (config instanceof PaintableType paintableType)
             {
-                overrides = paintableType.getPaintjobs().stream()
+                overrides = paintableType.getPaintjobs().values().stream()
                         .filter(p -> !p.equals(paintableType.getDefaultPaintjob()))
                         .map(p -> new Override(ArmorMod.paintjob.toString(), p.getId(), ArmorMod.FLANSMOD_ID + ":item/" + p.getIcon()))
                         .toList();

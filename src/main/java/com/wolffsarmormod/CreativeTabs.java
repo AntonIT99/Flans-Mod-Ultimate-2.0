@@ -91,7 +91,7 @@ public final class CreativeTabs
                     PaintableType type = paintableItem.getPaintableType();
                     if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()))
                     {
-                        for (Paintjob pj : type.getPaintjobs())
+                        for (Paintjob pj : type.getPaintjobs().values())
                             output.accept(paintableItem.makePaintjobStack(pj));
                     }
                     else

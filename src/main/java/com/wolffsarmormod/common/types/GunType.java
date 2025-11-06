@@ -21,6 +21,7 @@ import net.minecraft.world.item.UseAnim;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -618,7 +619,7 @@ public class GunType extends PaintableType implements IScope
             secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
         deployable = readValue(split, "Deployable", deployable, file);
         deployableModelName = readValue(split, "DeployedModel", deployableModelName, file);
-        deployableTextureName = readValue(split, "DeployedTexture", deployableTextureName, file);
+        deployableTextureName = readValue(split, "DeployedTexture", deployableTextureName, file).toLowerCase(Locale.ROOT);
         //TODO: MuzzleFlashModel
         standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
         topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);

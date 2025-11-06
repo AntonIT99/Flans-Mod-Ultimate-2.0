@@ -31,8 +31,8 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -73,9 +73,17 @@ public final class ModClientEventHandler
     {
         ArmorMod.getItems().stream()
             .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendererItem<?>)
-            .map(RegistryObject::getId)
-            .map(id -> new ModelResourceLocation(id, "inventory"))
-            .forEach(mrl -> event.getModels().computeIfPresent(mrl, (loc, original) -> new BewlrRoutingModel(original)));
+            .forEach(itemRegistryObject -> {
+                ResourceLocation id = itemRegistryObject.getId();
+                // Wrap ALL baked model variants belonging to this item
+                event.getModels().replaceAll((loc, original) -> {
+                    if (id != null && loc.getNamespace().equals(id.getNamespace()) && loc.getPath().equals(id.getPath()) && !(original instanceof BewlrRoutingModel))
+                    {
+                        return new BewlrRoutingModel(original);
+                    }
+                    return original;
+                });
+            });
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

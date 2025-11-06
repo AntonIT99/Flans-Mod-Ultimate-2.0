@@ -599,10 +599,9 @@ public class ContentManager
         Path jsonBlockFolderPath = provider.getAssetsPath().resolve("models").resolve("block");
         Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
 
-        //TODO: remove / conversion unnecessary?
-        //convertExistingJsonFiles(jsonItemFolderPath);
-        //convertExistingJsonFiles(jsonBlockFolderPath);
-        //convertExistingJsonFiles(jsonBlockstatesFolderPath);
+        convertExistingJsonFiles(jsonItemFolderPath);
+        convertExistingJsonFiles(jsonBlockFolderPath);
+        convertExistingJsonFiles(jsonBlockstatesFolderPath);
 
         if (!Files.exists(jsonItemFolderPath))
         {
@@ -693,7 +692,7 @@ public class ContentManager
 
         if (config instanceof PaintableType paintableType)
         {
-            for (Paintjob p : paintableType.getPaintjobs())
+            for (Paintjob p : paintableType.getPaintjobs().values())
             {
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {

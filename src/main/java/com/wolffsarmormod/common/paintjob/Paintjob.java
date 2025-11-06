@@ -6,8 +6,8 @@ import com.wolffsarmormod.common.types.PaintableType;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -34,36 +34,19 @@ public class Paintjob
     @Getter
     private final String icon;
     @Getter
-    private String textureName = StringUtils.EMPTY;
+    private final String textureName;
     @Getter
     private final List<Supplier<ItemStack>> dyesNeeded;
+    @Getter @OnlyIn(Dist.CLIENT)
+    private final ResourceLocation texture;
+
     @Getter @Setter
     private EnumPaintjobRarity rarity;
     @Getter @Setter
     private boolean addToTables;
-    @Getter
-    private ResourceLocation texture;
 
-    /**
-     * Constructor for the default Paintjob
-     */
-    public Paintjob(PaintableType type, int id, String icon, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
-    {
-        this(type, id, StringUtils.EMPTY, icon, dyesNeeded);
-        this.texture = texture;
-    }
 
-    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, List<Supplier<ItemStack>> dyesNeeded)
-    {
-        this(type, id, displayName, icon, dyesNeeded);
-        this.textureName = textureName;
-        if (FMLEnvironment.dist == Dist.CLIENT)
-        {
-            this.texture = InfoType.loadTexture(textureName, type);
-        }
-    }
-
-    private Paintjob(PaintableType type, int id, String displayName, String icon, List<Supplier<ItemStack>> dyesNeeded)
+    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {
         this.type = type;
         this.id = id;
@@ -71,6 +54,13 @@ public class Paintjob
         this.icon = icon;
         this.dyesNeeded = dyesNeeded;
         this.rarity = EnumPaintjobRarity.UNKNOWN;
+        this.texture = texture;
+        this.textureName = textureName;
+    }
+
+    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, List<Supplier<ItemStack>> dyesNeeded)
+    {
+        this(type, id, displayName, icon, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
     }
 
     public boolean isLegendary()

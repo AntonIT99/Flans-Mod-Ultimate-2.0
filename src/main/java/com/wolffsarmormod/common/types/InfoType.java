@@ -38,6 +38,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -151,11 +152,11 @@ public abstract class InfoType
     protected void readLine(String line, String[] split, TypeFile file)
     {
         name = readValues(split, "Name", name, file);
-        originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase();
+        originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase(Locale.ROOT);
         description = readValues(split, "Description", description, file);
-        icon = readValue(split, "Icon", icon, file).toLowerCase();
-        textureName = readValue(split, "Texture", textureName, file).toLowerCase();
-        overlayName = readValue(split, "Overlay", overlayName, file).toLowerCase();
+        icon = readValue(split, "Icon", icon, file).toLowerCase(Locale.ROOT);
+        textureName = readValue(split, "Texture", textureName, file).toLowerCase(Locale.ROOT);
+        overlayName = readValue(split, "Overlay", overlayName, file).toLowerCase(Locale.ROOT);
         modelName = readValue(split, "Model", modelName, file);
         modelScale = readValue(split, "ModelScale", modelScale, file);
 
@@ -209,7 +210,7 @@ public abstract class InfoType
         String sound = readValue(split, key, currentValue, file);
         if (StringUtils.isNotBlank(sound))
         {
-            sound = sound.toLowerCase();
+            sound = sound.toLowerCase(Locale.ROOT);
             ArmorMod.registerSound(sound);
         }
         return sound;
@@ -249,16 +250,6 @@ public abstract class InfoType
     protected void postReadClient()
     {
         modelClassName = findModelClass(modelName, contentPack);
-        if (!textureName.isBlank())
-        {
-            if (this instanceof ArmorType)
-                ContentManager.getArmorTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
-            else
-                ContentManager.getSkinsTextureReferences().get(contentPack).putIfAbsent(textureName, new DynamicReference(textureName));
-        }
-        if (!overlayName.isBlank())
-            ContentManager.getGuiTextureReferences().get(contentPack).putIfAbsent(overlayName, new DynamicReference(overlayName));
-
         texture = loadTexture(textureName, this);
         overlay = loadOverlay(overlayName, this).orElse(null);
     }
@@ -379,10 +370,14 @@ public abstract class InfoType
         if (!textureName.isBlank())
         {
             DynamicReference ref;
+            Map<String, DynamicReference> refsMap;
             if (type instanceof ArmorType)
-                ref = ContentManager.getArmorTextureReferences().get(type.getContentPack()).get(textureName);
+                refsMap = ContentManager.getArmorTextureReferences().get(type.getContentPack());
             else
-                ref = ContentManager.getSkinsTextureReferences().get(type.getContentPack()).get(textureName);
+                refsMap = ContentManager.getSkinsTextureReferences().get(type.getContentPack());
+
+            refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
+            ref = refsMap.get(textureName);
 
             if (ref != null)
                 texture = ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
@@ -395,7 +390,11 @@ public abstract class InfoType
     {
         if (!overlayName.isBlank())
         {
-            DynamicReference ref = ContentManager.getGuiTextureReferences().get(type.getContentPack()).get(overlayName);
+            var refsMap = ContentManager.getGuiTextureReferences().get(type.getContentPack());
+
+            refsMap.putIfAbsent(overlayName, new DynamicReference(overlayName));
+            DynamicReference ref = refsMap.get(overlayName);
+
             if (ref != null)
                 return Optional.of(ResourceLocation.fromNamespaceAndPath(ArmorMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
         }
