@@ -59,7 +59,7 @@ public class ArmorMod
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
-    public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
+    public static final boolean FORCE_RECOMPILE_ALL_PACKS = true;
 
     static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
@@ -97,8 +97,8 @@ public class ArmorMod
         soundEventRegistry.register(modEventBus);
 
         // Read content packs and register items & sounds
-        ContentManager.INSTANCE.findContentInFlanFolder();
-        ContentManager.INSTANCE.readContentPacks();
+        ContentManager.findContentInFlanFolder();
+        ContentManager.readContentPacks();
 
         CreativeTabs.registerCreativeModeTabs();
         registerSound(SOUND_BULLET);

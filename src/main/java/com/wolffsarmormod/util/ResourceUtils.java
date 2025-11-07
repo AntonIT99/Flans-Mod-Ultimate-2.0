@@ -16,6 +16,13 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResourceUtils
 {
+    public static String sanitize(String name)
+    {
+        // Lowercase + swap spaces; keep only chars valid in resource paths
+        String n = name.toLowerCase().replace(' ', '_');
+        return n.replaceAll("[^a-z0-9._\\-]", "_");
+    }
+
     public static class ItemModel
     {
         String parent;

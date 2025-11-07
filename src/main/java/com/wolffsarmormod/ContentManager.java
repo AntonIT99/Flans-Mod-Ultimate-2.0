@@ -43,14 +43,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentManager
 {
-    public static final ContentManager INSTANCE = new ContentManager();
-
     public static final String TEXTURES_ARMOR_FOLDER = "armor";
     public static final String TEXTURES_GUI_FOLDER = "gui";
     public static final String TEXTURES_SKINS_FOLDER = "skins";
@@ -104,7 +103,7 @@ public class ContentManager
         textures.put(TEXTURES_SKINS_FOLDER, new HashMap<>());
     }
 
-    public void findContentInFlanFolder()
+    public static void findContentInFlanFolder()
     {
         loadFlanFolder();
         if (flanFolder == null)
@@ -125,7 +124,7 @@ public class ContentManager
         }
     }
 
-    public void readContentPacks()
+    public static void readContentPacks()
     {
         for (IContentProvider provider : contentPacks)
         {
@@ -140,11 +139,19 @@ public class ContentManager
             skinsTextureReferences.putIfAbsent(provider, new HashMap<>());
             modelReferences.putIfAbsent(provider, new HashMap<>());
 
-            long start = System.currentTimeMillis();
-            readFiles(provider);
-            registerConfigs(provider);
-            long end = System.currentTimeMillis();
-            ArmorMod.log.debug("{}: Types loaded in {} ms", provider.getName(), String.format("%,d", end - start));
+            if (ArmorMod.log.isDebugEnabled())
+            {
+                long start = System.currentTimeMillis();
+                readFiles(provider);
+                registerConfigs(provider);
+                long end = System.currentTimeMillis();
+                ArmorMod.log.debug("{}: Types loaded in {} ms", provider.getName(), String.format("%,d", end - start));
+            }
+            else
+            {
+                readFiles(provider);
+                registerConfigs(provider);
+            }
 
             if (FMLEnvironment.dist == Dist.CLIENT)
             {
@@ -213,7 +220,7 @@ public class ContentManager
         }
     }
 
-    private Map<String, Path> loadFoldersAndJarZipFiles(Path rootPath) throws IOException
+    private static Map<String, Path> loadFoldersAndJarZipFiles(Path rootPath) throws IOException
     {
         Set<String> processedNames = new HashSet<>();
 
@@ -244,7 +251,7 @@ public class ContentManager
         }
     }
 
-    private void readFiles(IContentProvider provider)
+    private static void readFiles(IContentProvider provider)
     {
         try (DirectoryStream<Path> dirStream = FileUtils.createDirectoryStream(provider))
         {
@@ -351,7 +358,7 @@ public class ContentManager
         }
     }
 
-    private void registerConfigs(IContentProvider contentPack)
+    private static void registerConfigs(IContentProvider contentPack)
     {
         for (TypeFile typeFile : files.get(contentPack))
         {
@@ -393,7 +400,7 @@ public class ContentManager
         }
     }
 
-    private String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
+    private static String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
     {
         String shortname = originalShortname;
         // Item shortname already registered and this content pack already has an alias shortname for this item
@@ -438,7 +445,7 @@ public class ContentManager
         return shortname;
     }
 
-    private void registerItem(String shortName, InfoType config, TypeFile typeFile)
+    private static void registerItem(String shortName, InfoType config, TypeFile typeFile)
     {
         registeredItems.put(shortName, typeFile.toString());
         ArmorMod.registerItem(shortName, config.getType(), () ->
@@ -456,7 +463,7 @@ public class ContentManager
         });
     }
 
-    private void findDuplicateTextures(IContentProvider provider)
+    private static void findDuplicateTextures(IContentProvider provider)
     {
         FileSystem fs = FileUtils.createFileSystem(provider);
         findDuplicateTexturesInFolder(TEXTURES_ARMOR_FOLDER, provider, fs, armorTextureReferences.get(provider));
@@ -465,7 +472,7 @@ public class ContentManager
         FileUtils.closeFileSystem(fs, provider);
     }
 
-    private void findDuplicateTexturesInFolder(String folderName, IContentProvider provider, FileSystem fs, Map<String, DynamicReference> aliasMapping)
+    private static void findDuplicateTexturesInFolder(String folderName, IContentProvider provider, FileSystem fs, Map<String, DynamicReference> aliasMapping)
     {
         Path textureFolderPath = provider.getAssetsPath(fs).resolve(folderName);
 
@@ -483,7 +490,7 @@ public class ContentManager
         }
     }
 
-    private void checkForDuplicateTextures(Path texturePath, IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
+    private static void checkForDuplicateTextures(Path texturePath, IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
     {
         String fileName = FilenameUtils.getBaseName(texturePath.getFileName().toString()).toLowerCase();
         if (folderName.equals(TEXTURES_ARMOR_FOLDER))
@@ -506,7 +513,7 @@ public class ContentManager
         textures.get(folderName).put(aliasName, new TextureFile(texturePath.getFileName().toString(), provider));
     }
 
-    private String getArmorTextureBaseName(String fileBaseName)
+    private static String getArmorTextureBaseName(String fileBaseName)
     {
         if (fileBaseName.endsWith("_1") || fileBaseName.endsWith("_2")) {
             return fileBaseName.substring(0, fileBaseName.length() - 2);
@@ -514,7 +521,7 @@ public class ContentManager
         return fileBaseName;
     }
 
-    private String findValidTextureName(String originalName, String folderName, IContentProvider thisContentPack, IContentProvider otherContentPack, Map<String, DynamicReference> aliasMapping)
+    private static String findValidTextureName(String originalName, String folderName, IContentProvider thisContentPack, IContentProvider otherContentPack, Map<String, DynamicReference> aliasMapping)
     {
         String name = originalName;
 
@@ -536,7 +543,7 @@ public class ContentManager
         return name;
     }
 
-    private boolean shouldUpdateAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
+    private static boolean shouldUpdateAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
     {
         if (aliasMapping == null)
             aliasMapping = Collections.emptyMap();
@@ -548,7 +555,7 @@ public class ContentManager
         }
     }
 
-    private void writeToAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
+    private static void writeToAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
     {
         if (aliasMapping == null)
             aliasMapping = Collections.emptyMap();
@@ -559,7 +566,7 @@ public class ContentManager
         }
     }
 
-    private boolean shouldPreLoadAssets(IContentProvider provider)
+    private static boolean shouldPreLoadAssets(IContentProvider provider)
     {
         if (FMLEnvironment.dist != Dist.CLIENT)
             return false;
@@ -588,65 +595,68 @@ public class ContentManager
         return missingAssets;
     }
 
-    private boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets)
+    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets)
     {
         return provider.isArchive() && (preLoadAssets || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
     }
 
-    private void createItemJsonFiles(IContentProvider provider)
+    private static void createItemJsonFiles(IContentProvider provider)
     {
-        Path jsonItemFolderPath = provider.getAssetsPath().resolve("models").resolve("item");
-        Path jsonBlockFolderPath = provider.getAssetsPath().resolve("models").resolve("block");
+        Path jsonModelsFolderPath = provider.getAssetsPath().resolve("models");
+        Path jsonItemModelsFolderPath = jsonModelsFolderPath.resolve("item");
         Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
 
-        convertExistingJsonFiles(jsonItemFolderPath);
-        convertExistingJsonFiles(jsonBlockFolderPath);
         convertExistingJsonFiles(jsonBlockstatesFolderPath);
+        convertExistingJsonFiles(jsonModelsFolderPath);
 
-        if (!Files.exists(jsonItemFolderPath))
+        try
         {
-            try
-            {
-                Files.createDirectories(jsonItemFolderPath);
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Could not create {}", jsonItemFolderPath, e);
-                return;
-            }
+            Files.createDirectories(jsonItemModelsFolderPath);
+        }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Could not create {}", jsonItemModelsFolderPath, e);
+            return;
         }
 
         for (InfoType config : listItems(provider))
         {
-            generateItemJson(config, jsonItemFolderPath);
+            generateItemJson(config, jsonItemModelsFolderPath);
         }
     }
 
-    private void convertExistingJsonFiles(Path jsonFolderPath)
+    private static void convertExistingJsonFiles(Path jsonFolderPath)
     {
-        if (Files.exists(jsonFolderPath))
+        if (!Files.isDirectory(jsonFolderPath))
+            return;
+
+        try (Stream<Path> walk = Files.walk(jsonFolderPath))
         {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(jsonFolderPath, "*.json"))
-            {
-                for (Path jsonFile : stream)
-                {
-                    processJsonItemFile(jsonFile);
-                }
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Could not open {}", jsonFolderPath, e);
-            }
+            walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".json"))
+                .forEach(ContentManager::processJsonItemFile);
+        }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Could not open {}", jsonFolderPath, e);
         }
     }
 
-    private void processJsonItemFile(Path jsonFile)
+    private static void processJsonItemFile(Path jsonFile)
     {
         try
         {
+            // 1) Rename the file itself to lowercase (safe even on case-insensitive FS)
+            jsonFile = renameToLowercase(jsonFile);
+
+            // 2) Lowercase the content (OK for blockstates/models only)
             String content = Files.readString(jsonFile, StandardCharsets.UTF_8);
-            String modified = content.replace("flansmod:items/", "flansmod:item/").toLowerCase();
-            Files.writeString(jsonFile, modified, StandardCharsets.UTF_8);
+            String modified = content
+                    .replace("flansmod:items/", "flansmod:item/")
+                    .toLowerCase();
+            if (!modified.equals(content))
+            {
+                Files.writeString(jsonFile, modified, StandardCharsets.UTF_8);
+            }
         }
         catch (IOException e)
         {
@@ -654,14 +664,39 @@ public class ContentManager
         }
     }
 
-    private List<InfoType> listItems(IContentProvider provider)
+    /** Rename file to lowercase (and replace spaces with underscores). */
+    private static Path renameToLowercase(Path file) throws IOException
+    {
+        String name = file.getFileName().toString();
+        String lower = ResourceUtils.sanitize(name);
+        if (name.equals(lower)) return file;
+
+        Path target = file.resolveSibling(lower);
+
+        // If only the case differs, do a two-step move for Windows/macOS
+        if (name.equalsIgnoreCase(lower))
+        {
+            Path tmp = file.resolveSibling(name + "." + UUID.randomUUID() + ".tmp");
+            Files.move(file, tmp, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+        else
+        {
+            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return target;
+    }
+
+
+
+    private static List<InfoType> listItems(IContentProvider provider)
     {
         return configs.get(provider).stream()
                 .filter(config -> config.getType().isItemType())
                 .toList();
     }
 
-    private void generateItemJson(InfoType config, Path outputFolder)
+    private static void generateItemJson(InfoType config, Path outputFolder)
     {
         ResourceUtils.ItemModel model = ResourceUtils.ItemModel.create(config);
         String jsonContent = gson.toJson(model);
@@ -712,14 +747,14 @@ public class ContentManager
         }
     }
 
-    private void copyItemIcons(IContentProvider provider)
+    private static void copyItemIcons(IContentProvider provider)
     {
         Path sourcePath = provider.getAssetsPath().resolve("textures").resolve("items");
         Path destPath = provider.getAssetsPath().resolve("textures").resolve("item");
         copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
     }
 
-    private void copyTextures(IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
+    private static void copyTextures(IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
     {
         Path sourcePath = provider.getAssetsPath().resolve(folderName);
         Path destPath = provider.getAssetsPath().resolve("textures").resolve(folderName);
@@ -727,7 +762,7 @@ public class ContentManager
         renameTextureFilesWithAliases(destPath, aliasMapping);
     }
 
-    private void renameTextureFilesWithAliases(Path folder, Map<String, DynamicReference> aliasMapping)
+    private static void renameTextureFilesWithAliases(Path folder, Map<String, DynamicReference> aliasMapping)
     {
         if (Files.exists(folder))
         {
@@ -779,20 +814,18 @@ public class ContentManager
         }
     }
 
-    private void createLocalization(IContentProvider provider)
+    private static void createLocalization(IContentProvider provider)
     {
         Path langDir = provider.getAssetsPath().resolve("lang");
-        if (!Files.isDirectory(langDir))
+
+        try
         {
-            try
-            {
-                Files.createDirectories(langDir);
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Could not create directory for localization {}", langDir, e);
-                return;
-            }
+            Files.createDirectories(langDir);
+        }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Could not create directory for localization {}", langDir, e);
+            return;
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(langDir, "*.lang"))
@@ -808,7 +841,7 @@ public class ContentManager
         }
     }
 
-    private void generateLocalizationFile(IContentProvider provider, Path langFile)
+    private static void generateLocalizationFile(IContentProvider provider, Path langFile)
     {
         Map<String, String> translations = readLangFile(langFile);
         for (InfoType config : configs.get(provider))
@@ -840,25 +873,12 @@ public class ContentManager
         }
     }
 
-    private Map<String, String> readLangFile(Path langFile)
+    private static Map<String, String> readLangFile(Path langFile)
     {
         Map<String, String> translations = new LinkedHashMap<>();
         try
         {
-            List<String> lines;
-            try
-            {
-                lines = Files.readAllLines(langFile, StandardCharsets.UTF_8);
-                stripBomIfPresent(lines);
-            }
-            catch (MalformedInputException ex)
-            {
-                // UTF-8 failed: try UTF-16
-                lines = Files.readAllLines(langFile, StandardCharsets.UTF_16);
-                stripBomIfPresent(lines);
-            }
-
-            for (String line : lines)
+            for (String line : readLinesUtf8OrUtf16(langFile))
             {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#") || line.indexOf('=') < 0)
@@ -883,6 +903,22 @@ public class ContentManager
         return translations;
     }
 
+    private static List<String> readLinesUtf8OrUtf16(Path file) throws IOException {
+        List<String> lines;
+        try
+        {
+            lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+            stripBomIfPresent(lines);
+        }
+        catch (MalformedInputException ex)
+        {
+            // UTF-8 failed: try UTF-16
+            lines = Files.readAllLines(file, StandardCharsets.UTF_16);
+            stripBomIfPresent(lines);
+        }
+        return lines;
+    }
+
     private static String convertTranslationKey(String legacyKey)
     {
         if (legacyKey.startsWith("item.") && legacyKey.endsWith(".name")) {
@@ -896,12 +932,12 @@ public class ContentManager
         return legacyKey;
     }
 
-    private String generateTranslationKey(String itemId, boolean isBlock)
+    private static String generateTranslationKey(String itemId, boolean isBlock)
     {
         return (isBlock ? "block." : "item.") + ArmorMod.FLANSMOD_ID + "." + itemId;
     }
 
-    private void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath)
+    private static void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath)
     {
         if (Files.exists(sourcePath))
         {
@@ -943,7 +979,7 @@ public class ContentManager
         }
     }
 
-    private void createSounds(IContentProvider provider)
+    private static void createSounds(IContentProvider provider)
     {
         Path soundsDir = provider.getAssetsPath().resolve("sounds");
         Path soundsJsonFile = provider.getAssetsPath().resolve("sounds.json");
@@ -974,7 +1010,7 @@ public class ContentManager
             lowercaseFile(soundsJsonFile);
     }
 
-    private void lowercaseFile(Path file)
+    private static void lowercaseFile(Path file)
     {
         try
         {
@@ -987,7 +1023,7 @@ public class ContentManager
         }
     }
 
-    private void createMcMeta(IContentProvider provider) {
+    private static void createMcMeta(IContentProvider provider) {
         Path mcMetaFile = (provider.isArchive() ? provider.getExtractedPath() : provider.getPath()).resolve("pack.mcmeta");
         if (Files.notExists(mcMetaFile))
         {
@@ -1010,7 +1046,7 @@ public class ContentManager
         }
     }
 
-    private boolean isTextureNameAlreadyRegistered(String name, String folderName, IContentProvider provider)
+    private static boolean isTextureNameAlreadyRegistered(String name, String folderName, IContentProvider provider)
     {
         return textures.get(folderName).containsKey(name) && !textures.get(folderName).get(name).contentPack().equals(provider);
     }
