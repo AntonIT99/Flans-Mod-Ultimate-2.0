@@ -3,6 +3,7 @@ package com.wolffsarmormod.common.types;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.paintjob.LegacyDyeMapper;
 import com.wolffsarmormod.common.paintjob.Paintjob;
+import com.wolffsarmormod.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -55,7 +55,7 @@ public abstract class PaintableType extends InfoType
                 dyeStacks.add(dyeNameToItemStack(split[i * 2 + 3], split[i * 2 + 4], line, file));
             }
             nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, split[1].toLowerCase(Locale.ROOT), split[2].toLowerCase(Locale.ROOT), dyeStacks));
+            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, ResourceUtils.sanitize(split[1]), ResourceUtils.sanitize(split[2]), dyeStacks));
         }
 
         if (split[0].equalsIgnoreCase("AdvPaintJob") && split.length > 3)
@@ -66,7 +66,7 @@ public abstract class PaintableType extends InfoType
                 dyeStacks.add(dyeNameToItemStack(split[i * 2 + 4], split[i * 2 + 5], line, file));
             }
             nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, split[1], split[2].toLowerCase(Locale.ROOT), split[3].toLowerCase(Locale.ROOT), dyeStacks));
+            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, split[1], ResourceUtils.sanitize(split[2]), ResourceUtils.sanitize(split[3]), dyeStacks));
         }
 
         if (split[0].equalsIgnoreCase("AddPaintableToTables"))

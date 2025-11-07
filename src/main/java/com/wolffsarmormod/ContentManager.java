@@ -238,7 +238,6 @@ public class ContentManager
                         ArmorMod.log.info("Content pack found in flan folder: '{}'", path.getFileName());
                         processedNames.add(name);
                         return true;
-
                     }
                     else
                     {
@@ -939,43 +938,49 @@ public class ContentManager
 
     private static void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath)
     {
-        if (Files.exists(sourcePath))
+        if (!Files.exists(sourcePath))
+            return;
+
+        if (Files.exists(destPath))
         {
-            if (Files.exists(destPath))
-            {
-                FileUtils.deleteRecursively(destPath);
-            }
+            FileUtils.deleteRecursively(destPath);
+        }
+        try
+        {
+            Files.createDirectories(destPath);
+        }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Could not create {}", destPath, e);
+            return;
+        }
 
-            try
-            {
-                Files.createDirectories(destPath);
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Could not create {}", destPath, e);
-                return;
-            }
+        try (Stream<Path> paths = Files.walk(sourcePath, 1))
+        {
+            paths.filter(Files::isRegularFile)
+                .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".png"))
+                .forEach(src -> {
+                    // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
+                    Path rel = sourcePath.relativize(src);
+                    String sanitizedRel = ResourceUtils.sanitizeRelPath(rel);
 
-            try (Stream<Path> paths = Files.walk(sourcePath, 1))
-            {
-                paths.filter(path -> path.toString().toLowerCase().endsWith(".png"))
-                    .forEach(path ->
+                    Path dst = destPath.resolve(sanitizedRel).normalize();
+                    try
                     {
-                        Path destinationFile = destPath.resolve(sourcePath.relativize(path).toString().toLowerCase());
-                        try
-                        {
-                            Files.copy(path, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        catch (IOException e)
-                        {
-                            ArmorMod.log.error("Could not create {}", destinationFile, e);
-                        }
-                    });
-            }
-            catch (IOException e)
-            {
-                ArmorMod.log.error("Could not read {}", sourcePath, e);
-            }
+                        Files.createDirectories(dst.getParent());
+                        // Avoid collisions after sanitizing (e.g., "A.png" & "a.png" → "a.png")
+                        Path unique = FileUtils.ensureUnique(dst);
+                        Files.copy(src, unique, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    catch (IOException e)
+                    {
+                        ArmorMod.log.error("Could not create {}", dst, e);
+                    }
+                });
+        }
+        catch (IOException e)
+        {
+            ArmorMod.log.error("Could not read {}", sourcePath, e);
         }
     }
 

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -29,6 +30,31 @@ import java.util.zip.ZipInputStream;
 public class FileUtils
 {
     private FileUtils() {}
+
+    /** If a destination path already exists (or would alias on case-insensitive FS), append -1, -2, ... */
+    public static Path ensureUnique(Path dst) throws IOException
+    {
+        if (!Files.exists(dst))
+            return dst;
+
+        String file = dst.getFileName().toString();
+        String name = file;
+        String ext = "";
+        int dot = file.lastIndexOf('.');
+        if (dot >= 0)
+        {
+            name = file.substring(0, dot);
+            ext = file.substring(dot);
+        }
+        AtomicInteger i = new AtomicInteger(1);
+        Path parent = dst.getParent();
+        Path candidate;
+        do {
+            candidate = parent.resolve(name + "-" + i.getAndIncrement() + ext);
+        }
+        while (Files.exists(candidate));
+        return candidate;
+    }
 
     public static boolean filesHaveDifferentBytesContent(Path file1, Path file2)
     {

@@ -11,6 +11,7 @@ import com.wolffsarmormod.util.ClassLoaderUtils;
 import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.FileUtils;
 import com.wolffsarmormod.util.LogUtils;
+import com.wolffsarmormod.util.ResourceUtils;
 import com.wolffsarmormod.util.TypeReaderUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
@@ -154,9 +155,9 @@ public abstract class InfoType
         name = readValues(split, "Name", name, file);
         originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase(Locale.ROOT);
         description = readValues(split, "Description", description, file);
-        icon = readValue(split, "Icon", icon, file).toLowerCase(Locale.ROOT);
-        textureName = readValue(split, "Texture", textureName, file).toLowerCase(Locale.ROOT);
-        overlayName = readValue(split, "Overlay", overlayName, file).toLowerCase(Locale.ROOT);
+        icon = ResourceUtils.sanitize(readValue(split, "Icon", icon, file));
+        textureName = ResourceUtils.sanitize(readValue(split, "Texture", textureName, file));
+        overlayName = ResourceUtils.sanitize(readValue(split, "Overlay", overlayName, file));
         modelName = readValue(split, "Model", modelName, file);
         modelScale = readValue(split, "ModelScale", modelScale, file);
 
