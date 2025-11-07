@@ -1,15 +1,18 @@
 package com.wolffsarmormod.common.raytracing;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityHit extends BulletHit
 {
-    public Entity entity;
+    private final Entity entity;
+    public final Vec3 impact;
 
-    public EntityHit(Entity e, float f)
+    public EntityHit(Entity entity, float intersectTime, Vec3 impact)
     {
-        super(f);
-        entity = e;
+        super(intersectTime);
+        this.entity = entity;
+        this.impact = impact;
     }
 
     @Override

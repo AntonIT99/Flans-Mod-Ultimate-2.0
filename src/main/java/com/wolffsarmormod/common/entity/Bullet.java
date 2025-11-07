@@ -477,7 +477,7 @@ public class Bullet extends Shootable
 
         int pingMs = firedShot.getPlayerOptional().map(p -> p.latency).orElse(0);
 
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level(), ignore, ticksInAir > 20, this, origin, motion, pingMs, 0f);
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level(), ignore, ticksInAir > 20, this, origin, motion, pingMs, 0f, getHitboxSize());
 
         if (hits.isEmpty())
             return;

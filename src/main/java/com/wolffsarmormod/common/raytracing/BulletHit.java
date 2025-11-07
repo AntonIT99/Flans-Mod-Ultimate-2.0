@@ -7,11 +7,11 @@ public abstract class BulletHit implements Comparable<BulletHit>
     /**
      * The time along the ray that the intersection happened. Between 0 and 1
      */
-    public float intersectTime;
+    public final float intersectTime;
 
-    protected BulletHit(float f)
+    protected BulletHit(float intersectTime)
     {
-        intersectTime = f;
+        this.intersectTime = intersectTime;
     }
 
     @Override

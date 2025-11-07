@@ -107,7 +107,7 @@ public final class ShootingUtils
         //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
         Entity ignore = shot.getPlayerOptional().isPresent() ? shot.getPlayerOptional().get() : shot.getShooterOptional().orElse(null);
 
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, rayTraceOrigin, shootingDirection, 0, penetrationPower);
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
         Vector3f previousHitPos = rayTraceOrigin;
         Vector3f finalhit = null;
 
@@ -209,9 +209,9 @@ public final class ShootingUtils
         }
         else if (bulletHit instanceof EntityHit entityHit)
         {
-            if (entityHit.entity != null)
+            if (entityHit.getEntity() != null)
             {
-                if (entityHit.entity.hurt(shot.getDamageSource(level), damage * bulletType.getDamage(entityHit.entity)) && entityHit.entity instanceof LivingEntity living)
+                if (entityHit.getEntity().hurt(shot.getDamageSource(level), damage * bulletType.getDamage(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
                     bulletType.getHitEffects().forEach(living::addEffect);
@@ -219,7 +219,7 @@ public final class ShootingUtils
                     living.invulnerableTime = 0;
                 }
                 if (bulletType.isSetEntitiesOnFire())
-                    entityHit.entity.setSecondsOnFire(20);
+                    entityHit.getEntity().setSecondsOnFire(20);
                 penetratingPower -= 1F;
 
                 //TODO: Debug Mode
