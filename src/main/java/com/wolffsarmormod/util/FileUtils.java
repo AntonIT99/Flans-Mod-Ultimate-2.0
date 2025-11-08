@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -32,7 +31,7 @@ public class FileUtils
     private FileUtils() {}
 
     /** If a destination path already exists (or would alias on case-insensitive FS), append -1, -2, ... */
-    public static Path ensureUnique(Path dst) throws IOException
+    public static Path ensureUnique(Path dst)
     {
         if (!Files.exists(dst))
             return dst;
@@ -46,14 +45,82 @@ public class FileUtils
             name = file.substring(0, dot);
             ext = file.substring(dot);
         }
-        AtomicInteger i = new AtomicInteger(1);
-        Path parent = dst.getParent();
+        int i = 1;
         Path candidate;
-        do {
-            candidate = parent.resolve(name + "-" + i.getAndIncrement() + ext);
+        do
+        {
+            candidate = dst.getParent().resolve(name + "-" + i++ + ext);
         }
         while (Files.exists(candidate));
         return candidate;
+    }
+
+    /** Returns true if the current filename differs from the sanitized target name. */
+    public static boolean needsRename(Path p)
+    {
+        String current = p.getFileName().toString();
+        String target  = sanitizedOggName(current);
+        return !current.equals(target);
+    }
+
+    /** Safe move that handles case-only renames on case-insensitive filesystems. */
+    public static void movePossiblyCaseOnly(Path src, Path dst) throws IOException
+    {
+        String srcName = src.getFileName().toString();
+        String dstName = dst.getFileName().toString();
+
+        // Case-only rename? Use a temp hop.
+        if (srcName.equalsIgnoreCase(dstName) && !srcName.equals(dstName))
+        {
+            Path tmp = src.resolveSibling(srcName + "." + java.util.UUID.randomUUID() + ".tmp");
+            Files.move(src, tmp, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(tmp, dst, StandardCopyOption.REPLACE_EXISTING);
+        }
+        else
+        {
+            Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static boolean isOgg(Path p)
+    {
+        String n = p.getFileName().toString();
+        int dot = n.lastIndexOf('.');
+        return dot >= 0 && n.substring(dot).equalsIgnoreCase(".ogg");
+    }
+
+    /** Build sanitized target filename for an .ogg (lowercase, safe chars, force .ogg). */
+    private static String sanitizedOggName(String currentName)
+    {
+        int dot = currentName.lastIndexOf('.');
+        String base = dot >= 0 ? currentName.substring(0, dot) : currentName;
+        String sanitizedBase = ResourceUtils.sanitize(base); // must lowercase + map illegal chars to '_'
+        return sanitizedBase + ".ogg";
+    }
+
+    /** Sanitize a relative path: lowercase, replace spaces with '_', remove illegal chars, force .png extension. */
+    public static String sanitizePngRelPath(Path rel)
+    {
+        StringBuilder out = new StringBuilder();
+        for (Path part : rel)
+        {
+            String name = part.getFileName().toString();
+            int dot = name.lastIndexOf('.');
+            if (dot >= 0)
+            {
+                name = name.substring(0, dot);
+            }
+            // sanitize basename and enforce .png extension
+            String finalName = ResourceUtils.sanitize(name) + ".png";
+
+            if (!out.isEmpty())
+                out.append('/');
+            out.append(finalName);
+        }
+        // collapse any accidental double slashes, trim leading slash
+        String s = out.toString().replaceAll("/{2,}", "/");
+        if (s.startsWith("/")) s = s.substring(1);
+        return s;
     }
 
     public static boolean filesHaveDifferentBytesContent(Path file1, Path file2)

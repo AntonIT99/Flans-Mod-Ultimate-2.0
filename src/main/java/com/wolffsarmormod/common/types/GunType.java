@@ -4,6 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
+import com.wolffsarmormod.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +23,6 @@ import net.minecraft.world.item.UseAnim;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -609,7 +609,7 @@ public class GunType extends PaintableType implements IScope
         cooldownSound = readValue(split, "CooldownSound", cooldownSound, file);
 
         //Modes and zoom settings
-        overlayName = readValue(split, "Scope", overlayName, file).toLowerCase();
+        overlayName = ResourceUtils.sanitize(readValue(split, "Scope", overlayName, file));
         if (split[0].equalsIgnoreCase("Mode") && split.length > 1)
             mode = EnumFireMode.getFireMode(split[1]);
         zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
@@ -620,7 +620,7 @@ public class GunType extends PaintableType implements IScope
             secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
         deployable = readValue(split, "Deployable", deployable, file);
         deployableModelName = readValue(split, "DeployedModel", deployableModelName, file);
-        deployableTextureName = readValue(split, "DeployedTexture", deployableTextureName, file).toLowerCase(Locale.ROOT);
+        deployableTextureName = ResourceUtils.sanitize(readValue(split, "DeployedTexture", deployableTextureName, file));
         //TODO: MuzzleFlashModel
         standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
         topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);
@@ -638,7 +638,7 @@ public class GunType extends PaintableType implements IScope
 
         if (split[0].equals("Ammo") && split.length > 1)
         {
-            ammo.add(split[1].toLowerCase());
+            ammo.add(ResourceUtils.sanitize(split[1]));
         }
 
         if (split[0].equalsIgnoreCase("BulletSpeed"))
@@ -675,7 +675,7 @@ public class GunType extends PaintableType implements IScope
         if (split[0].equalsIgnoreCase("AllowAttachments"))
         {
             for (int i = 1; i < split.length; i++)
-                allowedAttachments.add(AttachmentType.getAttachment(split[i]));
+                allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(split[i])));
         }
 
         allowBarrelAttachments = readValue(split, "AllowBarrelAttachments", allowBarrelAttachments, file);

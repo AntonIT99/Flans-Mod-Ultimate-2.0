@@ -3,6 +3,8 @@ package com.wolffsarmormod.common.types;
 import com.wolffsarmormod.common.guns.EnumAttachmentType;
 import com.wolffsarmormod.common.guns.EnumFireMode;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
+import com.wolffsarmormod.common.item.AttachmentItem;
+import com.wolffsarmormod.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -178,7 +180,7 @@ public class AttachmentType extends PaintableType implements IScope
         zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
         fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
 
-        overlayName = readValue(split, "ZoomOverlay", overlayName, file).toLowerCase();
+        overlayName = ResourceUtils.sanitize(readValue(split, "ZoomOverlay", overlayName, file));
 
         hasNightVision = readValue(split, "HasNightVision", hasNightVision, file);
     }
@@ -214,10 +216,9 @@ public class AttachmentType extends PaintableType implements IScope
     @Nullable
     public static AttachmentType getFromNBT(CompoundTag tags) {
         ItemStack stack = ItemStack.of(tags);
-        //TODO: implement AttachmentItem
-        /*if (!stack.isEmpty() && stack.getItem() instanceof ItemAttachment attachment) {
-            return attachment.type;
-        }*/
+        if (!stack.isEmpty() && stack.getItem() instanceof AttachmentItem attachment) {
+            return attachment.getConfigType();
+        }
         return null;
     }
 

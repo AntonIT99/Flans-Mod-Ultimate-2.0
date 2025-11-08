@@ -9,7 +9,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import javax.annotation.Nullable;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,40 +19,7 @@ public final class ResourceUtils
     public static String sanitize(String name)
     {
         // Lowercase + swap spaces; keep only chars valid in resource paths
-        String n = name.toLowerCase().replace(' ', '_');
-        return n.replaceAll("[^a-z0-9._\\-]", "_");
-    }
-
-    /** Sanitize a relative path: lowercase, replace spaces with '_', remove illegal chars, force .png extension. */
-    public static String sanitizeRelPath(Path rel)
-    {
-        StringBuilder out = new StringBuilder();
-        for (Path part : rel)
-        {
-            String name = part.getFileName().toString();
-            String ext = "";
-            int dot = name.lastIndexOf('.');
-            if (dot >= 0)
-            {
-                ext = name.substring(dot);
-                name = name.substring(0, dot);
-            }
-            // sanitize basename
-            String base = name.toLowerCase()
-                    .replace(' ', '_')
-                    .replaceAll("[^a-z0-9._-]", "_");
-
-            // enforce .png extension
-            String finalName = base + ".png";
-
-            if (out.length() > 0)
-                out.append('/');
-            out.append(finalName);
-        }
-        // collapse any accidental double slashes, trim leading slash (paranoia)
-        String s = out.toString().replaceAll("/{2,}", "/");
-        if (s.startsWith("/")) s = s.substring(1);
-        return s;
+        return name.toLowerCase().replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
     }
 
     public static class ItemModel

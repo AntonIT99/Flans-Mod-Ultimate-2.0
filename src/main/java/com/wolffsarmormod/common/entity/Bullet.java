@@ -269,8 +269,10 @@ public class Bullet extends Shootable
 
         if (infoType != null)
         {
-            if (!(infoType instanceof BulletType bulletType))
+            if (!(infoType instanceof BulletType bType))
                 return;
+
+            bulletType = bType;
 
             if (tag.contains("fireablegun", Tag.TAG_COMPOUND))
             {

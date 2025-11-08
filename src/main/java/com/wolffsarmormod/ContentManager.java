@@ -494,6 +494,7 @@ public class ContentManager
         String fileName = FilenameUtils.getBaseName(texturePath.getFileName().toString()).toLowerCase();
         if (folderName.equals(TEXTURES_ARMOR_FOLDER))
             fileName = getArmorTextureBaseName(fileName);
+        fileName = ResourceUtils.sanitize(fileName);
         String aliasName = fileName;
 
         if (isTextureNameAlreadyRegistered(fileName, folderName, provider))
@@ -962,7 +963,7 @@ public class ContentManager
                 .forEach(src -> {
                     // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
                     Path rel = sourcePath.relativize(src);
-                    String sanitizedRel = ResourceUtils.sanitizeRelPath(rel);
+                    String sanitizedRel = FileUtils.sanitizePngRelPath(rel);
 
                     Path dst = destPath.resolve(sanitizedRel).normalize();
                     try
@@ -991,19 +992,9 @@ public class ContentManager
 
         if (Files.isDirectory(soundsDir))
         {
-            DirectoryStream.Filter<Path> filter = path -> {
-                String fileName = path.getFileName().toString();
-                return fileName.toLowerCase().endsWith(".ogg") && !fileName.equals(fileName.toLowerCase());
-            };
-
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(soundsDir, filter))
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(soundsDir, Files::isRegularFile))
             {
-                for (Path file : stream)
-                {
-                    String lowercaseName = file.getFileName().toString().toLowerCase();
-                    Files.move(file, soundsDir.resolve(lowercaseName + ".tmp"), StandardCopyOption.REPLACE_EXISTING);
-                    Files.move(soundsDir.resolve(lowercaseName + ".tmp"), soundsDir.resolve(lowercaseName), StandardCopyOption.REPLACE_EXISTING);
-                }
+                processSoundFiles(stream, soundsDir);
             }
             catch (IOException e)
             {
@@ -1011,15 +1002,45 @@ public class ContentManager
             }
         }
 
-        if (Files.exists(soundsJsonFile))
-            lowercaseFile(soundsJsonFile);
+        if (Files.isRegularFile(soundsJsonFile))
+            processSoundJsonFile(soundsJsonFile);
     }
 
-    private static void lowercaseFile(Path file)
+    private static void processSoundFiles(DirectoryStream<Path> stream, Path soundsDir)
+    {
+        for (Path src : stream)
+        {
+            if (!FileUtils.isOgg(src))
+                continue;
+            if (!FileUtils.needsRename(src))
+                continue;
+
+            try
+            {
+                Path target = soundsDir.resolve(ResourceUtils.sanitize(src.getFileName().toString())).normalize();
+                Path finalTarget = FileUtils.ensureUnique(target);
+                FileUtils.movePossiblyCaseOnly(src, finalTarget);
+            }
+            catch (IOException e)
+            {
+                ArmorMod.log.error("Could not rename {}", src, e);
+            }
+        }
+    }
+
+    private static void processSoundJsonFile(Path file)
     {
         try
         {
-            String content = Files.readString(file);
+            String content = Files.readString(file, StandardCharsets.UTF_8);
+            // Strip UTF-8 BOM if present so a BOM-only file counts as empty
+            if (!content.isEmpty() && content.charAt(0) == '\uFEFF') {
+                content = content.substring(1);
+            }
+            if (content.isBlank()) {
+                Files.deleteIfExists(file);
+                return;
+            }
             Files.writeString(file, content.toLowerCase());
         }
         catch (IOException e)

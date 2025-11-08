@@ -2,6 +2,7 @@ package com.wolffsarmormod.common.types;
 
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.client.model.DefaultArmor;
+import com.wolffsarmormod.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,8 +64,8 @@ public class ArmorType extends InfoType
     {
         super.readLine(line, split, file);
         rawArmorItemType = readValue(split, "Type", rawArmorItemType, file);
-        textureName = readValue(split, "ArmourTexture", textureName, file).toLowerCase();
-        textureName = readValue(split, "ArmorTexture", textureName, file).toLowerCase();
+        textureName = ResourceUtils.sanitize(readValue(split, "ArmourTexture", textureName, file));
+        textureName = ResourceUtils.sanitize(readValue(split, "ArmorTexture", textureName, file));
         defence = readValue(split, "DamageReduction", defence, file);
         defence = readValue(split, "Defence", defence, file);
         enchantability = readValue(split, "Enchantability", enchantability, file);

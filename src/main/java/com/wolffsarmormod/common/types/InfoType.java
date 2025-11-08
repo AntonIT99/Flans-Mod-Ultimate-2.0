@@ -39,7 +39,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -153,7 +152,7 @@ public abstract class InfoType
     protected void readLine(String line, String[] split, TypeFile file)
     {
         name = readValues(split, "Name", name, file);
-        originalShortName = readValue(split, "ShortName", originalShortName, file).toLowerCase(Locale.ROOT);
+        originalShortName = ResourceUtils.sanitize(readValue(split, "ShortName", originalShortName, file));
         description = readValues(split, "Description", description, file);
         icon = ResourceUtils.sanitize(readValue(split, "Icon", icon, file));
         textureName = ResourceUtils.sanitize(readValue(split, "Texture", textureName, file));
@@ -211,7 +210,7 @@ public abstract class InfoType
         String sound = readValue(split, key, currentValue, file);
         if (StringUtils.isNotBlank(sound))
         {
-            sound = sound.toLowerCase(Locale.ROOT);
+            sound = ResourceUtils.sanitize(sound);
             ArmorMod.registerSound(sound);
         }
         return sound;
