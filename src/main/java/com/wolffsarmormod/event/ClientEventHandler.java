@@ -155,8 +155,8 @@ public final class ClientEventHandler
 
         if (mainArmPose && offArmPose)
         {
-            humanoid.leftArmPose  = ModClient.BOTH_ARMS_AIM;
-            humanoid.rightArmPose = ModClient.BOTH_ARMS_AIM;
+            humanoid.leftArmPose  = ModClient.bothArmsAim;
+            humanoid.rightArmPose = ModClient.bothArmsAim;
         }
         else if (mainArmPose)
         {

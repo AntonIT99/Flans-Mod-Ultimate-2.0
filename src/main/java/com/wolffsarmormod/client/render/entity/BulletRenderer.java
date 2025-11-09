@@ -1,4 +1,4 @@
-package com.wolffsarmormod.client.render;
+package com.wolffsarmormod.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

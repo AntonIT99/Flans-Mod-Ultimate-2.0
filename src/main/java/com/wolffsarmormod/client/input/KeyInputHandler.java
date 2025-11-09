@@ -9,6 +9,7 @@ import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.network.PacketHandler;
 import com.wolffsarmormod.network.PacketReload;
+import com.wolffsarmormod.network.PacketRequestDebug;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -30,6 +31,8 @@ public final class KeyInputHandler
 
     private static final KeyMapping reloadKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".reload", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_R, CATEGORY);
     private static final KeyMapping lookAtGunKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".lookAtGun", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_M, CATEGORY);
+    private static final KeyMapping debugKey = new KeyMapping("key." + ArmorMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY);
+
 
     //TODO: implement all key bindings
 
@@ -37,6 +40,7 @@ public final class KeyInputHandler
     {
         event.register(reloadKey);
         event.register(lookAtGunKey);
+        event.register(debugKey);
     }
 
     public static void checkKeys()
@@ -53,6 +57,14 @@ public final class KeyInputHandler
             if (lookAtGunKey.consumeClick())
             {
                 doLookAtGun();
+            }
+            if (debugKey.consumeClick())
+            {
+                if (ModClient.isDebug())
+                    ModClient.setDebug(false);
+                else
+                    PacketHandler.sendToServer(new PacketRequestDebug());
+
             }
         }
     }

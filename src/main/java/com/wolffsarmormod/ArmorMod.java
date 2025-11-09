@@ -3,6 +3,9 @@ package com.wolffsarmormod;
 import com.mojang.logging.LogUtils;
 import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.Shootable;
+import com.wolffsarmormod.common.entity.debug.DebugColor;
+import com.wolffsarmormod.common.entity.debug.DebugDot;
+import com.wolffsarmormod.common.entity.debug.DebugVector;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.config.ModCommonConfigs;
@@ -39,6 +42,7 @@ public class ArmorMod
 {
     public static final String MOD_ID = "wolffsarmormod";
     public static final String FLANSMOD_ID = "flansmod";
+
     // Range for which sound packets are sent
     public static final float SOUND_RANGE = 64F;
     public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
@@ -61,9 +65,7 @@ public class ArmorMod
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
     public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
 
-    static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
-    static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
-
+    // Registries
     static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, ArmorMod.FLANSMOD_ID);
     static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArmorMod.MOD_ID);
     static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ArmorMod.MOD_ID);
@@ -75,9 +77,24 @@ public class ArmorMod
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(Bullet.RENDER_DISTANCE) // how far clients track it
-            .updateInterval(1) // ticks between velocity/pos updates
+            .clientTrackingRange(Bullet.RENDER_DISTANCE)
+            .updateInterval(1)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
+    public static final RegistryObject<EntityType<DebugDot>> debugDotEntity = entityRegistry.register("debug_dot", () ->
+        EntityType.Builder.<DebugDot>of(DebugDot::new, MobCategory.MISC)
+            .sized(DebugColor.DEFAULT_HITBOX_SIZE, DebugColor.DEFAULT_HITBOX_SIZE)
+            .clientTrackingRange(DebugColor.RENDER_DISTANCE)
+            .updateInterval(20)
+            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "debug_dot").toString()));
+    public static final RegistryObject<EntityType<DebugVector>> debugVectorEntity = entityRegistry.register("debug_vector", () ->
+        EntityType.Builder.<DebugVector>of(DebugVector::new, MobCategory.MISC)
+            .sized(DebugColor.DEFAULT_HITBOX_SIZE, DebugColor.DEFAULT_HITBOX_SIZE)
+            .clientTrackingRange(DebugColor.RENDER_DISTANCE)
+            .updateInterval(20)
+            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "debug_vector").toString()));
+
+    static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+    static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
 
     public ArmorMod(FMLJavaModLoadingContext context)
     {

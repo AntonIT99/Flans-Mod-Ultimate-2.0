@@ -192,6 +192,7 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.6:processor'
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
+    compileOnly 'org.jetbrains:annotations:26.0.2'
     compileOnly 'org.projectlombok:lombok:1.18.42'
 
     implementation fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-20250830')

@@ -2,6 +2,7 @@ package com.wolffsarmormod.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
+import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.BulletType;
@@ -52,22 +53,21 @@ public class PlayerHitbox
     @OnlyIn(Dist.CLIENT)
     public void renderHitbox(Level level, Vector3f pos)
     {
-
-        //Vector3f boxOrigin = new Vector3f(pos.x + rP.x, pos.y + rP.y, pos.z + rP.z);
-        //world.spawnEntity(new EntityDebugAABB(world, boxOrigin, d, 2, 1F, 1F, 0F, axes.getYaw(), axes.getPitch(), axes.getRoll(), o));
-        if(type != EnumHitboxType.RIGHTARM)
+        if (type != EnumHitboxType.RIGHTARM)
             return;
-        for(int i = 0; i < 3; i++)
-            for(int j = 0; j < 3; j++)
+
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
                 for(int k = 0; k < 3; k++)
                 {
                     Vector3f point = new Vector3f(o.x + d.x * i / 2, o.y + d.y * j / 2, o.z + d.z * k / 2);
                     point = axes.findLocalVectorGlobally(point);
-                    //TODO: Debug Mode
-                    /*if (FlansMod.DEBUG && level.isRemote)
-                        level.spawnEntity(new EntityDebugDot(level, new Vector3f(pos.x + rP.x + point.x, pos.y + rP.y + point.y, pos.z + rP.z + point.z), 1, 0F, 1F, 0F));*/
+                    DebugHelper.spawnDebugDot(level, new Vector3f(pos.x + rP.x + point.x, pos.y + rP.y + point.y, pos.z + rP.z + point.z), 1, 0F, 1F, 0F);
                 }
-
+            }
+        }
     }
 
     public PlayerBulletHit raytrace(Vector3f origin, Vector3f motion)

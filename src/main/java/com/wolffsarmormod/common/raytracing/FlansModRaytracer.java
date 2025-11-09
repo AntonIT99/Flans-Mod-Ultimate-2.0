@@ -12,6 +12,7 @@ import com.wolffsarmormod.common.types.AttachmentType;
 import com.wolffsarmormod.common.types.GunType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -28,7 +29,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.Optional;
 public class FlansModRaytracer
 {
     //TODO: investigate why high speed bullets can not eliminate near targets
-    public static List<BulletHit> raytrace(Level level, Entity playerToIgnore, boolean canHitSelf, Entity entityToIgnore, Vector3f origin, Vector3f motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize)
+    public static List<BulletHit> raytrace(Level level, Entity playerToIgnore, boolean canHitSelf, Entity entityToIgnore, Vector3f origin, Vector3f motion, int pingOfShooter, float gunPenetration, float projectileHitBoxSize)
     {
         //Create a list for all bullet hits
         List<BulletHit> hits = new ArrayList<>();
@@ -106,7 +106,7 @@ public class FlansModRaytracer
                 && entity.isAlive()
                 && (entity instanceof LivingEntity || entity instanceof AAGun || entity instanceof Grenade))
             {
-                EntityHit hit = findHitAgainstEntityAndParts(entity, start, motion.toVec3(), bulletHitBoxSize);
+                EntityHit hit = findHitAgainstEntityAndParts(entity, start, motion.toVec3(), projectileHitBoxSize);
                 if (hit != null) {
                     hits.add(new EntityHit(hit.getEntity(), hit.intersectTime, hit.impact));
                 }
@@ -128,33 +128,32 @@ public class FlansModRaytracer
 
     /**
      * Finds the earliest hit against an entity and its parts.
-     * - Expands AABBs by bullet radius
+     * - Expands AABBs by projectile radius
      * - Sweeps AABBs by entity velocity
      * - Handles start-inside
      * - Picks earliest t; parts win ties
      */
     @Nullable
-    public static EntityHit findHitAgainstEntityAndParts(Entity entity, Vec3 start, Vec3 motion, float bulletRadius)
+    public static EntityHit findHitAgainstEntityAndParts(Entity entity, Vec3 start, Vec3 motion, float projectileHitBoxSize)
     {
         final double len2 = motion.lengthSqr();
         final boolean noMotion = len2 <= 1e-9;
         final Vec3 entVel = entity.getDeltaMovement();
 
         // Whole entity
-        AABB wholeBox = buildSweptInflatedBox(entity.getBoundingBox(), bulletRadius, entVel);
+        AABB wholeBox = buildSweptInflatedBox(entity.getBoundingBox(), projectileHitBoxSize, entVel);
         EntityHit best = tryHitBox(entity, wholeBox, start, motion, len2, noMotion);
 
         // Parts (take earliest; prefer parts on tie)
         Entity[] parts = entity.getParts();
-        if (parts != null) {
+        if (parts != null)
+        {
             for (Entity part : parts)
             {
-                AABB partBox = buildSweptInflatedBox(part.getBoundingBox(), bulletRadius, entVel);
+                AABB partBox = buildSweptInflatedBox(part.getBoundingBox(), projectileHitBoxSize, entVel);
                 EntityHit cand = tryHitBox(part, partBox, start, motion, len2, noMotion);
-                if (isBetterHit(cand, best, true))
-                {
+                if (isBetterHit(cand, best))
                     best = cand;
-                }
             }
         }
 
@@ -162,10 +161,9 @@ public class FlansModRaytracer
     }
 
     /** Inflate by bullet radius and sweep by entity velocity for ~1 tick. */
-    private static AABB buildSweptInflatedBox(AABB box, float radius, Vec3 entVel)
+    private static AABB buildSweptInflatedBox(AABB box, float projectileHtiBoxSize, Vec3 entityVelocity)
     {
-        // For extra generosity (like 1.7.10), consider entVel.scale(2)
-        return box.inflate(radius).expandTowards(entVel);
+        return box.inflate(projectileHtiBoxSize / 2F).expandTowards(entityVelocity);
     }
 
     /** Attempt a hit against a single AABB with start-inside handling. */
@@ -204,21 +202,16 @@ public class FlansModRaytracer
     }
 
     /** Compare two hits; prefer candidate if it is earlier, or equal when preferCandOnTie=true. */
-    private static boolean isBetterHit(@Nullable EntityHit cand, @Nullable EntityHit best, boolean preferCandOnTie)
+    private static boolean isBetterHit(@Nullable EntityHit cand, @Nullable EntityHit best)
     {
         if (cand == null)
             return false;
         if (best == null)
             return true;
-        int cmp = cand.compareTo(best);
-        if (cmp < 0)
-            return true;
-        if (cmp > 0)
-            return false;
-        return preferCandOnTie;
+        return cand.compareTo(best) <= 0;
     }
 
-    private static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vector3f motion, Vec3 normalized_motion, List<BulletHit> hits, Float penetration, BlockPos oldPos)
+    private static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vector3f motion, Vec3 direction, List<BulletHit> hits, Float penetration, BlockPos oldPos)
     {
         //Ray trace the bullet by comparing its next position to its current position
         Vec3 nextPosVec = new Vec3(posVec.x + motion.x, posVec.y + motion.y, posVec.z + motion.z);
@@ -254,7 +247,7 @@ public class FlansModRaytracer
 
             if (penetration > 0)
             {
-                hits = raytraceBlock(level, hit.getLocation().add(normalized_motion), hitVec.add(normalized_motion), motion, normalized_motion, hits, penetration, pos);
+                hits = raytraceBlock(level, hit.getLocation().add(direction), hitVec.add(direction), motion, direction, hits, penetration, pos);
             }
         }
         return hits;

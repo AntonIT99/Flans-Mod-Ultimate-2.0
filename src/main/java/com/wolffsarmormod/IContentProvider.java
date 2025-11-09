@@ -1,8 +1,8 @@
 package com.wolffsarmormod;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;

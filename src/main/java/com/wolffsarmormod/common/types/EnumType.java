@@ -9,8 +9,8 @@ import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.item.IFlanItem;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

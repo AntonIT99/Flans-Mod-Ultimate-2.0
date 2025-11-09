@@ -7,6 +7,7 @@ import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.Grenade;
+import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.guns.DefaultShootingHandler;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireableGun;
@@ -14,6 +15,7 @@ import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.guns.InventoryHelper;
 import com.wolffsarmormod.common.guns.ShootingHandler;
 import com.wolffsarmormod.common.guns.ShootingUtils;
+import com.wolffsarmormod.common.raytracing.FlansModRaytracer;
 import com.wolffsarmormod.common.types.GunType;
 import com.wolffsarmormod.common.types.IScope;
 import com.wolffsarmormod.common.types.InfoType;
@@ -22,6 +24,7 @@ import com.wolffsarmormod.network.PacketGunFire;
 import com.wolffsarmormod.network.PacketHandler;
 import com.wolffsarmormod.network.PacketPlaySound;
 import net.minecraftforge.fml.LogicalSide;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,7 +38,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -201,6 +203,8 @@ public record GunItemBehavior(GunItem item)
                 player.getInventory().setItem(player.getInventory().selected, ItemStack.EMPTY);
         }
         data.setShootTime(hand, shootTime);
+
+        DebugHelper.spawnDebugDot(level, FlansModRaytracer.getPlayerMuzzlePosition(player, hand), 100);
     }
 
     public void shootServer(InteractionHand hand, ServerPlayer player, ItemStack gunstack)
@@ -217,13 +221,6 @@ public record GunItemBehavior(GunItem item)
             return;
 
         shoot(hand, player, gunstack, data, level, null);
-
-        //TODO: Debug Mode
-        /*if (FlansMod.DEBUG)
-        {
-            Vector3f gunOrigin = FlansModRaytracer.GetPlayerMuzzlePosition(player, hand);
-            world.spawnEntity(new EntityDebugDot(world, gunOrigin, 100, 1.0f, 1.0f, 1.0f));
-        }*/
     }
 
     public boolean reload(ItemStack gunstack, Level level, Entity entity, Inventory inventory, InteractionHand hand, boolean hasOffHand, boolean forceReload, boolean isCreative)

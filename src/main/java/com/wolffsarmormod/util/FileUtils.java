@@ -4,8 +4,8 @@ import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

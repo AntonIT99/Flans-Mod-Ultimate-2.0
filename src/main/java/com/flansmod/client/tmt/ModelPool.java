@@ -2,8 +2,8 @@ package com.flansmod.client.tmt;
 
 import com.wolffsarmormod.ArmorMod;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;

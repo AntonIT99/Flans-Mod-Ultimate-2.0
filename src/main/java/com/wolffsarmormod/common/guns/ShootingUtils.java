@@ -4,6 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.common.FlansExplosion;
 import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
+import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.raytracing.BlockHit;
 import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.DriveableHit;
@@ -111,24 +112,18 @@ public final class ShootingUtils
         Vector3f previousHitPos = rayTraceOrigin;
         Vector3f finalhit = null;
 
-        for (BulletHit hit : hits)
+        for (int i = 0; i < hits.size(); i++)
         {
+            BulletHit hit = hits.get(i);
             Vector3f shotVector = new Vector3f(shootingDirection).scale(hit.intersectTime);
             Vector3f hitPos = Vector3f.add(rayTraceOrigin, shotVector, null);
 
-            //TODO: debug
-            /*if(FlansMod.DEBUG)
-            {
-                if (hit instanceof BlockHit)
-                {
-                    level.spawnEntity(new EntityDebugDot(level, hitPos, 1000, 1.0f, 0f, 1.0f));
-                }
-                else
-                {
-                    level.spawnEntity(new EntityDebugDot(level, hitPos, 1000, 1.0f, 1.0f, 1.0f));
-                }
-                level.spawnEntity(new EntityDebugVector(level, previousHitPos, Vector3f.sub(hitPos, previousHitPos, null), 1000, 0.5f, 0.5f, ((float)i/hits.size())));
-            }*/
+            if (hit instanceof BlockHit)
+                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1.0f, 0f, 1.0f);
+            else
+                DebugHelper.spawnDebugDot(level, hitPos, 1000);
+            DebugHelper.spawnDebugVector(level, previousHitPos, Vector3f.sub(hitPos, previousHitPos, null), 1000, 0.5f, 0.5f, ((float) i / hits.size()));
+
             previousHitPos = hitPos;
 
             penetrationPower = onHit(level, hitPos, shootingDirection, shot, hit, penetrationPower);
@@ -166,9 +161,8 @@ public final class ShootingUtils
         if (bulletHit instanceof DriveableHit driveableHit)
         {
             penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamageAgainstVehicles(), driveableHit, penetratingPower);
-            //TODO: Debug Mode
-            /*if(FlansMod.DEBUG)
-                level.spawnEntity(new EntityDebugDot(level, hit, 1000, 0F, 0F, 1F));*/
+
+            DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
 
             //Send hit marker, if player is present
             shot.getPlayerOptional().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
@@ -177,9 +171,7 @@ public final class ShootingUtils
         {
             penetratingPower = playerHit.hitbox.hitByBullet(shot, damage, penetratingPower);
 
-            //TODO: debug mode
-            /*if (FlansMod.DEBUG)
-                level.spawnEntity(new EntityDebugDot(level, hit, 1000, 1F, 0F, 0F));*/
+            DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
 
             Optional<ServerPlayer> optionalPlayer = shot.getPlayerOptional();
 
@@ -222,9 +214,7 @@ public final class ShootingUtils
                     entityHit.getEntity().setSecondsOnFire(20);
                 penetratingPower -= 1F;
 
-                //TODO: Debug Mode
-                /*if(FlansMod.DEBUG)
-                    level.spawnEntity(new EntityDebugDot(level, hit, 1000, 1F, 1F, 0F));*/
+                DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 1F, 0F);
             }
 
             //Send hit marker, if player is present
@@ -240,9 +230,7 @@ public final class ShootingUtils
             // State is already “actual” in modern MC (no getActualState)
             BlockState state = level.getBlockState(pos);
 
-            //TODO: Debug mode
-            /*if(FlansMod.DEBUG)
-                level.spawnEntity(new EntityDebugDot(level, hit, 1000, 0F, 1F, 0F));*/
+            DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
 
             boolean isGlass = state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
             //If the bullet breaks glass, and can do so according to FlansMod, do so.

@@ -8,10 +8,10 @@ import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

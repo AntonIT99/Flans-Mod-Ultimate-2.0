@@ -7,8 +7,8 @@ import com.wolffsarmormod.common.types.InfoType;
 import com.wolffsarmormod.common.types.PaintableType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;

@@ -5,6 +5,7 @@ import com.wolffsarmormod.common.types.BulletType;
 import com.wolffsarmormod.common.types.InfoType;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,19 +16,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
+public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
 {
     protected static final EntityDataAccessor<String> DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
     /** Client and Server side */
     protected String shortname = StringUtils.EMPTY;
 
-    public Driveable(EntityType<?> entityType, Level level)
+    protected Driveable(EntityType<?> entityType, Level level)
     {
         super(entityType, level);
     }
 
-    public Driveable(EntityType<?> entityType, Level level, InfoType infoType)
+    protected Driveable(EntityType<?> entityType, Level level, InfoType infoType)
     {
         super(entityType, level);
         shortname = infoType.getShortName();
@@ -65,21 +66,19 @@ public class Driveable extends Entity implements IEntityAdditionalSpawnData, IFl
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag pCompound)
+    protected void readAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag pCompound)
+    protected void addAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }
 
     /**
      * Called if the bullet actually hit the part returned by the raytrace
-     *
-     * @param penetratingPower
      */
     public float bulletHit(BulletType bulletType, float damage, DriveableHit hit, float penetratingPower)
     {

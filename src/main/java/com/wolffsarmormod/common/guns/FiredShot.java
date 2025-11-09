@@ -3,13 +3,13 @@ package com.wolffsarmormod.common.guns;
 import com.wolffsarmormod.common.FlansDamageSources;
 import com.wolffsarmormod.common.types.BulletType;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**

@@ -33,7 +33,7 @@ public class ModClient
 {
     public static final ThreadLocal<LivingEntity> entityRenderContext = new ThreadLocal<>();
 
-    public static final HumanoidModel.ArmPose BOTH_ARMS_AIM = HumanoidModel.ArmPose.create("both_arms_aim", true,
+    public static final HumanoidModel.ArmPose bothArmsAim = HumanoidModel.ArmPose.create("both_arms_aim", true,
         (model, entity, arm) -> {
             model.rightArm.xRot = -(float)Math.PI / 2F;
             model.rightArm.yRot = -0.05F;
@@ -42,6 +42,9 @@ public class ModClient
             model.leftArm.yRot = 0.05F;
             model.leftArm.zRot = 0F;
         });
+
+    @Getter @Setter
+    private static boolean isDebug = false;
 
     // Plane / Vehicle control handling
     /** Whether the player has received the vehicle tutorial text */

@@ -9,7 +9,7 @@ public class DriveableHit extends BulletHit
     public Driveable driveable;
     //public EnumDriveablePart part;
 
-    //TODO: Drivealbes
+    //TODO: Driveables
     public DriveableHit(Driveable d, /*EnumDriveablePart p,*/ float f)
     {
         super(f);
