@@ -1,4 +1,4 @@
-package com.wolffsarmormod.common.entity.debug;
+package com.wolffsarmormod.client.debug;
 
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ModClient;
@@ -8,15 +8,20 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DebugHelper
 {
+    public static final List<DebugColor> activeDebugEntities = new CopyOnWriteArrayList<>();
+
     public static void spawnDebugVector(Level level, Vec3 start, Vec3 end, int lifeTime, float red, float green, float blue)
     {
         if (!ModClient.isDebug() || !level.isClientSide)
             return;
 
-        level.addFreshEntity(new DebugVector(level, start, end, lifeTime, red, green, blue));
+        activeDebugEntities.add(new DebugVector(start, end, lifeTime, red, green, blue));
     }
 
     public static void spawnDebugVector(Level level, Vec3 start, Vec3 end, int lifeTime)
@@ -39,7 +44,7 @@ public final class DebugHelper
         if (!ModClient.isDebug() || !level.isClientSide)
             return;
 
-        level.addFreshEntity(new DebugDot(level, position, lifeTime, red, green, blue));
+        activeDebugEntities.add(new DebugDot(position, lifeTime, red, green, blue));
     }
 
     public static void spawnDebugDot(Level level, Vec3 position, int lifeTime)

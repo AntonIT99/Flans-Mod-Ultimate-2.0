@@ -126,7 +126,7 @@ public class PlayerData
     private PlayerData(UUID id)
     {
         playerId = id;
-        snapshots = new PlayerSnapshot[PlayerSnapshot.numPlayerSnapshots];
+        snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 
     public static PlayerData getInstance(@NotNull Player player)
@@ -194,7 +194,7 @@ public class PlayerData
     {
         mountingGun = null;
         isShootingRight = isShootingLeft = false;
-        snapshots = new PlayerSnapshot[PlayerSnapshot.numPlayerSnapshots];
+        snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 
     public float getShootTime(InteractionHand hand)

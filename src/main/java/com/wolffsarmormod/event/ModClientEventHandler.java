@@ -7,8 +7,6 @@ import com.wolffsarmormod.client.input.KeyInputHandler;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
 import com.wolffsarmormod.client.render.CustomArmorLayer;
 import com.wolffsarmormod.client.render.entity.BulletRenderer;
-import com.wolffsarmormod.client.render.entity.debug.DebugDotRenderer;
-import com.wolffsarmormod.client.render.entity.debug.DebugVectorRenderer;
 import com.wolffsarmormod.common.item.ICustomRendererItem;
 import com.wolffsarmormod.common.item.IPaintableItem;
 import lombok.AccessLevel;
@@ -127,8 +125,6 @@ public final class ModClientEventHandler
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
         event.registerEntityRenderer(ArmorMod.bulletEntity.get(), BulletRenderer::new);
-        event.registerEntityRenderer(ArmorMod.debugDotEntity.get(), DebugDotRenderer::new);
-        event.registerEntityRenderer(ArmorMod.debugVectorEntity.get(), DebugVectorRenderer::new);
     }
 
     @SubscribeEvent

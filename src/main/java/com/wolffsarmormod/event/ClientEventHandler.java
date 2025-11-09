@@ -3,6 +3,8 @@ package com.wolffsarmormod.event;
 import com.flansmod.client.model.ModelGun;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModClient;
+import com.wolffsarmormod.client.debug.DebugColor;
+import com.wolffsarmormod.client.debug.DebugHelper;
 import com.wolffsarmormod.client.input.KeyInputHandler;
 import com.wolffsarmormod.client.input.MouseInputHandler;
 import com.wolffsarmormod.client.render.ClientHudOverlays;
@@ -70,6 +72,9 @@ public final class ClientEventHandler
                 // Only handle if the velocity vector is not too small
                 MouseInputHandler.handleMouseMove(dx, dy);
             }
+
+            for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
+                debugEntity.tick();
         }
     }
 
@@ -103,6 +108,15 @@ public final class ClientEventHandler
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
+
+        if (ModClient.isDebug())
+        {
+            for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
+            {
+                if (event.getFrustum().isVisible(debugEntity.getAABB()))
+                    debugEntity.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera());
+            }
+        }
     }
 
     /** CROSSHAIR: pre = we can cancel vanilla*/
@@ -204,6 +218,12 @@ public final class ClientEventHandler
 
         event.setCanceled(true);
         event.setSwingHand(false);
+    }
+
+    @SubscribeEvent
+    public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event)
+    {
+        DebugHelper.activeDebugEntities.clear(); // cleanup on world/connection change
     }
 
     //TODO:

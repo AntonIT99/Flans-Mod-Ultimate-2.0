@@ -12,12 +12,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,7 +45,7 @@ public class ModClient
             model.leftArm.zRot = 0F;
         });
 
-    @Getter @Setter
+    @Getter
     private static boolean isDebug = false;
 
     // Plane / Vehicle control handling
@@ -97,6 +99,14 @@ public class ModClient
 
     @Getter @Setter
     private static int hitMarkerTime = 0;
+
+    public static void setDebug(boolean value)
+    {
+        isDebug = value;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null)
+            mc.gui.getChat().addMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
+    }
 
     @NotNull
     @OnlyIn(Dist.CLIENT)

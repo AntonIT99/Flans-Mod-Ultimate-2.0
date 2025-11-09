@@ -1,8 +1,9 @@
 package com.wolffsarmormod.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.ModClient;
+import com.wolffsarmormod.client.debug.DebugHelper;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
-import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.guns.FiredShot;
 import com.wolffsarmormod.common.item.GunItem;
 import com.wolffsarmormod.common.types.BulletType;
@@ -53,7 +54,7 @@ public class PlayerHitbox
     @OnlyIn(Dist.CLIENT)
     public void renderHitbox(Level level, Vector3f pos)
     {
-        if (type != EnumHitboxType.RIGHTARM)
+        if (!ModClient.isDebug() || type != EnumHitboxType.RIGHTARM)
             return;
 
         for (int i = 0; i < 3; i++)

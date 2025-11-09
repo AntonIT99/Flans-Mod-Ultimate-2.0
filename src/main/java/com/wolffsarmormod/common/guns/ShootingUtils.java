@@ -1,10 +1,10 @@
 package com.wolffsarmormod.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
+import com.wolffsarmormod.client.debug.DebugHelper;
 import com.wolffsarmormod.common.FlansExplosion;
 import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.PlayerBulletHit;
-import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.raytracing.BlockHit;
 import com.wolffsarmormod.common.raytracing.BulletHit;
 import com.wolffsarmormod.common.raytracing.DriveableHit;
@@ -106,7 +106,8 @@ public final class ShootingUtils
 
         float penetrationPower = shot.getBulletType().getPenetratingPower();
         //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
-        Entity ignore = shot.getPlayerOptional().isPresent() ? shot.getPlayerOptional().get() : shot.getShooterOptional().orElse(null);
+        Optional<ServerPlayer> playerOptional = shot.getPlayerOptional();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getShooterOptional().orElse(null);
 
         List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
         Vector3f previousHitPos = rayTraceOrigin;
@@ -119,10 +120,10 @@ public final class ShootingUtils
             Vector3f hitPos = Vector3f.add(rayTraceOrigin, shotVector, null);
 
             if (hit instanceof BlockHit)
-                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1.0f, 0f, 1.0f);
+                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0f, 1F);
             else
                 DebugHelper.spawnDebugDot(level, hitPos, 1000);
-            DebugHelper.spawnDebugVector(level, previousHitPos, Vector3f.sub(hitPos, previousHitPos, null), 1000, 0.5f, 0.5f, ((float) i / hits.size()));
+            DebugHelper.spawnDebugVector(level, previousHitPos, Vector3f.sub(hitPos, previousHitPos, null), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
 

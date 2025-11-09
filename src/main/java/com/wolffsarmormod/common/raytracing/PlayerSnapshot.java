@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class PlayerSnapshot
 {
-    public static final int numPlayerSnapshots = 20;
+    public static final int NUM_PLAYER_SNAPSHOTS = 20;
 
     private static final float PI = (float) Math.PI;
     
@@ -130,27 +130,25 @@ public class PlayerSnapshot
     @OnlyIn(Dist.CLIENT)
     public void renderSnapshot()
     {
-        for(PlayerHitbox hitbox : hitboxes)
+        for (PlayerHitbox hitbox : hitboxes)
         {
             hitbox.renderHitbox(player.level(), pos);
         }
     }
 
-    public PlayerHitbox GetHitbox(EnumHitboxType type)
+    public PlayerHitbox getHitbox(EnumHitboxType type)
     {
-        for(PlayerHitbox hitbox : hitboxes)
+        for (PlayerHitbox hitbox : hitboxes)
         {
-            if(hitbox.type == type)
-            {
+            if (hitbox.type == type)
                 return hitbox;
-            }
         }
         return null;
     }
 
     public Vector3f getMuzzleLocation(GunType gunType, AttachmentType barrelAttachment, InteractionHand hand)
     {
-        PlayerHitbox hitbox = GetHitbox(hand == InteractionHand.OFF_HAND ? EnumHitboxType.LEFTARM : EnumHitboxType.RIGHTARM);
+        PlayerHitbox hitbox = getHitbox(hand == InteractionHand.OFF_HAND ? EnumHitboxType.LEFTARM : EnumHitboxType.RIGHTARM);
         Vector3f muzzlePos = new Vector3f(hitbox.o.x, hitbox.o.y + hitbox.d.y * 0.5f, hitbox.o.z + hitbox.d.z * 0.5f);
 
         ModelGun modelGun = (ModelGun) ModelCache.getOrLoadTypeModel(gunType);
@@ -161,7 +159,6 @@ public class PlayerSnapshot
         }
 
         muzzlePos = hitbox.axes.findLocalVectorGlobally(muzzlePos);
-
 
         Vector3f.add(muzzlePos, hitbox.rP, muzzlePos);
         return muzzlePos;

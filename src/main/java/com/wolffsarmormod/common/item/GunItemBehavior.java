@@ -5,9 +5,9 @@ import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.IContentProvider;
 import com.wolffsarmormod.ModClient;
+import com.wolffsarmormod.client.debug.DebugHelper;
 import com.wolffsarmormod.common.PlayerData;
 import com.wolffsarmormod.common.entity.Grenade;
-import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.guns.DefaultShootingHandler;
 import com.wolffsarmormod.common.guns.EnumSecondaryFunction;
 import com.wolffsarmormod.common.guns.FireableGun;
@@ -204,7 +204,7 @@ public record GunItemBehavior(GunItem item)
         }
         data.setShootTime(hand, shootTime);
 
-        DebugHelper.spawnDebugDot(level, FlansModRaytracer.getPlayerMuzzlePosition(player, hand), 100);
+        DebugHelper.spawnDebugDot(level, FlansModRaytracer.getPlayerMuzzlePosition(player, hand), 1000);
     }
 
     public void shootServer(InteractionHand hand, ServerPlayer player, ItemStack gunstack)

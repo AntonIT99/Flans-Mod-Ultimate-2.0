@@ -3,9 +3,6 @@ package com.wolffsarmormod;
 import com.mojang.logging.LogUtils;
 import com.wolffsarmormod.common.entity.Bullet;
 import com.wolffsarmormod.common.entity.Shootable;
-import com.wolffsarmormod.common.entity.debug.DebugColor;
-import com.wolffsarmormod.common.entity.debug.DebugDot;
-import com.wolffsarmormod.common.entity.debug.DebugVector;
 import com.wolffsarmormod.common.types.EnumType;
 import com.wolffsarmormod.config.ModClientConfigs;
 import com.wolffsarmormod.config.ModCommonConfigs;
@@ -80,18 +77,6 @@ public class ArmorMod
             .clientTrackingRange(Bullet.RENDER_DISTANCE)
             .updateInterval(1)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
-    public static final RegistryObject<EntityType<DebugDot>> debugDotEntity = entityRegistry.register("debug_dot", () ->
-        EntityType.Builder.<DebugDot>of(DebugDot::new, MobCategory.MISC)
-            .sized(DebugColor.DEFAULT_HITBOX_SIZE, DebugColor.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(DebugColor.RENDER_DISTANCE)
-            .updateInterval(20)
-            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "debug_dot").toString()));
-    public static final RegistryObject<EntityType<DebugVector>> debugVectorEntity = entityRegistry.register("debug_vector", () ->
-        EntityType.Builder.<DebugVector>of(DebugVector::new, MobCategory.MISC)
-            .sized(DebugColor.DEFAULT_HITBOX_SIZE, DebugColor.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(DebugColor.RENDER_DISTANCE)
-            .updateInterval(20)
-            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "debug_vector").toString()));
 
     static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();

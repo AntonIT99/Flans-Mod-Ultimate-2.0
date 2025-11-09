@@ -3,8 +3,8 @@ package com.wolffsarmormod.common.entity;
 import com.flansmod.common.vector.Vector3f;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.ModUtils;
+import com.wolffsarmormod.client.debug.DebugHelper;
 import com.wolffsarmormod.client.render.ParticleHelper;
-import com.wolffsarmormod.common.entity.debug.DebugHelper;
 import com.wolffsarmormod.common.guns.EnumSpreadPattern;
 import com.wolffsarmormod.common.guns.FireableGun;
 import com.wolffsarmormod.common.guns.FiredShot;
@@ -306,6 +306,7 @@ public class Bullet extends Shootable
     @Override
     public void tick()
     {
+        //TODO: add FMU logic
         super.tick();
         Level level = level();
         try
@@ -316,7 +317,7 @@ public class Bullet extends Shootable
                 checkforuuids = false;
             }
 
-            DebugHelper.spawnDebugVector(level, position(), velocity, 20);
+            DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
             if (handleFuseAndLifetime())
                 return;
             if (!level.isClientSide)

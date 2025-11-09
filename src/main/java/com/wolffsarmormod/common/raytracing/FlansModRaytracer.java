@@ -7,9 +7,6 @@ import com.wolffsarmormod.common.entity.AAGun;
 import com.wolffsarmormod.common.entity.Driveable;
 import com.wolffsarmormod.common.entity.Grenade;
 import com.wolffsarmormod.common.guns.ShootingUtils;
-import com.wolffsarmormod.common.item.GunItem;
-import com.wolffsarmormod.common.types.AttachmentType;
-import com.wolffsarmormod.common.types.GunType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -257,15 +254,16 @@ public class FlansModRaytracer
     {
         PlayerSnapshot snapshot = new PlayerSnapshot(player);
 
-        ItemStack itemstack = hand == InteractionHand.OFF_HAND ? player.getOffhandItem() : player.getMainHandItem();
+        ItemStack itemstack = (hand == InteractionHand.OFF_HAND) ? player.getOffhandItem() : player.getMainHandItem();
 
-        if (itemstack.getItem() instanceof GunItem gunItem)
+        //TODO: Fix this code
+        /*if (itemstack.getItem() instanceof GunItem gunItem)
         {
             GunType gunType = gunItem.getConfigType();
             AttachmentType barrelType = gunType.getBarrel(itemstack);
 
             return Vector3f.add(new Vector3f(player.getX(), player.getY(), player.getZ()), snapshot.getMuzzleLocation(gunType, barrelType, hand), null);
-        }
+        }*/
 
         return new Vector3f(player.getEyePosition(0.0F));
     }
