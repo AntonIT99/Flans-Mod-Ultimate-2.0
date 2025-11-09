@@ -61,6 +61,7 @@ public final class PacketHandler {
         // Client to Server Packets
         registerC2S(PacketGunFire.class);
         registerC2S(PacketRequestDebug.class);
+        registerC2S(PacketReload.class);
 
         initAndRegister();
     }
