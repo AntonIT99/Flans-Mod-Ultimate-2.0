@@ -67,7 +67,7 @@ public class PacketBulletTrail extends PacketBase
     public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
         //TODO trails not visible when trail origin position and player camera position are to close. the can only be seen with an slight angle
-        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(ArmorMod.MOD_ID, "textures/skins/" + trailTexture.toLowerCase() + ".png");
+        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(ArmorMod.MOD_ID, "textures/skins/" + trailTexture + ".png");
         InstantBulletRenderer.addTrail(new InstantShotTrail(origin, hitPos, width, length, bulletSpeed, resLoc));
     }
 }

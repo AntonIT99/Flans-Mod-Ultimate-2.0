@@ -1,5 +1,6 @@
 package com.wolffsarmormod;
 
+import com.wolffsarmormod.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -84,7 +85,7 @@ public final class ModUtils
         if (id == null || id.isBlank())
             return Optional.empty();
 
-        id = id.trim().toLowerCase();
+        id = ResourceUtils.sanitize(id.trim());
 
         // If no namespace, assume minecraft
         if (!id.contains(":"))

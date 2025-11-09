@@ -59,16 +59,6 @@ public class SuperAndOwnerFixVisitor extends ClassVisitor
                 }
                 super.visitFieldInsn(opcode, owner, name, desc);
             }
-
-            @Override
-            public void visitTypeInsn(int opcode, String type)
-            {
-                // For NEW/CHECKCAST/INSTANCEOF referring to legacy base inside a direct subclass:
-                // Usually not expected, but if it happens we keep them as interface or class?
-                // If you want them as interface, leave it; if they must be class, uncomment:
-                // if (type.equals(legacyBase)) type = shimClass;
-                super.visitTypeInsn(opcode, type);
-            }
         };
     }
 }

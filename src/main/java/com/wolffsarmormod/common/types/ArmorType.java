@@ -16,6 +16,7 @@ import net.minecraft.world.item.ArmorItem;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.wolffsarmormod.util.TypeReaderUtils.readValue;
 import static com.wolffsarmormod.util.TypeReaderUtils.readValues;
@@ -98,7 +99,7 @@ public class ArmorType extends InfoType
     protected void postRead()
     {
         super.postRead();
-        switch (rawArmorItemType.toLowerCase())
+        switch (rawArmorItemType.toLowerCase(Locale.ROOT))
         {
             case "helmet", "hat", "head":
                 armorItemType = ArmorItem.Type.HELMET;

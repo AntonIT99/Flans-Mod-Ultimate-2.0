@@ -39,6 +39,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -460,11 +461,11 @@ public abstract class InfoType
     public static ItemStack getRecipeElement(String id, int amount, int damage, @Nullable IContentProvider provider)
     {
         // Do a handful of special cases, mostly legacy recipes
-        switch (id)
+        switch (id.toLowerCase(Locale.ROOT))
         {
-            case "doorIron":
+            case "dooriron":
                 return new ItemStack(Items.IRON_DOOR, amount);
-            case "clayItem":
+            case "clayitem":
                 return new ItemStack(Items.CLAY_BALL, amount);
             case "iron_trapdoor":
                 return new ItemStack(Blocks.IRON_TRAPDOOR, amount);
@@ -472,7 +473,7 @@ public abstract class InfoType
                 return new ItemStack(Blocks.OAK_TRAPDOOR, amount);
             case "gunpowder":
                 return new ItemStack(Items.GUNPOWDER, amount);
-            case "ingotIron", "iron":
+            case "ingotiron", "iron":
                 return new ItemStack(Items.IRON_INGOT, amount);
             case "boat":
                 return new ItemStack(Items.OAK_BOAT, amount);

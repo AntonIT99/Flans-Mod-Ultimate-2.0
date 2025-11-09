@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 public interface IContentProvider
 {
@@ -63,11 +64,11 @@ public interface IContentProvider
 
     default boolean isJarFile()
     {
-        return getPath().toString().toLowerCase().endsWith(".jar");
+        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(".jar");
     }
 
     default boolean isZipFile()
     {
-        return getPath().toString().toLowerCase().endsWith(".zip");
+        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(".zip");
     }
 }

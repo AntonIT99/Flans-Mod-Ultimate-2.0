@@ -3,6 +3,7 @@ package com.wolffsarmormod.common.types;
 import com.flansmod.client.model.ModelBullet;
 import com.wolffsarmormod.ArmorMod;
 import com.wolffsarmormod.common.driveables.EnumWeaponType;
+import com.wolffsarmormod.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -205,6 +206,8 @@ public class BulletType extends ShootableType
         if (split[0].equalsIgnoreCase("Missile") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
             weaponType = EnumWeaponType.MISSILE;
         weaponType = readValue(split, "WeaponType", weaponType, EnumWeaponType.class, file);
+
+        trailTexture = ResourceUtils.sanitize(readValue(split, "TrailTexture", trailTexture, file));
 
         if (split[0].equalsIgnoreCase("LockOnToDriveables"))
             lockOnToPlanes = lockOnToVehicles = lockOnToMechas =  readValue(split, "LockOnToDriveables", lockOnToVehicles, file);

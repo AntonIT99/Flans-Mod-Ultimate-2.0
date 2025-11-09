@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,7 +20,7 @@ public final class ResourceUtils
     public static String sanitize(String name)
     {
         // Lowercase + swap spaces; keep only chars valid in resource paths
-        return name.toLowerCase().replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
+        return name.toLowerCase(Locale.ROOT).replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
     }
 
     public static class ItemModel

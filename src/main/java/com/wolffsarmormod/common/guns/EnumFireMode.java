@@ -1,5 +1,7 @@
 package com.wolffsarmormod.common.guns;
 
+import java.util.Locale;
+
 public enum EnumFireMode
 {
     SEMIAUTO,
@@ -9,7 +11,7 @@ public enum EnumFireMode
 
     public static EnumFireMode getFireMode(String s)
     {
-        return switch (s.toLowerCase())
+        return switch (s.toLowerCase(Locale.ROOT))
         {
             case "fullauto" -> FULLAUTO;
             case "minigun" -> MINIGUN;

@@ -13,6 +13,7 @@ import com.wolffsarmormod.util.DynamicReference;
 import com.wolffsarmormod.util.FileUtils;
 import com.wolffsarmormod.util.LogUtils;
 import com.wolffsarmormod.util.ResourceUtils;
+import com.wolffsarmormod.util.SoundJsonProcessor;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -230,7 +231,7 @@ public class ContentManager
                 if (path.equals(rootPath))
                     return false;
 
-                if (Files.isDirectory(path) || path.toString().toLowerCase().endsWith(".jar") || path.toString().toLowerCase().endsWith(".zip"))
+                if (Files.isDirectory(path) || path.toString().toLowerCase(Locale.ROOT).endsWith(".jar") || path.toString().toLowerCase(Locale.ROOT).endsWith(".zip"))
                 {
                     String name = FilenameUtils.getBaseName(path.getFileName().toString());
                     if (!processedNames.contains(name))
@@ -479,7 +480,7 @@ public class ContentManager
         {
             try (Stream<Path> stream = Files.list(textureFolderPath))
             {
-                stream.filter(p -> p.toString().toLowerCase().endsWith(".png"))
+                stream.filter(p -> p.toString().toLowerCase(Locale.ROOT).endsWith(".png"))
                         .forEach(p -> checkForDuplicateTextures(p, provider, folderName, aliasMapping));
             }
             catch (IOException e)
@@ -491,7 +492,7 @@ public class ContentManager
 
     private static void checkForDuplicateTextures(Path texturePath, IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
     {
-        String fileName = FilenameUtils.getBaseName(texturePath.getFileName().toString()).toLowerCase();
+        String fileName = FilenameUtils.getBaseName(texturePath.getFileName().toString());
         if (folderName.equals(TEXTURES_ARMOR_FOLDER))
             fileName = getArmorTextureBaseName(fileName);
         fileName = ResourceUtils.sanitize(fileName);
@@ -652,7 +653,7 @@ public class ContentManager
             String content = Files.readString(jsonFile, StandardCharsets.UTF_8);
             String modified = content
                     .replace("flansmod:items/", "flansmod:item/")
-                    .toLowerCase();
+                    .toLowerCase(Locale.ROOT);
             if (!modified.equals(content))
             {
                 Files.writeString(jsonFile, modified, StandardCharsets.UTF_8);
@@ -775,7 +776,7 @@ public class ContentManager
                         {
                             baseFileName = getArmorTextureBaseName(baseFileName);
                         }
-                        return file.toString().toLowerCase().endsWith(".png") && aliasMapping.containsKey(baseFileName);
+                        return file.toString().toLowerCase(Locale.ROOT).endsWith(".png") && aliasMapping.containsKey(baseFileName);
                     })
                     .forEach(file ->
                     {
@@ -860,7 +861,7 @@ public class ContentManager
             }
         }
 
-        String jsonFileName = langFile.getFileName().toString().toLowerCase().replace(".lang", ".json");
+        String jsonFileName = langFile.getFileName().toString().toLowerCase(Locale.ROOT).replace(".lang", ".json");
         Path jsonPath = langFile.getParent().resolve(jsonFileName);
 
         try (Writer writer = Files.newBufferedWriter(jsonPath, StandardCharsets.UTF_8))
@@ -922,11 +923,11 @@ public class ContentManager
     private static String convertTranslationKey(String legacyKey)
     {
         if (legacyKey.startsWith("item.") && legacyKey.endsWith(".name")) {
-            String id = legacyKey.substring(5, legacyKey.length() - 5).toLowerCase();
+            String id = legacyKey.substring(5, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
             return "item." + ArmorMod.FLANSMOD_ID + "." + id;
         }
         if ((legacyKey.startsWith("tile.") || legacyKey.startsWith("block.")) && legacyKey.endsWith(".name")) {
-            String id = legacyKey.substring(legacyKey.indexOf('.') + 1, legacyKey.length() - 5).toLowerCase();
+            String id = legacyKey.substring(legacyKey.indexOf('.') + 1, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
             return "block." + ArmorMod.FLANSMOD_ID + "." + id;
         }
         return legacyKey;
@@ -959,7 +960,7 @@ public class ContentManager
         try (Stream<Path> paths = Files.walk(sourcePath, 1))
         {
             paths.filter(Files::isRegularFile)
-                .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".png"))
+                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".png"))
                 .forEach(src -> {
                     // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
                     Path rel = sourcePath.relativize(src);
@@ -1003,7 +1004,7 @@ public class ContentManager
         }
 
         if (Files.isRegularFile(soundsJsonFile))
-            processSoundJsonFile(soundsJsonFile);
+            SoundJsonProcessor.process(soundsJsonFile, ArmorMod.FLANSMOD_ID, soundsDir);
     }
 
     private static void processSoundFiles(DirectoryStream<Path> stream, Path soundsDir)
@@ -1025,27 +1026,6 @@ public class ContentManager
             {
                 ArmorMod.log.error("Could not rename {}", src, e);
             }
-        }
-    }
-
-    private static void processSoundJsonFile(Path file)
-    {
-        try
-        {
-            String content = Files.readString(file, StandardCharsets.UTF_8);
-            // Strip UTF-8 BOM if present so a BOM-only file counts as empty
-            if (!content.isEmpty() && content.charAt(0) == '\uFEFF') {
-                content = content.substring(1);
-            }
-            if (content.isBlank()) {
-                Files.deleteIfExists(file);
-                return;
-            }
-            Files.writeString(file, content.toLowerCase());
-        }
-        catch (IOException e)
-        {
-            ArmorMod.log.error("Could not process {}", file, e);
         }
     }
 

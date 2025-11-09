@@ -1,5 +1,7 @@
 package com.wolffsarmormod.common.guns;
 
+import java.util.Locale;
+
 public enum EnumSecondaryFunction
 {
     ZOOM,
@@ -9,8 +11,7 @@ public enum EnumSecondaryFunction
 
     public static EnumSecondaryFunction get(String s)
     {
-        s = s.toLowerCase();
-        return switch (s)
+        return switch (s.toLowerCase(Locale.ROOT))
         {
             case "zoom" -> ZOOM;
             case "melee" -> MELEE;

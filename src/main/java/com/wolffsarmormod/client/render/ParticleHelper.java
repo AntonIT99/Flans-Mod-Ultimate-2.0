@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.Locale;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -52,7 +53,7 @@ public final class ParticleHelper
         if (raw == null || raw.isEmpty())
             return Optional.empty();
 
-        String s = raw.toLowerCase();
+        String s = raw.toLowerCase(Locale.ROOT);
 
         // Item/block patterns first: "iconcrack_modid:item", "blockcrack_modid:block", "blockdust_modid:block"
         if (s.contains("_"))
