@@ -181,7 +181,8 @@ public class FlansModRaytracer
         // Segment clip
         Vec3 end = start.add(motion);
         Optional<Vec3> hit = box.clip(start, end);
-        if (hit.isEmpty()) return null;
+        if (hit.isEmpty())
+            return null;
 
         Vec3 impact = hit.get();
         float t = computeParametricT(start, impact, motion, len2, noMotion);

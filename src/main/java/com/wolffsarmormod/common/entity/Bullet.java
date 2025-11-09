@@ -78,6 +78,7 @@ public class Bullet extends Shootable
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
+        System.out.println("SPAWN: " + new Vec3(getX(), getY(), getZ()));
     }
 
     @Override
@@ -305,6 +306,7 @@ public class Bullet extends Shootable
     @Override
     public void tick()
     {
+        System.out.println("TICK: " + new Vec3(getX(), getY(), getZ()));
         super.tick();
         try
         {
@@ -314,13 +316,16 @@ public class Bullet extends Shootable
                 checkforuuids = false;
             }
 
+            if (handleFuseAndLifetime())
+                return;
+
+            performRaytraceAndApplyHits();
             applyDragAndGravity();
             updatePositionAndOrientation();
+            applyHomingIfLocked();
 
             if (level().isClientSide)
                 clientTick();
-            else
-                serverTick();
         }
         catch (Exception ex)
         {
@@ -424,20 +429,6 @@ public class Bullet extends Shootable
                 level().playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
     }
 
-    /* ======================= Server Tick Orchestration ======================= */
-
-    protected void serverTick()
-    {
-        //TODO: Debug Mode
-        //if (FlansMod.DEBUG) spawnDebugVector();
-
-        if (handleFuseAndLifetime())
-            return; // may discard
-
-        performRaytraceAndApplyHits();
-        applyHomingIfLocked();
-    }
-
     private void spawnDebugVector()
     {
         //TODO: Debug Mode
@@ -457,6 +448,7 @@ public class Bullet extends Shootable
 
         if (bulletType.getFuse() > 0 && ticksInAir > bulletType.getFuse() && !isRemoved())
         {
+            //TODO: detonate() instead of discard()?
             discard();
             return true;
         }
@@ -467,8 +459,6 @@ public class Bullet extends Shootable
         }
         return isRemoved();
     }
-
-    /* ======================= Raytrace & Hit Handling ======================= */
 
     private void performRaytraceAndApplyHits()
     {
@@ -498,17 +488,17 @@ public class Bullet extends Shootable
         }
     }
 
-    /* ======================= Homing ======================= */
-
     protected void applyHomingIfLocked()
     {
-        if (lockedOnTo == null || isRemoved()) return;
+        if (lockedOnTo == null || isRemoved())
+            return;
 
         double dX = lockedOnTo.getX() - getX();
         double dY = lockedOnTo.getY() - getY();
         double dZ = lockedOnTo.getZ() - getZ();
         double d2 = dX * dX + dY * dY + dZ * dZ;
-        if (d2 < 1.0e-6) return;
+        if (d2 < 1.0e-6)
+            return;
 
         Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
         Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
@@ -520,8 +510,6 @@ public class Bullet extends Shootable
         velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
         setDeltaMovement(velocity);
     }
-
-    /* ======================= UUID Resolution ======================= */
 
     protected void resolvePendingUUIDs()
     {

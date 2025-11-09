@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -313,6 +314,7 @@ public class ContentManager
                 .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".txt"))
                 .map(txtFile -> readTypeFile(txtFile, folderName, provider))
                 .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(TypeFile::getType).thenComparing(TypeFile::getName))
                 .toList()
             );
         }
