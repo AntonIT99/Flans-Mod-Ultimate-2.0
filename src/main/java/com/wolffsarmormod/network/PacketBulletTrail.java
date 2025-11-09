@@ -12,7 +12,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 @NoArgsConstructor
-public class PacketBulletTrail extends PacketBase
+public class PacketBulletTrail implements IClientPacket
 {
     private Vector3f origin;
     private Vector3f hitPos;

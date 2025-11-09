@@ -14,7 +14,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.state.BlockState;
 
 @NoArgsConstructor
-public class PacketBlockHitEffect extends PacketBase
+public class PacketBlockHitEffect implements IClientPacket
 {
     private float x;
     private float y;

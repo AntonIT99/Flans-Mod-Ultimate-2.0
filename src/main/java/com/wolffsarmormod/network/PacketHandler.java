@@ -42,13 +42,15 @@ public final class PacketHandler {
     private static boolean frozen = false;
     private static int nextId = 0;
 
-    private record Entry(Class<? extends PacketBase> clazz, NetworkDirection dir) {}
+    private record Entry(Class<? extends IPacket> clazz, NetworkDirection dir) {}
 
     /**
      * Initialisation method called from FMLCommonSetupEvent
      */
     public static void registerPackets()
     {
+        // Server to Client Packets
+        registerS2C(PacketAllowDebug.class);
         registerS2C(PacketBlockHitEffect.class);
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketFlak.class);
@@ -56,43 +58,40 @@ public final class PacketHandler {
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketPlaySound.class);
 
+        // Client to Server Packets
         registerC2S(PacketGunFire.class);
-        registerC2S(PacketReload.class);
+        registerC2S(PacketRequestDebug.class);
 
         initAndRegister();
     }
 
     /** Register a packet type for C2S (client -> server). */
-    public static boolean registerC2S(Class<? extends PacketBase> clz)
+    public static void registerC2S(Class<? extends IServerPacket> clz)
     {
-        return add(clz, NetworkDirection.PLAY_TO_SERVER);
+        add(clz, NetworkDirection.PLAY_TO_SERVER);
     }
 
     /** Register a packet type for S2C (server -> client). */
-    public static boolean registerS2C(Class<? extends PacketBase> clz)
+    public static void registerS2C(Class<? extends IClientPacket> clz)
     {
-        return add(clz, NetworkDirection.PLAY_TO_CLIENT);
+        add(clz, NetworkDirection.PLAY_TO_CLIENT);
     }
 
-    private static boolean add(Class<? extends PacketBase> clz, NetworkDirection dir)
+    private static void add(Class<? extends IPacket> clz, NetworkDirection dir)
     {
         if (frozen)
         {
             ArmorMod.log.warn("Tried to register {} after init", clz.getCanonicalName());
-            return false;
         }
         if (entries.size() >= 256)
         {
             ArmorMod.log.error("Packet limit exceeded by {}", clz.getCanonicalName());
-            return false;
         }
         if (entries.stream().anyMatch(e -> e.clazz == clz && e.dir == dir))
         {
             ArmorMod.log.warn("Duplicate packet registration for {} {}", clz.getCanonicalName(), dir);
-            return false;
         }
         entries.add(new Entry(clz, dir));
-        return true;
     }
 
     /** Call during common setup (inside enqueueWork). Sort deterministically and register with IDs. */
@@ -109,9 +108,9 @@ public final class PacketHandler {
             registerOne(e.clazz, e.dir);
     }
 
-    private static <T extends PacketBase> void registerOne(Class<T> clz, NetworkDirection dir) {
+    private static <T extends IPacket> void registerOne(Class<T> clz, NetworkDirection dir) {
         CHANNEL.messageBuilder(clz, nextId++, dir)
-                .encoder(PacketBase::encodeInto)
+                .encoder(IPacket::encodeInto)
                 .decoder(buf -> {
                     try
                     {
@@ -127,21 +126,21 @@ public final class PacketHandler {
                 .consumerMainThread((msg, ctxSup) -> {
                     NetworkEvent.Context ctx = ctxSup.get();
                     ctx.enqueueWork(() -> {
-                        if (ctx.getDirection().getReceptionSide().isServer())
+                        if (ctx.getDirection().getReceptionSide().isServer() && msg instanceof IServerPacket serverPacket)
                         {
                             // Server
                             ServerPlayer sender = ctx.getSender();
                             if (sender != null)
-                                msg.handleServerSide(sender);
+                                serverPacket.handleServerSide(sender);
                         }
-                        else
+                        else if (msg instanceof IClientPacket clientPacket)
                         {
                             // Client
                             Minecraft mc = Minecraft.getInstance();
                             ClientLevel level = mc.level;
                             LocalPlayer player = mc.player;
                             if (level != null && player != null)
-                                msg.handleClientSide(player, level);
+                                clientPacket.handleClientSide(player, level);
                         }
                     });
                     ctx.setPacketHandled(true);
@@ -149,43 +148,39 @@ public final class PacketHandler {
                 .add();
     }
 
-    // ---------------------------
-    // Send helpers (Forge style)
-    // ---------------------------
-
     /** server -> specific player */
-    public static void sendTo(PacketBase msg, ServerPlayer player)
+    public static void sendTo(IClientPacket msg, ServerPlayer player)
     {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), msg);
     }
 
     /** server -> everyone */
-    public static void sendToAll(PacketBase msg)
+    public static void sendToAll(IClientPacket msg)
     {
         CHANNEL.send(PacketDistributor.ALL.noArg(), msg);
     }
 
     /** server -> all in a dimension */
-    public static void sendToDimension(ResourceKey<Level> dimension, PacketBase msg)
+    public static void sendToDimension(ResourceKey<Level> dimension, IClientPacket msg)
     {
         CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), msg);
     }
 
     /** server -> players near a point (like your TargetPoint) */
-    public static void sendToAllAround(PacketBase msg, double x, double y, double z, double range, ResourceKey<Level> dim)
+    public static void sendToAllAround(IClientPacket msg, double x, double y, double z, double range, ResourceKey<Level> dim)
     {
         PacketDistributor.TargetPoint tp = new PacketDistributor.TargetPoint(x, y, z, range, dim);
         CHANNEL.send(PacketDistributor.NEAR.with(() -> tp), msg);
     }
 
     /** client -> server */
-    public static void sendToServer(PacketBase msg)
+    public static void sendToServer(IServerPacket msg)
     {
         CHANNEL.sendToServer(msg);
     }
 
     /** server -> all in a donut (min..max radius) */
-    public static void sendToDonut(ResourceKey<Level> dim, Vec3 center, double minRange, double maxRange, PacketBase msg)
+    public static void sendToDonut(ResourceKey<Level> dim, Vec3 center, double minRange, double maxRange, IClientPacket msg)
     {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null)
@@ -194,7 +189,8 @@ public final class PacketHandler {
         if (level == null)
             return;
 
-        double min2 = minRange * minRange, max2 = maxRange * maxRange;
+        double min2 = minRange * minRange;
+        double max2 = maxRange * maxRange;
         for (ServerPlayer p : level.players())
         {
             double d2 = p.position().distanceToSqr(center);
@@ -204,7 +200,7 @@ public final class PacketHandler {
     }
 
     /** server -> all within range except one player */
-    public static void sendToAllExcept(ResourceKey<Level> dim, Vec3 center, double range, ServerPlayer except, PacketBase msg)
+    public static void sendToAllExcept(ResourceKey<Level> dim, Vec3 center, double range, ServerPlayer except, IClientPacket msg)
     {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null)

@@ -10,7 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor
-public class PacketGunFire extends PacketBase
+public class PacketGunFire implements IServerPacket
 {
     private InteractionHand hand;
 

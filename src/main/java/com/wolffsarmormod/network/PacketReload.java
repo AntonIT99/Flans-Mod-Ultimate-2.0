@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
  * The GunAnimationPacket plays the reload animation and sets the pumpDelay & pumpTime times to prevent the client from shooting while reloading
  */
 @NoArgsConstructor
-public class PacketReload extends PacketBase
+public class PacketReload implements IServerPacket
 {
     private boolean isOffHand;
     private boolean isForced;

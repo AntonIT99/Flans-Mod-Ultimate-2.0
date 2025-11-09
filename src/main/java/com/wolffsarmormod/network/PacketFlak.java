@@ -8,7 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 
 @NoArgsConstructor
-public class PacketFlak extends PacketBase
+public class PacketFlak implements IClientPacket
 {
     /** Position of this flak */
     private double x;

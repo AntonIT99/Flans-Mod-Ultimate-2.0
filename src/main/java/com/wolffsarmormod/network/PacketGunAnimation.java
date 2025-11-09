@@ -12,7 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 
 @NoArgsConstructor
-public class PacketGunAnimation extends PacketBase
+public class PacketGunAnimation implements IClientPacket
 {
     public enum AnimationType
     {

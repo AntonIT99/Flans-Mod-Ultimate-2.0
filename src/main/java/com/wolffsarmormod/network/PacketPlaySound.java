@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 import java.util.Objects;
 
 @NoArgsConstructor
-public class PacketPlaySound extends PacketBase
+public class PacketPlaySound implements IClientPacket
 {
     private float posX;
     private float posY;
