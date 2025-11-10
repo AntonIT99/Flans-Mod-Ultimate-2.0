@@ -76,6 +76,7 @@ public abstract class ShootableType extends InfoType
     /**
      * The speed at which to throw the grenade. 0 will just drop it on the floor
      */
+    @Getter
     protected float throwSpeed = 1.0F;
     /**
      * Hit box size

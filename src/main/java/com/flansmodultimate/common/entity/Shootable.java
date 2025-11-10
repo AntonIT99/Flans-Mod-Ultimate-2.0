@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
 {
@@ -22,8 +23,8 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected static final EntityDataAccessor<String> SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
 
-    /** Synced between Client and Server */
     protected String shortname = StringUtils.EMPTY;
+    protected Vec3 velocity;
 
     protected Shootable(EntityType<?> entityType, Level level)
     {
@@ -64,6 +65,31 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     @Override
     @NotNull
+    public Vec3 getDeltaMovement()
+    {
+        return velocity;
+    }
+
+    @Override
+    public void setDeltaMovement(@NotNull Vec3 deltaMovement)
+    {
+        //Does not allow the client to change the velocity from outside this class
+        if (!level().isClientSide)
+        {
+            super.setDeltaMovement(deltaMovement);
+            velocity = deltaMovement;
+        }
+        hasImpulse = true;
+    }
+
+    @Override
+    public void setDeltaMovement(double dx, double dy, double dz)
+    {
+        setDeltaMovement(new Vec3(dx, dy, dz));
+    }
+
+    @Override
+    @NotNull
     public EntityDimensions getDimensions(@NotNull Pose pose)
     {
         float hitboxSize = getHitboxSize();
@@ -90,6 +116,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     {
         buf.writeUtf(shortname);
         buf.writeFloat(getHitboxSize());
+        buf.writeDouble(velocity.x);
+        buf.writeDouble(velocity.y);
+        buf.writeDouble(velocity.z);
     }
 
     @Override
@@ -97,5 +126,10 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     {
         shortname = buf.readUtf();
         setHitboxSize(buf.readFloat());
+        double vx = buf.readDouble();
+        double vy = buf.readDouble();
+        double vz = buf.readDouble();
+        velocity = new Vec3(vx, vy, vz);
+        setDeltaMovement(velocity);
     }
 }

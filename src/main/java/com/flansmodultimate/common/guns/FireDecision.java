@@ -74,7 +74,7 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
 
     private static boolean needsToReload(GunItem gunItem, ItemStack stack)
     {
-        for (int i = 0; i < gunItem.getConfigType().getNumAmmoItemsInGun(); i++)
+        for (int i = 0; i < gunItem.getConfigType().getNumAmmoItemsInGun(stack); i++)
         {
             ItemStack bulletStack = gunItem.getBulletItemStack(stack, i);
             if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getDamageValue() < bulletStack.getMaxDamage())

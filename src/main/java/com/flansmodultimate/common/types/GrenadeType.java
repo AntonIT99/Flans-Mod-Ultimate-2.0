@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.effect.MobEffectInstance;
 
@@ -20,9 +21,10 @@ public class GrenadeType extends ShootableType
 
     //Throwing
     /** The delay between subsequent grenade throws */
-    protected int throwDelay = 0;
+    protected int throwDelay;
     /** The sound to play upon throwing this grenade */
-    protected String throwSound = "";
+    @Getter
+    protected String throwSound = StringUtils.EMPTY;
     /** The name of the item to drop (if any) when throwing the grenade */
     protected String dropItemOnThrow = null;
     /** Whether you can throw this grenade by right clicking */
@@ -33,7 +35,7 @@ public class GrenadeType extends ShootableType
     protected boolean penetratesEntities;
     protected boolean penetratesBlocks;
     /** The sound to play upon bouncing off a surface */
-    protected String bounceSound = "";
+    protected String bounceSound = StringUtils.EMPTY;
     /** Whether the grenade should stick to surfaces */
     protected boolean sticky;
     /** If true, then the grenade will stick to the player that threw it. Used to make delayed self destruct weapons */
@@ -78,22 +80,23 @@ public class GrenadeType extends ShootableType
     /** If true, then this grenade can be detonated by any remote detonator tool */
     protected boolean remote;
     /** How much damage to deal to the entity that triggered it */
-    protected float damageToTriggerer = 0F;
+    protected float damageToTriggerer;
 
     //Detonation
     /** Detonation will not occur until after this time */
-    protected int primeDelay = 0;
+    protected int primeDelay;
 
     //Aesthetics
     /** Particles given off in the detonation */
-    protected int explodeParticles = 0;
+    protected int explodeParticles;
     protected String explodeParticleType = "largesmoke";
     /** Whether the grenade should spin when thrown. Generally false for mines or things that should lie flat */
+    @Getter
     protected boolean spinWhenThrown = true;
 
     //Smoke
     /** Time to remain after detonation */
-    protected int smokeTime = 0;
+    protected int smokeTime;
     /** Particles given off after detonation */
     protected String smokeParticleType = "explode";
     /** The effects to be given to people coming too close */
@@ -106,17 +109,21 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean isDeployableBag;
     /** The number of times players can use this bag before it runs out */
+    @Getter
     protected int numUses = 1;
     /** The amount to heal the player using this bag */
-    protected float healAmount = 0;
+    @Getter
+    protected float healAmount;
     /** The potion effects to apply to users of this bag */
+    @Getter
     protected List<MobEffectInstance> potionEffects = new ArrayList<>();
     /** The number of clips to give to the player when using this bag
      * When they right click with a gun, they will get this number of clips for that gun.
      * They get the first ammo type, as listed in the gun type file
      * The number of clips they get is multiplied by numBulletsInGun too
      */
-    protected int numClips = 0;
+    @Getter
+    protected int numClips;
 
     @Override
     protected void readLine(String line, String[] split, TypeFile file)

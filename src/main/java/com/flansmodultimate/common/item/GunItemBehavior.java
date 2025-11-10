@@ -94,7 +94,7 @@ public record GunItemBehavior(GunItem item)
             return false;
         Entity hit = ehr.getEntity();
 
-        return hit instanceof Grenade grenade && grenade.getConfigType().isDeployableBag();
+        return hit instanceof Grenade grenade && grenade.getGrenadeType().isDeployableBag();
 
         //TODO uncomment
         /*return hit instanceof EntityFlagpole
@@ -240,7 +240,7 @@ public record GunItemBehavior(GunItem item)
         //For playing sounds afterwards
         boolean reloadedSomething = false;
         //Check each ammo slot, one at a time
-        for (int i = 0; i < configType.getNumAmmoItemsInGun(); i++)
+        for (int i = 0; i < configType.getNumAmmoItemsInGun(gunstack); i++)
         {
             //Get the stack in the slot
             ItemStack bulletStack = item.getBulletItemStack(gunstack, i);
@@ -346,7 +346,7 @@ public record GunItemBehavior(GunItem item)
 
     public static Optional<AmmoSlot> findUsableAmmo(GunItem item, ItemStack gunStack, GunType configType)
     {
-        int slots = configType.getNumAmmoItemsInGun();
+        int slots = configType.getNumAmmoItemsInGun(gunStack);
         for (int i = 0; i < slots; i++)
         {
             ItemStack s = item.getBulletItemStack(gunStack, i);

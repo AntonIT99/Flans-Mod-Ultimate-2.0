@@ -110,6 +110,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether the player can receive ammo for this gun from an ammo mag
      */
+    @Getter
     protected boolean allowRearm = true;
     /**
      * The time (in ticks) it takes to reload this gun
@@ -166,7 +167,6 @@ public class GunType extends PaintableType implements IScope
      * Number of ammo items that the gun may hold. Most guns will hold one magazine.
      * Some may hold more, such as Nerf pistols, revolvers or shotguns
      */
-    @Getter
     protected int numAmmoItemsInGun = 1;
     /**
      * The fire rate of the gun in RPM, 1200 = MAX
@@ -973,6 +973,45 @@ public class GunType extends PaintableType implements IScope
                 return attachment.modeOverride;
         }
         return mode;
+    }
+
+    /**
+     * Set the secondary or primary fire mode
+     */
+    public void setSecondaryFire(ItemStack stack, boolean mode)
+    {
+        if (!stack.hasTag())
+            stack.setTag(new CompoundTag());
+
+        stack.getTag().putBoolean("secondaryFire", mode);
+    }
+
+    /**
+     * Get whether the gun is in secondary or primary fire mode
+     */
+    public boolean getSecondaryFire(ItemStack stack)
+    {
+        if (!stack.hasTag())
+            stack.setTag(new CompoundTag());
+
+        if (!stack.getTag().contains("secondaryfire"))
+        {
+            stack.getTag().putBoolean("secondaryfire", false);
+            return false;
+        }
+
+        return stack.getTag().getBoolean("secondaryfire");
+    }
+
+    /**
+     * Get the max size of ammo items depending on what mode the gun is in
+     */
+    public int getNumAmmoItemsInGun(ItemStack stack)
+    {
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            return getGrip(stack).numSecAmmoItems;
+        else
+            return numPrimaryAmmoItems;
     }
 
 

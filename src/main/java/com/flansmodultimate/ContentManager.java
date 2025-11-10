@@ -450,19 +450,7 @@ public class ContentManager
     private static void registerItem(String shortName, InfoType config, TypeFile typeFile)
     {
         registeredItems.put(shortName, typeFile.toString());
-        FlansMod.registerItem(shortName, config.getType(), () ->
-        {
-            try
-            {
-                return ItemFactory.createItem(config);
-            }
-            catch (Exception e)
-            {
-                FlansMod.log.error("Failed to instantiate {}", config);
-                LogUtils.logWithoutStacktrace(e);
-                return null;
-            }
-        });
+        FlansMod.registerItem(shortName, config.getType(), () -> ItemFactory.createItem(config));
     }
 
     private static void findDuplicateTextures(IContentProvider provider)

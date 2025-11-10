@@ -1,6 +1,7 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModClientConfigs;
@@ -75,8 +76,14 @@ public class FlansMod
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
             .clientTrackingRange(Bullet.RENDER_DISTANCE)
-            .updateInterval(1)
+            .updateInterval(20)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
+    public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () ->
+        EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
+            .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
+            .clientTrackingRange(Grenade.RENDER_DISTANCE)
+            .updateInterval(100)
+            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString()));
 
     static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();

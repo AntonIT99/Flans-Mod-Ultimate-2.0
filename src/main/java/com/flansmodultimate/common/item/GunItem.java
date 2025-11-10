@@ -133,9 +133,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             tooltipComponents.add(Component.literal(paintjobName).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
 
         // Legendary crafter tag
-        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("LegendaryCrafter", net.minecraft.nbt.Tag.TAG_STRING))
+        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("legendarycrafter", net.minecraft.nbt.Tag.TAG_STRING))
         {
-            String crafter = stack.getTag().getString("LegendaryCrafter");
+            String crafter = stack.getTag().getString("legendarycrafter");
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
@@ -159,7 +159,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         }
 
         // Ammo info
-        for (int i = 0; i < configType.getNumAmmoItemsInGun(); i++)
+        for (int i = 0; i < configType.getNumAmmoItemsInGun(stack); i++)
         {
             ItemStack bulletStack = getBulletItemStack(stack, i);
             if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
@@ -448,7 +448,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         {
             // init empty slots
             ListTag list = new ListTag();
-            for (int i = 0; i < configType.getNumAmmoItemsInGun(); i++)
+            for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
             tag.put(NBT_TAG_AMMO, list);
             return ItemStack.EMPTY;
@@ -480,7 +480,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
         {
             list = new ListTag();
-            for (int i = 0; i < configType.getNumAmmoItemsInGun(); i++) list.add(new CompoundTag());
+            for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
+                list.add(new CompoundTag());
             tag.put(NBT_TAG_AMMO, list);
         }
 

@@ -70,7 +70,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
                 player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 250, 0, true, false));
             if (!configType.getEffects().isEmpty() && CommonEventHandler.getTicker() % 25 == 0)
             {
-                configType.getEffects().forEach(player::addEffect);
+                configType.getEffects().forEach(effect -> player.addEffect(new MobEffectInstance(effect)));
             }
             if (configType.hasNegateFallDamage())
                 player.fallDistance = 0F;

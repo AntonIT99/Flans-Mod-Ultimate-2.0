@@ -41,6 +41,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,7 +52,6 @@ public class Bullet extends Shootable
 
     @Getter
     protected BulletType bulletType;
-    protected Vec3 velocity;
 
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
@@ -81,31 +81,6 @@ public class Bullet extends Shootable
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
-    }
-
-    @Override
-    @NotNull
-    public Vec3 getDeltaMovement()
-    {
-        return velocity;
-    }
-
-    @Override
-    public void setDeltaMovement(@NotNull Vec3 deltaMovement)
-    {
-        //Does not allow the client to change the velocity from outside this class
-        if (!level().isClientSide)
-        {
-            super.setDeltaMovement(deltaMovement);
-            velocity = deltaMovement;
-        }
-        hasImpulse = true;
-    }
-
-    @Override
-    public void setDeltaMovement(double dx, double dy, double dz)
-    {
-        setDeltaMovement(new Vec3(dx, dy, dz));
     }
 
     @Override
@@ -189,6 +164,12 @@ public class Bullet extends Shootable
     }
 
     @Override
+    public boolean displayFireAnimation()
+    {
+        return false;
+    }
+
+    @Override
     public boolean fireImmune()
     {
         return true;
@@ -208,33 +189,24 @@ public class Bullet extends Shootable
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
-    {
-        super.writeSpawnData(buf);
-        buf.writeDouble(velocity.x);
-        buf.writeDouble(velocity.y);
-        buf.writeDouble(velocity.z);
-    }
-
-    @Override
     public void readSpawnData(FriendlyByteBuf buf)
     {
         try
         {
             super.readSpawnData(buf);
-            if (InfoType.getInfoType(shortname) instanceof BulletType type)
-                bulletType = type;
-            double vx = buf.readDouble();
-            double vy = buf.readDouble();
-            double vz = buf.readDouble();
-            velocity = new Vec3(vx, vy, vz);
-            setDeltaMovement(velocity);
             setOrientation(velocity);
+            if (InfoType.getInfoType(shortname) instanceof BulletType type)
+                bulletType = Objects.requireNonNull(type);
+            if (bulletType == null)
+            {
+                FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
+                discard();
+            }
         }
         catch (Exception e)
         {
             discard();
-            FlansMod.log.debug("Failed to read bullet spawn data", e);
+            FlansMod.log.warn("Failed to read bullet spawn data", e);
         }
     }
 
@@ -268,11 +240,8 @@ public class Bullet extends Shootable
         setShortName(tag.getString("type"));
         InfoType infoType = InfoType.getInfoType(shortname);
 
-        if (infoType != null)
+        if (infoType instanceof BulletType bType)
         {
-            if (!(infoType instanceof BulletType bType))
-                return;
-
             bulletType = bType;
 
             if (tag.contains("fireablegun", Tag.TAG_COMPOUND))
@@ -300,6 +269,10 @@ public class Bullet extends Shootable
             }
 
             firedShot = new FiredShot(fireablegun, bulletType);
+        }
+        else
+        {
+            discard();
         }
     }
 
@@ -332,7 +305,7 @@ public class Bullet extends Shootable
         }
         catch (Exception ex)
         {
-            FlansMod.log.warn("", ex);
+            FlansMod.log.error("Error ticking bullet", ex);
             discard();
         }
     }

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 
-public class BulletRenderer extends FlanEntityRenderer<Bullet>
+public class BulletRenderer extends FlansEntityRenderer<Bullet>
 {
     public BulletRenderer(EntityRendererProvider.Context ctx)
     {
@@ -19,6 +19,7 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
     @Override
     public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
     {
+        //TODO: Read scaling from models
         pose.pushPose();
 
         float scale = bullet.getBulletType().getModelScale();

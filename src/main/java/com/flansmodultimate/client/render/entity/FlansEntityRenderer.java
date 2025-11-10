@@ -17,9 +17,9 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
+public class FlansEntityRenderer<T extends Entity> extends EntityRenderer<T>
 {
-    public FlanEntityRenderer(EntityRendererProvider.Context ctx)
+    public FlansEntityRenderer(EntityRendererProvider.Context ctx)
     {
         super(ctx);
     }
@@ -30,11 +30,11 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
         if (!(entity instanceof IFlanEntity flanEntity))
             return;
 
-        IModelBase bulletModel = ModelCache.getOrLoadTypeModel(flanEntity.getShortName());
-        if (bulletModel != null)
+        IModelBase model = ModelCache.getOrLoadTypeModel(flanEntity.getShortName());
+        if (model != null)
         {
             VertexConsumer vertexconsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(entity)));
-            bulletModel.renderToBuffer(pose, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            model.renderToBuffer(pose, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 

@@ -100,15 +100,16 @@ public class FiredShot {
      */
     public DamageSource getDamageSource(boolean headshot, Level level)
     {
+        //TODO: check this logic
         if (player != null)
         {
             // hitscan: direct == attacker == player
-            return FlansDamageSources.createDamageSource(level, player, player, headshot ? FlansDamageSources.FLANS_GUN_HEADSHOT : FlansDamageSources.FLANS_GUN);
+            return FlansDamageSources.createDamageSource(level, player, player, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
         }
         else if (shooter != null)
         {
             // no distinct direct cause known – at least attribute to the shooter
-            return FlansDamageSources.createDamageSource(level, null, shooter, headshot ? FlansDamageSources.FLANS_GUN_HEADSHOT : FlansDamageSources.FLANS_GUN);
+            return FlansDamageSources.createDamageSource(level, null, shooter, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
         }
         return level.damageSources().generic();
     }

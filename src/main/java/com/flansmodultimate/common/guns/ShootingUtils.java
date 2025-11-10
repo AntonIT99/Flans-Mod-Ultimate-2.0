@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -50,51 +51,51 @@ public final class ShootingUtils
     /**
      * For any kind of shooting this method should be used. It handles everything including the differentiation between spawning a EntityBullet and performing a raytrace
      *
-     * @param world             World where the shot is fired
+     * @param level             World where the shot is fired
      * @param shot              FiredShot object, created using the guidelines
      * @param bulletAmount      Number how many bullets should be fired
      * @param rayTraceOrigin    Origin of the bullet
      * @param shootingDirection Direction where the bullet will travel
      */
-    public static void fireGun(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection)
+    public static void fireGun(Level level, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection)
     {
-        fireGun(world, shot, bulletAmount, rayTraceOrigin, shootingDirection, isExtraBullet -> {});
+        fireGun(level, shot, bulletAmount, rayTraceOrigin, shootingDirection, isExtraBullet -> {});
     }
 
     /**
      * For any kind of shooting this method should be used. It handles everything including the differentiation between spawning a EntityBullet and performing a raytrace
      *
-     * @param world             World where the shot is fired
+     * @param level             World where the shot is fired
      * @param shot              FiredShot object, created using the guidelines
      * @param bulletAmount      Number how many bullets should be fired
      * @param rayTraceOrigin    Origin of the bullet
      * @param shootingDirection Direction where the bullet will travel
      * @param handler           ShootBulletHandler which is called every time a shot is fired (bulletAmount times)
      */
-    public static void fireGun(Level world, FiredShot shot, int bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
+    public static void fireGun(Level level, FiredShot shot, int bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
     {
         if (shot.getFireableGun().getBulletSpeed() == 0F)
         {
             //Raytrace
-            createMultipleShots(world, shot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
+            createMultipleShots(level, shot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
         }
         else
         {
             //Spawn EntityBullet
             for (int i = 0; i < bulletAmount; i++)
             {
-                world.addFreshEntity(new Bullet(world, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
+                level.addFreshEntity(new Bullet(level, shot, rayTraceOrigin.toVec3(), shootingDirection.toVec3()));
                 handler.shooting(i < bulletAmount - 1);
             }
         }
     }
 
-    private static void createMultipleShots(Level world, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
+    private static void createMultipleShots(Level level, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
     {
         float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
         for (int i = 0; i < bulletAmount; i++)
         {
-            createShot(world, shot, bulletspread, rayTraceOrigin, new Vector3f(shootingDirection));
+            createShot(level, shot, bulletspread, rayTraceOrigin, new Vector3f(shootingDirection));
             handler.shooting(i < bulletAmount - 1);
         }
     }
@@ -207,7 +208,7 @@ public final class ShootingUtils
                 if (entityHit.getEntity().hurt(shot.getDamageSource(level), damage * bulletType.getDamage(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
-                    bulletType.getHitEffects().forEach(living::addEffect);
+                    bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = 0;
                 }

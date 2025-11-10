@@ -132,7 +132,7 @@ public final class ClientHudOverlays
             GunType gunType = gunItem.getConfigType();
             int xAccum = 0;
 
-            for (int n = 0; n < gunType.getNumAmmoItemsInGun(); n++)
+            for (int n = 0; n < gunType.getNumAmmoItemsInGun(stack); n++)
             {
                 ItemStack bulletStack = gunItem.getBulletItemStack(stack, n);
                 if (bulletStack == null || bulletStack.isEmpty())
