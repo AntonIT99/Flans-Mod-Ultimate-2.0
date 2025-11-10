@@ -1,7 +1,7 @@
 package com.flansmodultimate.common;
 
-import com.flansmodultimate.ModUtils;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraftforge.event.ForgeEventFactory;

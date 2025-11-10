@@ -1,6 +1,5 @@
-package com.flansmodultimate;
+package com.flansmodultimate.util;
 
-import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;

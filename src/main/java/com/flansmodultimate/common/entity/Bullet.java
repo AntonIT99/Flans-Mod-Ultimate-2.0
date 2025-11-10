@@ -2,7 +2,6 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModUtils;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -13,6 +12,7 @@ import com.flansmodultimate.common.raytracing.BulletHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;

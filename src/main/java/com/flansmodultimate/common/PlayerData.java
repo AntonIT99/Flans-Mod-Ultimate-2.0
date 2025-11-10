@@ -1,13 +1,13 @@
 package com.flansmodultimate.common;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ModUtils;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.QueuedReload;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;

@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ModUtils;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.ShootingUtils;
+import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
