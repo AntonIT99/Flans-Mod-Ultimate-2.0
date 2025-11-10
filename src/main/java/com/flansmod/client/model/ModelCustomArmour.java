@@ -1,10 +1,10 @@
 package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.model.IFlanTypeModel;
+import com.flansmodultimate.common.types.ArmorType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsarmormod.client.model.IFlanTypeModel;
-import com.wolffsarmormod.common.types.ArmorType;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
 import org.jetbrains.annotations.NotNull;

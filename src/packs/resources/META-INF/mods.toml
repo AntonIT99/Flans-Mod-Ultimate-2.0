@@ -15,11 +15,11 @@ license="MIT"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
-modId="wolffsarmorpacks" #mandatory
+modId="flansmodultimate_packs" #mandatory
 # The version number of the mod
 version="1.0" #mandatory
 # A display name for the mod
-displayName="Wolff's Armor Packs" #mandatory
+displayName="Content Packs for Flan's Mod Ultimate 2" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.minecraftforge.net/en/latest/misc/updatechecker/
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
@@ -42,7 +42,7 @@ displayTest = "NONE"
 # The description text for the mod (multi line!) (#mandatory)
 description='''This Mod adds armors from content packs designed for legacy Flan's Mod'''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.wolffsarmorpacks]] #optional
+[[dependencies.flansmodultimate_packs]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -56,7 +56,7 @@ description='''This Mod adds armors from content packs designed for legacy Flan'
     # Side this dependency is applied on - BOTH, CLIENT, or SERVER
     side="BOTH"
 # Here's another dependency
-[[dependencies.wolffsarmorpacks]]
+[[dependencies.flansmodultimate_packs]]
     modId="minecraft"
     mandatory=true
     # This version range declares a minimum of the current minecraft version up to but not including the next major version

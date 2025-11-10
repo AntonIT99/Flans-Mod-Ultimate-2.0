@@ -1,9 +1,9 @@
 package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.wolffsarmormod.client.model.IFlanTypeModel;
-import com.wolffsarmormod.common.entity.DeployedGun;
-import com.wolffsarmormod.common.types.GunType;
+import com.flansmodultimate.client.model.IFlanTypeModel;
+import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.types.GunType;
 import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Setter;
 

@@ -15,21 +15,21 @@ license="MIT"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
-modId="wolffsarmormod" #mandatory
+modId="flansmodultimate" #mandatory
 # The version number of the mod
-version="1.1-beta" #mandatory
+version="2.0" #mandatory
 # A display name for the mod
-displayName="Wolff's Armor Mod" #mandatory
+displayName="Flan's Mod Ultimate 2" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.minecraftforge.net/en/latest/misc/updatechecker/
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-#logoFile="examplemod.png" #optional
+logoFile="flansmod.png" #optional
 # A text field displayed in the mod UI
-#credits="" #optional
+credits="All code contributors." #optional
 # A text field displayed in the mod UI
-authors="Wolff" #optional
+authors="Wolff, Jamioflan" #optional
 # Display Test controls the display for your mod in the server connection screen
 # MATCH_VERSION means that your mod will cause a red X if the versions on client and server differ. This is the default behaviour and should be what you choose if you have server and client elements to your mod.
 # IGNORE_SERVER_VERSION means that your mod will not cause a red X if it's present on the server but not on the client. This is what you should use if you're a server only mod.
@@ -39,9 +39,9 @@ authors="Wolff" #optional
 #displayTest="MATCH_VERSION" # MATCH_VERSION is the default if nothing is specified (#optional)
 
 # The description text for the mod (multi line!) (#mandatory)
-description='''This Mod adds armors from content packs designed for legacy Flan's Mod'''
+description='''Unofficial continuation of Flan's Mod to load content packs designed for legacy versions'''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.wolffsarmormod]] #optional
+[[dependencies.flansmodultimate]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -55,15 +55,15 @@ description='''This Mod adds armors from content packs designed for legacy Flan'
     # Side this dependency is applied on - BOTH, CLIENT, or SERVER
     side="BOTH"
 # Here's another dependency
-[[dependencies.wolffsarmormod]]
+[[dependencies.flansmodultimate]]
     modId="minecraft"
     mandatory=true
     # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.wolffsarmormod]]
-    modId="wolffsarmorpacks"
+[[dependencies.flansmodultimate]]
+    modId="flansmodultimate_packs"
     mandatory=false
     # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange=""
@@ -77,5 +77,5 @@ description='''This Mod adds armors from content packs designed for legacy Flan'
 #openGLVersion="[3.2,)"
 
 mixins = [
-    "wolffsarmormod.mixins.json"
+    "flansmodultimate.mixins.json"
 ]
