@@ -1,7 +1,4 @@
-package com.flansmodultimate.common.entity;
-
-import com.flansmodultimate.common.raytracing.BulletHit;
-import com.flansmodultimate.common.raytracing.PlayerHitbox;
+package com.flansmodultimate.common.raytracing;
 
 import net.minecraft.world.entity.Entity;
 
