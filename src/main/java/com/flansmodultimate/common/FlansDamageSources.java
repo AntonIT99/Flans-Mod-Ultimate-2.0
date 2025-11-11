@@ -16,6 +16,8 @@ import net.minecraft.world.level.Level;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlansDamageSources
 {
+    //TODO: integrate type in damage source (if possible)
+
     public static final ResourceKey<DamageType> FLANS_SHOOTABLE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_shootable"));
     public static final ResourceKey<DamageType> FLANS_HEADSHOT = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_headshot"));
     public static final ResourceKey<DamageType> FLANS_EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_explosion"));

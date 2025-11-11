@@ -22,30 +22,25 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
-    // TODO: FMU Particles
+    // TODO: FMU Particles (doSpawnParticle() in ClientProxy)
 
-    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z)
+    //TODO: investigate why parameter isVisible
+    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z, boolean isVisible)
     {
-        return spawnFromString(level, s, x, y, z, false);
+        spawnFromString(level, s, x, y, z);
     }
 
-    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, boolean alwaysVisible)
+    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z)
     {
-        return spawnFromString(level, s, x, y, z, 0.0, 0.0, 0.0, false);
+        spawnFromString(level, s, x, y, z);
     }
 
-    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz)
-    {
-        return spawnFromString(level, s, x, y, z, vx, vy, vz, false);
-    }
-
-    public static boolean spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz, boolean alwaysVisible)
+    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz)
     {
         Optional<ParticleOptions> opt = toOptions(s);
         if (opt.isEmpty())
-            return false;
+            return;
         level.addParticle(opt.get(), x, y, z, vx, vy, vz);
-        return true;
     }
 
     private static Optional<ParticleOptions> toOptions(String raw)

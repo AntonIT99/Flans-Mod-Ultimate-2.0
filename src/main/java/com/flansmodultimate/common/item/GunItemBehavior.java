@@ -14,7 +14,7 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.InventoryHelper;
 import com.flansmodultimate.common.guns.ShootingHandler;
-import com.flansmodultimate.common.guns.ShootingUtils;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
@@ -184,9 +184,9 @@ public record GunItemBehavior(GunItem item)
                         EnchantmentModule.ModifyGun(fireableGun, player, otherHand);
                     }*/
 
-                    FiredShot shot = new FiredShot(fireableGun, bulletItem.getConfigType(), (ServerPlayer)player);
+                    FiredShot shot = new FiredShot(fireableGun, bulletItem.getConfigType(), player);
                     //TODO gunOrigin? & animation origin
-                    ShootingUtils.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
+                    ShootingHelper.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
                 }
                 else if (shootableItem instanceof GrenadeItem grenadeItem)
                 {

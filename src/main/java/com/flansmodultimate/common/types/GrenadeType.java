@@ -76,6 +76,7 @@ public class GrenadeType extends ShootableType
     /** If > 0 this will act like a mine and explode when a driveable comes within this radius of the grenade */
     protected float driveableProximityTrigger = -1F;
     /**  If true, then anything attacking this entity will detonate it */
+    @Getter
     protected boolean detonateWhenShot;
     /** If true, then this grenade can be detonated by any remote detonator tool */
     protected boolean remote;
@@ -84,6 +85,7 @@ public class GrenadeType extends ShootableType
 
     //Detonation
     /** Detonation will not occur until after this time */
+    @Getter
     protected int primeDelay;
 
     //Aesthetics
@@ -102,6 +104,7 @@ public class GrenadeType extends ShootableType
     /** The effects to be given to people coming too close */
     protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
     /** The radius for smoke effects to take place in */
+    @Getter
     protected float smokeRadius = 5F;
 
     //Deployed bag functionality

@@ -3,12 +3,14 @@ package com.flansmodultimate.common.raytracing;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -147,7 +149,7 @@ public class PlayerHitbox
         return null;
     }
 
-    public float hitByBullet(FiredShot shot, float damage, float penetratingPower)
+    public float hitByBullet(FiredShot shot, float damage, float penetratingPower, @Nullable Bullet bullet)
     {
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
@@ -174,7 +176,7 @@ public class PlayerHitbox
                 //Calculate the hit damage
                 float hitDamage = damage * shot.getBulletType().getDamage(player) * damageModifier;
                 //Create a damage source object
-                DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level());
+                DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 
                 //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
                 //TODO: Teams

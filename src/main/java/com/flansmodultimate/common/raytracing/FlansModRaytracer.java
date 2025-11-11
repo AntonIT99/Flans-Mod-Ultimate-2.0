@@ -5,7 +5,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
-import com.flansmodultimate.common.guns.ShootingUtils;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -239,7 +239,7 @@ public class FlansModRaytracer
                     lambda = -lambda;
 
                 hits.add(new BlockHit(hit, lambda, blockState));
-                penetration -= ShootingUtils.getBlockPenetrationDecrease(blockState, pos, level);
+                penetration -= ShootingHelper.getBlockPenetrationDecrease(blockState, pos, level);
             }
 
             if (penetration > 0)

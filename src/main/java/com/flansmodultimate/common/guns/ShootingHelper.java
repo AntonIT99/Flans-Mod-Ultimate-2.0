@@ -21,6 +21,7 @@ import com.flansmodultimate.network.PacketPlaySound;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.Tags;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -46,7 +47,7 @@ import java.util.Optional;
  * Class containing a bunch of shooting related functions
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ShootingUtils
+public final class ShootingHelper
 {
     /**
      * For any kind of shooting this method should be used. It handles everything including the differentiation between spawning a EntityBullet and performing a raytrace
@@ -107,8 +108,8 @@ public final class ShootingUtils
 
         float penetrationPower = shot.getBulletType().getPenetratingPower();
         //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
-        Optional<ServerPlayer> playerOptional = shot.getPlayerOptional();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getShooterOptional().orElse(null);
+        Optional<ServerPlayer> playerOptional = shot.getPlayerAttacker();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getCausingEntity().orElse(null);
 
         List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
         Vector3f previousHitPos = rayTraceOrigin;
@@ -128,10 +129,10 @@ public final class ShootingUtils
 
             previousHitPos = hitPos;
 
-            penetrationPower = onHit(level, hitPos, shootingDirection, shot, hit, penetrationPower);
+            penetrationPower = onHit(level, hitPos, shootingDirection, shot, hit, penetrationPower, null);
             if (penetrationPower <= 0f)
             {
-                onDetonate(level, shot, hitPos);
+                onDetonate(level, shot, hitPos, null);
                 finalhit = hitPos;
                 break;
             }
@@ -153,9 +154,10 @@ public final class ShootingUtils
      * @param shot              The FiredShot instance of the shot
      * @param bulletHit         BulletHit if the object hit
      * @param penetratingPower  Power of the bullet to penetrate objects
+     * @param bullet            The bullet entity
      * @return The remaining penetrationPower after hitting the object specified in the BulletHit
      */
-    public static float onHit(Level level, Vector3f hit, Vector3f shootingDirection, FiredShot shot, BulletHit bulletHit, float penetratingPower)
+    public static float onHit(Level level, Vector3f hit, Vector3f shootingDirection, FiredShot shot, BulletHit bulletHit, float penetratingPower, @Nullable Bullet bullet)
     {
         float damage = shot.getFireableGun().getDamage();
 
@@ -167,15 +169,15 @@ public final class ShootingUtils
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
 
             //Send hit marker, if player is present
-            shot.getPlayerOptional().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
+            shot.getPlayerAttacker().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
-            penetratingPower = playerHit.hitbox.hitByBullet(shot, damage, penetratingPower);
+            penetratingPower = playerHit.hitbox.hitByBullet(shot, damage, penetratingPower, bullet);
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
 
-            Optional<ServerPlayer> optionalPlayer = shot.getPlayerOptional();
+            Optional<ServerPlayer> optionalPlayer = shot.getPlayerAttacker();
 
             // Check teams
             if (optionalPlayer.isPresent())
@@ -198,6 +200,7 @@ public final class ShootingUtils
                 {
                     FlansMod.getPacketHandler().sendTo(new PacketHitMarker(), player);
                 }*/
+                //TODO: check arguments in FMU
                 PacketHandler.sendTo(new PacketHitMarker(), player);
             }
         }
@@ -205,7 +208,7 @@ public final class ShootingUtils
         {
             if (entityHit.getEntity() != null)
             {
-                if (entityHit.getEntity().hurt(shot.getDamageSource(level), damage * bulletType.getDamage(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
+                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
@@ -220,7 +223,7 @@ public final class ShootingUtils
             }
 
             //Send hit marker, if player is present
-            shot.getPlayerOptional().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
+            shot.getPlayerAttacker().ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(), p));
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
@@ -273,18 +276,18 @@ public final class ShootingUtils
     }
 
     /**
-     * @param level       World which contains the detonatePos
+     * @param level       Level which contains the detonatePos
      * @param shot        FiredShot instance of the shot
      * @param detonatePos Location where the detonation should happen
+     * @param bullet      The bullet entity
      */
-    public static void onDetonate(Level level, FiredShot shot, Vector3f detonatePos)
+    public static void onDetonate(Level level, FiredShot shot, Vector3f detonatePos, @Nullable Bullet bullet)
     {
         BulletType bulletType = shot.getBulletType();
 
         if (bulletType.getExplosionRadius() > 0)
         {
-            new FlansExplosion(level, shot.getShooterOptional().orElse(null), shot.getPlayerOptional().orElse(null), bulletType,
-                    detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getExplosionRadius(), bulletType.getFireRadius() > 0, bulletType.getFlak() > 0, bulletType.isExplosionBreaksBlocks());
+            new FlansExplosion(level, bullet, shot.getAttacker().orElse(null), bulletType, detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak() > 0, false);
         }
         if (bulletType.getFireRadius() > 0)
         {

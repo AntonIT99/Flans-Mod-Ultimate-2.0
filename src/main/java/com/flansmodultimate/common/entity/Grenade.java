@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
@@ -10,6 +11,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketPlaySound;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +36,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Grenade extends Shootable
 {
     public static final int RENDER_DISTANCE = 64;
@@ -262,11 +265,6 @@ public class Grenade extends Shootable
         // no-op: ignore vanilla client interpolation
     }
 
-    protected DamageSource getGrenadeDamage()
-    {
-        return FlansDamageSources.createDamageSource(level(), this, thrower, FlansDamageSources.FLANS_SHOOTABLE);
-    }
-
     @Override
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand) 
     {
@@ -329,6 +327,17 @@ public class Grenade extends Shootable
     }
 
     @Override
+    public boolean hurt(@NotNull DamageSource source, float amount)
+    {
+        if (grenadeType.isDetonateWhenShot())
+        {
+            detonate();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void tick()
     {
         super.tick();
@@ -350,5 +359,50 @@ public class Grenade extends Shootable
     {
         if (thrower == null && throwerUUID != null && level instanceof ServerLevel sLevel && sLevel.getEntity(throwerUUID) instanceof LivingEntity living)
             thrower = living;
+    }
+
+    public void detonate()
+    {
+        //Do not detonate before grenade is primed
+        if (!shouldDetonateNow())
+            return;
+        //Stop repeat detonations
+        if (detonated)
+            return;
+        detonated = true;
+
+        playDetonateSound();
+        doExplosion();
+        //TODO: continue this
+        /*spreadFire();
+        spawnExplosionParticlesClient();
+        dropItemsOnDetonate();
+        if (handleFlashbang())
+            return;
+
+        handleSmokeOrDeath();*/
+    }
+
+    protected boolean shouldDetonateNow()
+    {
+        return tickCount >= grenadeType.getPrimeDelay();
+    }
+
+    protected void playDetonateSound()
+    {
+        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level().dimension(), grenadeType.getDetonateSound(), true);
+    }
+
+    protected void doExplosion() {
+        if (level().isClientSide || grenadeType.getExplosionRadius() <= 0.1F)
+            return;
+
+        new FlansExplosion(level(), this, thrower, grenadeType, getX(), getY(), getZ(), false);
+    }
+
+
+    protected DamageSource getGrenadeDamage()
+    {
+        return FlansDamageSources.createDamageSource(level(), this, thrower, FlansDamageSources.FLANS_SHOOTABLE);
     }
 }

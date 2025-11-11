@@ -7,7 +7,7 @@ import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingUtils;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.raytracing.BulletHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.types.BulletType;
@@ -228,8 +228,8 @@ public class Bullet extends Shootable
             gunTag.putFloat("vehicledamage", gun.getDamageAgainstVehicles());
             tag.put("fireablegun", gunTag);
 
-            firedShot.getPlayerOptional().ifPresent((ServerPlayer player) -> tag.putUUID("player", player.getUUID()));
-            firedShot.getShooterOptional().ifPresent((Entity shooter) -> tag.putUUID("shooter", shooter.getUUID()));
+            firedShot.getPlayerAttacker().ifPresent((ServerPlayer player) -> tag.putUUID("player", player.getUUID()));
+            firedShot.getCausingEntity().ifPresent((Entity shooter) -> tag.putUUID("shooter", shooter.getUUID()));
         }
     }
 
@@ -417,10 +417,10 @@ public class Bullet extends Shootable
     {
         Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
         Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
-        Optional<ServerPlayer> playerOptional = firedShot.getPlayerOptional();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getShooterOptional().orElse(null);
+        Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
 
-        int pingMs = firedShot.getPlayerOptional().map(p -> p.latency).orElse(0);
+        int pingMs = firedShot.getPlayerAttacker().map(p -> p.latency).orElse(0);
 
         List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, origin, motion, pingMs, 0f, getHitboxSize());
 
@@ -431,10 +431,10 @@ public class Bullet extends Shootable
         {
             Vector3f hitPos = new Vector3f(origin.x + motion.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
 
-            currentPenetratingPower = ShootingUtils.onHit(level, hitPos, motion, firedShot, bulletHit, currentPenetratingPower);
+            currentPenetratingPower = ShootingHelper.onHit(level, hitPos, motion, firedShot, bulletHit, currentPenetratingPower, this);
             if (currentPenetratingPower <= 0F)
             {
-                ShootingUtils.onDetonate(level, firedShot, hitPos);
+                ShootingHelper.onDetonate(level, firedShot, hitPos, this);
                 discard();
                 break;
             }
@@ -488,9 +488,13 @@ public class Bullet extends Shootable
             shooteruuid = null;
         }
 
-        if (shooter != null)
+        if (player != null)
         {
             firedShot = new FiredShot(firedShot.getFireableGun(), bulletType, shooter, player);
+        }
+        else
+        {
+            firedShot = new FiredShot(firedShot.getFireableGun(), bulletType, shooter, (shooter instanceof LivingEntity living) ? living : null);
         }
     }
 }

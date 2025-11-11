@@ -97,8 +97,15 @@ public class ModClient
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
 
+    //TODO: FMU Hitmarker logic
     @Getter @Setter
     private static int hitMarkerTime = 0;
+    @Getter @Setter
+    private static boolean hitMarkerHeadshot = false;
+    @Getter @Setter
+    private static float hitMarkerPenAmount = 1F;
+    @Getter @Setter
+    private static boolean hitMarkerExplosion = false;
 
     public static void setDebug(boolean value)
     {

@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
 import java.util.Optional;
@@ -28,12 +30,12 @@ public class FiredShot {
     @Getter
     private final BulletType bulletType;
     /**
-     * Player, if one can be associated with the shot
+     * Living Entity, if one can be associated with the shot. Can be the same as shooter
      */
     @Nullable
-    private final ServerPlayer player;
+    private final LivingEntity attacker;
     /**
-     * Entity which fired the shot. Can be the same as the Player optional
+     * Entity which fired the shot.
      */
     @Nullable
     private final Entity shooter;
@@ -48,84 +50,61 @@ public class FiredShot {
     }
 
     /**
-     * @param fireableGun weapon used to fire the shot
-     * @param bulletType  BulletType of the fired bullet
-     * @param player The player who shot
-     */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, ServerPlayer player)
-    {
-        this(fireableGun, bulletType, player, player);
-    }
-
-    /**
-     * This constructor should be used when an entity shot, but no player is involved
-     * e.g a zombie holding a gun or a sentry
+     * This constructor should be used when a living entity shot
      *
-     * @param fireableGun weapon used to fire the shot
-     * @param bulletType  BulletType of the fired bullet
-     * @param shooter Entity which fired the shot
+     * @param fireableGun   Weapon used to fire the shot
+     * @param bulletType    BulletType of the fired bullet
+     * @param attacker   Entity which fired the shot
      */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter)
+    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable LivingEntity attacker)
     {
-        this(fireableGun, bulletType, shooter, null);
+        this(fireableGun, bulletType, attacker, attacker);
     }
 
     /**
-     * This constructor should be used if a player causes a shot, but the player is actually not the entity shooting it
+     * This constructor should be used if a living entity causes a shot, but it is actually not the entity shooting it
      * e.g a player flying a plane
      *
-     * @param fireableGun  weapon used to fire the shot
-     * @param bulletType  BulletType of the fired bullet
-     * @param shooter the Entity firing the shot
-     * @param player  the Player causing the shot
+     * @param fireableGun   weapon used to fire the shot
+     * @param bulletType    BulletType of the fired bullet
+     * @param shooter       the Entity firing the shot
+     * @param attacker      the living entity indirectly causing the shot
      */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable ServerPlayer player)
+    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)
     {
         this.fireableGun = fireableGun;
         this.bulletType = bulletType;
-        this.player = player;
+        this.attacker = attacker;
         this.shooter = shooter;
     }
 
     /**
      * @return the matching DamageSource for the shot
      */
-    public DamageSource getDamageSource(Level level)
+    public DamageSource getDamageSource(Level level, @Nullable Bullet bullet)
     {
-        return getDamageSource(false, level);
+        return getDamageSource(false, level, bullet);
     }
 
     /**
      * @return the matching DamageSource for the shot with the additional 'headshot' information
      */
-    public DamageSource getDamageSource(boolean headshot, Level level)
+    public DamageSource getDamageSource(boolean headshot, Level level, @Nullable Bullet bullet)
     {
-        //TODO: check this logic
-        if (player != null)
-        {
-            // hitscan: direct == attacker == player
-            return FlansDamageSources.createDamageSource(level, player, player, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
-        }
-        else if (shooter != null)
-        {
-            // no distinct direct cause known – at least attribute to the shooter
-            return FlansDamageSources.createDamageSource(level, null, shooter, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
-        }
-        return level.damageSources().generic();
+        return FlansDamageSources.createDamageSource(level, (bullet != null) ? bullet : shooter, attacker, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
     }
 
-    /**
-     * @return Optional containing a player if one is involved in the cause of the shot
-     */
-    public Optional<ServerPlayer> getPlayerOptional()
+    public Optional<ServerPlayer> getPlayerAttacker()
     {
-        return Optional.ofNullable(player);
+        return Optional.ofNullable(attacker).filter(ServerPlayer.class::isInstance).map(ServerPlayer.class::cast);
     }
 
-    /**
-     * @return Optional containing the Entity which shot. Might be the same as the player optional
-     */
-    public Optional<Entity> getShooterOptional()
+    public Optional<LivingEntity> getAttacker()
+    {
+        return Optional.ofNullable(attacker);
+    }
+
+    public Optional<Entity> getCausingEntity()
     {
         return Optional.ofNullable(shooter);
     }
