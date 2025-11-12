@@ -20,7 +20,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
@@ -367,15 +366,13 @@ public class Bullet extends Shootable
 
         float spread = 0.1F;
 
-        boolean fancyLike = Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FAST;
-
         for (int i = 0; i < 10; i++)
         {
             double x = xo + dX * i + random.nextGaussian() * spread;
             double y = yo + dY * i + random.nextGaussian() * spread;
             double z = zo + dZ * i + random.nextGaussian() * spread;
 
-            ParticleHelper.spawnFromString(level, bulletType.getTrailParticleType(), x, y, z, fancyLike);
+            ParticleHelper.spawnFromString(level, bulletType.getTrailParticleType(), x, y, z);
         }
     }
 

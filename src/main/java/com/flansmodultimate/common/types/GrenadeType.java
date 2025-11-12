@@ -48,20 +48,32 @@ public class GrenadeType extends ShootableType
     protected int stickSoundRange = 10;
     protected String stickSound;
 
+    @Getter
     protected boolean flashBang;
+    @Getter
     protected int flashTime = 200;
+    @Getter
     protected int flashRange = 8;
 
+    @Getter
     protected boolean flashSoundEnable;
+    @Getter
     protected int flashSoundRange = 16;
+    @Getter
     protected String flashSound;
 
+    @Getter
     protected boolean flashDamageEnable;
+    @Getter
     protected float flashDamage;
 
+    @Getter
     protected boolean flashEffects;
-    protected int flashEffectsID;
+    @Getter
+    protected int flashEffectsId;
+    @Getter
     protected int flashEffectsDuration;
+    @Getter
     protected int flashEffectsLevel;
 
     protected boolean motionSensor;
@@ -90,7 +102,9 @@ public class GrenadeType extends ShootableType
 
     //Aesthetics
     /** Particles given off in the detonation */
+    @Getter
     protected int explodeParticles;
+    @Getter
     protected String explodeParticleType = "largesmoke";
     /** Whether the grenade should spin when thrown. Generally false for mines or things that should lie flat */
     @Getter
@@ -98,8 +112,10 @@ public class GrenadeType extends ShootableType
 
     //Smoke
     /** Time to remain after detonation */
+    @Getter
     protected int smokeTime;
     /** Particles given off after detonation */
+    @Getter
     protected String smokeParticleType = "explode";
     /** The effects to be given to people coming too close */
     protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
@@ -182,7 +198,7 @@ public class GrenadeType extends ShootableType
         flashDamageEnable = readValue(split, "FlashDamageEnable", flashDamageEnable, file);
         flashDamage = readValue(split, "FlashDamage", flashDamage, file);
         flashEffects = readValue(split, "FlashEffects", flashEffects, file);
-        flashEffectsID = readValue(split, "FlashEffectsID", flashEffectsID, file);
+        flashEffectsId = readValue(split, "FlashEffectsID", flashEffectsId, file);
         flashEffectsDuration = readValue(split, "FlashEffectsDuration", flashEffectsDuration, file);
         flashEffectsLevel = readValue(split, "FlashEffectsLevel", flashEffectsLevel, file);
         flashBang = readValue(split, "FlashBang", flashBang, file);

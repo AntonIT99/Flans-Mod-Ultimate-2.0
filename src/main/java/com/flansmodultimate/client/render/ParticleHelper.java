@@ -22,14 +22,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
-    // TODO: FMU Particles (doSpawnParticle() in ClientProxy)
-
-    //TODO: investigate why parameter isVisible
-    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z, boolean isVisible)
-    {
-        spawnFromString(level, s, x, y, z);
-    }
-
     public static void spawnFromString(ClientLevel level, String s, double x, double y, double z)
     {
         spawnFromString(level, s, x, y, z);

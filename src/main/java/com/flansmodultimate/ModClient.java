@@ -107,6 +107,12 @@ public class ModClient
     @Getter @Setter
     private static boolean hitMarkerExplosion = false;
 
+    //TODO: implement
+    @Getter @Setter
+    private static boolean isInFlash = false;
+    @Getter @Setter
+    private static int flashTime = 10;
+
     public static void setDebug(boolean value)
     {
         isDebug = value;

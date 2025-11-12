@@ -136,6 +136,7 @@ public abstract class ShootableType extends InfoType
     protected boolean readExplosionDamageVsVehicles;
     protected boolean readExplosionDamageVsPlanes;
     /** The name of the item to drop upon detonating */
+    @Getter
     protected String dropItemOnDetonate = null;
     /** Sound to play upon detonation */
     @Getter

@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.item.GunItem;
@@ -10,12 +11,19 @@ import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.network.PacketFlak;
+import com.flansmodultimate.network.PacketFlashBang;
+import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.PacketPlaySound;
+import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -23,6 +31,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -31,6 +40,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -129,7 +140,7 @@ public class Grenade extends Shootable
     }
 
     /**
-     * Constructor for grenades thrown where a player and/or a entity can be associated with.
+     * Constructor for grenades thrown where a player and/or an entity can be associated with.
      * E.g. mecha using a grenade launcher. In this case the 'entity' is the mecha and the 'player' the player controlling the mecha
      *
      * @param level         World in which the grenade will spawn in
@@ -271,7 +282,9 @@ public class Grenade extends Shootable
         if (!grenadeType.isDeployableBag())
             return InteractionResult.PASS;
 
-        if (!level().isClientSide)
+        Level level = level();
+
+        if (!level.isClientSide)
         {
             boolean used = false;
 
@@ -281,8 +294,8 @@ public class Grenade extends Shootable
                 player.heal(grenadeType.getHealAmount());
 
                 // Hearts around the player (server side)
-                ServerLevel s = (ServerLevel) level();
-                s.sendParticles(ParticleTypes.HEART, player.getX(), player.getY() + 1.0, player.getZ(), 5, 0.2, 0.3, 0.2, 0.0);
+                ServerLevel serverLevel = (ServerLevel) level;
+                serverLevel.sendParticles(ParticleTypes.HEART, player.getX(), player.getY() + 1.0, player.getZ(), 5, 0.2, 0.3, 0.2, 0.0);
                 used = true;
             }
 
@@ -363,6 +376,7 @@ public class Grenade extends Shootable
 
     public void detonate()
     {
+        Level level = level();
         //Do not detonate before grenade is primed
         if (!shouldDetonateNow())
             return;
@@ -371,16 +385,12 @@ public class Grenade extends Shootable
             return;
         detonated = true;
 
-        playDetonateSound();
-        doExplosion();
-        //TODO: continue this
-        /*spreadFire();
-        spawnExplosionParticlesClient();
-        dropItemsOnDetonate();
-        if (handleFlashbang())
-            return;
-
-        handleSmokeOrDeath();*/
+        playDetonateSound(level);
+        doExplosion(level);
+        spreadFire(level);
+        spawnExplosionParticles(level);
+        dropItemsOnDetonate(level);
+        handleSmokeAndFlashbang(level);
     }
 
     protected boolean shouldDetonateNow()
@@ -388,18 +398,112 @@ public class Grenade extends Shootable
         return tickCount >= grenadeType.getPrimeDelay();
     }
 
-    protected void playDetonateSound()
+    protected void playDetonateSound(Level level)
     {
-        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level().dimension(), grenadeType.getDetonateSound(), true);
+        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), grenadeType.getDetonateSound(), true);
     }
 
-    protected void doExplosion() {
-        if (level().isClientSide || grenadeType.getExplosionRadius() <= 0.1F)
+    protected void doExplosion(Level level) {
+        if (level.isClientSide || grenadeType.getExplosionRadius() <= 0.1F)
             return;
 
         new FlansExplosion(level(), this, thrower, grenadeType, getX(), getY(), getZ(), false);
     }
 
+    protected void spreadFire(Level level)
+    {
+        if (level.isClientSide)
+            return;
+        if (grenadeType.getFireRadius() <= 0.1F)
+            return;
+
+        float fireRadius = grenadeType.getFireRadius();
+        for (float i = -fireRadius; i < fireRadius; i++)
+        {
+            for (float j = -fireRadius; j < fireRadius; j++)
+            {
+                for (float k = -fireRadius; k < fireRadius; k++)
+                {
+                    if (i * i + j * j + k * k > fireRadius * fireRadius)
+                        continue;
+
+                    BlockPos pos = BlockPos.containing(i + getX(), j + getY(), k + getZ());
+                    if (level.getBlockState(pos).isAir() && random.nextBoolean()) {
+                        // Keep the 1.12.2 behavior that immediately sets and schedules fire
+                        level.setBlock(pos, Blocks.FIRE.defaultBlockState(), 2);
+                        level.scheduleTick(pos, Blocks.FIRE, 0);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void spawnExplosionParticles(Level level)
+    {
+        if (!level.isClientSide)
+            return;
+
+        for (int i = 0; i < grenadeType.getExplodeParticles(); i++)
+        {
+            ParticleHelper.spawnFromString((ClientLevel) level, grenadeType.getExplodeParticleType(), getX(), getY(), getZ(), random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
+        }
+    }
+
+    protected void dropItemsOnDetonate(Level level)
+    {
+        if (level.isClientSide)
+            return;
+        if (StringUtils.isBlank(grenadeType.getDropItemOnDetonate()))
+            return;
+
+        ItemStack dropStack = InfoType.getRecipeElement(grenadeType.getDropItemOnDetonate(), grenadeType.getContentPack());
+        if (dropStack != null && !dropStack.isEmpty())
+            spawnAtLocation(dropStack, 1.0F);
+    }
+
+    protected void handleSmokeAndFlashbang(Level level)
+    {
+        if (grenadeType.getSmokeTime() > 0) {
+            smoking = true;
+            smokeTime = grenadeType.getSmokeTime();
+        }
+        else if (!level.isClientSide)
+        {
+            discard();
+        }
+
+        if (!grenadeType.isFlashBang())
+            return;
+        if (level.isClientSide)
+            return;
+
+        double smokeRadius = grenadeType.getSmokeRadius();
+        AABB aabb = getBoundingBox().inflate(smokeRadius, smokeRadius, smokeRadius);
+
+        List<LivingEntity> list = ModUtils.queryEntities(level, null, aabb, LivingEntity.class, null);
+        for (LivingEntity entity : list)
+        {
+            if (entity.distanceTo(this) < grenadeType.getFlashRange() && grenadeType.isFlashDamageEnable())
+            {
+                if (grenadeType.isFlashEffects())
+                {
+                    MobEffect effect = MobEffect.byId(grenadeType.getFlashEffectsId());
+                    if (effect != null)
+                        entity.addEffect(new MobEffectInstance(effect, grenadeType.getFlashEffectsDuration(), grenadeType.getFlashEffectsLevel()));
+                }
+                entity.hurt(this.getGrenadeDamage(), grenadeType.getFlashDamage());
+            }
+        }
+
+        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), 50, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), 30, level.dimension());
+
+        if (grenadeType.isFlashSoundEnable())
+            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), grenadeType.getFlashSoundRange(), level.dimension(), grenadeType.getFlashSound(), true);
+
+        PacketHandler.sendToAllAround(new PacketFlashBang(grenadeType.getFlashTime()), getX(), getY(), getZ(), grenadeType.getFlashRange(), level.dimension());
+
+        discard();
+    }
 
     protected DamageSource getGrenadeDamage()
     {
