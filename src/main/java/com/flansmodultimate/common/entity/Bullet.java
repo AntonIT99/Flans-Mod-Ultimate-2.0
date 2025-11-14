@@ -40,7 +40,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -195,7 +194,7 @@ public class Bullet extends Shootable
             super.readSpawnData(buf);
             setOrientation(velocity);
             if (InfoType.getInfoType(shortname) instanceof BulletType type)
-                bulletType = Objects.requireNonNull(type);
+                bulletType = type;
             if (bulletType == null)
             {
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
@@ -304,7 +303,7 @@ public class Bullet extends Shootable
         }
         catch (Exception ex)
         {
-            FlansMod.log.error("Error ticking bullet", ex);
+            FlansMod.log.error("Error ticking bullet {}", shortname, ex);
             discard();
         }
     }

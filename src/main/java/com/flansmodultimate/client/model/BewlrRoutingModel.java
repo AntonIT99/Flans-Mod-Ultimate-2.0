@@ -1,4 +1,4 @@
-package com.flansmodultimate.event;
+package com.flansmodultimate.client.model;
 
 import com.flansmodultimate.client.render.CustomBewlr;
 import org.jetbrains.annotations.NotNull;

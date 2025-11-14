@@ -22,6 +22,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 public class BulletType extends ShootableType
 {
     public static final double LOCK_ON_RANGE = 128.0;
+    public static final int FLAK_PARTICLES_RANGE = 200;
 
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */

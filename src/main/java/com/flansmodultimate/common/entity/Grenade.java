@@ -1,16 +1,21 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.FlansExplosion;
+import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketFlashBang;
 import com.flansmodultimate.network.PacketHandler;
@@ -18,6 +23,7 @@ import com.flansmodultimate.network.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import net.minecraftforge.common.MinecraftForge;
 import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,14 +41,20 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 import java.util.UUID;
@@ -277,7 +289,8 @@ public class Grenade extends Shootable
     }
 
     @Override
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand) 
+    @NotNull
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
         if (!grenadeType.isDeployableBag())
             return InteractionResult.PASS;
@@ -357,12 +370,23 @@ public class Grenade extends Shootable
         Level level = level();
         try
         {
-            //TODO tick()
+            if (shouldDespawn())
+            {
+                discard();
+                return;
+            }
             resolveUUID(level);
+            decrementMotionTime();
+            spawnTrailParticles(level);
+            handleSmoke(level);
+            handleDetonationConditions(level);
+            updateStuckState(level);
+            handlePhysicsAndMotion(level);
+            //TODO: continue implementing
         }
         catch (Exception ex)
         {
-            FlansMod.log.error("Error ticking grenade", ex);
+            FlansMod.log.error("Error ticking grenade {}", shortname, ex);
             discard();
         }
     }
@@ -372,6 +396,218 @@ public class Grenade extends Shootable
     {
         if (thrower == null && throwerUUID != null && level instanceof ServerLevel sLevel && sLevel.getEntity(throwerUUID) instanceof LivingEntity living)
             thrower = living;
+    }
+
+    protected void decrementMotionTime()
+    {
+        if (motionTime > 0)
+            motionTime--;
+    }
+
+    protected boolean shouldDespawn() {
+        if (grenadeType.getDespawnTime() > 0 && tickCount > grenadeType.getDespawnTime()) {
+            detonated = true;
+            return true;
+        }
+        return false;
+    }
+
+    protected void spawnTrailParticles(Level level) {
+        if (!level.isClientSide || !grenadeType.isTrailParticles())
+            return;
+
+        // Using previous position fields (Mojmap: xo, yo, zo)
+        double dx = (getX() - xo) / 10.0;
+        double dy = (getY() - yo) / 10.0;
+        double dz = (getZ() - zo) / 10.0;
+
+        for (int i = 0; i < 10; i++)
+        {
+            double px = xo + dx * i;
+            double py = yo + dy * i;
+            double pz = zo + dz * i;
+            ParticleHelper.spawnFromString((ClientLevel) level, grenadeType.getTrailParticleType(), px, py, pz);
+        }
+    }
+
+    protected void handleSmoke(Level level) {
+        if (!smoking)
+            return;
+
+        // Send flak packet to spawn particles
+        if (!level.isClientSide)
+            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+
+        // Apply potion effects in smoke radius
+        double r = grenadeType.getSmokeRadius();
+        double rSq = r * r;
+        AABB aabb = getBoundingBox().inflate(r, r, r);
+
+        List<LivingEntity> list = ModUtils.queryLivingEntities(level, aabb);
+        for (LivingEntity entity : list)
+        {
+            if (entity.distanceToSqr(this) >= rSq)
+                continue;
+
+            // Check for gas masks / smoke protection
+            boolean smokeThem = true;
+            for (EquipmentSlot slot : EquipmentSlot.values())
+            {
+                ItemStack stack = entity.getItemBySlot(slot);
+                if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour && armour.getConfigType().isSmokeProtection())
+                {
+                    smokeThem = false;
+                    break;
+                }
+            }
+
+            if (smokeThem)
+                grenadeType.getSmokeEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
+        }
+
+        smokeTime--;
+        if (smokeTime <= 0)
+            discard();
+    }
+
+    protected void handleDetonationConditions(Level level)
+    {
+        if (!level.isClientSide)
+            return;
+
+        // Fuse
+        if (grenadeType.getFuse() > 0 && tickCount > grenadeType.getFuse())
+            detonate();
+
+        // Proximity triggers
+        if (grenadeType.getLivingProximityTrigger() <= 0 && grenadeType.getDriveableProximityTrigger() <= 0)
+            return;
+
+        float checkRadius = Math.max(grenadeType.getLivingProximityTrigger(), grenadeType.getDriveableProximityTrigger());
+        double rLivingSq = grenadeType.getLivingProximityTrigger() * grenadeType.getLivingProximityTrigger();
+        double rDriveableSq = grenadeType.getDriveableProximityTrigger() * grenadeType.getDriveableProximityTrigger();
+
+        List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius), null);
+        for (Entity entity : list)
+        {
+            if (entity == thrower && (tickCount < 10 || !ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()))
+                continue;
+
+            // Living proximity
+            if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
+            {
+                //TODO: Teams
+                //TODO: check team of thrower and check ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()
+
+                // Friendly fire check
+                /*if (TeamsManager.getInstance() != null
+                        && TeamsManager.getInstance().currentRound != null
+                        && entity instanceof ServerPlayer
+                        && player.isPresent()) {
+
+                    EntityDamageSourceFlan damageSource =
+                            new EntityDamageSourceFlan(getType().shortName, this, player.get(), getType());
+
+                    if (!TeamsManager.getInstance().currentRound.gametype.playerAttacked((ServerPlayer) entity, damageSource)) {
+                        continue;
+                    }
+                }*/
+
+                if (handleEntityInProximityTriggerRange(living))
+                    break;
+            }
+
+            // Driveable proximity
+            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq && handleEntityInProximityTriggerRange(driveable))
+                break;
+        }
+    }
+
+    protected boolean handleEntityInProximityTriggerRange(Entity entity)
+    {
+        GrenadeProximityEvent event = new GrenadeProximityEvent(this, entity);
+        MinecraftForge.EVENT_BUS.post(event);
+        if (event.isCanceled())
+            return false;
+
+        if (getGrenadeType().getDamageToTriggerer() > 0F)
+            entity.hurt(getGrenadeDamage(), getGrenadeType().getDamageToTriggerer());
+
+        detonate();
+        return true;
+    }
+
+    protected void updateStuckState(Level level)
+    {
+        if (stuck)
+        {
+            BlockPos pos = new BlockPos(stuckToX, stuckToY, stuckToZ);
+            if (level.isEmptyBlock(pos))
+                stuck = false;
+        }
+    }
+
+    protected void handlePhysicsAndMotion(Level level)
+    {
+        if (stuck || grenadeType.isStickToThrower())
+            return;
+
+        // Update rotation from axes + angular velocity
+        yRotO = axes.getYaw();
+        xRotO = axes.getPitch();
+        prevRotationRoll = axes.getRoll();
+
+        if (angularVelocity.lengthSqr() > 0.00000001)
+            axes.rotateLocal((float) angularVelocity.length(), new Vector3f(angularVelocity.normalize()));
+
+        Vec3 posVec = position(); // current position
+        Vec3 nextPosVec = posVec.add(velocity);
+
+        HitResult result = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+
+        if (result.getType() == HitResult.Type.BLOCK)
+            handleBlockHit(level, posVec, velocity, (BlockHitResult) result);
+        else
+            // No hit, just move
+            setPos(getX() + velocity.x, getY() + velocity.y, getZ() + velocity.z);
+    }
+
+    protected void handleBlockHit(Level level, Vec3 posVec, Vec3 motionVec, BlockHitResult hit)
+    {
+        BlockPos blockPos = hit.getBlockPos();
+        BlockState state = level.getBlockState(blockPos);
+
+        // If the shape is empty, the block doesn't collide (air, some plants, etc.)
+        boolean blocksMovement = !state.getCollisionShape(level(), blockPos, CollisionContext.empty()).isEmpty();
+
+        if (!blocksMovement)
+        {
+            // Just move if block doesn't stop motion
+            setPos(getX() + motionVec.x, getY() + motionVec.y, getZ() + motionVec.z);
+            return;
+        }
+
+        // Explode on impact
+        if (grenadeType.isExplodeOnImpact())
+        {
+            detonate();
+            return;
+        }
+
+        // Break glass
+        if (grenadeType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
+        {
+            ModUtils.destroyBlock((ServerLevel) level, blockPos, thrower, false);
+        }
+
+        // Bounce / stick if not penetrating blocks
+        if (!grenadeType.isPenetratesBlocks())
+            handleBounceAndSticky(posVec, motionVec, hit, state);
+    }
+
+    protected void handleBounceAndSticky(Vec3 posVec, Vec3 motionVec, BlockHitResult hit, BlockState state)
+    {
+        //TODO
     }
 
     public void detonate()
@@ -480,7 +716,7 @@ public class Grenade extends Shootable
         double smokeRadius = grenadeType.getSmokeRadius();
         AABB aabb = getBoundingBox().inflate(smokeRadius, smokeRadius, smokeRadius);
 
-        List<LivingEntity> list = ModUtils.queryEntities(level, null, aabb, LivingEntity.class, null);
+        List<LivingEntity> list = ModUtils.queryLivingEntities(level, aabb);
         for (LivingEntity entity : list)
         {
             if (entity.distanceTo(this) < grenadeType.getFlashRange() && grenadeType.isFlashDamageEnable())
@@ -495,7 +731,7 @@ public class Grenade extends Shootable
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), 50, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), 30, level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
         if (grenadeType.isFlashSoundEnable())
             PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), grenadeType.getFlashSoundRange(), level.dimension(), grenadeType.getFlashSound(), true);

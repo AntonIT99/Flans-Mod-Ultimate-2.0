@@ -1,6 +1,5 @@
-package com.flansmodultimate.event;
+package com.flansmodultimate;
 
-import com.flansmodultimate.FlansMod;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 

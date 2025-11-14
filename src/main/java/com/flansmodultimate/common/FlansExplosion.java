@@ -109,7 +109,7 @@ public class FlansExplosion extends Explosion
         this.power = explosionPower;
 
         this.causesFire = causesFire;
-        this.breaksBlocks = breaksBlocks && TeamsManager.explosions;
+        this.breaksBlocks = breaksBlocks && TeamsManager.isExplosions();
 
         this.canDamageSelf = canDamageSelf;
         this.damageVsLiving  = damageVsLiving;

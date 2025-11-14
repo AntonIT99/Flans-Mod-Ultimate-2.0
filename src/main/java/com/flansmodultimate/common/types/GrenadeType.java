@@ -15,6 +15,9 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 @NoArgsConstructor
 public class GrenadeType extends ShootableType
 {
+    public static final int SMOKE_PARTICLES_COUNT = 50;
+    public static final int SMOKE_PARTICLES_RANGE = 30;
+
     //Misc
     /** The damage imparted by smacking someone over the head with this grenade */
     protected int meleeDamage = 1;
@@ -33,12 +36,14 @@ public class GrenadeType extends ShootableType
     //Physics
     /** Whether this grenade may pass through entities or blocks */
     protected boolean penetratesEntities;
+    @Getter
     protected boolean penetratesBlocks;
     /** The sound to play upon bouncing off a surface */
     protected String bounceSound = StringUtils.EMPTY;
     /** Whether the grenade should stick to surfaces */
     protected boolean sticky;
     /** If true, then the grenade will stick to the player that threw it. Used to make delayed self destruct weapons */
+    @Getter
     protected boolean stickToThrower;
 
     protected boolean stickToEntity;
@@ -84,8 +89,10 @@ public class GrenadeType extends ShootableType
 
     //Conditions for detonation
     /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
+    @Getter
     protected float livingProximityTrigger = -1F;
     /** If > 0 this will act like a mine and explode when a driveable comes within this radius of the grenade */
+    @Getter
     protected float driveableProximityTrigger = -1F;
     /**  If true, then anything attacking this entity will detonate it */
     @Getter
@@ -93,6 +100,7 @@ public class GrenadeType extends ShootableType
     /** If true, then this grenade can be detonated by any remote detonator tool */
     protected boolean remote;
     /** How much damage to deal to the entity that triggered it */
+    @Getter
     protected float damageToTriggerer;
 
     //Detonation
@@ -118,6 +126,7 @@ public class GrenadeType extends ShootableType
     @Getter
     protected String smokeParticleType = "explode";
     /** The effects to be given to people coming too close */
+    @Getter
     protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
     /** The radius for smoke effects to take place in */
     @Getter

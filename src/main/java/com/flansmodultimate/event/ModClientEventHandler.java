@@ -2,8 +2,10 @@ package com.flansmodultimate.event;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;

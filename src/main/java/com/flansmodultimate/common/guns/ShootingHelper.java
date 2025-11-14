@@ -10,6 +10,7 @@ import com.flansmodultimate.common.raytracing.DriveableHit;
 import com.flansmodultimate.common.raytracing.EntityHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.raytracing.PlayerBulletHit;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.PacketBlockHitEffect;
@@ -18,13 +19,14 @@ import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.PacketHitMarker;
 import com.flansmodultimate.network.PacketPlaySound;
+import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -237,16 +239,10 @@ public final class ShootingHelper
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
 
-            boolean isGlass = state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
             //If the bullet breaks glass, and can do so according to FlansMod, do so.
-            if (bulletType.isBreaksGlass() && isGlass)
+            if (bulletType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
             {
-                //TODO: Teams
-                /*if (TeamsManager.canBreakGlass)
-                {
-                    WorldServer levelServer = (WorldServer)level;
-                    destroyBlock(levelServer, pos, shot.getPlayerOptional().orElse(null), false);
-                }*/
+                ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
             }
 
             penetratingPower -= getBlockPenetrationDecrease(state, pos, level);
@@ -308,7 +304,7 @@ public final class ShootingHelper
         // Send flak packet
         if (bulletType.getFlak() > 0)
         {
-            PacketHandler.sendToAllAround(new PacketFlak(detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak(), bulletType.getFlakParticles()), detonatePos.x, detonatePos.y, detonatePos.z, 200, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak(), bulletType.getFlakParticles()), detonatePos.x, detonatePos.y, detonatePos.z, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
         }
         // Drop item on hitting if bullet requires it
         if (bulletType.getDropItemOnHit() != null)

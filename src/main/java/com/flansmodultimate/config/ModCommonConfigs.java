@@ -16,6 +16,7 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.BooleanValue addAllPaintjobsToCreative;
 
     // Gameplay Settings
+    public static final ForgeConfigSpec.BooleanValue grenadeProximityTriggerFriendlyFire;
     public static final ForgeConfigSpec.DoubleValue vehicleWheelSeatExplosionModifier;
 
     static {
@@ -35,6 +36,10 @@ public class ModCommonConfigs
 
         BUILDER.push("Gameplay Settings");
 
+        //TODO: idea - teams command to enable / disable friendly fire
+        grenadeProximityTriggerFriendlyFire = BUILDER
+            .comment("Whether grenade proximity triggers can get triggered by the thrower and its allies")
+            .define("grenadeProximityTriggerFriendlyFire", true);
         vehicleWheelSeatExplosionModifier = BUILDER
             .comment("Proportion of damage from an explosion when it has hit a wheel or seat.")
             .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);

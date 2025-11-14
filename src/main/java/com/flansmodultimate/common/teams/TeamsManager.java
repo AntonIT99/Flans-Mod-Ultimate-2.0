@@ -1,20 +1,24 @@
 package com.flansmodultimate.common.teams;
 
+import lombok.Getter;
+
 public class TeamsManager
 {
-    public static boolean voting = false;
-    public static boolean explosions = true;
-    public static boolean roundsGenerator = false;
-    public static boolean driveablesBreakBlocks = true;
-    public static boolean bombsEnabled = true;
-    public static boolean shellsEnabled = true;
-    public static boolean bulletsEnabled = true;
-    public static boolean forceAdventureMode = true;
-    public static boolean canBreakGuns = true;
-    public static boolean canBreakGlass = true;
-    public static boolean armourDrops = true;
-    public static boolean vehiclesNeedFuel = true;
-    public static boolean overrideHunger = true;
-    public static boolean survivalCanBreakVehicles = true;
-    public static boolean survivalCanPlaceVehicles = true;
+    private static boolean voting = false;
+    @Getter
+    private static boolean explosions = true;
+    private static boolean roundsGenerator = false;
+    private static boolean driveablesBreakBlocks = true;
+    private static boolean bombsEnabled = true;
+    private static boolean shellsEnabled = true;
+    private static boolean bulletsEnabled = true;
+    private static boolean forceAdventureMode = true;
+    private static boolean canBreakGuns = true;
+    @Getter
+    private static boolean canBreakGlass = true;
+    private static boolean armourDrops = true;
+    private static boolean vehiclesNeedFuel = true;
+    private static boolean overrideHunger = true;
+    private static boolean survivalCanBreakVehicles = true;
+    private static boolean survivalCanPlaceVehicles = true;
 }

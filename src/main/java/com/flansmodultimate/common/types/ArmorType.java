@@ -47,14 +47,32 @@ public class ArmorType extends InfoType
     /** Modifier for jump (jump boost effect every couple of seconds) */
     @Getter
     protected float jumpModifier = 1F;
+    /** If true, then the player gets a night vision buff every couple of seconds */
+    @Getter
     protected boolean nightVision;
+    /** If true, then the player gets a invisiblity buff every couple of seconds */
+    @Getter
     protected boolean invisible;
+    /** If true, then smoke effects from grenades will have no effect on players wearing this */
+    @Getter
     protected boolean smokeProtection;
+    /** If ture, the player will not receive fall damage */
+    @Getter
     protected boolean negateFallDamage;
+    /** If true, the player will not receive fire damage */
+    @Getter
     protected boolean fireResistance;
+    /** If true, the player can breathe underwater */
+    @Getter
     protected boolean waterBreathing;
+    /** If true, the player can walk on water */
+    @Getter
     protected boolean onWaterWalking;
+    /** If true, then the player gets a hunger de-buff every couple of seconds */
+    @Getter
     protected boolean hunger;
+    /** If true, then the player gets a regeneration buff every couple of seconds */
+    @Getter
     protected boolean regeneration;
     /** Map of effects and effect Amplifiers */
     @Getter
@@ -137,78 +155,5 @@ public class ArmorType extends InfoType
     public boolean hasDurability()
     {
         return durability > 0;
-    }
-
-    /**
-     * If true, then the player gets a night vision buff every couple of seconds
-     */
-    public boolean hasNightVision()
-    {
-        return nightVision;
-    }
-
-    /**
-     * If true, then the player gets a invisiblity buff every couple of seconds
-     */
-    public boolean hasInvisiblility()
-    {
-        return invisible;
-    }
-
-    // TODO: Implement Smoke Protection with Flan's grenades
-    /**
-     * If true, then smoke effects from grenades will have no effect on players wearing this
-     */
-    public boolean hasSmokeProtection()
-    {
-        return smokeProtection;
-    }
-
-    /**
-     * If ture, the player will not receive fall damage
-     */
-    public boolean hasNegateFallDamage()
-    {
-        return negateFallDamage;
-    }
-
-    /**
-     * If true, the player can walk on water
-     */
-    public boolean hasOnWaterWalking()
-    {
-        return onWaterWalking;
-    }
-
-    /**
-     * If true, the player can breathe underwater
-     */
-    public boolean hasWaterBreathing()
-    {
-        return waterBreathing;
-    }
-
-    /**
-     * If true, the player will not receive fire damage
-     */
-    public boolean hasFireResistance()
-    {
-        return fireResistance;
-    }
-
-    /**
-     * If true, then the player gets a hunger de-buff every couple of seconds
-     */
-    public boolean hasHunger()
-    {
-        return hunger;
-    }
-
-    /**
-     * If true, then the player gets a regeneration buff every couple of seconds
-     */
-    public boolean hasRegeneration()
-    {
-        return regeneration;
     }
 }
