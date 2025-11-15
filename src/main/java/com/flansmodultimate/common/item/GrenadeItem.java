@@ -1,14 +1,22 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
+import com.flansmodultimate.common.types.InfoType;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.fml.LogicalSide;
+import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -17,7 +25,15 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -84,9 +100,9 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @javax.annotation.Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendHoverText(tooltipComponents);
+        appendContentPackNameAndItemDescription(tooltipComponents);
 
         if (!Screen.hasShiftDown())
         {
@@ -97,17 +113,81 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
         }
         else
         {
-            if (configType.getExplosionRadius() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Explosion Radius", String.valueOf(configType.getExplosionRadius())));
-            if (configType.getExplosionPower() > 1F)
-                tooltipComponents.add(IFlanItem.statLine("Explosion Power", String.valueOf(configType.getExplosionPower())));
+            super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
         }
     }
 
-    public void throwGrenade(Level level, LivingEntity thrower)
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
     {
-        //TODO: implement EntityGrenade
-        /*EntityGrenade grenade = getGrenade(world, thrower);
-        world.spawnEntity(grenade);*/
+        Multimap<Attribute, AttributeModifier> modifiers = super.getAttributeModifiers(slot, stack);
+
+        if (slot == EquipmentSlot.MAINHAND)
+        {
+            modifiers = ArrayListMultimap.create(modifiers);
+            modifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", configType.getMeleeDamage(), AttributeModifier.Operation.ADDITION));
+        }
+
+        return modifiers;
+    }
+
+    @Override
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
+    {
+        return configType.getMeleeDamage() == 0;
+    }
+
+    @Override
+    @NotNull
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
+    {
+        ItemStack stack = player.getItemInHand(hand);
+        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+
+        // If can throw grenade
+        if (configType.isCanThrow() && data != null && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
+        {
+            // Delay the next throw / weapon fire / whatnot
+            data.setShootTimeRight(configType.getThrowDelay());
+
+            // Create a new grenade entity
+            Grenade grenade = getGrenade(player);
+
+            // Spawn the entity server side
+            if (!level.isClientSide)
+                level.addFreshEntity(grenade);
+
+            // Consume an item (non-creative)
+            if (!player.getAbilities().instabuild)
+                stack.shrink(1);
+
+            // Drop an item upon throwing if necessary
+            if (StringUtils.isNotBlank(configType.getDropItemOnThrow()))
+            {
+                String itemName = configType.getDropItemOnDetonate(); // kept from original logic
+                ItemStack dropStack = InfoType.getRecipeElement(itemName, configType.getContentPack());
+
+                if (!level.isClientSide && dropStack != null && !dropStack.isEmpty())
+                {
+                    ItemEntity itemEntity = new ItemEntity(level, player.getX(), player.getY(), player.getZ(), dropStack);
+                    level.addFreshEntity(itemEntity);
+                }
+            }
+
+            // We successfully used the item (threw a grenade)
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        }
+
+        // Nothing special happened, fall back
+        return InteractionResultHolder.pass(stack);
+    }
+
+    public Grenade getGrenade(LivingEntity thrower)
+    {
+        Grenade grenade = new Grenade(thrower, configType);
+        // If this can be remotely detonated, add it to the players detonate list
+        if (configType.isRemote() && thrower instanceof Player player)
+            PlayerData.getInstance(player).getRemoteExplosives().add(grenade);
+        return grenade;
     }
 }

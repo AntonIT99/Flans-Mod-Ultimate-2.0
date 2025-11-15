@@ -36,7 +36,7 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendHoverText(tooltipComponents);
+        appendContentPackNameAndItemDescription(tooltipComponents);
 
         String paintjobName = getPaintjob(stack).getDisplayName();
         if (!paintjobName.isEmpty())

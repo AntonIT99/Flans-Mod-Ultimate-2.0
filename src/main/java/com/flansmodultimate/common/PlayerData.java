@@ -71,7 +71,8 @@ public class PlayerData
     @Getter @Setter
     private boolean reloadingLeft;
     /** When remote explosives are thrown they are added to this list. When the player uses a remote, the first one from this list detonates */
-    private ArrayList<Grenade> remoteExplosives = new ArrayList<>();
+    @Getter
+    private final ArrayList<Grenade> remoteExplosives = new ArrayList<>(); //TODO: add Tools to detonate remote explosives
     /** Sound delay parameters */
     @Getter @Setter
     private int loopedSoundDelay;

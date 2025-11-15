@@ -376,6 +376,7 @@ public class Grenade extends Shootable
                 discard();
                 return;
             }
+
             resolveUUID(level);
             decrementMotionTime();
             spawnTrailParticles(level);
@@ -790,7 +791,7 @@ public class Grenade extends Shootable
 
     protected void handleImpactDamage(Level level)
     {
-        if (stuck || (grenadeType.getDamageVsLiving() <= 0F && grenadeType.getDamageVsPlayer() <= 0F))
+        if (stuck || (grenadeType.getDamage().getDamageVsLiving() <= 0F && grenadeType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
         double speedSq = velocity.lengthSqr();
@@ -806,9 +807,9 @@ public class Grenade extends Shootable
             float damageFactor = (float) (speedSq * 3.0D);
 
             if (living instanceof Player player)
-                player.hurt(getGrenadeDamage(), grenadeType.getDamageVsPlayer() * damageFactor);
+                player.hurt(getGrenadeDamage(), grenadeType.getDamage().getDamageVsPlayer() * damageFactor);
             else
-                living.hurt(getGrenadeDamage(), grenadeType.getDamageVsLiving() * damageFactor);
+                living.hurt(getGrenadeDamage(), grenadeType.getDamage().getDamageVsLiving() * damageFactor);
         }
     }
 

@@ -22,6 +22,7 @@ import com.flansmodultimate.network.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -210,7 +211,7 @@ public final class ShootingHelper
         {
             if (entityHit.getEntity() != null)
             {
-                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
+                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage().getDamageValue(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
@@ -307,7 +308,7 @@ public final class ShootingHelper
             PacketHandler.sendToAllAround(new PacketFlak(detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak(), bulletType.getFlakParticles()), detonatePos.x, detonatePos.y, detonatePos.z, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
         }
         // Drop item on hitting if bullet requires it
-        if (bulletType.getDropItemOnHit() != null)
+        if (StringUtils.isNotBlank(bulletType.getDropItemOnHit()))
         {
             //TODO save ItemStack on load into the bulletType
             ItemStack dropStack = InfoType.getRecipeElement(bulletType.getDropItemOnHit(), bulletType.getContentPack());

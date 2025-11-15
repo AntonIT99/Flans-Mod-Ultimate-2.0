@@ -2,10 +2,8 @@ package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.driveables.Wheel;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Plane;
-import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -61,10 +59,7 @@ public class FlansExplosion extends Explosion
     private final boolean causesFire;
     private final boolean breaksBlocks;
     private final boolean canDamageSelf;
-    private final float damageVsLiving;
-    private final float damageVsPlayer;
-    private final float damageVsPlane;
-    private final float damageVsVehicle;
+    private final DamageStats damage;
 
     // Core Context
     private final Level level;
@@ -85,17 +80,17 @@ public class FlansExplosion extends Explosion
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean smoking, boolean canDamageSelf)
     {
         this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, smoking, type.isExplosionBreaksBlocks(),
-                type.getExplosionDamageVsLiving(), type.getExplosionDamageVsPlayer(), type.getExplosionDamageVsPlane(), type.getExplosionDamageVsVehicle(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+                type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, GrenadeType type, double x, double y, double z, boolean canDamageSelf)
     {
         this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, type.getSmokeRadius() > 0, type.isExplosionBreaksBlocks(),
-                type.getExplosionDamageVsLiving(), type.getExplosionDamageVsPlayer(), type.getExplosionDamageVsPlane(), type.getExplosionDamageVsVehicle(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+                type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, InfoType type, double x, double y, double z, float explosionRadius, float explosionPower,
-                          boolean causesFire, boolean smoking, boolean breaksBlocks, float damageVsLiving, float damageVsPlayer, float damageVsPlane, float damageVsVehicle, int smokeCount, int debrisCount, boolean canDamageSelf)
+                          boolean causesFire, boolean smoking, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
         super(level, explosive, x, y, z, explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
@@ -112,10 +107,7 @@ public class FlansExplosion extends Explosion
         this.breaksBlocks = breaksBlocks && TeamsManager.isExplosions();
 
         this.canDamageSelf = canDamageSelf;
-        this.damageVsLiving  = damageVsLiving;
-        this.damageVsPlayer  = damageVsPlayer;
-        this.damageVsPlane   = damageVsPlane;
-        this.damageVsVehicle = damageVsVehicle;
+        this.damage = damage;
 
         this.affectedBlockPositions = Lists.newArrayList();
         this.damageCalculator = (explosive == null) ? new ExplosionDamageCalculator() : new EntityBasedExplosionDamageCalculator(explosive);
@@ -252,30 +244,18 @@ public class FlansExplosion extends Explosion
                 float damage = (float) ((impact * impact + impact) / 2.0D * 8.0D * radius2 + 1.0D);
 
                 // === Flan’s multipliers ===
-                Driveable entityDriveable = null;
-                if (e instanceof Player)
-                    damage *= damageVsPlayer;
-                else if (e instanceof LivingEntity)
-                    damage *= damageVsLiving;
-                else if (e instanceof Plane)
-                    damage *= damageVsPlane;
-                else if (e instanceof Vehicle)
-                    damage *= damageVsVehicle;
-                else if (e instanceof Wheel wheel)
+                damage *= this.damage.getDamageValue(e);
+
+                if (e instanceof Wheel wheel)
                 {
-                    entityDriveable = wheel.getDriveable();
                     damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
+                    damage *= this.damage.getDamageValue(wheel.getDriveable());
                 }
                 else if (e instanceof Seat seat)
                 {
-                    entityDriveable = seat.getDriveable();
                     damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
+                    damage *= this.damage.getDamageValue(seat.getDriveable());
                 }
-
-                if (entityDriveable instanceof Plane)
-                    damage *= damageVsPlane;
-                if (entityDriveable instanceof Vehicle)
-                    damage *= damageVsVehicle;
 
                 if (damage > 0.5F)
                 {

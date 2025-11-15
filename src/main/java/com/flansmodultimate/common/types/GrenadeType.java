@@ -20,22 +20,24 @@ public class GrenadeType extends ShootableType
 
     //Misc
     /** The damage imparted by smacking someone over the head with this grenade */
+    @Getter
     protected int meleeDamage = 1;
 
     //Throwing
     /** The delay between subsequent grenade throws */
+    @Getter
     protected int throwDelay;
     /** The sound to play upon throwing this grenade */
     @Getter
     protected String throwSound = StringUtils.EMPTY;
     /** The name of the item to drop (if any) when throwing the grenade */
+    @Getter
     protected String dropItemOnThrow = null;
     /** Whether you can throw this grenade by right clicking */
+    @Getter
     protected boolean canThrow = true;
 
     //Physics
-    /** Whether this grenade may pass through entities or blocks */
-    protected boolean penetratesEntities;
     @Getter
     protected boolean penetratesBlocks;
     /** The sound to play upon bouncing off a surface */
@@ -88,12 +90,6 @@ public class GrenadeType extends ShootableType
     @Getter
     protected int flashEffectsLevel;
 
-    protected boolean motionSensor;
-    protected float motionSensorRange = 5.0F;
-    protected float motionSoundRange = 20.0F;
-    protected String motionSound;
-    protected int motionTime = 20;
-
     //Conditions for detonation
     /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
     @Getter
@@ -105,6 +101,7 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean detonateWhenShot;
     /** If true, then this grenade can be detonated by any remote detonator tool */
+    @Getter
     protected boolean remote;
     /** How much damage to deal to the entity that triggered it */
     @Getter
@@ -166,15 +163,13 @@ public class GrenadeType extends ShootableType
         super.readLine(line, split, file);
 
         meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
+
         //Grenade Throwing
         throwDelay = readValue(split, "ThrowDelay", throwDelay, file);
         meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
         throwSound = readValue(split, "ThrowSound", throwSound, file);
         dropItemOnThrow = readValue(split, "DropItemOnThrow", dropItemOnThrow, file);
         canThrow = readValue(split, "CanThrow", canThrow, file);
-
-        //Grenade Physics
-        penetratesEntities = readValue(split, "PenetratesEntities", penetratesEntities, file);
         penetratesBlocks = readValue(split, "PenetratesBlocks", penetratesBlocks, file);
 
         bounceSound = readValue(split, "BounceSound", bounceSound, file);
@@ -218,12 +213,6 @@ public class GrenadeType extends ShootableType
         flashEffectsDuration = readValue(split, "FlashEffectsDuration", flashEffectsDuration, file);
         flashEffectsLevel = readValue(split, "FlashEffectsLevel", flashEffectsLevel, file);
         flashBang = readValue(split, "FlashBang", flashBang, file);
-
-        motionSensor = readValue(split, "MotionSensor", motionSensor, file);
-        motionSensorRange = readValue(split, "MotionSensorRange", motionSensorRange, file);
-        motionSoundRange = readValue(split, "MotionSoundRange", motionSoundRange, file);
-        motionSound = readSound(split, "MotionSound", motionSound, file);
-        motionTime = readValue(split, "MotionTime", motionTime, file);
 
         detonateWhenShot = readValue(split, "DetonateWhenShot", detonateWhenShot, file);
 

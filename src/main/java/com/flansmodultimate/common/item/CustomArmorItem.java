@@ -115,7 +115,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendHoverText(tooltipComponents);
+        appendContentPackNameAndItemDescription(tooltipComponents);
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
             tooltipComponents.add(Component.literal("+" + (int)((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));

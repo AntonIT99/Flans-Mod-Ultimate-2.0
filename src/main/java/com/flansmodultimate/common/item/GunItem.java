@@ -126,7 +126,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendHoverText(tooltipComponents);
+        appendContentPackNameAndItemDescription(tooltipComponents);
 
         String paintjobName = getPaintjob(stack).getDisplayName();
         if (!paintjobName.isEmpty())

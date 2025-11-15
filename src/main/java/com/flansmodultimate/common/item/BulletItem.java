@@ -35,7 +35,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendHoverText(tooltipComponents);
+        appendContentPackNameAndItemDescription(tooltipComponents);
 
         if (!Screen.hasShiftDown())
         {
@@ -46,28 +46,15 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         }
         else
         {
-            if (!originGunbox.isBlank())
+            super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+
+            if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
 
-            tooltipComponents.add(IFlanItem.statLine("Damage", String.valueOf(configType.getDamageVsLiving())));
-            if (configType.getDamageVsVehicles() != configType.getDamageVsLiving())
-                tooltipComponents.add(IFlanItem.statLine("Damage Vs Vehicles", String.valueOf(configType.getDamageVsVehicles())));
-            if (configType.getDamageVsPlanes() != configType.getDamageVsVehicles())
-                tooltipComponents.add(IFlanItem.statLine("Damage Vs Planes", String.valueOf(configType.getDamageVsPlanes())));
-
             tooltipComponents.add(IFlanItem.statLine("Penetration", String.valueOf(configType.getPenetratingPower())));
-            tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(configType.getRoundsPerItem())));
-            tooltipComponents.add(IFlanItem.statLine("Fall Speed", String.valueOf(configType.getFallSpeed())));
 
-            if (configType.getExplosionRadius() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Explosion Radius", String.valueOf(configType.getExplosionRadius())));
-            if (configType.getExplosionPower() > 1F)
-                tooltipComponents.add(IFlanItem.statLine("Explosion Power", String.valueOf(configType.getExplosionPower())));
-
-            if (configType.getNumBullets() > 1F)
+            if (configType.getNumBullets() != 1)
                 tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(configType.getNumBullets())));
-            if (configType.getBulletSpread() > 1F)
-                tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(configType.getBulletSpread())));
 
             if (configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers() || configType.isLockOnToVehicles())
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "LockOn"));
@@ -77,7 +64,6 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "Laser"));
             else if (configType.getWeaponType() == EnumWeaponType.MISSILE)
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "Unguided"));
-
         }
     }
 }

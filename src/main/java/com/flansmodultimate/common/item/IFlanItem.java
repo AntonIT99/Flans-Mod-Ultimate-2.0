@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfigs;
 import org.apache.commons.io.FilenameUtils;
@@ -21,7 +22,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         return FilenameUtils.getBaseName(getConfigType().getContentPack().getName());
     }
 
-    default void appendHoverText(@NotNull List<Component> tooltipComponents)
+    default void appendContentPackNameAndItemDescription(@NotNull List<Component> tooltipComponents)
     {
         if (BooleanUtils.isTrue(ModClientConfigs.showPackNameInItemDescriptions.get()) && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.GRAY));
@@ -33,12 +34,64 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         }
     }
 
-    /** Helper to render "BlueLabel: gray value" */
+    /**
+     * Helper to render "BlueLabel: gray value"
+     */
     static Component statLine(String label, String value)
     {
         return Component.literal(label)
-            .withStyle(ChatFormatting.BLUE)
-            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+                .withStyle(ChatFormatting.BLUE)
+                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    /**
+     * Slightly indented stat line for sub-values (vs Living / vs Player / etc.)
+     */
+    static Component indentedStatLine(String label, String value)
+    {
+        return Component.literal("  " + label)
+                .withStyle(ChatFormatting.DARK_AQUA)
+                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    /**
+     * Format floats nicely (no trailing .0 if not needed)
+     */
+    static String formatFloat(float f)
+    {
+        if (Math.abs(f - Math.round(f)) < 0.0001F)
+        {
+            return Integer.toString(Math.round(f));
+        }
+        return String.format(java.util.Locale.ROOT, "%.2f", f);
+    }
+
+    /**
+     * Adds explosion damage stats avoiding redundant lines.
+     */
+    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseName)
+    {
+        final float EPS = 0.0001f;
+
+        // Always show base explosion damage if it's meaningful
+        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage())));
+
+        // vs Living: only show if explicitly configured AND different from base
+        if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving())));
+
+        // vs Player: inherits from vsLiving
+        if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer())));
+
+        // vs Vehicle: inherits from base
+        if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles())));
+
+        // vs Plane: inherits from vsVehicle
+        if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes())));
     }
 }

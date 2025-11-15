@@ -24,6 +24,7 @@ import com.flansmodultimate.network.PacketGunFire;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.PacketPlaySound;
 import net.minecraftforge.fml.LogicalSide;
+import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -190,8 +191,8 @@ public record GunItemBehavior(GunItem item)
                 }
                 else if (shootableItem instanceof GrenadeItem grenadeItem)
                 {
-                    //throw grenade
-                    grenadeItem.throwGrenade(level, player);
+                    // throw grenade
+                    level.addFreshEntity(grenadeItem.getGrenade(player));
                     handler.shooting(false);
                 }
 
@@ -275,9 +276,9 @@ public record GunItemBehavior(GunItem item)
                     ItemStack newBulletStack = inventory.getItem(bestSlot);
 
                     //Unload the old magazine (Drop an item if it is required and the player is not in creative mode)
-                    if (bulletStack != null && bulletStack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType().getDropItemOnReload() != null && !isCreative && bulletStack.getDamageValue() == bulletStack.getMaxDamage())
+                    if (bulletStack != null && bulletStack.getItem() instanceof ShootableItem shootableItem && !isCreative && bulletStack.getDamageValue() == bulletStack.getMaxDamage())
                     {
-                        dropItem(level, entity, ((ShootableItem) bulletStack.getItem()).getConfigType().getDropItemOnReload(), ((ShootableItem) bulletStack.getItem()).getConfigType().getContentPack());
+                        dropItem(level, entity, shootableItem.getConfigType().getDropItemOnReload(), shootableItem.getConfigType().getContentPack());
                     }
 
                     //The magazine was not finished, pull it out and give it back to the player or, failing that, drop it
@@ -320,7 +321,7 @@ public record GunItemBehavior(GunItem item)
      */
     public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
     {
-        if (!level.isClientSide && itemName != null)
+        if (!level.isClientSide && StringUtils.isNotBlank(itemName))
         {
             ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
             entity.spawnAtLocation(dropStack, 0.5F);
