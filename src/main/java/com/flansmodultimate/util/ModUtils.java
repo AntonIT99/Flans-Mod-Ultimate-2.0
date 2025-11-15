@@ -60,6 +60,11 @@ public final class ModUtils
         return level.getEntities(except, box, e -> e != null && e.isAlive() && (except == null || e != except) && (filter == null || filter.test(e)));
     }
 
+    public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box)
+    {
+        return queryEntities(level, except, box);
+    }
+
     public static <T extends Entity> List<T> queryEntities(Level level, @Nullable Entity except, AABB box, Class<T> type, @Nullable Predicate<? super T> filter)
     {
         return level.getEntitiesOfClass(type, box, e -> e != null && e.isAlive() && (except == null || e != except) && (filter == null || filter.test(e)));
@@ -85,6 +90,11 @@ public final class ModUtils
     public static List<LivingEntity> queryLivingEntities(Level level, AABB box, @Nullable Predicate<? super LivingEntity> filter)
     {
         return queryEntities(level, null, box, LivingEntity.class, filter);
+    }
+
+    public static List<LivingEntity> queryLivingEntities(Level level, @Nullable Entity except, AABB box)
+    {
+        return queryEntities(level, except, box, LivingEntity.class, null);
     }
 
     public static List<LivingEntity> queryLivingEntities(Level level, AABB box)

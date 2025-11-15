@@ -73,6 +73,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float hitBoxSize = 0.5F;
     /** Upon hitting a block or entity, the grenade will be deflected and its motion will be multiplied by this constant */
+    @Getter
     protected float bounciness = 0.9F;
 
     //Damage to hit entities
@@ -80,6 +81,7 @@ public abstract class ShootableType extends InfoType
     protected float damage = 1.0F;
     @Getter
     protected float damageVsLiving = 1.0F;
+    @Getter
     protected float damageVsPlayer = 1.0F;
     protected float damageVsEntity = 1.0F;
     @Getter

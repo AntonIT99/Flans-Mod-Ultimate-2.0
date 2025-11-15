@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -96,7 +97,7 @@ public class Grenade extends Shootable
     protected boolean detonated;
     /** For deployable bags */
     protected int numUsesRemaining;
-    protected boolean isThisStick;
+    @Nullable
     protected Entity stickedEntity;
     protected int motionTime;
 
@@ -382,7 +383,16 @@ public class Grenade extends Shootable
             handleDetonationConditions(level);
             updateStuckState(level);
             handlePhysicsAndMotion(level);
-            //TODO: continue implementing
+            updateStickToThrower();
+            handleStickToEntity(level);
+            handleStickToDriveable(level);
+            handleStickToEntityAfter(level);
+            handleImpactDamage(level);
+            applyGravity();
+
+            // Fire glitch fix
+            if (level.isClientSide)
+                clearFire();
         }
         catch (Exception ex)
         {
@@ -487,7 +497,7 @@ public class Grenade extends Shootable
         double rLivingSq = grenadeType.getLivingProximityTrigger() * grenadeType.getLivingProximityTrigger();
         double rDriveableSq = grenadeType.getDriveableProximityTrigger() * grenadeType.getDriveableProximityTrigger();
 
-        List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius), null);
+        List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
         for (Entity entity : list)
         {
             if (entity == thrower && (tickCount < 10 || !ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()))
@@ -602,12 +612,210 @@ public class Grenade extends Shootable
 
         // Bounce / stick if not penetrating blocks
         if (!grenadeType.isPenetratesBlocks())
-            handleBounceAndSticky(posVec, motionVec, hit, state);
+            handleBounceAndSticky(posVec, motionVec, hit);
     }
 
-    protected void handleBounceAndSticky(Vec3 posVec, Vec3 motionVec, BlockHitResult hit, BlockState state)
+    protected void handleBounceAndSticky(Vec3 posVec, Vec3 motionVec, BlockHitResult hit)
     {
-        //TODO
+        Vector3f posVecF = new Vector3f((float) posVec.x, (float) posVec.y, (float) posVec.z);
+        Vector3f motVecF = new Vector3f((float) motionVec.x, (float) motionVec.y, (float) motionVec.z);
+        Vector3f hitVecF = new Vector3f((float) hit.getLocation().x, (float) hit.getLocation().y, (float) hit.getLocation().z);
+
+        // Motion pre- / post-hit
+        Vector3f preHitMotVec = Vector3f.sub(hitVecF, posVecF, null);
+        Vector3f postHitMotVec = Vector3f.sub(motVecF, preHitMotVec, null);
+
+        // Reflect based on side hit
+        Direction sideHit = hit.getDirection();
+        switch (sideHit)
+        {
+            case UP, DOWN:
+                postHitMotVec.setY(-postHitMotVec.getY());
+                break;
+            case EAST, WEST:
+                postHitMotVec.setX(-postHitMotVec.getX());
+                break;
+            case NORTH, SOUTH:
+                postHitMotVec.setZ(-postHitMotVec.getZ());
+                break;
+        }
+
+        float motLenSq = motVecF.lengthSquared();
+        float lambda = Math.abs(motLenSq) < 0.00000001F ? 1F : postHitMotVec.length() / (float) Math.sqrt(motLenSq);
+
+        // Scale by bounciness
+        postHitMotVec.scale(grenadeType.getBounciness() / 2F);
+
+        // Move grenade along path including reflection
+        setPos(getX() + preHitMotVec.x + postHitMotVec.x, getY() + preHitMotVec.y + postHitMotVec.y, getZ() + preHitMotVec.z + postHitMotVec.z);
+
+        // Set motion
+        Vec3 newMotion = new Vec3(postHitMotVec.x / lambda, postHitMotVec.y / lambda, postHitMotVec.z / lambda);
+        setDeltaMovement(newMotion);
+
+        // Random spin
+        float randomSpinner = 90F;
+        angularVelocity = angularVelocity.add(random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner);
+
+        // Slow spin based on motion
+        angularVelocity.scale(newMotion.lengthSqr());
+
+        // Bounce sound
+        if (newMotion.lengthSqr() > 0.01D)
+        {
+            FlansMod.getSoundEvent(grenadeType.getBounceSound()).ifPresent(soundEvent ->
+                playSound(soundEvent.get(), 1.0F, 1.2F / (random.nextFloat() * 0.2F + 0.9F)));
+        }
+
+        // Sticky grenades
+        if (grenadeType.isSticky())
+        {
+            // Move to exact hit position
+            setPos(hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
+
+            // Stop all motion
+            setDeltaMovement(Vec3.ZERO);
+            angularVelocity = new Vec3(0, 0, 0);
+
+            float yaw = axes.getYaw();
+            switch (hit.getDirection())
+            {
+                case DOWN:
+                    axes.setAngles(yaw, 180F, 0F);
+                    break;
+                case UP:
+                    axes.setAngles(yaw, 0F, 0F);
+                    break;
+                case NORTH:
+                    axes.setAngles(270F, 90F, 0F);
+                    axes.rotateLocalYaw(yaw);
+                    break;
+                case SOUTH:
+                    axes.setAngles(90F, 90F, 0F);
+                    axes.rotateLocalYaw(yaw);
+                    break;
+                case WEST:
+                    axes.setAngles(180F, 90F, 0F);
+                    axes.rotateLocalYaw(yaw);
+                    break;
+                case EAST:
+                    axes.setAngles(0F, 90F, 0F);
+                    axes.rotateLocalYaw(yaw);
+                    break;
+            }
+
+            stuck = true;
+            BlockPos bp = hit.getBlockPos();
+            stuckToX = bp.getX();
+            stuckToY = bp.getY();
+            stuckToZ = bp.getZ();
+        }
+    }
+
+    protected void updateStickToThrower() {
+        if (!grenadeType.isStickToThrower())
+            return;
+
+        if (thrower == null || !thrower.isAlive())
+            discard();
+        else
+            setPos(thrower.getX(), thrower.getY(), thrower.getZ());
+    }
+
+    protected void handleStickToEntity(Level level)
+    {
+        if (!grenadeType.isStickToEntity())
+            return;
+
+        if (stickedEntity == null && !stuck)
+        {
+            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream()
+                .findFirst()
+                .ifPresent(entity -> stickedEntity = entity);
+        }
+
+        if (stickedEntity != null)
+        {
+            setPos(stickedEntity.getX(), stickedEntity.getY(), stickedEntity.getZ());
+            if (!stickedEntity.isAlive())
+                discard();
+        }
+    }
+
+    protected void handleStickToDriveable(Level level)
+    {
+        if (!grenadeType.isStickToDriveable())
+            return;
+
+        if (stickedEntity == null && !stuck)
+        {
+            ModUtils.queryEntities(level, null, getBoundingBox(), Driveable.class, null).stream()
+                .findFirst()
+                .ifPresent(driveable -> stickedEntity = driveable);
+        }
+
+        if (stickedEntity != null)
+        {
+            setPos(stickedEntity.getX(), stickedEntity.getY(), stickedEntity.getZ());
+            if (!stickedEntity.isAlive())
+                discard();
+        }
+    }
+
+    protected void handleStickToEntityAfter(Level level)
+    {
+        if (!grenadeType.isStickToEntityAfter())
+            return;
+
+        if (stickedEntity == null)
+        {
+            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream()
+                .findFirst()
+                .ifPresent(entity -> {
+                    if (grenadeType.isAllowStickSound())
+                    {
+                        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), grenadeType.getStickSoundRange(), level.dimension(), grenadeType.getStickSound(), true);
+                    }
+                    stickedEntity = entity;
+                });
+        }
+
+        if (stickedEntity != null)
+        {
+            setPos(stickedEntity.getX(), stickedEntity.getY(), stickedEntity.getZ());
+            if (!stickedEntity.isAlive())
+                discard();
+        }
+    }
+
+    protected void handleImpactDamage(Level level)
+    {
+        if (stuck || (grenadeType.getDamageVsLiving() <= 0F && grenadeType.getDamageVsPlayer() <= 0F))
+            return;
+
+        double speedSq = velocity.lengthSqr();
+        if (speedSq < 0.01D)
+            return;
+
+        List<LivingEntity> list = ModUtils.queryLivingEntities(level, this, getBoundingBox());
+        for (LivingEntity living : list)
+        {
+            if (living == thrower && tickCount < 10)
+                continue;
+
+            float damageFactor = (float) (speedSq * 3.0D);
+
+            if (living instanceof Player player)
+                player.hurt(getGrenadeDamage(), grenadeType.getDamageVsPlayer() * damageFactor);
+            else
+                living.hurt(getGrenadeDamage(), grenadeType.getDamageVsLiving() * damageFactor);
+        }
+    }
+
+    protected void applyGravity()
+    {
+        double gravity = 9.81D / 400D * grenadeType.getFallSpeed();
+        setDeltaMovement(velocity.x, velocity.y - gravity, velocity.z);
     }
 
     public void detonate()

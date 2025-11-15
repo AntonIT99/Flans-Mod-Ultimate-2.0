@@ -39,18 +39,25 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean penetratesBlocks;
     /** The sound to play upon bouncing off a surface */
+    @Getter
     protected String bounceSound = StringUtils.EMPTY;
     /** Whether the grenade should stick to surfaces */
+    @Getter
     protected boolean sticky;
     /** If true, then the grenade will stick to the player that threw it. Used to make delayed self destruct weapons */
     @Getter
     protected boolean stickToThrower;
-
+    @Getter
     protected boolean stickToEntity;
+    @Getter
     protected boolean stickToDriveable;
+    @Getter
     protected boolean stickToEntityAfter;
+    @Getter
     protected boolean allowStickSound;
+    @Getter
     protected int stickSoundRange = 10;
+    @Getter
     protected String stickSound;
 
     @Getter
