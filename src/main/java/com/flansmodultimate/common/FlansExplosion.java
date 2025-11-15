@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class FlansExplosion extends Explosion
 {
@@ -212,8 +211,7 @@ public class FlansExplosion extends Explosion
 
             AABB aabb = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
 
-            Predicate<Entity> selector = e -> !e.isRemoved() && !(e == this.explosive && !canDamageSelf) && !e.ignoreExplosion();
-            List<Entity> entities = ModUtils.queryEntities(level, explosive, aabb, selector);
+            List<Entity> entities = ModUtils.queryEntities(level, null, aabb, e -> !e.isRemoved() && !(e == this.explosive && !canDamageSelf) && !e.ignoreExplosion());
 
             // Forge hook (still exists)
             ForgeEventFactory.onExplosionDetonate(level, this, entities, radius2);

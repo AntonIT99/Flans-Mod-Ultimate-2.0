@@ -24,7 +24,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
 
     protected String shortname = StringUtils.EMPTY;
-    protected Vec3 velocity;
+    protected Vec3 velocity = new Vec3(0, 0, 0);
 
     protected Shootable(EntityType<?> entityType, Level level)
     {

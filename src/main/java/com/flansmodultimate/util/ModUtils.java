@@ -62,7 +62,7 @@ public final class ModUtils
 
     public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box)
     {
-        return queryEntities(level, except, box);
+        return queryEntities(level, except, box, null);
     }
 
     public static <T extends Entity> List<T> queryEntities(Level level, @Nullable Entity except, AABB box, Class<T> type, @Nullable Predicate<? super T> filter)

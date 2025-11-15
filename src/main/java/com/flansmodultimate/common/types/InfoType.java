@@ -76,7 +76,7 @@ public abstract class InfoType
     protected String overlayName = StringUtils.EMPTY;
     @Getter
     protected float modelScale = 1F;
-    protected int colour = 0xFFFFFF;
+    protected int colour = 0xFFFFFF; //TODO implement colour
     protected String[] recipeLine;
     protected char[][] recipeGrid = new char[3][3];
     protected int recipeOutput = 1;

@@ -19,8 +19,11 @@ public class GrenadeRenderer extends FlansEntityRenderer<Grenade>
     @Override
     public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
     {
-        //TODO: Read scaling from models
+        //TODO: Read scaling from model classes
         pose.pushPose();
+
+        float scale = grenade.getGrenadeType().getModelScale();
+        pose.scale(scale, scale, scale);
 
         if (grenade.isStuck())
         {

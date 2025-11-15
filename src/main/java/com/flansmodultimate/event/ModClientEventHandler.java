@@ -9,6 +9,7 @@ import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
+import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.common.item.ICustomRendererItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import lombok.AccessLevel;
@@ -127,6 +128,7 @@ public final class ModClientEventHandler
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
         event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
+        event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
     }
 
     @SubscribeEvent

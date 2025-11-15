@@ -65,7 +65,6 @@ public class Grenade extends Shootable
 {
     public static final int RENDER_DISTANCE = 64;
 
-    @Getter
     protected GrenadeType grenadeType;
 
     /** The entity that threw them */
@@ -169,10 +168,19 @@ public class Grenade extends Shootable
         thrower = entity;
     }
 
+    public GrenadeType getGrenadeType()
+    {
+        if (grenadeType == null && InfoType.getInfoType(getShortName()) instanceof GrenadeType gType)
+        {
+            grenadeType = gType;
+        }
+        return grenadeType;
+    }
+
     @Override
     public boolean isPickable()
     {
-        return !isRemoved() && grenadeType.isDeployableBag();
+        return !isRemoved() && getGrenadeType().isDeployableBag();
     }
 
     @Override
@@ -415,7 +423,8 @@ public class Grenade extends Shootable
             motionTime--;
     }
 
-    protected boolean shouldDespawn() {
+    protected boolean shouldDespawn()
+    {
         if (grenadeType.getDespawnTime() > 0 && tickCount > grenadeType.getDespawnTime()) {
             detonated = true;
             return true;

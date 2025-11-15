@@ -14,7 +14,6 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
@@ -48,7 +47,6 @@ public class Bullet extends Shootable
 {
     public static final int RENDER_DISTANCE = 128;
 
-    @Getter
     protected BulletType bulletType;
 
     protected FiredShot firedShot;
@@ -79,6 +77,15 @@ public class Bullet extends Shootable
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
+    }
+
+    public BulletType getBulletType()
+    {
+        if (bulletType == null && InfoType.getInfoType(getShortName()) instanceof BulletType bType)
+        {
+            bulletType = bType;
+        }
+        return bulletType;
     }
 
     @Override
