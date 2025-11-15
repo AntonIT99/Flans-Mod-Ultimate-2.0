@@ -88,7 +88,7 @@ public abstract class ShootableType extends InfoType
     protected int fuse = 0;
     /** After this time the grenade will despawn quietly. 0 means no despawn time */
     @Getter
-    protected int despawnTime = 0;
+    protected int despawnTime = 0; //TODO: Global Configuration Option
     /** If true, then this will explode upon hitting something */
     @Getter
     protected boolean explodeOnImpact;

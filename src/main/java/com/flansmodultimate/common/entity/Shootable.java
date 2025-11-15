@@ -1,11 +1,15 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.types.ShootableType;
+import lombok.EqualsAndHashCode;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,6 +20,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
@@ -109,6 +114,13 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         super.onSyncedDataUpdated(key);
         if (HITBOX_SIZE.equals(key))
             refreshDimensions();
+    }
+
+    @Override
+    @NotNull
+    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    {
+        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

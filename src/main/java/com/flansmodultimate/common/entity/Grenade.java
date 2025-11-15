@@ -358,7 +358,7 @@ public class Grenade extends Shootable
             }
         }
 
-        return InteractionResult.sidedSuccess(level().isClientSide);
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
@@ -425,7 +425,8 @@ public class Grenade extends Shootable
 
     protected boolean shouldDespawn()
     {
-        if (grenadeType.getDespawnTime() > 0 && tickCount > grenadeType.getDespawnTime()) {
+        if (grenadeType.getDespawnTime() > 0 && tickCount > grenadeType.getDespawnTime())
+        {
             detonated = true;
             return true;
         }
@@ -492,7 +493,7 @@ public class Grenade extends Shootable
 
     protected void handleDetonationConditions(Level level)
     {
-        if (!level.isClientSide)
+        if (level.isClientSide)
             return;
 
         // Fuse
@@ -583,10 +584,10 @@ public class Grenade extends Shootable
         Vec3 posVec = position(); // current position
         Vec3 nextPosVec = posVec.add(velocity);
 
-        HitResult result = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+        BlockHitResult result = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 
         if (result.getType() == HitResult.Type.BLOCK)
-            handleBlockHit(level, posVec, velocity, (BlockHitResult) result);
+            handleBlockHit(level, posVec, velocity, result);
         else
             // No hit, just move
             setPos(getX() + velocity.x, getY() + velocity.y, getZ() + velocity.z);
@@ -825,7 +826,8 @@ public class Grenade extends Shootable
     protected void applyGravity()
     {
         double gravity = 9.81D / 400D * grenadeType.getFallSpeed();
-        setDeltaMovement(velocity.x, velocity.y - gravity, velocity.z);
+        velocity = velocity.add(0, - gravity, 0);
+        setDeltaMovement(velocity);
     }
 
     public void detonate()
@@ -866,9 +868,7 @@ public class Grenade extends Shootable
 
     protected void spreadFire(Level level)
     {
-        if (level.isClientSide)
-            return;
-        if (grenadeType.getFireRadius() <= 0.1F)
+        if (level.isClientSide || grenadeType.getFireRadius() <= 0.1F)
             return;
 
         float fireRadius = grenadeType.getFireRadius();
@@ -905,9 +905,7 @@ public class Grenade extends Shootable
 
     protected void dropItemsOnDetonate(Level level)
     {
-        if (level.isClientSide)
-            return;
-        if (StringUtils.isBlank(grenadeType.getDropItemOnDetonate()))
+        if (level.isClientSide || StringUtils.isBlank(grenadeType.getDropItemOnDetonate()))
             return;
 
         ItemStack dropStack = InfoType.getRecipeElement(grenadeType.getDropItemOnDetonate(), grenadeType.getContentPack());
@@ -917,7 +915,8 @@ public class Grenade extends Shootable
 
     protected void handleSmokeAndFlashbang(Level level)
     {
-        if (grenadeType.getSmokeTime() > 0) {
+        if (grenadeType.getSmokeTime() > 0)
+        {
             smoking = true;
             smokeTime = grenadeType.getSmokeTime();
         }
@@ -926,9 +925,7 @@ public class Grenade extends Shootable
             discard();
         }
 
-        if (!grenadeType.isFlashBang())
-            return;
-        if (level.isClientSide)
+        if (!grenadeType.isFlashBang() || level.isClientSide)
             return;
 
         double smokeRadius = grenadeType.getSmokeRadius();
