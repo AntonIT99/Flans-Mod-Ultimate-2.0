@@ -150,12 +150,9 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
             // Delay the next throw / weapon fire / whatnot
             data.setShootTimeRight(configType.getThrowDelay());
 
-            // Create a new grenade entity
-            Grenade grenade = getGrenade(player);
-
             // Spawn the entity server side
             if (!level.isClientSide)
-                level.addFreshEntity(grenade);
+                level.addFreshEntity(getGrenade(player));
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)

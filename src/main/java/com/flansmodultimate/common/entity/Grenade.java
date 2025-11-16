@@ -292,12 +292,6 @@ public class Grenade extends Shootable
     }
 
     @Override
-    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport)
-    {
-        // no-op: ignore vanilla client interpolation
-    }
-
-    @Override
     @NotNull
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
@@ -662,6 +656,7 @@ public class Grenade extends Shootable
 
         // Set motion
         Vec3 newMotion = new Vec3(postHitMotVec.x / lambda, postHitMotVec.y / lambda, postHitMotVec.z / lambda);
+        velocity = newMotion;
         setDeltaMovement(newMotion);
 
         // Random spin
@@ -669,7 +664,7 @@ public class Grenade extends Shootable
         angularVelocity = angularVelocity.add(random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner);
 
         // Slow spin based on motion
-        angularVelocity.scale(newMotion.lengthSqr());
+        angularVelocity = angularVelocity.scale(newMotion.lengthSqr());
 
         // Bounce sound
         if (newMotion.lengthSqr() > 0.01D)
@@ -685,7 +680,8 @@ public class Grenade extends Shootable
             setPos(hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
 
             // Stop all motion
-            setDeltaMovement(Vec3.ZERO);
+            velocity = Vec3.ZERO;
+            setDeltaMovement(velocity);
             angularVelocity = new Vec3(0, 0, 0);
 
             float yaw = axes.getYaw();

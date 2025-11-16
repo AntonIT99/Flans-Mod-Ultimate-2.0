@@ -78,6 +78,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     @Override
     public void setDeltaMovement(@NotNull Vec3 deltaMovement)
     {
+        //TODO: remove client check -> interpolation should be prevented by lerpMotion
         //Does not allow the client to change the velocity from outside this class
         if (!level().isClientSide)
         {
@@ -91,6 +92,18 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void setDeltaMovement(double dx, double dy, double dz)
     {
         setDeltaMovement(new Vec3(dx, dy, dz));
+    }
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport)
+    {
+        // no-op: ignore vanilla client interpolation
+    }
+
+    @Override
+    public void lerpMotion(double pX, double pY, double pZ)
+    {
+        // no-op: ignore vanilla client interpolation
     }
 
     @Override
