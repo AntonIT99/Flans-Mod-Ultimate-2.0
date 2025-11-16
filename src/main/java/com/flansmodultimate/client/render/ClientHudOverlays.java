@@ -80,19 +80,18 @@ public final class ClientHudOverlays
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
     }
 
+    //TODO: FMU Style hit marker
     /** Draw the hit marker at screen center with fade-out alpha. */
     public static void renderHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
     {
         if (ModClient.getHitMarkerTime() <= 0)
             return;
 
-        // Fade like old code: ((time - 10 + pt) / 10)^+ clamped
         float a = Math.max((ModClient.getHitMarkerTime() - 10.0f + partialTick) / 10.0f, 0.0f);
 
-        // 9x9 region from a 16x16 texture, centered
         int w = 9;
         int h = 9;
-        int x = sw / 2 - 4;
+        int x = sw / 2 - 5;
         int y = sh / 2 - 4;
 
         RenderSystem.enableBlend();
@@ -172,7 +171,7 @@ public final class ClientHudOverlays
         }
     }
 
-    //TODO
+    //TODO: implement these methods
     public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
     public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
     public static void renderVehicleDebug(GuiGraphics g, int sw, int sh) {}
