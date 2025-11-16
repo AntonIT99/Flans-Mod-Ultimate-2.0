@@ -419,7 +419,12 @@ public class Grenade extends Shootable
 
     protected boolean shouldDespawn()
     {
-        if (grenadeType.getDespawnTime() > 0 && tickCount > grenadeType.getDespawnTime())
+        int despawnTime = grenadeType.getDespawnTime();
+        if (ModCommonConfigs.grenadeDefaultRespawnTime.get() > 0)
+        {
+            despawnTime = Math.min(despawnTime, ModCommonConfigs.grenadeDefaultRespawnTime.get());
+        }
+        if (despawnTime > 0 && tickCount > despawnTime)
         {
             detonated = true;
             return true;
@@ -655,19 +660,18 @@ public class Grenade extends Shootable
         setPos(getX() + preHitMotVec.x + postHitMotVec.x, getY() + preHitMotVec.y + postHitMotVec.y, getZ() + preHitMotVec.z + postHitMotVec.z);
 
         // Set motion
-        Vec3 newMotion = new Vec3(postHitMotVec.x / lambda, postHitMotVec.y / lambda, postHitMotVec.z / lambda);
-        velocity = newMotion;
-        setDeltaMovement(newMotion);
+        velocity = new Vec3(postHitMotVec.x / lambda, postHitMotVec.y / lambda, postHitMotVec.z / lambda);
+        setDeltaMovement(velocity);
 
         // Random spin
         float randomSpinner = 90F;
         angularVelocity = angularVelocity.add(random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner);
 
         // Slow spin based on motion
-        angularVelocity = angularVelocity.scale(newMotion.lengthSqr());
+        angularVelocity = angularVelocity.scale(velocity.lengthSqr());
 
         // Bounce sound
-        if (newMotion.lengthSqr() > 0.01D)
+        if (velocity.lengthSqr() > 0.01D)
         {
             FlansMod.getSoundEvent(grenadeType.getBounceSound()).ifPresent(soundEvent ->
                 playSound(soundEvent.get(), 1.0F, 1.2F / (random.nextFloat() * 0.2F + 0.9F)));

@@ -119,7 +119,6 @@ public class Bullet extends Shootable
 
     public void setVelocity(Vec3 velocity)
     {
-        this.velocity = velocity;
         setDeltaMovement(velocity);
 
         // only initialize rotation once (same behavior as the old check)
@@ -315,7 +314,7 @@ public class Bullet extends Shootable
 
     protected void updatePositionAndOrientation() {
         // move by current velocity
-        setPos(getX() + velocity.x, getY() + velocity.y, getZ() + velocity.z);
+        setPos(position().add(velocity));
 
         // recompute target angles from motion (same math as 1.7.10)
         float horiz = (float) Math.hypot(velocity.x, velocity.z);

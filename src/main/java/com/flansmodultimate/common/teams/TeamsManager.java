@@ -6,7 +6,7 @@ public class TeamsManager
 {
     private static boolean voting = false;
     @Getter
-    private static boolean explosions = true;
+    private static boolean explosionsBreakBlocks = true; //TODO: default value through config?
     private static boolean roundsGenerator = false;
     private static boolean driveablesBreakBlocks = true;
     private static boolean bombsEnabled = true;
@@ -15,7 +15,7 @@ public class TeamsManager
     private static boolean forceAdventureMode = true;
     private static boolean canBreakGuns = true;
     @Getter
-    private static boolean canBreakGlass = true;
+    private static boolean canBreakGlass = true; //TODO: default value through config?
     private static boolean armourDrops = true;
     private static boolean vehiclesNeedFuel = true;
     private static boolean overrideHunger = true;
