@@ -21,7 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
+public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 

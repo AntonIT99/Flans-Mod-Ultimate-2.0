@@ -95,7 +95,7 @@ public record GunItemBehavior(GunItem item)
             return false;
         Entity hit = ehr.getEntity();
 
-        return hit instanceof Grenade grenade && grenade.getGrenadeType().isDeployableBag();
+        return hit instanceof Grenade grenade && grenade.getConfigType().isDeployableBag();
 
         //TODO uncomment
         /*return hit instanceof EntityFlagpole

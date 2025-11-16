@@ -20,17 +20,15 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
+public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<GunType>
 {
     protected static final EntityDataAccessor<String> GUN_TYPE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.STRING);
 
     protected static List<DeployedGun> mgs = new ArrayList<>();
 
-    /** Client and Server side */
-    protected String shortname = StringUtils.EMPTY;
-
     @Getter
     protected GunType configType;
+    protected String shortname = StringUtils.EMPTY;
     protected int blockX;
     protected int blockY;
     protected int blockZ;

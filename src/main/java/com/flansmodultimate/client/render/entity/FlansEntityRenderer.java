@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render.entity;
 import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.LegacyTransformApplier;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -25,16 +26,16 @@ public class FlansEntityRenderer<T extends Entity> extends EntityRenderer<T>
     }
 
     @Override
-    public void render(@NotNull T entity, float entityYaw, float partialTick, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull T entity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int packedLight)
     {
-        if (!(entity instanceof IFlanEntity flanEntity))
+        if (!(entity instanceof IFlanEntity<?> flanEntity))
             return;
 
         IModelBase model = ModelCache.getOrLoadTypeModel(flanEntity.getShortName());
         if (model != null)
         {
-            VertexConsumer vertexconsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(entity)));
-            model.renderToBuffer(pose, vertexconsumer, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            VertexConsumer vertexConsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(entity)));
+            LegacyTransformApplier.renderModel(model, flanEntity.getConfigType(), poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
         }
     }
 
@@ -42,7 +43,7 @@ public class FlansEntityRenderer<T extends Entity> extends EntityRenderer<T>
     @NotNull
     public ResourceLocation getTextureLocation(@NotNull T entity)
     {
-        if (entity instanceof IFlanEntity flanEntity)
+        if (entity instanceof IFlanEntity<?> flanEntity)
         {
             InfoType infoType = InfoType.getInfoType(flanEntity.getShortName());
             if (infoType != null)

@@ -3,6 +3,9 @@ package com.flansmodultimate.util;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -21,11 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ClassLoaderUtils
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ClassLoaderUtils
 {
-    private ClassLoaderUtils() {}
+    @Getter
+    private static final Map<String, List<TransformOp>> transforms = new HashMap<>();
 
     private static final CustomClassLoader classLoader = new CustomClassLoader();
 
@@ -178,8 +184,9 @@ public class ClassLoaderUtils
         ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
         ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(map));
         ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
+        ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor);
 
-        cr.accept(superAndOwnerFixVisitor, 0);
+        cr.accept(transformVisitor, 0);
         return cw.toByteArray();
     }
 

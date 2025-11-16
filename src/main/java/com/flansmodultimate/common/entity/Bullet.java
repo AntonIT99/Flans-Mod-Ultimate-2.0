@@ -39,12 +39,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Bullet extends Shootable
+public class Bullet extends Shootable implements IFlanEntity<BulletType>
 {
     public static final int RENDER_DISTANCE = 128;
 
-    protected BulletType bulletType;
-
+    protected BulletType configType;
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
@@ -68,20 +67,20 @@ public class Bullet extends Shootable
         super(FlansMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         ticksInAir = 0;
-        bulletType = firedShot.getBulletType();
+        configType = firedShot.getBulletType();
 
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
     }
 
-    public BulletType getBulletType()
+    public BulletType getConfigType()
     {
-        if (bulletType == null && InfoType.getInfoType(getShortName()) instanceof BulletType bType)
+        if (configType == null && InfoType.getInfoType(getShortName()) instanceof BulletType bType)
         {
-            bulletType = bType;
+            configType = bType;
         }
-        return bulletType;
+        return configType;
     }
 
     @Override
@@ -134,19 +133,19 @@ public class Bullet extends Shootable
      */
     protected void getLockOnTarget(Level level)
     {
-        if (bulletType.isLockOnToPlanes() || bulletType.isLockOnToVehicles() || bulletType.isLockOnToMechas() || bulletType.isLockOnToLivings() || bulletType.isLockOnToPlayers())
+        if (configType.isLockOnToPlanes() || configType.isLockOnToVehicles() || configType.isLockOnToMechas() || configType.isLockOnToLivings() || configType.isLockOnToPlayers())
         {
             Vector3f motionVec = new Vector3f(velocity);
             Entity closestEntity = null;
-            float closestAngle = bulletType.getMaxLockOnAngle() * (float) Math.PI / 180F;
+            float closestAngle = configType.getMaxLockOnAngle() * (float) Math.PI / 180F;
 
             for (Entity entity : ModUtils.queryEntitiesInRange(level, this, BulletType.LOCK_ON_RANGE, null))
             {
-                if (bulletType.isLockOnToMechas() && entity instanceof Mecha
-                    || bulletType.isLockOnToVehicles() && entity instanceof Vehicle
-                    || bulletType.isLockOnToPlanes() && entity instanceof Plane
-                    || bulletType.isLockOnToPlayers() && entity instanceof Player
-                    || bulletType.isLockOnToLivings() && entity instanceof LivingEntity)
+                if (configType.isLockOnToMechas() && entity instanceof Mecha
+                    || configType.isLockOnToVehicles() && entity instanceof Vehicle
+                    || configType.isLockOnToPlanes() && entity instanceof Plane
+                    || configType.isLockOnToPlayers() && entity instanceof Player
+                    || configType.isLockOnToLivings() && entity instanceof LivingEntity)
                 {
                     Vector3f relPosVec = new Vector3f(entity.getX() - getX(), entity.getY() - getY(), entity.getZ() - getZ());
                     float angle = Math.abs(Vector3f.angle(motionVec, relPosVec));
@@ -189,8 +188,8 @@ public class Bullet extends Shootable
             super.readSpawnData(buf);
             setOrientation(velocity);
             if (InfoType.getInfoType(shortname) instanceof BulletType type)
-                bulletType = type;
-            if (bulletType == null)
+                configType = type;
+            if (configType == null)
             {
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
@@ -235,7 +234,7 @@ public class Bullet extends Shootable
 
         if (infoType instanceof BulletType bType)
         {
-            bulletType = bType;
+            configType = bType;
 
             if (tag.contains("fireablegun", Tag.TAG_COMPOUND))
             {
@@ -261,7 +260,7 @@ public class Bullet extends Shootable
                 checkforuuids = true;
             }
 
-            firedShot = new FiredShot(fireablegun, bulletType);
+            firedShot = new FiredShot(fireablegun, configType);
         }
         else
         {
@@ -306,7 +305,7 @@ public class Bullet extends Shootable
     protected void applyDragAndGravity()
     {
         float drag = isInWater() ? 0.8F : 0.99F;
-        float gravity = 0.02F * bulletType.getFallSpeed();
+        float gravity = 0.02F * configType.getFallSpeed();
 
         velocity = velocity.scale(drag).add(0.0, -gravity, 0.0);
         setDeltaMovement(velocity);
@@ -335,7 +334,7 @@ public class Bullet extends Shootable
     {
         if (isInWater())
             spawnWaterBubbles(level);
-        if (bulletType.isTrailParticles())
+        if (configType.isTrailParticles())
             spawnParticles(level);
         playFlybyIfClose(level);
     }
@@ -366,7 +365,7 @@ public class Bullet extends Shootable
             double y = yo + dY * i + random.nextGaussian() * spread;
             double z = zo + dZ * i + random.nextGaussian() * spread;
 
-            ParticleHelper.spawnFromString(level, bulletType.getTrailParticleType(), x, y, z);
+            ParticleHelper.spawnFromString(level, configType.getTrailParticleType(), x, y, z);
         }
     }
 
@@ -390,7 +389,7 @@ public class Bullet extends Shootable
     {
         ticksInAir++;
 
-        if (bulletType.getFuse() > 0 && ticksInAir > bulletType.getFuse() && !isRemoved())
+        if (configType.getFuse() > 0 && ticksInAir > configType.getFuse() && !isRemoved())
         {
             //TODO: detonate() instead of discard()?
             discard();
@@ -448,7 +447,7 @@ public class Bullet extends Shootable
         Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
 
         float angle = Math.abs(Vector3f.angle(motion, toTarget));
-        double pull = angle * bulletType.getLockOnForce();
+        double pull = angle * configType.getLockOnForce();
         pull = pull * pull;
 
         velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
@@ -481,11 +480,11 @@ public class Bullet extends Shootable
 
         if (player != null)
         {
-            firedShot = new FiredShot(firedShot.getFireableGun(), bulletType, shooter, player);
+            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, player);
         }
         else
         {
-            firedShot = new FiredShot(firedShot.getFireableGun(), bulletType, shooter, (shooter instanceof LivingEntity living) ? living : null);
+            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, (shooter instanceof LivingEntity living) ? living : null);
         }
     }
 }

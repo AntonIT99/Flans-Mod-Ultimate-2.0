@@ -17,22 +17,18 @@ public class BulletRenderer extends FlansEntityRenderer<Bullet>
     }
 
     @Override
-    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
     {
-        //TODO: Read scaling from models
-        pose.pushPose();
-
-        float scale = bullet.getBulletType().getModelScale();
-        pose.scale(scale, scale, scale);
+        poseStack.pushPose();
 
         float yaw   = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
         float pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
 
-        pose.mulPose(Axis.YP.rotationDegrees(yaw));
-        pose.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
 
-        super.render(bullet, entityYaw, partialTicks, pose, buf, light);
+        super.render(bullet, entityYaw, partialTicks, poseStack, buf, light);
 
-        pose.popPose();
+        poseStack.popPose();
     }
 }

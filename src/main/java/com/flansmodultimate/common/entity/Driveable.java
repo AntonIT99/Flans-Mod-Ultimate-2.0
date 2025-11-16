@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.common.raytracing.DriveableHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
+import lombok.Getter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,11 +17,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
+public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<InfoType>
 {
     protected static final EntityDataAccessor<String> DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
-    /** Client and Server side */
+    @Getter
+    protected BulletType configType;
     protected String shortname = StringUtils.EMPTY;
 
     protected Driveable(EntityType<?> entityType, Level level)

@@ -5,12 +5,12 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.LegacyTransformApplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
-import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.LogicalSide;
@@ -86,17 +86,12 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     @Override
     public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        //TODO: find a way to get scaling from inside render() method
         IModelBase model = ModelCache.getOrLoadTypeModel(configType);
         if (model == null)
             return;
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(configType.getTexture()));
-
-        for (ModelRenderer part : model.getBoxList())
-        {
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F, configType.getModelScale());
-        }
+        LegacyTransformApplier.renderModel(model, configType, poseStack, vertexConsumer, packedLight, packedOverlay, 1F, 1F, 1F, 1F);
     }
 
     @Override

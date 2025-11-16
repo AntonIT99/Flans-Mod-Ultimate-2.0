@@ -61,12 +61,11 @@ import java.util.List;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Grenade extends Shootable
+public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 {
     public static final int RENDER_DISTANCE = 64;
 
-    protected GrenadeType grenadeType;
-
+    protected GrenadeType configType;
     /** The entity that threw them */
     @Nullable
     protected LivingEntity thrower;
@@ -118,7 +117,7 @@ public class Grenade extends Shootable
     {
         super(FlansMod.grenadeEntity.get(), level, grenadeType);
         setPos(position);
-        this.grenadeType = grenadeType;
+        this.configType = grenadeType;
         numUsesRemaining = grenadeType.getNumUses();
 
         //Set the grenade to be facing the way the Pitch and Yaw variables define
@@ -168,19 +167,19 @@ public class Grenade extends Shootable
         thrower = entity;
     }
 
-    public GrenadeType getGrenadeType()
+    public GrenadeType getConfigType()
     {
-        if (grenadeType == null && InfoType.getInfoType(getShortName()) instanceof GrenadeType gType)
+        if (configType == null && InfoType.getInfoType(getShortName()) instanceof GrenadeType gType)
         {
-            grenadeType = gType;
+            configType = gType;
         }
-        return grenadeType;
+        return configType;
     }
 
     @Override
     public boolean isPickable()
     {
-        return !isRemoved() && getGrenadeType().isDeployableBag();
+        return !isRemoved() && getConfigType().isDeployableBag();
     }
 
     @Override
@@ -217,8 +216,8 @@ public class Grenade extends Shootable
         {
             super.readSpawnData(buf);
             if (InfoType.getInfoType(shortname) instanceof GrenadeType type)
-                grenadeType = type;
-            if (grenadeType == null)
+                configType = type;
+            if (configType == null)
             {
                 FlansMod.log.warn("Unknown grenade type {}, discarding.", shortname);
                 discard();
@@ -239,7 +238,7 @@ public class Grenade extends Shootable
             yRotO = yaw;
             xRotO = pitch;
             axes.setAngles(yaw, pitch, 0F);
-            if (grenadeType.isSpinWhenThrown())
+            if (configType.isSpinWhenThrown())
                 angularVelocity = new Vec3(0, 0, 10);
         }
         catch (Exception e)
@@ -256,7 +255,7 @@ public class Grenade extends Shootable
         InfoType infoType = InfoType.getInfoType(shortname);
         if (infoType instanceof GrenadeType gType)
         {
-            grenadeType = gType;
+            configType = gType;
 
             if (tag.hasUUID("thrower"))
                 throwerUUID = tag.getUUID("thrower");
@@ -295,7 +294,7 @@ public class Grenade extends Shootable
     @NotNull
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
-        if (!grenadeType.isDeployableBag())
+        if (!configType.isDeployableBag())
             return InteractionResult.PASS;
 
         Level level = level();
@@ -305,9 +304,9 @@ public class Grenade extends Shootable
             boolean used = false;
 
             // Heal
-            if (grenadeType.getHealAmount() > 0 && player.getHealth() < player.getMaxHealth())
+            if (configType.getHealAmount() > 0 && player.getHealth() < player.getMaxHealth())
             {
-                player.heal(grenadeType.getHealAmount());
+                player.heal(configType.getHealAmount());
 
                 // Hearts around the player (server side)
                 ServerLevel serverLevel = (ServerLevel) level;
@@ -316,7 +315,7 @@ public class Grenade extends Shootable
             }
 
             // Potion effects
-            for (MobEffectInstance effect : grenadeType.getPotionEffects())
+            for (MobEffectInstance effect : configType.getPotionEffects())
             {
                 // clone to avoid sharing mutable instances
                 player.addEffect(new MobEffectInstance(effect));
@@ -324,7 +323,7 @@ public class Grenade extends Shootable
             }
 
             // Ammo give
-            if (grenadeType.getNumClips() > 0)
+            if (configType.getNumClips() > 0)
             {
                 ItemStack inHand = player.getItemInHand(hand);
                 if (!inHand.isEmpty() && inHand.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isAllowRearm())
@@ -335,7 +334,7 @@ public class Grenade extends Shootable
                     if (!ammoTypes.isEmpty())
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
-                        int numToGive = Math.min(bulletToGive.getMaxStackSize(), grenadeType.getNumClips() * gunType.getNumAmmoItemsInGun(inHand));
+                        int numToGive = Math.min(bulletToGive.getMaxStackSize(), configType.getNumClips() * gunType.getNumAmmoItemsInGun(inHand));
                         Item item = ItemFactory.createItem(bulletToGive);
                         if (item != null && player.getInventory().add(new ItemStack(item, numToGive)))
                             used = true;
@@ -358,7 +357,7 @@ public class Grenade extends Shootable
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (grenadeType.isDetonateWhenShot())
+        if (configType.isDetonateWhenShot())
         {
             detonate();
             return true;
@@ -419,7 +418,7 @@ public class Grenade extends Shootable
 
     protected boolean shouldDespawn()
     {
-        int despawnTime = grenadeType.getDespawnTime();
+        int despawnTime = configType.getDespawnTime();
         if (ModCommonConfigs.grenadeDefaultRespawnTime.get() > 0)
         {
             despawnTime = Math.min(despawnTime, ModCommonConfigs.grenadeDefaultRespawnTime.get());
@@ -433,7 +432,7 @@ public class Grenade extends Shootable
     }
 
     protected void spawnTrailParticles(Level level) {
-        if (!level.isClientSide || !grenadeType.isTrailParticles())
+        if (!level.isClientSide || !configType.isTrailParticles())
             return;
 
         // Using previous position fields (Mojmap: xo, yo, zo)
@@ -446,7 +445,7 @@ public class Grenade extends Shootable
             double px = xo + dx * i;
             double py = yo + dy * i;
             double pz = zo + dz * i;
-            ParticleHelper.spawnFromString((ClientLevel) level, grenadeType.getTrailParticleType(), px, py, pz);
+            ParticleHelper.spawnFromString((ClientLevel) level, configType.getTrailParticleType(), px, py, pz);
         }
     }
 
@@ -456,10 +455,10 @@ public class Grenade extends Shootable
 
         // Send flak packet to spawn particles
         if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
         // Apply potion effects in smoke radius
-        double r = grenadeType.getSmokeRadius();
+        double r = configType.getSmokeRadius();
         double rSq = r * r;
         AABB aabb = getBoundingBox().inflate(r, r, r);
 
@@ -482,7 +481,7 @@ public class Grenade extends Shootable
             }
 
             if (smokeThem)
-                grenadeType.getSmokeEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
+                configType.getSmokeEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
         }
 
         smokeTime--;
@@ -496,16 +495,16 @@ public class Grenade extends Shootable
             return;
 
         // Fuse
-        if (grenadeType.getFuse() > 0 && tickCount > grenadeType.getFuse())
+        if (configType.getFuse() > 0 && tickCount > configType.getFuse())
             detonate();
 
         // Proximity triggers
-        if (grenadeType.getLivingProximityTrigger() <= 0 && grenadeType.getDriveableProximityTrigger() <= 0)
+        if (configType.getLivingProximityTrigger() <= 0 && configType.getDriveableProximityTrigger() <= 0)
             return;
 
-        float checkRadius = Math.max(grenadeType.getLivingProximityTrigger(), grenadeType.getDriveableProximityTrigger());
-        double rLivingSq = grenadeType.getLivingProximityTrigger() * grenadeType.getLivingProximityTrigger();
-        double rDriveableSq = grenadeType.getDriveableProximityTrigger() * grenadeType.getDriveableProximityTrigger();
+        float checkRadius = Math.max(configType.getLivingProximityTrigger(), configType.getDriveableProximityTrigger());
+        double rLivingSq = configType.getLivingProximityTrigger() * configType.getLivingProximityTrigger();
+        double rDriveableSq = configType.getDriveableProximityTrigger() * configType.getDriveableProximityTrigger();
 
         List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
         for (Entity entity : list)
@@ -550,8 +549,8 @@ public class Grenade extends Shootable
         if (event.isCanceled())
             return false;
 
-        if (getGrenadeType().getDamageToTriggerer() > 0F)
-            entity.hurt(getGrenadeDamage(), getGrenadeType().getDamageToTriggerer());
+        if (getConfigType().getDamageToTriggerer() > 0F)
+            entity.hurt(getGrenadeDamage(), getConfigType().getDamageToTriggerer());
 
         detonate();
         return true;
@@ -569,7 +568,7 @@ public class Grenade extends Shootable
 
     protected void handlePhysicsAndMotion(Level level)
     {
-        if (stuck || grenadeType.isStickToThrower())
+        if (stuck || configType.isStickToThrower())
             return;
 
         // Update rotation from axes + angular velocity
@@ -608,20 +607,20 @@ public class Grenade extends Shootable
         }
 
         // Explode on impact
-        if (grenadeType.isExplodeOnImpact())
+        if (configType.isExplodeOnImpact())
         {
             detonate();
             return;
         }
 
         // Break glass
-        if (grenadeType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
+        if (configType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
         {
             ModUtils.destroyBlock((ServerLevel) level, blockPos, thrower, false);
         }
 
         // Bounce / stick if not penetrating blocks
-        if (!grenadeType.isPenetratesBlocks())
+        if (!configType.isPenetratesBlocks())
             handleBounceAndSticky(posVec, motionVec, hit);
     }
 
@@ -654,7 +653,7 @@ public class Grenade extends Shootable
         float lambda = Math.abs(motLenSq) < 0.00000001F ? 1F : postHitMotVec.length() / (float) Math.sqrt(motLenSq);
 
         // Scale by bounciness
-        postHitMotVec.scale(grenadeType.getBounciness() / 2F);
+        postHitMotVec.scale(configType.getBounciness() / 2F);
 
         // Move grenade along path including reflection
         setPos(getX() + preHitMotVec.x + postHitMotVec.x, getY() + preHitMotVec.y + postHitMotVec.y, getZ() + preHitMotVec.z + postHitMotVec.z);
@@ -673,12 +672,12 @@ public class Grenade extends Shootable
         // Bounce sound
         if (velocity.lengthSqr() > 0.01D)
         {
-            FlansMod.getSoundEvent(grenadeType.getBounceSound()).ifPresent(soundEvent ->
+            FlansMod.getSoundEvent(configType.getBounceSound()).ifPresent(soundEvent ->
                 playSound(soundEvent.get(), 1.0F, 1.2F / (random.nextFloat() * 0.2F + 0.9F)));
         }
 
         // Sticky grenades
-        if (grenadeType.isSticky())
+        if (configType.isSticky())
         {
             // Move to exact hit position
             setPos(hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
@@ -724,7 +723,7 @@ public class Grenade extends Shootable
     }
 
     protected void updateStickToThrower() {
-        if (!grenadeType.isStickToThrower())
+        if (!configType.isStickToThrower())
             return;
 
         if (thrower == null || !thrower.isAlive())
@@ -735,7 +734,7 @@ public class Grenade extends Shootable
 
     protected void handleStickToEntity(Level level)
     {
-        if (!grenadeType.isStickToEntity())
+        if (!configType.isStickToEntity())
             return;
 
         if (stickedEntity == null && !stuck)
@@ -755,7 +754,7 @@ public class Grenade extends Shootable
 
     protected void handleStickToDriveable(Level level)
     {
-        if (!grenadeType.isStickToDriveable())
+        if (!configType.isStickToDriveable())
             return;
 
         if (stickedEntity == null && !stuck)
@@ -775,7 +774,7 @@ public class Grenade extends Shootable
 
     protected void handleStickToEntityAfter(Level level)
     {
-        if (!grenadeType.isStickToEntityAfter())
+        if (!configType.isStickToEntityAfter())
             return;
 
         if (stickedEntity == null)
@@ -783,9 +782,9 @@ public class Grenade extends Shootable
             ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream()
                 .findFirst()
                 .ifPresent(entity -> {
-                    if (grenadeType.isAllowStickSound())
+                    if (configType.isAllowStickSound())
                     {
-                        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), grenadeType.getStickSoundRange(), level.dimension(), grenadeType.getStickSound(), true);
+                        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), configType.getStickSoundRange(), level.dimension(), configType.getStickSound(), true);
                     }
                     stickedEntity = entity;
                 });
@@ -801,7 +800,7 @@ public class Grenade extends Shootable
 
     protected void handleImpactDamage(Level level)
     {
-        if (stuck || (grenadeType.getDamage().getDamageVsLiving() <= 0F && grenadeType.getDamage().getDamageVsPlayer() <= 0F))
+        if (stuck || (configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
         double speedSq = velocity.lengthSqr();
@@ -817,15 +816,15 @@ public class Grenade extends Shootable
             float damageFactor = (float) (speedSq * 3.0D);
 
             if (living instanceof Player player)
-                player.hurt(getGrenadeDamage(), grenadeType.getDamage().getDamageVsPlayer() * damageFactor);
+                player.hurt(getGrenadeDamage(), configType.getDamage().getDamageVsPlayer() * damageFactor);
             else
-                living.hurt(getGrenadeDamage(), grenadeType.getDamage().getDamageVsLiving() * damageFactor);
+                living.hurt(getGrenadeDamage(), configType.getDamage().getDamageVsLiving() * damageFactor);
         }
     }
 
     protected void applyGravity()
     {
-        double gravity = 9.81D / 400D * grenadeType.getFallSpeed();
+        double gravity = 9.81D / 400D * configType.getFallSpeed();
         velocity = velocity.add(0, - gravity, 0);
         setDeltaMovement(velocity);
     }
@@ -851,27 +850,27 @@ public class Grenade extends Shootable
 
     protected boolean shouldDetonateNow()
     {
-        return tickCount >= grenadeType.getPrimeDelay();
+        return tickCount >= configType.getPrimeDelay();
     }
 
     protected void playDetonateSound(Level level)
     {
-        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), grenadeType.getDetonateSound(), true);
+        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), configType.getDetonateSound(), true);
     }
 
     protected void doExplosion(Level level) {
-        if (level.isClientSide || grenadeType.getExplosionRadius() <= 0.1F)
+        if (level.isClientSide || configType.getExplosionRadius() <= 0.1F)
             return;
 
-        new FlansExplosion(level(), this, thrower, grenadeType, getX(), getY(), getZ(), false);
+        new FlansExplosion(level(), this, thrower, configType, getX(), getY(), getZ(), false);
     }
 
     protected void spreadFire(Level level)
     {
-        if (level.isClientSide || grenadeType.getFireRadius() <= 0.1F)
+        if (level.isClientSide || configType.getFireRadius() <= 0.1F)
             return;
 
-        float fireRadius = grenadeType.getFireRadius();
+        float fireRadius = configType.getFireRadius();
         for (float i = -fireRadius; i < fireRadius; i++)
         {
             for (float j = -fireRadius; j < fireRadius; j++)
@@ -897,61 +896,61 @@ public class Grenade extends Shootable
         if (!level.isClientSide)
             return;
 
-        for (int i = 0; i < grenadeType.getExplodeParticles(); i++)
+        for (int i = 0; i < configType.getExplodeParticles(); i++)
         {
-            ParticleHelper.spawnFromString((ClientLevel) level, grenadeType.getExplodeParticleType(), getX(), getY(), getZ(), random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
+            ParticleHelper.spawnFromString((ClientLevel) level, configType.getExplodeParticleType(), getX(), getY(), getZ(), random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
         }
     }
 
     protected void dropItemsOnDetonate(Level level)
     {
-        if (level.isClientSide || StringUtils.isBlank(grenadeType.getDropItemOnDetonate()))
+        if (level.isClientSide || StringUtils.isBlank(configType.getDropItemOnDetonate()))
             return;
 
-        ItemStack dropStack = InfoType.getRecipeElement(grenadeType.getDropItemOnDetonate(), grenadeType.getContentPack());
+        ItemStack dropStack = InfoType.getRecipeElement(configType.getDropItemOnDetonate(), configType.getContentPack());
         if (dropStack != null && !dropStack.isEmpty())
             spawnAtLocation(dropStack, 1.0F);
     }
 
     protected void handleSmokeAndFlashbang(Level level)
     {
-        if (grenadeType.getSmokeTime() > 0)
+        if (configType.getSmokeTime() > 0)
         {
             smoking = true;
-            smokeTime = grenadeType.getSmokeTime();
+            smokeTime = configType.getSmokeTime();
         }
         else if (!level.isClientSide)
         {
             discard();
         }
 
-        if (!grenadeType.isFlashBang() || level.isClientSide)
+        if (!configType.isFlashBang() || level.isClientSide)
             return;
 
-        double smokeRadius = grenadeType.getSmokeRadius();
+        double smokeRadius = configType.getSmokeRadius();
         AABB aabb = getBoundingBox().inflate(smokeRadius, smokeRadius, smokeRadius);
 
         List<LivingEntity> list = ModUtils.queryLivingEntities(level, aabb);
         for (LivingEntity entity : list)
         {
-            if (entity.distanceTo(this) < grenadeType.getFlashRange() && grenadeType.isFlashDamageEnable())
+            if (entity.distanceTo(this) < configType.getFlashRange() && configType.isFlashDamageEnable())
             {
-                if (grenadeType.isFlashEffects())
+                if (configType.isFlashEffects())
                 {
-                    MobEffect effect = MobEffect.byId(grenadeType.getFlashEffectsId());
+                    MobEffect effect = MobEffect.byId(configType.getFlashEffectsId());
                     if (effect != null)
-                        entity.addEffect(new MobEffectInstance(effect, grenadeType.getFlashEffectsDuration(), grenadeType.getFlashEffectsLevel()));
+                        entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel()));
                 }
-                entity.hurt(this.getGrenadeDamage(), grenadeType.getFlashDamage());
+                entity.hurt(this.getGrenadeDamage(), configType.getFlashDamage());
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, grenadeType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
-        if (grenadeType.isFlashSoundEnable())
-            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), grenadeType.getFlashSoundRange(), level.dimension(), grenadeType.getFlashSound(), true);
+        if (configType.isFlashSoundEnable())
+            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), configType.getFlashSoundRange(), level.dimension(), configType.getFlashSound(), true);
 
-        PacketHandler.sendToAllAround(new PacketFlashBang(grenadeType.getFlashTime()), getX(), getY(), getZ(), grenadeType.getFlashRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlashBang(configType.getFlashTime()), getX(), getY(), getZ(), configType.getFlashRange(), level.dimension());
 
         discard();
     }

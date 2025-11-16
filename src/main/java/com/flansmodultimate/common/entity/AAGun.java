@@ -1,8 +1,11 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.types.InfoType;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -13,11 +16,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<InfoType>
 {
     protected static final EntityDataAccessor<String> AA_TYPE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.STRING);
 
-    /** Client and Server side */
+    @Getter
+    protected InfoType configType;
     protected String shortname = StringUtils.EMPTY;
 
     public AAGun(EntityType<?> entityType, Level level)
@@ -62,13 +67,13 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag pCompound)
+    protected void readAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag pCompound)
+    protected void addAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }

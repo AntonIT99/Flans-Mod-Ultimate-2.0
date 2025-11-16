@@ -17,19 +17,15 @@ public class GrenadeRenderer extends FlansEntityRenderer<Grenade>
     }
 
     @Override
-    public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack pose, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
     {
-        //TODO: Read scaling from model classes
-        pose.pushPose();
-
-        float scale = grenade.getGrenadeType().getModelScale();
-        pose.scale(scale, scale, scale);
+        poseStack.pushPose();
 
         if (grenade.isStuck())
         {
-            pose.mulPose(Axis.YP.rotationDegrees(180F - grenade.getAxes().getYaw()));
-            pose.mulPose(Axis.ZP.rotationDegrees(grenade.getAxes().getPitch()));
-            pose.mulPose(Axis.XP.rotationDegrees(grenade.getAxes().getRoll()));
+            poseStack.mulPose(Axis.YP.rotationDegrees(180F - grenade.getAxes().getYaw()));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(grenade.getAxes().getPitch()));
+            poseStack.mulPose(Axis.XP.rotationDegrees(grenade.getAxes().getRoll()));
         }
         else
         {
@@ -41,13 +37,13 @@ public class GrenadeRenderer extends FlansEntityRenderer<Grenade>
             float pitch = grenade.xRotO + dPitch * partialTicks;
             float roll = grenade.getPrevRotationRoll() + dRoll * partialTicks;
 
-            pose.mulPose(Axis.YP.rotationDegrees(yaw));
-            pose.mulPose(Axis.ZP.rotationDegrees(pitch));
-            pose.mulPose(Axis.XP.rotationDegrees(roll));
+            poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
+            poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         }
 
-        super.render(grenade, entityYaw, partialTicks, pose, buf, light);
+        super.render(grenade, entityYaw, partialTicks, poseStack, buf, light);
 
-        pose.popPose();
+        poseStack.popPose();
     }
 }
