@@ -114,7 +114,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (model instanceof ModelGun modelGun)
         {
             VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(getPaintjob(stack).getTexture()));
-            modelGun.renderItem(stack, itemDisplayContext, poseStack, vertexConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+            int color = configType.getColour();
+            float red = (color >> 16 & 255) / 255F;
+            float green = (color >> 8 & 255) / 255F;
+            float blue = (color & 255) / 255F;
+            modelGun.renderItem(stack, itemDisplayContext, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
         }
     }
 

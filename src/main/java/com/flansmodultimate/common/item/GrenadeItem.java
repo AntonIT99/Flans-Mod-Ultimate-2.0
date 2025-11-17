@@ -91,7 +91,11 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
             return;
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(configType.getTexture()));
-        LegacyTransformApplier.renderModel(model, configType, poseStack, vertexConsumer, packedLight, packedOverlay, 1F, 1F, 1F, 1F);
+        int color = configType.getColour();
+        float red = (color >> 16 & 255) / 255F;
+        float green = (color >> 8 & 255) / 255F;
+        float blue = (color & 255) / 255F;
+        LegacyTransformApplier.renderModel(model, configType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
     }
 
     @Override

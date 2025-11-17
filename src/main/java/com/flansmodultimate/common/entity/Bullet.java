@@ -88,7 +88,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         this.firedShot = firedShot;
         ticksInAir = 0;
         configType = firedShot.getBulletType();
-
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
         currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
@@ -228,6 +227,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
             }
+            if (firedShot == null)
+                firedShot = new FiredShot((FireableGun) null, configType, null, null);
         }
         catch (Exception e)
         {

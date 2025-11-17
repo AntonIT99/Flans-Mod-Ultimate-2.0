@@ -1,0 +1,33 @@
+Entities:
+- AAGun - TODO
+- Bullet - WIP (FMU Features)
+- DeployableGun - TODO
+- Grenade - Done
+- Mecha - TODO
+- Plane - TODO
+- Vehicle - TODO
+
+
+Rendering:
+- Armor - Done
+- Bomb - Done
+- Bullet - Done
+- Grenade - Done
+- Gun - WIP
+- MG - TODO
+
+Items:
+- ArmorItem - Done
+- BulletItem - Done
+- GrenadeItem - Done
+- GunItem - WIP
+
+Types:
+- Armor - Done
+- Attachment - Done
+- Bullet - Done
+- Grenade - Done
+- Gun - Done
+- InfoType - Done
+
+

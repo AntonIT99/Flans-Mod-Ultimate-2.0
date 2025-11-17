@@ -11,6 +11,7 @@ import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.common.item.ICustomRendererItem;
+import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -137,6 +139,21 @@ public final class ModClientEventHandler
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event)
+    {
+        event.register((stack, tintIndex) -> {
+            Item item = stack.getItem();
+            if (item instanceof IFlanItem<?> flanItem)
+                return flanItem.getConfigType().getColour();
+            return 0xFFFFFFFF;
+        },
+        FlansMod.getItems().stream()
+            .map(RegistryObject::get)
+            .toArray(Item[]::new)
+        );
     }
 
     @SubscribeEvent

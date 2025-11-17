@@ -61,12 +61,12 @@ public class FireableGun
         this.spreadPattern = spreadPattern;
     }
 
-    private void multiplySpread(float multiplier)
+    public void multiplySpread(float multiplier)
     {
         spread *= multiplier;
     }
 
-    private void multiplyDamage(float multiplier)
+    public void multiplyDamage(float multiplier)
     {
         damage *= multiplier;
     }
