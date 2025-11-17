@@ -17,7 +17,7 @@ public class ModCommonConfigs
 
     // Gameplay Settings
     public static final ForgeConfigSpec.IntValue shootableDefaultRespawnTime;
-    public static final ForgeConfigSpec.BooleanValue grenadeProximityTriggerFriendlyFire;
+    public static final ForgeConfigSpec.BooleanValue shootableProximityTriggerFriendlyFire;
     public static final ForgeConfigSpec.DoubleValue vehicleWheelSeatExplosionModifier;
 
     static {
@@ -44,11 +44,11 @@ public class ModCommonConfigs
 
         BUILDER.push("Shootable Settings");
         //TODO: idea - teams command to enable / disable friendly fire
-        grenadeProximityTriggerFriendlyFire = BUILDER
-                .comment("Whether grenade proximity triggers can get triggered by the thrower and its allies")
-                .define("grenadeProximityTriggerFriendlyFire", true);
+        shootableProximityTriggerFriendlyFire = BUILDER
+                .comment("Whether proximity triggers can get triggered by the thrower and its allies")
+                .define("shootableProximityTriggerFriendlyFire", true);
         shootableDefaultRespawnTime = BUILDER
-                .comment("Max despawn time in ticks (0.05s) for grenades (inclusive land mines) and bullets entities. After this time the entity will despawn quietly. 0 means no despawn time.")
+                .comment("Max despawn time in ticks (0.05s). After this time the entity will despawn quietly. 0 means no despawn time.")
                 .defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         BUILDER.pop();
 

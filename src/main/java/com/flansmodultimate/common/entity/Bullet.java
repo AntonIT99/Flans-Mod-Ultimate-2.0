@@ -327,10 +327,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             handleSubmunitionsTimers(level);
             handleVLSTimer();
 
-            DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
-
             if (handleFuseAndLifetime(level))
                 return;
+
+            handleDetonationConditions(level, configType);
+
+            DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
 
             performRaytraceAndApplyHits(level);
             applyDragAndGravity();
@@ -419,7 +421,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
 
         if (configType.isDestroyOnDeploySubmunition())
-            detonate(level, position());
+            detonate(level);
     }
 
     protected void handleVLSTimer()
@@ -432,6 +434,20 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         if (vlsDelay > 0)
             vlsDelay--;
+    }
+
+    @Override
+    protected boolean isShooterEntity(Entity entity)
+    {
+        return entity == firedShot.getAttacker().orElse(null) || entity == firedShot.getCausingEntity().orElse(null);
+    }
+
+    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity) {
+        if (getConfigType().getDamageToTriggerer() > 0F)
+            entity.hurt(firedShot.getDamageSource(level, this), getConfigType().getDamageToTriggerer());
+
+        detonate(level);
+        return true;
     }
 
     protected void applyDragAndGravity()
@@ -523,13 +539,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         if (configType.getFuse() > 0 && ticksInAir > configType.getFuse() && !isRemoved())
         {
-            detonate(level, position());
+            detonate(level);
             discard();
             return true;
         }
         if (tickCount > bulletLife)
         {
-            detonate(level, position());
+            detonate(level);
             discard();
             return true;
         }
@@ -560,7 +576,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             currentPenetratingPower = ShootingHelper.onHit(level, hitPos, motion, firedShot, bulletHit, currentPenetratingPower, this);
             if (currentPenetratingPower <= 0F)
             {
-                detonate(level, hitPos.toVec3());
+                setPos(hitPos.toVec3());
+                detonate(level);
                 discard();
                 break;
             }
@@ -590,13 +607,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         setDeltaMovement(velocity);
     }
 
-    public void detonate(Level level, Vec3 detonatePos)
+    public void detonate(Level level)
     {
         if (tickCount < configType.getPrimeDelay() || detonated)
             return;
 
         detonated = true;
 
-        ShootingHelper.onDetonate(level, firedShot, detonatePos, this);
+        ShootingHelper.onDetonate(level, firedShot, position(), this);
     }
 }

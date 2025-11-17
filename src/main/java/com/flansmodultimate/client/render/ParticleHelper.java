@@ -24,7 +24,7 @@ public final class ParticleHelper
 {
     public static void spawnFromString(ClientLevel level, String s, double x, double y, double z)
     {
-        spawnFromString(level, s, x, y, z);
+        spawnFromString(level, s, x, y, z, 0, 0, 0);
     }
 
     public static void spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz)

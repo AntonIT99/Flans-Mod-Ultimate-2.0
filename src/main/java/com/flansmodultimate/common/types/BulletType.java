@@ -37,13 +37,6 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean setEntitiesOnFire = false;
 
-    /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
-    protected float livingProximityTrigger = -1F;
-    /** If > 0 this will act like a mine and explode when a driveable comes within this radius of the grenade */
-    protected float driveableProximityTrigger = -1F;
-    /** How much damage to deal to the entity that triggered it */
-    protected float damageToTriggerer = 0F;
-    /** Detonation will not occur until after this time */
     @Getter
     protected int primeDelay = 0;
     /** Particles given off in the detonation */
@@ -181,9 +174,6 @@ public class BulletType extends ShootableType
 
         bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
         bulletSpread = readValue(split, "Spread", bulletSpread, file);
-        livingProximityTrigger = readValue(split, "LivingProximityTrigger", livingProximityTrigger, file);
-        driveableProximityTrigger = readValue(split, "VehicleProximityTrigger", driveableProximityTrigger, file);
-        damageToTriggerer = readValue(split, "DamageToTriggerer", damageToTriggerer, file);
         primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
         primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
         explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);

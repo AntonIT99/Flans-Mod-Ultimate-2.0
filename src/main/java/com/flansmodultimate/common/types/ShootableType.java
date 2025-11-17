@@ -93,6 +93,16 @@ public abstract class ShootableType extends InfoType
     /** If true, then this will explode upon hitting something */
     @Getter
     protected boolean explodeOnImpact;
+    /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
+    @Getter
+    protected float livingProximityTrigger = -1F;
+    /** If > 0 this will act like a mine and explode when a driveable comes within this radius of the grenade */
+    @Getter
+    protected float driveableProximityTrigger = -1F;
+    /** How much damage to deal to the entity that triggered it */
+    @Getter
+    protected float damageToTriggerer = 0F;
+    /** Detonation will not occur until after this time */
 
     //Detonation Stuff
     /** The radius in which to spread fire */
@@ -117,6 +127,8 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
 
+
+    //Submunitions
     @Getter
     protected boolean hasSubmunitions;
     @Getter
@@ -129,6 +141,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected boolean destroyOnDeploySubmunition;
 
+    //Particles
     @Getter
     protected int smokeParticleCount = 0;
     @Getter
@@ -211,6 +224,9 @@ public abstract class ShootableType extends InfoType
         despawnTime = readValue(split, "DespawnTime", despawnTime, file);
         explodeOnImpact = readValue(split, "ExplodeOnImpact", explodeOnImpact, file);
         explodeOnImpact = readValue(split, "DetonateOnImpact", explodeOnImpact, file);
+        livingProximityTrigger = readValue(split, "LivingProximityTrigger", livingProximityTrigger, file);
+        driveableProximityTrigger = readValue(split, "VehicleProximityTrigger", driveableProximityTrigger, file);
+        damageToTriggerer = readValue(split, "DamageToTriggerer", damageToTriggerer, file);
 
         //Detonation
         fireRadius = readValue(split, "FireRadius", fireRadius, file);
@@ -302,8 +318,7 @@ public abstract class ShootableType extends InfoType
         return list;
     }
 
-    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack)
-    {
+    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack) {
         return getAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
     }
 }

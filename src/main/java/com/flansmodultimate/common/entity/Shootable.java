@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
@@ -17,9 +18,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData
@@ -149,10 +153,65 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         {
             despawnTime = Math.min(despawnTime, ModCommonConfigs.shootableDefaultRespawnTime.get());
         }
-        if (despawnTime > 0 && tickCount > despawnTime)
-        {
-            return true;
-        }
-        return false;
+        return despawnTime > 0 && tickCount > despawnTime;
     }
+
+    protected void handleDetonationConditions(Level level, ShootableType configType)
+    {
+        if (level.isClientSide)
+            return;
+
+        // Fuse
+        if (configType.getFuse() > 0 && tickCount > configType.getFuse())
+            detonate(level);
+
+        // Proximity triggers
+        if (configType.getLivingProximityTrigger() <= 0 && configType.getDriveableProximityTrigger() <= 0)
+            return;
+
+        float checkRadius = Math.max(configType.getLivingProximityTrigger(), configType.getDriveableProximityTrigger());
+        double rLivingSq = configType.getLivingProximityTrigger() * configType.getLivingProximityTrigger();
+        double rDriveableSq = configType.getDriveableProximityTrigger() * configType.getDriveableProximityTrigger();
+
+        List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
+        for (Entity entity : list)
+        {
+            if (isShooterEntity(entity) && (tickCount < 10 || !ModCommonConfigs.shootableProximityTriggerFriendlyFire.get()))
+                continue;
+
+            // Living proximity
+            if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
+            {
+                //TODO: Teams
+                //TODO: check team of thrower and check ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()
+
+                // Friendly fire check
+                /*if (TeamsManager.getInstance() != null
+                        && TeamsManager.getInstance().currentRound != null
+                        && entity instanceof ServerPlayer
+                        && player.isPresent()) {
+
+                    EntityDamageSourceFlan damageSource =
+                            new EntityDamageSourceFlan(getType().shortName, this, player.get(), getType());
+
+                    if (!TeamsManager.getInstance().currentRound.gametype.playerAttacked((ServerPlayer) entity, damageSource)) {
+                        continue;
+                    }
+                }*/
+
+                if (handleEntityInProximityTriggerRange(level, living))
+                    break;
+            }
+
+            // Driveable proximity
+            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq && handleEntityInProximityTriggerRange(level, driveable))
+                break;
+        }
+    }
+
+    protected abstract boolean isShooterEntity(Entity entity);
+
+    protected abstract boolean handleEntityInProximityTriggerRange(Level level, Entity entity);
+
+    protected abstract void detonate(Level level);
 }

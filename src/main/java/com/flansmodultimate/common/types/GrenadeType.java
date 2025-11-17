@@ -91,21 +91,12 @@ public class GrenadeType extends ShootableType
     protected int flashEffectsLevel;
 
     //Conditions for detonation
-    /** If > 0 this will act like a mine and explode when a living entity comes within this radius of the grenade */
-    @Getter
-    protected float livingProximityTrigger = -1F;
-    /** If > 0 this will act like a mine and explode when a driveable comes within this radius of the grenade */
-    @Getter
-    protected float driveableProximityTrigger = -1F;
-    /**  If true, then anything attacking this entity will detonate it */
     @Getter
     protected boolean detonateWhenShot;
     /** If true, then this grenade can be detonated by any remote detonator tool */
     @Getter
     protected boolean remote;
     /** How much damage to deal to the entity that triggered it */
-    @Getter
-    protected float damageToTriggerer;
 
     //Detonation
     /** Detonation will not occur until after this time */
@@ -173,9 +164,6 @@ public class GrenadeType extends ShootableType
         penetratesBlocks = readValue(split, "PenetratesBlocks", penetratesBlocks, file);
 
         bounceSound = readValue(split, "BounceSound", bounceSound, file);
-        livingProximityTrigger = readValue(split, "LivingProximityTrigger", livingProximityTrigger, file);
-        driveableProximityTrigger = readValue(split, "VehicleProximityTrigger", driveableProximityTrigger, file);
-        damageToTriggerer = readValue(split, "DamageToTriggerer", damageToTriggerer, file);
         primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
         primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
 

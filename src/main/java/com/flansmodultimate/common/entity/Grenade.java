@@ -15,7 +15,6 @@ import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketFlashBang;
@@ -359,7 +358,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     {
         if (configType.isDetonateWhenShot())
         {
-            detonate();
+            detonate(level());
             return true;
         }
         return false;
@@ -383,7 +382,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             decrementMotionTime();
             spawnTrailParticles(level);
             handleSmoke(level);
-            handleDetonationConditions(level);
+            handleDetonationConditions(level, configType);
             updateStuckState(level);
             handlePhysicsAndMotion(level);
             updateStickToThrower();
@@ -428,10 +427,10 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         for (int i = 0; i < 10; i++)
         {
-            double px = xo + dx * i;
-            double py = yo + dy * i;
-            double pz = zo + dz * i;
-            ParticleHelper.spawnFromString((ClientLevel) level, configType.getTrailParticleType(), px, py, pz);
+            double x = xo + dx * i;
+            double y = yo + dy * i;
+            double z = zo + dz * i;
+            ParticleHelper.spawnFromString((ClientLevel) level, configType.getTrailParticleType(), x, y, z);
         }
     }
 
@@ -475,60 +474,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             discard();
     }
 
-    protected void handleDetonationConditions(Level level)
+    @Override
+    protected boolean isShooterEntity(Entity entity)
     {
-        if (level.isClientSide)
-            return;
-
-        // Fuse
-        if (configType.getFuse() > 0 && tickCount > configType.getFuse())
-            detonate();
-
-        // Proximity triggers
-        if (configType.getLivingProximityTrigger() <= 0 && configType.getDriveableProximityTrigger() <= 0)
-            return;
-
-        float checkRadius = Math.max(configType.getLivingProximityTrigger(), configType.getDriveableProximityTrigger());
-        double rLivingSq = configType.getLivingProximityTrigger() * configType.getLivingProximityTrigger();
-        double rDriveableSq = configType.getDriveableProximityTrigger() * configType.getDriveableProximityTrigger();
-
-        List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
-        for (Entity entity : list)
-        {
-            if (entity == thrower && (tickCount < 10 || !ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()))
-                continue;
-
-            // Living proximity
-            if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
-            {
-                //TODO: Teams
-                //TODO: check team of thrower and check ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()
-
-                // Friendly fire check
-                /*if (TeamsManager.getInstance() != null
-                        && TeamsManager.getInstance().currentRound != null
-                        && entity instanceof ServerPlayer
-                        && player.isPresent()) {
-
-                    EntityDamageSourceFlan damageSource =
-                            new EntityDamageSourceFlan(getType().shortName, this, player.get(), getType());
-
-                    if (!TeamsManager.getInstance().currentRound.gametype.playerAttacked((ServerPlayer) entity, damageSource)) {
-                        continue;
-                    }
-                }*/
-
-                if (handleEntityInProximityTriggerRange(living))
-                    break;
-            }
-
-            // Driveable proximity
-            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq && handleEntityInProximityTriggerRange(driveable))
-                break;
-        }
+        return entity == thrower;
     }
 
-    protected boolean handleEntityInProximityTriggerRange(Entity entity)
+    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
     {
         GrenadeProximityEvent event = new GrenadeProximityEvent(this, entity);
         MinecraftForge.EVENT_BUS.post(event);
@@ -536,9 +488,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             return false;
 
         if (getConfigType().getDamageToTriggerer() > 0F)
-            entity.hurt(getGrenadeDamage(), getConfigType().getDamageToTriggerer());
+            entity.hurt(getDamageSource(), getConfigType().getDamageToTriggerer());
 
-        detonate();
+        detonate(level);
         return true;
     }
 
@@ -591,7 +543,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // Explode on impact
         if (configType.isExplodeOnImpact())
         {
-            detonate();
+            detonate(level);
             return;
         }
 
@@ -795,9 +747,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             float damageFactor = (float) (speedSq * 3.0D);
 
             if (living instanceof Player player)
-                player.hurt(getGrenadeDamage(), configType.getDamage().getDamageVsPlayer() * damageFactor);
+                player.hurt(getDamageSource(), configType.getDamage().getDamageVsPlayer() * damageFactor);
             else
-                living.hurt(getGrenadeDamage(), configType.getDamage().getDamageVsLiving() * damageFactor);
+                living.hurt(getDamageSource(), configType.getDamage().getDamageVsLiving() * damageFactor);
         }
     }
 
@@ -808,9 +760,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         setDeltaMovement(velocity);
     }
 
-    public void detonate()
+    public void detonate(Level level)
     {
-        Level level = level();
         //Do not detonate before grenade is primed
         if (!shouldDetonateNow())
             return;
@@ -920,7 +871,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     if (effect != null)
                         entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel()));
                 }
-                entity.hurt(this.getGrenadeDamage(), configType.getFlashDamage());
+                entity.hurt(getDamageSource(), configType.getFlashDamage());
             }
         }
 
@@ -934,7 +885,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         discard();
     }
 
-    protected DamageSource getGrenadeDamage()
+    protected DamageSource getDamageSource()
     {
         return FlansDamageSources.createDamageSource(level(), this, thrower, FlansDamageSources.FLANS_SHOOTABLE);
     }
