@@ -64,6 +64,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected boolean hasSetSubDelay = false;
     protected boolean hasSetVlsDelay = false;
     protected int vlsDelay = 0;
+    protected int soundTime = 0;
+    protected Vec3 lookVector;
+    protected Vec3 initialPos;
+    protected boolean hasSetLook = false;
 
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
     protected boolean checkforuuids;
@@ -301,7 +305,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     @Override
     public void tick()
     {
-        //TODO: add FMU logic
+        //TODO: add FMU logic (WIP)
         super.tick();
         Level level = level();
         try
@@ -324,13 +328,16 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             }
 
             updatePingOfShooter(level);
-            handleSubmunitionsTimers(level);
+            handleSubmunitionsTimers();
             handleVLSTimer();
+            initLookAndOrigin();
+            decrementSoundTime();
 
             if (handleFuseAndLifetime(level))
                 return;
 
             handleDetonationConditions(level, configType);
+            handleSubmunitions(level);
 
             DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
 
@@ -338,6 +345,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             applyDragAndGravity();
             updatePositionAndOrientation();
             applyHomingIfLocked();
+            updateTorpedoVelocity();
 
             if (level.isClientSide)
                 clientTick((ClientLevel) level);
@@ -381,7 +389,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = player.latency);
     }
 
-    protected void handleSubmunitionsTimers(Level level)
+    protected void handleSubmunitionsTimers()
     {
         if (!hasSetSubDelay && configType.isHasSubmunitions())
         {
@@ -392,7 +400,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         {
             submunitionDelay--;
         }
+    }
 
+    protected void handleSubmunitions(Level level)
+    {
         if (configType.isHasSubmunitions() && submunitionDelay < 0)
         {
             deploySubmunitions(level);
@@ -436,6 +447,23 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             vlsDelay--;
     }
 
+    protected void initLookAndOrigin()
+    {
+        LivingEntity owner = firedShot.getAttacker().orElse(null);
+        if (!hasSetLook && owner != null)
+        {
+            lookVector = owner.getLookAngle();
+            initialPos = owner.position();
+            hasSetLook = true;
+        }
+    }
+
+    protected void decrementSoundTime()
+    {
+        if (soundTime > 0)
+            soundTime--;
+    }
+
     @Override
     protected boolean isShooterEntity(Entity entity)
     {
@@ -452,10 +480,30 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected void applyDragAndGravity()
     {
-        float drag = isInWater() ? 0.8F : 0.99F;
-        float gravity = 0.02F * configType.getFallSpeed();
+        if (configType.isTorpedo())
+            return;
 
-        velocity = velocity.scale(drag).add(0.0, -gravity, 0.0);
+        float drag = isInWater() ? configType.getDragInWater() : configType.getDragInAir();
+        double gravity = 0.02 * configType.getFallSpeed();
+        velocity = velocity.scale(drag).add(0, -gravity, 0);
+        setDeltaMovement(velocity);
+    }
+
+    protected void updateTorpedoVelocity()
+    {
+        if (!configType.isTorpedo())
+            return;
+
+        if (isInWater())
+        {
+            Vec3 direction = velocity.normalize();
+            velocity = new Vec3(direction.x, velocity.y * 0.3, direction.z);
+        }
+        else
+        {
+            double gravity = 0.02 * configType.getFallSpeed();
+            velocity = velocity.add(0, -gravity, 0);
+        }
         setDeltaMovement(velocity);
     }
 

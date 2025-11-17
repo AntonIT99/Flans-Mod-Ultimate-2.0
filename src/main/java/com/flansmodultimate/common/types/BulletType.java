@@ -104,7 +104,9 @@ public class BulletType extends ShootableType
     @Getter
     protected List<MobEffectInstance> hitEffects = new ArrayList<>();
 
-    protected float dragInAir   = 0.99F;
+    @Getter
+    protected float dragInAir = 0.99F;
+    @Getter
     protected float dragInWater = 0.80F;
     protected boolean canSpotEntityDriveable;
     protected int maxRange = -1;
@@ -135,6 +137,7 @@ public class BulletType extends ShootableType
     protected String boostPhaseParticle;
     protected float trackPhaseSpeed = 2;
     protected float trackPhaseTurn = 0.2F;
+    @Getter
     protected boolean torpedo;
     protected boolean fancyDescription = true;
     @Getter

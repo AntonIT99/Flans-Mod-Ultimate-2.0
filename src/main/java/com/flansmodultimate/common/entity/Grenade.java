@@ -72,9 +72,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected LivingEntity thrower;
     @Nullable
     protected UUID throwerUUID;
-    /** This is to avoid players grenades teamkilling after they switch team */
-    //TODO: add Teams
-    //protected Team teamOfThrower;
     /** Yeah, I want my grenades to have fancy physics */
     @Getter
     protected RotatedAxes axes = new RotatedAxes();
