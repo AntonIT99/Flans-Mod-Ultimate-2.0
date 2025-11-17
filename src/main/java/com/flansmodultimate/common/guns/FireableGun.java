@@ -1,14 +1,18 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Class used for storing the properties of a gun
  */
 public class FireableGun
 {
-
     /** Spread of the bullets shot with this gun */
     @Getter
     private float spread;
@@ -27,24 +31,26 @@ public class FireableGun
     @Getter
     private final float damageAgainstVehicles;
 
-    /**
-     * @param type        InfoType of the gun
-     * @param damage      Damage of the gun
-     * @param spread      Bullet spread of the gun
-     * @param bulletSpeed Bullet speed of the gun (0 means instant/raytraced)
-     */
+    public FireableGun(GunType gunType, @NotNull ItemStack gunStack)
+    {
+        this(gunType, gunStack, null);
+    }
+
+    public FireableGun(GunType gunType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack)
+    {
+        this(gunType, gunType.getDamage(gunStack), gunType.getSpread(gunStack), gunType.getBulletSpeed(gunStack), gunType.getSpreadPattern(gunStack));
+        //TODO: shields & gloves & EnchantmentModule
+        /*if (otherHandStack != null && !otherHandStack.isEmpty() && otherHandStack.getItem() instanceof ShieldItem || otherHandStack.getItem() instanceof ItemGlove)
+        {
+            EnchantmentModule.modifyGun(fireableGun, player, otherHand);
+        }*/
+    }
+
     public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this(type, damage, damage, spread, bulletSpeed, spreadPattern);
     }
 
-    /**
-     * @param type                  InfoType of the gun
-     * @param damage                Damage of the gun
-     * @param damageAgainstVehicles	Damage of the gun against vehicles
-     * @param spread                Bullet spread of the gun
-     * @param bulletSpeed           Bullet speed of the gun (0 means instant/raytraced)
-     */
     public FireableGun(InfoType type, float damage, float damageAgainstVehicles, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this.type = type;
@@ -55,20 +61,12 @@ public class FireableGun
         this.spreadPattern = spreadPattern;
     }
 
-    /**
-     * @return the shortName of the InfoType of this gun
-     */
-    public String getShortName()
-    {
-        return type.getShortName();
-    }
-
-    public void multiplySpread(float multiplier)
+    private void multiplySpread(float multiplier)
     {
         spread *= multiplier;
     }
 
-    public void multiplyDamage(float multiplier)
+    private void multiplyDamage(float multiplier)
     {
         damage *= multiplier;
     }

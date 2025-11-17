@@ -12,10 +12,14 @@ import com.flansmodultimate.common.raytracing.BulletHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -47,8 +51,20 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
+    /** Stop repeat detonations */
+    protected boolean detonated = false;
     protected int ticksInAir;
+    protected boolean initialTick = true;
+    protected double initialSpeed;
     protected float currentPenetratingPower;
+    /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
+    protected int pingOfShooter = 0;
+
+    protected int submunitionDelay = 20;
+    protected boolean hasSetSubDelay = false;
+    protected boolean hasSetVlsDelay = false;
+    protected int vlsDelay = 0;
+
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
     protected boolean checkforuuids;
     protected UUID playeruuid;
@@ -133,32 +149,46 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
      */
     protected void getLockOnTarget(Level level)
     {
-        if (configType.isLockOnToPlanes() || configType.isLockOnToVehicles() || configType.isLockOnToMechas() || configType.isLockOnToLivings() || configType.isLockOnToPlayers())
-        {
-            Vector3f motionVec = new Vector3f(velocity);
-            Entity closestEntity = null;
-            float closestAngle = configType.getMaxLockOnAngle() * (float) Math.PI / 180F;
+        boolean lockPlanes = configType.isLockOnToPlanes();
+        boolean lockVehicles = configType.isLockOnToVehicles();
+        boolean lockMechas = configType.isLockOnToMechas();
+        boolean lockLivings = configType.isLockOnToLivings();
+        boolean lockPlayers = configType.isLockOnToPlayers();
 
-            for (Entity entity : ModUtils.queryEntitiesInRange(level, this, BulletType.LOCK_ON_RANGE, null))
+        if (!(lockPlanes || lockVehicles || lockMechas || lockLivings || lockPlayers))
+            return;
+
+        Vec3 motionDir = velocity.normalize();
+        float maxAngleRad = configType.getMaxLockOnAngle() * Mth.DEG_TO_RAD;
+        float minCosAllowed = Mth.cos(maxAngleRad);
+        double bestCos = -1.0; // cos in [-1, 1]; bigger = smaller angle
+        Entity closestEntity = null;
+
+        for (Entity entity : ModUtils.queryEntitiesInRange(level, this, BulletType.LOCK_ON_RANGE, null))
+        {
+            if (lockMechas && entity instanceof Mecha
+                || lockVehicles && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
+                || lockPlanes && (entity instanceof Plane || ModUtils.isPlaneLike(entity))
+                || lockPlayers && entity instanceof Player
+                || lockLivings && entity instanceof LivingEntity)
             {
-                if (configType.isLockOnToMechas() && entity instanceof Mecha
-                    || configType.isLockOnToVehicles() && entity instanceof Vehicle
-                    || configType.isLockOnToPlanes() && entity instanceof Plane
-                    || configType.isLockOnToPlayers() && entity instanceof Player
-                    || configType.isLockOnToLivings() && entity instanceof LivingEntity)
+                Vec3 relDir = entity.position().subtract(position()).normalize();
+                double cos = motionDir.dot(relDir);
+
+                if (cos >= minCosAllowed && cos > bestCos)
                 {
-                    Vector3f relPosVec = new Vector3f(entity.getX() - getX(), entity.getY() - getY(), entity.getZ() - getZ());
-                    float angle = Math.abs(Vector3f.angle(motionVec, relPosVec));
-                    if (angle < closestAngle)
-                    {
-                        closestEntity = entity;
-                        closestAngle = angle;
-                    }
+                    bestCos = cos;
+                    closestEntity = entity;
                 }
             }
+        }
 
-            if(closestEntity != null)
-                lockedOnTo = closestEntity;
+        if (closestEntity != null)
+        {
+            BulletLockOnEvent bulletLockOnEvent = new BulletLockOnEvent(this, closestEntity);
+            MinecraftForge.EVENT_BUS.post(bulletLockOnEvent);
+            if (!bulletLockOnEvent.isCanceled())
+                lockedOnTo = bulletLockOnEvent.getLockedOnTo();
         }
     }
 
@@ -260,7 +290,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 checkforuuids = true;
             }
 
-            firedShot = new FiredShot(fireablegun, configType);
+            firedShot = new FiredShot(fireablegun, configType, null, null);
         }
         else
         {
@@ -276,30 +306,132 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         Level level = level();
         try
         {
+            if (initialTick)
+            {
+                initialSpeed = velocity.length();
+                initialTick = false;
+            }
             if (!level.isClientSide && checkforuuids)
             {
                 resolvePendingUUIDs((ServerLevel) level);
                 checkforuuids = false;
             }
+            if (shouldDespawn(configType))
+            {
+                detonated = true;
+                discard();
+                return;
+            }
+
+            updatePingOfShooter(level);
+            handleSubmunitionsTimers(level);
+            handleVLSTimer();
 
             DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
-            if (handleFuseAndLifetime())
+
+            if (handleFuseAndLifetime(level))
                 return;
-            if (!level.isClientSide)
-                performRaytraceAndApplyHits(level);
+
+            performRaytraceAndApplyHits(level);
             applyDragAndGravity();
             updatePositionAndOrientation();
             applyHomingIfLocked();
 
             if (level.isClientSide)
                 clientTick((ClientLevel) level);
-
         }
         catch (Exception ex)
         {
             FlansMod.log.error("Error ticking bullet {}", shortname, ex);
             discard();
         }
+    }
+
+    protected void resolvePendingUUIDs(ServerLevel level)
+    {
+        ServerPlayer player = null;
+        Entity shooter = null;
+
+        if (playeruuid != null)
+        {
+            player = (ServerPlayer) level.getPlayerByUUID(playeruuid);
+            playeruuid = null;
+        }
+
+        if (shooteruuid != null)
+        {
+            if (player != null && shooteruuid.equals(player.getUUID()))
+                shooter = player;
+            else
+                shooter = level.getEntity(shooteruuid); // null if not loaded
+            shooteruuid = null;
+        }
+
+        if (player != null)
+            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, player);
+        else
+            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, (shooter instanceof LivingEntity living) ? living : null);
+    }
+
+    protected void updatePingOfShooter(Level level)
+    {
+        if (!level.isClientSide)
+            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = player.latency);
+    }
+
+    protected void handleSubmunitionsTimers(Level level)
+    {
+        if (!hasSetSubDelay && configType.isHasSubmunitions())
+        {
+            submunitionDelay = configType.getSubMunitionTimer();
+            hasSetSubDelay = true;
+        }
+        else if (configType.isHasSubmunitions())
+        {
+            submunitionDelay--;
+        }
+
+        if (configType.isHasSubmunitions() && submunitionDelay < 0)
+        {
+            deploySubmunitions(level);
+            submunitionDelay = 9001;
+        }
+    }
+
+    public void deploySubmunitions(Level level)
+    {
+        if (StringUtils.isBlank(configType.getSubmunition()))
+            return;
+
+        ShootableType submunitionType = ShootableType.getAmmoType(configType.getSubmunition(), configType.getContentPack()).orElse(null);
+        if (submunitionType == null)
+            return;
+
+        FiredShot submunitionShot = null;
+        if (submunitionType instanceof BulletType bulletType)
+            submunitionShot = new FiredShot(firedShot.getFireableGun(), bulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null));
+        Shootable shootable = ShootableFactory.createShootable(level, submunitionType, position(), velocity.normalize(), submunitionShot);
+
+
+        for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
+        {
+            level.addFreshEntity(shootable);
+        }
+
+        if (configType.isDestroyOnDeploySubmunition())
+            detonate(level, position());
+    }
+
+    protected void handleVLSTimer()
+    {
+        if (!hasSetVlsDelay && configType.isVls())
+        {
+            vlsDelay = configType.getVlsTime();
+            hasSetVlsDelay = true;
+        }
+
+        if (vlsDelay > 0)
+            vlsDelay--;
     }
 
     protected void applyDragAndGravity()
@@ -385,18 +517,19 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
     }
 
-    protected boolean handleFuseAndLifetime()
+    protected boolean handleFuseAndLifetime(Level level)
     {
         ticksInAir++;
 
         if (configType.getFuse() > 0 && ticksInAir > configType.getFuse() && !isRemoved())
         {
-            //TODO: detonate() instead of discard()?
+            detonate(level, position());
             discard();
             return true;
         }
         if (tickCount > bulletLife)
         {
+            detonate(level, position());
             discard();
             return true;
         }
@@ -405,8 +538,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected void performRaytraceAndApplyHits(Level level)
     {
-        Vector3f origin = new Vector3f((float)getX(), (float)getY(), (float)getZ());
-        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
+        if (level.isClientSide)
+            return;
+
+        Vector3f origin = new Vector3f(position());
+        Vector3f motion = new Vector3f(velocity);
         Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
         Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
 
@@ -419,12 +555,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         for (BulletHit bulletHit : hits)
         {
-            Vector3f hitPos = new Vector3f(origin.x + motion.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
+            Vector3f hitPos = new Vector3f(origin.x + velocity.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
 
             currentPenetratingPower = ShootingHelper.onHit(level, hitPos, motion, firedShot, bulletHit, currentPenetratingPower, this);
             if (currentPenetratingPower <= 0F)
             {
-                ShootingHelper.onDetonate(level, firedShot, hitPos, this);
+                detonate(level, hitPos.toVec3());
                 discard();
                 break;
             }
@@ -454,37 +590,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         setDeltaMovement(velocity);
     }
 
-    protected void resolvePendingUUIDs(ServerLevel level)
+    public void detonate(Level level, Vec3 detonatePos)
     {
-        ServerPlayer player = null;
-        Entity shooter = null;
+        if (tickCount < configType.getPrimeDelay() || detonated)
+            return;
 
-        if (playeruuid != null)
-        {
-            player = (ServerPlayer) level.getPlayerByUUID(playeruuid);
-            playeruuid = null;
-        }
+        detonated = true;
 
-        if (shooteruuid != null)
-        {
-            if (player != null && shooteruuid.equals(player.getUUID()))
-            {
-                shooter = player;
-            }
-            else
-            {
-                shooter = level.getEntity(shooteruuid); // null if not loaded
-            }
-            shooteruuid = null;
-        }
-
-        if (player != null)
-        {
-            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, player);
-        }
-        else
-        {
-            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, (shooter instanceof LivingEntity living) ? living : null);
-        }
+        ShootingHelper.onDetonate(level, firedShot, detonatePos, this);
     }
 }

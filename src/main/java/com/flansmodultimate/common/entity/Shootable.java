@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModCommonConfigs;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
@@ -139,5 +140,19 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         double vz = buf.readDouble();
         velocity = new Vec3(vx, vy, vz);
         setDeltaMovement(velocity);
+    }
+
+    protected boolean shouldDespawn(ShootableType configType)
+    {
+        int despawnTime = configType.getDespawnTime();
+        if (ModCommonConfigs.shootableDefaultRespawnTime.get() > 0)
+        {
+            despawnTime = Math.min(despawnTime, ModCommonConfigs.shootableDefaultRespawnTime.get());
+        }
+        if (despawnTime > 0 && tickCount > despawnTime)
+        {
+            return true;
+        }
+        return false;
     }
 }

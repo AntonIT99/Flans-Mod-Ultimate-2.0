@@ -147,7 +147,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
 
             // Spawn the entity server side
             if (!level.isClientSide)
-                level.addFreshEntity(getGrenade(player));
+                level.addFreshEntity(new Grenade(level, configType, player));
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)
@@ -172,14 +172,5 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
 
         // Nothing special happened, fall back
         return InteractionResultHolder.pass(stack);
-    }
-
-    public Grenade getGrenade(LivingEntity thrower)
-    {
-        Grenade grenade = new Grenade(thrower, configType);
-        // If this can be remotely detonated, add it to the players detonate list
-        if (configType.isRemote() && thrower instanceof Player player)
-            PlayerData.getInstance(player).getRemoteExplosives().add(grenade);
-        return grenade;
     }
 }

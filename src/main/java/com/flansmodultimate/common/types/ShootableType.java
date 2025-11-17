@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
@@ -88,7 +89,7 @@ public abstract class ShootableType extends InfoType
     protected int fuse = 0;
     /** After this time the grenade will despawn quietly. 0 means no despawn time */
     @Getter
-    protected int despawnTime = 0; //TODO: Global Configuration Option
+    protected int despawnTime = 0;
     /** If true, then this will explode upon hitting something */
     @Getter
     protected boolean explodeOnImpact;
@@ -116,11 +117,16 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
 
+    @Getter
     protected boolean hasSubmunitions;
+    @Getter
     protected String submunition = StringUtils.EMPTY;
+    @Getter
     protected int numSubmunitions = 0;
+    @Getter
     protected int subMunitionTimer = 0;
     protected float submunitionSpread = 1;
+    @Getter
     protected boolean destroyOnDeploySubmunition;
 
     @Getter
@@ -294,5 +300,10 @@ public abstract class ShootableType extends InfoType
             }
         }
         return list;
+    }
+
+    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack)
+    {
+        return getAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
     }
 }

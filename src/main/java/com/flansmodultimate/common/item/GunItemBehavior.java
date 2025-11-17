@@ -10,12 +10,11 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.DefaultShootingHandler;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.InventoryHelper;
 import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
+import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.common.types.InfoType;
@@ -156,6 +155,7 @@ public record GunItemBehavior(GunItem item)
             Vector3f rayTraceOrigin = new Vector3f(player.getEyePosition(0.0F));
             ShootingHandler handler = new DefaultShootingHandler(level, player, gunStack, hand, slot.get());
 
+            //TODO: probably needs refactoring
             if (level.isClientSide)
             {
                 int bulletAmount = configType.getNumBullets() * shootableType.getNumBullets();
@@ -172,31 +172,9 @@ public record GunItemBehavior(GunItem item)
             }
             else
             {
-                Vector3f rayTraceDirection = new Vector3f(player.getLookAngle());
-
-                if (shootableItem instanceof BulletItem bulletItem)
-                {
-                    //Fire gun
-                    FireableGun fireableGun = new FireableGun(configType, configType.getDamage(gunStack), configType.getSpread(gunStack), configType.getBulletSpeed(gunStack), configType.getSpreadPattern(gunStack));
-
-                    //TODO: enchantments & gloves
-                    /*if (otherHand.getItem() instanceof ShieldItem || otherHand.getItem() instanceof ItemGlove)
-                    {
-                        EnchantmentModule.ModifyGun(fireableGun, player, otherHand);
-                    }*/
-
-                    FiredShot shot = new FiredShot(fireableGun, bulletItem.getConfigType(), player);
-                    //TODO gunOrigin? & animation origin
-                    ShootingHelper.fireGun(level, shot, configType.getNumBullets() * shootableType.getNumBullets(), rayTraceOrigin, rayTraceDirection, handler);
-                }
-                else if (shootableItem instanceof GrenadeItem grenadeItem)
-                {
-                    // throw grenade
-                    level.addFreshEntity(grenadeItem.getGrenade(player));
-                    handler.shooting(false);
-                }
-
-                boolean silenced = configType.getBarrel(gunStack) != null && configType.getBarrel(gunStack).isSilencer();
+                //TODO gunOrigin? & animation origin
+                ShootingHelper.fireGun(level, player, configType, shootableType, gunStack, otherHand, handler);
+                boolean silenced = Optional.ofNullable(configType.getBarrel(gunStack)).map(AttachmentType::isSilencer).orElse(false);
                 playShotSound(level, rayTraceOrigin, silenced);
             }
 

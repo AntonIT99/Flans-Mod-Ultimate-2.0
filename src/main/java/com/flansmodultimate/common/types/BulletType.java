@@ -21,6 +21,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 @NoArgsConstructor
 public class BulletType extends ShootableType
 {
+    //TODO: make these constants configurable
     public static final double LOCK_ON_RANGE = 128.0;
     public static final int FLAK_PARTICLES_RANGE = 200;
 
@@ -43,9 +44,11 @@ public class BulletType extends ShootableType
     /** How much damage to deal to the entity that triggered it */
     protected float damageToTriggerer = 0F;
     /** Detonation will not occur until after this time */
+    @Getter
     protected int primeDelay = 0;
     /** Particles given off in the detonation */
     protected int explodeParticles = 0;
+    @Getter
     protected String explodeParticleType = "largesmoke";
 
     /** Exclusively for driveable usage. Replaces old isBomb and isShell booleans with something more flexible */
@@ -130,7 +133,9 @@ public class BulletType extends ShootableType
     protected float smokeRadius = 5F;
 
     //Other stuff
+    @Getter
     protected boolean vls;
+    @Getter
     protected int vlsTime = 0;
     protected boolean fixedDirection;
     protected float turnRadius = 3;

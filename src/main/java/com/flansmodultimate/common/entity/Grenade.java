@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.FlansExplosion;
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
@@ -35,6 +36,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -88,9 +90,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     @Getter
     protected boolean stuck;
     /** Stores the position of the block this grenade is stuck to. Used to determine when to unstick */
-    protected int stuckToX;
-    protected int stuckToY;
-    protected int stuckToZ;
+    protected BlockPos stuckPos;
     /** Stop repeat detonations */
     protected boolean detonated;
     /** For deployable bags */
@@ -104,16 +104,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         super(entityType, level);
     }
 
-    /**
-     * General constructor. Example usecase: grenades spawned via console command
-     *
-     * @param level         Level in which the grenade will spawn in
-     * @param grenadeType   GrenadeType of the grenade
-     * @param position      Position the grenade will spawn at
-     * @param rotationPitch Pitch of the direction the grenade will fly
-     * @param rotationYaw   Yaw of the direction the grenade will fly
-     */
-    public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw)
+    public Grenade(Level level, GrenadeType grenadeType, Vec3 position, Vec3 direction, @Nullable LivingEntity entity)
+    {
+        this(level, grenadeType, position, getPitchFromDirection(direction), getYawFromDirection(direction), entity);
+    }
+
+    public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity)
     {
         super(FlansMod.grenadeEntity.get(), level, grenadeType);
         setPos(position);
@@ -136,35 +132,39 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         if (grenadeType.getThrowSound() != null)
             PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), grenadeType.getThrowSound(), true);
-    }
 
-    /**
-     * General constructor for entitys throwing grenades. This should not be used when a player throws the grenade
-     *
-     * @param livingEntity  Entity throwing the grenade
-     * @param grenadeType   GrenadeType of the grenade
-     */
-    public Grenade(@NotNull LivingEntity livingEntity, GrenadeType grenadeType)
-    {
-        this(livingEntity.level(), grenadeType, livingEntity.getEyePosition(), livingEntity.getXRot(), livingEntity.getYRot());
-        thrower = livingEntity;
-    }
-
-    /**
-     * Constructor for grenades thrown where a player and/or an entity can be associated with.
-     * E.g. mecha using a grenade launcher. In this case the 'entity' is the mecha and the 'player' the player controlling the mecha
-     *
-     * @param level         World in which the grenade will spawn in
-     * @param grenadeType   GrenadeType of the grenade
-     * @param position      Position the grenade will spawn at
-     * @param rotationPitch Pitch of the direction the grenade will fly
-     * @param rotationYaw   Yaw of the direction the grenade will fly
-     * @param entity        The entity throwing the grenade.
-     */
-    public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity)
-    {
-        this(level, grenadeType, position, rotationPitch, rotationYaw);
         thrower = entity;
+        // If this can be remotely detonated, add it to the players detonate list
+        if (grenadeType.isRemote() && thrower instanceof Player player)
+            PlayerData.getInstance(player).getRemoteExplosives().add(this);
+    }
+
+    /**
+     * General constructor for entities throwing grenades.
+     */
+    public Grenade(Level level, GrenadeType grenadeType, @NotNull LivingEntity livingEntity)
+    {
+        this(level, grenadeType, livingEntity.getEyePosition(), livingEntity.getXRot(), livingEntity.getYRot(), livingEntity);
+    }
+
+    private static float getYawFromDirection(Vec3 dir)
+    {
+        Vec3 n = dir.normalize();
+        double x = n.x;
+        double z = n.z;
+        float yaw = (float) Math.toDegrees(Math.atan2(-x, z));
+        return Mth.wrapDegrees(yaw);
+    }
+
+    private static float getPitchFromDirection(Vec3 dir)
+    {
+        Vec3 n = dir.normalize();
+        double x = n.x;
+        double y = n.y;
+        double z = n.z;
+        double horiz = Math.sqrt(x * x + z * z);
+        float pitch = (float) Math.toDegrees(Math.atan2(-y, horiz));
+        return Mth.wrapDegrees(pitch);
     }
 
     public GrenadeType getConfigType()
@@ -372,8 +372,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         Level level = level();
         try
         {
-            if (shouldDespawn())
+            if (shouldDespawn(configType))
             {
+                detonated = true;
                 discard();
                 return;
             }
@@ -414,21 +415,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     {
         if (motionTime > 0)
             motionTime--;
-    }
-
-    protected boolean shouldDespawn()
-    {
-        int despawnTime = configType.getDespawnTime();
-        if (ModCommonConfigs.grenadeDefaultRespawnTime.get() > 0)
-        {
-            despawnTime = Math.min(despawnTime, ModCommonConfigs.grenadeDefaultRespawnTime.get());
-        }
-        if (despawnTime > 0 && tickCount > despawnTime)
-        {
-            detonated = true;
-            return true;
-        }
-        return false;
     }
 
     protected void spawnTrailParticles(Level level) {
@@ -558,12 +544,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void updateStuckState(Level level)
     {
-        if (stuck)
-        {
-            BlockPos pos = new BlockPos(stuckToX, stuckToY, stuckToZ);
-            if (level.isEmptyBlock(pos))
-                stuck = false;
-        }
+        if (stuck && stuckPos != null && level.isEmptyBlock(stuckPos))
+            stuck = false;
     }
 
     protected void handlePhysicsAndMotion(Level level)
@@ -715,10 +697,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
 
             stuck = true;
-            BlockPos bp = hit.getBlockPos();
-            stuckToX = bp.getX();
-            stuckToY = bp.getY();
-            stuckToZ = bp.getZ();
+            stuckPos = hit.getBlockPos();
         }
     }
 

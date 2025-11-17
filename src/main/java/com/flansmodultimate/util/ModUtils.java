@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -53,6 +54,26 @@ public final class ModUtils
             return local != null && local.getUUID().equals(player.getUUID());
         }
         return false;
+    }
+
+    public static boolean isVehicleLike(Entity entity)
+    {
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        if (id == null)
+            return false;
+
+        String path = id.getPath().toLowerCase(Locale.ROOT);
+        return path.contains("vehicle");
+    }
+
+    public static boolean isPlaneLike(Entity entity)
+    {
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        if (id == null)
+            return false;
+
+        String path = id.getPath().toLowerCase(Locale.ROOT);
+        return path.contains("plane");
     }
 
     public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box, @Nullable Predicate<? super Entity> filter)

@@ -3,13 +3,16 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import java.util.Optional;
@@ -17,59 +20,39 @@ import java.util.Optional;
 /**
  * Class for creating an object containing all necessary information about a fired shot
  */
-public class FiredShot {
-
-    /**
-     * The weapon used to fire the shot
-     */
+public class FiredShot
+{
+    /** The weapon used to fire the shot */
     @Getter
     private final FireableGun fireableGun;
-    /**
-     * The BulletType of the fired bullet
-     */
+    /** The BulletType of the fired bullet */
     @Getter
     private final BulletType bulletType;
-    /**
-     * Living Entity, if one can be associated with the shot. Can be the same as shooter
-     */
+    /** Living Entity, if one can be associated with the shot. Can be the same as shooter */
     @Nullable
     private final LivingEntity attacker;
-    /**
-     * Entity which fired the shot.
-     */
+    /** Entity which fired the shot. */
     @Nullable
     private final Entity shooter;
 
-    /**
-     * @param fireableGun weapon used to fire the shot
-     * @param bulletType  BulletType of the fired bullet
-     */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType)
+    /** General Constructor */
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack)
     {
-        this(fireableGun, bulletType, null, null);
+        this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, null, null);
     }
 
-    /**
-     * This constructor should be used when a living entity shot
-     *
-     * @param fireableGun   Weapon used to fire the shot
-     * @param bulletType    BulletType of the fired bullet
-     * @param attacker   Entity which fired the shot
-     */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable LivingEntity attacker)
+    /** Constructor for living entities shooting directly */
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, @Nullable LivingEntity attacker)
     {
-        this(fireableGun, bulletType, attacker, attacker);
+        this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, attacker, attacker);
     }
 
-    /**
-     * This constructor should be used if a living entity causes a shot, but it is actually not the entity shooting it
-     * e.g a player flying a plane
-     *
-     * @param fireableGun   weapon used to fire the shot
-     * @param bulletType    BulletType of the fired bullet
-     * @param shooter       the Entity firing the shot
-     * @param attacker      the living entity indirectly causing the shot
-     */
+    /** Constructor for living entities shooting indirectly */
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
+    {
+        this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, shooter, attacker);
+    }
+
     public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)
     {
         this.fireableGun = fireableGun;
