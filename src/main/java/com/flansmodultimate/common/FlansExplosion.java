@@ -3,6 +3,7 @@ package com.flansmodultimate.common;
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.driveables.Wheel;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
@@ -76,16 +77,19 @@ public class FlansExplosion extends Explosion
     private final List<BlockPos> affectedBlockPositions;
     private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
-    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean smoking, boolean canDamageSelf)
+    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
-        this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, smoking, type.isExplosionBreaksBlocks(),
-                type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+        this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
+                type.isExplosionBreaksBlocks(), type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
-    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, GrenadeType type, double x, double y, double z, boolean canDamageSelf)
+    private static boolean isSmoking(ShootableType type)
     {
-        this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, type.getSmokeRadius() > 0, type.isExplosionBreaksBlocks(),
-                type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+        if (type instanceof BulletType bulletType)
+            return bulletType.getFlak() > 0;
+        else if (type instanceof GrenadeType grenadeType)
+            return grenadeType.getSmokeRadius() > 0;
+        return false;
     }
 
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, InfoType type, double x, double y, double z, float explosionRadius, float explosionPower,
@@ -317,7 +321,6 @@ public class FlansExplosion extends Explosion
             for (BlockPos pos : getToBlow())
             {
                 BlockState state = level.getBlockState(pos);
-                Block block = state.getBlock();
 
                 // optional debris/smoke particles like your old snippet
                 if (spawnParticles && level instanceof ServerLevel sl)
@@ -401,7 +404,7 @@ public class FlansExplosion extends Explosion
         {
             float smokeRand = (float) Math.random();
 
-            if(smokeRand < 0.25)
+            if (smokeRand < 0.25)
             {
                 PacketHandler.sendToAllAround(new PacketParticle("flansmod.flare", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
@@ -423,7 +426,7 @@ public class FlansExplosion extends Explosion
         {
             float smokeRand = (float) Math.random();
 
-            if(smokeRand < 0.25)
+            if (smokeRand < 0.25)
             {
                 PacketHandler.sendToAllAround(new PacketParticle("flansmod.debris1", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 

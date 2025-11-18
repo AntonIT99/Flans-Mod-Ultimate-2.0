@@ -21,7 +21,6 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketBlockHitEffect;
 import com.flansmodultimate.network.PacketBulletTrail;
-import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.PacketHitMarker;
 import com.flansmodultimate.network.PacketPlaySound;
@@ -37,7 +36,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -63,13 +61,12 @@ public final class ShootingHelper
 {
     private static final RandomSource random = RandomSource.create();
 
-    //TODO: Refactor this depending on usage
     public static void fireGun(Level level, @NotNull ShootableType shootableType, @Nullable FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
         if (firedShot != null && firedShot.getFireableGun().getBulletSpeed() == 0F && shootableType instanceof BulletType)
         {
-            // Raytrace
-            createMultipleShots(level, firedShot, bulletAmount, new Vector3f(rayTraceOrigin), new Vector3f(shootingDirection), handler);
+            // Raytrace without entity
+            createMultipleShots(level, firedShot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
         }
         else
         {
@@ -90,8 +87,8 @@ public final class ShootingHelper
 
         if (gunType.getBulletSpeed(gunStack) == 0F && shootableType instanceof BulletType bulletType)
         {
-            // Raytrace
-            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, otherHandStack), bulletAmount, new Vector3f(shooter.getEyePosition(0.0F)), new Vector3f(shooter.getLookAngle()), handler);
+            // Raytrace without entity
+            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, otherHandStack), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
         }
         else
         {
@@ -107,77 +104,17 @@ public final class ShootingHelper
         }
     }
 
-    private static void createMultipleShots(Level level, FiredShot shot, Integer bulletAmount, Vector3f rayTraceOrigin, Vector3f shootingDirection, ShootingHandler handler)
+    public static float onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, float penetratingPower)
     {
-        float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
-        for (int i = 0; i < bulletAmount; i++)
-        {
-            createShot(level, shot, bulletspread, rayTraceOrigin, new Vector3f(shootingDirection));
-            handler.shooting(i < bulletAmount - 1);
-        }
+        return onHit(level, shot, bulletHit, hit, shootingDirection, penetratingPower, null);
     }
 
-    private static void createShot(Level level, FiredShot shot, float bulletspread, Vector3f rayTraceOrigin, Vector3f shootingDirection)
-    {
-        randomizeVectorDirection(level, shootingDirection, bulletspread, shot.getFireableGun().getSpreadPattern());
-        shootingDirection.scale(500.0f);
-
-        float penetrationPower = shot.getBulletType().getPenetratingPower();
-        //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
-        Optional<ServerPlayer> playerOptional = shot.getPlayerAttacker();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getCausingEntity().orElse(null);
-
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
-        Vector3f previousHitPos = rayTraceOrigin;
-        Vector3f finalhit = null;
-
-        for (int i = 0; i < hits.size(); i++)
-        {
-            BulletHit hit = hits.get(i);
-            Vector3f shotVector = new Vector3f(shootingDirection).scale(hit.intersectTime);
-            Vector3f hitPos = Vector3f.add(rayTraceOrigin, shotVector, null);
-
-            if (hit instanceof BlockHit)
-                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0f, 1F);
-            else
-                DebugHelper.spawnDebugDot(level, hitPos, 1000);
-            DebugHelper.spawnDebugVector(level, previousHitPos, Vector3f.sub(hitPos, previousHitPos, null), 1000, 1F, 1F, ((float) i / hits.size()));
-
-            previousHitPos = hitPos;
-
-            penetrationPower = onHit(level, hitPos, shootingDirection, shot, hit, penetrationPower, null);
-            if (penetrationPower <= 0f)
-            {
-                onDetonate(level, shot, hitPos.toVec3(), null);
-                finalhit = hitPos;
-                break;
-            }
-        }
-
-        if (finalhit == null)
-        {
-            finalhit = Vector3f.add(rayTraceOrigin, shootingDirection, null);
-        }
-        //Animation
-        //TODO should this be send to all Players?
-        PacketHandler.sendToAllAround(new PacketBulletTrail(rayTraceOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
-    }
-
-    /**
-     * @param level             World which contains the location of the hit
-     * @param hit               The location of the hit
-     * @param shootingDirection The direction the shot was fired
-     * @param shot              The FiredShot instance of the shot
-     * @param bulletHit         BulletHit if the object hit
-     * @param penetratingPower  Power of the bullet to penetrate objects
-     * @param bullet            The bullet entity
-     * @return The remaining penetrationPower after hitting the object specified in the BulletHit
-     */
-    public static float onHit(Level level, Vector3f hit, Vector3f shootingDirection, FiredShot shot, BulletHit bulletHit, float penetratingPower, @Nullable Bullet bullet)
+    public static float onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, float penetratingPower, @Nullable Bullet bullet)
     {
         float damage = shot.getFireableGun().getDamage();
-
         BulletType bulletType = shot.getBulletType();
+        Optional<ServerPlayer> player = shot.getPlayerAttacker();
+
         if (bulletHit instanceof DriveableHit driveableHit)
         {
             penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamageAgainstVehicles(), driveableHit, penetratingPower);
@@ -185,7 +122,7 @@ public final class ShootingHelper
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
 
             //Send hit marker, if player is present
-            shot.getPlayerAttacker().ifPresent((ServerPlayer player) -> PacketHandler.sendTo(new PacketHitMarker(), player));
+            player.ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(), p));
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
@@ -193,13 +130,9 @@ public final class ShootingHelper
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
 
-            Optional<ServerPlayer> optionalPlayer = shot.getPlayerAttacker();
-
             // Check teams
-            if (optionalPlayer.isPresent())
+            if (player.isPresent())
             {
-                ServerPlayer player = optionalPlayer.get();
-
                 //TODO: Teams
                 /*TeamsRound round;
                 if (TeamsManager.getInstance() != null && (round = TeamsManager.getInstance().currentRound) != null)
@@ -217,7 +150,7 @@ public final class ShootingHelper
                     FlansMod.getPacketHandler().sendTo(new PacketHitMarker(), player);
                 }*/
                 //TODO: check arguments in FMU
-                PacketHandler.sendTo(new PacketHitMarker(), player);
+                PacketHandler.sendTo(new PacketHitMarker(), player.get());
             }
         }
         else if (bulletHit instanceof EntityHit entityHit)
@@ -246,7 +179,6 @@ public final class ShootingHelper
             BlockHitResult bhr = (BlockHitResult) bh.getHitResult();
             BlockPos pos = bhr.getBlockPos();
             Direction direction = bhr.getDirection();
-            Vec3 impact = bhr.getLocation();
 
             // State is already “actual” in modern MC (no getActualState)
             BlockState state = level.getBlockState(pos);
@@ -265,12 +197,12 @@ public final class ShootingHelper
             bulletDir.normalise();
             bulletDir.scale(0.5f);
 
-            for (Player player : level.players())
+            for (Player p : level.players())
             {
                 //Checks if the player is in a radius of 300 Blocks (300 squared = 90000)
-                if (player.distanceToSqr(Vec3.atCenterOf(pos)) < 90000)
+                if (p.distanceToSqr(Vec3.atCenterOf(pos)) < 90000)
                 {
-                    PacketHandler.sendTo(new PacketBlockHitEffect(hit, bulletDir, pos, direction), (ServerPlayer) player);
+                    PacketHandler.sendTo(new PacketBlockHitEffect(new Vector3f(hit), bulletDir, pos, direction), (ServerPlayer) p);
                 }
             }
 
@@ -285,69 +217,158 @@ public final class ShootingHelper
         return penetratingPower;
     }
 
-    public static void onDetonate(Level level, FiredShot shot, Vec3 detonatePos, @Nullable Bullet bullet)
+    public static void onDetonate(Level level, FiredShot firedShot, Vec3 detonatePos)
     {
-        BulletType bulletType = shot.getBulletType();
+        onDetonate(level, firedShot.getBulletType(), detonatePos, null, firedShot.getAttacker().orElse(null));
+    }
 
+
+    public static void onDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
+    {
         // Play detonate sound
-        PacketPlaySound.sendSoundPacket(detonatePos.x, detonatePos.y, detonatePos.z, FlansMod.SOUND_RANGE, level.dimension(), bulletType.getDetonateSound(), true);
-
+        playDetonateSound(level, type, position);
         // Explode
-        if (!level.isClientSide && bulletType.getExplosionRadius() > 0.1F)
-        {
-            new FlansExplosion(level, bullet, shot.getAttacker().orElse(null), bulletType, detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak() > 0, false);
-        }
-
+        doExplosion(level, type, position, shootable, causingEntity);
         // Make fire
-        if (!level.isClientSide && bulletType.getFireRadius() > 0.1F)
+        spreadFire(level, type, position);
+        // Make explosion particles
+        spawnExplosionParticles(level, type, position);
+        // Drop item on hitting if bullet requires it
+        dropItemsOnDetonate(level, type, position, shootable);
+    }
+
+    private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
+    {
+        PacketPlaySound.sendSoundPacket(position, FlansMod.SOUND_RANGE, level.dimension(), type.getDetonateSound(), true);
+    }
+
+    private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)
+    {
+        if (level.isClientSide || type.getExplosionRadius() <= 0.1F)
+            return;
+
+        new FlansExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+    }
+
+    private static void spreadFire(Level level, ShootableType type, Vec3 position)
+    {
+        if (level.isClientSide || type.getFireRadius() <= 0.1F)
+            return;
+
+        float fireRadius = type.getFireRadius();
+        for (float i = -fireRadius; i < fireRadius; i++)
         {
-            for (float i = -bulletType.getFireRadius(); i < bulletType.getFireRadius(); i++)
+            for (float j = -fireRadius; j < fireRadius; j++)
             {
-                for (float k = -bulletType.getFireRadius(); k < bulletType.getFireRadius(); k++)
+                for (float k = -fireRadius; k < fireRadius; k++)
                 {
-                    for (int j = -1; j < 1; j++)
+                    if (i * i + j * j + k * k > fireRadius * fireRadius)
+                        continue;
+
+                    BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
+                    if (level.isEmptyBlock(pos) && random.nextBoolean())
                     {
-                        BlockPos pos = new BlockPos(Mth.floor(detonatePos.x + i), Mth.floor(detonatePos.y + j), Mth.floor(detonatePos.z + k));
-                        if (level.isEmptyBlock(pos))
-                            level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+                        level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
                     }
                 }
             }
         }
+    }
 
-        // Make explosion particles
-        if (level.isClientSide)
+    private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
+    {
+        if (!level.isClientSide)
+            return;
+
+        for (int i = 0; i < type.getExplodeParticles(); i++)
         {
-            ParticleHelper.spawnFromString((ClientLevel) level, bulletType.getExplodeParticleType(), detonatePos.x, detonatePos.y, detonatePos.z, random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
+            ParticleHelper.spawnFromString((ClientLevel) level, type.getExplodeParticleType(), position.x, position.y, position.z, random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
         }
+    }
 
+    private static void dropItemsOnDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable)
+    {
+        if (level.isClientSide || StringUtils.isBlank(type.getDropItemOnDetonate()))
+            return;
 
-        // Send flak packet
-        if (bulletType.getFlak() > 0)
+        ItemStack dropStack = InfoType.getRecipeElement(type.getDropItemOnDetonate(), type.getContentPack());
+        if (dropStack != null && !dropStack.isEmpty())
         {
-            PacketHandler.sendToAllAround(new PacketFlak(detonatePos.x, detonatePos.y, detonatePos.z, bulletType.getFlak(), bulletType.getFlakParticles()), detonatePos.x, detonatePos.y, detonatePos.z, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
-        }
-
-        // Drop item on hitting if bullet requires it
-        if (StringUtils.isNotBlank(bulletType.getDropItemOnHit()))
-        {
-            ItemStack dropStack = InfoType.getRecipeElement(bulletType.getDropItemOnHit(), bulletType.getContentPack());
-
-            if (dropStack != null && !dropStack.isEmpty())
+            if (shootable != null)
             {
-                ItemEntity entityitem = new ItemEntity(level, detonatePos.x, detonatePos.y, detonatePos.z, dropStack);
+                shootable.spawnAtLocation(dropStack, 1.0F);
+            }
+            else
+            {
+                ItemEntity entityitem = new ItemEntity(level, position.x, position.y, position.z, dropStack);
                 entityitem.setDefaultPickUpDelay();
                 level.addFreshEntity(entityitem);
             }
         }
-
     }
 
-    public static void randomizeVectorDirection(Level level, Vector3f vector, Float spread, EnumSpreadPattern pattern)
+    private static void createMultipleShots(Level level, FiredShot shot, Integer bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
-        Vector3f xAxis = Vector3f.cross(vector, new Vector3f(0f, 1f, 0f), null);
+        float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
+        for (int i = 0; i < bulletAmount; i++)
+        {
+            createShot(level, shot, bulletspread, rayTraceOrigin, shootingDirection);
+            handler.shooting(i < bulletAmount - 1);
+        }
+    }
+
+    private static void createShot(Level level, FiredShot shot, float bulletspread, Vec3 rayTraceOrigin, Vec3 shootingDirection)
+    {
+        shootingDirection = randomizeVectorDirection(level, shootingDirection, bulletspread, shot.getFireableGun().getSpreadPattern());
+        shootingDirection.scale(500F);
+
+        float penetrationPower = shot.getBulletType().getPenetratingPower();
+        //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
+        Optional<ServerPlayer> playerOptional = shot.getPlayerAttacker();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getCausingEntity().orElse(null);
+
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, new Vector3f(rayTraceOrigin), new Vector3f(shootingDirection), 0, penetrationPower, 0F);
+        Vec3 previousHitPos = rayTraceOrigin;
+        Vec3 finalhit = null;
+
+        for (int i = 0; i < hits.size(); i++)
+        {
+            BulletHit hit = hits.get(i);
+            Vec3 shotVector = shootingDirection.scale(hit.intersectTime);
+            Vec3 hitPos = rayTraceOrigin.add(shotVector);
+
+            if (hit instanceof BlockHit)
+                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0f, 1F);
+            else
+                DebugHelper.spawnDebugDot(level, hitPos, 1000);
+            DebugHelper.spawnDebugVector(level, previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
+
+            previousHitPos = hitPos;
+
+            penetrationPower = onHit(level, shot, hit, hitPos, shootingDirection, penetrationPower);
+            if (penetrationPower <= 0f)
+            {
+                onDetonate(level, shot, hitPos);
+                finalhit = hitPos;
+                break;
+            }
+        }
+
+        if (finalhit == null)
+        {
+            finalhit = rayTraceOrigin.add(shootingDirection);
+        }
+        //Animation
+        //TODO should this be send to all Players?
+        PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(rayTraceOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
+    }
+
+    private static Vec3 randomizeVectorDirection(Level level, Vec3 vector, float spread, EnumSpreadPattern pattern)
+    {
+        Vector3f result = new Vector3f(vector);
+        Vector3f xAxis = Vector3f.cross(result, new Vector3f(0f, 1f, 0f), null);
         xAxis.normalise();
-        Vector3f yAxis = Vector3f.cross(vector, xAxis, null);
+        Vector3f yAxis = Vector3f.cross(result, xAxis, null);
         yAxis.normalise();
 
         switch (pattern)
@@ -362,16 +383,16 @@ public final class ShootingHelper
                 xAxis.scale(xComponent);
                 yAxis.scale(yComponent);
 
-                Vector3f.add(vector, xAxis, vector);
-                Vector3f.add(vector, yAxis, vector);
+                Vector3f.add(result, xAxis, result);
+                Vector3f.add(result, yAxis, result);
 
                 break;
             }
             case CUBE:
             {
-                vector.x += (float)level.random.nextGaussian() * spread;
-                vector.y += (float)level.random.nextGaussian() * spread;
-                vector.z += (float)level.random.nextGaussian() * spread;
+                result.x += (float)level.random.nextGaussian() * spread;
+                result.y += (float)level.random.nextGaussian() * spread;
+                result.z += (float)level.random.nextGaussian() * spread;
                 break;
             }
             case HORIZONTAL:
@@ -380,7 +401,7 @@ public final class ShootingHelper
 
                 xAxis.scale(xComponent);
 
-                Vector3f.add(vector, xAxis, vector);
+                Vector3f.add(result, xAxis, result);
 
                 break;
             }
@@ -390,7 +411,7 @@ public final class ShootingHelper
 
                 yAxis.scale(yComponent);
 
-                Vector3f.add(vector, yAxis, vector);
+                Vector3f.add(result, yAxis, result);
 
                 break;
             }
@@ -423,15 +444,15 @@ public final class ShootingHelper
                 xAxis.scale(xComponent);
                 yAxis.scale(yComponent);
 
-                Vector3f.add(vector, xAxis, vector);
-                Vector3f.add(vector, yAxis, vector);
+                Vector3f.add(result, xAxis, result);
+                Vector3f.add(result, yAxis, result);
 
                 break;
             }
             default:
                 break;
         }
-
+        return result.toVec3();
     }
 
     public static float getBlockPenetrationDecrease(BlockState blockstate, BlockPos pos, Level level)

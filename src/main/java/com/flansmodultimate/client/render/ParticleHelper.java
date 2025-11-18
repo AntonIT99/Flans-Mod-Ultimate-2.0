@@ -78,7 +78,7 @@ public final class ParticleHelper
             case "bubble" -> Optional.of(ParticleTypes.BUBBLE);
             case "splash" -> Optional.of(ParticleTypes.SPLASH);
             case "wake" -> Optional.of(ParticleTypes.FISHING);
-            case "drop" -> Optional.of(ParticleTypes.DRIPPING_WATER);
+            case "drop", "dripwater" -> Optional.of(ParticleTypes.DRIPPING_WATER);
             case "suspended", "depthsuspend" -> Optional.of(ParticleTypes.MYCELIUM);
             case "townaura" -> Optional.of(ParticleTypes.ASH);
             case "crit" -> Optional.of(ParticleTypes.CRIT);
@@ -89,7 +89,6 @@ public final class ParticleHelper
             case "mobspell" -> Optional.of(ParticleTypes.ENTITY_EFFECT);
             case "mobspellambient" -> Optional.of(ParticleTypes.AMBIENT_ENTITY_EFFECT);
             case "witchmagic" -> Optional.of(ParticleTypes.WITCH);
-            case "dripwater" -> Optional.of(ParticleTypes.DRIPPING_WATER);
             case "driplava" -> Optional.of(ParticleTypes.DRIPPING_LAVA);
             case "angryvillager" -> Optional.of(ParticleTypes.ANGRY_VILLAGER);
             case "happyvillager" -> Optional.of(ParticleTypes.HAPPY_VILLAGER);
@@ -106,7 +105,7 @@ public final class ParticleHelper
             case "slime" -> Optional.of(ParticleTypes.ITEM_SLIME);
             case "heart" -> Optional.of(ParticleTypes.HEART);
             case "barrier" -> Optional.of(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, Blocks.BARRIER.defaultBlockState()));
-            default -> Optional.empty();
+            default -> Optional.empty(); //TODO: Get by its register Name?
         };
     }
 }

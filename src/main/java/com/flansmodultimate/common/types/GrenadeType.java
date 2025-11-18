@@ -113,20 +113,6 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean spinWhenThrown = true;
 
-    //Smoke
-    /** Time to remain after detonation */
-    @Getter
-    protected int smokeTime;
-    /** Particles given off after detonation */
-    @Getter
-    protected String smokeParticleType = "explode";
-    /** The effects to be given to people coming too close */
-    @Getter
-    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
-    /** The radius for smoke effects to take place in */
-    @Getter
-    protected float smokeRadius = 5F;
-
     //Deployed bag functionality
     /** If true, then right clicking this "grenade" will give the player health or buffs or ammo as defined below */
     @Getter
@@ -177,14 +163,6 @@ public class GrenadeType extends ShootableType
         stickSoundRange = readValue(split, "StickSoundRange", stickSoundRange, file);
         stickSound = readSound(split, "StickSound", stickSound, file);
 
-        explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);
-        explodeParticleType = readValue(split, "ExplodeParticles", explodeParticleType, file);
-        smokeTime = readValue(split, "SmokeTime", smokeTime, file);
-        explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);
-        smokeParticleType = readValue(split, "SmokeParticles", smokeParticleType, file);
-        addEffects(readValues(split, "SmokeEffect", file), smokeEffects, line, file, false, false);
-
-        smokeRadius = readValue(split, "SmokeRadius", smokeRadius, file);
         spinWhenThrown = readValue(split, "SpinWhenThrown", spinWhenThrown, file);
         remote = readValue(split, "Remote", remote, file);
 

@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
@@ -90,9 +91,9 @@ public class PacketPlaySound implements IClientPacket
         level.playLocalSound(posX, posY, posZ, event.get(), SoundSource.PLAYERS, volume, pitch, false);
     }
 
-    public static void sendSoundPacket(Player player, double range, String sound, boolean distort)
+    public static void sendSoundPacket(double x, double y, double z, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced)
     {
-        sendSoundPacket(player.getX(), player.getY(), player.getZ(), range, player.level().dimension(), sound, distort, false);
+        PacketHandler.sendToAllAround(new PacketPlaySound(x, y, z, sound, distort, silenced), x, y, z, (float)range, dimension);
     }
 
     public static void sendSoundPacket(double x, double y, double z, double range, ResourceKey<Level> dimension, String sound, boolean distort)
@@ -100,8 +101,18 @@ public class PacketPlaySound implements IClientPacket
         sendSoundPacket(x, y, z, range, dimension, sound, distort, false);
     }
 
-    public static void sendSoundPacket(double x, double y, double z, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced)
+    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort)
     {
-        PacketHandler.sendToAllAround(new PacketPlaySound(x, y, z, sound, distort, silenced), x, y, z, (float)range, dimension);
+        sendSoundPacket(position.x, position.y, position.z, range, dimension, sound, distort);
+    }
+
+    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced)
+    {
+        sendSoundPacket(position.x, position.y, position.z, range, dimension, sound, distort, silenced);
+    }
+
+    public static void sendSoundPacket(Player player, double range, String sound, boolean distort)
+    {
+        sendSoundPacket(player.getX(), player.getY(), player.getZ(), range, player.level().dimension(), sound, distort, false);
     }
 }

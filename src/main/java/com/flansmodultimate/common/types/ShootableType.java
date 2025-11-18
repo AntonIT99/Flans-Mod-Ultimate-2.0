@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.world.effect.MobEffectInstance;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,24 +16,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
+import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ShootableType extends InfoType
 {
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
 
-    //Aesthetics
-    /** Whether trail particles are given off */
+    /** Controls whether it has full luminescence */
     @Getter
-    protected boolean trailParticles;
-    /** Trail particles given off by this while being thrown */
-    @Getter
-    protected String trailParticleType = "smoke";
-
-    // hasLight controls whether it has full luminescence.
-    // hasDynamicLight controls if it lights up the area around it.
-    @Getter
-    protected boolean hasLight;
+    protected boolean hasLight; //TODO: implement
+    /** Controls if it lights up the area around it */
     protected boolean hasDynamicLight;
 
     //Item Stuff
@@ -47,7 +42,7 @@ public abstract class ShootableType extends InfoType
     protected String dropItemOnHit;
     /** The number of rounds fired by a gun per item */
     @Getter
-    protected int roundsPerItem = 0;
+    protected int roundsPerItem;
     /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
     @Getter
     protected int numBullets = 1;
@@ -61,10 +56,10 @@ public abstract class ShootableType extends InfoType
     //Physics and Stuff
     /** The speed at which the grenade should fall */
     @Getter
-    protected float fallSpeed = 1.0F;
+    protected float fallSpeed = 1F;
     /** The speed at which to throw the grenade. 0 will just drop it on the floor */
     @Getter
-    protected float throwSpeed = 1.0F;
+    protected float throwSpeed = 1F;
     /** Hit box size */
     @Getter
     protected float hitBoxSize = 0.5F;
@@ -79,17 +74,17 @@ public abstract class ShootableType extends InfoType
     /** Whether this grenade will break glass when thrown against it */
     @Getter
     protected boolean breaksGlass;
-    protected float ignoreArmorProbability = 0;
-    protected float ignoreArmorDamageFactor = 0;
+    protected float ignoreArmorProbability;
+    protected float ignoreArmorDamageFactor;
     protected float blockPenetrationModifier = -1;
 
     //Detonation Conditions
     /** If 0, then the grenade will last until some other detonation condition is met, else the grenade will detonate after this time (in ticks) */
     @Getter
-    protected int fuse = 0;
+    protected int fuse;
     /** After this time the grenade will despawn quietly. 0 means no despawn time */
     @Getter
-    protected int despawnTime = 0;
+    protected int despawnTime;
     /** If true, then this will explode upon hitting something */
     @Getter
     protected boolean explodeOnImpact;
@@ -101,16 +96,16 @@ public abstract class ShootableType extends InfoType
     protected float driveableProximityTrigger = -1F;
     /** How much damage to deal to the entity that triggered it */
     @Getter
-    protected float damageToTriggerer = 0F;
+    protected float damageToTriggerer;
     /** Detonation will not occur until after this time */
 
     //Detonation Stuff
     /** The radius in which to spread fire */
     @Getter
-    protected float fireRadius = 0F;
+    protected float fireRadius;
     /** The radius of explosion upon detonation */
     @Getter
-    protected float explosionRadius = 0F;
+    protected float explosionRadius;
     /** Power of explosion. Multiplier, 1 = vanilla behaviour */
     @Getter
     protected float explosionPower = 1F;
@@ -127,25 +122,47 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
 
-
     //Submunitions
     @Getter
     protected boolean hasSubmunitions;
     @Getter
     protected String submunition = StringUtils.EMPTY;
     @Getter
-    protected int numSubmunitions = 0;
+    protected int numSubmunitions;
     @Getter
-    protected int subMunitionTimer = 0;
+    protected int subMunitionTimer;
     protected float submunitionSpread = 1;
     @Getter
     protected boolean destroyOnDeploySubmunition;
 
-    //Particles
+    //Particles and Smoke
+    /** Whether trail particles are given off */
     @Getter
-    protected int smokeParticleCount = 0;
+    protected boolean trailParticles;
+    /** Trail particles given off by this while being thrown */
     @Getter
-    protected int debrisParticleCount = 0;
+    protected String trailParticleType = "smoke";
+    @Getter
+    protected int smokeParticleCount;
+    @Getter
+    protected int debrisParticleCount;
+    /** Time to remain after detonation */
+    @Getter
+    protected int smokeTime;
+    /** Particles given off after detonation */
+    @Getter
+    protected String smokeParticleType = "explode";
+    /** The effects to be given to people coming too close */
+    @Getter
+    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
+    /** The radius for smoke effects to take place in */
+    @Getter
+    protected float smokeRadius = 5F;
+    /** Particles given off in the detonation */
+    @Getter
+    protected int explodeParticles;
+    @Getter
+    protected String explodeParticleType = "largesmoke";
 
     @Override
     public void onItemRegistration(String registeredItemId)
@@ -239,7 +256,6 @@ public abstract class ShootableType extends InfoType
         explosionBreaksBlocks = readValue(split, "ExplosionBreakBlocks", explosionBreaksBlocks, file);
         explosionBreaksBlocks = readValue(split, "ExplosionsBreakBlocks", explosionBreaksBlocks, file);
 
-
         if (split[0].equalsIgnoreCase("ExplosionDamage") || split[0].equalsIgnoreCase("ExplosionDamageVsEntity"))
         {
             explosionDamage.setDamage(readValue(split, "ExplosionDamage", explosionDamage.getDamage(), file));
@@ -289,6 +305,12 @@ public abstract class ShootableType extends InfoType
         trailParticles = readValue(split, "TrailParticles", trailParticles, file);
         trailParticles = readValue(split, "SmokeTrail", trailParticles, file);
         trailParticleType = readValue(split, "TrailParticleType", trailParticleType, file);
+        explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);
+        explodeParticleType = readValue(split, "ExplodeParticles", explodeParticleType, file);
+        smokeTime = readValue(split, "SmokeTime", smokeTime, file);
+        smokeParticleType = readValue(split, "SmokeParticles", smokeParticleType, file);
+        addEffects(readValues(split, "SmokeEffect", file), smokeEffects, line, file, false, false);
+        smokeRadius = readValue(split, "SmokeRadius", smokeRadius, file);
     }
 
     @Override

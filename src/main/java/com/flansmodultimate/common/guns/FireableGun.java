@@ -46,6 +46,11 @@ public class FireableGun
         }*/
     }
 
+    public FireableGun(InfoType type, float damage, float spread, float bulletSpeed)
+    {
+        this(type, damage, damage, spread, bulletSpeed, EnumSpreadPattern.CIRCLE);
+    }
+
     public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this(type, damage, damage, spread, bulletSpeed, spreadPattern);

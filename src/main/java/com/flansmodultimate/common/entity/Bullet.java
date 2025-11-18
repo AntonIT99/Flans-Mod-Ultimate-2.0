@@ -14,6 +14,8 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.BulletLockOnEvent;
+import com.flansmodultimate.network.PacketFlak;
+import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.api.distmarker.Dist;
@@ -51,8 +53,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
-    /** Stop repeat detonations */
-    protected boolean detonated = false;
     protected int ticksInAir;
     protected boolean initialTick = true;
     protected double initialSpeed;
@@ -606,26 +606,25 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (level.isClientSide)
             return;
 
-        Vector3f origin = new Vector3f(position());
-        Vector3f motion = new Vector3f(velocity);
+        Vec3 origin = position();
         Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
         Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
 
         int pingMs = firedShot.getPlayerAttacker().map(p -> p.latency).orElse(0);
 
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, origin, motion, pingMs, 0f, getHitboxSize());
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, new Vector3f(origin), new Vector3f(velocity), pingMs, 0f, getHitboxSize());
 
         if (hits.isEmpty())
             return;
 
         for (BulletHit bulletHit : hits)
         {
-            Vector3f hitPos = new Vector3f(origin.x + velocity.x * bulletHit.intersectTime, origin.y + motion.y * bulletHit.intersectTime, origin.z + motion.z * bulletHit.intersectTime);
+            Vec3 hitPos = origin.add(velocity.scale(bulletHit.intersectTime));
 
-            currentPenetratingPower = ShootingHelper.onHit(level, hitPos, motion, firedShot, bulletHit, currentPenetratingPower, this);
+            currentPenetratingPower = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, currentPenetratingPower, this);
             if (currentPenetratingPower <= 0F)
             {
-                setPos(hitPos.toVec3());
+                setPos(hitPos);
                 detonate(level);
                 discard();
                 break;
@@ -658,11 +657,24 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     public void detonate(Level level)
     {
-        if (tickCount < configType.getPrimeDelay() || detonated)
+        if (tickCount < configType.getPrimeDelay() || detonated || isRemoved())
             return;
 
         detonated = true;
 
-        ShootingHelper.onDetonate(level, firedShot, position(), this);
+        spawnFlakParticles(level);
+        ShootingHelper.onDetonate(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
     }
+
+    private void spawnFlakParticles(Level level)
+    {
+        // Send Flak packet
+        if (!level.isClientSide && configType.getFlak() > 0)
+        {
+            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), configType.getFlak(), configType.getFlakParticles()), getX(), getY(), getZ(), BulletType.FLAK_PARTICLES_RANGE, level.dimension());
+        }
+    }
+
+    //TODO: variable for attacker / owner?
+    //TODO: getDamage method independent from firedShot?
 }

@@ -28,21 +28,16 @@ public class BulletType extends ShootableType
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
     @Getter
-    protected int flak = 0;
+    protected int flak;
     /** The type of flak particles to spawn */
     @Getter
     protected String flakParticles = "largesmoke";
 
     /** If true then this bullet will burn entites it hits */
     @Getter
-    protected boolean setEntitiesOnFire = false;
-
+    protected boolean setEntitiesOnFire;
     @Getter
-    protected int primeDelay = 0;
-    /** Particles given off in the detonation */
-    protected int explodeParticles = 0;
-    @Getter
-    protected String explodeParticleType = "largesmoke";
+    protected int primeDelay;
 
     /** Exclusively for driveable usage. Replaces old isBomb and isShell booleans with something more flexible */
     @Getter
@@ -52,23 +47,23 @@ public class BulletType extends ShootableType
     protected String hitSound;
     @Getter
     protected float hitSoundRange = 64F;
-    protected boolean hitSoundEnable = false;
-    protected boolean entityHitSoundEnable = false;
+    protected boolean hitSoundEnable;
+    protected boolean entityHitSoundEnable;
 
     protected boolean penetrates = true;
     @Getter
     protected float penetratingPower = 1F;
     // In % of penetration to remove per tick.
-    protected float penetrationDecay = 0F;
+    protected float penetrationDecay;
 
     /*
      * How much the loss of penetration power affects the damage of the bullet. 0 = damage not affected by that kind of penetration,
      * 1 = damage is fully affected by bullet penetration of that kind
      */
-    protected float playerPenetrationEffectOnDamage = 0F;
-    protected float entityPenetrationEffectOnDamage = 0F;
-    protected float blockPenetrationEffectOnDamage = 0F;
-    protected float penetrationDecayEffectOnDamage = 0F;
+    protected float playerPenetrationEffectOnDamage;
+    protected float entityPenetrationEffectOnDamage;
+    protected float blockPenetrationEffectOnDamage;
+    protected float penetrationDecayEffectOnDamage;
 
     // Knocback modifier. less gives less kb, more gives more kb, 1 = normal kb.
     protected float knockbackModifier;
@@ -107,31 +102,18 @@ public class BulletType extends ShootableType
     @Getter
     protected float dragInAir = 0.99F;
     @Getter
-    protected float dragInWater = 0.80F;
+    protected float dragInWater = 0.8F;
     protected boolean canSpotEntityDriveable;
     protected int maxRange = -1;
     protected boolean shootForSettingPos;
     protected int shootForSettingPosHeight = 100;
     protected boolean isDoTopAttack;
 
-    //Smoke
-    /** Time to remain after detonation */
-    protected int smokeTime = 0;
-    /** Particles given off after detonation */
-
-    protected String smokeParticleType = "explode";
-    /** The effects to be given to people coming too close */
-
-    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
-    /** The radius for smoke effects to take place in */
-
-    protected float smokeRadius = 5F;
-
     //Other stuff
     @Getter
     protected boolean vls;
     @Getter
-    protected int vlsTime = 0;
+    protected int vlsTime;
     protected boolean fixedDirection;
     protected float turnRadius = 3;
     protected String boostPhaseParticle;
@@ -179,14 +161,7 @@ public class BulletType extends ShootableType
         bulletSpread = readValue(split, "Spread", bulletSpread, file);
         primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
         primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
-        explodeParticles = readValue(split, "NumExplodeParticles", explodeParticles, file);
-        explodeParticleType = readValue(split, "ExplodeParticles", explodeParticleType, file);
-        smokeTime = readValue(split, "SmokeTime", smokeTime, file);
-        smokeParticleType = readValue(split, "SmokeParticles", smokeParticleType, file);
 
-        addEffects(readValues(split, "SmokeEffect", file), smokeEffects, line, file, false, false);
-
-        smokeRadius = readValue(split, "SmokeRadius", smokeRadius, file);
         vls = readValue(split, "VLS", vls, file);
         vls = readValue(split, "HasDeadZone", vls, file);
         vlsTime = readValue(split, "DeadZoneTime", vlsTime, file);

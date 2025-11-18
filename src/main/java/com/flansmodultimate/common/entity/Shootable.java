@@ -35,6 +35,8 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     protected String shortname = StringUtils.EMPTY;
     protected Vec3 velocity = new Vec3(0, 0, 0);
+    /** Stop repeat detonations */
+    protected boolean detonated;
 
     protected Shootable(EntityType<?> entityType, Level level)
     {

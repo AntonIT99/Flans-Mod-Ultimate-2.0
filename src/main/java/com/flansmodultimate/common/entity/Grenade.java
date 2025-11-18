@@ -4,8 +4,8 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
-import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
@@ -24,7 +24,6 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
-import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +49,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -732,7 +730,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             return;
 
         double speedSq = velocity.lengthSqr();
-        if (speedSq < 0.01D)
+        if (speedSq < 0.01)
             return;
 
         List<LivingEntity> list = ModUtils.queryLivingEntities(level, this, getBoundingBox());
@@ -759,84 +757,18 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     public void detonate(Level level)
     {
-        //Do not detonate before grenade is primed
-        if (!shouldDetonateNow())
+        if (!shouldDetonateNow() || detonated || isRemoved())
             return;
-        //Stop repeat detonations
-        if (detonated)
-            return;
+
         detonated = true;
 
-        playDetonateSound(level);
-        doExplosion(level);
-        spreadFire(level);
-        spawnExplosionParticles(level);
-        dropItemsOnDetonate(level);
+        ShootingHelper.onDetonate(level, configType, position(), this, thrower);
         handleSmokeAndFlashbang(level);
     }
 
     protected boolean shouldDetonateNow()
     {
         return tickCount >= configType.getPrimeDelay();
-    }
-
-    protected void playDetonateSound(Level level)
-    {
-        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), configType.getDetonateSound(), true);
-    }
-
-    protected void doExplosion(Level level) {
-        if (level.isClientSide || configType.getExplosionRadius() <= 0.1F)
-            return;
-
-        new FlansExplosion(level(), this, thrower, configType, getX(), getY(), getZ(), false);
-    }
-
-    protected void spreadFire(Level level)
-    {
-        if (level.isClientSide || configType.getFireRadius() <= 0.1F)
-            return;
-
-        float fireRadius = configType.getFireRadius();
-        for (float i = -fireRadius; i < fireRadius; i++)
-        {
-            for (float j = -fireRadius; j < fireRadius; j++)
-            {
-                for (float k = -fireRadius; k < fireRadius; k++)
-                {
-                    if (i * i + j * j + k * k > fireRadius * fireRadius)
-                        continue;
-
-                    BlockPos pos = BlockPos.containing(i + getX(), j + getY(), k + getZ());
-                    if (level.getBlockState(pos).isAir() && random.nextBoolean()) {
-                        // Keep the 1.12.2 behavior that immediately sets and schedules fire
-                        level.setBlock(pos, Blocks.FIRE.defaultBlockState(), 2);
-                        level.scheduleTick(pos, Blocks.FIRE, 0);
-                    }
-                }
-            }
-        }
-    }
-
-    protected void spawnExplosionParticles(Level level)
-    {
-        if (!level.isClientSide)
-            return;
-
-        for (int i = 0; i < configType.getExplodeParticles(); i++)
-        {
-            ParticleHelper.spawnFromString((ClientLevel) level, configType.getExplodeParticleType(), getX(), getY(), getZ(), random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
-        }
-    }
-
-    protected void dropItemsOnDetonate(Level level)
-    {
-        if (level.isClientSide || StringUtils.isBlank(configType.getDropItemOnDetonate()))
-            return;
-
-        ItemStack dropStack = InfoType.getRecipeElement(configType.getDropItemOnDetonate(), configType.getContentPack());
-        if (dropStack != null && !dropStack.isEmpty())
-            spawnAtLocation(dropStack, 1.0F);
     }
 
     protected void handleSmokeAndFlashbang(Level level)

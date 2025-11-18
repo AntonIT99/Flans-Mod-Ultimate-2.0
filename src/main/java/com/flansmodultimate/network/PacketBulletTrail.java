@@ -21,7 +21,7 @@ public class PacketBulletTrail implements IClientPacket
     private float bulletSpeed;
     private String trailTexture;
 
-    public PacketBulletTrail(Vector3f origin, Vector3f hitPos, Float width, Float length, Float bulletSpeed, String trailTexture)
+    public PacketBulletTrail(Vector3f origin, Vector3f hitPos, float width, float length, float bulletSpeed, String trailTexture)
     {
         this.origin = origin;
         this.hitPos = hitPos;
