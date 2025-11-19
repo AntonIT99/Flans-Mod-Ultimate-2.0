@@ -3,6 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.config.ModCommonConfigs;
@@ -62,6 +63,8 @@ public class FlansMod
     //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
     //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
     public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
+
+    public static final TeamsManager teamsManager = new TeamsManager();
 
     // Registries
     static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);

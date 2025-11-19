@@ -14,18 +14,17 @@ import com.flansmodultimate.common.raytracing.DriveableHit;
 import com.flansmodultimate.common.raytracing.EntityHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.raytracing.PlayerBulletHit;
-import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.network.PacketBlockHitEffect;
-import com.flansmodultimate.network.PacketBulletTrail;
-import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.PacketHitMarker;
-import com.flansmodultimate.network.PacketParticles;
-import com.flansmodultimate.network.PacketPlaySound;
+import com.flansmodultimate.network.client.PacketBlockHitEffect;
+import com.flansmodultimate.network.client.PacketBulletTrail;
+import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketParticles;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -160,7 +159,7 @@ public final class ShootingHelper
         {
             if (entityHit.getEntity() != null)
             {
-                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage().getDamageValue(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
+                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage().getDamageAgainstEntity(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
                 {
                     //TODO: Check origin code
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
@@ -189,7 +188,7 @@ public final class ShootingHelper
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
 
             //If the bullet breaks glass, and can do so according to FlansMod, do so.
-            if (bulletType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
+            if (bulletType.isBreaksGlass() && ModUtils.isGlass(state) && FlansMod.teamsManager.isCanBreakGlass() && !level.isClientSide)
             {
                 ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
             }

@@ -1,5 +1,8 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.server;
 
+import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketAllowDebug;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.network.FriendlyByteBuf;

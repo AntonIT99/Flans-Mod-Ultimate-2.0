@@ -1,8 +1,8 @@
 package com.flansmodultimate.common;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.driveables.Wheel;
-import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.GrenadeType;
@@ -10,8 +10,8 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.PacketHitMarker;
-import com.flansmodultimate.network.PacketParticle;
+import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -107,7 +107,7 @@ public class FlansExplosion extends Explosion
         this.power = explosionPower;
 
         this.causesFire = causesFire;
-        this.breaksBlocks = breaksBlocks && TeamsManager.isExplosionsBreakBlocks();
+        this.breaksBlocks = breaksBlocks && FlansMod.teamsManager.isExplosionsBreakBlocks();
 
         this.canDamageSelf = canDamageSelf;
         this.damage = damage;
@@ -246,17 +246,17 @@ public class FlansExplosion extends Explosion
                 float damage = (float) ((impact * impact + impact) / 2.0D * 8.0D * radius2 + 1.0D);
 
                 // === Flan’s multipliers ===
-                damage *= this.damage.getDamageValue(e);
+                damage *= this.damage.getDamageAgainstEntity(e);
 
                 if (e instanceof Wheel wheel)
                 {
                     damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
-                    damage *= this.damage.getDamageValue(wheel.getDriveable());
+                    damage *= this.damage.getDamageAgainstEntity(wheel.getDriveable());
                 }
                 else if (e instanceof Seat seat)
                 {
                     damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
-                    damage *= this.damage.getDamageValue(seat.getDriveable());
+                    damage *= this.damage.getDamageAgainstEntity(seat.getDriveable());
                 }
 
                 if (damage > 0.5F)

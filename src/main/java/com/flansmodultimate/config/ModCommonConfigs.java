@@ -45,8 +45,8 @@ public class ModCommonConfigs
         BUILDER.push("Shootable Settings");
         //TODO: idea - teams command to enable / disable friendly fire
         shootableProximityTriggerFriendlyFire = BUILDER
-                .comment("Whether proximity triggers can get triggered by the thrower and its allies")
-                .define("shootableProximityTriggerFriendlyFire", true);
+                .comment("Whether proximity triggers can get triggered by allies and cause friendly fire")
+                .define("shootableProximityTriggerFriendlyFire", false);
         shootableDefaultRespawnTime = BUILDER
                 .comment("Max despawn time in ticks (0.05s). After this time the entity will despawn quietly. 0 means no despawn time.")
                 .defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);

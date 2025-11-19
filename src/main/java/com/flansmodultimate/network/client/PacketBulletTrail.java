@@ -1,9 +1,10 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.client;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
+import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

@@ -174,7 +174,7 @@ public class PlayerHitbox
             case BODY, HEAD, LEFTARM, RIGHTARM:
             {
                 //Calculate the hit damage
-                float hitDamage = damage * shot.getBulletType().getDamage().getDamageValue(player) * damageModifier;
+                float hitDamage = damage * shot.getBulletType().getDamage().getDamageAgainstEntity(player) * damageModifier;
                 //Create a damage source object
                 DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 

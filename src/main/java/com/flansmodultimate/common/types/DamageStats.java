@@ -106,7 +106,7 @@ public final class DamageStats
             damageVsPlanes = damageVsVehicles;
     }
 
-    public float getDamageValue(Entity entity)
+    public float getDamageAgainstEntity(Entity entity)
     {
         if (entity instanceof Player)
             return damageVsPlayer;

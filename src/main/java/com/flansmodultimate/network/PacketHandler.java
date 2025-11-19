@@ -1,6 +1,18 @@
 package com.flansmodultimate.network;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.network.client.PacketAllowDebug;
+import com.flansmodultimate.network.client.PacketBlockHitEffect;
+import com.flansmodultimate.network.client.PacketBulletTrail;
+import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.PacketGunAnimation;
+import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketParticle;
+import com.flansmodultimate.network.client.PacketParticles;
+import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.server.PacketGunFire;
+import com.flansmodultimate.network.server.PacketReload;
+import com.flansmodultimate.network.server.PacketRequestDebug;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.network.NetworkDirection;

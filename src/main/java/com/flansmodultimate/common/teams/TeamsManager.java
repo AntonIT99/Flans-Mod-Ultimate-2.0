@@ -1,24 +1,38 @@
 package com.flansmodultimate.common.teams;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
+@NoArgsConstructor
 public class TeamsManager
 {
-    private static boolean voting = false;
+    private boolean voting = false;
     @Getter
-    private static boolean explosionsBreakBlocks = true; //TODO: default value through config?
-    private static boolean roundsGenerator = false;
-    private static boolean driveablesBreakBlocks = true;
-    private static boolean bombsEnabled = true;
-    private static boolean shellsEnabled = true;
-    private static boolean bulletsEnabled = true;
-    private static boolean forceAdventureMode = true;
-    private static boolean canBreakGuns = true;
+    private boolean explosionsBreakBlocks = true; //TODO: default value through config?
+    private boolean roundsGenerator;
+    private boolean driveablesBreakBlocks = true;
+    private boolean bombsEnabled = true;
+    private boolean shellsEnabled = true;
+    private boolean bulletsEnabled = true;
+    private boolean forceAdventureMode = true;
+    private boolean canBreakGuns = true;
     @Getter
-    private static boolean canBreakGlass = true; //TODO: default value through config?
-    private static boolean armourDrops = true;
-    private static boolean vehiclesNeedFuel = true;
-    private static boolean overrideHunger = true;
-    private static boolean survivalCanBreakVehicles = true;
-    private static boolean survivalCanPlaceVehicles = true;
+    private boolean canBreakGlass = true; //TODO: default value through config?
+    private boolean armourDrops = true;
+    private boolean vehiclesNeedFuel = true;
+    private boolean overrideHunger = true;
+    private boolean survivalCanBreakVehicles = true;
+    private boolean survivalCanPlaceVehicles = true;
+
+    /** The current round in play. This class replaces the old set of 3 fields "currentGametype", "currentMap" and "teams" */
+    @Nullable
+    private TeamsRound currentRound;
+
+    public Optional<TeamsRound> getCurrentRound()
+    {
+        return Optional.ofNullable(currentRound);
+    }
 }

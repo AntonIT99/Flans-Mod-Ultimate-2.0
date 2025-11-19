@@ -502,18 +502,23 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @Override
-    protected boolean isShooterEntity(Entity entity)
+    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity) {
+        if (getConfigType().getDamageToTriggerer() > 0F)
+            entity.hurt(firedShot.getDamageSource(level, this), getConfigType().getDamageToTriggerer());
+
+        return true;
+    }
+
+    @Override
+    public boolean isShooterEntity(Entity entity)
     {
         return entity == firedShot.getAttacker().orElse(null) || entity == firedShot.getCausingEntity().orElse(null);
     }
 
     @Override
-    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity) {
-        if (getConfigType().getDamageToTriggerer() > 0F)
-            entity.hurt(firedShot.getDamageSource(level, this), getConfigType().getDamageToTriggerer());
-
-        detonate(level);
-        return true;
+    public Optional<LivingEntity> getOwner()
+    {
+        return firedShot.getAttacker();
     }
 
     protected void handleSubmunitions(Level level)

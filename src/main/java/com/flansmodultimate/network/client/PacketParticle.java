@@ -1,6 +1,7 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

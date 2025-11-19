@@ -1,12 +1,15 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData
@@ -194,44 +199,50 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
         for (Entity entity : list)
         {
-            if (isShooterEntity(entity) && (tickCount < 10 || !ModCommonConfigs.shootableProximityTriggerFriendlyFire.get()))
+            if (isShooterEntity(entity) && tickCount < 10)
                 continue;
 
             // Living proximity
             if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
             {
-                //TODO: Teams
-                //TODO: check team of thrower and check ModCommonConfigs.grenadeProximityTriggerFriendlyFire.get()
-
-                // Friendly fire check
-                /*if (TeamsManager.getInstance() != null
-                        && TeamsManager.getInstance().currentRound != null
-                        && entity instanceof ServerPlayer
-                        && player.isPresent()) {
-
-                    EntityDamageSourceFlan damageSource =
-                            new EntityDamageSourceFlan(getType().shortName, this, player.get(), getType());
-
-                    if (!TeamsManager.getInstance().currentRound.gametype.playerAttacked((ServerPlayer) entity, damageSource)) {
+                if (BooleanUtils.isNotTrue(ModCommonConfigs.shootableProximityTriggerFriendlyFire.get()))
+                {
+                    // Check to prevent friendly fire
+                    Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
+                    LivingEntity owner = getOwner().orElse(null);
+                    if (currentRound.isPresent()
+                            && owner instanceof ServerPlayer attacker
+                            && entity instanceof ServerPlayer victim
+                            && !currentRound.get().getGametype().canPlayerBeAttacked(victim, attacker))
                         continue;
-                    }
-                }*/
+                }
 
-                if (handleEntityInProximityTriggerRange(level, living))
-                    break;
+                if (!handleEntityInProximityTriggerRange(level, living))
+                    continue;
+
+                detonate(level);
+                break;
             }
 
             // Driveable proximity
-            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq && handleEntityInProximityTriggerRange(level, driveable))
+            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq)
+            {
+                if (!handleEntityInProximityTriggerRange(level, driveable))
+                    continue;
+
+                detonate(level);
                 break;
+            }
         }
     }
 
-    protected abstract boolean isShooterEntity(Entity entity);
-
     protected abstract boolean handleEntityInProximityTriggerRange(Level level, Entity entity);
 
-    protected abstract void detonate(Level level);
+    public abstract boolean isShooterEntity(Entity entity);
+
+    public abstract Optional<LivingEntity> getOwner();
+
+    public abstract void detonate(Level level);
 
     protected void detonate(Level level, ShootableType type, LivingEntity causingEntity)
     {

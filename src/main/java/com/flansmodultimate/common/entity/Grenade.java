@@ -9,16 +9,15 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GrenadeProximityEvent;
-import com.flansmodultimate.network.PacketFlak;
-import com.flansmodultimate.network.PacketFlashBang;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.PacketPlaySound;
+import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.PacketFlashBang;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -428,7 +427,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             motionTime--;
     }
 
-    protected void spawnTrailParticles(Level level) {
+    protected void spawnTrailParticles(Level level)
+    {
         if (!level.isClientSide || !configType.isTrailParticles())
             return;
 
@@ -446,7 +446,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
     }
 
-    protected void handleSmoke(Level level) {
+    protected void handleSmoke(Level level)
+    {
         if (!smoking)
             return;
 
@@ -486,12 +487,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             discard();
     }
 
-    @Override
-    protected boolean isShooterEntity(Entity entity)
-    {
-        return entity == thrower;
-    }
-
     protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
     {
         GrenadeProximityEvent event = new GrenadeProximityEvent(this, entity);
@@ -502,8 +497,19 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (getConfigType().getDamageToTriggerer() > 0F)
             entity.hurt(getDamageSource(), getConfigType().getDamageToTriggerer());
 
-        detonate(level);
         return true;
+    }
+
+    @Override
+    public boolean isShooterEntity(Entity entity)
+    {
+        return entity == thrower;
+    }
+
+    @Override
+    public Optional<LivingEntity> getOwner()
+    {
+        return Optional.ofNullable(thrower);
     }
 
     protected void updateStuckState(Level level)
@@ -560,7 +566,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
 
         // Break glass
-        if (configType.isBreaksGlass() && ModUtils.isGlass(state) && TeamsManager.isCanBreakGlass() && !level.isClientSide)
+        if (configType.isBreaksGlass() && ModUtils.isGlass(state) && FlansMod.teamsManager.isCanBreakGlass() && !level.isClientSide)
         {
             ModUtils.destroyBlock((ServerLevel) level, blockPos, thrower, false);
         }
@@ -758,10 +764,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
             float damageFactor = (float) (speedSq * 3.0D);
 
-            if (living instanceof Player player)
-                player.hurt(getDamageSource(), configType.getDamage().getDamageVsPlayer() * damageFactor);
-            else
-                living.hurt(getDamageSource(), configType.getDamage().getDamageVsLiving() * damageFactor);
+            living.hurt(getDamageSource(), configType.getDamage().getDamageAgainstEntity(living) * damageFactor);
         }
     }
 

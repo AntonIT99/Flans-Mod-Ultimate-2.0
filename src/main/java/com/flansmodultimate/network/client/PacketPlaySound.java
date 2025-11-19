@@ -1,6 +1,8 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketHandler;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.StringUtils;

@@ -1,8 +1,9 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.client;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;

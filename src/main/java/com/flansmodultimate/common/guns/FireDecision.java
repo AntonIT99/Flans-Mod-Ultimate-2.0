@@ -5,7 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.network.PacketPlaySound;
+import com.flansmodultimate.network.client.PacketPlaySound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;

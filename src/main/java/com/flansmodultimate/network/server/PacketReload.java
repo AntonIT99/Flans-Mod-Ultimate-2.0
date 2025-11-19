@@ -1,9 +1,13 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketGunAnimation;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.network.FriendlyByteBuf;
