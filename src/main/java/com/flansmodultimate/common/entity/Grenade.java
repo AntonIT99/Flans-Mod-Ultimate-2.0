@@ -57,6 +57,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -64,12 +65,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 {
     public static final int RENDER_DISTANCE = 64;
 
+    protected static final String NBT_THROWER = "thrower_uuid";
+    protected static final String NBT_PITCH = "rotation_pitch";
+    protected static final String NBT_YAW = "rotation_yaw";
+
     protected GrenadeType configType;
     /** The entity that threw them */
     @Nullable
     protected LivingEntity thrower;
-    @Nullable
-    protected UUID throwerUUID;
     /** Yeah, I want my grenades to have fancy physics */
     @Getter
     protected RotatedAxes axes = new RotatedAxes();
@@ -92,6 +95,11 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     @Nullable
     protected Entity stickedEntity;
     protected int motionTime;
+
+    /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
+    protected boolean checkForUUIDs;
+    @Nullable
+    protected UUID throwerUUID;
 
     public Grenade(EntityType<?> entityType, Level level)
     {
@@ -198,7 +206,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
-        buf.writeInt(thrower == null ? 0 : thrower.getId());
+        buf.writeInt(Optional.ofNullable(thrower).map(Entity::getId).orElse(0));
         buf.writeFloat(axes.getYaw());
         buf.writeFloat(axes.getPitch());
     }
@@ -209,6 +217,10 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         try
         {
             super.readSpawnData(buf);
+            int throwerId = buf.readInt();
+            float yaw = buf.readFloat();
+            float pitch = buf.readFloat();
+
             if (InfoType.getInfoType(shortname) instanceof GrenadeType type)
                 configType = type;
             if (configType == null)
@@ -218,20 +230,19 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                 return;
             }
 
-            int entityId = buf.readInt();
-            Entity ent = level().getEntity(entityId);
-            if (ent instanceof LivingEntity living)
+            Level level = level();
+            if (throwerId != 0 && level.getEntity(throwerId) instanceof LivingEntity living)
             {
+
                 thrower = living;
                 throwerUUID = living.getUUID();
             }
 
-            float yaw = buf.readFloat();
-            float pitch = buf.readFloat();
             setRot(yaw, pitch);
             yRotO = yaw;
             xRotO = pitch;
             axes.setAngles(yaw, pitch, 0F);
+
             if (configType.isSpinWhenThrown())
                 angularVelocity = new Vec3(0, 0, 10);
         }
@@ -245,18 +256,21 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        setShortName(tag.getString("type"));
+        super.readAdditionalSaveData(tag);
         InfoType infoType = InfoType.getInfoType(shortname);
         if (infoType instanceof GrenadeType gType)
         {
             configType = gType;
 
-            if (tag.hasUUID("thrower"))
-                throwerUUID = tag.getUUID("thrower");
+            if (tag.hasUUID(NBT_THROWER))
+            {
+                throwerUUID = tag.getUUID(NBT_THROWER);
+                checkForUUIDs = true;
+            }
 
             // Orientation
-            float yaw   = tag.getFloat("rotationyaw");
-            float pitch = tag.getFloat("rotationpitch");
+            float yaw = tag.getFloat(NBT_YAW);
+            float pitch = tag.getFloat(NBT_PITCH);
             setYRot(yaw);
             setXRot(pitch);
             yRotO = yaw;
@@ -272,16 +286,15 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putString("type", shortname);
+        super.addAdditionalSaveData(tag);
 
-        // Store UUID (robust across renames/offline)
         if (thrower != null)
             throwerUUID = thrower.getUUID();
         if (throwerUUID != null)
-            tag.putUUID("thrower", throwerUUID);
+            tag.putUUID(NBT_THROWER, throwerUUID);
 
-        tag.putFloat("rotationyaw", axes.getYaw());
-        tag.putFloat("rotationpitch", axes.getPitch());
+        tag.putFloat(NBT_YAW, axes.getYaw());
+        tag.putFloat(NBT_PITCH, axes.getPitch());
     }
 
     @Override
@@ -401,8 +414,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     /** Resolve UUID of thrower */
     protected void resolveUUID(Level level)
     {
-        if (thrower == null && throwerUUID != null && level instanceof ServerLevel sLevel && sLevel.getEntity(throwerUUID) instanceof LivingEntity living)
+        if (level.isClientSide || !checkForUUIDs)
+            return;
+
+        if (thrower == null && throwerUUID != null && ((ServerLevel)level).getEntity(throwerUUID) instanceof LivingEntity living)
             thrower = living;
+
+        checkForUUIDs = false;
     }
 
     protected void decrementMotionTime()

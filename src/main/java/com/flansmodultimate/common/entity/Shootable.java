@@ -9,6 +9,7 @@ import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -30,8 +31,10 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
+    protected static final String NBT_TYPE_NAME = "type";
+
     protected static final EntityDataAccessor<String> SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
-    public static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
 
     protected String shortname = StringUtils.EMPTY;
     protected Vec3 velocity = new Vec3(0, 0, 0);
@@ -146,6 +149,18 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         double vz = buf.readDouble();
         velocity = new Vec3(vx, vy, vz);
         setDeltaMovement(velocity);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        setShortName(tag.getString(NBT_TYPE_NAME));
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        tag.putString(NBT_TYPE_NAME, shortname);
     }
 
     protected boolean shouldDespawn(ShootableType configType)

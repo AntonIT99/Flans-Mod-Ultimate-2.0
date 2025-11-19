@@ -35,6 +35,7 @@ public class GunType extends PaintableType implements IScope
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
+    protected static final String NBT_ATTACHMENTS = "attachments";
 
     /**Extended Recoil System
      * ported by SecretAgent12
@@ -832,7 +833,7 @@ public class GunType extends PaintableType implements IScope
     {
         checkForTags(gun);
         CompoundTag tag = Objects.requireNonNull(gun.getTag()); // non-null because checkForTags used getOrCreateTag()
-        CompoundTag attachments = tag.getCompound("attachments");
+        CompoundTag attachments = tag.getCompound(NBT_ATTACHMENTS);
         CompoundTag data = attachments.getCompound(name);
         return AttachmentType.getFromNBT(data);
     }
@@ -844,7 +845,7 @@ public class GunType extends PaintableType implements IScope
     {
         checkForTags(gun);
         CompoundTag tag = Objects.requireNonNull(gun.getTag());
-        CompoundTag attachments = tag.getCompound("attachments");
+        CompoundTag attachments = tag.getCompound(NBT_ATTACHMENTS);
         CompoundTag stackTag = attachments.getCompound(name);
         return ItemStack.of(stackTag); // Empty tag -> ItemStack.EMPTY
     }
@@ -858,7 +859,7 @@ public class GunType extends PaintableType implements IScope
         CompoundTag tag = gun.getOrCreateTag();
 
         // If there's no "attachments" compound, create and populate it
-        if (!tag.contains("attachments", Tag.TAG_COMPOUND))
+        if (!tag.contains(NBT_ATTACHMENTS, Tag.TAG_COMPOUND))
         {
             CompoundTag attachments = new CompoundTag();
             for (int i = 0; i < numGenericAttachmentSlots; i++)
@@ -870,7 +871,7 @@ public class GunType extends PaintableType implements IScope
             attachments.put("stock", new CompoundTag());
             attachments.put("grip", new CompoundTag());
 
-            tag.put("attachments", attachments);
+            tag.put(NBT_ATTACHMENTS, attachments);
         }
     }
 

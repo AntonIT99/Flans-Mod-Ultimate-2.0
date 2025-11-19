@@ -53,7 +53,7 @@ import java.util.function.Consumer;
 
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
 {
-    protected static final String NBT_TAG_AMMO = "ammo";
+    protected static final String NBT_AMMO = "ammo";
 
     protected static boolean rightMouseHeld;
     protected static boolean lastRightMouseHeld;
@@ -448,17 +448,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return ItemStack.EMPTY;
         }
 
-        if (!tag.contains(NBT_TAG_AMMO, Tag.TAG_LIST))
+        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
         {
             // init empty slots
             ListTag list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(NBT_TAG_AMMO, list);
+            tag.put(NBT_AMMO, list);
             return ItemStack.EMPTY;
         }
 
-        ListTag list = tag.getList(NBT_TAG_AMMO, Tag.TAG_COMPOUND);
+        ListTag list = tag.getList(NBT_AMMO, Tag.TAG_COMPOUND);
         if (id < 0 || id >= list.size())
             return ItemStack.EMPTY;
 
@@ -477,16 +477,16 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         CompoundTag tag = gun.getOrCreateTag();
 
         ListTag list;
-        if (tag.contains(NBT_TAG_AMMO, Tag.TAG_LIST))
+        if (tag.contains(NBT_AMMO, Tag.TAG_LIST))
         {
-            list = tag.getList(NBT_TAG_AMMO, Tag.TAG_COMPOUND);
+            list = tag.getList(NBT_AMMO, Tag.TAG_COMPOUND);
         }
         else
         {
             list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(NBT_TAG_AMMO, list);
+            tag.put(NBT_AMMO, list);
         }
 
         // ensure index exists
@@ -497,6 +497,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : bullet.save(new CompoundTag());
 
         list.set(id, slotTag);
-        tag.put(NBT_TAG_AMMO, list); // write back (harmless if unchanged)
+        tag.put(NBT_AMMO, list); // write back (harmless if unchanged)
     }
 }

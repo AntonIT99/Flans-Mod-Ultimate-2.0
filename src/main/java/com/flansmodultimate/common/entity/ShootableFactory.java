@@ -19,26 +19,6 @@ import net.minecraft.world.phys.Vec3;
 public final class ShootableFactory
 {
     /**
-     * General constructor
-     */
-    @NotNull
-    public static Shootable createShootable(Level level, @NotNull ShootableType type, Vec3 origin, Vec3 direction, @Nullable FiredShot firedShot)
-    {
-        if (type instanceof BulletType)
-        {
-            if (firedShot != null)
-                return new Bullet(level, firedShot, origin, direction);
-            else
-                throw new IllegalArgumentException("firedShot must not be null");
-        }
-        else if (type instanceof GrenadeType grenadeType)
-        {
-            return new Grenade(level, grenadeType, origin, direction, null);
-        }
-        throw new IllegalArgumentException("Unknown Shootable Type");
-    }
-
-    /**
      * Shootable entities associated with a living entity shooting a gun
      */
     @NotNull
@@ -54,4 +34,24 @@ public final class ShootableFactory
         }
         throw new IllegalArgumentException("Unknown Shootable Type");
     }
+
+    /**
+     * For Spawning submunitions
+     * @param firedShot: the shot that spawns the submunitions
+     * @param type: the type of the submunition to spawn
+     */
+    @NotNull
+    public static Shootable createShootable(Level level, @NotNull FiredShot firedShot, @NotNull ShootableType type, Vec3 origin, Vec3 direction)
+    {
+        if (type instanceof BulletType bulletType)
+        {
+            return new Bullet(level, new FiredShot(firedShot.getFireableGun(), bulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null)), origin, direction);
+        }
+        else if (type instanceof GrenadeType grenadeType)
+        {
+            return new Grenade(level, grenadeType, origin, direction, firedShot.getAttacker().orElse(null));
+        }
+        throw new IllegalArgumentException("Unknown Shootable Type");
+    }
+
 }

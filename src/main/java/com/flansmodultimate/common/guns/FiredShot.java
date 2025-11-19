@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,28 +30,16 @@ public class FiredShot
     @Getter
     private final BulletType bulletType;
     /** Living Entity, if one can be associated with the shot. Can be the same as shooter */
-    @Nullable
-    private final LivingEntity attacker;
+    @Setter @Nullable
+    private LivingEntity attacker;
     /** Entity which fired the shot. */
-    @Nullable
-    private final Entity shooter;
+    @Setter @Nullable
+    private Entity shooter;
 
-    /** General Constructor */
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack)
-    {
-        this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, null, null);
-    }
-
-    /** Constructor for living entities shooting directly */
+    /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, @Nullable LivingEntity attacker)
     {
         this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, attacker, attacker);
-    }
-
-    /** Constructor for living entities shooting indirectly */
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
-    {
-        this(new FireableGun(gunType, gunStack, otherHandStack), bulletType, shooter, attacker);
     }
 
     public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)

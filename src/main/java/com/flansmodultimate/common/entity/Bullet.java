@@ -22,6 +22,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -49,6 +50,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 {
     public static final int RENDER_DISTANCE = 128;
 
+    protected static final String NBT_ATTACKER = "attacker_uuid";
+    protected static final String NBT_SHOOTER = "shooter_uuid";
+    protected static final String NBT_FIREABLE_GUN = "fireable_gun";
+    protected static final String NBT_FIREABLE_GUN_TYPE_NAME = "info_type";
+    protected static final String NBT_FIREABLE_GUN_SPREAD = "spread";
+    protected static final String NBT_FIREABLE_GUN_SPEED = "speed";
+    protected static final String NBT_FIREABLE_GUN_DAMAGE = "damage";
+    protected static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
+
     protected BulletType configType;
     protected FiredShot firedShot;
     protected Entity lockedOnTo; // For homing missiles
@@ -58,21 +68,23 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected double initialSpeed;
     protected float currentPenetratingPower;
     /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
-    protected int pingOfShooter = 0;
+    protected int pingOfShooter;
 
     protected int submunitionDelay = 20;
-    protected boolean hasSetSubDelay = false;
-    protected boolean hasSetVlsDelay = false;
-    protected int vlsDelay = 0;
-    protected int soundTime = 0;
+    protected boolean hasSetSubDelay;
+    protected boolean hasSetVlsDelay;
+    protected int vlsDelay;
+    protected int soundTime;
     protected Vec3 lookVector;
     protected Vec3 initialPos;
-    protected boolean hasSetLook = false;
+    protected boolean hasSetLook;
 
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
-    protected boolean checkforuuids;
-    protected UUID playeruuid;
-    protected UUID shooteruuid;
+    protected boolean checkForUUIDs;
+    /** UUID of the living entity which fired that bullet (either directly or indirectly) */
+    protected UUID attackerUUID;
+    /** UUID of the entity which shot that bullet (directly) */
+    protected UUID shooterUUID;
 
     @OnlyIn(Dist.CLIENT)
     protected boolean playedFlybySound;
@@ -214,12 +226,24 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @Override
+    public void writeSpawnData(FriendlyByteBuf buf)
+    {
+        super.writeSpawnData(buf);
+        buf.writeInt(firedShot.getCausingEntity().map(Entity::getId).orElse(0));
+        buf.writeInt(firedShot.getAttacker().map(Entity::getId).orElse(0));
+    }
+
+    @Override
     public void readSpawnData(FriendlyByteBuf buf)
     {
         try
         {
             super.readSpawnData(buf);
+            int shooterId = buf.readInt();
+            int attackerId = buf.readInt();
+
             setOrientation(velocity);
+
             if (InfoType.getInfoType(shortname) instanceof BulletType type)
                 configType = type;
             if (configType == null)
@@ -227,8 +251,17 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
             }
-            if (firedShot == null)
-                firedShot = new FiredShot((FireableGun) null, configType, null, null);
+
+            Level level = level();
+            Entity shooter = null;
+            LivingEntity attacker = null;
+
+            if (shooterId != 0)
+                shooter = level.getEntity(attackerId);
+            if (attackerId != 0 && level.getEntity(attackerId) instanceof LivingEntity living)
+                attacker = living;
+
+            firedShot = new FiredShot(null, configType, shooter, attacker);
         }
         catch (Exception e)
         {
@@ -238,9 +271,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putString("type", shortname);
+        super.addAdditionalSaveData(tag);
 
         FireableGun gun = firedShot.getFireableGun();
 
@@ -248,54 +281,54 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         {
             CompoundTag gunTag = new CompoundTag();
 
-            gunTag.putString("infotype", gun.getType().getShortName());
-            gunTag.putFloat("spread", gun.getSpread());
-            gunTag.putFloat("speed", gun.getBulletSpeed());
-            gunTag.putFloat("damage", gun.getDamage());
-            gunTag.putFloat("vehicledamage", gun.getDamageAgainstVehicles());
-            tag.put("fireablegun", gunTag);
+            gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
+            gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
+            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
+            gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
+            gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
+            tag.put(NBT_FIREABLE_GUN, gunTag);
 
-            firedShot.getPlayerAttacker().ifPresent((ServerPlayer player) -> tag.putUUID("player", player.getUUID()));
-            firedShot.getCausingEntity().ifPresent((Entity shooter) -> tag.putUUID("shooter", shooter.getUUID()));
+            firedShot.getAttacker().ifPresent(livingEntity -> tag.putUUID(NBT_ATTACKER, livingEntity.getUUID()));
+            firedShot.getCausingEntity().ifPresent(entity -> tag.putUUID(NBT_SHOOTER, entity.getUUID()));
         }
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        FireableGun fireablegun = null;
-        setShortName(tag.getString("type"));
+        super.readAdditionalSaveData(tag);
         InfoType infoType = InfoType.getInfoType(shortname);
+        FireableGun fireableGun = null;
 
         if (infoType instanceof BulletType bType)
         {
             configType = bType;
 
-            if (tag.contains("fireablegun", Tag.TAG_COMPOUND))
+            if (tag.contains(NBT_FIREABLE_GUN, Tag.TAG_COMPOUND))
             {
-                CompoundTag gun = tag.getCompound("fireablegun");
-                float damage = gun.getFloat("damage");
-                float vDamage = gun.getFloat("vehicledamage");
-                float spread = gun.getFloat("spread");
-                float speed = gun.getFloat("speed");
-                InfoType fireablegunInfoType = InfoType.getInfoType(gun.getString("infotype"));
+                CompoundTag gun = tag.getCompound(NBT_FIREABLE_GUN);
+                float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
+                float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
+                float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
+                EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
 
-                if (fireablegunInfoType != null)
-                    fireablegun = new FireableGun(fireablegunInfoType, damage, vDamage, spread, speed, EnumSpreadPattern.CIRCLE);
+                InfoType fireableGunInfoType = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
+                if (fireableGunInfoType != null)
+                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, spreadPattern);
             }
 
-            if (tag.hasUUID("player"))
+            if (tag.hasUUID(NBT_ATTACKER))
             {
-                playeruuid = tag.getUUID("player");
-                checkforuuids = true;
+                attackerUUID = tag.getUUID(NBT_ATTACKER);
+                checkForUUIDs = true;
             }
-            if (tag.hasUUID("shooter"))
+            if (tag.hasUUID(NBT_SHOOTER))
             {
-                shooteruuid = tag.getUUID("shooter");
-                checkforuuids = true;
+                shooterUUID = tag.getUUID(NBT_SHOOTER);
+                checkForUUIDs = true;
             }
 
-            firedShot = new FiredShot(fireablegun, configType, null, null);
+            firedShot = new FiredShot(fireableGun, configType, null, null);
         }
         else
         {
@@ -311,16 +344,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         Level level = level();
         try
         {
-            if (initialTick)
-            {
-                initialSpeed = velocity.length();
-                initialTick = false;
-            }
-            if (!level.isClientSide && checkforuuids)
-            {
-                resolvePendingUUIDs((ServerLevel) level);
-                checkforuuids = false;
-            }
+            setInitialSpeed();
+            resolveUUIDs(level);
+
             if (shouldDespawn(configType))
             {
                 detonated = true;
@@ -358,30 +384,32 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    protected void resolvePendingUUIDs(ServerLevel level)
+    protected void setInitialSpeed()
     {
-        ServerPlayer player = null;
+        if (initialTick)
+        {
+            initialSpeed = velocity.length();
+            initialTick = false;
+        }
+    }
+
+    protected void resolveUUIDs(Level level)
+    {
+        if (level.isClientSide || !checkForUUIDs)
+            return;
+
+        ServerLevel serverLevel = (ServerLevel) level;
         Entity shooter = null;
+        LivingEntity attacker = null;
 
-        if (playeruuid != null)
-        {
-            player = (ServerPlayer) level.getPlayerByUUID(playeruuid);
-            playeruuid = null;
-        }
+        if (shooterUUID != null)
+            shooter = serverLevel.getEntity(shooterUUID); // null if not loaded
+        if (attackerUUID != null && serverLevel.getEntity(attackerUUID) instanceof LivingEntity living)
+            attacker = living;
 
-        if (shooteruuid != null)
-        {
-            if (player != null && shooteruuid.equals(player.getUUID()))
-                shooter = player;
-            else
-                shooter = level.getEntity(shooteruuid); // null if not loaded
-            shooteruuid = null;
-        }
-
-        if (player != null)
-            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, player);
-        else
-            firedShot = new FiredShot(firedShot.getFireableGun(), configType, shooter, (shooter instanceof LivingEntity living) ? living : null);
+        firedShot.setShooter(shooter);
+        firedShot.setAttacker(attacker);
+        checkForUUIDs = false;
     }
 
     protected void updatePingOfShooter(Level level)
@@ -421,11 +449,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (submunitionType == null)
             return;
 
-        FiredShot submunitionShot = null;
-        if (submunitionType instanceof BulletType bulletType)
-            submunitionShot = new FiredShot(firedShot.getFireableGun(), bulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null));
-        Shootable shootable = ShootableFactory.createShootable(level, submunitionType, position(), velocity.normalize(), submunitionShot);
-
+        Shootable shootable = ShootableFactory.createShootable(level, firedShot, submunitionType, position(), velocity.normalize());
 
         for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
         {

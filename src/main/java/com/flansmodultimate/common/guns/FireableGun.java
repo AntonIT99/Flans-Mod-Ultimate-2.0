@@ -13,23 +13,20 @@ import net.minecraft.world.item.ItemStack;
  */
 public class FireableGun
 {
-    /** Spread of the bullets shot with this gun */
-    @Getter
-    private float spread;
-    @Getter
-    private final EnumSpreadPattern spreadPattern;
-    /** Speed a bullet fired from this gun will travel at. (0 means instant/raytraced) */
-    @Getter
-    private final float bulletSpeed;
     /** the InfoType of this gun */
     @Getter
     private final InfoType type;
     /** the damage this gun will cause */
     @Getter
     private float damage;
-    /** the damage this gun will cause against vehicles */
+    /** Spread of the bullets shot with this gun */
     @Getter
-    private final float damageAgainstVehicles;
+    private float spread;
+    /** Speed a bullet fired from this gun will travel at. (0 means instant/raytraced) */
+    @Getter
+    private final float bulletSpeed;
+    @Getter
+    private final EnumSpreadPattern spreadPattern;
 
     public FireableGun(GunType gunType, @NotNull ItemStack gunStack)
     {
@@ -46,23 +43,12 @@ public class FireableGun
         }*/
     }
 
-    public FireableGun(InfoType type, float damage, float spread, float bulletSpeed)
-    {
-        this(type, damage, damage, spread, bulletSpeed, EnumSpreadPattern.CIRCLE);
-    }
-
     public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
-    {
-        this(type, damage, damage, spread, bulletSpeed, spreadPattern);
-    }
-
-    public FireableGun(InfoType type, float damage, float damageAgainstVehicles, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)
     {
         this.type = type;
         this.damage = damage;
         this.spread = spread;
         this.bulletSpeed = bulletSpeed;
-        this.damageAgainstVehicles = damageAgainstVehicles;
         this.spreadPattern = spreadPattern;
     }
 

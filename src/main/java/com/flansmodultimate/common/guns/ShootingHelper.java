@@ -61,9 +61,10 @@ public final class ShootingHelper
 {
     private static final RandomSource random = RandomSource.create();
 
-    public static void fireGun(Level level, @NotNull ShootableType shootableType, @Nullable FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
+    /** Call this when fire bullets from vehicles or other sources */
+    public static void fireGun(Level level, @NotNull FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
-        if (firedShot != null && firedShot.getFireableGun().getBulletSpeed() == 0F && shootableType instanceof BulletType)
+        if (firedShot.getFireableGun().getBulletSpeed() == 0F && firedShot.getBulletType() instanceof BulletType)
         {
             // Raytrace without entity
             createMultipleShots(level, firedShot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
@@ -71,16 +72,17 @@ public final class ShootingHelper
         else
         {
             // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, shootableType, rayTraceOrigin, shootingDirection, firedShot);
+            Bullet bullet = new Bullet(level, firedShot, rayTraceOrigin, shootingDirection);
 
             for (int i = 0; i < bulletAmount; i++)
             {
-                level.addFreshEntity(shootable);
+                level.addFreshEntity(bullet);
                 handler.shooting(i < bulletAmount - 1);
             }
         }
     }
 
+    /** Call this to fire bullets or grenades from a living entity holding a gun */
     public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
     {
         int bulletAmount = gunType.getNumBullets() * shootableType.getNumBullets();
@@ -88,7 +90,7 @@ public final class ShootingHelper
         if (gunType.getBulletSpeed(gunStack) == 0F && shootableType instanceof BulletType bulletType)
         {
             // Raytrace without entity
-            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, otherHandStack), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
+            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, otherHandStack, shooter), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
         }
         else
         {
@@ -117,7 +119,7 @@ public final class ShootingHelper
 
         if (bulletHit instanceof DriveableHit driveableHit)
         {
-            penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamageAgainstVehicles(), driveableHit, penetratingPower);
+            penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamage(), driveableHit, penetratingPower);
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
 
