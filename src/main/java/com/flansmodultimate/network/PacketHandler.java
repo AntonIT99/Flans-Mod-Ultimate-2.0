@@ -57,6 +57,7 @@ public final class PacketHandler {
         registerS2C(PacketGunAnimation.class);
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
+        registerS2C(PacketParticles.class);
         registerS2C(PacketPlaySound.class);
 
         // Client to Server Packets

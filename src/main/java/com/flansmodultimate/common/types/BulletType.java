@@ -104,6 +104,7 @@ public class BulletType extends ShootableType
     @Getter
     protected float dragInWater = 0.8F;
     protected boolean canSpotEntityDriveable;
+    @Getter
     protected int maxRange = -1;
     protected boolean shootForSettingPos;
     protected int shootForSettingPosHeight = 100;

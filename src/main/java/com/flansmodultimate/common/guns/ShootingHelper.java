@@ -2,8 +2,8 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Shootable;
@@ -21,8 +21,10 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketBlockHitEffect;
 import com.flansmodultimate.network.PacketBulletTrail;
+import com.flansmodultimate.network.PacketFlak;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.PacketHitMarker;
+import com.flansmodultimate.network.PacketParticles;
 import com.flansmodultimate.network.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -31,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -61,7 +62,7 @@ public final class ShootingHelper
 {
     private static final RandomSource random = RandomSource.create();
 
-    /** Call this when fire bullets from vehicles or other sources */
+    /** Call this when fire bullets from vehicles or other sources (Server side) */
     public static void fireGun(Level level, @NotNull FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
         if (firedShot.getFireableGun().getBulletSpeed() == 0F && firedShot.getBulletType() instanceof BulletType)
@@ -82,7 +83,7 @@ public final class ShootingHelper
         }
     }
 
-    /** Call this to fire bullets or grenades from a living entity holding a gun */
+    /** Call this to fire bullets or grenades from a living entity holding a gun (Server side) */
     public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
     {
         int bulletAmount = gunType.getNumBullets() * shootableType.getNumBullets();
@@ -227,16 +228,25 @@ public final class ShootingHelper
 
     public static void onDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
     {
-        // Play detonate sound
+        if (level.isClientSide)
+            return;
+
         playDetonateSound(level, type, position);
-        // Explode
         doExplosion(level, type, position, shootable, causingEntity);
-        // Make fire
-        spreadFire(level, type, position);
-        // Make explosion particles
+        spreadFire(level, type, position, true);
         spawnExplosionParticles(level, type, position);
-        // Drop item on hitting if bullet requires it
-        dropItemsOnDetonate(level, type, position, shootable);
+        dropItemsOnDetonate(level, type.getDropItemOnDetonate(), type.getContentPack(), position, shootable);
+    }
+
+    public static void onBulletDeath(Level level, BulletType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
+    {
+        if (level.isClientSide)
+            return;
+
+        doExplosion(level, type, position, shootable, causingEntity);
+        spreadFire(level, type, position, false);
+        spawnFlakParticles(level, type, position);
+        dropItemsOnDetonate(level, type.getDropItemOnHit(), type.getContentPack(), position, shootable);
     }
 
     private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
@@ -246,31 +256,46 @@ public final class ShootingHelper
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)
     {
-        if (level.isClientSide || type.getExplosionRadius() <= 0.1F)
+        if (type.getExplosionRadius() <= 0.1F)
             return;
 
         new FlansExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+
+        // Despawn bullets (not grenades)
+        if (explosive instanceof Bullet bullet)
+            bullet.discard();
     }
 
-    private static void spreadFire(Level level, ShootableType type, Vec3 position)
+    private static void spreadFire(Level level, ShootableType type, Vec3 position, boolean volumetric)
     {
-        if (level.isClientSide || type.getFireRadius() <= 0.1F)
+        if (type.getFireRadius() <= 0.1F)
             return;
 
         float fireRadius = type.getFireRadius();
         for (float i = -fireRadius; i < fireRadius; i++)
         {
-            for (float j = -fireRadius; j < fireRadius; j++)
+            for (float k = -fireRadius; k < fireRadius; k++)
             {
-                for (float k = -fireRadius; k < fireRadius; k++)
-                {
-                    if (i * i + j * j + k * k > fireRadius * fireRadius)
-                        continue;
 
-                    BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
-                    if (level.isEmptyBlock(pos) && random.nextBoolean())
+                if (volumetric)
+                {
+                    for (float j = -fireRadius; j < fireRadius; j++)
                     {
-                        level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+                        if (i * i + j * j + k * k > fireRadius * fireRadius)
+                            continue;
+
+                        BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
+                        if (level.isEmptyBlock(pos) && random.nextBoolean())
+                            level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+                    }
+                }
+                else
+                {
+                    for (int j = -1; j < 1; j++)
+                    {
+                        BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
+                        if (level.isEmptyBlock(pos))
+                            level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
                     }
                 }
             }
@@ -279,21 +304,22 @@ public final class ShootingHelper
 
     private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
     {
-        if (!level.isClientSide)
-            return;
-
-        for (int i = 0; i < type.getExplodeParticles(); i++)
-        {
-            ParticleHelper.spawnFromString((ClientLevel) level, type.getExplodeParticleType(), position.x, position.y, position.z, random.nextGaussian(), random.nextGaussian(), random.nextGaussian());
-        }
+        if (type.getExplodeParticles() > 0)
+            PacketHandler.sendToAllAround(new PacketParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position.x, position.y, position.z, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
     }
 
-    private static void dropItemsOnDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable)
+    private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
     {
-        if (level.isClientSide || StringUtils.isBlank(type.getDropItemOnDetonate()))
+        if (type.getFlak() > 0)
+            PacketHandler.sendToAllAround(new PacketFlak(position.x, position.y, position.z, type.getFlak(), type.getFlakParticles()), position.x, position.y, position.z, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
+    }
+
+    private static void dropItemsOnDetonate(Level level, String itemName, IContentProvider contentPack, Vec3 position, @Nullable Shootable shootable)
+    {
+        if (StringUtils.isBlank(itemName))
             return;
 
-        ItemStack dropStack = InfoType.getRecipeElement(type.getDropItemOnDetonate(), type.getContentPack());
+        ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
         if (dropStack != null && !dropStack.isEmpty())
         {
             if (shootable != null)

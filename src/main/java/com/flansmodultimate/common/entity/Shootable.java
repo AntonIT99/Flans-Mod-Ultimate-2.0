@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.util.ModUtils;
@@ -231,4 +232,10 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected abstract boolean handleEntityInProximityTriggerRange(Level level, Entity entity);
 
     protected abstract void detonate(Level level);
+
+    protected void detonate(Level level, ShootableType type, LivingEntity causingEntity)
+    {
+        detonated = true;
+        ShootingHelper.onDetonate(level, type, position(), this, causingEntity);
+    }
 }

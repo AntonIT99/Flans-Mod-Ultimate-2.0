@@ -21,6 +21,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ShootableType extends InfoType
 {
+    public static final int EXPLODE_PARTICLES_RANGE = 200;
+
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
 
     /** Controls whether it has full luminescence */

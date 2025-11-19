@@ -5,7 +5,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
@@ -352,9 +351,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             // Consume a use and remove when empty
             if (used)
             {
-                this.numUsesRemaining--;
-                if (this.numUsesRemaining <= 0)
-                    this.discard();
+                numUsesRemaining--;
+                if (numUsesRemaining <= 0)
+                    discard();
             }
         }
 
@@ -433,7 +432,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (!level.isClientSide || !configType.isTrailParticles())
             return;
 
-        // Using previous position fields (Mojmap: xo, yo, zo)
         double dx = (getX() - xo) / 10.0;
         double dy = (getY() - yo) / 10.0;
         double dz = (getZ() - zo) / 10.0;
@@ -443,6 +441,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             double x = xo + dx * i;
             double y = yo + dy * i;
             double z = zo + dz * i;
+
             ParticleHelper.spawnFromString((ClientLevel) level, configType.getTrailParticleType(), x, y, z);
         }
     }
@@ -775,32 +774,29 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     public void detonate(Level level)
     {
-        if (!shouldDetonateNow() || detonated || isRemoved())
+        if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
             return;
 
-        detonated = true;
-
-        ShootingHelper.onDetonate(level, configType, position(), this, thrower);
-        handleSmokeAndFlashbang(level);
+        detonate(level, configType, thrower);
+        startSmokeCounter();
+        handleFlashbang(level);
     }
 
-    protected boolean shouldDetonateNow()
-    {
-        return tickCount >= configType.getPrimeDelay();
-    }
-
-    protected void handleSmokeAndFlashbang(Level level)
+    protected void startSmokeCounter()
     {
         if (configType.getSmokeTime() > 0)
         {
             smoking = true;
             smokeTime = configType.getSmokeTime();
         }
-        else if (!level.isClientSide)
+        else
         {
             discard();
         }
+    }
 
+    protected void handleFlashbang(Level level)
+    {
         if (!configType.isFlashBang() || level.isClientSide)
             return;
 

@@ -1,5 +1,6 @@
 package com.flansmodultimate.network;
 
+import com.flansmodultimate.client.render.ParticleHelper;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -25,12 +26,12 @@ public class PacketParticle implements IClientPacket
 
     public PacketParticle(String s, double x1, double y1, double z1, double x2, double y2, double z2, float size)
     {
-        x = (float)x1;
-        y = (float)y1;
-        z = (float)z1;
-        mx = (float)x2;
-        my = (float)y2;
-        mz = (float)z2;
+        x = (float) x1;
+        y = (float) y1;
+        z = (float) z1;
+        mx = (float) x2;
+        my = (float) y2;
+        mz = (float) z2;
         particleType = s;
         scale = size;
     }
@@ -64,6 +65,7 @@ public class PacketParticle implements IClientPacket
     @Override
     public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
-
+        //TODO: take scale into account
+        ParticleHelper.spawnFromString(level, particleType, x, y, z, mx, my, mz);
     }
 }

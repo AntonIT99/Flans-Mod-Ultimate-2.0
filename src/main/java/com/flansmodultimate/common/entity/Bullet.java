@@ -14,8 +14,6 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.BulletLockOnEvent;
-import com.flansmodultimate.network.PacketFlak;
-import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.api.distmarker.Dist;
@@ -339,13 +337,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     @Override
     public void tick()
     {
-        //TODO: add FMU logic (WIP)
         super.tick();
         Level level = level();
         try
         {
-            setInitialSpeed();
             resolveUUIDs(level);
+            setInitialSpeed();
 
             if (shouldDespawn(configType))
             {
@@ -360,9 +357,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             initLookAndOrigin();
             decrementSoundTime();
 
+            if (handleMaxRange(level))
+                return;
             if (handleFuseAndLifetime(level))
                 return;
 
+            //TODO: add FMU logic (WIP) - continue here
             handleDetonationConditions(level, configType);
             handleSubmunitions(level);
 
@@ -431,35 +431,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    protected void handleSubmunitions(Level level)
-    {
-        if (configType.isHasSubmunitions() && submunitionDelay < 0)
-        {
-            deploySubmunitions(level);
-            submunitionDelay = 9001;
-        }
-    }
-
-    public void deploySubmunitions(Level level)
-    {
-        if (StringUtils.isBlank(configType.getSubmunition()))
-            return;
-
-        ShootableType submunitionType = ShootableType.getAmmoType(configType.getSubmunition(), configType.getContentPack()).orElse(null);
-        if (submunitionType == null)
-            return;
-
-        Shootable shootable = ShootableFactory.createShootable(level, firedShot, submunitionType, position(), velocity.normalize());
-
-        for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
-        {
-            level.addFreshEntity(shootable);
-        }
-
-        if (configType.isDestroyOnDeploySubmunition())
-            detonate(level);
-    }
-
     protected void handleVLSTimer()
     {
         if (!hasSetVlsDelay && configType.isVls())
@@ -489,18 +460,119 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             soundTime--;
     }
 
+    /** returns true if bullet was discarded */
+    private boolean handleMaxRange(Level level)
+    {
+        LivingEntity owner = firedShot.getAttacker().orElse(null);
+        if (owner == null)
+            return false;
+
+        double rangeX = owner.getX() - getX();
+        double rangeY = owner.getY() - getY();
+        double rangeZ = owner.getZ() - getZ();
+        double range = Math.sqrt(rangeX * rangeX + rangeY * rangeY + rangeZ * rangeZ);
+
+        if (configType.getMaxRange() != -1 && configType.getMaxRange() < range)
+        {
+            // Optional fuse detonation on max range
+            if (tickCount > configType.getFuse() && configType.getFuse() > 0)
+                detonate(level);
+            else
+                setDead(level);
+        }
+
+        return isRemoved();
+    }
+
+    /** returns true if bullet was discarded */
+    protected boolean handleFuseAndLifetime(Level level)
+    {
+        ticksInAir++;
+
+        if (ticksInAir > configType.getFuse() && configType.getFuse() > 0 && !isRemoved())
+        {
+            setDead(level);
+        }
+        if (tickCount > bulletLife)
+        {
+            setDead(level);
+        }
+
+        return isRemoved();
+    }
+
     @Override
     protected boolean isShooterEntity(Entity entity)
     {
         return entity == firedShot.getAttacker().orElse(null) || entity == firedShot.getCausingEntity().orElse(null);
     }
 
+    @Override
     protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity) {
         if (getConfigType().getDamageToTriggerer() > 0F)
             entity.hurt(firedShot.getDamageSource(level, this), getConfigType().getDamageToTriggerer());
 
         detonate(level);
         return true;
+    }
+
+    protected void handleSubmunitions(Level level)
+    {
+        if (configType.isHasSubmunitions() && submunitionDelay < 0)
+        {
+            deploySubmunitions(level);
+            submunitionDelay = 9001;
+        }
+    }
+
+    public void deploySubmunitions(Level level)
+    {
+        if (StringUtils.isBlank(configType.getSubmunition()))
+            return;
+
+        ShootableType submunitionType = ShootableType.getAmmoType(configType.getSubmunition(), configType.getContentPack()).orElse(null);
+        if (submunitionType == null)
+            return;
+
+        Shootable shootable = ShootableFactory.createShootable(level, firedShot, submunitionType, position(), velocity.normalize());
+
+        for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
+        {
+            level.addFreshEntity(shootable);
+        }
+
+        if (configType.isDestroyOnDeploySubmunition())
+            detonate(level);
+    }
+
+    protected void performRaytraceAndApplyHits(Level level)
+    {
+        if (level.isClientSide)
+            return;
+
+        Vec3 origin = position();
+        Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
+        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
+
+        int pingMs = firedShot.getPlayerAttacker().map(p -> p.latency).orElse(0);
+
+        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, new Vector3f(origin), new Vector3f(velocity), pingMs, 0f, getHitboxSize());
+
+        if (hits.isEmpty())
+            return;
+
+        for (BulletHit bulletHit : hits)
+        {
+            Vec3 hitPos = origin.add(velocity.scale(bulletHit.intersectTime));
+
+            currentPenetratingPower = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, currentPenetratingPower, this);
+            if (currentPenetratingPower <= 0F)
+            {
+                setPos(hitPos);
+                detonate(level);
+                break;
+            }
+        }
     }
 
     protected void applyDragAndGravity()
@@ -532,7 +604,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         setDeltaMovement(velocity);
     }
 
-    protected void updatePositionAndOrientation() {
+    protected void updatePositionAndOrientation()
+    {
         // move by current velocity
         setPos(position().add(velocity));
 
@@ -550,19 +623,62 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         xRotO = getXRot();
     }
 
+    protected void applyHomingIfLocked()
+    {
+        if (lockedOnTo == null || isRemoved())
+            return;
+
+        double dX = lockedOnTo.getX() - getX();
+        double dY = lockedOnTo.getY() - getY();
+        double dZ = lockedOnTo.getZ() - getZ();
+        double d2 = dX * dX + dY * dY + dZ * dZ;
+        if (d2 < 1.0e-6)
+            return;
+
+        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
+        Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
+
+        float angle = Math.abs(Vector3f.angle(motion, toTarget));
+        double pull = angle * configType.getLockOnForce();
+        pull = pull * pull;
+
+        velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
+        setDeltaMovement(velocity);
+    }
+
+    /** detonate() also discards bullet entities */
+    @Override
+    public void detonate(Level level)
+    {
+        if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
+            return;
+
+        detonate(level, configType, firedShot.getAttacker().orElse(null));
+    }
+
+    public void setDead(Level level)
+    {
+        if (isRemoved())
+            return;
+
+        ShootingHelper.onBulletDeath(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
+        discard();
+    }
+
     @OnlyIn(Dist.CLIENT)
     protected void clientTick(ClientLevel level)
     {
-        if (isInWater())
-            spawnWaterBubbles(level);
-        if (configType.isTrailParticles())
-            spawnParticles(level);
+        spawnWaterBubbles(level);
+        spawnTrailParticles(level);
         playFlybyIfClose(level);
     }
 
     @OnlyIn(Dist.CLIENT)
     protected void spawnWaterBubbles(ClientLevel level)
     {
+        if (!isInWater())
+            return;
+
         for (int i = 0; i < 4; i++)
         {
             double t = 0.25;
@@ -571,9 +687,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void spawnParticles(ClientLevel level)
+    protected void spawnTrailParticles(ClientLevel level)
     {
-        // segment between previous and current position
+        if (!configType.isTrailParticles() || ticksInAir <= 1)
+            return;
+
         double dX = (getX() - xo) / 10.0;
         double dY = (getY() - yo) / 10.0;
         double dZ = (getZ() - zo) / 10.0;
@@ -605,100 +723,4 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         FlansMod.getSoundEvent(FlansMod.SOUND_BULLETFLYBY).ifPresent(soundEvent ->
                 level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
     }
-
-    protected boolean handleFuseAndLifetime(Level level)
-    {
-        ticksInAir++;
-
-        if (configType.getFuse() > 0 && ticksInAir > configType.getFuse() && !isRemoved())
-        {
-            detonate(level);
-            discard();
-            return true;
-        }
-        if (tickCount > bulletLife)
-        {
-            detonate(level);
-            discard();
-            return true;
-        }
-        return isRemoved();
-    }
-
-    protected void performRaytraceAndApplyHits(Level level)
-    {
-        if (level.isClientSide)
-            return;
-
-        Vec3 origin = position();
-        Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
-
-        int pingMs = firedShot.getPlayerAttacker().map(p -> p.latency).orElse(0);
-
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, new Vector3f(origin), new Vector3f(velocity), pingMs, 0f, getHitboxSize());
-
-        if (hits.isEmpty())
-            return;
-
-        for (BulletHit bulletHit : hits)
-        {
-            Vec3 hitPos = origin.add(velocity.scale(bulletHit.intersectTime));
-
-            currentPenetratingPower = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, currentPenetratingPower, this);
-            if (currentPenetratingPower <= 0F)
-            {
-                setPos(hitPos);
-                detonate(level);
-                discard();
-                break;
-            }
-        }
-    }
-
-    protected void applyHomingIfLocked()
-    {
-        if (lockedOnTo == null || isRemoved())
-            return;
-
-        double dX = lockedOnTo.getX() - getX();
-        double dY = lockedOnTo.getY() - getY();
-        double dZ = lockedOnTo.getZ() - getZ();
-        double d2 = dX * dX + dY * dY + dZ * dZ;
-        if (d2 < 1.0e-6)
-            return;
-
-        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
-        Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
-
-        float angle = Math.abs(Vector3f.angle(motion, toTarget));
-        double pull = angle * configType.getLockOnForce();
-        pull = pull * pull;
-
-        velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
-        setDeltaMovement(velocity);
-    }
-
-    public void detonate(Level level)
-    {
-        if (tickCount < configType.getPrimeDelay() || detonated || isRemoved())
-            return;
-
-        detonated = true;
-
-        spawnFlakParticles(level);
-        ShootingHelper.onDetonate(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
-    }
-
-    private void spawnFlakParticles(Level level)
-    {
-        // Send Flak packet
-        if (!level.isClientSide && configType.getFlak() > 0)
-        {
-            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), configType.getFlak(), configType.getFlakParticles()), getX(), getY(), getZ(), BulletType.FLAK_PARTICLES_RANGE, level.dimension());
-        }
-    }
-
-    //TODO: variable for attacker / owner?
-    //TODO: getDamage method independent from firedShot?
 }
