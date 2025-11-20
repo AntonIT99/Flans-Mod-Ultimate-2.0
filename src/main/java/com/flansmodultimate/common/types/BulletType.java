@@ -53,10 +53,11 @@ public class BulletType extends ShootableType
     protected boolean penetrates = true;
     @Getter
     protected float penetratingPower = 1F;
-    // In % of penetration to remove per tick.
+    /** In % of penetration to remove per tick. */
+    @Getter
     protected float penetrationDecay;
 
-    /*
+    /**
      * How much the loss of penetration power affects the damage of the bullet. 0 = damage not affected by that kind of penetration,
      * 1 = damage is fully affected by bullet penetration of that kind
      */
@@ -65,7 +66,7 @@ public class BulletType extends ShootableType
     protected float blockPenetrationEffectOnDamage;
     protected float penetrationDecayEffectOnDamage;
 
-    // Knocback modifier. less gives less kb, more gives more kb, 1 = normal kb.
+    /** Knocback modifier. less gives less kb, more gives more kb, 1 = normal kb. */
     protected float knockbackModifier;
     /** Lock on variables. If true, then the bullet will search for a target at the moment it is fired */
     @Getter
@@ -106,7 +107,9 @@ public class BulletType extends ShootableType
     protected boolean canSpotEntityDriveable;
     @Getter
     protected int maxRange = -1;
+    @Getter
     protected boolean shootForSettingPos;
+    @Getter
     protected int shootForSettingPosHeight = 100;
     protected boolean isDoTopAttack;
 
@@ -115,18 +118,23 @@ public class BulletType extends ShootableType
     protected boolean vls;
     @Getter
     protected int vlsTime;
+    @Getter
     protected boolean fixedDirection;
+    @Getter
     protected float turnRadius = 3;
+    @Getter
     protected String boostPhaseParticle;
+    @Getter
     protected float trackPhaseSpeed = 2;
-    protected float trackPhaseTurn = 0.2F;
+    @Getter
+    protected float trackPhaseTurn = 0.1F;
     @Getter
     protected boolean torpedo;
     protected boolean fancyDescription = true;
     @Getter
     protected boolean laserGuidance;
 
-    // 0 = disable, otherwise sets velocity scale on block hit particle fx
+    /** 0 = disable, otherwise sets velocity scale on block hit particle fx */
     protected float blockHitFXScale;
     protected boolean readBlockHitFXScale;
 

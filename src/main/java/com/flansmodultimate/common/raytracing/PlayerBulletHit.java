@@ -8,9 +8,7 @@ import net.minecraft.world.entity.Entity;
  */
 public class PlayerBulletHit extends BulletHit
 {
-    /**
-     * The hitbox hit
-     */
+    /** The hitbox hit */
     public PlayerHitbox hitbox;
 
     public PlayerBulletHit(PlayerHitbox box, float f)

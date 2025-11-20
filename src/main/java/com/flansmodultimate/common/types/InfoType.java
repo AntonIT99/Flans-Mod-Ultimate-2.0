@@ -99,7 +99,10 @@ public abstract class InfoType
 
     public String getShortName()
     {
-        return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
+        if (type.isItemType())
+            return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
+        else
+            return originalShortName;
     }
 
     @OnlyIn(Dist.CLIENT)

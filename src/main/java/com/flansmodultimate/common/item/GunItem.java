@@ -67,7 +67,14 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     protected final String shortname;
     @Getter
     protected final GunItemBehavior behavior;
-    protected int soundDelay = 0;
+    protected int soundDelay;
+    @Getter
+    protected int impactX;
+    @Getter
+    protected int impactY;
+    @Getter
+    protected int impactZ;
+    //TODO: implement checkForLockOn
 
     public GunItem(GunType configType)
     {

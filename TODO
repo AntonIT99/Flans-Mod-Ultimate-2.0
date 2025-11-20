@@ -7,7 +7,6 @@ Entities:
 - Plane - TODO
 - Vehicle - TODO
 
-
 Rendering:
 - Armor - Done
 - Bomb - Done
@@ -29,5 +28,9 @@ Types:
 - Grenade - Done
 - Gun - Done
 - InfoType - Done
+
+FMU Class Comparison
+- PlayerHitbox - TODO
+- PlayerSnapshot - Done
 
 

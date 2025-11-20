@@ -8,14 +8,18 @@ import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.BulletHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.BulletLockOnEvent;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,16 +33,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,7 +72,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected float currentPenetratingPower;
     /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
     protected int pingOfShooter;
-
     protected int submunitionDelay = 20;
     protected boolean hasSetSubDelay;
     protected boolean hasSetVlsDelay;
@@ -76,6 +80,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected Vec3 lookVector;
     protected Vec3 initialPos;
     protected boolean hasSetLook;
+    @Setter
+    protected Vec3 ownerPos;
+    @Setter
+    protected Vec3 ownerLook;
+    protected int impactX;
+    protected int impactY;
+    protected int impactZ;
+    protected boolean isFirstPositionSetting;
+    protected boolean isPositionUpper = true;
 
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
     protected boolean checkForUUIDs;
@@ -343,6 +356,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         {
             resolveUUIDs(level);
             setInitialSpeed();
+            updatePreviousPosition();
 
             if (shouldDespawn(configType))
             {
@@ -362,17 +376,19 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             if (handleFuseAndLifetime(level))
                 return;
 
-            //TODO: add FMU logic (WIP) - continue here
             handleDetonationConditions(level, configType);
             handleSubmunitions(level);
 
             DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
 
-            performRaytraceAndApplyHits(level);
+            performRaytraceAndApplyHits(level); //TODO: check hit application with FMU
             applyDragAndGravity();
-            updatePositionAndOrientation();
-            applyHomingIfLocked();
+            updatePenetrationPower();
+            applyHomingIfLocked(); //TODO: check
+            updateShootForSettingPos();
+            updateManualGuidance(level);
             updateTorpedoVelocity();
+            updatePositionAndOrientation();
 
             if (level.isClientSide)
                 clientTick((ClientLevel) level);
@@ -391,6 +407,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             initialSpeed = velocity.length();
             initialTick = false;
         }
+    }
+
+    protected void updatePreviousPosition()
+    {
+        xo = getX();
+        yo = getY();
+        zo = getZ();
     }
 
     protected void resolveUUIDs(Level level)
@@ -461,7 +484,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     /** returns true if bullet was discarded */
-    private boolean handleMaxRange(Level level)
+    protected boolean handleMaxRange(Level level)
     {
         LivingEntity owner = firedShot.getAttacker().orElse(null);
         if (owner == null)
@@ -556,12 +579,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         Vec3 origin = position();
-        Optional<ServerPlayer> playerOptional = firedShot.getPlayerAttacker();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : firedShot.getCausingEntity().orElse(null);
-
-        int pingMs = firedShot.getPlayerAttacker().map(p -> p.latency).orElse(0);
-
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, ticksInAir > 20, this, new Vector3f(origin), new Vector3f(velocity), pingMs, 0f, getHitboxSize());
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize());
 
         if (hits.isEmpty())
             return;
@@ -614,7 +632,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         // move by current velocity
         setPos(position().add(velocity));
 
-        // recompute target angles from motion (same math as 1.7.10)
+        // recompute target angles from motion
         float horiz = (float) Math.hypot(velocity.x, velocity.z);
         float targetYaw = (float) (Math.toDegrees(Math.atan2(velocity.x, velocity.z)));
         float targetPitch = (float) (Math.toDegrees(Math.atan2(velocity.y, horiz)));
@@ -626,6 +644,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         // update "previous" fields for next tick interpolation
         yRotO = getYRot();
         xRotO = getXRot();
+    }
+
+    protected void updatePenetrationPower()
+    {
+        // Damp penetration too
+        float prevPenetratingPower = currentPenetratingPower;
+        currentPenetratingPower *= (1 - configType.getPenetrationDecay());
+
+        if (configType.getPenetrationDecay() > 0F) {
+            //TODO: implement PenetrationLoss
+            //penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - currentPenetratingPower), PenetrationLossType.DECAY));
+        }
     }
 
     protected void applyHomingIfLocked()
@@ -651,6 +681,130 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         setDeltaMovement(velocity);
     }
 
+    protected void updateShootForSettingPos()
+    {
+        LivingEntity owner = firedShot.getAttacker().orElse(null);
+
+        if (owner != null && configType.isShootForSettingPos() && !isFirstPositionSetting)
+        {
+            if (owner instanceof Player player)
+            {
+                ItemStack stack = player.getMainHandItem(); // was getCurrentEquippedItem()
+
+                if (!stack.isEmpty() && stack.getItem() instanceof GunItem itemGun)
+                {
+                    // assuming ItemGun still exposes these fields like before
+                    impactX = itemGun.getImpactX();
+                    impactY = itemGun.getImpactY();
+                    impactZ = itemGun.getImpactZ();
+                }
+            }
+            isFirstPositionSetting = true;
+        }
+
+        // Phase 1: go straight up until we’re high enough
+        if (configType.isShootForSettingPos() && isFirstPositionSetting && isPositionUpper)
+        {
+            Vec3 motion = getDeltaMovement();
+            double motionXa = motion.x;
+            double motionYa = motion.y;
+            double motionZa = motion.z;
+
+            double motiona = Math.sqrt(motionXa * motionXa + motionYa * motionYa + motionZa * motionZa);
+
+            // straight up with same speed
+            setDeltaMovement(0.0, motiona, 0.0);
+
+            if (getY() - configType.getShootForSettingPosHeight() > owner.getY())
+                isPositionUpper = false;
+        }
+
+        // Phase 2: travel horizontally toward impactX/Z, then start diving down
+        if (configType.isShootForSettingPos() && isFirstPositionSetting && !isPositionUpper)
+        {
+            double rootx = impactX - getX();
+            double rootz = impactZ - getZ();
+            double roota = Math.sqrt(rootx * rootx + rootz * rootz);
+
+            double ySpeed = velocity.y;
+            double speed = velocity.length();
+
+            if (roota != 0.0)
+            {
+                double newMotionX = rootx * speed / roota;
+                double newMotionZ = rootz * speed / roota;
+
+                // keep current vertical speed, rotate horizontal component
+                setDeltaMovement(newMotionX, ySpeed, newMotionZ);
+            }
+
+            // close enough to the target X/Z → turn straight down
+            if (Math.abs(impactX - getX()) < 1.0 && Math.abs(impactZ - getZ()) < 1.0)
+            {
+                setDeltaMovement(0.0, -speed, 0.0);
+            }
+        }
+    }
+
+    protected void updateManualGuidance(Level level)
+    {
+        LivingEntity owner = firedShot.getAttacker().orElse(null);
+
+        if (owner != null && configType.isManualGuidance() && vlsDelay <= 0 && lockedOnTo == null)
+        {
+            // CLIENT: send updated guidance to the server when player moves / looks ---
+            if (level.isClientSide && owner == Minecraft.getInstance().player)
+            {
+                Vec3 tempPos = owner.position();
+                Vec3 look = owner.getLookAngle();
+
+                double deltaPos = (ownerPos == null) ? 1000.0F : tempPos.subtract(ownerPos).lengthSqr();
+                double deltaLook = (ownerLook == null) ? 1000.0F : look.subtract(ownerLook).lengthSqr();
+
+                ownerPos = tempPos;
+                ownerLook = look;
+
+                if (deltaPos > 1.0 || deltaLook > 0.0001)
+                    PacketHandler.sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x, (float) ownerLook.y, (float) ownerLook.z));
+            }
+
+            // SERVER + CLIENT: apply guidance to the missile's motion
+
+            // Use last known look / pos from packet, or fall back to the current owner state
+            Vec3 lookVec = (ownerLook != null) ? ownerLook : owner.getLookAngle();
+            Vec3 origin = (ownerPos != null) ? ownerPos : owner.position();
+
+            if (configType.isFixedDirection())
+            {
+                lookVec = lookVector;
+                origin = initialPos;
+            }
+
+            float x = (float) (getX() - origin.x);
+            float y = (float) (getY() - origin.y);
+            float z = (float) (getZ() - origin.z);
+
+            float d = (float) Math.sqrt(x * x + y * y + z * z);
+            d += configType.getTurnRadius();
+
+            lookVec = lookVec.normalize();
+
+            Vec3 targetPoint = origin.add(lookVec.scale(d));
+            Vec3 diff = targetPoint.subtract(position());
+
+            float speed2 = configType.getTrackPhaseSpeed();
+            float turnSpeed = configType.getTrackPhaseTurn();
+
+            diff = diff.normalize();
+
+            Vec3 targetSpeed = diff.scale(speed2);
+
+            velocity = velocity.add(targetSpeed.subtract(velocity).scale(turnSpeed));
+
+            setDeltaMovement(velocity);
+        }
+    }
+
     /** detonate() also discards bullet entities */
     @Override
     public void detonate(Level level)
@@ -673,9 +827,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     @OnlyIn(Dist.CLIENT)
     protected void clientTick(ClientLevel level)
     {
-        spawnWaterBubbles(level);
-        spawnTrailParticles(level);
         playFlybyIfClose(level);
+        spawnWaterBubbles(level);
+        spawnParticles(level);
+        clearFire();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -686,13 +841,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         for (int i = 0; i < 4; i++)
         {
-            double t = 0.25;
-            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * t, getY() - velocity.y * t, getZ() - velocity.z * t, velocity.x, velocity.y, velocity.z);
+            double bubbleMotion = 0.25;
+            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * bubbleMotion, getY() - velocity.y * bubbleMotion, getZ() - velocity.z * bubbleMotion, velocity.x, velocity.y + 0.1F, velocity.z);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void spawnTrailParticles(ClientLevel level)
+    protected void spawnParticles(ClientLevel level)
     {
         if (!configType.isTrailParticles() || ticksInAir <= 1)
             return;
@@ -703,13 +858,25 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         float spread = 0.1F;
 
-        for (int i = 0; i < 10; i++)
+        if (vlsDelay > 0 && StringUtils.isNotBlank(configType.getBoostPhaseParticle()))
         {
-            double x = xo + dX * i + random.nextGaussian() * spread;
-            double y = yo + dY * i + random.nextGaussian() * spread;
-            double z = zo + dZ * i + random.nextGaussian() * spread;
-
-            ParticleHelper.spawnFromString(level, configType.getTrailParticleType(), x, y, z);
+            for (int i = 0; i < 10; i++)
+            {
+                double x = xo + dX * i + random.nextGaussian() * spread;
+                double y = yo + dY * i + random.nextGaussian() * spread;
+                double z = zo + dZ * i + random.nextGaussian() * spread;
+                ParticleHelper.spawnFromString(level, configType.getBoostPhaseParticle(), x, y, z, 0, 0, 0);
+            }
+        }
+        else if (!configType.isVls() || vlsDelay <= 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                double x = xo + dX * i + random.nextGaussian() * spread;
+                double y = yo + dY * i + random.nextGaussian() * spread;
+                double z = zo + dZ * i + random.nextGaussian() * spread;
+                ParticleHelper.spawnFromString(level, configType.getTrailParticleType(), x, y, z, 0, 0, 0);
+            }
         }
     }
 

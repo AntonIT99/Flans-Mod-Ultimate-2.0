@@ -22,7 +22,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static final EntityDataAccessor<String> DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
     @Getter
-    protected BulletType configType;
+    protected InfoType configType;
     protected String shortname = StringUtils.EMPTY;
 
     protected Driveable(EntityType<?> entityType, Level level)

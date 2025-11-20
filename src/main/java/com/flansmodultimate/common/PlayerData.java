@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.QueuedReload;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
+import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -109,7 +110,8 @@ public class PlayerData
     /** The player's vote for the next round from 1 ~ 5. 0 is not yet voted */
     private int vote;
     /** The team this player is currently on */
-    //private Team team;
+    @Getter
+    private Team team;
     /** The team this player will switch to upon respawning */
     //private Team newTeam;
     /** The class the player is currently using */

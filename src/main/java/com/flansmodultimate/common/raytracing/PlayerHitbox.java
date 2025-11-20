@@ -39,17 +39,22 @@ public class PlayerHitbox
      */
     public Vector3f d;
     /**
+     * The velocity of this box, in world axes.
+     */
+    public Vector3f vel;
+    /**
      * The type of hitbox
      */
     public EnumHitboxType type;
 
-    public PlayerHitbox(Player player, RotatedAxes axes, Vector3f rotationPoint, Vector3f origin, Vector3f dimensions, EnumHitboxType type)
+    public PlayerHitbox(Player player, RotatedAxes axes, Vector3f rotationPoint, Vector3f origin, Vector3f dimensions, Vector3f velocity, EnumHitboxType type)
     {
         this.player = player;
         this.axes = axes;
         this.o = origin;
         this.d = dimensions;
         this.type = type;
+        this.vel = velocity;
         this.rP = rotationPoint;
     }
 
@@ -78,7 +83,7 @@ public class PlayerHitbox
         //Move to local coords for this hitbox, but don't modify the original "origin" vector
         origin = Vector3f.sub(origin, rP, null);
         origin = axes.findGlobalVectorLocally(origin);
-        motion = axes.findGlobalVectorLocally(motion);
+        motion = axes.findGlobalVectorLocally(Vector3f.sub(motion, vel, null));
 
         //We now have an AABB starting at o and with dimensions d and our ray in the same coordinate system
         //We are looking for a point at which the ray enters the box, so we need only consider faces that the ray can see. Partition the space into 3 areas in each axis
@@ -154,9 +159,10 @@ public class PlayerHitbox
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
             player.setSecondsOnFire(20);
-        //TODO: Check origin code
+
         bulletType.getHitEffects().forEach(effect -> player.addEffect(new MobEffectInstance(effect)));
 
+        //TODO: Check origin code
         float damageModifier = bulletType.getPenetratingPower() < 0.1F ? penetratingPower / bulletType.getPenetratingPower() : 1;
 
         switch (type)

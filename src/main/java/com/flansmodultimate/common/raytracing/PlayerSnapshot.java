@@ -6,6 +6,7 @@ import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -13,6 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,34 +30,44 @@ public class PlayerSnapshot
 
     private static final float PI = (float) Math.PI;
     
-    /**
-     * The player this snapshot is for
-     */
+    /** The player this snapshot is for */
     public final Player player;
-    /**
-     * The player's position at the point the snapshot was taken
-     */
+    /** The player's position at the point the snapshot was taken */
     public final Vector3f pos;
-    /**
-     * The hitboxes for this player
-     */
+    /** The player's velocity at the point the snapshot was taken */
+    public Vector3f vel;
+    /** The hitboxes for this player */
     public final List<PlayerHitbox> hitboxes = new ArrayList<>();
-    /**
-     * The time at which this snapshot was taken
-     */
+    /** The time at which this snapshot was taken */
     public final long time;
 
     public PlayerSnapshot(Player p)
     {
         player = p;
         time = p.level().getGameTime();
-        pos = new Vector3f(p.getX(), p.getY(), p.getZ());
+        pos = ModUtils.isThePlayer(p) ? new Vector3f(p.getX(), p.getY() - 1.6F, p.getZ()) : new Vector3f(p.position());
+        vel = new Vector3f(p.getDeltaMovement());
 
         RotatedAxes bodyAxes = new RotatedAxes(p.yBodyRot, 0F, 0F);
-        RotatedAxes headAxes = new RotatedAxes(p.getYHeadRot() - p.yBodyRot, p.getXRot(), 0F);
+        RotatedAxes headAxes = new RotatedAxes(p.getYHeadRot() - p.yBodyRot + 90, 0F, p.getXRot());
+        Vector3f bodyBox = new Vector3f(0.5F, 0.67F, 0.3F);
+        Vector3f bodyPos = new Vector3f(-0.25F, 0.75F, -0.15F);
 
-        hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), new Vector3f(-0.25F, 0F, -0.15F), new Vector3f(0.5F, 1.4F, 0.3F), EnumHitboxType.BODY));
-        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(headAxes), new Vector3f(0.0F, 1.4F, 0F), new Vector3f(-0.25F, 0F, -0.25F), new Vector3f(0.5F, 0.5F, 0.5F), EnumHitboxType.HEAD));
+        Vector3f headPos = new Vector3f(-0.25F, 0F, -0.25F);
+        Vector3f headBox = new Vector3f(0.5F, 0.5F, 0.5F);
+
+        Vector3f legPos = new Vector3f(-0.25F, 0F, -0.15F);
+        Vector3f legBox = new Vector3f(0.5F, 0.75F, 0.3F);
+
+        //body
+        hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), bodyPos, bodyBox, vel,
+                EnumHitboxType.BODY));
+
+        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(headAxes),
+                new Vector3f(0.0F, 1.4F, 0F), headPos, headBox, vel, EnumHitboxType.HEAD));
+
+        //legs
+        hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), legPos, legBox, vel, EnumHitboxType.LEGS));
 
         //Calculate rotation of arms using modified code from ModelBiped
         float yHead = (p.getYHeadRot() - p.yBodyRot) / (180F / PI);
@@ -82,42 +94,52 @@ public class PlayerSnapshot
         float originZLeft = -Mth.sin(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
         float originXLeft = Mth.cos(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
 
-        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(leftArmAxes), new Vector3f(originXLeft, 1.3F, originZLeft), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), EnumHitboxType.LEFTARM));
-        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), EnumHitboxType.RIGHTARM));
+        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(leftArmAxes), new Vector3f(originXLeft, 1.3F, originZLeft), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), vel, EnumHitboxType.LEFTARM));
+        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), vel, EnumHitboxType.RIGHTARM));
 
         //Add box for right hand shield
         ItemStack playerRightHandStack = player.getMainHandItem();
-        if(!playerRightHandStack.isEmpty() && playerRightHandStack.getItem() instanceof GunItem gunItem)
+        if (!playerRightHandStack.isEmpty() && playerRightHandStack.getItem() instanceof GunItem gunItem)
         {
             GunType gunType = gunItem.getConfigType();
             if(gunType.isShield())
             {
-                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), EnumHitboxType.RIGHTITEM));
+                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), vel, EnumHitboxType.RIGHTITEM));
             }
         }
+
         ItemStack playerLeftHandStack = player.getOffhandItem();
-        if(!playerLeftHandStack.isEmpty() && playerLeftHandStack.getItem() instanceof GunItem gunItem)
+        if (!playerLeftHandStack.isEmpty() && playerLeftHandStack.getItem() instanceof GunItem gunItem)
         {
             GunType gunType = gunItem.getConfigType();
             if (gunType.isShield())
             {
-                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), EnumHitboxType.RIGHTITEM));
+                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), vel, EnumHitboxType.RIGHTITEM));
             }
         }
     }
 
-    public List<BulletHit> raytrace(Vector3f origin, Vector3f motion)
+    public List<BulletHit> raytrace(Vec3 origin, Vec3 motion, float lowerBound, float upperBound)
     {
+        return raytrace(new Vector3f(origin), new Vector3f(motion), lowerBound, upperBound);
+    }
+
+    public List<BulletHit> raytrace(Vector3f origin, Vector3f motion, float lowerBound, float upperBound)
+    {
+        //Prepare a list for the hits
+        List<BulletHit> hits = new ArrayList<>();
+
+        if (upperBound <= lowerBound)
+            return hits;
+
         //Get the bullet raytrace vector into local coordinates
         Vector3f localOrigin = Vector3f.sub(origin, pos, null);
-        //Prepare a list for the hits
-        ArrayList<BulletHit> hits = new ArrayList<>();
 
         //Check each hitbox for a hit
-        for(PlayerHitbox hitbox : hitboxes)
+        for (PlayerHitbox hitbox : hitboxes)
         {
             PlayerBulletHit hit = hitbox.raytrace(localOrigin, motion);
-            if(hit != null && hit.intersectTime >= 0F && hit.intersectTime <= 1F)
+            if (hit != null && hit.intersectTime >= lowerBound && hit.intersectTime <= upperBound)
             {
                 hits.add(hit);
             }

@@ -1,5 +1,6 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.common.entity.Bullet;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,14 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.Interaction;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -58,6 +64,9 @@ public final class ModUtils
 
     public static boolean isVehicleLike(Entity entity)
     {
+        if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))
+            return true;
+
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         if (id == null)
             return false;
@@ -68,12 +77,26 @@ public final class ModUtils
 
     public static boolean isPlaneLike(Entity entity)
     {
+        if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("plane"))
+            return true;
+
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         if (id == null)
             return false;
 
         String path = id.getPath().toLowerCase(Locale.ROOT);
         return path.contains("plane");
+    }
+
+    //TODO: add exceptions for other entities of this mod that should not be hit by bullets
+    public static boolean canEntityBeHitByBullets(Entity entity)
+    {
+        return !(entity instanceof Bullet)
+                && !(entity instanceof ItemEntity)
+                && !(entity instanceof Projectile)
+                && !(entity instanceof ExperienceOrb)
+                && !(entity instanceof Display)
+                && !(entity instanceof Interaction);
     }
 
     public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box, @Nullable Predicate<? super Entity> filter)

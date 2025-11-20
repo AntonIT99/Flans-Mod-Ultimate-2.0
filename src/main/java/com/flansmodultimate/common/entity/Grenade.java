@@ -770,7 +770,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void applyGravity()
     {
-        double gravity = 9.81D / 400D * configType.getFallSpeed();
+        double gravity = 9.81 / 400.0 * configType.getFallSpeed();
         velocity = velocity.add(0, - gravity, 0);
         setDeltaMovement(velocity);
     }

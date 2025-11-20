@@ -4,9 +4,7 @@ import net.minecraft.world.entity.Entity;
 
 public abstract class BulletHit implements Comparable<BulletHit>
 {
-    /**
-     * The time along the ray that the intersection happened. Between 0 and 1
-     */
+    /** The time along the ray that the intersection happened. Between 0 and 1 */
     public final float intersectTime;
 
     protected BulletHit(float intersectTime)

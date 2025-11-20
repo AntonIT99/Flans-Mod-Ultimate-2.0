@@ -16,6 +16,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -79,5 +81,15 @@ public class FiredShot
     public Optional<Entity> getCausingEntity()
     {
         return Optional.ofNullable(shooter);
+    }
+
+    public List<Entity> getOwnerEntities()
+    {
+        List<Entity> entities = new ArrayList<>();
+        if (shooter != null)
+            entities.add(shooter);
+        if (attacker != null)
+            entities.add(attacker);
+        return entities;
     }
 }

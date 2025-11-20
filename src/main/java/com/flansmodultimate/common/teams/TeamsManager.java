@@ -27,6 +27,11 @@ public class TeamsManager
     private boolean survivalCanBreakVehicles = true;
     private boolean survivalCanPlaceVehicles = true;
 
+    @Getter
+    private int bulletSnapshotMin;
+    @Getter
+    private int bulletSnapshotDivisor = 50;
+
     /** The current round in play. This class replaces the old set of 3 fields "currentGametype", "currentMap" and "teams" */
     @Nullable
     private TeamsRound currentRound;

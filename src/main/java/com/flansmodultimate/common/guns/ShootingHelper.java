@@ -197,7 +197,7 @@ public final class ShootingHelper
 
             Vector3f bulletDir = new Vector3f(shootingDirection);
             bulletDir.normalise();
-            bulletDir.scale(0.5f);
+            bulletDir.scale(0.5F);
 
             for (Player p : level.players())
             {
@@ -214,7 +214,7 @@ public final class ShootingHelper
 
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
         {
-            return -1f;
+            return -1F;
         }
         return penetratingPower;
     }
@@ -350,11 +350,8 @@ public final class ShootingHelper
         shootingDirection.scale(500F);
 
         float penetrationPower = shot.getBulletType().getPenetratingPower();
-        //first tries to get the player because the players vehicle is also ignored, or get the player independent shooter or null
-        Optional<ServerPlayer> playerOptional = shot.getPlayerAttacker();
-        Entity ignore = playerOptional.isPresent() ? playerOptional.get() : shot.getCausingEntity().orElse(null);
 
-        List<BulletHit> hits = FlansModRaytracer.raytrace(level, ignore, false, null, new Vector3f(rayTraceOrigin), new Vector3f(shootingDirection), 0, penetrationPower, 0F);
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
         Vec3 previousHitPos = rayTraceOrigin;
         Vec3 finalhit = null;
 

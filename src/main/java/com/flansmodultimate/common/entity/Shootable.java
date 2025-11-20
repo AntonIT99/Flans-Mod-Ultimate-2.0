@@ -95,7 +95,15 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void setDeltaMovement(@NotNull Vec3 deltaMovement)
     {
         super.setDeltaMovement(deltaMovement);
-        velocity = deltaMovement;
+        velocity = getDeltaMovement();
+        hasImpulse = true;
+    }
+
+    @Override
+    public void setDeltaMovement(double pX, double pY, double pZ)
+    {
+        super.setDeltaMovement(pX, pY, pZ);
+        velocity = getDeltaMovement();
         hasImpulse = true;
     }
 
@@ -211,9 +219,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
                     Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
                     LivingEntity owner = getOwner().orElse(null);
                     if (currentRound.isPresent()
-                            && owner instanceof ServerPlayer attacker
-                            && entity instanceof ServerPlayer victim
-                            && !currentRound.get().getGametype().canPlayerBeAttacked(victim, attacker))
+                        && owner instanceof ServerPlayer attacker
+                        && entity instanceof ServerPlayer victim
+                        && !currentRound.get().getGametype().canPlayerBeAttacked(victim, attacker))
                         continue;
                 }
 
