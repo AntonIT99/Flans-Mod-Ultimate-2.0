@@ -24,6 +24,7 @@ public class ModelBullet extends ModelBase
     public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
         pPoseStack.pushPose();
+        pPoseStack.translate(0F, 2F, 0F);
         bulletModel.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, getScale());
         pPoseStack.popPose();
     }

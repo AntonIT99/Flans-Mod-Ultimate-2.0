@@ -888,6 +888,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
         if (distanceToSqr(mc.player) >= 25.0) // within 5 blocks
             return;
+        if (mc.player == firedShot.getAttacker().orElse(null))
+            return;
 
         playedFlybySound = true;
         float soundVolume = 10.0F;
