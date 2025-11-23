@@ -558,6 +558,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 v7[0] -= m * bottomScale;
                 v7[2] += bottomScale;
                 break;
+            default:
+                break;
         }
 
         addRectShape(v, v1, v2, v3, v4, v5, v6, v7, w, h, d);
@@ -672,6 +674,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 v6[2] += bScale4;
                 v7[0] -= m * bScale1;
                 v7[2] += bScale4;
+                break;
+            default:
                 break;
         }
 
@@ -822,24 +826,9 @@ public class ModelRendererTurbo extends ModelRenderer
                 v7[0] -= m * bScale1;
                 v7[2] += bScale4;
                 break;
+            default:
+                break;
         }
-
-        float[] qValues = new float[]{
-                Math.abs((v[0] - v1[0]) / (v3[0] - v2[0])),
-                Math.abs((v[0] - v1[0]) / (v4[0] - v5[0])),
-                Math.abs((v4[0] - v5[0]) / (v7[0] - v6[0])),
-                Math.abs((v3[0] - v2[0]) / (v7[0] - v6[0])),
-
-                Math.abs((v[1] - v3[1]) / (v1[1] - v2[1])),
-                Math.abs((v4[1] - v7[1]) / (v5[1] - v6[1])),
-                Math.abs((v[1] - v3[1]) / (v4[1] - v7[1])),
-                Math.abs((v1[1] - v2[1]) / (v5[1] - v6[1])),
-
-                Math.abs((v[2] - v4[2]) / (v1[2] - v5[2])),
-                Math.abs((v[2] - v4[2]) / (v3[2] - v7[2])),
-                Math.abs((v1[2] - v5[2]) / (v2[2] - v6[2])),
-                Math.abs((v3[2] - v7[2]) / (v2[2] - v6[2]))
-        };
 
         addRectShape(v, v1, v2, v3, v4, v5, v6, v7, w, h, d);
     }
@@ -1316,9 +1305,9 @@ public class ModelRendererTurbo extends ModelRenderer
         float y1 = y - expansion;
         float z1 = z - expansion;
 
-        int wDir = 0;
-        int hDir = 0;
-        int dDir = 0;
+        int wDir;
+        int hDir;
+        int dDir;
 
         float wScale = 1F + (expansion / (w * pixelScale));
         float hScale = 1F + (expansion / (h * pixelScale));
@@ -1941,8 +1930,8 @@ public class ModelRendererTurbo extends ModelRenderer
         for(int idx = 0; idx < verts.length; idx++)
         {
             vertices[vertices.length - verts.length + idx] = verts[idx];
-            if(copyGroup && verts[idx] instanceof PositionTransformVertex)
-                ((PositionTransformVertex)verts[idx]).addGroup(currentGroup);
+            if(copyGroup && verts[idx] instanceof PositionTransformVertex positionTransformVertex)
+                positionTransformVertex.addGroup(currentGroup);
         }
 
         for(int idx = 0; idx < poly.length; idx++)
@@ -1994,8 +1983,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void setGroup(String groupName, Bone bone, double weight)
     {
-        if(!transformGroup.containsKey(groupName))
-            transformGroup.put(groupName, new TransformGroupBone(bone, weight));
+        transformGroup.computeIfAbsent(groupName, key -> new TransformGroupBone(bone, weight));
         currentGroup = transformGroup.get(groupName);
     }
 
@@ -2082,25 +2070,13 @@ public class ModelRendererTurbo extends ModelRenderer
         defaultTexture = s;
     }
 
-    /**
-     * Renders the shape.
-     *
-     * @param scale the scale of the shape. Default is 1.
-     */
-    @Override
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
-    {
-        render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale, false);
-    }
-
 
     /**
      * Renders the shape
      *
      * @param scale     The scale of the shape. Default is 1.
-     * @param rotateOrderZYX Whether to use the rotate order ZYX instead of YZX
      */
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, boolean rotateOrderZYX)
+    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         if (!isVisible()) return;
 
@@ -2116,7 +2092,7 @@ public class ModelRendererTurbo extends ModelRenderer
 
         pPoseStack.pushPose();
         pPoseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(pPoseStack, scale, rotateOrderZYX);
+        translateAndRotate(pPoseStack, scale);
         compile(pPoseStack.last(), pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
 
         for (ModelRenderer childModel : childModels)
@@ -2137,29 +2113,23 @@ public class ModelRendererTurbo extends ModelRenderer
         render(worldScale, false);
     }
 
-    public void render(float worldScale, boolean oldRotateOrder) {}
+    public void render(float worldScale, boolean oldRotateOrder)
+    {
+        // do nothing, only keep this method overload for compatibility when loading legacy classes
+    }
 
     /**
      * Translate and rotate the shape
-     *
      * @param scale     The scale of the shape. Default is 1.
-     * @param rotateOrderZYX Whether to use the rotate order ZYX instead of YZX
      */
-    public void translateAndRotate(PoseStack poseStack, float scale, boolean rotateOrderZYX)
+    @Override
+    public void translateAndRotate(PoseStack poseStack, float scale)
     {
         poseStack.translate(rotationPointX * 0.0625F * scale, rotationPointY * 0.0625F * scale, rotationPointZ * 0.0625F * scale);
 
         if (rotateAngleX != 0.0F || rotateAngleY != 0.0F || rotateAngleZ != 0.0F)
         {
-            Quaternionf rotation;
-            if (rotateOrderZYX)
-            {
-                rotation = new Quaternionf().rotationZYX(rotateAngleZ, rotateAngleY, rotateAngleX);
-            }
-            else
-            {
-                rotation = new Quaternionf().rotationY(rotateAngleY).rotateZ(rotateAngleZ).rotateX(rotateAngleX);
-            }
+            Quaternionf rotation = new Quaternionf().rotationZYX(rotateAngleZ, rotateAngleY, rotateAngleX);
             poseStack.mulPose(rotation);
         }
 

@@ -64,15 +64,6 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     @Override
     public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
-        /* Accessibility can no longer be modified by Reflections
-        boolean scaleHead = ReflectionUtils.getBooleanValue("scaleHead", AgeableListModel.class, this, true);
-        float babyYHeadOffset = ReflectionUtils.getFloatValue("babyYHeadOffset", AgeableListModel.class, this, 16.0F);
-        float babyZHeadOffset = ReflectionUtils.getFloatValue("babyZHeadOffset", AgeableListModel.class, this, 0.0F);
-        float babyHeadScale = ReflectionUtils.getFloatValue("babyHeadScale", AgeableListModel.class, this, 2.0F);
-        float babyBodyScale = ReflectionUtils.getFloatValue("babyBodyScale", AgeableListModel.class, this, 2.0F);
-        float bodyYOffset = ReflectionUtils.getFloatValue("bodyYOffset", AgeableListModel.class, this, 24.0F);
-        */
-
         boolean scaleHead = true;
         float babyYHeadOffset = 16.0F;
         float babyZHeadOffset = 0.0F;
@@ -84,7 +75,8 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         if (young)
         {
             pPoseStack.pushPose();
-            if (scaleHead) {
+            if (scaleHead)
+            {
                 float f = 1.5F / babyHeadScale;
                 pPoseStack.scale(f, f, f);
             }
