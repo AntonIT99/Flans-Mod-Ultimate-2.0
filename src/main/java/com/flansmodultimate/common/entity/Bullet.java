@@ -705,17 +705,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         // Phase 1: go straight up until we’re high enough
         if (configType.isShootForSettingPos() && isFirstPositionSetting && isPositionUpper)
         {
-            Vec3 motion = getDeltaMovement();
-            double motionXa = motion.x;
-            double motionYa = motion.y;
-            double motionZa = motion.z;
-
-            double motiona = Math.sqrt(motionXa * motionXa + motionYa * motionYa + motionZa * motionZa);
-
             // straight up with same speed
-            setDeltaMovement(0.0, motiona, 0.0);
+            setDeltaMovement(0.0, velocity.length(), 0.0);
 
-            if (getY() - configType.getShootForSettingPosHeight() > owner.getY())
+            if (owner != null && getY() - configType.getShootForSettingPosHeight() > owner.getY())
                 isPositionUpper = false;
         }
 

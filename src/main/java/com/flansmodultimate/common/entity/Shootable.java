@@ -95,7 +95,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void setDeltaMovement(@NotNull Vec3 deltaMovement)
     {
         super.setDeltaMovement(deltaMovement);
-        velocity = getDeltaMovement();
+        velocity = deltaMovement;
         hasImpulse = true;
     }
 
@@ -103,7 +103,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public void setDeltaMovement(double pX, double pY, double pZ)
     {
         super.setDeltaMovement(pX, pY, pZ);
-        velocity = getDeltaMovement();
+        velocity = new Vec3(pX, pY, pZ);
         hasImpulse = true;
     }
 
