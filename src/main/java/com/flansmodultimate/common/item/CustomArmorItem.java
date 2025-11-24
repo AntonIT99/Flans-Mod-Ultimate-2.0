@@ -118,7 +118,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         appendContentPackNameAndItemDescription(tooltipComponents);
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
-            tooltipComponents.add(Component.literal("+" + (int)((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
+            tooltipComponents.add(Component.literal("+" + IFlanItem.formatFloat((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
 
         if (configType.isSmokeProtection())
             tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));

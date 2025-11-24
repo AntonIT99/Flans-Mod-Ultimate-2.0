@@ -51,12 +51,12 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
 
-            tooltipComponents.add(IFlanItem.statLine("Penetration", String.valueOf(configType.getPenetratingPower())));
+            tooltipComponents.add(IFlanItem.statLine("Penetration", IFlanItem.formatFloat(configType.getPenetratingPower())));
 
             if (configType.getNumBullets() != 1)
                 tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(configType.getNumBullets())));
 
-            if (configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers() || configType.isLockOnToVehicles())
+            if (hasLockOn())
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "LockOn"));
             else if (configType.isManualGuidance())
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "Manual"));
@@ -64,6 +64,16 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "Laser"));
             else if (configType.getWeaponType() == EnumWeaponType.MISSILE)
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "Unguided"));
+
+            if (hasLockOn() || configType.isLaserGuidance())
+            {
+                tooltipComponents.add(IFlanItem.statLine("Turning Force", IFlanItem.formatFloat(configType.getLockOnForce() * 10F) + "G"));
+            }
         }
+    }
+
+    private boolean hasLockOn()
+    {
+        return configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers() || configType.isLockOnToVehicles();
     }
 }

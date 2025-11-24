@@ -379,6 +379,39 @@ public class FlansModRaytracer
         return hits;
     }
 
+    /**
+     * Performs a block ray trace from the given entity's eyes in the direction it is looking.
+     * <p>
+     * The start position is the entity's interpolated eye position at the given {@code partialTicks},
+     * and the end position is that eye position extended by {@code dist} blocks along the current
+     * view vector. The result is a {@link BlockHitResult} describing the first block hit (or a miss).
+     *
+     * @param entity       the living entity from whose perspective the ray trace is performed
+     * @param partialTicks interpolation factor between the previous and current tick (typically render partial ticks);
+     *                     used to smoothly interpolate the eye position and view direction
+     * @param dist         maximum distance, in blocks, that the ray trace will extend from the entity's eyes
+     * @param interact     whether the ray trace should interact with fluids; if {@code true}, the ray
+     *                     can hit fluids ({@link ClipContext.Fluid#ANY}), otherwise fluids are ignored
+     *                     ({@link ClipContext.Fluid#NONE})
+     * @return the {@link BlockHitResult} for the first block intersected by the ray; if no block is hit,
+     *         the result will have type {@link net.minecraft.world.phys.HitResult.Type#MISS}
+     */
+    public static BlockHitResult getSpottedPoint(Entity entity, float partialTicks, double dist, boolean interact)
+    {
+        // Eye position with interpolation
+        Vec3 eyePos = entity.getEyePosition(partialTicks);
+
+        // Look direction with interpolation
+        Vec3 lookVec = entity.getViewVector(partialTicks);
+
+        // Target point in front of the eyes
+        Vec3 targetPos = eyePos.add(lookVec.scale(dist));
+
+        ClipContext.Fluid fluidMode = interact ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE;
+        ClipContext ctx = new ClipContext(eyePos, targetPos, ClipContext.Block.OUTLINE, fluidMode, entity);
+        return entity.level().clip(ctx);
+    }
+
     public static Vector3f getPlayerMuzzlePosition(Player player, InteractionHand hand)
     {
         PlayerSnapshot snapshot = new PlayerSnapshot(player);

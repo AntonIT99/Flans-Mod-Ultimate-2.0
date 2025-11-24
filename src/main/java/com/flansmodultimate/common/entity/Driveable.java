@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.raytracing.DriveableHit;
 import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import lombok.Getter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
@@ -17,13 +18,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<InfoType>
+public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<DriveableType>
 {
     protected static final EntityDataAccessor<String> DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
     @Getter
-    protected InfoType configType;
+    protected DriveableType configType;
     protected String shortname = StringUtils.EMPTY;
+
+    //Flares
+    protected int flareDelay = 0;
+    @Getter
+    protected int ticksFlareUsing = 0;
+    @Getter
+    protected boolean varFlare;
 
     protected Driveable(EntityType<?> entityType, Level level)
     {

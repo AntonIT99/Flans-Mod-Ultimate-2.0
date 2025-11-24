@@ -16,6 +16,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
@@ -41,6 +42,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
@@ -64,31 +67,42 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected BulletType configType;
     protected FiredShot firedShot;
-    protected Entity lockedOnTo; // For homing missiles
     protected int bulletLife = 600; // Kill bullets after 30 seconds
     protected int ticksInAir;
     protected boolean initialTick = true;
     protected double initialSpeed;
     protected float currentPenetratingPower;
-    /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
-    protected int pingOfShooter;
-    protected int submunitionDelay = 20;
-    protected boolean hasSetSubDelay;
-    protected boolean hasSetVlsDelay;
-    protected int vlsDelay;
     protected int soundTime;
     protected Vec3 lookVector;
     protected Vec3 initialPos;
     protected boolean hasSetLook;
-    @Setter
-    protected Vec3 ownerPos;
-    @Setter
-    protected Vec3 ownerLook;
     protected int impactX;
     protected int impactY;
     protected int impactZ;
     protected boolean isFirstPositionSetting;
     protected boolean isPositionUpper = true;
+    @Setter
+    protected Vec3 ownerPos;
+    @Setter
+    protected Vec3 ownerLook;
+
+    /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
+    protected int pingOfShooter;
+
+    /** For homing missiles */
+    protected Entity lockedOnTo; // For homing missiles
+    protected double prevDistanceToEntity;
+    protected boolean toggleLock;
+    protected int closeCount;
+    protected double prevDistanceToTarget;
+
+    /** Submunitions */
+    protected int submunitionDelay = 20;
+    protected boolean hasSetSubDelay;
+
+    /** VLS */
+    protected boolean hasSetVlsDelay;
+    protected int vlsDelay;
 
     /** These values are used to store the UUIDs until the next entity update is performed. This prevents issues caused by the loading order */
     protected boolean checkForUUIDs;
@@ -253,6 +267,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             int shooterId = buf.readInt();
             int attackerId = buf.readInt();
 
+            Level level = level();
+            Entity shooter = null;
+            LivingEntity attacker = null;
+
             setOrientation(velocity);
 
             if (InfoType.getInfoType(shortname) instanceof BulletType type)
@@ -262,10 +280,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
             }
-
-            Level level = level();
-            Entity shooter = null;
-            LivingEntity attacker = null;
 
             if (shooterId != 0)
                 shooter = level.getEntity(attackerId);
@@ -384,7 +398,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             performRaytraceAndApplyHits(level); //TODO: check hit application with FMU
             applyDragAndGravity();
             updatePenetrationPower();
-            applyHomingIfLocked(); //TODO: check
+            applyHomingIfLocked(level);
             updateShootForSettingPos();
             updateManualGuidance(level);
             updateTorpedoVelocity();
@@ -658,27 +672,160 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    protected void applyHomingIfLocked()
+    protected void applyHomingIfLocked(Level level)
     {
-        if (lockedOnTo == null || isRemoved())
+        if (isRemoved())
             return;
 
-        double dX = lockedOnTo.getX() - getX();
-        double dY = lockedOnTo.getY() - getY();
-        double dZ = lockedOnTo.getZ() - getZ();
-        double d2 = dX * dX + dY * dY + dZ * dZ;
-        if (d2 < 1.0e-6)
+        LivingEntity owner = firedShot.getAttacker().orElse(null);
+
+        // No lock → try laser guidance
+        if (lockedOnTo == null)
+        {
+            if (configType.isLaserGuidance() && owner != null)
+            {
+                BlockHitResult hit = FlansModRaytracer.getSpottedPoint(owner, 1.0F, configType.getMaxRangeOfMissile(), false);
+                if (hit.getType() != HitResult.Type.MISS)
+                    applyLaserGuidance(Vec3.atCenterOf(hit.getBlockPos()));
+            }
+            return;
+        }
+
+        // Target present: sound & tracking
+        if (lockedOnTo instanceof Driveable driveable)
+        {
+            String lockedOnSound = driveable.getConfigType().getLockedOnSound();
+            if (StringUtils.isNotBlank(lockedOnSound) && soundTime <= 0 && !level.isClientSide)
+            {
+                PacketPlaySound.sendSoundPacket(lockedOnTo.getX(), lockedOnTo.getY(), lockedOnTo.getZ(), driveable.getConfigType().getLockedOnSoundRange(), level.dimension(), lockedOnSound ,false);
+                soundTime = driveable.getConfigType().getSoundTime();
+            }
+        }
+
+        if (tickCount > configType.getTickStartHoming())
+        {
+            // Geometry: missile → target vector
+            double dX = lockedOnTo.getX() - getX();
+            double dZ = lockedOnTo.getZ() - getZ();
+            double dY;
+            double dXYZ;
+
+            if (configType.isDoTopAttack() && Math.abs(lockedOnTo.getX() - getX()) > 2.0 && Math.abs(lockedOnTo.getZ() - getZ()) > 2.0)
+                dY = lockedOnTo.getY() + 30.0 - getY();
+            else
+                dY = lockedOnTo.getY() - getY();
+
+            if (!configType.isDoTopAttack())
+                dXYZ = distanceTo(lockedOnTo);
+            else
+                dXYZ = Math.sqrt(dX * dX + dY * dY + dZ * dZ);
+
+            // SACLOS: target must stay in crosshair
+            if (owner != null && configType.isEnableSACLOS())
+            {
+                double dXp = lockedOnTo.getX() - owner.getX();
+                double dYp = lockedOnTo.getY() - owner.getY();
+                double dZp = lockedOnTo.getZ() - owner.getZ();
+
+                Vec3 playerLook = owner.getLookAngle();
+                Vec3 playerToTarget = new Vec3(dXp, dYp, dZp);
+
+                double angleSaclos = Math.abs(Vector3f.angle(new Vector3f(playerLook), new Vector3f(playerToTarget)));
+                if (angleSaclos > Math.toRadians(configType.getMaxDegreeOfSACLOS()))
+                    lockedOnTo = null;
+            }
+
+            // Range / toggle lock logic
+            if (toggleLock)
+            {
+                toggleLock = false;
+                if (dXYZ > configType.getMaxRangeOfMissile())
+                    lockedOnTo = null;
+            }
+
+            updateVelocityForHoming(velocity, dX, dY, dZ, dXYZ);
+
+            // "Close count" logic – if distance grows too long, drop lock
+            if (tickCount > 4 && dXYZ > prevDistanceToEntity)
+            {
+                closeCount++;
+                if (closeCount > 15)
+                    lockedOnTo = null;
+            }
+            else if (closeCount > 0)
+                closeCount--;
+
+            prevDistanceToEntity = dXYZ;
+        }
+
+        // Flare / countermeasure check
+        if (lockedOnTo instanceof Driveable driveable && (driveable.isVarFlare() || driveable.getTicksFlareUsing() > 0))
+        {
+            lockedOnTo = null;
+        }
+    }
+
+    protected void applyLaserGuidance(Vec3 targetPos)
+    {
+        // Wait until homing is allowed
+        if (tickCount <= configType.getTickStartHoming())
             return;
 
-        Vector3f motion = new Vector3f((float)velocity.x, (float)velocity.y, (float)velocity.z);
-        Vector3f toTarget = new Vector3f((float)dX, (float)dY, (float)dZ);
+        // Vector from missile to target
+        double dX = targetPos.x - getX();
+        double dY = targetPos.y - getY();
+        double dZ = targetPos.z - getZ();
+        double dXYZ = Math.sqrt(dX * dX + dY * dY + dZ * dZ);
 
-        float angle = Math.abs(Vector3f.angle(motion, toTarget));
-        double pull = angle * configType.getLockOnForce();
-        pull = pull * pull;
+        if (toggleLock)
+            toggleLock = false;
 
-        velocity = velocity.scale(0.95).add(pull * dX / d2, pull * dY / d2, pull * dZ / d2);
-        setDeltaMovement(velocity);
+        updateVelocityForHoming(velocity, dX, dY, dZ, dXYZ);
+
+        // If we’re getting farther away for too long, “drop” the guidance
+        if (tickCount > 4 && dXYZ > prevDistanceToTarget)
+            closeCount++;
+        else if (closeCount > 0)
+            closeCount--;
+
+        prevDistanceToTarget = dXYZ;
+    }
+
+    private void updateVelocityForHoming(Vec3 velocity, double dX, double dY, double dZ, double dXYZ)
+    {
+        double speed = velocity.length();
+        if (speed < 1.0e-6 || dXYZ < 1.0e-6)
+            return; // no meaningful motion
+
+        Vec3 desiredMotion = new Vec3(dX * speed / dXYZ, dY * speed / dXYZ, dZ * speed / dXYZ);
+        Vec3 desiredDirection = desiredMotion.normalize();
+        Vec3 currentDirection = velocity.normalize();
+
+        // Angle between current and desired directions (radians)
+        float angle = Math.abs(Vector3f.angle(new Vector3f(currentDirection), new Vector3f(desiredDirection)));
+
+        // FOV / seeker cone: if target too far off boresight, lose lock
+        if (angle > Math.toRadians(configType.getMaxDegreeOfMissile()))
+        {
+            lockedOnTo = null;
+            return;
+        }
+
+        // Turn rate per tick scaled by lockOnForce (1 is like 10G)
+        double maxTurnThisTick = Math.toRadians(configType.getLockOnForce() * 28.10 / 60);
+
+        // If angle is tiny or within our turn budget, snap to desired direction
+        if (angle < 1.0e-3F || angle <= maxTurnThisTick)
+        {
+            setDeltaMovement(desiredMotion);
+            return;
+        }
+
+        // Rotate partially towards desiredDir by fraction t = maxTurn / angle
+        double t = Math.max(0.0, Math.min(1.0, maxTurnThisTick / angle));
+        Vec3 newDir = currentDirection.scale(1.0 - t).add(desiredDirection.scale(t)).normalize();
+        Vec3 newVelocity = newDir.scale(speed);
+        setDeltaMovement(newVelocity);
     }
 
     protected void updateShootForSettingPos()

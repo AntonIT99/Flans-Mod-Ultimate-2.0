@@ -82,15 +82,20 @@ public class BulletType extends ShootableType
     /** Lock on maximum angle for finding a target */
     @Getter
     protected float maxLockOnAngle = 45F;
-    /** Lock on force that pulls the bullet towards its prey */
+    /** Lock on force that pulls the bullet towards its prey. 1 is 10G */
     @Getter
     protected float lockOnForce = 1F;
     @Getter
     protected String trailTexture = StringUtils.EMPTY;
+    @Getter
     protected int maxDegreeOfMissile = 20;
+    @Getter
     protected int tickStartHoming = 5;
+    @Getter
     protected boolean enableSACLOS;
+    @Getter
     protected int maxDegreeOfSACLOS = 5;
+    @Getter
     protected int maxRangeOfMissile = 150;
 
     @Getter
@@ -111,6 +116,7 @@ public class BulletType extends ShootableType
     protected boolean shootForSettingPos;
     @Getter
     protected int shootForSettingPosHeight = 100;
+    @Getter
     protected boolean isDoTopAttack;
 
     //Other stuff

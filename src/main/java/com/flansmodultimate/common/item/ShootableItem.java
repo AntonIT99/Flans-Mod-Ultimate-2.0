@@ -51,15 +51,15 @@ public abstract class ShootableItem extends Item
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Fall Speed", String.valueOf(getConfigType().getFallSpeed())));
+            tooltipComponents.add(IFlanItem.statLine("Fall Speed", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
         if (getConfigType().getBulletSpread() > 1F || getConfigType().getBulletSpread() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Spread", String.valueOf(getConfigType().getBulletSpread())));
+            tooltipComponents.add(IFlanItem.statLine("Spread", IFlanItem.formatFloat(getConfigType().getBulletSpread())));
 
         IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
 
         if (getConfigType().getExplosionRadius() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Explosion Radius", String.valueOf(getConfigType().getExplosionRadius())));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius())));
         if (getConfigType().getExplosionPower() > 1F || getConfigType().getExplosionPower() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Explosion Power", String.valueOf(getConfigType().getExplosionPower())));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower())));
     }
 }

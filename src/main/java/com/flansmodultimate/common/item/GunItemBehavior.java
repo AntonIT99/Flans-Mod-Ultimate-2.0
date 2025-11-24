@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmod.client.model.GunAnimations;
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.ModClient;
@@ -37,6 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
@@ -114,9 +114,9 @@ public record GunItemBehavior(GunItem item)
 
     public void shoot(InteractionHand hand, Player player, ItemStack gunStack, PlayerData data, Level level, GunAnimations animations)
     {
-        GunType configType = item.getConfigType();
+        GunType gunType = item.getConfigType();
 
-        if (!configType.isUsableByPlayers())
+        if (!gunType.isUsableByPlayers())
             return;
 
         float shootTime = data.getShootTime(hand);
@@ -131,9 +131,7 @@ public record GunItemBehavior(GunItem item)
         if (!level.isClientSide && shootTime > 0F && shootTime < 4F)
         {
             while (shootTime > 0F)
-            {
                 shootTime--;
-            }
         }
 
         //Send the server the instruction to shoot
@@ -143,42 +141,41 @@ public record GunItemBehavior(GunItem item)
         while (shootTime <= 0F)
         {
             // Add the delay for this shot and shoot it!
-            shootTime += configType.getShootDelay(gunStack);
+            shootTime += gunType.getShootDelay(gunStack);
 
-            Optional<AmmoSlot> slot = findUsableAmmo(item, gunStack, configType);
+            Optional<AmmoSlot> slot = findUsableAmmo(item, gunStack, gunType);
 
             if (slot.isEmpty())
                 continue;
 
             ShootableItem shootableItem = (ShootableItem) slot.get().stack().getItem();
             ShootableType shootableType = shootableItem.getConfigType();
-            Vector3f rayTraceOrigin = new Vector3f(player.getEyePosition(0.0F));
             ShootingHandler handler = new DefaultShootingHandler(level, player, gunStack, hand, slot.get());
 
             //TODO: probably needs refactoring
             if (level.isClientSide)
             {
-                int bulletAmount = configType.getNumBullets() * shootableType.getNumBullets();
+                int bulletAmount = gunType.getNumBullets() * shootableType.getNumBullets();
                 for (int i = 0; i < bulletAmount; i++)
                 {
                     //Smooth effects, no need to wait for the server response
                     handler.shooting(i < bulletAmount - 1);
                 }
 
-                animations.doShoot(configType.getPumpDelay(), configType.getPumpTime());
-                float recoil = configType.getRecoil(gunStack);
+                animations.doShoot(gunType.getPumpDelay(), gunType.getPumpTime());
+                float recoil = gunType.getRecoil(gunStack);
                 ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
             }
             else
             {
                 //TODO gunOrigin? & animation origin
-                ShootingHelper.fireGun(level, player, configType, shootableType, gunStack, otherHand, handler);
-                boolean silenced = Optional.ofNullable(configType.getBarrel(gunStack)).map(AttachmentType::isSilencer).orElse(false);
-                playShotSound(level, rayTraceOrigin, silenced);
+                ShootingHelper.fireGun(level, player, gunType, shootableType, gunStack, otherHand, handler);
+                boolean silenced = Optional.ofNullable(gunType.getBarrel(gunStack)).map(AttachmentType::isSilencer).orElse(false);
+                playShotSound(level, player.getEyePosition(), silenced);
             }
 
-            if (configType.isConsumeGunUponUse())
+            if (gunType.isConsumeGunUponUse())
                 player.getInventory().setItem(player.getInventory().selected, ItemStack.EMPTY);
         }
         data.setShootTime(hand, shootTime);
@@ -285,7 +282,7 @@ public record GunItemBehavior(GunItem item)
         return reloadedSomething;
     }
 
-    private void playShotSound(Level level, Vector3f position, Boolean silenced) {
+    private void playShotSound(Level level, Vec3 position, Boolean silenced) {
         // Play shot sounds
         if (item.soundDelay <= 0 && item.configType.getShootSound() != null)
         {

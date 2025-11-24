@@ -109,6 +109,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         this(level, grenadeType, position, getPitchFromDirection(direction), getYawFromDirection(direction), entity);
     }
 
+    /** For living entities throwing grenades. */
+    public Grenade(Level level, GrenadeType grenadeType, @NotNull LivingEntity livingEntity)
+    {
+        this(level, grenadeType, livingEntity.getEyePosition(), livingEntity.getXRot(), livingEntity.getYRot(), livingEntity);
+    }
+
     public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity)
     {
         super(FlansMod.grenadeEntity.get(), level, grenadeType);
@@ -137,14 +143,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // If this can be remotely detonated, add it to the players detonate list
         if (grenadeType.isRemote() && thrower instanceof Player player)
             PlayerData.getInstance(player).getRemoteExplosives().add(this);
-    }
-
-    /**
-     * General constructor for entities throwing grenades.
-     */
-    public Grenade(Level level, GrenadeType grenadeType, @NotNull LivingEntity livingEntity)
-    {
-        this(level, grenadeType, livingEntity.getEyePosition(), livingEntity.getXRot(), livingEntity.getYRot(), livingEntity);
     }
 
     private static float getYawFromDirection(Vec3 dir)

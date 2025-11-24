@@ -152,13 +152,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         // Stats
         if (configType.isShowDamage())
-            tooltipComponents.add(IFlanItem.statLine("Damage", String.valueOf(configType.getDamage(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Damage", IFlanItem.formatFloat(configType.getDamage(stack))));
         if (configType.isShowRecoil())
-            tooltipComponents.add(IFlanItem.statLine("Recoil", String.valueOf(configType.getRecoil(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Recoil", IFlanItem.formatFloat(configType.getRecoil(stack))));
         if (configType.isShowSpread())
-            tooltipComponents.add(IFlanItem.statLine("Accuracy", String.valueOf(configType.getSpread(stack))));
+            tooltipComponents.add(IFlanItem.statLine("Accuracy", IFlanItem.formatFloat(configType.getSpread(stack))));
         if (configType.isShowReloadTime())
-            tooltipComponents.add(IFlanItem.statLine("Reload Time", (configType.getReloadTime(stack) / 20F) + "s"));
+            tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
 
         // Attachments
         if (configType.isShowAttachments())
