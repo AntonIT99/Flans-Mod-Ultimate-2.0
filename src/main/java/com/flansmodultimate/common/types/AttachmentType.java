@@ -36,6 +36,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected boolean flashlight;
     /** Flashlight range. How far away it lights things up */
+    @Getter
     protected float flashlightRange = 10F;
     /** Flashlight strength between 0 and 15 */
     @Getter

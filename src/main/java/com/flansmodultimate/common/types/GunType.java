@@ -37,9 +37,7 @@ public class GunType extends PaintableType implements IScope
     protected static final int DEFAULT_SHOOT_DELAY = 2;
     protected static final String NBT_ATTACHMENTS = "attachments";
 
-    /**Extended Recoil System
-     * ported by SecretAgent12
-     */
+    /** Extended Recoil System */
     //TODO GunRecoil
     //protected GunRecoil recoil = new GunRecoil();
     @Getter
@@ -52,11 +50,11 @@ public class GunType extends PaintableType implements IScope
     /**
      * Base value for Upwards cursor/view recoil
      */
-    protected float recoilPitch = 0.0F;
+    protected float recoilPitch;
     /**
      * Base value for Left/Right cursor/view recoil
      */
-    protected float recoilYaw = 0.0F;
+    protected float recoilYaw;
     /**
      * Modifier for setting the maximum pitch divergence when randomizing recoil (Recoil 2 + rndRecoil 0.5 == 1.5-2.5 Recoil range)
      */
@@ -69,11 +67,11 @@ public class GunType extends PaintableType implements IScope
     /**
      * DEPRECATED DO NOT USE. Subtracts from pitch recoil when crouching.
      */
-    protected float decreaseRecoilPitch = 0F;
+    protected float decreaseRecoilPitch;
     /**
      * DEPRECATED DO NOT USE. Divisor for yaw recoil when crouching.
      */
-    protected float decreaseRecoilYaw = 0F;
+    protected float decreaseRecoilYaw;
 
     /**
      * The alternatives to the above. Simple multipliers for sneaking, sprinting on yaw and pitch respectively. 1F = no change.
@@ -139,7 +137,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Damage inflicted by this gun. Multiplied by the bullet damage.
      */
-    protected float damage = 0;
+    protected float damage;
     /**
      * The damage inflicted upon punching someone with this gun
      */
@@ -163,7 +161,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The delay between shots in ticks (1/20ths of seconds) OUTDATED, USE RPM
      */
-    protected float shootDelay = 0;
+    protected float shootDelay;
     /**
      * Number of ammo items that the gun may hold. Most guns will hold one magazine.
      * Some may hold more, such as Nerf pistols, revolvers or shotguns
@@ -172,7 +170,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The fire rate of the gun in RPM, 1200 = MAX
      */
-    protected float roundsPerMin = 0;
+    protected float roundsPerMin;
     /**
      * The firing mode of the gun. One of semi-auto, full-auto, minigun or burst
      */
@@ -202,7 +200,7 @@ public class GunType extends PaintableType implements IScope
      * The amount of knockback to impact upon the player per shot
      */
     @Getter
-    protected float knockback = 0F;
+    protected float knockback;
     /**
      * The secondary function of this gun. By default, the left mouse button triggers this
      */
@@ -213,12 +211,12 @@ public class GunType extends PaintableType implements IScope
      * If true, then this gun can be dual wielded
      */
     @Getter
-    protected boolean oneHanded = false;
+    protected boolean oneHanded;
     /**
      * For one shot items like a panzerfaust
      */
     @Getter
-    protected boolean consumeGunUponUse = false;
+    protected boolean consumeGunUponUse;
     /**
      * Show the crosshair when holding this weapon
      */
@@ -227,7 +225,7 @@ public class GunType extends PaintableType implements IScope
      * Item to drop on shooting
      */
     @Getter
-    protected String dropItemOnShoot = null;
+    protected String dropItemOnShoot;
     /**
      * Set these to make guns only usable by a certain type of entity
      */
@@ -258,19 +256,22 @@ public class GunType extends PaintableType implements IScope
     /**
      * 0=use flansmod.cfg default, 1=force allow, 2=force deny
      **/
-    protected int hipFireWhileSprinting = 0;
+    protected int hipFireWhileSprinting;
 
     //Launcher variables
     protected int canLockOnAngle = 5;
-    protected int lockOnSoundTime = 0;
-    protected String lockOnSound = "";
+    protected int lockOnSoundTime;
+    protected String lockOnSound = StringUtils.EMPTY;
     protected int maxRangeLockOn = 80;
-    protected boolean canSetPosition = false;
+    protected boolean canSetPosition;
     /**
      * Determines what the launcher can lock on to
      */
-    protected boolean lockOnToPlanes = false, lockOnToVehicles = false, lockOnToMechas = false, lockOnToPlayers = false, lockOnToLivings = false;
-
+    protected boolean lockOnToPlanes;
+    protected boolean lockOnToVehicles;
+    protected boolean lockOnToMechas;
+    protected boolean lockOnToPlayers;
+    protected boolean lockOnToLivings;
 
     //Shields
 	/*A shield is actually a gun without any shoot functionality (similar to knives or binoculars)

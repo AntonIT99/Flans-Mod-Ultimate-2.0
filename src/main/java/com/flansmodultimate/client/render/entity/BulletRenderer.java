@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
@@ -20,6 +21,9 @@ public class BulletRenderer extends FlansEntityRenderer<Bullet>
     public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
     {
         shadowRadius = bullet.getHitboxSize();
+        // hasLight -> use full-bright light value
+        light = bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : light;
+
 
         poseStack.pushPose();
 

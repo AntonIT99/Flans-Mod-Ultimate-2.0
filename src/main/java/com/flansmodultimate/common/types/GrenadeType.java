@@ -15,6 +15,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 @NoArgsConstructor
 public class GrenadeType extends ShootableType
 {
+    //TODO: Make Configurable
     public static final int SMOKE_PARTICLES_COUNT = 50;
     public static final int SMOKE_PARTICLES_RANGE = 30;
 

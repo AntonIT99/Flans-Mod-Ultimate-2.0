@@ -5,8 +5,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.input.KeyInputHandler;
-import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.common.item.GunItem;
@@ -49,33 +47,17 @@ public final class ClientEventHandler
         //updatePlayerView();
     }
 
-    //TODO: complete commented code
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.START)
-        {
-            //ModClient.updateFlashlights(Minecraft.getMinecraft());
-        }
-        else if (event.phase == TickEvent.Phase.END)
-        {
-            InstantBulletRenderer.updateAllTrails();
-            //renderHooks.update();
-            //RenderFlag.angle += 2F;
-            ModClient.tick();
-            KeyInputHandler.checkKeys();
+        if (event.phase != TickEvent.Phase.END)
+            return;
 
-            double dx = Minecraft.getInstance().mouseHandler.getXVelocity();
-            double dy = Minecraft.getInstance().mouseHandler.getYVelocity();
-            if (dx * dx + dy * dy > 0.001)
-            {
-                // Only handle if the velocity vector is not too small
-                MouseInputHandler.handleMouseMove(dx, dy);
-            }
+        //TODO: complete commented code
+        //renderHooks.update();
+        //RenderFlag.angle += 2F;
+        ModClient.tick();
 
-            for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
-                debugEntity.tick();
-        }
     }
 
     @SubscribeEvent
@@ -226,7 +208,7 @@ public final class ClientEventHandler
         DebugHelper.activeDebugEntities.clear(); // cleanup on world/connection change
     }
 
-    //TODO:
+    //TODO: check these methods
     //renderItemFrame()
     //renderHeldItem()
     //renderThirdPersonWeapons()

@@ -1,8 +1,18 @@
 package com.flansmodultimate;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmodultimate.client.debug.DebugColor;
+import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.input.MouseInputHandler;
+import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.event.handler.CommonEventHandler;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,23 +21,37 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,11 +70,11 @@ public class ModClient
         });
 
     @Getter
-    private static boolean isDebug = false;
+    private static boolean isDebug;
 
     // Plane / Vehicle control handling
     /** Whether the player has received the vehicle tutorial text */
-    private static boolean doneTutorial = false;
+    private static boolean doneTutorial;
     /** Whether the player is in mouse control mode */
     private static boolean controlModeMouse = true;
     /** A delayer on the mouse control switch */
@@ -77,12 +101,12 @@ public class ModClient
     private static int scopeTime;
     /** The scope that is currently being looked down */
     @Getter
-    private static IScope currentScope = null;
+    private static IScope currentScope;
     /** The transition variable for zooming in / out with a smoother. 0 = unscoped, 1 = scoped */
     @Getter
-    private static float zoomProgress = 0F;
+    private static float zoomProgress;
     @Getter
-    private static float lastZoomProgress = 0F;
+    private static float lastZoomProgress;
     /** The zoom level of the last scope used for transitioning out of being scoped, even after the scope is forgotten */
     private static float lastZoomLevel = 1F;
     private static float lastFOVZoomLevel = 1F;
@@ -99,19 +123,23 @@ public class ModClient
 
     //TODO: FMU Hitmarker logic
     @Getter @Setter
-    private static int hitMarkerTime = 0;
+    private static int hitMarkerTime;
     @Getter @Setter
-    private static boolean hitMarkerHeadshot = false;
+    private static boolean hitMarkerHeadshot;
     @Getter @Setter
     private static float hitMarkerPenAmount = 1F;
     @Getter @Setter
-    private static boolean hitMarkerExplosion = false;
+    private static boolean hitMarkerExplosion;
 
     //TODO: implement
     @Getter @Setter
-    private static boolean isInFlash = false;
+    private static boolean isInFlash;
     @Getter @Setter
     private static int flashTime = 10;
+
+    /** Lighting */
+    private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
+    private static int lightOverrideRefreshRate = 5;
 
     public static void setDebug(boolean value)
     {
@@ -239,6 +267,8 @@ public class ModClient
         if (player == null || level  == null)
             return;
 
+        updateFlashlights(mc, level);
+        InstantBulletRenderer.updateAllTrails();
         updateScopeAndHitMarkerTime();
         updateRecoil();
         updateGunAnimations();
@@ -252,6 +282,164 @@ public class ModClient
         {
             mc.setCameraEntity(player);
             changedCameraEntity = false;
+        }
+
+        KeyInputHandler.checkKeys();
+        double dx = Minecraft.getInstance().mouseHandler.getXVelocity();
+        double dy = Minecraft.getInstance().mouseHandler.getYVelocity();
+
+        // Only handle if the velocity vector is not too small
+        if (dx * dx + dy * dy > 0.001)
+            MouseInputHandler.handleMouseMove(dx, dy);
+
+        for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
+            debugEntity.tick();
+    }
+
+    /** Handle flashlight block light override */
+    private static void updateFlashlights(Minecraft mc, ClientLevel level)
+    {
+        if (!shouldRunFlashlightUpdate(mc))
+            return;
+
+        updateRefreshRate(mc);
+        clearOldLightBlocks(level);
+        handlePlayerFlashlights(level);
+        handleDynamicEntityLights(level);
+    }
+
+    private static boolean shouldRunFlashlightUpdate(Minecraft mc)
+    {
+        return mc.level != null && CommonEventHandler.getTicker() % lightOverrideRefreshRate == 0;
+    }
+
+    private static void updateRefreshRate(Minecraft mc)
+    {
+        GraphicsStatus graphics = mc.options.graphicsMode().get();
+        boolean fancy = (graphics == GraphicsStatus.FANCY || graphics == GraphicsStatus.FABULOUS);
+        lightOverrideRefreshRate = fancy ? 10 : 20;
+    }
+
+    private static void clearOldLightBlocks(ClientLevel level)
+    {
+        for (BlockPos pos : blockLightOverrides)
+        {
+            if (level.getBlockState(pos).is(Blocks.LIGHT))
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+        blockLightOverrides.clear();
+    }
+
+    /** Handle lights from player-held flashlights. */
+    private static void handlePlayerFlashlights(ClientLevel level)
+    {
+        for (Player player : level.players())
+        {
+            AttachmentType grip = getFlashlightGrip(player);
+            if (grip != null)
+                placeFlashlightLightsForPlayer(level, player, grip);
+        }
+    }
+
+    /** Handle lights from bullets and mechas. */
+    private static void handleDynamicEntityLights(ClientLevel level)
+    {
+        for (Entity entity : level.entitiesForRendering())
+        {
+            if (entity instanceof Bullet bullet)
+                handleBulletLight(level, bullet);
+            else if (entity instanceof Mecha mecha)
+                handleMechaLight(level, mecha);
+        }
+    }
+
+    @Nullable
+    private static AttachmentType getFlashlightGrip(Player player)
+    {
+        ItemStack stack = player.getMainHandItem();
+        if (!(stack.getItem() instanceof GunItem itemGun))
+            return null;
+
+        GunType gunType = itemGun.getConfigType();
+        AttachmentType grip = gunType.getGrip(stack);
+        if (grip != null && grip.isFlashlight())
+            return grip;
+
+        return null;
+    }
+
+    private static void placeFlashlightLightsForPlayer(ClientLevel level, Player player, AttachmentType grip)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            float partialTicks = 1.0F;
+            double distance = grip.getFlashlightRange() / 2F * (i + 1);
+
+            HitResult hit = player.pick(distance, partialTicks, false);
+            if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK)
+            {
+                BlockPos targetPos = blockHit.getBlockPos().relative(blockHit.getDirection());
+                placeLightIfAir(level, targetPos, 12);
+            }
+        }
+    }
+
+    private static void handleBulletLight(ClientLevel level, Bullet bullet)
+    {
+        if (bullet.isRemoved() || !bullet.getConfigType().isHasLight())
+            return;
+
+        BlockPos pos = bullet.blockPosition();
+        placeLightIfAir(level, pos, 15);
+    }
+
+    private static void handleMechaLight(ClientLevel level, Mecha mecha)
+    {
+        BlockPos mechaPos = mecha.blockPosition();
+
+        // Mecha light
+        int mechaLight = mecha.lightLevel();
+        if (mechaLight > 0)
+        {
+            int existing = level.getBrightness(LightLayer.BLOCK, mechaPos);
+            int lightLevel = Math.max(existing, mechaLight);
+            placeLightIfAir(level, mechaPos, lightLevel);
+        }
+
+        if (mecha.forceDark())
+            applyForceDarkApproximation(mechaPos);
+    }
+
+    private static void placeLightIfAir(ClientLevel level, BlockPos pos, int lightLevel)
+    {
+        if (!level.getBlockState(pos).isAir())
+            return;
+
+        int clamped = Mth.clamp(lightLevel, 0, 15);
+        BlockState lightState = Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, clamped);
+        level.setBlock(pos, lightState, Block.UPDATE_CLIENTS);
+        blockLightOverrides.add(pos.immutable());
+    }
+
+    /**
+     * Placeholder for the old EnumSkyBlock.SKY "dark bubble" behavior.
+     * 1.20.1 does not expose a simple setSkyLight API, so this is just
+     * a hook where you can implement mixin/light-engine logic if needed.
+     */
+    private static void applyForceDarkApproximation(BlockPos center)
+    {
+        for (int i = -3; i <= 3; i++)
+        {
+            for (int j = -3; j <= 3; j++)
+            {
+                for (int k = -3; k <= 3; k++)
+                {
+                    BlockPos pos = center.offset(i, j, k);
+                    blockLightOverrides.add(pos.immutable());
+                    // TODO: Mecha forceDark(): sky light override has no clean public API in 1.20.1
+                    //mc.world.setLightFor(EnumSkyBlock.SKY, blockPos, Math.abs(i) + Math.abs(j) + Math.abs(k));
+                }
+            }
         }
     }
 

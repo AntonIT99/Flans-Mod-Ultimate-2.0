@@ -37,19 +37,15 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent e)
     {
-        // avoid running twice per tick
         if (e.phase != TickEvent.Phase.END)
             return;
+
         Player p = e.player;
 
         if (!p.level().isClientSide)
-        {
             PlayerData.getInstance(p).serverTick(p);
-        }
         else
-        {
             PlayerData.getInstance(p).clientTick(p);
-        }
     }
 
     @SubscribeEvent
