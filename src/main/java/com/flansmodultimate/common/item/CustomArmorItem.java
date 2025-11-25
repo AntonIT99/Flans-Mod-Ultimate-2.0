@@ -3,7 +3,7 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.config.ModCommonConfigs;
-import com.flansmodultimate.event.CommonEventHandler;
+import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;

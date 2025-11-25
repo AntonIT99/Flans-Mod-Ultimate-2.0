@@ -1,8 +1,7 @@
 {
   "message_id": "flans_explosion",
-  "scaling": "when_caused_by_living_non_player",
-  "exhaustion": 0.1,
-  "effects": {
-    "explosion": true
-  }
+  "scaling": "never",
+  "exhaustion": 0.0,
+  "effects": "hurt",
+  "death_message_type": "default"
 }

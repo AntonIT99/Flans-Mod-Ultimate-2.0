@@ -4,16 +4,19 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansExplosion;
+import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
-import com.flansmodultimate.common.raytracing.BlockHit;
-import com.flansmodultimate.common.raytracing.BulletHit;
-import com.flansmodultimate.common.raytracing.DriveableHit;
-import com.flansmodultimate.common.raytracing.EntityHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
-import com.flansmodultimate.common.raytracing.PlayerBulletHit;
+import com.flansmodultimate.common.raytracing.hits.BlockHit;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
+import com.flansmodultimate.common.raytracing.hits.DriveableHit;
+import com.flansmodultimate.common.raytracing.hits.EntityHit;
+import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -23,6 +26,7 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
@@ -46,12 +50,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class containing a bunch of shooting related functions
@@ -59,6 +63,8 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShootingHelper
 {
+    private static final double ENTITY_HIT_PARTICLE_RANGE = 64.0;
+
     private static final RandomSource random = RandomSource.create();
 
     /** Call this when fire bullets from vehicles or other sources (Server side) */
@@ -106,36 +112,72 @@ public final class ShootingHelper
         }
     }
 
-    public static float onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, float penetratingPower)
+    public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot) {}
+
+    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, HitData hitData)
     {
-        return onHit(level, shot, bulletHit, hit, shootingDirection, penetratingPower, null);
+        return onHit(level, shot, bulletHit, hit, shootingDirection, hitData, null);
     }
 
-    public static float onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, float penetratingPower, @Nullable Bullet bullet)
+    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, HitData hitData, @Nullable Bullet bullet)
     {
+        float penetratingPower = hitData.penetratingPower();
+        float lastHitPenAmount = hitData.lastHitPenAmount();
+        boolean lastHitHeadshot = hitData.lastHitHeadshot();
         float damage = shot.getFireableGun().getDamage();
         BulletType bulletType = shot.getBulletType();
-        Optional<ServerPlayer> player = shot.getPlayerAttacker();
+        Optional<ServerPlayer> playerOwner = shot.getPlayerAttacker();
+        LivingEntity owner = shot.getAttacker().orElse(null);
 
         if (bulletHit instanceof DriveableHit driveableHit)
         {
-            penetratingPower = driveableHit.driveable.bulletHit(bulletType, shot.getFireableGun().getDamage(), driveableHit, penetratingPower);
+            if (bulletType.isEntityHitSoundEnable())
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
+
+            AtomicBoolean isFriendly = new AtomicBoolean(false);
+            driveableHit.getDriveable().setLastAtkEntity(owner);
+
+            playerOwner.ifPresent(serverPlayer ->
+                FlansMod.teamsManager.getCurrentRound().ifPresent(round -> {
+                    for (Seat seat : driveableHit.getDriveable().getSeats())
+                    {
+                        if (seat.getRiddenByEntity() instanceof Player controllingPlayer)
+                        {
+                            PlayerData dataDriver = PlayerData.getInstance(controllingPlayer);
+                            PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
+                            if (dataDriver.getTeam().getShortName().equals(dataAttacker.getTeam().getShortName()))
+                                isFriendly.set(true);
+                        }
+                    }
+                }
+            ));
+
+            if (isFriendly.get())
+                penetratingPower = 0F;
+            else
+                penetratingPower = driveableHit.getDriveable().bulletHit(bulletType, damage, driveableHit, hitData);
+
+            if (bulletType.isCanSpotEntityDriveable())
+                driveableHit.getDriveable().setEntityMarker(200);
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
 
             //Send hit marker, if player is present
-            player.ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(), p));
+            playerOwner.ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), p));
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
-            penetratingPower = playerHit.hitbox.hitByBullet(shot, damage, penetratingPower, bullet);
+            if (bulletType.isEntityHitSoundEnable())
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
 
-            DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
+            float prevPenetratingPower = penetratingPower;
+            //TODO: check this
+            penetratingPower = playerHit.getHitbox().hitByBullet(shot, damage, penetratingPower, bullet);
 
             // Check teams
-            if (player.isPresent())
+            if (playerOwner.isPresent())
             {
-                //TODO: Teams
+                //TODO: Teams - (check playerHit.getHitbox().hitByBullet)
                 /*TeamsRound round;
                 if (TeamsManager.getInstance() != null && (round = TeamsManager.getInstance().currentRound) != null)
                 {
@@ -151,36 +193,51 @@ public final class ShootingHelper
                 {
                     FlansMod.getPacketHandler().sendTo(new PacketHitMarker(), player);
                 }*/
-                //TODO: check arguments in FMU
-                PacketHandler.sendTo(new PacketHitMarker(), player.get());
+
+                if (bullet != null)
+                    bullet.getPenetrationLosses().add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.Type.PLAYER));
+
+                DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
+
+                //Send hit marker, if player is present
+                PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
             }
         }
-        else if (bulletHit instanceof EntityHit entityHit)
+        else if (bulletHit instanceof EntityHit entityHit && entityHit.getEntity() != null)
         {
-            if (entityHit.getEntity() != null)
-            {
-                if (entityHit.getEntity().hurt(shot.getDamageSource(level, null), damage * bulletType.getDamage().getDamageAgainstEntity(entityHit.getEntity())) && entityHit.getEntity() instanceof LivingEntity living)
-                {
-                    //TODO: Check origin code
-                    bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
-                    // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                    living.invulnerableTime = 0;
-                }
-                if (bulletType.isSetEntitiesOnFire())
-                    entityHit.getEntity().setSecondsOnFire(20);
-                penetratingPower -= 1F;
+            Entity entity = entityHit.getEntity();
 
-                DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 1F, 0F);
+            if (bulletType.isEntityHitSoundEnable())
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
+
+            damage = getDamageAffectedByPenetration(damage, bulletType, bullet) * bulletType.getDamage().getDamageAgainstEntity(entity);
+
+            if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            {
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
+                bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
+                // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                living.invulnerableTime = 0;
             }
 
+            if (bulletType.isSetEntitiesOnFire())
+                entity.setSecondsOnFire(20);
+
+            penetratingPower -= 1F;
+
+            if (bullet != null)
+                bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.Type.ENTITY));
+
+            DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 1F, 0F);
+
             //Send hit marker, if player is present
-            shot.getPlayerAttacker().ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(), p));
+            shot.getPlayerAttacker().ifPresent(p -> PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), p));
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
-            BlockHitResult bhr = (BlockHitResult) bh.getHitResult();
-            BlockPos pos = bhr.getBlockPos();
-            Direction direction = bhr.getDirection();
+            //TODO
+            BlockPos pos = bh.getHitResult().getBlockPos();
+            Direction direction = bh.getHitResult().getDirection();
 
             // State is already “actual” in modern MC (no getActualState)
             BlockState state = level.getBlockState(pos);
@@ -209,14 +266,39 @@ public final class ShootingHelper
             }
 
             //play sound when bullet hits block
-            PacketPlaySound.sendSoundPacket(hit.x, hit.y, hit.z, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), false);
+            PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), false);
         }
 
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
         {
-            return -1F;
+            penetratingPower = -1F;
         }
-        return penetratingPower;
+        return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
+    }
+
+    public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)
+    {
+        if (bullet == null || type.getPenetratingPower() <= 0F || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+            return gunDamage;
+
+        float totalPenetrationLostPercentage = 0F;
+
+        for (PenetrationLoss penetrationLoss : bullet.getPenetrationLosses())
+        {
+            float effectOnDamage = penetrationLoss.type().getEffectOnDamage(type);
+            float loss = penetrationLoss.loss();
+
+            if (effectOnDamage <= 0 || effectOnDamage > 1 || loss <= 0)
+                continue;
+
+            float penetrationLostPercentage = (loss / type.getPenetratingPower());
+            if (penetrationLostPercentage == 0)
+                continue;
+
+            totalPenetrationLostPercentage += (penetrationLostPercentage - penetrationLostPercentage * (1 - effectOnDamage));
+        }
+
+        return gunDamage * (1 - totalPenetrationLostPercentage);
     }
 
     public static void onDetonate(Level level, FiredShot firedShot, Vec3 detonatePos)
@@ -304,13 +386,13 @@ public final class ShootingHelper
     private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
     {
         if (type.getExplodeParticles() > 0)
-            PacketHandler.sendToAllAround(new PacketParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position.x, position.y, position.z, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
     }
 
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
     {
         if (type.getFlak() > 0)
-            PacketHandler.sendToAllAround(new PacketFlak(position.x, position.y, position.z, type.getFlak(), type.getFlakParticles()), position.x, position.y, position.z, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position.x, position.y, position.z, type.getFlak(), type.getFlakParticles()), position, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
     }
 
     private static void dropItemsOnDetonate(Level level, String itemName, IContentProvider contentPack, Vec3 position, @Nullable Shootable shootable)
@@ -349,28 +431,27 @@ public final class ShootingHelper
         shootingDirection = randomizeVectorDirection(level, shootingDirection, bulletspread, shot.getFireableGun().getSpreadPattern());
         shootingDirection.scale(500F);
 
-        float penetrationPower = shot.getBulletType().getPenetratingPower();
-
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, penetrationPower, 0F);
+        HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, hitData.penetratingPower(), 0F);
         Vec3 previousHitPos = rayTraceOrigin;
         Vec3 finalhit = null;
 
         for (int i = 0; i < hits.size(); i++)
         {
             BulletHit hit = hits.get(i);
-            Vec3 shotVector = shootingDirection.scale(hit.intersectTime);
+            Vec3 shotVector = shootingDirection.scale(hit.getIntersectTime());
             Vec3 hitPos = rayTraceOrigin.add(shotVector);
 
             if (hit instanceof BlockHit)
-                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0f, 1F);
+                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0F, 1F);
             else
                 DebugHelper.spawnDebugDot(level, hitPos, 1000);
             DebugHelper.spawnDebugVector(level, previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
+            hitData = onHit(level, shot, hit, hitPos, shootingDirection, hitData);
 
-            penetrationPower = onHit(level, shot, hit, hitPos, shootingDirection, penetrationPower);
-            if (penetrationPower <= 0f)
+            if (hitData.penetratingPower() <= 0F)
             {
                 onDetonate(level, shot, hitPos);
                 finalhit = hitPos;
@@ -382,8 +463,7 @@ public final class ShootingHelper
         {
             finalhit = rayTraceOrigin.add(shootingDirection);
         }
-        //Animation
-        //TODO should this be send to all Players?
+
         PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(rayTraceOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
     }
 

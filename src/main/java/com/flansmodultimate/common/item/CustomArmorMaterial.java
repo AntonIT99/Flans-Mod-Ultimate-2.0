@@ -12,32 +12,11 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.function.Supplier;
 
-public class CustomArmorMaterial implements ArmorMaterial
+public record CustomArmorMaterial(String name, int durability, int defense, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance, Supplier<Ingredient> repairMaterial) implements ArmorMaterial
 {
-    private final String name;
-    private final int durability;
-    private final int defense;
-    private final int enchantability;
-    private final SoundEvent equipSound;
-    private final float toughness;
-    private final float knockbackResistance;
-    private final Supplier<Ingredient> repairMaterial;
-
     CustomArmorMaterial(ArmorType type)
     {
         this(type.getShortName(), type.getDurability(), (int) Math.max(type.getDamageReductionAmount(), Math.round(type.getDefence() * 20.0F)), type.getEnchantability(), SoundEvents.ARMOR_EQUIP_IRON, type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
-    }
-
-    CustomArmorMaterial(String name, int durability, int defense, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance, Supplier<Ingredient> repairMaterial)
-    {
-        this.name = name;
-        this.durability = durability;
-        this.defense = defense;
-        this.enchantability = enchantability;
-        this.equipSound = equipSound;
-        this.toughness = toughness;
-        this.knockbackResistance = knockbackResistance;
-        this.repairMaterial = repairMaterial;
     }
 
     @Override

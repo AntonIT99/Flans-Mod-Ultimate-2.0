@@ -4,6 +4,8 @@ import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
+import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.util.ModUtils;
@@ -35,7 +37,7 @@ public class PlayerSnapshot
     /** The player's position at the point the snapshot was taken */
     public final Vector3f pos;
     /** The player's velocity at the point the snapshot was taken */
-    public Vector3f vel;
+    public final Vector3f vel;
     /** The hitboxes for this player */
     public final List<PlayerHitbox> hitboxes = new ArrayList<>();
     /** The time at which this snapshot was taken */
@@ -59,12 +61,11 @@ public class PlayerSnapshot
         Vector3f legPos = new Vector3f(-0.25F, 0F, -0.15F);
         Vector3f legBox = new Vector3f(0.5F, 0.75F, 0.3F);
 
-        //body
-        hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), bodyPos, bodyBox, vel,
-                EnumHitboxType.BODY));
+        //head
+        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(headAxes), new Vector3f(0.0F, 1.4F, 0F), headPos, headBox, vel, EnumHitboxType.HEAD));
 
-        hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(headAxes),
-                new Vector3f(0.0F, 1.4F, 0F), headPos, headBox, vel, EnumHitboxType.HEAD));
+        //body
+        hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), bodyPos, bodyBox, vel, EnumHitboxType.BODY));
 
         //legs
         hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), legPos, legBox, vel, EnumHitboxType.LEGS));
@@ -139,7 +140,7 @@ public class PlayerSnapshot
         for (PlayerHitbox hitbox : hitboxes)
         {
             PlayerBulletHit hit = hitbox.raytrace(localOrigin, motion);
-            if (hit != null && hit.intersectTime >= lowerBound && hit.intersectTime <= upperBound)
+            if (hit != null && hit.getIntersectTime() >= lowerBound && hit.getIntersectTime() <= upperBound)
             {
                 hits.add(hit);
             }

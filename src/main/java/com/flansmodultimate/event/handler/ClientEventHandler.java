@@ -1,4 +1,4 @@
-package com.flansmodultimate.event;
+package com.flansmodultimate.event.handler;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.FlansMod;

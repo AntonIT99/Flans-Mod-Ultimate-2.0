@@ -7,19 +7,22 @@ import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.guns.PenetrationLoss;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.raytracing.BulletHit;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -46,6 +49,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -67,11 +71,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected BulletType configType;
     protected FiredShot firedShot;
-    protected int bulletLife = 600; // Kill bullets after 30 seconds
+    /** Kill bullets after 30 seconds */
+    protected int bulletLife = 600;
     protected int ticksInAir;
     protected boolean initialTick = true;
     protected double initialSpeed;
-    protected float currentPenetratingPower;
     protected int soundTime;
     protected Vec3 lookVector;
     protected Vec3 initialPos;
@@ -85,6 +89,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected Vec3 ownerPos;
     @Setter
     protected Vec3 ownerLook;
+
+    /** Penetration */
+    protected float penetratingPower;
+    /** When the bullet loses penetration, the cause and amount is saved to this list */
+    @Getter
+    protected final List<PenetrationLoss> penetrationLosses = new ArrayList<>();
+
+    /** Hitmarker information on the server side */
+    @Setter
+    protected boolean lastHitHeadshot = false;
+    @Getter @Setter
+    protected float lastHitPenAmount = 1F;
 
     /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
     protected int pingOfShooter;
@@ -123,11 +139,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     {
         super(FlansMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
-        ticksInAir = 0;
         configType = firedShot.getBulletType();
+        penetratingPower = firedShot.getBulletType().getPenetratingPower();
         setPos(origin);
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
-        currentPenetratingPower = firedShot.getBulletType().getPenetratingPower();
     }
 
     public BulletType getConfigType()
@@ -256,6 +271,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         super.writeSpawnData(buf);
         buf.writeInt(firedShot.getCausingEntity().map(Entity::getId).orElse(0));
         buf.writeInt(firedShot.getAttacker().map(Entity::getId).orElse(0));
+        buf.writeInt(Optional.ofNullable(lockedOnTo).map(Entity::getId).orElse(0));
+        buf.writeInt(impactX);
+        buf.writeInt(impactY);
+        buf.writeInt(impactZ);
     }
 
     @Override
@@ -266,6 +285,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             super.readSpawnData(buf);
             int shooterId = buf.readInt();
             int attackerId = buf.readInt();
+            int lockedOnToId = buf.readInt();
+            impactX = buf.readInt();
+            impactY = buf.readInt();
+            impactZ = buf.readInt();
 
             Level level = level();
             Entity shooter = null;
@@ -285,8 +308,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 shooter = level.getEntity(attackerId);
             if (attackerId != 0 && level.getEntity(attackerId) instanceof LivingEntity living)
                 attacker = living;
+            if (lockedOnToId != 0)
+                lockedOnTo = level.getEntity(lockedOnToId);
 
             firedShot = new FiredShot(null, configType, shooter, attacker);
+            penetratingPower = configType.getPenetratingPower();
         }
         catch (Exception e)
         {
@@ -395,7 +421,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
             DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
 
-            performRaytraceAndApplyHits(level); //TODO: check hit application with FMU
+            performRaytraceAndApplyHits(level);
             applyDragAndGravity();
             updatePenetrationPower();
             applyHomingIfLocked(level);
@@ -593,20 +619,32 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         Vec3 origin = position();
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize());
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize());
 
         if (hits.isEmpty())
             return;
 
+        lastHitPenAmount = 0F;
+        lastHitHeadshot = false;
+
         for (BulletHit bulletHit : hits)
         {
-            Vec3 hitPos = origin.add(velocity.scale(bulletHit.intersectTime));
+            BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
+            MinecraftForge.EVENT_BUS.post(bulletHitEvent);
+            if (bulletHitEvent.isCanceled())
+                continue;
 
-            currentPenetratingPower = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, currentPenetratingPower, this);
-            if (currentPenetratingPower <= 0F)
+            Vec3 hitPos = origin.add(velocity.scale(bulletHit.getIntersectTime()));
+
+            ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot), this);
+            penetratingPower = hitData.penetratingPower();
+            lastHitPenAmount = hitData.lastHitPenAmount();
+            lastHitHeadshot = hitData.lastHitHeadshot();
+
+            if (penetratingPower <= 0F || (configType.isExplodeOnImpact() && ticksInAir > 1))
             {
                 setPos(hitPos);
-                detonate(level);
+                setDead(level);
                 break;
             }
         }
@@ -663,13 +701,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected void updatePenetrationPower()
     {
         // Damp penetration too
-        float prevPenetratingPower = currentPenetratingPower;
-        currentPenetratingPower *= (1 - configType.getPenetrationDecay());
+        float prevPenetratingPower = penetratingPower;
+        penetratingPower *= (1 - configType.getPenetrationDecay());
 
-        if (configType.getPenetrationDecay() > 0F) {
-            //TODO: implement PenetrationLoss
-            //penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - currentPenetratingPower), PenetrationLossType.DECAY));
-        }
+        if (configType.getPenetrationDecay() > 0F)
+            penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.Type.DECAY));
     }
 
     protected void applyHomingIfLocked(Level level)

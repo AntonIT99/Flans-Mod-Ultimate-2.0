@@ -1,10 +1,14 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.common.raytracing.DriveableHit;
+import com.flansmodultimate.common.driveables.Seat;
+import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
+import com.flansmodultimate.common.raytracing.hits.DriveableHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +21,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.Collections;
+import java.util.List;
 
 public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<DriveableType>
 {
@@ -26,12 +34,20 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected DriveableType configType;
     protected String shortname = StringUtils.EMPTY;
 
-    //Flares
+    @Getter
+    protected Seat[] seats;
+
+    protected boolean isShowedPosition = false;
+
+    /** Flares */
     protected int flareDelay = 0;
     @Getter
     protected int ticksFlareUsing = 0;
     @Getter
     protected boolean varFlare;
+
+    @Setter
+    protected Entity lastAtkEntity;
 
     protected Driveable(EntityType<?> entityType, Level level)
     {
@@ -55,6 +71,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         shortname = s;
         entityData.set(DRIVEABLE_TYPE, shortname);
+    }
+
+    public void setEntityMarker(int tick)
+    {
+        isShowedPosition = true;
+        tickCount = tick;
     }
 
     @Override
@@ -87,12 +109,36 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     }
 
+    /** Used to stop self collision */
+    public boolean isPartOfThis(Entity entity)
+    {
+        for (Seat seat : seats)
+        {
+            if (seat == null)
+                continue;
+            if (entity == seat)
+                return true;
+            if (seat.getRiddenByEntity() == entity)
+                return true;
+        }
+        return entity == this;
+    }
+
     /**
      * Called if the bullet actually hit the part returned by the raytrace
      */
-    public float bulletHit(BulletType bulletType, float damage, DriveableHit hit, float penetratingPower)
+    public float bulletHit(BulletType bulletType, float damage, DriveableHit hit, ShootingHelper.HitData hitData)
     {
-        //TODO implement
+        //TODO: implement
         return 0F;
+    }
+
+    /**
+     * Attack method called by bullets hitting the plane. Does advanced raytracing to detect which part of the plane is hit
+     */
+    public List<BulletHit> attackFromBullet(Vec3 origin, Vec3 motion)
+    {
+        //TODO: implement
+        return Collections.emptyList();
     }
 }

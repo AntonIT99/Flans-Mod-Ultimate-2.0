@@ -1,4 +1,4 @@
-package com.flansmodultimate.event;
+package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.PacketHandler;

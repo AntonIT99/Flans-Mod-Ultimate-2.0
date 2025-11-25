@@ -13,6 +13,10 @@ public class Seat extends Entity
     @Getter
     protected Driveable driveable;
 
+    /** The entity that is riding this entity */
+    @Getter
+    protected Entity riddenByEntity;
+
     public Seat(EntityType<?> pEntityType, Level pLevel)
     {
         super(pEntityType, pLevel);

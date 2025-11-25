@@ -30,6 +30,13 @@ public class ArmorType extends InfoType
     /** The amount of damage to absorb. From 0 to 1. Stacks additively between armour pieces */
     @Getter
     protected double defence;
+    /** The amount of damage to absorb. From 0 to 1. Stacks additively between armour pieces. For bullet damage specifically. */
+    @Getter
+    protected double bulletDefence;
+    protected boolean readBulletDefence;
+    /** How good the armour is at stopping bullets. Same units as bullet penetration. Default 0 to emulate previous behaviour */
+    @Getter
+    protected float penetrationResistance;
     @Getter
     protected int damageReductionAmount;
     @Getter
@@ -87,6 +94,12 @@ public class ArmorType extends InfoType
         textureName = ResourceUtils.sanitize(readValue(split, "ArmorTexture", textureName, file));
         defence = readValue(split, "DamageReduction", defence, file);
         defence = readValue(split, "Defence", defence, file);
+        defence = readValue(split, "OtherDefence", defence, file);
+        if (split[0].equalsIgnoreCase("BulletDefence"))
+        {
+            bulletDefence = readValue(split, "BulletDefence", bulletDefence, file);
+            readBulletDefence = true;
+        }
         enchantability = readValue(split, "Enchantability", enchantability, file);
         toughness = readValue(split, "Toughness", toughness, file);
         durability = readValue(split, "Durability", durability, file);
@@ -136,6 +149,8 @@ public class ArmorType extends InfoType
                 armorItemType = ArmorItem.Type.HELMET;
                 break;
         }
+        if (!readBulletDefence)
+            bulletDefence = defence;
     }
 
     @OnlyIn(Dist.CLIENT)

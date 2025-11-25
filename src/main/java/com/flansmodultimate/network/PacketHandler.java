@@ -190,6 +190,11 @@ public final class PacketHandler {
         CHANNEL.send(PacketDistributor.NEAR.with(() -> tp), msg);
     }
 
+    public static void sendToAllAround(IClientPacket msg, Vec3 position, double range, ResourceKey<Level> dim)
+    {
+        sendToAllAround(msg, position.x, position.y, position.z, range, dim);
+    }
+
     /** client -> server */
     public static void sendToServer(IServerPacket msg)
     {

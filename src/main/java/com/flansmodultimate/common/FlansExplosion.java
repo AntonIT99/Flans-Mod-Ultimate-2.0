@@ -1,12 +1,12 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.driveables.Wheel;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.GrenadeType;
-import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
@@ -66,9 +66,7 @@ public class FlansExplosion extends Explosion
     private final Vec3 center;
     private final float radius;
     private final float power;
-
-    //TODO: integrate type in damage source (if possible)
-    private final InfoType type; // type of Flan's Mod weapon causing explosion
+    
     @Nullable
     private final LivingEntity causingEntity;
     private final Entity explosive;
@@ -79,7 +77,7 @@ public class FlansExplosion extends Explosion
 
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
-        this(level, explosive, causingEntity, type, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
+        this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
                 type.isExplosionBreaksBlocks(), type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
@@ -92,7 +90,7 @@ public class FlansExplosion extends Explosion
         return false;
     }
 
-    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, InfoType type, double x, double y, double z, float explosionRadius, float explosionPower,
+    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, float explosionRadius, float explosionPower,
                           boolean causesFire, boolean smoking, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
         super(level, explosive, x, y, z, explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
@@ -100,7 +98,6 @@ public class FlansExplosion extends Explosion
         this.level = level;
         this.explosive = explosive;
         this.causingEntity = causingEntity;
-        this.type = type;
 
         this.center = new Vec3(x, y, z);
         this.radius = explosionRadius;
@@ -243,26 +240,26 @@ public class FlansExplosion extends Explosion
                     continue;
 
                 // vanilla base damage (7.0F scale, like 1.12.2)
-                float damage = (float) ((impact * impact + impact) / 2.0D * 8.0D * radius2 + 1.0D);
+                float explosionDamage = (float) ((impact * impact + impact) / 2.0D * 8.0D * radius2 + 1.0D);
 
                 // === Flan’s multipliers ===
-                damage *= this.damage.getDamageAgainstEntity(e);
+                explosionDamage *= this.damage.getDamageAgainstEntity(e);
 
                 if (e instanceof Wheel wheel)
                 {
-                    damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
-                    damage *= this.damage.getDamageAgainstEntity(wheel.getDriveable());
+                    explosionDamage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
+                    explosionDamage *= this.damage.getDamageAgainstEntity(wheel.getDriveable());
                 }
                 else if (e instanceof Seat seat)
                 {
-                    damage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
-                    damage *= this.damage.getDamageAgainstEntity(seat.getDriveable());
+                    explosionDamage *= ModCommonConfigs.vehicleWheelSeatExplosionModifier.get();
+                    explosionDamage *= this.damage.getDamageAgainstEntity(seat.getDriveable());
                 }
 
-                if (damage > 0.5F)
+                if (explosionDamage > 0.5F)
                 {
                     DamageSource damageSource = FlansDamageSources.createDamageSource(level, explosive, causingEntity, FlansDamageSources.FLANS_EXPLOSION);
-                    boolean hurt = e.hurt(damageSource, damage);
+                    boolean hurt = e.hurt(damageSource, explosionDamage);
                     if (hurt && causingEntity instanceof ServerPlayer serverPlayer)
                         PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), serverPlayer);
                 }
@@ -406,19 +403,19 @@ public class FlansExplosion extends Explosion
 
             if (smokeRand < 0.25)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.flare", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.25 && smokeRand < 0.5)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.flare", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.5 && smokeRand < 0.75)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.flare", center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.75)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.flare", center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             }
         }
 
@@ -428,19 +425,19 @@ public class FlansExplosion extends Explosion
 
             if (smokeRand < 0.25)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.debris1", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.25 && smokeRand < 0.5)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.debris1", center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.5 && smokeRand < 0.75)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.debris1", center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             } 
             else if (smokeRand > 0.75)
             {
-                PacketHandler.sendToAllAround(new PacketParticle("flansmod.debris1", center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
             }
         }
     }

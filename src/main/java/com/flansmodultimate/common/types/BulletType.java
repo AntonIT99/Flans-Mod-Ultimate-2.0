@@ -48,6 +48,7 @@ public class BulletType extends ShootableType
     @Getter
     protected float hitSoundRange = 64F;
     protected boolean hitSoundEnable;
+    @Getter
     protected boolean entityHitSoundEnable;
 
     protected boolean penetrates = true;
@@ -61,12 +62,17 @@ public class BulletType extends ShootableType
      * How much the loss of penetration power affects the damage of the bullet. 0 = damage not affected by that kind of penetration,
      * 1 = damage is fully affected by bullet penetration of that kind
      */
+    @Getter
     protected float playerPenetrationEffectOnDamage;
+    @Getter
     protected float entityPenetrationEffectOnDamage;
+    @Getter
     protected float blockPenetrationEffectOnDamage;
+    @Getter
     protected float penetrationDecayEffectOnDamage;
 
     /** Knocback modifier. less gives less kb, more gives more kb, 1 = normal kb. */
+    @Getter
     protected float knockbackModifier;
     /** Lock on variables. If true, then the bullet will search for a target at the moment it is fired */
     @Getter
@@ -109,6 +115,7 @@ public class BulletType extends ShootableType
     protected float dragInAir = 0.99F;
     @Getter
     protected float dragInWater = 0.8F;
+    @Getter
     protected boolean canSpotEntityDriveable;
     @Getter
     protected int maxRange = -1;

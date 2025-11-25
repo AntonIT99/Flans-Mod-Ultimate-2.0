@@ -1,22 +1,21 @@
-package com.flansmodultimate.common.raytracing;
+package com.flansmodultimate.common.raytracing.hits;
 
 import lombok.Getter;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.BlockHitResult;
 
+@Getter
 public class BlockHit extends BulletHit
 {
-    @Getter
-    private final HitResult hitResult;
-    @Getter
+    private final BlockHitResult hitResult;
     private final BlockState blockstate;
 
-    public BlockHit(HitResult mop, Float f, BlockState blockstate)
+    public BlockHit(BlockHitResult blockHitResult, Float f, BlockState blockstate)
     {
         super(f);
-        hitResult = mop;
+        hitResult = blockHitResult;
         this.blockstate = blockstate;
     }
 

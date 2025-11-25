@@ -5,6 +5,10 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.raytracing.hits.BlockHit;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
+import com.flansmodultimate.common.raytracing.hits.EntityHit;
+import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -34,7 +38,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FlansModRaytracer
 {
-    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize)
+    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize)
     {
         //Create a list for all bullet hits
         List<BulletHit> hits = new ArrayList<>();
@@ -50,7 +54,7 @@ public class FlansModRaytracer
                 continue;
 
             if (entity instanceof Driveable driveable)
-                checkDriveableHit(driveable, origin, motion, hits);
+                checkDriveableHit(driveable, origin, motion, owner, hits);
             else if (entity instanceof Player player)
                 checkPlayerHit(player, origin, motion, pingOfShooter, bulletHitBoxSize, hits);
             else
@@ -69,22 +73,19 @@ public class FlansModRaytracer
         return hits;
     }
 
-    //TODO: Driveables
-    private static void checkDriveableHit(Driveable driveable, Vec3 origin, Vec3 motion, List<BulletHit> hits)
+    private static void checkDriveableHit(Driveable driveable, Vec3 origin, Vec3 motion, @Nullable LivingEntity owner, List<BulletHit> hits)
     {
-        /*
-        if (driveable.isPartOfThis(playerToIgnore))
-            continue;
+        if (owner != null && driveable.isPartOfThis(owner))
+            return;
 
-        float speed = motion.length();
+        double speed = motion.length();
 
         // If this bullet is within the driveable's detection range
-        if (driveable.distanceToSqr(origin) <= (driveable.getConfigType().bulletDetectionRadius + speed) * (driveable.getConfigType().bulletDetectionRadius + speed))
+        if (driveable.distanceToSqr(origin) <= (driveable.getConfigType().getBulletDetectionRadius() + speed) * (driveable.getConfigType().getBulletDetectionRadius() + speed))
         {
             // Raytrace the bullet
             hits.addAll(driveable.attackFromBullet(origin, motion));
         }
-        */
     }
 
     private static void checkPlayerHit(Player player, Vec3 origin, Vec3 motion, int pingOfShooter, float hitBoxSize, List<BulletHit> hits)
@@ -187,7 +188,7 @@ public class FlansModRaytracer
     {
         EntityHit hit = findHitAgainstEntityAndParts(entity, origin, motion, hitBoxSize);
         if (hit != null)
-            hits.add(new EntityHit(hit.getEntity(), hit.intersectTime, hit.impact));
+            hits.add(new EntityHit(hit.getEntity(), hit.getIntersectTime(), hit.getImpact()));
     }
 
     /**

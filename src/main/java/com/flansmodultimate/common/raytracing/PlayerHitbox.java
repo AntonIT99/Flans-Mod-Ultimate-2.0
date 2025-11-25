@@ -1,22 +1,31 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.config.ModCommonConfigs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class PlayerHitbox
 {
@@ -162,34 +171,66 @@ public class PlayerHitbox
 
         bulletType.getHitEffects().forEach(effect -> player.addEffect(new MobEffectInstance(effect)));
 
-        //TODO: Check origin code
-        float damageModifier = bulletType.getPenetratingPower() < 0.1F ? penetratingPower / bulletType.getPenetratingPower() : 1;
+        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack legs = player.getItemBySlot(EquipmentSlot.LEGS);
+        ItemStack feet = player.getItemBySlot(EquipmentSlot.FEET);
 
-        switch (type)
+        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour) ? 1.0F : headArmour.getConfigType().getPenetrationResistance();
+        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour) ? 1.0F : chestArmour.getConfigType().getPenetrationResistance();
+        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour) ? 0.65F : legsArmour.getConfigType().getPenetrationResistance();
+        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour) ? 0.35F : feetArmour.getConfigType().getPenetrationResistance();
+        float totalPenetrationResistance;
+
+        if (type == EnumHitboxType.HEAD)
+            totalPenetrationResistance = headPenRes;
+        else if (type == EnumHitboxType.LEGS)
+            totalPenetrationResistance = legsPenRes + feetPenRes;
+        else
+            totalPenetrationResistance = chestPenRes;
+
+        float damageModifier = 1F;
+        if (penetratingPower <= 0.7F * totalPenetrationResistance && BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+            damageModifier = (float) Math.pow((penetratingPower / (0.7F * totalPenetrationResistance)), 2.5);
+        else if (BooleanUtils.isNotTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+            damageModifier = bulletType.getPenetratingPower() < 0.1F ? (penetratingPower / bulletType.getPenetratingPower()) : 1F;
+
+        if (bullet != null)
+            bullet.setLastHitPenAmount(Math.max(bullet.getLastHitPenAmount(), damageModifier));
+
+        if (type == EnumHitboxType.HEAD)
         {
-            case HEAD:
-                damageModifier *= 1.6F;
-                break;
-            case LEFTARM, RIGHTARM:
-                damageModifier *= 0.6F;
-                break;
-            default: break;
+            damageModifier *= ModCommonConfigs.headshotDamageModifier.get();
+            if (bullet != null)
+                bullet.setLastHitHeadshot(true);
         }
+        else if (type == EnumHitboxType.BODY)
+        {
+            damageModifier *= ModCommonConfigs.chestshotDamageModifier.get();
+        }
+        else if (type == EnumHitboxType.LEGS)
+        {
+            damageModifier *= ModCommonConfigs.legshotModifier.get();
+        }
+        else if (type == EnumHitboxType.LEFTARM || type == EnumHitboxType.RIGHTARM)
+        {
+            damageModifier *= ModCommonConfigs.armshotDamageModifier.get();
+        }
+
         switch(type)
         {
-            case BODY, HEAD, LEFTARM, RIGHTARM:
+            case LEGS, BODY, HEAD, LEFTARM, RIGHTARM:
             {
                 //Calculate the hit damage
-                float hitDamage = damage * shot.getBulletType().getDamage().getDamageAgainstEntity(player) * damageModifier;
+                float hitDamage = ShootingHelper.getDamageAffectedByPenetration(damage, bulletType, bullet) * shot.getBulletType().getDamage().getDamageAgainstEntity(player) * damageModifier;
                 //Create a damage source object
                 DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 
                 //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
-                //TODO: Teams
-                /*if(!player.world.isRemote && hitDamage == 0 && TeamsManager.getInstance().currentRound != null)
-                    TeamsManager.getInstance().currentRound.gametype.playerAttacked((EntityPlayerMP)player, damagesource);*/
+                if (!player.level().isClientSide && hitDamage == 0 && FlansMod.teamsManager.getCurrentRound().isPresent())
+                    FlansMod.teamsManager.getCurrentRound().get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
 
-                //if(damagesource.)
+                Vec3 motBefore = player.getDeltaMovement();
 
                 //Attack the entity!
                 if (player.hurt(damagesource, hitDamage))
@@ -198,31 +239,43 @@ public class PlayerHitbox
                     player.hurtTime = Math.min(player.hurtTime + 1, player.hurtDuration);
                     player.invulnerableTime = player.hurtDuration / 2;
                 }
-                return penetratingPower - 1;
+
+                //Slowdown when shot in the legs
+                if (type == EnumHitboxType.LEGS)
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, true, false));
+
+                // Handle knockback by finding entity motion before and after, and reapplying to negate effect of vanilla code.
+                Vec3 motAfter = player.getDeltaMovement();
+                Vec3 deltaV = motAfter.subtract(motBefore).scale(1 - bulletType.getKnockbackModifier());
+
+                if (bulletType.getKnockbackModifier() > 2F)
+                    deltaV = new Vec3(deltaV.x, Math.sqrt(deltaV.y), deltaV.z);
+
+                player.setDeltaMovement(player.getDeltaMovement().subtract(deltaV));
+
+                if (BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+                    return penetratingPower - totalPenetrationResistance;
+                else
+                    return penetratingPower - 1;
             }
             case RIGHTITEM:
             {
                 ItemStack currentStack = player.getMainHandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
-                {
-                    GunType gunType = gunItem.getConfigType();
-                    //TODO : Shield damage
-                    return penetratingPower - gunType.getShieldDamageAbsorption();
-                }
-                else return penetratingPower;
+                    return penetratingPower - gunItem.getConfigType().getShieldDamageAbsorption();
+                else
+                    return penetratingPower;
             }
             case LEFTITEM:
             {
                 ItemStack currentStack = player.getOffhandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
-                {
-                    GunType gunType = gunItem.getConfigType();
-                    //TODO : Shield damage
-                    return penetratingPower - gunType.getShieldDamageAbsorption();
-                }
-                else return penetratingPower;
+                    return penetratingPower - gunItem.getConfigType().getShieldDamageAbsorption();
+                else
+                    return penetratingPower;
             }
-            default: return penetratingPower;
+            default:
+                return penetratingPower;
         }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "flansmod:flans_shootable",
+    "flansmod:flans_headshot"
+  ]
+}

@@ -1,4 +1,4 @@
-package com.flansmodultimate.event;
+package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;

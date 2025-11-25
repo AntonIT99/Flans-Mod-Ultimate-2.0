@@ -22,6 +22,13 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
+    public static final String RED_DUST = "reddust";
+    public static final String FM_DEBRIS_1 = "flansmod.debris1";
+    public static final String FM_FLARE = "flansmod.flare";
+
+    //TODO: Particle size?
+    //TODO: FMU Particles
+
     public static void spawnFromString(ClientLevel level, String s, double x, double y, double z)
     {
         spawnFromString(level, s, x, y, z, 0, 0, 0);
@@ -99,7 +106,7 @@ public final class ParticleHelper
             case "lava" -> Optional.of(ParticleTypes.LAVA);
             case "footstep" -> Optional.of(ParticleTypes.CLOUD);
             case "cloud" -> Optional.of(ParticleTypes.CLOUD);
-            case "reddust" -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
+            case RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
             case "snowballpoof" -> Optional.of(ParticleTypes.ITEM_SNOWBALL);
             case "snowshovel" -> Optional.of(ParticleTypes.POOF);
             case "slime" -> Optional.of(ParticleTypes.ITEM_SLIME);

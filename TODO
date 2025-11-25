@@ -1,37 +1,40 @@
 Entities:
 - AAGun - TODO
-- Bullet - WIP (FMU Features)
+- Bullet - Done
 - DeployableGun - TODO
+- Driveable - TODO
 - Grenade - Done
 - Mecha - TODO
 - Plane - TODO
 - Vehicle - TODO
 
 Rendering:
-- Armor - Done
 - Bomb - Done
 - Bullet - Done
+- CustomArmor - Done
 - Grenade - Done
 - Gun - WIP
 - MG - TODO
 
 Items:
-- ArmorItem - Done
+- AttachmentItem - Done
 - BulletItem - Done
+- CustomArmorItem - Done
 - GrenadeItem - Done
 - GunItem - WIP
 
 Types:
-- Armor - Done
-- Attachment - Done
-- Bullet - Done
-- Grenade - Done
-- Gun - Done
+- ArmorType - Done
+- AttachmentType - Done
+- BulletType - Done
+- DriveableType - TODO
+- GrenadeType - Done
+- GunType - Done
 - InfoType - Done
 
-FMU Class Comparison
-- PlayerHitbox - TODO
+Other Classes:
+- PlayerHitbox - Done
 - PlayerSnapshot - Done
 
-Content Packs:
+TODO Content Packs:
 - Fix AK-47 of MW

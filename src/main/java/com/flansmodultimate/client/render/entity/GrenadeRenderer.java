@@ -19,6 +19,8 @@ public class GrenadeRenderer extends FlansEntityRenderer<Grenade>
     @Override
     public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
     {
+        shadowRadius = grenade.getHitboxSize();
+
         poseStack.pushPose();
 
         if (grenade.isStuck())
