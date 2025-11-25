@@ -6,8 +6,8 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
-import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
@@ -346,8 +346,8 @@ public class ModClient
     {
         for (Entity entity : level.entitiesForRendering())
         {
-            if (entity instanceof Bullet bullet)
-                handleBulletLight(level, bullet);
+            if (entity instanceof Shootable shootable)
+                handleShootableLight(level, shootable);
             else if (entity instanceof Mecha mecha)
                 handleMechaLight(level, mecha);
         }
@@ -384,12 +384,12 @@ public class ModClient
         }
     }
 
-    private static void handleBulletLight(ClientLevel level, Bullet bullet)
+    private static void handleShootableLight(ClientLevel level, Shootable shootable)
     {
-        if (bullet.isRemoved() || !bullet.getConfigType().isHasLight())
+        if (shootable.isRemoved() || !shootable.getConfigType().isHasDynamicLight())
             return;
 
-        BlockPos pos = bullet.blockPosition();
+        BlockPos pos = shootable.blockPosition();
         placeLightIfAir(level, pos, 15);
     }
 

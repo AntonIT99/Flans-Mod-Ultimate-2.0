@@ -99,11 +99,6 @@ public class GrenadeType extends ShootableType
     protected boolean remote;
     /** How much damage to deal to the entity that triggered it */
 
-    //Detonation
-    /** Detonation will not occur until after this time */
-    @Getter
-    protected int primeDelay;
-
     //Aesthetics
     /** Particles given off in the detonation */
     @Getter
@@ -149,10 +144,7 @@ public class GrenadeType extends ShootableType
         dropItemOnThrow = readValue(split, "DropItemOnThrow", dropItemOnThrow, file);
         canThrow = readValue(split, "CanThrow", canThrow, file);
         penetratesBlocks = readValue(split, "PenetratesBlocks", penetratesBlocks, file);
-
         bounceSound = readValue(split, "BounceSound", bounceSound, file);
-        primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
-        primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
 
         //Sticky settings
         sticky = readValue(split, "Sticky", sticky, file);

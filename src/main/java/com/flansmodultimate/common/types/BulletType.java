@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
@@ -36,8 +37,6 @@ public class BulletType extends ShootableType
     /** If true then this bullet will burn entites it hits */
     @Getter
     protected boolean setEntitiesOnFire;
-    @Getter
-    protected int primeDelay;
 
     /** Exclusively for driveable usage. Replaces old isBomb and isShell booleans with something more flexible */
     @Getter
@@ -47,6 +46,7 @@ public class BulletType extends ShootableType
     protected String hitSound;
     @Getter
     protected float hitSoundRange = 64F;
+    @Getter
     protected boolean hitSoundEnable;
     @Getter
     protected boolean entityHitSoundEnable;
@@ -57,6 +57,7 @@ public class BulletType extends ShootableType
     /** In % of penetration to remove per tick. */
     @Getter
     protected float penetrationDecay;
+    protected float blockPenetrationModifier = -1F;
 
     /**
      * How much the loss of penetration power affects the damage of the bullet. 0 = damage not affected by that kind of penetration,
@@ -148,6 +149,7 @@ public class BulletType extends ShootableType
     protected boolean laserGuidance;
 
     /** 0 = disable, otherwise sets velocity scale on block hit particle fx */
+    @Getter
     protected float blockHitFXScale;
     protected boolean readBlockHitFXScale;
 
@@ -170,6 +172,7 @@ public class BulletType extends ShootableType
         penetratingPower = readValue(split, "Penetration", penetratingPower, file);
         penetratingPower = readValue(split, "PenetratingPower", penetratingPower, file);
         penetrationDecay = readValue(split, "PenetrationDecay", penetrationDecay, file);
+        blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
 
         playerPenetrationEffectOnDamage = readValue(split, "PlayerPenetrationDamageEffect", playerPenetrationEffectOnDamage, file);
         entityPenetrationEffectOnDamage = readValue(split, "EntityPenetrationDamageEffect", entityPenetrationEffectOnDamage, file);
@@ -181,8 +184,6 @@ public class BulletType extends ShootableType
 
         bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
         bulletSpread = readValue(split, "Spread", bulletSpread, file);
-        primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
-        primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
 
         vls = readValue(split, "VLS", vls, file);
         vls = readValue(split, "HasDeadZone", vls, file);
@@ -269,5 +270,10 @@ public class BulletType extends ShootableType
     protected IModelBase getDefaultModel()
     {
         return new ModelBullet();
+    }
+
+    public float getBlockPenetrationModifier()
+    {
+        return blockPenetrationModifier < 0F ? (float) ((double) ModCommonConfigs.blockPenetrationModifier.get()) : blockPenetrationModifier;
     }
 }

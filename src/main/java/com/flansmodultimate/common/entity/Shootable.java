@@ -59,6 +59,8 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         setHitboxSize(type.getHitBoxSize());
     }
 
+    public abstract ShootableType getConfigType();
+
     public String getShortName()
     {
         shortname = entityData.get(SHOOTABLE_TYPE);
@@ -177,9 +179,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         tag.putString(NBT_TYPE_NAME, shortname);
     }
 
-    protected boolean shouldDespawn(ShootableType configType)
+    protected boolean shouldDespawn()
     {
-        int despawnTime = configType.getDespawnTime();
+        int despawnTime = getConfigType().getDespawnTime();
         if (ModCommonConfigs.shootableDefaultRespawnTime.get() > 0)
         {
             despawnTime = Math.min(despawnTime, ModCommonConfigs.shootableDefaultRespawnTime.get());
@@ -187,8 +189,10 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         return despawnTime > 0 && tickCount > despawnTime;
     }
 
-    protected void handleDetonationConditions(Level level, ShootableType configType)
+    protected void handleDetonationConditions(Level level)
     {
+        ShootableType configType = getConfigType();
+
         if (level.isClientSide)
             return;
 
@@ -252,9 +256,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     public abstract void detonate(Level level);
 
-    protected void detonate(Level level, ShootableType type, LivingEntity causingEntity)
+    protected void detonate(Level level, LivingEntity causingEntity)
     {
         detonated = true;
-        ShootingHelper.onDetonate(level, type, position(), this, causingEntity);
+        ShootingHelper.onDetonate(level, getConfigType(), position(), this, causingEntity);
     }
 }

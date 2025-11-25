@@ -165,6 +165,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         return Mth.wrapDegrees(pitch);
     }
 
+    @Override
     public GrenadeType getConfigType()
     {
         if (configType == null && InfoType.getInfoType(getShortName()) instanceof GrenadeType gType)
@@ -375,7 +376,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         Level level = level();
         try
         {
-            if (shouldDespawn(configType))
+            if (shouldDespawn())
             {
                 detonated = true;
                 discard();
@@ -386,7 +387,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             decrementMotionTime();
             spawnTrailParticles(level);
             handleSmoke(level);
-            handleDetonationConditions(level, configType);
+            handleDetonationConditions(level);
             updateStuckState(level);
             handlePhysicsAndMotion(level);
             updateStickToThrower();
@@ -773,12 +774,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         setDeltaMovement(velocity);
     }
 
+    @Override
     public void detonate(Level level)
     {
         if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
             return;
 
-        detonate(level, configType, thrower);
+        detonate(level, thrower);
         startSmokeCounter();
         handleFlashbang(level);
     }

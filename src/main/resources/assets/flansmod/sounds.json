@@ -1,4 +1,41 @@
 {
+  "emptyclick": {
+    "category": "player",
+    "sounds": ["flansmod:emptyclick"]
+  },
+  "defaultshellinsert": {
+    "category": "player",
+    "sounds": ["flansmod:defaultshellinsert"]
+  },
+  "impact_dirt": {
+    "category": "block",
+    "sounds": ["flansmod:impact_dirt-01", "flansmod:impact_dirt-02", "flansmod:impact_dirt-03", "flansmod:impact_dirt-04"]
+  },
+
+  "impact_metal": {
+    "category": "block",
+    "sounds": ["flansmod:impact_metal-01", "flansmod:impact_metal-02", "flansmod:impact_metal-03", "flansmod:impact_metal-04", "flansmod:impact_metal-05"]
+  },
+  "impact_bricks": {
+    "category": "block",
+    "sounds": ["flansmod:impact_bricks-01", "flansmod:impact_bricks-02", "flansmod:impact_bricks-03", "flansmod:impact_bricks-04", "flansmod:impact_bricks-05"]
+  },
+  "impact_glass": {
+    "category": "block",
+    "sounds": ["flansmod:impact_glass-01", "flansmod:impact_glass-02", "flansmod:impact_glass-03", "flansmod:impact_glass-04", "flansmod:impact_glass-05"]
+  },
+  "impact_rock": {
+    "category": "block",
+    "sounds": ["flansmod:impact_rock-01", "flansmod:impact_rock-02", "flansmod:impact_rock-03", "flansmod:impact_rock-04"]
+  },
+  "impact_wood": {
+    "category": "block",
+    "sounds": ["flansmod:impact_wood-01", "flansmod:impact_wood-02", "flansmod:impact_wood-03", "flansmod:impact_wood-04", "flansmod:impact_wood-05"]
+  },
+  "impact_water": {
+    "category": "block",
+    "sounds": ["flansmod:impact_water-01", "flansmod:impact_water-02", "flansmod:impact_water-03", "flansmod:impact_water-04", "flansmod:impact_water-05"]
+  },
   "bullet": {
     "category": "player",
     "sounds": [

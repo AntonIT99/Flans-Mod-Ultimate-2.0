@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -97,9 +98,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected final List<PenetrationLoss> penetrationLosses = new ArrayList<>();
 
     /** Hitmarker information on the server side */
-    @Setter
     protected boolean lastHitHeadshot = false;
-    @Getter @Setter
     protected float lastHitPenAmount = 1F;
 
     /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
@@ -145,6 +144,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
     }
 
+    @Override
     public BulletType getConfigType()
     {
         if (configType == null && InfoType.getInfoType(getShortName()) instanceof BulletType bType)
@@ -398,7 +398,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             setInitialSpeed();
             updatePreviousPosition();
 
-            if (shouldDespawn(configType))
+            if (shouldDespawn())
             {
                 detonated = true;
                 discard();
@@ -416,7 +416,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             if (handleFuseAndLifetime(level))
                 return;
 
-            handleDetonationConditions(level, configType);
+            handleDetonationConditions(level);
             handleSubmunitions(level);
 
             DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
@@ -615,6 +615,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected void performRaytraceAndApplyHits(Level level)
     {
+        //TODO: allow client interpolation?
         if (level.isClientSide)
             return;
 
@@ -648,6 +649,59 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 break;
             }
         }
+    }
+
+    public void handleBounceOrStop(Level level, BlockHitResult hitResult, Vec3 hitVec)
+    {
+        if (configType.getBounciness() <= 0F)
+        {
+            // No bounce: stop at impact point
+            setPos(hitVec);
+            setDead(level);
+            return;
+        }
+
+        Vec3 preHitVel = hitVec.subtract(position());
+        Vec3 postHitVel = velocity.subtract(preHitVel);
+
+        Vec3 surfaceNormal = getSurfaceNormal(hitResult.getDirection());
+
+        if (velocity.lengthSqr() < 0.1F * initialSpeed)
+        {
+            setPos(hitVec);
+            setDead(level);
+            return;
+        }
+
+        double lambda = postHitVel.length() / velocity.length();
+
+        double normalProjection = surfaceNormal.dot(postHitVel);
+        // normal component (scaled down)
+        Vec3 normal = surfaceNormal.scale(-normalProjection);
+
+        // tangential component
+        Vec3 orthog = postHitVel.add(normal);
+
+        normal = normal.scale(configType.getBounciness() / 3.0F);
+        orthog = orthog.scale(configType.getBounciness());
+
+        postHitVel = orthog.add(normal);
+        Vec3 totalVel = preHitVel.add(postHitVel);
+
+        setPos(position().add(totalVel));
+        setDeltaMovement(postHitVel.scale(1.0D / lambda));
+    }
+
+    protected static Vec3 getSurfaceNormal(Direction side)
+    {
+        return switch (side) {
+            case DOWN -> new Vec3(0, -1, 0);
+            case UP -> new Vec3(0, 1, 0);
+            case NORTH -> new Vec3(0, 0, -1);
+            case SOUTH -> new Vec3(0, 0, 1);
+            case EAST -> new Vec3(1, 0, 0);
+            case WEST -> new Vec3(-1, 0, 0);
+        };
     }
 
     protected void applyDragAndGravity()
@@ -988,7 +1042,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
             return;
 
-        detonate(level, configType, firedShot.getAttacker().orElse(null));
+        detonate(level, firedShot.getAttacker().orElse(null));
     }
 
     public void setDead(Level level)

@@ -10,6 +10,7 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,6 +27,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 public class PlayerHitbox
 {
@@ -163,8 +166,12 @@ public class PlayerHitbox
         return null;
     }
 
-    public float hitByBullet(FiredShot shot, float damage, float penetratingPower, @Nullable Bullet bullet)
+    public ShootingHelper.HitData hitByBullet(FiredShot shot, float damage, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
+        float lastHitPenAmount;
+        float penetratingPower = hitData.penetratingPower();
+        boolean lastHitHeadshot = hitData.lastHitHeadshot();
+
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
             player.setSecondsOnFire(20);
@@ -195,14 +202,12 @@ public class PlayerHitbox
         else if (BooleanUtils.isNotTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
             damageModifier = bulletType.getPenetratingPower() < 0.1F ? (penetratingPower / bulletType.getPenetratingPower()) : 1F;
 
-        if (bullet != null)
-            bullet.setLastHitPenAmount(Math.max(bullet.getLastHitPenAmount(), damageModifier));
+        lastHitPenAmount = Math.max(hitData.lastHitPenAmount(), damageModifier);
 
         if (type == EnumHitboxType.HEAD)
         {
             damageModifier *= ModCommonConfigs.headshotDamageModifier.get();
-            if (bullet != null)
-                bullet.setLastHitHeadshot(true);
+            lastHitHeadshot = true;
         }
         else if (type == EnumHitboxType.BODY)
         {
@@ -227,8 +232,10 @@ public class PlayerHitbox
                 DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 
                 //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
-                if (!player.level().isClientSide && hitDamage == 0 && FlansMod.teamsManager.getCurrentRound().isPresent())
-                    FlansMod.teamsManager.getCurrentRound().get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
+                Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
+
+                if (!player.level().isClientSide && hitDamage == 0 && currentRound.isPresent())
+                    currentRound.get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
 
                 Vec3 motBefore = player.getDeltaMovement();
 
@@ -254,28 +261,30 @@ public class PlayerHitbox
                 player.setDeltaMovement(player.getDeltaMovement().subtract(deltaV));
 
                 if (BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
-                    return penetratingPower - totalPenetrationResistance;
+                    penetratingPower -= totalPenetrationResistance;
                 else
-                    return penetratingPower - 1;
+                    penetratingPower--;
+
+                break;
             }
             case RIGHTITEM:
             {
                 ItemStack currentStack = player.getMainHandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
-                    return penetratingPower - gunItem.getConfigType().getShieldDamageAbsorption();
-                else
-                    return penetratingPower;
+                    penetratingPower -= gunItem.getConfigType().getShieldDamageAbsorption();
+                break;
             }
             case LEFTITEM:
             {
                 ItemStack currentStack = player.getOffhandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
-                    return penetratingPower - gunItem.getConfigType().getShieldDamageAbsorption();
-                else
-                    return penetratingPower;
+                    penetratingPower -= gunItem.getConfigType().getShieldDamageAbsorption();
+                break;
             }
             default:
-                return penetratingPower;
+                break;
         }
+
+        return new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
     }
 }

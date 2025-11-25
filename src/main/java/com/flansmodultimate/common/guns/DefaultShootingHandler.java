@@ -93,8 +93,11 @@ public final class DefaultShootingHandler implements ShootingHandler
         // Drop item on shooting if gun requires it
         GunItemBehavior.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
-        // TODO: knockback if needed
-        // if (configType.getKnockback() > 0F) {}
+
+        if (gunType.getKnockback() > 0F)
+        {
+            //TODO : Apply knockback
+        }
 
         // Damage the bullet item
         bulletStack.setDamageValue(bulletStack.getDamageValue() + 1);

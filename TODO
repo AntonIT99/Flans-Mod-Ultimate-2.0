@@ -35,6 +35,7 @@ Types:
 Other Classes:
 - PlayerHitbox - Done
 - PlayerSnapshot - Done
+- PlayerHandler - TODO
 
 TODO Content Packs:
 - Fix AK-47 of MW

@@ -27,8 +27,9 @@ public abstract class ShootableType extends InfoType
 
     /** Controls whether it has full luminescence */
     @Getter
-    protected boolean hasLight; //TODO: implement
+    protected boolean hasLight;
     /** Controls if it lights up the area around it */
+    @Getter
     protected boolean hasDynamicLight;
 
     //Item Stuff
@@ -76,9 +77,10 @@ public abstract class ShootableType extends InfoType
     /** Whether this grenade will break glass when thrown against it */
     @Getter
     protected boolean breaksGlass;
+    @Getter
     protected float ignoreArmorProbability;
+    @Getter
     protected float ignoreArmorDamageFactor;
-    protected float blockPenetrationModifier = -1;
 
     //Detonation Conditions
     /** If 0, then the grenade will last until some other detonation condition is met, else the grenade will detonate after this time (in ticks) */
@@ -100,6 +102,8 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float damageToTriggerer;
     /** Detonation will not occur until after this time */
+    @Getter
+    protected int primeDelay;
 
     //Detonation Stuff
     /** The radius in which to spread fire */
@@ -230,7 +234,6 @@ public abstract class ShootableType extends InfoType
             damage.setReadDamageVsPlanes(true);
         }
 
-        blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
         ignoreArmorProbability = readValue(split, "IgnoreArmorProbability", ignoreArmorProbability, file);
         ignoreArmorDamageFactor = readValue(split, "IgnoreArmorDamageFactor", ignoreArmorDamageFactor, file);
         breaksGlass = readValue(split, "reaksGlass", breaksGlass, file);
@@ -246,6 +249,8 @@ public abstract class ShootableType extends InfoType
         livingProximityTrigger = readValue(split, "LivingProximityTrigger", livingProximityTrigger, file);
         driveableProximityTrigger = readValue(split, "VehicleProximityTrigger", driveableProximityTrigger, file);
         damageToTriggerer = readValue(split, "DamageToTriggerer", damageToTriggerer, file);
+        primeDelay = readValue(split, "PrimeDelay", primeDelay, file);
+        primeDelay = readValue(split, "TriggerDelay", primeDelay, file);
 
         //Detonation
         fireRadius = readValue(split, "FireRadius", fireRadius, file);

@@ -20,6 +20,8 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.DoubleValue chestshotDamageModifier;
     public static final ForgeConfigSpec.DoubleValue armshotDamageModifier;
     public static final ForgeConfigSpec.DoubleValue legshotModifier;
+    public static final ForgeConfigSpec.BooleanValue enableBlockPenetration;
+    public static final ForgeConfigSpec.DoubleValue blockPenetrationModifier;
     public static final ForgeConfigSpec.DoubleValue vehicleWheelSeatExplosionModifier;
 
     // Armor Settings
@@ -42,9 +44,6 @@ public class ModCommonConfigs
         useNewPenetrationSystem = BUILDER
                 .comment("Whether to use new penetration system (only content packs designed to work with this system will work as intended with this on).")
                 .define("useNewPenetrationSystem", false);
-        vehicleWheelSeatExplosionModifier = BUILDER
-                .comment("Proportion of damage from an explosion when it has hit a wheel or seat.")
-                .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);
         headshotDamageModifier = BUILDER
                 .comment("All headshot damage will be modified by this amount")
                 .defineInRange("headshotDamageModifier", 2.0, 0.0, 100.0);
@@ -57,6 +56,15 @@ public class ModCommonConfigs
         legshotModifier = BUILDER
                 .comment("All leg shot damage will be modified by this amount")
                 .defineInRange("legshotModifier", 0.8, 0.0, 100.0);
+        enableBlockPenetration = BUILDER
+                .comment("This will enable the block penetration system to be used")
+                .define("enableBlockPenetration", false);
+        blockPenetrationModifier = BUILDER
+                .comment("Default block penetration modifier power. Individual bullets will override")
+                .defineInRange("blockPenetrationModifier", 0.0, 0.0, 100.0);
+        vehicleWheelSeatExplosionModifier = BUILDER
+                .comment("Proportion of damage from an explosion when it has hit a wheel or seat.")
+                .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);
         BUILDER.pop();
 
         BUILDER.push("Armor Settings");

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.types.ShootableType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +26,7 @@ public final class CommonEventHandler
 {
     @Getter
     private static long ticker;
+    private static final RandomSource random = RandomSource.create();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
@@ -54,15 +57,65 @@ public final class CommonEventHandler
         LivingEntity entity = event.getEntity();
         DamageSource source = event.getSource();
 
-        // only server
-        if (entity.level().isClientSide)
+        // server side only
+        if (entity.level().isClientSide || !FlansDamageSources.isShootableDamage(source))
             return;
 
-        boolean isBullet = source.is(FlansDamageSources.FLANS_SHOOTABLE) || source.is(FlansDamageSources.FLANS_HEADSHOT);
-
-        if (!isBullet)
+        if (tryApplyIgnoreArmorShot(event, entity, source))
             return;
 
+        applyArmorScaling(event, entity);
+    }
+
+    private static boolean tryApplyIgnoreArmorShot(LivingHurtEvent event, LivingEntity entity, DamageSource source)
+    {
+        float damage = event.getAmount();
+        if (damage <= 0.0F)
+            return false;
+
+        ShootableType shootableType = FlansDamageSources.getShootableTypeFromSource(source).orElse(null);
+        if (shootableType == null)
+            return false;
+
+        // No ignore-armor behavior configured
+        if (shootableType.getIgnoreArmorProbability() <= 0.0F)
+            return false;
+
+        // Random roll failed → fall back to normal armor handling
+        if (random.nextFloat() >= shootableType.getIgnoreArmorProbability())
+            return false;
+
+        float originalDamage = damage;
+
+        // Strip absorption hearts first
+        float absorption = entity.getAbsorptionAmount();
+        damage = Math.max(damage - absorption, 0.0F);
+        entity.setAbsorptionAmount(absorption - (originalDamage - damage));
+
+        // Apply ignore-armor damage multiplier
+        damage *= shootableType.getIgnoreArmorDamageFactor();
+
+        if (damage > 0.0F)
+        {
+            float health = entity.getHealth();
+
+            // Directly hurt the entity (armor is 100% bypassed here)
+            entity.setHealth(health - damage);
+
+            // Update combat tracker (for death messages, stats, etc.)
+            entity.getCombatTracker().recordDamage(source, damage);
+
+            // Optionally adjust absorption again (mirroring the old logic)
+            entity.setAbsorptionAmount(entity.getAbsorptionAmount() - damage);
+        }
+
+        //  Cancel the event so vanilla damage and your armor scaling don't run
+        event.setCanceled(true);
+        return true;
+    }
+
+    private static void applyArmorScaling(LivingHurtEvent event, LivingEntity entity)
+    {
         float totalNormalDef = 0.0F;
         float totalBulletDef = 0.0F;
 
