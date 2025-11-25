@@ -619,6 +619,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (level.isClientSide)
             return;
 
+        //TODO: investigate why the hits are empty
         Vec3 origin = position();
         List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize());
 
