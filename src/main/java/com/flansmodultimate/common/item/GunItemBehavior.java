@@ -148,6 +148,7 @@ public record GunItemBehavior(GunItem item)
             if (slot.isEmpty())
                 continue;
 
+            ItemStack shootableStack = slot.get().stack();
             ShootableItem shootableItem = (ShootableItem) slot.get().stack().getItem();
             ShootableType shootableType = shootableItem.getConfigType();
             ShootingHandler handler = new DefaultShootingHandler(level, player, gunStack, hand, slot.get());
@@ -170,7 +171,7 @@ public record GunItemBehavior(GunItem item)
             else
             {
                 //TODO gunOrigin? & animation origin
-                ShootingHelper.fireGun(level, player, gunType, shootableType, gunStack, otherHand, handler);
+                ShootingHelper.fireGun(level, player, gunType, shootableType, gunStack, shootableStack, otherHand, handler);
                 boolean silenced = Optional.ofNullable(gunType.getBarrel(gunStack)).map(AttachmentType::isSilencer).orElse(false);
                 playShotSound(level, player.getEyePosition(), silenced);
             }

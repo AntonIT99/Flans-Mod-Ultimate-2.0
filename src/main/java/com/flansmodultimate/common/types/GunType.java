@@ -4,6 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -941,13 +942,37 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the bullet speed of a specific gun, taking into account attachments
      */
+    public float getBulletSpeed(ItemStack stack, ItemStack bulletStack)
+    {
+        float stackBulletSpeed;
+
+        if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
+            stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().getSpeedMultiplier();
+        else
+            stackBulletSpeed = bulletSpeed;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            stackBulletSpeed = getGrip(stack).secondarySpeed;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackBulletSpeed *= attachment.bulletSpeedMultiplier;
+
+        return stackBulletSpeed;
+    }
+
+    /**
+     * Get the bullet speed of a specific gun, taking into account attachments
+     */
     public float getBulletSpeed(ItemStack stack)
     {
         float stackBulletSpeed = bulletSpeed;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            stackBulletSpeed = getGrip(stack).secondarySpeed;
+
         for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
             stackBulletSpeed *= attachment.bulletSpeedMultiplier;
-        }
+
         return stackBulletSpeed;
     }
 

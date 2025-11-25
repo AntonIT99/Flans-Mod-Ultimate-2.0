@@ -22,11 +22,11 @@ public final class ShootableFactory
      * Shootable entities associated with a living entity shooting a gun
      */
     @NotNull
-    public static Shootable createShootable(Level level, @NotNull GunType gunType, @NotNull ShootableType type, @NotNull LivingEntity shooter, @NotNull ItemStack mainHandStack, @Nullable ItemStack otherHandStack)
+    public static Shootable createShootable(Level level, @NotNull GunType gunType, @NotNull ShootableType type, @NotNull LivingEntity shooter, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack)
     {
         if (type instanceof BulletType bulletType)
         {
-            return new Bullet(level, new FiredShot(gunType, bulletType, mainHandStack, otherHandStack, shooter), shooter.getEyePosition(0.0F), shooter.getLookAngle());
+            return new Bullet(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), shooter.getEyePosition(0.0F), shooter.getLookAngle());
         }
         else if (type instanceof GrenadeType grenadeType)
         {

@@ -26,6 +26,7 @@ public class BulletType extends ShootableType
     public static final double LOCK_ON_RANGE = 128.0;
     public static final int FLAK_PARTICLES_RANGE = 200;
 
+    @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
     @Getter
@@ -104,10 +105,8 @@ public class BulletType extends ShootableType
     protected int maxDegreeOfSACLOS = 5;
     @Getter
     protected int maxRangeOfMissile = 150;
-
     @Getter
     protected boolean manualGuidance;
-    protected int lockOnFuse = 10;
 
     @Getter
     protected List<MobEffectInstance> hitEffects = new ArrayList<>();
@@ -144,7 +143,6 @@ public class BulletType extends ShootableType
     protected float trackPhaseTurn = 0.1F;
     @Getter
     protected boolean torpedo;
-    protected boolean fancyDescription = true;
     @Getter
     protected boolean laserGuidance;
 
@@ -234,9 +232,7 @@ public class BulletType extends ShootableType
 
         manualGuidance = readValue(split, "ManualGuidance", manualGuidance, file);
         laserGuidance = readValue(split, "LaserGuidance", laserGuidance, file);
-        lockOnFuse = readValue(split, "LockOnFuse", lockOnFuse, file);
         maxRange = readValue(split, "MaxRange", maxRange, file);
-        fancyDescription = readValue(split, "FancyDescription", fancyDescription, file);
         speedMultiplier = readValue(split, "BulletSpeedMultiplier", speedMultiplier, file);
 
         blockHitFXScale = readValue(split, "BlockHitFXScale", blockHitFXScale, file);

@@ -99,19 +99,19 @@ public final class ShootingHelper
     }
 
     /** Call this to fire bullets or grenades from a living entity holding a gun (Server side) */
-    public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
+    public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
     {
         int bulletAmount = gunType.getNumBullets() * shootableType.getNumBullets();
 
-        if (gunType.getBulletSpeed(gunStack) == 0F && shootableType instanceof BulletType bulletType)
+        if (gunType.getBulletSpeed(gunStack, shootableStack) == 0F && shootableType instanceof BulletType bulletType)
         {
             // Raytrace without entity
-            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, otherHandStack, shooter), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
+            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
         }
         else
         {
             // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, otherHandStack);
+            Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
 
             for (int i = 0; i < bulletAmount; i++)
             {
