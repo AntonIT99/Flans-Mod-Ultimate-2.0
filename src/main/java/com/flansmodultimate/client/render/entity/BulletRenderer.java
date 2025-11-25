@@ -20,7 +20,6 @@ public class BulletRenderer extends FlansEntityRenderer<Bullet>
     @Override
     public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
     {
-        shadowRadius = bullet.getHitboxSize();
         // hasLight -> use full-bright light value
         light = bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : light;
 
