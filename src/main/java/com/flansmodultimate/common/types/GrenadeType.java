@@ -19,7 +19,10 @@ public class GrenadeType extends ShootableType
     public static final int SMOKE_PARTICLES_COUNT = 50;
     public static final int SMOKE_PARTICLES_RANGE = 30;
 
+    protected static final float DEFAULT_BOUNCINESS = 0.9F;
+
     //Misc
+    protected boolean useDefaultBounciness = true;
     /** The damage imparted by smacking someone over the head with this grenade */
     @Getter
     protected int meleeDamage = 1;
@@ -97,14 +100,8 @@ public class GrenadeType extends ShootableType
     /** If true, then this grenade can be detonated by any remote detonator tool */
     @Getter
     protected boolean remote;
-    /** How much damage to deal to the entity that triggered it */
 
     //Aesthetics
-    /** Particles given off in the detonation */
-    @Getter
-    protected int explodeParticles;
-    @Getter
-    protected String explodeParticleType = "largesmoke";
     /** Whether the grenade should spin when thrown. Generally false for mines or things that should lie flat */
     @Getter
     protected boolean spinWhenThrown = true;
@@ -134,6 +131,9 @@ public class GrenadeType extends ShootableType
     protected void readLine(String line, String[] split, TypeFile file)
     {
         super.readLine(line, split, file);
+
+        if (split[0].equalsIgnoreCase("Bounciness"))
+            useDefaultBounciness = false;
 
         meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
 
@@ -191,5 +191,13 @@ public class GrenadeType extends ShootableType
         addEffects(readValues(split, "PotionEffect", file), potionEffects, line, file, false, false);
 
         numClips = readValue(split, "NumClips", numClips, file);
+    }
+
+    @Override
+    protected void postRead()
+    {
+        super.postRead();
+        if (useDefaultBounciness)
+            bounciness = DEFAULT_BOUNCINESS;
     }
 }

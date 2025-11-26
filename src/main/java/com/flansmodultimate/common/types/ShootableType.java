@@ -59,7 +59,7 @@ public abstract class ShootableType extends InfoType
     //Physics and Stuff
     /** The speed at which the grenade should fall */
     @Getter
-    protected float fallSpeed = 1F;
+    protected float fallSpeed = 1F; //TODO: idea - define weight
     /** The speed at which to throw the grenade. 0 will just drop it on the floor */
     @Getter
     protected float throwSpeed = 1F;
@@ -68,7 +68,7 @@ public abstract class ShootableType extends InfoType
     protected float hitBoxSize = 0.5F;
     /** Upon hitting a block or entity, the grenade will be deflected and its motion will be multiplied by this constant */
     @Getter
-    protected float bounciness = 0.9F;
+    protected float bounciness = 0F;
 
     //Damage to hit entities
     /** Amount of damage to impart upon various entities */
@@ -236,7 +236,7 @@ public abstract class ShootableType extends InfoType
 
         ignoreArmorProbability = readValue(split, "IgnoreArmorProbability", ignoreArmorProbability, file);
         ignoreArmorDamageFactor = readValue(split, "IgnoreArmorDamageFactor", ignoreArmorDamageFactor, file);
-        breaksGlass = readValue(split, "reaksGlass", breaksGlass, file);
+        breaksGlass = readValue(split, "BreaksGlass", breaksGlass, file);
         bounciness = readValue(split, "Bounciness", bounciness, file);
         hasLight = readValue(split, "HasLight", hasLight, file);
         hasDynamicLight = readValue(split, "HasDynamicLight", hasDynamicLight, file);

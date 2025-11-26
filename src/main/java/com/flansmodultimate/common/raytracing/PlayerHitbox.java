@@ -197,8 +197,8 @@ public class PlayerHitbox
             totalPenetrationResistance = chestPenRes;
 
         float damageModifier = 1F;
-        if (penetratingPower <= 0.7F * totalPenetrationResistance && BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
-            damageModifier = (float) Math.pow((penetratingPower / (0.7F * totalPenetrationResistance)), 2.5);
+        if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+            damageModifier = (float) Math.pow((penetratingPower / (BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance)), 2.5);
         else if (BooleanUtils.isNotTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
             damageModifier = bulletType.getPenetratingPower() < 0.1F ? (penetratingPower / bulletType.getPenetratingPower()) : 1F;
 

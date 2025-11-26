@@ -619,9 +619,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (level.isClientSide)
             return;
 
-        //TODO: investigate why the hits are empty
         Vec3 origin = position();
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize());
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
 
         if (hits.isEmpty())
             return;
@@ -927,11 +926,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         {
             if (owner instanceof Player player)
             {
-                ItemStack stack = player.getMainHandItem(); // was getCurrentEquippedItem()
+                ItemStack stack = player.getMainHandItem();
 
                 if (!stack.isEmpty() && stack.getItem() instanceof GunItem itemGun)
                 {
-                    // assuming ItemGun still exposes these fields like before
                     impactX = itemGun.getImpactX();
                     impactY = itemGun.getImpactY();
                     impactZ = itemGun.getImpactZ();

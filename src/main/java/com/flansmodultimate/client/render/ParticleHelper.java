@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -23,8 +24,13 @@ import java.util.Optional;
 public final class ParticleHelper
 {
     public static final String RED_DUST = "reddust";
+
     public static final String FM_DEBRIS_1 = "flansmod.debris1";
     public static final String FM_FLARE = "flansmod.flare";
+
+    public static final String ICON_CRACK = "iconcrack";
+    public static final String BLOCK_CRACK = "blockcrack";
+    public static final String BLOCK_DUST = "blockdust";
 
     //TODO: Particle size?
     //TODO: FMU Particles
@@ -44,7 +50,7 @@ public final class ParticleHelper
 
     private static Optional<ParticleOptions> toOptions(String raw)
     {
-        if (raw == null || raw.isEmpty())
+        if (StringUtils.isBlank(raw))
             return Optional.empty();
 
         String s = raw.toLowerCase(Locale.ROOT);
@@ -54,24 +60,48 @@ public final class ParticleHelper
         {
             // keep the rest intact so IDs like "mod:item" work
             String[] split = s.split("_", 2);
-            if (split.length == 2)
+            if (split.length > 1)
             {
                 String kind = split[0];
                 String id = split[1]; // expected "modid:itemname" or "modid:blockname"
 
-                if (kind.equals("iconcrack"))
+                if (kind.equals(ICON_CRACK))
                 {
-                    Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(id));
-                    if (item == null) return Optional.empty();
+                    ResourceLocation rl = ResourceLocation.tryParse(id);
+                    if (rl == null)
+                        return Optional.empty();
+
+                    Item item = ForgeRegistries.ITEMS.getValue(rl);
+                    if (item == null)
+                        return Optional.empty();
+
                     return Optional.of(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(item)));
                 }
 
-                if (kind.equals("blockcrack") || kind.equals("blockdust"))
+                if (kind.equals(BLOCK_CRACK))
                 {
-                    Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(id));
-                    if (block == null) return Optional.empty();
-                    // In modern MC both of these are typically represented with BLOCK particles.
+                    ResourceLocation rl = ResourceLocation.tryParse(id);
+                    if (rl == null)
+                        return Optional.empty();
+
+                    Block block = ForgeRegistries.BLOCKS.getValue(rl);
+                    if (block == null)
+                        return Optional.empty();
+
                     return Optional.of(new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState()));
+                }
+
+                if (kind.equals(BLOCK_DUST))
+                {
+                    ResourceLocation rl = ResourceLocation.tryParse(id);
+                    if (rl == null)
+                        return Optional.empty();
+
+                    Block block = ForgeRegistries.BLOCKS.getValue(rl);
+                    if (block == null)
+                        return Optional.empty();
+
+                    return Optional.of(new BlockParticleOption(ParticleTypes.FALLING_DUST, block.defaultBlockState()));
                 }
             }
         }

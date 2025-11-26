@@ -86,8 +86,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected boolean stuck;
     /** Stores the position of the block this grenade is stuck to. Used to determine when to unstick */
     protected BlockPos stuckPos;
-    /** Stop repeat detonations */
-    protected boolean detonated;
     /** For deployable bags */
     protected int numUsesRemaining;
     @Nullable

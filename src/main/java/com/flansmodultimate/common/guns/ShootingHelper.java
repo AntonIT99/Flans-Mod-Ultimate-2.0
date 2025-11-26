@@ -3,6 +3,7 @@ package com.flansmodultimate.common.guns;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.PenetrableBlock;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.render.ParticleHelper;
 import com.flansmodultimate.common.FlansExplosion;
@@ -23,6 +24,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketHitMarker;
@@ -31,7 +33,6 @@ import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -57,7 +59,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,12 +71,9 @@ public final class ShootingHelper
 {
     //TODO: make configurable
     private static final double ENTITY_HIT_PARTICLE_RANGE = 64.0;
-    //TODO: read penetrableBlocks from config
-    @Getter
-    private static final List<PenetrableBlock> penetrableBlocks = new ArrayList<>();
-    private static final RandomSource random = RandomSource.create();
+    private static final double BLOCK_HIT_PARTICLE_RANGER = 64.0;
 
-    private record PenetrableBlock(Block block, float hardness, boolean breaks) {}
+    private static final RandomSource random = RandomSource.create();
 
     /** Call this when fire bullets from vehicles or other sources (Server side) */
     public static void fireGun(Level level, @NotNull FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
@@ -124,12 +122,12 @@ public final class ShootingHelper
 
     public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot) {}
 
-    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, HitData hitData)
+    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData)
     {
-        return onHit(level, shot, bulletHit, hit, shootingDirection, hitData, null);
+        return onHit(level, shot, bulletHit, hit, shootingMotion, hitData, null);
     }
 
-    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingDirection, HitData hitData, @Nullable Bullet bullet)
+    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData, @Nullable Bullet bullet)
     {
         float penetratingPower = hitData.penetratingPower();
         float lastHitPenAmount = hitData.lastHitPenAmount();
@@ -230,33 +228,7 @@ public final class ShootingHelper
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
-            //TODO remove 1.12.2 code
-            /*BlockPos pos = bh.getHitResult().getBlockPos();
-            Direction direction = bh.getHitResult().getDirection();
-
-            // State is already “actual” in modern MC (no getActualState)
-            BlockState state = level.getBlockState(pos);
-
-            //If the bullet breaks glass, and can do so according to FlansMod, do so.
-            if (bulletType.isBreaksGlass() && ModUtils.isGlass(state) && FlansMod.teamsManager.isCanBreakGlass() && !level.isClientSide)
-            {
-                ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
-            }
-
-            penetratingPower -= getBlockPenetrationDecrease(state, pos, level);
-
-            Vector3f bulletDir = new Vector3f(shootingDirection);
-            bulletDir.normalise();
-            bulletDir.scale(0.5F);
-
-            for (Player p : level.players())
-            {
-                //Checks if the player is in a radius of 300 Blocks (300 squared = 90000)
-                if (p.distanceToSqr(Vec3.atCenterOf(pos)) < 90000)
-                    PacketHandler.sendTo(new PacketBlockHitEffect(new Vector3f(hit), bulletDir, pos, direction), (ServerPlayer) p);
-            }*/
-
-            penetratingPower = handleBlockHit(level, bh.getHitResult(), shot, penetratingPower, bullet);
+            penetratingPower = handleBlockHit(level, bh.getHitResult(), shootingMotion, shot, penetratingPower, bullet);
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
             showHitMarker = true;
@@ -272,57 +244,43 @@ public final class ShootingHelper
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
     }
 
-    private static float handleBlockHit(Level level, BlockHitResult hitResult, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
+    private static float handleBlockHit(Level level, BlockHitResult hitResult, Vec3 shootingMotion, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
     {
         BlockPos pos = hitResult.getBlockPos();
         Vec3 hitVec = hitResult.getLocation();
         BlockState state = level.getBlockState(pos);
-        Block block = state.getBlock();
 
         // Block penetration (may consume power and let the bullet continue)
         if (BooleanUtils.isTrue(ModCommonConfigs.enableBlockPenetration.get()))
         {
-            penetratingPower = tryPenetrateBlock(level, pos, state, block, shot, penetratingPower, bullet);
+            float hardness = getBlockPenetrationDecrease(level, state, pos, shot.getBulletType());
+            penetratingPower -= hardness;
+
+            // No penetration
             if (penetratingPower < 0F)
                 return penetratingPower;
+
+            PenetrableBlock penetrableBlock = PenetrableBlock.get(state);
+
+            if (penetrableBlock != null && penetrableBlock.breaksOnPenetration() && !level.isClientSide)
+                ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
+
+            if (bullet != null)
+                bullet.getPenetrationLosses().add(new PenetrationLoss(hardness, PenetrationLoss.Type.BLOCK));
         }
 
         // Special handling: glass breaking
         handleGlassBreak(level, pos, state, shot);
 
         // Impact sound
-        playImpactSound(level, pos, state, block, shot.getBulletType());
+        playImpactSound(level, pos, state, shot.getBulletType());
 
         //Particles
-        spawnBlockHitParticles(level, pos, state, block, hitVec, shot.getBulletType());
+        spawnBlockHitParticles(level, hitResult, shootingMotion, shot.getBulletType(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE);
 
         // Bounce / ricochet or stop
         if (bullet != null)
             bullet.handleBounceOrStop(level, hitResult, hitVec);
-
-        return penetratingPower;
-    }
-
-    private static float tryPenetrateBlock(Level level, BlockPos pos, BlockState state, Block block, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
-    {
-        for (PenetrableBlock penetrableBlock : penetrableBlocks)
-        {
-            if (block != penetrableBlock.block || !state.is(penetrableBlock.block()))
-                continue;
-
-            float penetrationModifier = shot.getBulletType().getBlockPenetrationModifier();
-            float hardness = penetrableBlock.hardness * (penetrationModifier > 0 ? (1F / penetrationModifier) : 1F);
-
-            penetratingPower -= hardness;
-            if (penetratingPower < 0F)
-                break; // not enough power to exit this block
-
-            if (penetrableBlock.breaks() && !level.isClientSide)
-                ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
-
-            if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(hardness, PenetrationLoss.Type.BLOCK));
-        }
 
         return penetratingPower;
     }
@@ -335,12 +293,12 @@ public final class ShootingHelper
         ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
     }
 
-    private static void playImpactSound(Level level, BlockPos pos, BlockState state, Block block, BulletType type)
+    private static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
     {
-        if (!type.isHitSoundEnable())
+        if (level.isClientSide || !type.isHitSoundEnable())
             return;
 
-        String hitToUse = resolveImpactSound(state, block, type).orElse(null);
+        String hitToUse = resolveImpactSound(state, state.getBlock(), type).orElse(null);
         if (hitToUse == null)
             return;
 
@@ -381,45 +339,20 @@ public final class ShootingHelper
         return Optional.empty();
     }
 
-    //TODO: spawn using packets - use PacketBlockHitEffect for particles?
-    private static void spawnBlockHitParticles(Level level, BlockPos pos, BlockState state, Block block, Vec3 hitVec, BulletType type)
+    private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 shootingMotion, BulletType type, float bbWidth)
     {
-        if (state.isAir() || type.getExplosionRadius() > 30 || type.getBlockHitFXScale() <= 0) {
+        if (level.isClientSide)
             return;
-        }
 
-        /*Minecraft mc = Minecraft.getInstance();
-        double scalingFactor = mc.options.graphicsMode().get().isFancy() ? 10.0D : 2.0D;
+        BlockPos pos = hitResult.getBlockPos();
+        BlockState state = level.getBlockState(pos);
 
-        int numBlockParticles = (int) (Math.pow(type.getExplosionRadius() + 1D, 1.5D) * scalingFactor + 20);
-        double velocityFactor = Math.sqrt(type.getExplosionRadius() + 1D) * type.getBlockHitFXScale() * 0.5D;
+        if (state.isAir())
+            return;
 
-        int blockId = Block.getId(state); // 1.20 static helper
-
-        for (int i = 0; i < numBlockParticles; i++)
-        {
-            double px1 = hitVec.x + (random.nextDouble() - 0.3D) * getBbWidth() * 0.05D;
-            double py1 = hitVec.y + (random.nextDouble() - 0.3D) * getBbWidth() * 0.05D;
-            double pz1 = hitVec.z + (random.nextDouble() - 0.3D) * getBbWidth() * 0.05D;
-
-            Vec3 motion = getDeltaMovement();
-
-            double vx1 = -motion.x * (0.0011D + random.nextGaussian() * 0.008D) * velocityFactor;
-            double vy1 = Math.abs(0.305D + random.nextDouble() * 0.125D) * velocityFactor;
-            double vz1 = -motion.z * (0.0011D + random.nextGaussian() * 0.008D) * velocityFactor;
-
-            FlansMod.proxy.spawnParticle("blockdust_" + blockId, px1, py1, pz1, vx1, vy1, vz1);
-
-            double px2 = hitVec.x + (random.nextDouble() - 0.6D) * getBbWidth() * 0.75D;
-            double py2 = hitVec.y + (random.nextDouble() - 0.6D) * getBbWidth() * 0.75D;
-            double pz2 = hitVec.z + (random.nextDouble() - 0.6D) * getBbWidth() * 0.75D;
-
-            double vx2 = -motion.x * (0.415D + random.nextGaussian() * 0.1D) * velocityFactor;
-            double vy2 = -motion.y * (0.425D + Math.abs(random.nextGaussian() * 0.1D)) * velocityFactor;
-            double vz2 = -motion.z * (0.415D + random.nextGaussian() * 0.1D) * velocityFactor;
-
-            FlansMod.proxy.spawnParticle("blockcrack_" + blockId, px2, py2, pz2, vx2, vy2, vz2);
-        }*/
+        Vec3 hitVec = hitResult.getLocation();
+        Direction direction = hitResult.getDirection();
+        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionRadius(), type.getBlockHitFXScale(), bbWidth), hitVec, BLOCK_HIT_PARTICLE_RANGER, level.dimension());
     }
 
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)
@@ -578,7 +511,7 @@ public final class ShootingHelper
         shootingDirection.scale(500F);
 
         HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, hitData.penetratingPower(), 0F);
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = rayTraceOrigin;
         Vec3 finalhit = null;
 
@@ -595,7 +528,7 @@ public final class ShootingHelper
             DebugHelper.spawnDebugVector(level, previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
-            hitData = onHit(level, shot, hit, hitPos, shootingDirection, hitData);
+            hitData = onHit(level, shot, hit, hitPos, shotVector, hitData);
 
             if (hitData.penetratingPower() <= 0F)
             {
@@ -705,12 +638,11 @@ public final class ShootingHelper
         return result.toVec3();
     }
 
-    public static float getBlockPenetrationDecrease(BlockState blockstate, BlockPos pos, Level level)
+    public static float getBlockPenetrationDecrease(Level level, BlockState blockstate, BlockPos pos, BulletType type)
     {
-        float hardness = blockstate.getDestroySpeed(level, pos) * 2;
-        if (hardness < 0)
-            return 1000; // Some high value for invincible blocks
-        else
-            return Math.max(hardness, 1);
+        float penetrationModifier = (type.getBlockPenetrationModifier() > 0F ? (1F / type.getBlockPenetrationModifier()) : 1F);
+        PenetrableBlock penetrableBlock = PenetrableBlock.get(blockstate);
+        float hardness = ((penetrableBlock != null) ? (float) penetrableBlock.hardness() : blockstate.getDestroySpeed(level, pos));
+        return 2F * hardness * penetrationModifier;
     }
 }

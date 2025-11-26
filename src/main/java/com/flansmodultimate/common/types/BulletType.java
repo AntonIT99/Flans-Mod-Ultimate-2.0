@@ -26,6 +26,8 @@ public class BulletType extends ShootableType
     public static final double LOCK_ON_RANGE = 128.0;
     public static final int FLAK_PARTICLES_RANGE = 200;
 
+    public static final float DEFAULT_PENETRATING_POWER = 0.7F;
+
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -246,7 +248,7 @@ public class BulletType extends ShootableType
         super.postRead();
         
         if (!penetrates)
-            penetratingPower = 0.7F;
+            penetratingPower = DEFAULT_PENETRATING_POWER;
 
         // Clamp to [0, 1]
         dragInAir = Math.max(0, Math.min(1, dragInAir)); 

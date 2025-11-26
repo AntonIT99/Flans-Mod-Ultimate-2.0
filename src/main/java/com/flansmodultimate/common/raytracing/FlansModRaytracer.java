@@ -10,6 +10,7 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FlansModRaytracer
 {
-    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize)
+    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize, BulletType type)
     {
         //Create a list for all bullet hits
         List<BulletHit> hits = new ArrayList<>();
@@ -61,7 +62,7 @@ public class FlansModRaytracer
                 checkEntityHit(entity, origin, motion, bulletHitBoxSize, hits);
         }
 
-        hits.addAll(raytraceBlock(level, origin, motion, gunPenetration));
+        hits = raytraceBlock(level, origin, Vec3.ZERO, motion, motion.normalize().scale(0.5), hits, gunPenetration, null, type);
 
         //We hit something
         if (!hits.isEmpty())
@@ -281,102 +282,41 @@ public class FlansModRaytracer
         return cand.compareTo(best) <= 0;
     }
 
-    /**
-     * Casts a ray from {@code origin} along {@code motion} and returns all block hits
-     * on that fixed segment, taking bullet penetration into account.
-     * <p>
-     * The method:
-     * <ul>
-     *   <li>Defines a ray segment from {@code origin} to {@code origin + motion}.</li>
-     *   <li>Repeatedly uses {@link Level#clip} between the current start point and
-     *       this fixed end point to find the next closest block hit.</li>
-     *   <li>For each hit, advances the travelled distance along the segment and
-     *       computes a normalized {@code lambda} value in [0, 1], where 0 is
-     *       {@code origin} and 1 is {@code origin + motion}.</li>
-     *   <li>Adds a {@link BulletHit} containing the hit result, lambda and block state
-     *       to the returned list.</li>
-     *   <li>Reduces {@code penetration} by the block's penetration cost and stops
-     *       when penetration is depleted.</li>
-     * </ul>
-     * The ray trace also terminates if the maximum segment distance is exceeded,
-     * no further blocks are hit, the motion is effectively zero-length, or a safety
-     * cap on the number of block hits is reached.
-     *
-     * @param level        the world in which to perform the ray trace
-     * @param origin       starting point of the ray
-     * @param motion       ray direction and length (defines {@code origin + motion} as end)
-     * @param penetration  initial penetration budget; reduced per hit until ≤ 0
-     * @return a new list of {@link BulletHit} instances in order along the ray segment
-     */
-    public static List<BulletHit> raytraceBlock(Level level, Vec3 origin, Vec3 motion, float penetration)
+    public static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vec3 motion, Vec3 direction, List<BulletHit> hits, float penetration, @Nullable BlockPos oldPos, BulletType type)
     {
-        List<BulletHit> hits = new ArrayList<>();
+        //Ray trace the bullet by comparing its next position to its current position
+        Vec3 nextPosVec = posVec.add(motion);
 
-        final double epsilon = 1.0e-3;
+        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
 
-        if (motion.lengthSqr() < epsilon * epsilon)
-            return hits;
-
-        final int maxBlockHitsPerTrace = 64;
-
-        Vec3 end = origin.add(motion);
-        double maxDistance = motion.length();
-        Vec3 direction = motion.normalize(); // fixed direction along the segment
-
-        Vec3 start = origin;
-        double travelled = 0.0;
-        BlockPos lastPos = null;
-
-        while (penetration > 0.0f && travelled < maxDistance && hits.size() < maxBlockHitsPerTrace)
+        if (hit.getType() == HitResult.Type.BLOCK)
         {
-            BlockHitResult result = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
+            Vec3 hitVec = hit.getLocation().subtract(posVec).add(previousHit);
+            BlockPos pos = hit.getBlockPos();
+            BlockState blockState = level.getBlockState(pos);
 
-            if (result.getType() != HitResult.Type.BLOCK)
-                // No more blocks along [start, end]
-                break;
-
-            Vec3 hitPos = result.getLocation();
-            double stepDist = hitPos.distanceTo(start);
-
-            // Protect against degenerate hits (e.g. start exactly on boundary)
-            if (stepDist < epsilon)
+            if (!pos.equals(oldPos))
             {
-                travelled += epsilon;
-                if (travelled > maxDistance) break;
-                start = start.add(direction.scale(epsilon));
-                continue;
+                //Calculate the lambda value of the intercept
+                float lambda = 1;
+                //Try each co-ordinate one at a time.
+                if (motion.x != 0)
+                    lambda = (float) (hitVec.x / motion.x);
+                else if (motion.y != 0)
+                    lambda = (float) (hitVec.y / motion.y);
+                else if (motion.z != 0)
+                    lambda = (float) (hitVec.z / motion.z);
+
+                if (lambda < 0)
+                    lambda = -lambda;
+
+                hits.add(new BlockHit(hit, lambda, blockState));
+                penetration -= ShootingHelper.getBlockPenetrationDecrease(level, blockState, pos, type);
             }
 
-            travelled += stepDist;
-            if (travelled > maxDistance + epsilon)
-                // Hit is beyond our allowed segment this tick
-                break;
-
-            BlockPos pos = result.getBlockPos();
-            if (lastPos != null && lastPos.equals(pos))
-            {
-                // Just in case, avoid double-hitting same block due to numeric weirdness
-                start = hitPos.add(direction.scale(epsilon));
-                continue;
-            }
-            lastPos = pos.immutable();
-
-            BlockState state = level.getBlockState(pos);
-
-            // Lambda along the ORIGINAL motion segment (0 = origin, 1 = origin + motion)
-            float lambda = (float) (travelled / maxDistance);
-
-            hits.add(new BlockHit(result, lambda, state));
-
-            // Apply penetration loss
-            penetration -= ShootingHelper.getBlockPenetrationDecrease(state, pos, level);
-            if (penetration <= 0.0f)
-                break;
-
-            // Move just past this hit, but keep the same fixed end point
-            start = hitPos.add(direction.scale(epsilon));
+            if (penetration > 0)
+                hits = raytraceBlock(level, hit.getLocation().add(direction), hitVec.add(direction), motion, direction, hits, penetration, pos, type);
         }
-
         return hits;
     }
 
