@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.render;
 
+import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,10 +11,6 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Locale;
@@ -65,44 +61,13 @@ public final class ParticleHelper
                 String kind = split[0];
                 String id = split[1]; // expected "modid:itemname" or "modid:blockname"
 
-                if (kind.equals(ICON_CRACK))
+                return switch (kind)
                 {
-                    ResourceLocation rl = ResourceLocation.tryParse(id);
-                    if (rl == null)
-                        return Optional.empty();
-
-                    Item item = ForgeRegistries.ITEMS.getValue(rl);
-                    if (item == null)
-                        return Optional.empty();
-
-                    return Optional.of(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(item)));
-                }
-
-                if (kind.equals(BLOCK_CRACK))
-                {
-                    ResourceLocation rl = ResourceLocation.tryParse(id);
-                    if (rl == null)
-                        return Optional.empty();
-
-                    Block block = ForgeRegistries.BLOCKS.getValue(rl);
-                    if (block == null)
-                        return Optional.empty();
-
-                    return Optional.of(new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState()));
-                }
-
-                if (kind.equals(BLOCK_DUST))
-                {
-                    ResourceLocation rl = ResourceLocation.tryParse(id);
-                    if (rl == null)
-                        return Optional.empty();
-
-                    Block block = ForgeRegistries.BLOCKS.getValue(rl);
-                    if (block == null)
-                        return Optional.empty();
-
-                    return Optional.of(new BlockParticleOption(ParticleTypes.FALLING_DUST, block.defaultBlockState()));
-                }
+                    case ICON_CRACK -> ModUtils.getItemStack(id).map(stack -> new ItemParticleOption(ParticleTypes.ITEM, stack));
+                    case BLOCK_CRACK -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.BLOCK, blockstate));
+                    case BLOCK_DUST -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.FALLING_DUST, blockstate));
+                    default -> Optional.empty();
+                };
             }
         }
 

@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -161,7 +163,7 @@ public final class ModUtils
 
     public static Optional<Item> getItemById(@Nullable String id)
     {
-        if (id == null || id.isBlank())
+        if (StringUtils.isBlank(id))
             return Optional.empty();
 
         id = ResourceUtils.sanitize(id.trim());
@@ -175,6 +177,47 @@ public final class ModUtils
             return Optional.empty();
 
         return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl));
+    }
+
+    private static boolean isInteger(String s)
+    {
+        if (s == null)
+            return false;
+        try
+        {
+            Integer.parseInt(s);
+            return true;
+        }
+        catch (NumberFormatException e)
+        {
+            return false;
+        }
+    }
+
+    public static Optional<BlockState> getBlockState(String id)
+    {
+        //Warning: Block.stateById() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
+        if (isInteger(id))
+        {
+            return Optional.of(Block.stateById(Integer.parseInt(id)));
+        }
+        else
+        {
+            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.BLOCKS::getValue).map(Block::defaultBlockState);
+        }
+    }
+
+    public static Optional<ItemStack> getItemStack(String id)
+    {
+        //Warning: Item.byId() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
+        if (isInteger(id))
+        {
+            return Optional.of(new ItemStack(Item.byId(Integer.parseInt(id))));
+        }
+        else
+        {
+            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.ITEMS::getValue).map(ItemStack::new);
+        }
     }
 
     public static boolean isGlass(BlockState state)
