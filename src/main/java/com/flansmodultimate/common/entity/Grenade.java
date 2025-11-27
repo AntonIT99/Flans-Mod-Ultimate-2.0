@@ -392,7 +392,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             handleStickToDriveable(level);
             handleStickToEntityAfter(level);
             handleImpactDamage(level);
-            applyGravity();
+            applyDragAndGravity();
 
             // Fire glitch fix
             if (level.isClientSide)
@@ -762,13 +762,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
             living.hurt(getDamageSource(), configType.getDamage().getDamageAgainstEntity(living) * damageFactor);
         }
-    }
-
-    protected void applyGravity()
-    {
-        double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
-        velocity = velocity.add(0, - gravity, 0);
-        setDeltaMovement(velocity);
     }
 
     @Override

@@ -179,6 +179,20 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
         tag.putString(NBT_TYPE_NAME, shortname);
     }
 
+    protected void applyDragAndGravity()
+    {
+        double gravity = ShootableType.FALL_SPEED_COEFFICIENT * getConfigType().getFallSpeed();
+        float drag = ShootableType.AIR_DEFAULT_DRAG;
+
+        if (isInWater())
+            drag = ShootableType.WATER_DEFAULT_DRAG;
+        else if (isInLava())
+            drag = ShootableType.LAVA_DEFAULT_DRAG;
+
+        velocity = velocity.scale(drag).add(0, -gravity, 0);
+        setDeltaMovement(velocity);
+    }
+
     protected boolean shouldDespawn()
     {
         int despawnTime = getConfigType().getDespawnTime();

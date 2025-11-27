@@ -24,7 +24,7 @@ public class BulletType extends ShootableType
 {
     //TODO: make these constants configurable
     public static final double LOCK_ON_RANGE = 128.0;
-    public static final int FLAK_PARTICLES_RANGE = 200;
+    public static final int FLAK_PARTICLES_RANGE = 256;
 
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
@@ -114,9 +114,9 @@ public class BulletType extends ShootableType
     protected List<MobEffectInstance> hitEffects = new ArrayList<>();
 
     @Getter
-    protected float dragInAir = 0.99F;
+    protected float dragInAir = AIR_DEFAULT_DRAG;
     @Getter
-    protected float dragInWater = 0.8F;
+    protected float dragInWater = WATER_DEFAULT_DRAG;
     @Getter
     protected boolean canSpotEntityDriveable;
     @Getter

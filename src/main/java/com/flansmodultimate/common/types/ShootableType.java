@@ -21,8 +21,11 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ShootableType extends InfoType
 {
-    public static final int EXPLODE_PARTICLES_RANGE = 200;
+    public static final int EXPLODE_PARTICLES_RANGE = 256;
     public static final double FALL_SPEED_COEFFICIENT = (9.81 / 400.0);
+    public static final float AIR_DEFAULT_DRAG = 0.99F;
+    public static final float WATER_DEFAULT_DRAG = 0.8F;
+    public static final float LAVA_DEFAULT_DRAG = 0.6F;
 
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
 
@@ -60,7 +63,7 @@ public abstract class ShootableType extends InfoType
     //Physics and Stuff
     /** The speed at which the grenade should fall */
     @Getter
-    protected float fallSpeed = 1F; //TODO: idea - define weight
+    protected float fallSpeed = 1F;
     /** The speed at which to throw the grenade. 0 will just drop it on the floor */
     @Getter
     protected float throwSpeed = 1F;

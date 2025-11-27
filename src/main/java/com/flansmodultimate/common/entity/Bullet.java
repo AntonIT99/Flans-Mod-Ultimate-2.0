@@ -709,8 +709,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (configType.isTorpedo())
             return;
 
-        float drag = isInWater() ? configType.getDragInWater() : configType.getDragInAir();
         double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
+        float drag = configType.getDragInAir();
+
+        if (isInWater())
+            drag = configType.getDragInWater();
+        else if (isInLava())
+            drag = ShootableType.LAVA_DEFAULT_DRAG;
+
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
     }
