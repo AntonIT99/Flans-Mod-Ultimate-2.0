@@ -710,7 +710,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         float drag = isInWater() ? configType.getDragInWater() : configType.getDragInAir();
-        double gravity = 0.02 * configType.getFallSpeed();
+        double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
     }
@@ -727,7 +727,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
         else
         {
-            double gravity = 0.02 * configType.getFallSpeed();
+            double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
             velocity = velocity.add(0, -gravity, 0);
         }
         setDeltaMovement(velocity);

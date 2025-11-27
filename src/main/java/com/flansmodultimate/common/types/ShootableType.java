@@ -22,6 +22,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 public abstract class ShootableType extends InfoType
 {
     public static final int EXPLODE_PARTICLES_RANGE = 200;
+    public static final double FALL_SPEED_COEFFICIENT = (9.81 / 400.0);
 
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
 
