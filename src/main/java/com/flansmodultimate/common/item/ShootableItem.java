@@ -51,7 +51,7 @@ public abstract class ShootableItem extends Item
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Fall Speed", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+            tooltipComponents.add(IFlanItem.statLine("Fall Speed", IFlanItem.formatFloat(getConfigType().getFallSpeed()))); //TODO: norm fallspeed
         if (getConfigType().getBulletSpread() > 1F || getConfigType().getBulletSpread() < 1F)
             tooltipComponents.add(IFlanItem.statLine("Spread", IFlanItem.formatFloat(getConfigType().getBulletSpread())));
 

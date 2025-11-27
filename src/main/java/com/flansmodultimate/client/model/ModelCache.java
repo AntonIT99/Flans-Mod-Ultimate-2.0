@@ -1,4 +1,4 @@
-package com.flansmodultimate.client;
+package com.flansmodultimate.client.model;
 
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;

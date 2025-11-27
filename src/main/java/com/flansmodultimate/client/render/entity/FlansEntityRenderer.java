@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.LegacyTransformApplier;

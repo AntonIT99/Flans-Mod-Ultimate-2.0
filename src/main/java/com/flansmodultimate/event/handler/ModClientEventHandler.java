@@ -3,9 +3,20 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
-import com.flansmodultimate.client.ModelCache;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
+import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.particle.AfterburnParticle;
+import com.flansmodultimate.client.particle.BigSmokeParticle;
+import com.flansmodultimate.client.particle.Debris1Particle;
+import com.flansmodultimate.client.particle.FlareParticle;
+import com.flansmodultimate.client.particle.FlashParticle;
+import com.flansmodultimate.client.particle.FmFlameParticle;
+import com.flansmodultimate.client.particle.FmMuzzleFlashParticle;
+import com.flansmodultimate.client.particle.FmTracerParticle;
+import com.flansmodultimate.client.particle.RocketExhaustParticle;
+import com.flansmodultimate.client.particle.SmokeBurstParticle;
+import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
@@ -22,6 +33,7 @@ import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -139,6 +151,24 @@ public final class ModClientEventHandler
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
+    }
+
+    @SubscribeEvent
+    public static void registerParticles(RegisterParticleProvidersEvent event)
+    {
+        event.registerSpriteSet(FlansMod.afterburnParticle.get(), AfterburnParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.debris1Particle.get(), Debris1Particle.Provider::new);
+        event.registerSpriteSet(FlansMod.flareParticle.get(), FlareParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.flashParticle.get(), FlashParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmFlameParticle.get(), FmFlameParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmMuzzleFlashParticle.get(), FmMuzzleFlashParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmTracerParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmTracerGreenParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmTracerRedParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.rocketExhaustParticle.get(), RocketExhaustParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.smokeBurstParticle.get(), SmokeBurstParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.smokeGrenadeParticle.get(), SmokeGrenadeParticle.Provider::new);
     }
 
     @SubscribeEvent

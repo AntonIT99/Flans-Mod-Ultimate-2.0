@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.handler.CommonEventHandler;

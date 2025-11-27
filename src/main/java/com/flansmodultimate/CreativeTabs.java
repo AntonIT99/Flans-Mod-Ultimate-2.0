@@ -11,6 +11,7 @@ import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.BooleanUtils;
@@ -24,29 +25,29 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreativeTabs
 {
-    public static void registerCreativeModeTabs()
+    public static void registerCreativeModeTabs(DeferredRegister<CreativeModeTab> creativeTabRegistry)
     {
-        registerCreativeTab("flansmod", List.of(FlansMod.rainbowPaintcan));
-        registerCreativeTab("armors", FlansMod.items.get(EnumType.ARMOR));
-        registerCreativeTab("attachments", FlansMod.items.get(EnumType.ATTACHMENT));
-        registerCreativeTab("guns", Stream.of(FlansMod.items.get(EnumType.GUN), FlansMod.items.get(EnumType.BULLET), FlansMod.items.get(EnumType.GRENADE)).flatMap(List::stream).toList());
-        registerCreativeTab("driveables", FlansMod.items.get(EnumType.BULLET));
+        registerCreativeTab(creativeTabRegistry, "flansmod", List.of(FlansMod.rainbowPaintcan));
+        registerCreativeTab(creativeTabRegistry, "armors", FlansMod.getItems(EnumType.ARMOR));
+        registerCreativeTab(creativeTabRegistry, "attachments", FlansMod.getItems(EnumType.ATTACHMENT));
+        registerCreativeTab(creativeTabRegistry, "guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET, EnumType.GRENADE)));
+        registerCreativeTab(creativeTabRegistry, "driveables", FlansMod.getItems(EnumType.BULLET));
     }
 
-    private static void registerCreativeTab(String tabName, List<RegistryObject<Item>> itemsForTab)
+    private static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab)
     {
         if (itemsForTab.isEmpty())
             return;
 
-        FlansMod.creativeModeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
+        creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
             .icon(createIcon(tabName, itemsForTab))
             .withSearchBar()

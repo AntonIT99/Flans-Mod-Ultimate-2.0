@@ -4,7 +4,7 @@ import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
 import com.flansmodultimate.common.guns.FireDecision;

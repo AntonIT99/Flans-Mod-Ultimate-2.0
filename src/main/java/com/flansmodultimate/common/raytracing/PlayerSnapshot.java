@@ -2,7 +2,7 @@ package com.flansmodultimate.common.raytracing;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;

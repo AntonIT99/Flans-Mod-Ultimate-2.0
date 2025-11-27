@@ -2,7 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -25,7 +25,6 @@ import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -439,7 +438,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             double y = yo + dy * i;
             double z = zo + dz * i;
 
-            ParticleHelper.spawnFromString((ClientLevel) level, configType.getTrailParticleType(), x, y, z);
+            ParticleHelper.spawnFromString(configType.getTrailParticleType(), x, y, z, 1F);
         }
     }
 

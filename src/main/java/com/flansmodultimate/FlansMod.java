@@ -19,6 +19,8 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixins;
 
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -34,11 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @Mod(FlansMod.MOD_ID)
 public class FlansMod
 {
+    //TODO: check for conflicts with Flan's Mod Reloaded
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
 
@@ -76,14 +80,16 @@ public class FlansMod
     public static final TeamsManager teamsManager = new TeamsManager();
 
     // Registries
-    static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
-    static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
-    static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
-    static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
+    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
 
+    // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbow_paintcan", () -> new Item(new Item.Properties()));
 
-    // Register entities
+    // Entities
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
         EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
@@ -97,8 +103,24 @@ public class FlansMod
             .updateInterval(100)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString()));
 
-    static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
-    static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
+    // Particles
+    public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> bigSmokeParticle = particleRegistry.register("big_smoke", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> debris1Particle = particleRegistry.register("debris_1", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> flareParticle = particleRegistry.register("flare", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> flashParticle = particleRegistry.register("flash", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmFlameParticle = particleRegistry.register("fm_flame", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmMuzzleFlashParticle = particleRegistry.register("fm_muzzle_flash", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmSmokeParticle = particleRegistry.register("fm_smoke", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmTracerParticle = particleRegistry.register("fm_tracer", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmTracerGreenParticle = particleRegistry.register("fm_tracer_green", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> fmTracerRedParticle = particleRegistry.register("fm_tracer_red", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> rocketExhaustParticle = particleRegistry.register("rocket_exhaust", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> smokeBurstParticle = particleRegistry.register("smoke_burst", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
+
+    private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+    private static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
 
     public FlansMod(FMLJavaModLoadingContext context)
     {
@@ -113,15 +135,16 @@ public class FlansMod
 
         // Registries
         itemRegistry.register(modEventBus);
+        particleRegistry.register(modEventBus);
+        soundEventRegistry.register(modEventBus);
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
-        soundEventRegistry.register(modEventBus);
 
         // Read content packs and register items & sounds
         ContentManager.findContentInFlanFolder();
         ContentManager.readContentPacks();
 
-        CreativeTabs.registerCreativeModeTabs();
+        CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
         registerSound(SOUND_EMPTY_CLICK);
         registerSound(SOUND_DEFAULT_SHELL_INSERT);
         registerSound(SOUND_IMPACT_DIRT);
@@ -157,6 +180,16 @@ public class FlansMod
     public static List<RegistryObject<Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
+    }
+
+    public static List<RegistryObject<Item>> getItems(EnumType type)
+    {
+        return items.get(type);
+    }
+
+    public static List<RegistryObject<Item>> getItems(Set<EnumType> types)
+    {
+        return types.stream().map(items::get).flatMap(List::stream).toList();
     }
 
     public static Optional<RegistryObject<SoundEvent>> getSoundEvent(String soundName)

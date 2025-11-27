@@ -1,7 +1,7 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.driveables.Wheel;
 import com.flansmodultimate.common.types.BulletType;

@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 
@@ -66,7 +66,6 @@ public class PacketParticle implements IClientPacket
     @Override
     public void handleClientSide(LocalPlayer player, ClientLevel level)
     {
-        //TODO: take scale into account
-        ParticleHelper.spawnFromString(level, particleType, x, y, z, mx, my, mz);
+        ParticleHelper.spawnFromString(particleType, x, y, z, mx, my, mz, scale);
     }
 }

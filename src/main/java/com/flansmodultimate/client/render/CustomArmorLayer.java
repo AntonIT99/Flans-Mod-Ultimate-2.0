@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmod.client.model.ModelCustomArmour;
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

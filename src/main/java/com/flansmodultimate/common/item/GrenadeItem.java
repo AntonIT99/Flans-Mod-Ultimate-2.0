@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.client.ModelCache;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;

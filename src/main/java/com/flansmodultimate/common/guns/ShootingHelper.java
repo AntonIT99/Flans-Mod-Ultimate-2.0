@@ -5,7 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.PenetrableBlock;
 import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.Seat;

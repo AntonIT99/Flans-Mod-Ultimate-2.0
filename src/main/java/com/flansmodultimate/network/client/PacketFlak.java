@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.render.ParticleHelper;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 
@@ -61,7 +61,7 @@ public class PacketFlak implements IClientPacket
             double vy = level.random.nextGaussian() / 20.0;
             double vz = level.random.nextGaussian() / 20.0;
 
-            ParticleHelper.spawnFromString(level, particleType, ox, oy, oz, vx, vy, vz);
+            ParticleHelper.spawnFromString(particleType, ox, oy, oz, vx, vy, vz, 1F);
         }
     }
 }

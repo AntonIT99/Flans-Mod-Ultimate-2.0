@@ -1,16 +1,23 @@
-package com.flansmodultimate.client.render;
+package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Locale;
@@ -21,27 +28,40 @@ public final class ParticleHelper
 {
     public static final String RED_DUST = "reddust";
 
+    public static final String FM_AFTERBURN = "flansmod.afterburn";
+    public static final String FM_BIG_SMOKE = "flansmod.bigsmoke";
     public static final String FM_DEBRIS_1 = "flansmod.debris1";
     public static final String FM_FLARE = "flansmod.flare";
+    public static final String FM_FLASH = "flansmod.flash";
+    public static final String FM_FLAME = "flansmod.fmflame";
+    public static final String FM_TRACER = "flansmod.fmtracer";
+    public static final String FM_TRACER_GREEN = "flansmod.fmtracergreen";
+    public static final String FM_TRACER_RED = "flansmod.fmtracerred";
+    public static final String FM_ROCKET_EXHAUST = "flansmod.rocketexhaust";
+    public static final String FM_SMOKE = "flansmod.smoke";
+    public static final String FM_SMOKE_BURST = "flansmod.smokeburst";
+    public static final String FM_SMOKER = "flansmod.smoker";
 
     public static final String ICON_CRACK = "iconcrack";
     public static final String BLOCK_CRACK = "blockcrack";
     public static final String BLOCK_DUST = "blockdust";
 
-    //TODO: Particle size?
-    //TODO: FMU Particles
-
-    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z)
+    @OnlyIn(Dist.CLIENT)
+    public static void spawnFromString(String s, double x, double y, double z, float scale)
     {
-        spawnFromString(level, s, x, y, z, 0, 0, 0);
+        spawnFromString(s, x, y, z, 0, 0, 0, scale);
     }
 
-    public static void spawnFromString(ClientLevel level, String s, double x, double y, double z, double vx, double vy, double vz)
+    @OnlyIn(Dist.CLIENT)
+    public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         Optional<ParticleOptions> opt = toOptions(s);
         if (opt.isEmpty())
             return;
-        level.addParticle(opt.get(), x, y, z, vx, vy, vz);
+
+        Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
+        if (particle != null && scale != 1.0F)
+            particle.scale(scale);
     }
 
     private static Optional<ParticleOptions> toOptions(String raw)
@@ -74,20 +94,37 @@ public final class ParticleHelper
         // Direct name mappings
         return switch (s)
         {
+            case FM_AFTERBURN -> Optional.of(FlansMod.afterburnParticle.get());
+            case FM_BIG_SMOKE -> Optional.of(FlansMod.bigSmokeParticle.get());
+            case FM_DEBRIS_1 -> Optional.of(FlansMod.debris1Particle.get());
+            case FM_FLARE -> Optional.of(FlansMod.flareParticle.get());
+            case FM_FLASH -> Optional.of(FlansMod.flashParticle.get());
+            case FM_FLAME -> Optional.of(FlansMod.fmFlameParticle.get());
+            case FM_TRACER -> Optional.of(FlansMod.fmTracerParticle.get());
+            case FM_TRACER_GREEN -> Optional.of(FlansMod.fmTracerGreenParticle.get());
+            case FM_TRACER_RED -> Optional.of(FlansMod.fmTracerRedParticle.get());
+            case FM_ROCKET_EXHAUST -> Optional.of(FlansMod.rocketExhaustParticle.get());
+            case FM_SMOKE -> Optional.of(FlansMod.fmSmokeParticle.get());
+            case FM_SMOKE_BURST -> Optional.of(FlansMod.smokeBurstParticle.get());
+            case FM_SMOKER -> Optional.of(FlansMod.smokeGrenadeParticle.get());
+            case RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
             case "hugeexplosion" -> Optional.of(ParticleTypes.EXPLOSION_EMITTER);
             case "largeexplode", "explode" -> Optional.of(ParticleTypes.EXPLOSION);
             case "fireworksspark" -> Optional.of(ParticleTypes.FIREWORK);
             case "bubble" -> Optional.of(ParticleTypes.BUBBLE);
             case "splash" -> Optional.of(ParticleTypes.SPLASH);
             case "wake" -> Optional.of(ParticleTypes.FISHING);
-            case "drop", "dripwater" -> Optional.of(ParticleTypes.DRIPPING_WATER);
-            case "suspended", "depthsuspend" -> Optional.of(ParticleTypes.MYCELIUM);
+            case "drop" ->  Optional.of(ParticleTypes.FALLING_WATER);
+            case "dripwater" -> Optional.of(ParticleTypes.DRIPPING_WATER);
+            case "suspended" -> Optional.of(ParticleTypes.MYCELIUM);
+            case "depthsuspend" -> Optional.of(ParticleTypes.UNDERWATER);
             case "townaura" -> Optional.of(ParticleTypes.ASH);
             case "crit" -> Optional.of(ParticleTypes.CRIT);
             case "magiccrit" -> Optional.of(ParticleTypes.ENCHANTED_HIT);
             case "smoke" -> Optional.of(ParticleTypes.SMOKE);
             case "largesmoke" -> Optional.of(ParticleTypes.LARGE_SMOKE);
-            case "spell", "instantspell" -> Optional.of(ParticleTypes.INSTANT_EFFECT);
+            case "spell" -> Optional.of(ParticleTypes.EFFECT);
+            case "instantspell" -> Optional.of(ParticleTypes.INSTANT_EFFECT);
             case "mobspell" -> Optional.of(ParticleTypes.ENTITY_EFFECT);
             case "mobspellambient" -> Optional.of(ParticleTypes.AMBIENT_ENTITY_EFFECT);
             case "witchmagic" -> Optional.of(ParticleTypes.WITCH);
@@ -99,15 +136,24 @@ public final class ParticleHelper
             case "enchantmenttable" -> Optional.of(ParticleTypes.ENCHANT);
             case "flame" -> Optional.of(ParticleTypes.FLAME);
             case "lava" -> Optional.of(ParticleTypes.LAVA);
-            case "footstep" -> Optional.of(ParticleTypes.CLOUD);
             case "cloud" -> Optional.of(ParticleTypes.CLOUD);
-            case RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
             case "snowballpoof" -> Optional.of(ParticleTypes.ITEM_SNOWBALL);
             case "snowshovel" -> Optional.of(ParticleTypes.POOF);
             case "slime" -> Optional.of(ParticleTypes.ITEM_SLIME);
             case "heart" -> Optional.of(ParticleTypes.HEART);
             case "barrier" -> Optional.of(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, Blocks.BARRIER.defaultBlockState()));
-            default -> Optional.empty(); //TODO: Get by its register Name?
+            default -> {
+                if (!s.contains(":"))
+                    yield Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s))
+                        .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+                        .filter(SimpleParticleType.class::isInstance)
+                        .map(SimpleParticleType.class::cast);
+                else
+                    yield Optional.ofNullable(ResourceLocation.tryParse(s))
+                        .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+                        .filter(SimpleParticleType.class::isInstance)
+                        .map(SimpleParticleType.class::cast);
+            }
         };
     }
 }
