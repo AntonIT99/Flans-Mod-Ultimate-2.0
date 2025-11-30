@@ -1,8 +1,8 @@
 {
   "textures": [
-    "flansmod:particle/boom1",
-    "flansmod:particle/boom2",
-    "flansmod:particle/boom3alt",
-    "flansmod:particle/boom4alt"
+    "flansmod:boom1",
+    "flansmod:boom2",
+    "flansmod:boom3alt",
+    "flansmod:boom4alt"
   ]
 }

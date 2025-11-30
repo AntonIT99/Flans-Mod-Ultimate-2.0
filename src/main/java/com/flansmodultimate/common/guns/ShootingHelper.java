@@ -231,7 +231,6 @@ public final class ShootingHelper
             penetratingPower = handleBlockHit(level, bh.getHitResult(), shootingMotion, shot, penetratingPower, bullet);
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
-            showHitMarker = true;
         }
 
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))

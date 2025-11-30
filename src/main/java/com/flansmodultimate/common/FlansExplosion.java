@@ -395,6 +395,9 @@ public class FlansExplosion extends Explosion
 
     private void spawnParticles(int numSmoke, int numDebris)
     {
+        if (level.isClientSide)
+            return;
+
         float mod = radius * 0.1F;
 
         for (int smoke = 0; smoke < numSmoke; smoke++)

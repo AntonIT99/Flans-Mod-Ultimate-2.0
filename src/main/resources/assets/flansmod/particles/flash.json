@@ -1,10 +1,10 @@
 {
   "textures": [
-    "flansmod:particle/boom1",
-    "flansmod:particle/boom2",
-    "flansmod:particle/boom3",
-    "flansmod:particle/boom4",
-    "flansmod:particle/boom5",
-    "flansmod:particle/boom6"
+    "flansmod:boom1",
+    "flansmod:boom2",
+    "flansmod:boom3",
+    "flansmod:boom4",
+    "flansmod:boom5",
+    "flansmod:boom6"
   ]
 }

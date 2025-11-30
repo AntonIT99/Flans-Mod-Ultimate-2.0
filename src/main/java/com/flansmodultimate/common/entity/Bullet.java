@@ -1064,7 +1064,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     {
         playFlybyIfClose(level);
         spawnWaterBubbles(level);
-        spawnParticles(level);
+        spawnParticles();
         clearFire();
     }
 
@@ -1082,7 +1082,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void spawnParticles(ClientLevel level)
+    protected void spawnParticles()
     {
         if (!configType.isTrailParticles() || ticksInAir <= 1)
             return;

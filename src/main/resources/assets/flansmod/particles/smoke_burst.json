@@ -1,10 +1,10 @@
 {
   "textures": [
-    "flansmod:particle/burst1",
-    "flansmod:particle/burst2",
-    "flansmod:particle/burst3",
-    "flansmod:particle/burst4",
-    "flansmod:particle/burst5",
-    "flansmod:particle/burst6"
+    "flansmod:burst1",
+    "flansmod:burst2",
+    "flansmod:burst3",
+    "flansmod:burst4",
+    "flansmod:burst5",
+    "flansmod:burst6"
   ]
 }
