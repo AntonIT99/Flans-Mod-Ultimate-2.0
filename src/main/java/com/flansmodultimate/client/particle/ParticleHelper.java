@@ -37,6 +37,7 @@ public final class ParticleHelper
     public static final String FM_TRACER = "flansmod.fmtracer";
     public static final String FM_TRACER_GREEN = "flansmod.fmtracergreen";
     public static final String FM_TRACER_RED = "flansmod.fmtracerred";
+    public static final String FM_MUZZLE_FLASH = "flansmod.muzzleflash";
     public static final String FM_ROCKET_EXHAUST = "flansmod.rocketexhaust";
     public static final String FM_SMOKE = "flansmod.smoke";
     public static final String FM_SMOKE_BURST = "flansmod.smokeburst";
@@ -103,6 +104,7 @@ public final class ParticleHelper
             case FM_TRACER -> Optional.of(FlansMod.fmTracerParticle.get());
             case FM_TRACER_GREEN -> Optional.of(FlansMod.fmTracerGreenParticle.get());
             case FM_TRACER_RED -> Optional.of(FlansMod.fmTracerRedParticle.get());
+            case FM_MUZZLE_FLASH -> Optional.of(FlansMod.fmMuzzleFlashParticle.get());
             case FM_ROCKET_EXHAUST -> Optional.of(FlansMod.rocketExhaustParticle.get());
             case FM_SMOKE -> Optional.of(FlansMod.fmSmokeParticle.get());
             case FM_SMOKE_BURST -> Optional.of(FlansMod.smokeBurstParticle.get());

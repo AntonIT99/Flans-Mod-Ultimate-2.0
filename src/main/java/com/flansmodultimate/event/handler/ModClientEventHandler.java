@@ -13,6 +13,7 @@ import com.flansmodultimate.client.particle.FlareParticle;
 import com.flansmodultimate.client.particle.FlashParticle;
 import com.flansmodultimate.client.particle.FmFlameParticle;
 import com.flansmodultimate.client.particle.FmMuzzleFlashParticle;
+import com.flansmodultimate.client.particle.FmSmokeParticle;
 import com.flansmodultimate.client.particle.FmTracerParticle;
 import com.flansmodultimate.client.particle.RocketExhaustParticle;
 import com.flansmodultimate.client.particle.SmokeBurstParticle;
@@ -163,6 +164,7 @@ public final class ModClientEventHandler
         event.registerSpriteSet(FlansMod.flashParticle.get(), FlashParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmFlameParticle.get(), FmFlameParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmMuzzleFlashParticle.get(), FmMuzzleFlashParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.fmSmokeParticle.get(), FmSmokeParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmTracerParticle.get(), FmTracerParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmTracerGreenParticle.get(), FmTracerParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmTracerRedParticle.get(), FmTracerParticle.Provider::new);
