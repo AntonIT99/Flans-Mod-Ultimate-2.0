@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -68,7 +69,7 @@ public final class ModelCache
     }
 
     @Nullable
-    public static IModelBase getOrLoadDeployableModel(String typeShortname)
+    public static IModelBase getOrLoadDeployableGunModel(String typeShortname)
     {
         InfoType type = InfoType.getInfoType(typeShortname);
         if (type instanceof GunType gunType && gunType.isDeployable())
@@ -76,5 +77,27 @@ public final class ModelCache
             return getOrLoadModel(gunType.getDeployableModelClassName(), type);
         }
         return null;
+    }
+
+    @Nullable
+    public static IModelBase getOrLoadCasingModel(GunType gunType)
+    {
+        return getOrLoadModel(gunType.getCasingModelClassName(), gunType);
+    }
+
+    @Nullable
+    public static IModelBase getOrLoadFlashModel(GunType gunType)
+    {
+        return getOrLoadModel(gunType.getFlashModelClassName(), gunType);
+    }
+
+    @Nullable
+    public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
+    {
+        IModelBase model = getOrLoadModel(gunType.getFlashModelClassName(), gunType);
+        if (model instanceof ModelMuzzleFlash modelMuzzleFlash)
+            return modelMuzzleFlash;
+        else
+            return null;
     }
 }

@@ -90,6 +90,10 @@ public class ModClient
     private static float recoilOffset;
     /** For interpolation */
     private static float recoilOffsetPrev;
+    @Getter @Setter
+    private static int lastBulletReload;
+    @Getter @Setter
+    private static int shotState = -1;
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */

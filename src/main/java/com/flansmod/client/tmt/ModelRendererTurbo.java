@@ -2107,12 +2107,14 @@ public class ModelRendererTurbo extends ModelRenderer
         RenderSystem.disableBlend();
     }
 
+    @Deprecated
     @Override
     public void render(float worldScale)
     {
         render(worldScale, false);
     }
 
+    @Deprecated
     public void render(float worldScale, boolean oldRotateOrder)
     {
         // do nothing, only keep this method overload for compatibility when loading legacy classes

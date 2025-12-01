@@ -475,28 +475,34 @@ public class GunType extends PaintableType implements IScope
     /**
      * For adding a bullet casing model to render
      */
-    //TODO ModelCasing
-    //protected ModelCasing casingModel;
-    protected String casingModelString;
+    protected String casingModelName = StringUtils.EMPTY;
+    @Getter
+    protected String casingModelClassName = StringUtils.EMPTY;
+    @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation casingTexture;
     /**
      * For adding a muzzle flash model to render
      */
-    //TODO ModelFlash
-    //protected ModelFlash flashModel;
-    //protected ModelMuzzleFlash muzzleFlashModel;
-    protected String flashModelString;
+    protected String flashModelName = StringUtils.EMPTY;
+    @Getter
+    protected String flashModelClassName = StringUtils.EMPTY;
+    @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation flashTexture;
+    protected String muzzleFlashModelName = StringUtils.EMPTY;
+    @Getter
+    protected String muzzleFlashModelClassName = StringUtils.EMPTY;
     /**
      * Set a bullet casing texture
      */
-    protected String casingTexture;
+    protected String casingTextureName = StringUtils.EMPTY;
     /**
      * Set a muzzle flash texture
      */
-    protected String flashTexture;
+    protected String flashTextureName = StringUtils.EMPTY;
     /**
      * Set a hit marker texture
      */
-    protected String hitTexture;
+    protected String hitTextureName;
 
     protected String muzzleFlashParticle = "flansmod.muzzleflash";
     protected float muzzleFlashParticleSize = 1F;
@@ -621,10 +627,16 @@ public class GunType extends PaintableType implements IScope
         fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
         if (split[0].equalsIgnoreCase("FOVZoomLevel") && fovFactor > 1F)
             secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
+
         deployable = readValue(split, "Deployable", deployable, file);
         deployableModelName = readValue(split, "DeployedModel", deployableModelName, file);
         deployableTextureName = ResourceUtils.sanitize(readValue(split, "DeployedTexture", deployableTextureName, file));
-        //TODO: MuzzleFlashModel
+        casingModelName = ResourceUtils.sanitize(readValue(split, "CasingModel", casingModelName, file));
+        casingTextureName = ResourceUtils.sanitize(readValue(split, "CasingTexture", casingTextureName, file));
+        flashModelName = ResourceUtils.sanitize(readValue(split, "FlashModel", flashModelName, file));
+        flashTextureName = ResourceUtils.sanitize(readValue(split, "FlashTexture", flashTextureName, file));
+        muzzleFlashModelName = ResourceUtils.sanitize(readValue(split, "MuzzleFlashModel", muzzleFlashModelName, file));
+
         standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
         topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);
         bottomViewLimit = readValue(split, "BottomViewLimit", bottomViewLimit, file);
@@ -714,6 +726,11 @@ public class GunType extends PaintableType implements IScope
         super.postReadClient();
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
+        casingModelClassName = findModelClass(casingModelName, contentPack);
+        casingTexture = loadTexture(casingTextureName, this);
+        flashModelClassName = findModelClass(flashModelName, contentPack);
+        flashTexture = loadTexture(flashTextureName, this);
+        muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
     }
 
     @Override
@@ -742,11 +759,6 @@ public class GunType extends PaintableType implements IScope
         IScope attachedScope = getScope(gunStack);
         return attachedScope == null ? this : attachedScope;
     }
-
-    /*public AttachmentType getScope(ItemStack gun)
-    {
-        return getAttachment(gun, "scope");
-    }*/
 
     /**
      * Returns all attachments currently attached to the specified gun

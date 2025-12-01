@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
+import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
@@ -418,6 +419,8 @@ public abstract class InfoType
                 model = new ModelBullet();
             else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
                 model = new ModelBomb();
+            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelDefaultMuzzleFlash"))
+                model = new ModelDefaultMuzzleFlash();
             else
             {
                 DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);

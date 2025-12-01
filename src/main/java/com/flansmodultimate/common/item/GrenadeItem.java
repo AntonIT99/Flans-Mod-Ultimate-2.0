@@ -160,7 +160,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
             // Drop an item upon throwing if necessary
             if (StringUtils.isNotBlank(configType.getDropItemOnThrow()))
             {
-                String itemName = configType.getDropItemOnDetonate(); // kept from original logic
+                String itemName = configType.getDropItemOnDetonate();
                 ItemStack dropStack = InfoType.getRecipeElement(itemName, configType.getContentPack());
 
                 if (!level.isClientSide && dropStack != null && !dropStack.isEmpty())
