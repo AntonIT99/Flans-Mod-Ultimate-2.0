@@ -1,5 +1,6 @@
-package com.flansmod.api;
+package com.flansmodultimate.api;
 
+import com.flansmodultimate.common.driveables.Seat;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -49,6 +50,5 @@ public interface IControllable
 	@OnlyIn(Dist.CLIENT)
     LivingEntity getCamera();
 
-    //TODO: implement Seat
-	//Seat getSeat(LivingEntity living);
+	Seat getSeat(LivingEntity living);
 }

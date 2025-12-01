@@ -25,6 +25,7 @@ import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.common.item.ICustomRendererItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
+import com.flansmodultimate.common.types.TypeFile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -35,6 +36,7 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,6 +51,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -56,6 +59,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 
 import java.nio.file.Files;
+import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -198,5 +202,19 @@ public final class ModClientEventHandler
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
         event.registerReloadListener((ResourceManagerReloadListener) rm -> ModelCache.reload());
+    }
+
+    @SubscribeEvent
+    public static void onSoundEngineLoad(SoundEngineLoadEvent event)
+    {
+        SoundManager soundManager = event.getEngine().soundManager;
+
+        for (Map.Entry<ResourceLocation, TypeFile> soundOrigin : FlansMod.getSoundsOrigins().entrySet())
+        {
+            if (soundManager.getSoundEvent(soundOrigin.getKey()) == null)
+            {
+                FlansMod.log.warn("Missing sound: {} from file {}", soundOrigin.getKey(), soundOrigin.getValue());
+            }
+        }
     }
 }

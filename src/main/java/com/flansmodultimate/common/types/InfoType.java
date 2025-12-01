@@ -216,7 +216,7 @@ public abstract class InfoType
         if (StringUtils.isNotBlank(sound))
         {
             sound = ResourceUtils.sanitize(sound);
-            FlansMod.registerSound(sound);
+            FlansMod.registerSound(sound, file);
         }
         return sound;
     }

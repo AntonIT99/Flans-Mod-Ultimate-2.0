@@ -5,9 +5,11 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.mojang.logging.LogUtils;
+import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -16,6 +18,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixins;
 
@@ -69,7 +72,7 @@ public class FlansMod
 
     public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
     public static final ResourceLocation muzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/muzzleflash.png");
-    public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/hitmarker.png");
+    public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
 
     public static final Logger log = LogUtils.getLogger();
     //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
@@ -87,7 +90,7 @@ public class FlansMod
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
 
     // Items
-    public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbow_paintcan", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
 
     // Entities
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
@@ -120,7 +123,9 @@ public class FlansMod
     public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
-    private static final Map<String, RegistryObject<SoundEvent>> sounds = new HashMap<>();
+    private static final Map<ResourceLocation, RegistryObject<SoundEvent>> sounds = new HashMap<>();
+    @Getter
+    private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
     public FlansMod(FMLJavaModLoadingContext context)
     {
@@ -145,20 +150,20 @@ public class FlansMod
         ContentManager.readContentPacks();
 
         CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
-        registerSound(SOUND_EMPTY_CLICK);
-        registerSound(SOUND_DEFAULT_SHELL_INSERT);
-        registerSound(SOUND_IMPACT_DIRT);
-        registerSound(SOUND_IMPACT_METAL);
-        registerSound(SOUND_IMPACT_BRICKS);
-        registerSound(SOUND_IMPACT_GLASS);
-        registerSound(SOUND_IMPACT_ROCK);
-        registerSound(SOUND_IMPACT_WOOD);
-        registerSound(SOUND_IMPACT_WATER);
-        registerSound(SOUND_BULLET);
-        registerSound(SOUND_BULLETFLYBY);
-        registerSound(SOUND_UNLOCKNOTCH);
-        registerSound(SOUND_SKULLBOSSLAUGH);
-        registerSound(SOUND_SKULLBOSSSPAWN);
+        registerSound(SOUND_EMPTY_CLICK, null);
+        registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
+        registerSound(SOUND_IMPACT_DIRT, null);
+        registerSound(SOUND_IMPACT_METAL, null);
+        registerSound(SOUND_IMPACT_BRICKS, null);
+        registerSound(SOUND_IMPACT_GLASS, null);
+        registerSound(SOUND_IMPACT_ROCK, null);
+        registerSound(SOUND_IMPACT_WOOD, null);
+        registerSound(SOUND_IMPACT_WATER, null);
+        registerSound(SOUND_BULLET, null);
+        registerSound(SOUND_BULLETFLYBY, null);
+        registerSound(SOUND_UNLOCKNOTCH, null);
+        registerSound(SOUND_SKULLBOSSLAUGH, null);
+        registerSound(SOUND_SKULLBOSSSPAWN, null);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -168,13 +173,16 @@ public class FlansMod
         items.get(type).add(itemRegistry.register(itemName, initItem));
     }
 
-    public static void registerSound(String soundName)
+    public static void registerSound(String soundName, @Nullable TypeFile typeFile)
     {
-        if (sounds.containsKey(soundName))
+        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
+        if (sounds.containsKey(rl))
             return;
 
-        RegistryObject<SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName)));
-        sounds.put(soundName, soundEvent);
+        RegistryObject<SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl));
+        sounds.put(rl, soundEvent);
+        if (typeFile != null)
+            soundsOrigins.put(rl, typeFile);
     }
 
     public static List<RegistryObject<Item>> getItems()
@@ -194,6 +202,7 @@ public class FlansMod
 
     public static Optional<RegistryObject<SoundEvent>> getSoundEvent(String soundName)
     {
-        return Optional.ofNullable(sounds.get(soundName));
+        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
+        return Optional.ofNullable(sounds.get(rl));
     }
 }

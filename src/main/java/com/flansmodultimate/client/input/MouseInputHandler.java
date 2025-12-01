@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.input;
 
-import com.flansmod.api.IControllable;
+import com.flansmodultimate.api.IControllable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
