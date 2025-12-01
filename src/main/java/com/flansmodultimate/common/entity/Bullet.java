@@ -598,16 +598,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (StringUtils.isBlank(configType.getSubmunition()))
             return;
 
-        ShootableType submunitionType = ShootableType.getAmmoType(configType.getSubmunition(), configType.getContentPack()).orElse(null);
-        if (submunitionType == null)
-            return;
-
-        Shootable shootable = ShootableFactory.createShootable(level, firedShot, submunitionType, position(), velocity.normalize());
-
-        for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
-        {
-            level.addFreshEntity(shootable);
-        }
+        ShootableFactory.createSubmunition(level, firedShot, position(), velocity.normalize()).ifPresent(submunitionEntity -> {
+            for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
+                level.addFreshEntity(submunitionEntity);
+        });
 
         if (configType.isDestroyOnDeploySubmunition())
             detonate(level);

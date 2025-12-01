@@ -141,7 +141,8 @@ public abstract class ShootableType extends InfoType
     protected int numSubmunitions;
     @Getter
     protected int subMunitionTimer;
-    protected float submunitionSpread = 1;
+    @Getter
+    protected float submunitionSpread = 1F;
     @Getter
     protected boolean destroyOnDeploySubmunition;
 
