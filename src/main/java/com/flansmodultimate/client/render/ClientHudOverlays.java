@@ -92,7 +92,7 @@ public final class ClientHudOverlays
         int w = 9;
         int h = 9;
         int x = sw / 2 - 5;
-        int y = sh / 2 - 4;
+        int y = sh / 2 - 5;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
