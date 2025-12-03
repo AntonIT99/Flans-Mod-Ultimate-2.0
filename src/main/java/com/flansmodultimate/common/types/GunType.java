@@ -1,10 +1,12 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.BulletItem;
+import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +38,19 @@ public class GunType extends PaintableType implements IScope
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
+
     protected static final String NBT_ATTACHMENTS = "attachments";
+    protected static final String NBT_GENERIC = "generic_";
+    protected static final String NBT_BARREL = "barrel";
+    protected static final String NBT_SCOPE = "scope";
+    protected static final String NBT_STOCK = "stock";
+    protected static final String NBT_GRIP = "grip";
+    protected static final String NBT_GADGET = "gadget";
+    protected static final String NBT_SLIDE = "slide";
+    protected static final String NBT_PUMP = "pump";
+    protected static final String NBT_ACCESSORY = "accessory";
+    protected static final String NBT_SECONDARY_FIRE = "secondary_fire";
+
 
     /** Extended Recoil System */
     //TODO GunRecoil
@@ -44,8 +58,6 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected float recoil;
     protected boolean useFancyRecoil = false;
-
-    //Gun Behaviour Variables
 
     //Recoil Variables
     /**
@@ -134,7 +146,8 @@ public class GunType extends PaintableType implements IScope
     /**
      * If true, spread determined by loaded ammo type
      */
-    protected boolean allowSpreadByBullet = false;
+    @Getter
+    protected boolean allowSpreadByBullet;
     /**
      * Damage inflicted by this gun. Multiplied by the bullet damage.
      */
@@ -142,14 +155,14 @@ public class GunType extends PaintableType implements IScope
     /**
      * The damage inflicted upon punching someone with this gun
      */
-    protected float meleeDamage = 1;
+    protected float meleeDamage = 1F;
     // Modifier for melee damage against specifically driveable entities.
-    protected float meleeDamageDriveableModifier = 1;
+    protected float meleeDamageDriveableModifier = 1F;
     /**
      * The speed of bullets upon leaving this gun. 0.0f means instant.
      */
     @Getter
-    protected float bulletSpeed = 5.0F;
+    protected float bulletSpeed = 5F;
     /**
      * The number of bullet entities created by each shot
      */
@@ -278,7 +291,7 @@ public class GunType extends PaintableType implements IScope
 	/*A shield is actually a gun without any shoot functionality (similar to knives or binoculars)
 	and a load of shield code on top. This means that guns can have in built shields (think Nerf Stampede) */
     /**
-     * Whether or not this gun has a shield piece
+     * Whether this gun has a shield piece
      */
     @Getter
     protected boolean shield = false;
@@ -293,7 +306,7 @@ public class GunType extends PaintableType implements IScope
      * Percentage of damage blocked between 0.00-1.00 (0.50F = 50%)
      */
     @Getter
-    protected float shieldDamageAbsorption = 0F;
+    protected float shieldDamageAbsorption;
 
     //Sounds
     /**
@@ -359,7 +372,7 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected int idleSoundLength;
     /**
-     * The block range for idle sounds (for miniguns etc)
+     * The block range for idle sounds (for miniguns etc.)
      */
     protected int idleSoundRange = 50;
     /**
@@ -389,7 +402,7 @@ public class GunType extends PaintableType implements IScope
      * Whether the looping sounds should be used. Automatically set if the player sets any one of the following sounds
      */
     @Getter
-    protected boolean useLoopingSounds = false;
+    protected boolean useLoopingSounds;
     /**
      * Played when the player starts to hold shoot
      */
@@ -440,7 +453,7 @@ public class GunType extends PaintableType implements IScope
      * If true, then the bullet does not shoot when right-clicked, but must instead be placed on the ground
      */
     @Getter
-    protected boolean deployable = false;
+    protected boolean deployable;
     protected String deployableModelName = StringUtils.EMPTY;
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
@@ -453,7 +466,11 @@ public class GunType extends PaintableType implements IScope
     /**
      * Various deployable settings controlling the player view limits and standing position
      */
-    protected float standBackDist = 1.5F, topViewLimit = -60F, bottomViewLimit = 30F, sideViewLimit = 45F, pivotHeight = 0.375F;
+    protected float standBackDist = 1.5F;
+    protected float topViewLimit = -60F;
+    protected float bottomViewLimit = 30F;
+    protected float sideViewLimit = 45F;
+    protected float pivotHeight = 0.375F;
 
     //Default Scope Settings. Overriden by scope attachments
     //In many cases, this will simply be iron sights
@@ -461,7 +478,7 @@ public class GunType extends PaintableType implements IScope
      * The zoom level of the default scope
      */
     @Getter
-    protected float zoomFactor = 1.0F;
+    protected float zoomFactor = 1F;
     /**
      * The FOV zoom level of the default scope
      */
@@ -504,11 +521,11 @@ public class GunType extends PaintableType implements IScope
      */
     protected String hitTextureName;
 
-    protected String muzzleFlashParticle = "flansmod.muzzleflash";
+    protected String muzzleFlashParticle = ParticleHelper.FM_MUZZLE_FLASH;
     protected float muzzleFlashParticleSize = 1F;
     protected Boolean useMuzzleFlashDefaults = true;
     protected Boolean showMuzzleFlashParticles = true;
-    protected Boolean showMuzzleFlashParticlesFirstPerson = false;
+    protected Boolean showMuzzleFlashParticlesFirstPerson;
     protected Vector3f muzzleFlashParticlesHandOffset = new Vector3f();
     protected Vector3f muzzleFlashParticlesShoulderOffset = new Vector3f();
 
@@ -524,18 +541,18 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether each attachment slot is available
      */
-    protected boolean allowBarrelAttachments = false;
-    protected boolean allowScopeAttachments = false;
-    protected boolean allowStockAttachments = false;
-    protected boolean allowGripAttachments = false;
-    protected boolean allowGadgetAttachments = false;
-    protected boolean allowSlideAttachments = false;
-    protected boolean allowPumpAttachments = false;
-    protected boolean allowAccessoryAttachments = false;
+    protected boolean allowBarrelAttachments;
+    protected boolean allowScopeAttachments;
+    protected boolean allowStockAttachments;
+    protected boolean allowGripAttachments;
+    protected boolean allowGadgetAttachments;
+    protected boolean allowSlideAttachments;
+    protected boolean allowPumpAttachments;
+    protected boolean allowAccessoryAttachments;
     /**
      * The number of generic attachment slots there are on this gun
      */
-    protected int numGenericAttachmentSlots = 0;
+    protected int numGenericAttachmentSlots;
 
     //Modifiers
     /**
@@ -545,17 +562,18 @@ public class GunType extends PaintableType implements IScope
     /**
      * Gives knockback resistance to the player
      */
-    protected float knockbackModifier = 0F;
+    protected float knockbackModifier;
     /**
      * Default spread of the gun. Do not modify.
      */
-    protected float defaultSpread = 0F;
+    protected float defaultSpread;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg */
     protected float adsSpreadModifier = -1F;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg. For shotguns. */
     protected float adsSpreadModifierShotgun = -1F;
 
-    protected float switchDelay = 0;
+    @Getter
+    protected float switchDelay;
 
     protected boolean hasVariableZoom = false;
     protected float minZoom = 1F;
@@ -564,9 +582,9 @@ public class GunType extends PaintableType implements IScope
 
     /** For shotgun pump handles and rifle bolts */
     @Getter @Setter
-    protected int pumpDelay = 0;
+    protected int pumpDelay;
     @Getter @Setter
-    protected int pumpDelayAfterReload = 0;
+    protected int pumpDelayAfterReload;
     @Getter @Setter
     protected int pumpTime = 1;
 
@@ -769,12 +787,16 @@ public class GunType extends PaintableType implements IScope
         List<AttachmentType> attachments = new ArrayList<>();
         for (int i = 0; i < numGenericAttachmentSlots; i++)
         {
-            appendToList(gun, "generic_" + i, attachments);
+            appendToList(gun, NBT_GENERIC + i, attachments);
         }
-        appendToList(gun, "barrel", attachments);
-        appendToList(gun, "scope", attachments);
-        appendToList(gun, "stock", attachments);
-        appendToList(gun, "grip", attachments);
+        appendToList(gun, NBT_BARREL, attachments);
+        appendToList(gun, NBT_SCOPE, attachments);
+        appendToList(gun, NBT_STOCK, attachments);
+        appendToList(gun, NBT_GRIP, attachments);
+        appendToList(gun, NBT_GADGET, attachments);
+        appendToList(gun, NBT_SLIDE, attachments);
+        appendToList(gun, NBT_PUMP, attachments);
+        appendToList(gun, NBT_ACCESSORY, attachments);
         return attachments;
     }
 
@@ -791,53 +813,85 @@ public class GunType extends PaintableType implements IScope
     //Attachment getter methods
     public AttachmentType getBarrel(ItemStack gun)
     {
-        return getAttachment(gun, "barrel");
+        return getAttachment(gun, NBT_BARREL);
     }
 
     public AttachmentType getScope(ItemStack gun)
     {
-        return getAttachment(gun, "scope");
+        return getAttachment(gun, NBT_SCOPE);
     }
 
     public AttachmentType getStock(ItemStack gun)
     {
-        return getAttachment(gun, "stock");
+        return getAttachment(gun, NBT_STOCK);
     }
 
     public AttachmentType getGrip(ItemStack gun)
     {
-        return getAttachment(gun, "grip");
+        return getAttachment(gun, NBT_GRIP);
+    }
+
+    public AttachmentType getGadget(ItemStack gun) {
+        return getAttachment(gun, NBT_GADGET);
+    }
+
+    public AttachmentType getSlide(ItemStack gun) {
+        return getAttachment(gun, NBT_SLIDE);
+    }
+
+    public AttachmentType getPump(ItemStack gun) {
+        return getAttachment(gun, NBT_PUMP);
+    }
+
+    public AttachmentType getAccessory(ItemStack gun) {
+        return getAttachment(gun, NBT_ACCESSORY);
     }
 
     public AttachmentType getGeneric(ItemStack gun, int i)
     {
-        return getAttachment(gun, "generic_" + i);
+        return getAttachment(gun, NBT_GENERIC + i);
     }
 
     //Attachment ItemStack getter methods
     public ItemStack getBarrelItemStack(ItemStack gun)
     {
-        return getAttachmentItemStack(gun, "barrel");
+        return getAttachmentItemStack(gun, NBT_BARREL);
     }
 
     public ItemStack getScopeItemStack(ItemStack gun)
     {
-        return getAttachmentItemStack(gun, "scope");
+        return getAttachmentItemStack(gun, NBT_SCOPE);
     }
 
     public ItemStack getStockItemStack(ItemStack gun)
     {
-        return getAttachmentItemStack(gun, "stock");
+        return getAttachmentItemStack(gun, NBT_STOCK);
     }
 
     public ItemStack getGripItemStack(ItemStack gun)
     {
-        return getAttachmentItemStack(gun, "grip");
+        return getAttachmentItemStack(gun, NBT_GRIP);
+    }
+
+    public ItemStack getGadgetItemStack(ItemStack gun) {
+        return getAttachmentItemStack(gun, NBT_GADGET);
+    }
+
+    public ItemStack getSlideItemStack(ItemStack gun) {
+        return getAttachmentItemStack(gun, NBT_SLIDE);
+    }
+
+    public ItemStack getPumpItemStack(ItemStack gun) {
+        return getAttachmentItemStack(gun, NBT_PUMP);
+    }
+
+    public ItemStack getAccessoryItemStack(ItemStack gun) {
+        return getAttachmentItemStack(gun, NBT_ACCESSORY);
     }
 
     public ItemStack getGenericItemStack(ItemStack gun, int i)
     {
-        return getAttachmentItemStack(gun, "generic_" + i);
+        return getAttachmentItemStack(gun, NBT_GENERIC + i);
     }
 
     /**
@@ -876,14 +930,18 @@ public class GunType extends PaintableType implements IScope
         if (!tag.contains(NBT_ATTACHMENTS, Tag.TAG_COMPOUND))
         {
             CompoundTag attachments = new CompoundTag();
+
             for (int i = 0; i < numGenericAttachmentSlots; i++)
-            {
-                attachments.put("generic_" + i, new CompoundTag());
-            }
-            attachments.put("barrel", new CompoundTag());
-            attachments.put("scope", new CompoundTag());
-            attachments.put("stock", new CompoundTag());
-            attachments.put("grip", new CompoundTag());
+                attachments.put(NBT_GENERIC + i, new CompoundTag());
+
+            attachments.put(NBT_BARREL, new CompoundTag());
+            attachments.put(NBT_SCOPE, new CompoundTag());
+            attachments.put(NBT_STOCK, new CompoundTag());
+            attachments.put(NBT_GRIP, new CompoundTag());
+            attachments.put(NBT_GADGET, new CompoundTag());
+            attachments.put(NBT_SLIDE, new CompoundTag());
+            attachments.put(NBT_PUMP, new CompoundTag());
+            attachments.put(NBT_ACCESSORY, new CompoundTag());
 
             tag.put(NBT_ATTACHMENTS, attachments);
         }
@@ -895,10 +953,10 @@ public class GunType extends PaintableType implements IScope
     public float getMeleeDamage(ItemStack stack)
     {
         float stackMeleeDamage = meleeDamage;
+
         for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
             stackMeleeDamage *= attachment.meleeDamageMultiplier;
-        }
+
         return stackMeleeDamage;
     }
 
@@ -908,23 +966,47 @@ public class GunType extends PaintableType implements IScope
     public float getDamage(ItemStack stack)
     {
         float stackDamage = damage;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            stackDamage = getGrip(stack).secondaryDamage;
+
         for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
             stackDamage *= attachment.damageMultiplier;
-        }
-        return stackDamage;
+
+        return (float) (stackDamage * ModCommonConfigs.gunDamageModifier.get());
     }
 
     /**
      * Get the bullet spread of a specific gun, taking into account attachments
      */
-    public float getSpread(ItemStack stack)
+    public float getSpread(ItemStack stack, boolean sneaking, boolean sprinting)
     {
         float stackSpread = bulletSpread;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            stackSpread = getGrip(stack).secondarySpread;
+
         for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
             stackSpread *= attachment.spreadMultiplier;
-        }
+
+        if (sprinting)
+            stackSpread *= sprintSpreadModifier;
+        else if (sneaking)
+            stackSpread *= sneakSpreadModifier;
+
+        return stackSpread;
+    }
+
+    /**
+     * Get the default spread of a specific gun, taking into account attachments
+     */
+    public float getDefaultSpread(ItemStack stack)
+    {
+        float stackSpread = defaultSpread;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackSpread *= attachment.spreadMultiplier;
+
         return stackSpread;
     }
 
@@ -938,6 +1020,7 @@ public class GunType extends PaintableType implements IScope
         return spreadPattern;
     }
 
+    //TODO: remove normal recoil
     /**
      * Get the recoil of a specific gun, taking into account attachments
      */
@@ -952,6 +1035,70 @@ public class GunType extends PaintableType implements IScope
     }
 
     /**
+     * Get the pitch recoil of a specific gun, taking into account attachments, randomess and sneak/sprint
+     */
+    public float getRecoilPitch(ItemStack stack, boolean sneaking, boolean sprinting)
+    {
+        float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilPitchRange);
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackRecoil *= attachment.recoilMultiplier;
+
+        if (sneaking)
+        {
+            if (decreaseRecoilPitch != 0)
+            {
+                // backwards compatibility
+                stackRecoil -= decreaseRecoilPitch;
+            }
+            else if (recoilSneakingMultiplier == -1)
+            {
+                // backwards compatibility 2: simulate decreaseRecoilPitch 2
+                stackRecoil = stackRecoil < 0.5F ? 0 : stackRecoil - 0.5F;
+            }
+            else
+            {
+                stackRecoil *= recoilSneakingMultiplier;
+            }
+        }
+        else if (sprinting)
+        {
+            stackRecoil *= recoilSprintingMultiplier;
+        }
+
+        return (float) (stackRecoil * ModCommonConfigs.gunRecoilModifier.get());
+    }
+
+    /**
+     * Get the yaw recoil of a specific gun, taking into account attachments, randomess and sneak/sprint
+     */
+    public float getRecoilYaw(ItemStack stack, boolean sneaking, boolean sprinting)
+    {
+        float stackRecoilYaw = recoilYaw + ((rand.nextFloat() - 0.5F) * rndRecoilYawRange);
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackRecoilYaw *= attachment.recoilMultiplier;
+
+        if (sneaking)
+        {
+            if (decreaseRecoilYaw < 0)
+            {
+                stackRecoilYaw /= decreaseRecoilYaw;
+            }
+            else
+            {
+                stackRecoilYaw *= recoilSneakingMultiplierYaw;
+            }
+        }
+        else if (sprinting)
+        {
+            stackRecoilYaw *= recoilSprintingMultiplierYaw;
+        }
+
+        return (float) (stackRecoilYaw * ModCommonConfigs.gunRecoilModifier.get());
+    }
+
+    /**
      * Get the bullet speed of a specific gun, taking into account attachments
      */
     public float getBulletSpeed(ItemStack stack, ItemStack bulletStack)
@@ -959,7 +1106,7 @@ public class GunType extends PaintableType implements IScope
         float stackBulletSpeed;
 
         if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
-            stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().getSpeedMultiplier();
+            stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().speedMultiplier;
         else
             stackBulletSpeed = bulletSpeed;
 
@@ -994,11 +1141,107 @@ public class GunType extends PaintableType implements IScope
     public float getReloadTime(ItemStack stack)
     {
         float stackReloadTime = reloadTime;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            stackReloadTime = getGrip(stack).secondaryReloadTime;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackReloadTime *= attachment.reloadTimeMultiplier;
+
+        return stackReloadTime;
+    }
+
+    /**
+     * Get the fire rate of a specific gun
+     */
+    public float getShootDelay(ItemStack stack)
+    {
+        float fireRate;
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            fireRate = getGrip(stack).secondaryShootDelay;
+        else if (roundsPerMin != 0F)
+            fireRate = 1200F / roundsPerMin;
+        else if (shootDelay != 0F)
+            fireRate = shootDelay;
+        else
+            fireRate = DEFAULT_SHOOT_DELAY;
+
+
         for (AttachmentType attachment : getCurrentAttachments(stack))
         {
-            stackReloadTime *= attachment.reloadTimeMultiplier;
+            if (attachment.modeOverride == EnumFireMode.BURST)
+                return Math.max(fireRate, 3F);
         }
-        return stackReloadTime;
+
+        float stackShootDelay = fireRate;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            stackShootDelay *= attachment.shootDelayMultiplier;
+        }
+        return stackShootDelay;
+    }
+
+    public float getShootDelay()
+    {
+        if (roundsPerMin != 0F)
+            return 1200F / roundsPerMin;
+        else if (shootDelay != 0F)
+            return shootDelay;
+        else
+            return DEFAULT_SHOOT_DELAY;
+    }
+
+    /**
+     * Get the number of bullets fired per shot of a specific gun
+     */
+    public int getNumBullets(ItemStack stack)
+    {
+        int amount = numBullets;
+
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            amount = getGrip(stack).secondaryNumBullets;
+
+        return amount;
+    }
+
+    /**
+     * Get the movement speed of a specific gun, taking into account attachments
+     */
+    public float getMovementSpeed(ItemStack stack)
+    {
+        float stackMovement = moveSpeedModifier;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackMovement *= attachment.moveSpeedMultiplier;
+
+        return stackMovement;
+    }
+
+    /**
+     * Get the recoil counter coefficient of the gun, taking into account attachments
+     */
+    public float getRecoilControl(ItemStack stack, boolean isSprinting, boolean isSneaking)
+    {
+        float control;
+
+        if (isSprinting)
+            control = recoilCounterCoefficientSprinting;
+        else if (isSneaking)
+            control = recoilCounterCoefficientSneaking;
+        else
+            control = recoilCounterCoefficient;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (isSprinting)
+                control *= attachment.recoilControlMultiplierSprinting;
+            else if (isSneaking)
+                control *= attachment.recoilControlMultiplierSneaking;
+            else
+                control *= attachment.recoilControlMultiplier;
+        }
+
+        return Math.max(0, Math.min(1, control));
     }
 
     /**
@@ -1022,7 +1265,7 @@ public class GunType extends PaintableType implements IScope
         if (!stack.hasTag())
             stack.setTag(new CompoundTag());
 
-        stack.getTag().putBoolean("secondaryFire", mode);
+        Objects.requireNonNull(stack.getTag()).putBoolean(NBT_SECONDARY_FIRE, mode);
     }
 
     /**
@@ -1033,13 +1276,13 @@ public class GunType extends PaintableType implements IScope
         if (!stack.hasTag())
             stack.setTag(new CompoundTag());
 
-        if (!stack.getTag().contains("secondaryfire"))
+        if (!Objects.requireNonNull(stack.getTag()).contains(NBT_SECONDARY_FIRE))
         {
-            stack.getTag().putBoolean("secondaryfire", false);
+            stack.getTag().putBoolean(NBT_SECONDARY_FIRE, false);
             return false;
         }
 
-        return stack.getTag().getBoolean("secondaryfire");
+        return stack.getTag().getBoolean(NBT_SECONDARY_FIRE);
     }
 
     /**
@@ -1053,20 +1296,49 @@ public class GunType extends PaintableType implements IScope
             return numPrimaryAmmoItems;
     }
 
-
-    public float getShootDelay(ItemStack stack)
+    //TODO: implement (from FMU)
+    /*public void setFireMode(ItemStack stack, int fireMode)
     {
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
-            if (attachment.modeOverride == EnumFireMode.BURST)
-                return Math.max(shootDelay, 3);
+        if (!stack.hasTagCompound()) {
+            stack.setTagCompound(new NBTTagCompound());
         }
 
-        float stackShootDelay = shootDelay;
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
-            stackShootDelay *= attachment.shootDelayMultiplier;
+        if (fireMode < EnumFireMode.values().length) {
+            stack.getTagCompound().setByte("GunMode", (byte) fireMode);
+        } else {
+            stack.getTagCompound().setByte("GunMode", (byte) mode.ordinal());
         }
-        return stackShootDelay;
-    }
+    }*/
+
+    /**
+     * Get the firing mode of a specific gun, taking into account attachments and secondary fire mode
+     */
+    //TODO: implement (from FMU)
+    /*public EnumFireMode getFireMode(ItemStack stack)
+    {
+        //Check for secondary fire mode
+        if (getGrip(stack) != null && getSecondaryFire(stack))
+            return getGrip(stack).secondaryFireMode;
+
+        //Else check for any mode overrides from attachments
+        for (AttachmentType attachment : getCurrentAttachments(stack)) {
+            if (attachment.modeOverride != null)
+                return attachment.modeOverride;
+        }
+
+        //Else set the fire mode from the gun
+        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("GunMode")) {
+            int gm = stack.getTagCompound().getByte("GunMode");
+            if (gm < EnumFireMode.values().length) {
+                for (EnumFireMode enumFireMode : submode) {
+                    if (gm == enumFireMode.ordinal()) {
+                        return EnumFireMode.values()[gm];
+                    }
+                }
+            }
+        }
+
+        setFireMode(stack, mode.ordinal());
+        return mode;
+    }*/
 }

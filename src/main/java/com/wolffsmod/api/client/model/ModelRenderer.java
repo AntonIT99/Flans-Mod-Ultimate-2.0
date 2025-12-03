@@ -15,8 +15,6 @@ import java.util.Set;
 
 public class ModelRenderer
 {
-    public static final float PI = (float) Math.PI;
-    
     /** The size of the texture file's width in pixels. */
     public float textureWidth;
 

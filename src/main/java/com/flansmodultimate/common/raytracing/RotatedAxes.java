@@ -3,10 +3,10 @@ package com.flansmodultimate.common.raytracing;
 import com.flansmod.common.vector.Matrix4f;
 import com.flansmod.common.vector.Vector3f;
 
+import net.minecraft.util.Mth;
+
 public class RotatedAxes
 {
-    private static final float PI = (float) Math.PI;
-    
     private float rotationYaw;
     private float rotationPitch;
     private float rotationRoll;
@@ -95,28 +95,28 @@ public class RotatedAxes
     //Rotate locally by some angle about the yaw axis
     public void rotateLocalYaw(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, getYAxis().normalise(null));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, getYAxis().normalise(null));
         convertMatrixToAngles();
     }
 
     //Rotate locally by some angle about the pitch axis
     public void rotateLocalPitch(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, getZAxis().normalise(null));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, getZAxis().normalise(null));
         convertMatrixToAngles();
     }
 
     //Rotate locally by some angle about the roll axis
     public void rotateLocalRoll(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, getXAxis().normalise(null));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, getXAxis().normalise(null));
         convertMatrixToAngles();
     }
 
     //Rotate globally by some angle about the yaw axis
     public RotatedAxes rotateGlobalYaw(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, new Vector3f(0F, 1F, 0F));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, new Vector3f(0F, 1F, 0F));
         convertMatrixToAngles();
         return this;
     }
@@ -124,7 +124,7 @@ public class RotatedAxes
     //Rotate globally by some angle about the pitch axis
     public RotatedAxes rotateGlobalPitch(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, new Vector3f(0F, 0F, 1F));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, new Vector3f(0F, 0F, 1F));
         convertMatrixToAngles();
         return this;
     }
@@ -132,7 +132,7 @@ public class RotatedAxes
     //Rotate globally by some angle about the roll axis
     public RotatedAxes rotateGlobalRoll(float rotateBy)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, new Vector3f(1F, 0F, 0F));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
         convertMatrixToAngles();
         return this;
     }
@@ -164,14 +164,14 @@ public class RotatedAxes
     //Rotate by some angle around some axis
     public void rotateLocal(float rotateBy, Vector3f rotateAround)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, findLocalVectorGlobally(rotateAround));
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, findLocalVectorGlobally(rotateAround));
         convertMatrixToAngles();
     }
 
     //Rotate by some angle around some axis
     public void rotateGlobal(float rotateBy, Vector3f rotateAround)
     {
-        rotationMatrix.rotate(rotateBy * PI / 180F, rotateAround);
+        rotationMatrix.rotate(rotateBy * Mth.PI / 180F, rotateAround);
         convertMatrixToAngles();
     }
 
@@ -184,9 +184,9 @@ public class RotatedAxes
         mat.m10 = in.y;
         mat.m20 = in.z;
         //Do the rotations used to obtain this basis in reverse
-        mat.rotate(-rotationYaw * PI / 180F, new Vector3f(0F, 1F, 0F));
-        mat.rotate(-rotationPitch * PI / 180F, new Vector3f(0F, 0F, 1F));
-        mat.rotate(-rotationRoll * PI / 180F, new Vector3f(1F, 0F, 0F));
+        mat.rotate(-rotationYaw * Mth.PI / 180F, new Vector3f(0F, 1F, 0F));
+        mat.rotate(-rotationPitch * Mth.PI / 180F, new Vector3f(0F, 0F, 1F));
+        mat.rotate(-rotationRoll * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
         return new Vector3f(mat.m00, mat.m10, mat.m20);
     }
 
@@ -199,9 +199,9 @@ public class RotatedAxes
         mat.m10 = in.y;
         mat.m20 = in.z;
         //Do the rotations used to obtain this basis
-        mat.rotate(rotationRoll * PI / 180F, new Vector3f(1F, 0F, 0F));
-        mat.rotate(rotationPitch * PI / 180F, new Vector3f(0F, 0F, 1F));
-        mat.rotate(rotationYaw * PI / 180F, new Vector3f(0F, 1F, 0F));
+        mat.rotate(rotationRoll * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
+        mat.rotate(rotationPitch * Mth.PI / 180F, new Vector3f(0F, 0F, 1F));
+        mat.rotate(rotationYaw * Mth.PI / 180F, new Vector3f(0F, 1F, 0F));
         return new Vector3f(mat.m00, mat.m10, mat.m20);
     }
 
@@ -209,29 +209,29 @@ public class RotatedAxes
     {
         //Re-load the identity
         rotationMatrix = new Matrix4f();
-        rotationMatrix.rotate(rotationRoll * PI / 180F, new Vector3f(1F, 0F, 0F));
-        rotationMatrix.rotate(rotationPitch * PI / 180F, new Vector3f(0F, 0F, 1F));
-        rotationMatrix.rotate(rotationYaw * PI / 180F, new Vector3f(0F, 1F, 0F));
+        rotationMatrix.rotate(rotationRoll * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
+        rotationMatrix.rotate(rotationPitch * Mth.PI / 180F, new Vector3f(0F, 0F, 1F));
+        rotationMatrix.rotate(rotationYaw * Mth.PI / 180F, new Vector3f(0F, 1F, 0F));
         convertMatrixToAngles();
     }
 
     private void convertMatrixToAngles()
     {
-		/*rotationPitch = (float)Math.acos(getXAxis().z) * 180F / PI;
+		/*rotationPitch = (float)Math.acos(getXAxis().z) * 180F / Mth.PI;
 		if(rotationPitch == 0F || rotationPitch == 180F)
 		{
 			//You've hit a pole. Exactly. With a float. Well done.
 		}
 		else
 		{
-			rotationYaw = (float)Math.atan2(-getXAxis().y, -getXAxis().x) * 180F / PI;
+			rotationYaw = (float)Math.atan2(-getXAxis().y, -getXAxis().x) * 180F / Mth.PI;
 			Matrix4f unyawedMatrix;
-			rotationRoll = (float)Math.atan2(-getYAxis().z, getZAxis().z) * 180F / PI;
+			rotationRoll = (float)Math.atan2(-getYAxis().z, getZAxis().z) * 180F / Mth.PI;
 		}*/
 
-        rotationYaw = (float)Math.atan2(rotationMatrix.m20, rotationMatrix.m00) * 180F / PI;
-        rotationPitch = (float)Math.atan2(-rotationMatrix.m10, Math.sqrt(rotationMatrix.m12 * rotationMatrix.m12 + rotationMatrix.m11 * rotationMatrix.m11)) * 180F / PI;
-        rotationRoll = (float)Math.atan2(rotationMatrix.m12, rotationMatrix.m11) * 180F / PI;
+        rotationYaw = (float)Math.atan2(rotationMatrix.m20, rotationMatrix.m00) * 180F / Mth.PI;
+        rotationPitch = (float)Math.atan2(-rotationMatrix.m10, Math.sqrt(rotationMatrix.m12 * rotationMatrix.m12 + rotationMatrix.m11 * rotationMatrix.m11)) * 180F / Mth.PI;
+        rotationRoll = (float)Math.atan2(rotationMatrix.m12, rotationMatrix.m11) * 180F / Mth.PI;
 
 		/*
 		double xx = rotationMatrix.m00;
@@ -246,12 +246,12 @@ public class RotatedAxes
 		double sqrtZ = Math.sqrt(zx * zx + zz * zz);
 		sqrtZ = (sqrtZ < 1 ? sqrtZ : 1);
 
-		rotationYaw = (float)Math.atan2(zx, zz) * 180F / PI;
-		rotationPitch = -(float)Math.atan2(zy, sqrtZ) * 180F / PI;
+		rotationYaw = (float)Math.atan2(zx, zz) * 180F / Mth.PI;
+		rotationPitch = -(float)Math.atan2(zy, sqrtZ) * 180F / Mth.PI;
 
-		Matrix4f rollOnlyMatrix = rotationMatrix.rotate(rotationYaw * PI / 180F, new Vector3f(0F, 1F, 0F), null).rotate(rotationPitch * PI / 180F, new Vector3f(1F, 0F, 0F));
+		Matrix4f rollOnlyMatrix = rotationMatrix.rotate(rotationYaw * Mth.PI / 180F, new Vector3f(0F, 1F, 0F), null).rotate(rotationPitch * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
 
-		rotationRoll = (float)Math.atan2(rollOnlyMatrix.m10, rollOnlyMatrix.m00) * 180F / PI;
+		rotationRoll = (float)Math.atan2(rollOnlyMatrix.m10, rollOnlyMatrix.m00) * 180F / Mth.PI;
 		*/
     }
 
@@ -261,9 +261,9 @@ public class RotatedAxes
         Matrix4f mat = new Matrix4f();
         mat.load(in.getMatrix());
         //Perform the rotations to convert from this local set of axes to the global axes
-        mat.rotate(rotationRoll * PI / 180F, new Vector3f(1F, 0F, 0F));
-        mat.rotate(rotationPitch * PI / 180F, new Vector3f(0F, 0F, 1F));
-        mat.rotate(rotationYaw * PI / 180F, new Vector3f(0F, 1F, 0F));
+        mat.rotate(rotationRoll * Mth.PI / 180F, new Vector3f(1F, 0F, 0F));
+        mat.rotate(rotationPitch * Mth.PI / 180F, new Vector3f(0F, 0F, 1F));
+        mat.rotate(rotationYaw * Mth.PI / 180F, new Vector3f(0F, 1F, 0F));
         //Return the globalised matrix
         return new RotatedAxes(mat);
     }

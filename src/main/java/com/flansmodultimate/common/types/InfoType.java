@@ -267,7 +267,7 @@ public abstract class InfoType
     }
 
     @Nullable
-    protected IModelBase getDefaultModel()
+    public IModelBase getDefaultModel()
     {
         return null;
     }
@@ -407,10 +407,10 @@ public abstract class InfoType
         return Optional.empty();
     }
 
-    @Nullable
     @SuppressWarnings("unchecked")
     @OnlyIn(Dist.CLIENT)
-    public static IModelBase loadModel(String modelClassName, InfoType type)
+    @Nullable
+    public static IModelBase loadModel(String modelClassName, InfoType type, @Nullable IModelBase defaultModel)
     {
         IModelBase model = null;
         if (!modelClassName.isBlank())
@@ -444,7 +444,7 @@ public abstract class InfoType
         }
 
         if (model == null)
-            model = type.getDefaultModel();
+            model = defaultModel;
 
         if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
             ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);

@@ -58,7 +58,7 @@ public abstract class ShootableType extends InfoType
      * Ammo-based spread setting if allowSpreadByBullet = true
      */
     @Getter
-    protected float bulletSpread = 1F;
+    protected float bulletSpread = -1F;
 
     //Physics and Stuff
     /** The speed at which the grenade should fall */

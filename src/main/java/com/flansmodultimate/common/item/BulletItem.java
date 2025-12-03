@@ -35,13 +35,12 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendContentPackNameAndItemDescription(tooltipComponents);
+        appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         if (!Screen.hasShiftDown())
         {
             KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
             Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-
             tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
         }
         else

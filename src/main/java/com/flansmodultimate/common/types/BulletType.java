@@ -265,7 +265,7 @@ public class BulletType extends ShootableType
 
     @Override
     @Nullable
-    protected IModelBase getDefaultModel()
+    public IModelBase getDefaultModel()
     {
         return new ModelBullet();
     }

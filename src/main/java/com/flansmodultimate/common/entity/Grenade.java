@@ -215,8 +215,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             float yaw = buf.readFloat();
             float pitch = buf.readFloat();
 
-            if (InfoType.getInfoType(shortname) instanceof GrenadeType type)
-                configType = type;
+            if (InfoType.getInfoType(shortname) instanceof GrenadeType gType)
+                configType = gType;
             if (configType == null)
             {
                 FlansMod.log.warn("Unknown grenade type {}, discarding.", shortname);
@@ -251,8 +251,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
-        InfoType infoType = InfoType.getInfoType(shortname);
-        if (infoType instanceof GrenadeType gType)
+        if (InfoType.getInfoType(shortname) instanceof GrenadeType gType)
         {
             configType = gType;
 

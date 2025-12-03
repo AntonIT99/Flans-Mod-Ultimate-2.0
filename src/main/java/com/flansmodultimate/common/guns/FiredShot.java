@@ -39,17 +39,31 @@ public class FiredShot
     private Entity shooter;
 
     /** Constructor for living entities shooting with a gun item in hand */
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @Nullable LivingEntity attacker)
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack), bulletType, attacker, attacker);
+        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isShiftKeyDown(), shooter.isSprinting()), bulletType, shooter, shooter);
     }
 
+    /** General Constructor */
     public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)
     {
         this.fireableGun = fireableGun;
         this.bulletType = bulletType;
         this.attacker = attacker;
         this.shooter = shooter;
+    }
+
+    public float getSpread()
+    {
+        float spread = -1F;
+
+        if (fireableGun.getType() instanceof GunType gunType && gunType.isAllowSpreadByBullet())
+            spread = bulletType.getBulletSpread();
+
+        if (spread <= 0F)
+            spread = fireableGun.getSpread();
+
+        return spread;
     }
 
     /**

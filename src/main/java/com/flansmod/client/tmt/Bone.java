@@ -370,7 +370,7 @@ public class Bone
     {
         if(inherit)
         {
-            x += neutralAngles.angleX + (isUpright ? (float)Math.PI / 2 : 0);
+            x += neutralAngles.angleX + (isUpright ? Mth.PI / 2 : 0);
             y += neutralAngles.angleY;
             z += neutralAngles.angleZ;
         }

@@ -31,6 +31,10 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.IntValue breakableArmor;
     public static final ForgeConfigSpec.IntValue defaultArmorDurability;
 
+    // Gun Settings
+    public static final ForgeConfigSpec.DoubleValue gunDamageModifier;
+    public static final ForgeConfigSpec.DoubleValue gunRecoilModifier;
+
     // Shootable Settings
     //TODO: idea - teams command to enable / disable friendly fire
     public static final ForgeConfigSpec.IntValue shootableDefaultRespawnTime;
@@ -63,7 +67,7 @@ public class ModCommonConfigs
                 .comment("All leg shot damage will be modified by this amount")
                 .defineInRange("legshotModifier", 0.8, 0.0, 100.0);
         vehicleWheelSeatExplosionModifier = BUILDER
-                .comment("Proportion of damage from an explosion when it has hit a wheel or seat.")
+                .comment("Proportion of damage from an explosion when it has hit a wheel or seat")
                 .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);
         BUILDER.pop();
 
@@ -74,6 +78,15 @@ public class ModCommonConfigs
         defaultArmorDurability = BUILDER
                 .comment("Default durability if breakableArmor = 1")
                 .defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
+        BUILDER.pop();
+
+        BUILDER.push("Gun Settings");
+        gunDamageModifier = BUILDER
+                .comment("All gun damage will be modified by this amount")
+                .defineInRange("gunDamageModifier", 1.0, 0.0, 100.0);
+        gunRecoilModifier = BUILDER
+                .comment("All gun recoil will be modified by this amount")
+                .defineInRange("gunRecoilModifier", 1.0, 0.0, 100.0);
         BUILDER.pop();
 
         BUILDER.push("Shootable Settings");
@@ -87,7 +100,7 @@ public class ModCommonConfigs
 
         BUILDER.push("Penetration System Settings");
         useNewPenetrationSystem = BUILDER
-                .comment("Whether to use new penetration system (only content packs designed to work with this system will work as intended with this on).")
+                .comment("Whether to use new penetration system (only content packs designed to work with this system will work as intended with this on)")
                 .define("useNewPenetrationSystem", false);
         enableBlockPenetration = BUILDER
                 .comment("This will enable the block penetration system to be used")

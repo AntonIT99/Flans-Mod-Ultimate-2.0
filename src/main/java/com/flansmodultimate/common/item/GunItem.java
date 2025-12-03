@@ -8,6 +8,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
 import com.flansmodultimate.common.guns.FireDecision;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
@@ -24,11 +25,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -36,6 +40,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -54,6 +59,8 @@ import java.util.function.Consumer;
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
 {
     protected static final String NBT_AMMO = "ammo";
+    protected static final String NBT_SECONDARY_AMMO = "secondary_ammo";
+    protected static final String NBT_LEGENDARY_CRAFTER = "legendary_crafter";
 
     protected static boolean rightMouseHeld;
     protected static boolean lastRightMouseHeld;
@@ -61,12 +68,15 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     protected static boolean lastLeftMouseHeld;
     @Getter
     protected static boolean crouching;
+    protected static boolean sprinting;
+    protected static boolean shooting;
 
     @Getter
     protected final GunType configType;
     protected final String shortname;
     @Getter
     protected final GunItemBehavior behavior;
+    protected String originGunbox;
     protected int soundDelay;
     @Getter
     protected int impactX;
@@ -137,51 +147,97 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendContentPackNameAndItemDescription(tooltipComponents);
-
-        String paintjobName = getPaintjob(stack).getDisplayName();
-        if (!paintjobName.isEmpty())
-            tooltipComponents.add(Component.literal(paintjobName).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
+        appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         // Legendary crafter tag
-        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("legendarycrafter", net.minecraft.nbt.Tag.TAG_STRING))
+        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
-            String crafter = stack.getTag().getString("legendarycrafter");
+            String crafter = stack.getTag().getString(NBT_LEGENDARY_CRAFTER);
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
-        // Stats
-        if (configType.isShowDamage())
-            tooltipComponents.add(IFlanItem.statLine("Damage", IFlanItem.formatFloat(configType.getDamage(stack))));
-        if (configType.isShowRecoil())
-            tooltipComponents.add(IFlanItem.statLine("Recoil", IFlanItem.formatFloat(configType.getRecoil(stack))));
-        if (configType.isShowSpread())
-            tooltipComponents.add(IFlanItem.statLine("Accuracy", IFlanItem.formatFloat(configType.getSpread(stack))));
-        if (configType.isShowReloadTime())
-            tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
-
-        // Attachments
-        if (configType.isShowAttachments())
+        if (!Screen.hasShiftDown())
         {
-            for (AttachmentType attachment : configType.getCurrentAttachments(stack))
+            // Attachments
+            if (configType.isShowAttachments())
             {
-                tooltipComponents.add(Component.literal(attachment.getName()).withStyle(ChatFormatting.DARK_AQUA));
+                List<AttachmentType> attachments = configType.getCurrentAttachments(stack);
+
+                if (!attachments.isEmpty())
+                    tooltipComponents.add(Component.literal("Attachments").withStyle(ChatFormatting.YELLOW));
+
+                for (AttachmentType attachment : attachments)
+                    tooltipComponents.add(Component.literal(attachment.getName()).withStyle(ChatFormatting.AQUA));
             }
+
+
+            // Ammo info
+            for (int i = 0; i < configType.getNumAmmoItemsInGun(stack); i++)
+            {
+                ItemStack bulletStack = getBulletItemStack(stack, i);
+                if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
+                {
+                    BulletType bulletType = bulletItem.getConfigType();
+                    int max = bulletStack.getMaxDamage();
+                    int remaining = max - bulletStack.getDamageValue();
+                    String line = bulletType.getName() + " " + remaining + "/" + max;
+                    tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+
+            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
+            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
         }
-
-        // Ammo info
-        for (int i = 0; i < configType.getNumAmmoItemsInGun(stack); i++)
+        else
         {
-            ItemStack bulletStack = getBulletItemStack(stack, i);
-            if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
-            {
-                BulletType bulletType = bulletItem.getConfigType();
-                int max = bulletStack.getMaxDamage();
-                // remaining durability/rounds
-                int remaining = max - bulletStack.getDamageValue();
-                String line = bulletType.getName() + " " + remaining + "/" + max;
-                tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_GRAY));
+            if (StringUtils.isNotBlank(originGunbox))
+                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
+
+            AttachmentType barrel = configType.getBarrel(stack);
+            if (barrel != null && barrel.isSilencer())
+                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
+
+            if (configType.getSecondaryFire(stack))
+                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
+
+            // Stats
+            if (configType.isShowDamage())
+                tooltipComponents.add(IFlanItem.statLine("Damage", IFlanItem.formatFloat(configType.getDamage(stack))));
+
+            if (configType.isShowRecoil()) {
+                tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getRecoilPitch(stack, false, false))));
+                tooltipComponents.add(IFlanItem.statLine("Horizontal Recoil", IFlanItem.formatFloat(configType.getRecoilYaw(stack, false, false))));
+
+                String sprintingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, true, false));
+                String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
+                String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
+
+                Component recoilControl = Component.literal("Recoil Control: ").withStyle(ChatFormatting.BLUE)
+                        .append(Component.literal(" " + sprintingControl).withStyle(ChatFormatting.RED))
+                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN));
+                tooltipComponents.add(recoilControl);
             }
+
+            if (configType.isShowSpread())
+            {
+                float spread = configType.getSpread(stack, false, false);
+                tooltipComponents.add(IFlanItem.statLine("Accuracy", IFlanItem.formatFloat(spread)));
+                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * spread) + "°"));
+            }
+
+            tooltipComponents.add(IFlanItem.statLine("Switch Delay", IFlanItem.formatFloat(configType.getSwitchDelay())));
+
+            if (configType.isShowReloadTime())
+                tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
+
+            float bulletSpeed = configType.getBulletSpeed(stack);
+            tooltipComponents.add(IFlanItem.statLine("Bullet Speed", (bulletSpeed == 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " blocks/s") : "instant"));
+
+            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + "rpm"));
+
+            tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
         }
     }
 
@@ -455,22 +511,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return ItemStack.EMPTY;
         }
 
-        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
+        String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
+
+        if (!tag.contains(nbt, Tag.TAG_LIST))
         {
-            // init empty slots
             ListTag list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(NBT_AMMO, list);
+            tag.put(nbt, list);
             return ItemStack.EMPTY;
         }
 
-        ListTag list = tag.getList(NBT_AMMO, Tag.TAG_COMPOUND);
+        ListTag list = tag.getList(nbt, Tag.TAG_COMPOUND);
         if (id < 0 || id >= list.size())
             return ItemStack.EMPTY;
 
         CompoundTag slotTag = list.getCompound(id);
-        return ItemStack.of(slotTag); // empty tag -> EMPTY stack
+        return ItemStack.of(slotTag);
     }
 
     /**
@@ -481,29 +538,28 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (gun.isEmpty() || id < 0)
             return;
 
-        CompoundTag tag = gun.getOrCreateTag();
-
         ListTag list;
-        if (tag.contains(NBT_AMMO, Tag.TAG_LIST))
+        CompoundTag tag = gun.getOrCreateTag();
+        String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
+
+        if (tag.contains(nbt, Tag.TAG_LIST))
         {
-            list = tag.getList(NBT_AMMO, Tag.TAG_COMPOUND);
+            list = tag.getList(nbt, Tag.TAG_COMPOUND);
         }
         else
         {
             list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(NBT_AMMO, list);
+            tag.put(nbt, list);
         }
 
-        // ensure index exists
         while (id >= list.size())
             list.add(new CompoundTag());
 
-        // Represent empty slots by an empty CompoundTag
         CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : bullet.save(new CompoundTag());
 
         list.set(id, slotTag);
-        tag.put(NBT_AMMO, list); // write back (harmless if unchanged)
+        tag.put(nbt, list);
     }
 }

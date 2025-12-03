@@ -29,7 +29,7 @@ Types:
 - BulletType - Done
 - DriveableType - TODO
 - GrenadeType - Done
-- GunType - Done
+- GunType - WIP
 - InfoType - Done
 
 Other Classes:

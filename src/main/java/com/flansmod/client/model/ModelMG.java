@@ -4,8 +4,12 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.types.GunType;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Setter;
+
+import net.minecraft.util.Mth;
 
 public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 {
@@ -23,27 +27,27 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         return GunType.class;
     }
 
-    public void renderBipod(float f, float f1, float f2, float f3, float f4, float f5, DeployedGun mg)
+    public void renderBipod(DeployedGun mg, PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         for(ModelRendererTurbo bipodPart : bipodModel)
         {
-            bipodPart.render(f5);
+            bipodPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
             return;
 
         for(ModelRendererTurbo ammoBoxPart : ammoBoxModel)
         {
-            ammoBoxPart.render(f5);
+            ammoBoxPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
     }
 
-    public void renderGun(float f, float f1, float f2, float f3, float f4, float f5, float f6, DeployedGun mg)
+    public void renderGun(DeployedGun mg, float partialTick, PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         for (ModelRendererTurbo gunPart : gunModel)
         {
-            gunPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * f6) / 180F * (float) Math.PI;
-            gunPart.render(f5);
+            gunPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
+            gunPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
 
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
@@ -51,8 +55,8 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 
         for (ModelRendererTurbo ammoPart : ammoModel)
         {
-            ammoPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * f6) / 180F * (float) Math.PI;
-            ammoPart.render(f5);
+            ammoPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
+            ammoPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
     }
 

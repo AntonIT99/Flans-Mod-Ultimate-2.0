@@ -162,7 +162,7 @@ public class ArmorType extends InfoType
 
     @Override
     @Nullable
-    protected IModelBase getDefaultModel()
+    public IModelBase getDefaultModel()
     {
         return new DefaultArmor(armorItemType);
     }

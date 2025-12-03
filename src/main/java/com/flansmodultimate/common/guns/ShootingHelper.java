@@ -69,11 +69,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShootingHelper
 {
+    public static final float ANGULAR_SPREAD_FACTOR = 0.0025F;
+
     //TODO: make configurable
     private static final double ENTITY_HIT_PARTICLE_RANGE = 64.0;
     private static final double BLOCK_HIT_PARTICLE_RANGER = 64.0;
-
-    private static final RandomSource random = RandomSource.create();
 
     /** Call this when fire bullets from vehicles or other sources (Server side) */
     public static void fireGun(Level level, @NotNull FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
@@ -444,7 +444,7 @@ public final class ShootingHelper
                             continue;
 
                         BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
-                        if (level.isEmptyBlock(pos) && random.nextBoolean())
+                        if (level.isEmptyBlock(pos) && level.random.nextBoolean())
                             level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
                     }
                 }
@@ -496,28 +496,26 @@ public final class ShootingHelper
 
     private static void createMultipleShots(Level level, FiredShot shot, Integer bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
-        float bulletspread = 0.0025F * shot.getFireableGun().getSpread() * shot.getBulletType().getBulletSpread();
         for (int i = 0; i < bulletAmount; i++)
         {
-            createShot(level, shot, bulletspread, rayTraceOrigin, shootingDirection);
+            createShot(level, shot, rayTraceOrigin, shootingDirection);
             handler.shooting(i < bulletAmount - 1);
         }
     }
 
-    private static void createShot(Level level, FiredShot shot, float bulletspread, Vec3 rayTraceOrigin, Vec3 shootingDirection)
+    private static void createShot(Level level, FiredShot shot, Vec3 rayTraceOrigin, Vec3 shootingDirection)
     {
-        shootingDirection = randomizeVectorDirection(level, shootingDirection, bulletspread, shot.getFireableGun().getSpreadPattern());
-        shootingDirection.scale(500F);
+        Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
 
         HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingDirection, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
+        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = rayTraceOrigin;
         Vec3 finalhit = null;
 
         for (int i = 0; i < hits.size(); i++)
         {
             BulletHit hit = hits.get(i);
-            Vec3 shotVector = shootingDirection.scale(hit.getIntersectTime());
+            Vec3 shotVector = shootingVector.scale(hit.getIntersectTime());
             Vec3 hitPos = rayTraceOrigin.add(shotVector);
 
             if (hit instanceof BlockHit)
@@ -545,96 +543,93 @@ public final class ShootingHelper
         PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(rayTraceOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
     }
 
-    private static Vec3 randomizeVectorDirection(Level level, Vec3 vector, float spread, EnumSpreadPattern pattern)
+    public static Vec3 calculateShootingMotionVector(RandomSource random, Vec3 direction, float spread, float speed, EnumSpreadPattern pattern)
     {
-        Vector3f result = new Vector3f(vector);
-        Vector3f xAxis = Vector3f.cross(result, new Vector3f(0f, 1f, 0f), null);
-        xAxis.normalise();
-        Vector3f yAxis = Vector3f.cross(result, xAxis, null);
-        yAxis.normalise();
+        double angularSpread = ANGULAR_SPREAD_FACTOR * spread;
+
+        // Make sure direction is sane
+        if (direction.lengthSqr() == 0.0D)
+            return direction;
+        else
+            direction = direction.normalize();
+
+        // Build a stable local basis (xAxis = "right", yAxis = "up" relative to forward)
+        Vec3 worldUp = Math.abs(direction.y) < 0.999D ? new Vec3(0.0D, 1.0D, 0.0D) : new Vec3(1.0D, 0.0D, 0.0D);
+        Vec3 xAxis = direction.cross(worldUp).normalize();
+        Vec3 yAxis = xAxis.cross(direction).normalize();
+
+        Vec3 perturbedDir = direction;
 
         switch (pattern)
         {
-            case CIRCLE:
+            case CIRCLE ->
             {
-                float theta = (float)(level.random.nextDouble() * Math.PI * 2.0f);
-                float radius = (float)level.random.nextDouble() * spread;
-                float xComponent = radius * (float)Math.sin(theta);
-                float yComponent = radius * (float)Math.cos(theta);
+                double theta = random.nextDouble() * Math.PI * 2.0;
+                double radius = random.nextDouble() * angularSpread;
+                double xComponent = radius * Math.sin(theta);
+                double yComponent = radius * Math.cos(theta);
 
-                xAxis.scale(xComponent);
-                yAxis.scale(yComponent);
+                Vec3 offset = xAxis.scale(xComponent).add(yAxis.scale(yComponent));
 
-                Vector3f.add(result, xAxis, result);
-                Vector3f.add(result, yAxis, result);
-
-                break;
+                perturbedDir = direction.add(offset);
             }
-            case CUBE:
+            case CUBE ->
             {
-                result.x += (float)level.random.nextGaussian() * spread;
-                result.y += (float)level.random.nextGaussian() * spread;
-                result.z += (float)level.random.nextGaussian() * spread;
-                break;
+                double ox = random.nextGaussian() * angularSpread;
+                double oy = random.nextGaussian() * angularSpread;
+                double oz = random.nextGaussian() * angularSpread;
+
+                perturbedDir = direction.add(ox, oy, oz);
             }
-            case HORIZONTAL:
+            case HORIZONTAL ->
             {
-                float xComponent = spread * (level.random.nextFloat() * 2f - 1f);
+                double xComponent = angularSpread * (random.nextDouble() * 2.0D - 1.0D);
 
-                xAxis.scale(xComponent);
+                Vec3 offset = xAxis.scale(xComponent);
 
-                Vector3f.add(result, xAxis, result);
-
-                break;
+                perturbedDir = direction.add(offset);
             }
-            case VERTICAL:
+            case VERTICAL ->
             {
-                float yComponent = spread * (level.random.nextFloat() * 2f - 1f);
+                double yComponent = angularSpread * (random.nextDouble() * 2.0D - 1.0D);
 
-                yAxis.scale(yComponent);
+                Vec3 offset = yAxis.scale(yComponent);
 
-                Vector3f.add(result, yAxis, result);
-
-                break;
+                perturbedDir = direction.add(offset);
             }
-            case TRIANGLE:
+            case TRIANGLE ->
             {
                 // Random square, then fold the corners
-                float xComponent = level.random.nextFloat() * 2f - 1f;
-                float yComponent = level.random.nextFloat() * 2f - 1f;
+                double xComponent = random.nextDouble() * 2.0D - 1.0D;
+                double yComponent = random.nextDouble() * 2.0D - 1.0D;
 
-                if(xComponent > 0f)
+                if (xComponent > 0.0D)
                 {
-                    if(yComponent > 1.0f - xComponent * 2f)
+                    if (yComponent > 1.0D - xComponent * 2.0D)
                     {
                         yComponent = -yComponent;
-                        xComponent = 1f - xComponent;
+                        xComponent = 1.0D - xComponent;
                     }
                 }
                 else
                 {
-                    if(yComponent > xComponent * 2f + 1f)
+                    if (yComponent > xComponent * 2.0D + 1.0D)
                     {
                         yComponent = -yComponent;
-                        xComponent = -1f - xComponent;
+                        xComponent = -1.0D - xComponent;
                     }
                 }
 
-                xComponent *= spread;
-                yComponent *= spread;
+                xComponent *= angularSpread;
+                yComponent *= angularSpread;
 
-                xAxis.scale(xComponent);
-                yAxis.scale(yComponent);
+                Vec3 offset = xAxis.scale(xComponent).add(yAxis.scale(yComponent));
 
-                Vector3f.add(result, xAxis, result);
-                Vector3f.add(result, yAxis, result);
-
-                break;
+                perturbedDir = direction.add(offset);
             }
-            default:
-                break;
         }
-        return result.toVec3();
+
+        return perturbedDir.normalize().scale(speed);
     }
 
     public static float getBlockPenetrationDecrease(Level level, BlockState blockstate, BlockPos pos, BulletType type)

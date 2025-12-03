@@ -35,11 +35,7 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        appendContentPackNameAndItemDescription(tooltipComponents);
-
-        String paintjobName = getPaintjob(stack).getDisplayName();
-        if (!paintjobName.isEmpty())
-            tooltipComponents.add(Component.literal(paintjobName).withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
+        appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         if (configType.getShootDelayMultiplier() != 1.0f)
             tooltipComponents.add(Component.literal("Rate of Fire x" + IFlanItem.formatFloat(100.0F / configType.getShootDelayMultiplier()) + "%").withStyle(ChatFormatting.BLUE));

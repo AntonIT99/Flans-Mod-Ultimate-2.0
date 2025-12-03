@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -34,47 +35,52 @@ public final class ModelCache
     {
         for (InfoType type : InfoType.getInfoTypes().values())
         {
-            IModelBase model = InfoType.loadModel(type.getModelClassName(), type);
+            IModelBase model = InfoType.loadModel(type.getModelClassName(), type, type.getDefaultModel());
             cache.put(type.getModelClassName(), Optional.ofNullable(model));
 
             if (type instanceof GunType gunType)
             {
-                IModelBase deployableModel = InfoType.loadModel(gunType.getDeployableModelClassName(), type);
+                IModelBase deployableModel = InfoType.loadModel(gunType.getDeployableModelClassName(), type, null);
+                IModelBase casingModel = InfoType.loadModel(gunType.getDeployableModelClassName(), type, null);
+                IModelBase flashModel = InfoType.loadModel(gunType.getCasingModelClassName(), type, null);
+                IModelBase muzzleFlashModel = InfoType.loadModel(gunType.getMuzzleFlashModelClassName(), type, new ModelDefaultMuzzleFlash());
                 cache.put(gunType.getDeployableModelClassName(), Optional.ofNullable(deployableModel));
+                cache.put(gunType.getCasingModelClassName(), Optional.ofNullable(casingModel));
+                cache.put(gunType.getFlashModelClassName(), Optional.ofNullable(flashModel));
+                cache.put(gunType.getMuzzleFlashModelClassName(), Optional.ofNullable(muzzleFlashModel));
             }
         }
     }
 
     @Nullable
-    public static IModelBase getOrLoadModel(String key, InfoType type)
+    public static IModelBase getOrLoadModel(String className, InfoType type, @Nullable IModelBase defaultModel)
     {
-        return cache.computeIfAbsent(key, k -> Optional.ofNullable(InfoType.loadModel(k, type))).orElse(null);
+        return cache.computeIfAbsent(className, key -> Optional.ofNullable(InfoType.loadModel(key, type, defaultModel))).orElse(null);
     }
 
     @Nullable
     public static IModelBase getOrLoadTypeModel(InfoType type)
     {
-        return getOrLoadModel(type.getModelClassName(), type);
+        return cache.computeIfAbsent(type.getModelClassName(), key -> Optional.ofNullable(InfoType.loadModel(key, type, type.getDefaultModel()))).orElse(null);
     }
 
     @Nullable
-    public static IModelBase getOrLoadTypeModel(String typeShortname)
+    public static IModelBase getOrLoadTypeModel(String shortname)
     {
-        InfoType type = InfoType.getInfoType(typeShortname);
+        InfoType type = InfoType.getInfoType(shortname);
         if (type != null)
         {
-            return getOrLoadModel(type.getModelClassName(), type);
+            return getOrLoadTypeModel(type);
         }
         return null;
     }
 
     @Nullable
-    public static IModelBase getOrLoadDeployableGunModel(String typeShortname)
+    public static IModelBase getOrLoadDeployableGunModel(String shortname)
     {
-        InfoType type = InfoType.getInfoType(typeShortname);
-        if (type instanceof GunType gunType && gunType.isDeployable())
+        if (InfoType.getInfoType(shortname) instanceof GunType gunType && gunType.isDeployable())
         {
-            return getOrLoadModel(gunType.getDeployableModelClassName(), type);
+            return getOrLoadModel(gunType.getDeployableModelClassName(), gunType, null);
         }
         return null;
     }
@@ -82,22 +88,22 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadCasingModel(GunType gunType)
     {
-        return getOrLoadModel(gunType.getCasingModelClassName(), gunType);
+        return getOrLoadModel(gunType.getCasingModelClassName(), gunType, null);
     }
 
     @Nullable
     public static IModelBase getOrLoadFlashModel(GunType gunType)
     {
-        return getOrLoadModel(gunType.getFlashModelClassName(), gunType);
+        return getOrLoadModel(gunType.getFlashModelClassName(), gunType, null);
     }
 
     @Nullable
     public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
     {
-        IModelBase model = getOrLoadModel(gunType.getFlashModelClassName(), gunType);
-        if (model instanceof ModelMuzzleFlash modelMuzzleFlash)
+        if (getOrLoadModel(gunType.getFlashModelClassName(), gunType, new ModelDefaultMuzzleFlash()) instanceof ModelMuzzleFlash modelMuzzleFlash)
+        {
             return modelMuzzleFlash;
-        else
-            return null;
+        }
+        return null;
     }
 }

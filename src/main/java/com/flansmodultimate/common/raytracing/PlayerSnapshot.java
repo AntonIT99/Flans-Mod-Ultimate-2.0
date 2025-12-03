@@ -29,8 +29,6 @@ import java.util.List;
 public class PlayerSnapshot
 {
     public static final int NUM_PLAYER_SNAPSHOTS = 20;
-
-    private static final float PI = (float) Math.PI;
     
     /** The player this snapshot is for */
     public final Player player;
@@ -71,29 +69,29 @@ public class PlayerSnapshot
         hitboxes.add(new PlayerHitbox(player, bodyAxes, new Vector3f(0F, 0F, 0F), legPos, legBox, vel, EnumHitboxType.LEGS));
 
         //Calculate rotation of arms using modified code from ModelBiped
-        float yHead = (p.getYHeadRot() - p.yBodyRot) / (180F / PI);
-        float xHead = p.getXRot() / (180F / PI);
+        float yHead = (p.getYHeadRot() - p.yBodyRot) * Mth.DEG_TO_RAD;
+        float xHead = p.getXRot() * Mth.DEG_TO_RAD;
 
         float zRight = 0.0F;
         float zLeft = 0.0F;
-        float yRight = -0.1F + yHead - (PI / 2F);
-        float yLeft = 0.1F + yHead + 0.4F - (PI / 2F);
-        float xRight = -(PI / 2F) + xHead;
-        float xLeft = -(PI / 2F) + xHead;
+        float yRight = -0.1F + yHead - (Mth.PI / 2F);
+        float yLeft = 0.1F + yHead + 0.4F - (Mth.PI / 2F);
+        float xRight = -(Mth.PI / 2F) + xHead;
+        float xLeft = -(Mth.PI / 2F) + xHead;
 
         zRight += Mth.cos(p.tickCount * 0.09F) * 0.05F + 0.05F;
         zLeft -= Mth.cos(p.tickCount * 0.09F) * 0.05F + 0.05F;
         xRight += Mth.sin(p.tickCount * 0.067F) * 0.05F;
         xLeft -= Mth.sin(p.tickCount * 0.067F) * 0.05F;
 
-        RotatedAxes leftArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xLeft).rotateGlobalYawInRads(PI + yLeft).rotateGlobalRollInRads(-zLeft);
-        RotatedAxes rightArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xRight).rotateGlobalYawInRads(PI + yRight).rotateGlobalRollInRads(-zRight);
+        RotatedAxes leftArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xLeft).rotateGlobalYawInRads(Mth.PI + yLeft).rotateGlobalRollInRads(-zLeft);
+        RotatedAxes rightArmAxes = (new RotatedAxes()).rotateGlobalPitchInRads(xRight).rotateGlobalYawInRads(Mth.PI + yRight).rotateGlobalRollInRads(-zRight);
 
-        float originZRight = Mth.sin(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
-        float originXRight = -Mth.cos(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
+        float originZRight = Mth.sin(-p.yBodyRot * Mth.DEG_TO_RAD) * 5.0F / 16F;
+        float originXRight = -Mth.cos(-p.yBodyRot * Mth.DEG_TO_RAD) * 5.0F / 16F;
 
-        float originZLeft = -Mth.sin(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
-        float originXLeft = Mth.cos(-p.yBodyRot * PI / 180F) * 5.0F / 16F;
+        float originZLeft = -Mth.sin(-p.yBodyRot * Mth.DEG_TO_RAD) * 5.0F / 16F;
+        float originXLeft = Mth.cos(-p.yBodyRot * Mth.DEG_TO_RAD) * 5.0F / 16F;
 
         hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(leftArmAxes), new Vector3f(originXLeft, 1.3F, originZLeft), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), vel, EnumHitboxType.LEFTARM));
         hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(-2F / 16F, -0.6F, -2F / 16F), new Vector3f(0.25F, 0.7F, 0.25F), vel, EnumHitboxType.RIGHTARM));

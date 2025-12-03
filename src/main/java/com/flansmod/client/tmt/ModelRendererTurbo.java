@@ -1032,19 +1032,19 @@ public class ModelRendererTurbo extends ModelRenderer
         switch(direction)
         {
             case MR_LEFT:
-                rotY = PI / 2;
+                rotY = Mth.PI / 2;
                 break;
             case MR_RIGHT:
-                rotY = -PI / 2;
+                rotY = -Mth.PI / 2;
                 break;
             case MR_TOP:
-                rotX = PI / 2;
+                rotX = Mth.PI / 2;
                 break;
             case MR_BOTTOM:
-                rotX = -PI / 2;
+                rotX = -Mth.PI / 2;
                 break;
             case MR_FRONT:
-                rotY = PI;
+                rotY = Mth.PI;
                 break;
             case MR_BACK:
                 break;
@@ -1446,10 +1446,10 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int i = 0; i < segs; i++)
             {
-                float yWidth = Mth.cos(-PI / 2 + (PI / rings) * j);
-                float yHeight = Mth.sin(-PI / 2 + (PI / rings) * j);
-                float xSize = Mth.sin((PI / segs) * i * 2F + PI) * yWidth;
-                float zSize = -Mth.cos((PI / segs) * i * 2F + PI) * yWidth;
+                float yWidth = Mth.cos(-Mth.PI / 2 + (Mth.PI / rings) * j);
+                float yHeight = Mth.sin(-Mth.PI / 2 + (Mth.PI / rings) * j);
+                float xSize = Mth.sin((Mth.PI / segs) * i * 2F + Mth.PI) * yWidth;
+                float zSize = -Mth.cos((Mth.PI / segs) * i * 2F + Mth.PI) * yWidth;
                 int curVert = 1 + i + segs * (j - 1);
                 tempVerts[curVert] = new PositionTextureVertex(x + xSize * r, y + yHeight * r, z + zSize * r, 0, 0);
                 if(i > 0)
@@ -1715,8 +1715,8 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int index = 0; index < segments; index++)
             {
-                float xSize = (mirror ^ dirMirror ? -1 : 1) * Mth.sin((PI / segments) * index * 2F + PI) * radius * sCur;
-                float zSize = -Mth.cos((PI / segments) * index * 2F + PI) * radius * sCur;
+                float xSize = (mirror ^ dirMirror ? -1 : 1) * Mth.sin((Mth.PI / segments) * index * 2F + Mth.PI) * radius * sCur;
+                float zSize = -Mth.cos((Mth.PI / segments) * index * 2F + Mth.PI) * radius * sCur;
 
                 float xPlace = xCur + (!dirSide ? xSize : 0);
                 float yPlace = yCur + (!dirTop ? zSize : 0);
@@ -1745,10 +1745,10 @@ public class ModelRendererTurbo extends ModelRenderer
         for(int index = 0; index < segments; index++)
         {
             int index2 = (index + 1) % segments;
-            float uSize = Mth.sin((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset);
-            float vSize = Mth.cos((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset);
-            float uSize1 = Mth.sin((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset);
-            float vSize1 = Mth.cos((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset);
+            float uSize = Mth.sin((Mth.PI / segments) * index * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize = Mth.cos((Mth.PI / segments) * index * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * vCircle - 2F * vOffset);
+            float uSize1 = Mth.sin((Mth.PI / segments) * index2 * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize1 = Mth.cos((Mth.PI / segments) * index2 * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * vCircle - 2F * vOffset);
             vert = new PositionTextureVertex[3];
 
             vert[0] = tempVerts[0].setTexturePosition(uStart + 0.5F * uCircle, vStart + 0.5F * vCircle);

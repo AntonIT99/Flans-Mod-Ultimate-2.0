@@ -1,10 +1,12 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.ShootableType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -51,9 +53,13 @@ public abstract class ShootableItem extends Item
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Fall Speed", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
-        if (getConfigType().getBulletSpread() > 1F || getConfigType().getBulletSpread() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Spread", IFlanItem.formatFloat(getConfigType().getBulletSpread())));
+            tooltipComponents.add(IFlanItem.statLine("Fall Speed Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+        if (getConfigType().getBulletSpread() > 0F)
+        {
+            float spread = getConfigType().getBulletSpread();
+            tooltipComponents.add(IFlanItem.statLine("Spread", IFlanItem.formatFloat(spread)));
+            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * spread) + "°"));
+        }
 
         IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
 

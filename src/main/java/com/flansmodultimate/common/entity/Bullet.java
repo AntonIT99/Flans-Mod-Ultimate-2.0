@@ -141,7 +141,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         configType = firedShot.getBulletType();
         penetratingPower = firedShot.getBulletType().getPenetratingPower();
         setPos(origin);
-        setArrowHeading(direction, firedShot.getFireableGun().getSpread() * firedShot.getBulletType().getBulletSpread(), firedShot.getFireableGun().getBulletSpeed());
+        setArrowHeading(direction, firedShot.getSpread(), firedShot.getFireableGun().getBulletSpeed(), firedShot.getFireableGun().getSpreadPattern());
     }
 
     @Override
@@ -160,13 +160,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         return distSq < (RENDER_DISTANCE * RENDER_DISTANCE);
     }
 
-    public void setArrowHeading(Vec3 direction, float spread, float speed)
+    public void setArrowHeading(Vec3 direction, float spread, float speed, EnumSpreadPattern spreadPattern)
     {
-        final double SPREAD_DIVISOR = 5.0;
-        final double BASE_JITTER = 0.005;
-
-        double jitter = BASE_JITTER * (spread / SPREAD_DIVISOR) * speed;
-        velocity = direction.normalize().scale(speed).add(random.nextGaussian() * jitter, random.nextGaussian() * jitter, random.nextGaussian() * jitter);
+        velocity = ShootingHelper.calculateShootingMotionVector(random, direction, spread, speed, spreadPattern);
         setDeltaMovement(velocity);
         setOrientation(velocity);
         getLockOnTarget(level());
@@ -296,8 +292,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
             setOrientation(velocity);
 
-            if (InfoType.getInfoType(shortname) instanceof BulletType type)
-                configType = type;
+            if (InfoType.getInfoType(shortname) instanceof BulletType bType)
+                configType = bType;
             if (configType == null)
             {
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
@@ -348,10 +344,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
-        InfoType infoType = InfoType.getInfoType(shortname);
         FireableGun fireableGun = null;
 
-        if (infoType instanceof BulletType bType)
+        if (InfoType.getInfoType(shortname) instanceof BulletType bType)
         {
             configType = bType;
 

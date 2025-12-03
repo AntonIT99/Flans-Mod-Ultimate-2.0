@@ -61,10 +61,10 @@ public class ModClient
 
     public static final HumanoidModel.ArmPose bothArmsAim = HumanoidModel.ArmPose.create("both_arms_aim", true,
         (model, entity, arm) -> {
-            model.rightArm.xRot = -(float)Math.PI / 2F;
+            model.rightArm.xRot = -Mth.PI / 2F;
             model.rightArm.yRot = -0.05F;
             model.rightArm.zRot = 0F;
-            model.leftArm.xRot = -(float)Math.PI / 2F;
+            model.leftArm.xRot = -Mth.PI / 2F;
             model.leftArm.yRot = 0.05F;
             model.leftArm.zRot = 0F;
         });
