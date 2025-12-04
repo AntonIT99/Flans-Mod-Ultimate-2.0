@@ -512,7 +512,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
                 startPos.y + (endPos.y - startPos.y) * interp,
                 startPos.z + (endPos.z - startPos.z) * interp);
 
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
+        //TODO: fix recoil
+        //poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
         poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
 
         /*if(spinningCocking)

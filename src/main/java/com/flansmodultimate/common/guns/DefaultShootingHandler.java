@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -93,11 +94,8 @@ public final class DefaultShootingHandler implements ShootingHandler
         // Drop item on shooting if gun requires it
         GunItemBehavior.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
-
         if (gunType.getKnockback() > 0F)
-        {
-            //TODO : Apply knockback
-        }
+            knockbackOppositeLook(player, gunType.getKnockback());
 
         // Damage the bullet item
         bulletStack.setDamageValue(bulletStack.getDamageValue() + 1);
@@ -110,5 +108,29 @@ public final class DefaultShootingHandler implements ShootingHandler
         {
             player.setItemInHand(hand, ItemStack.EMPTY);
         }
+    }
+
+    public static void knockbackOppositeLook(Player player, double strength)
+    {
+        if (player.level().isClientSide)
+            return;
+
+        // Get where the player is looking
+        Vec3 look = player.getLookAngle(); // (x, y, z)
+
+        // Invert the look direction (opposite of where they look) and optionally flatten Y so it's mostly horizontal
+        Vec3 dir = new Vec3(-look.x, 0.0, -look.z);
+
+        if (dir.lengthSqr() < 1.0E-4)
+            return; // avoid NaN if the vector is too small
+
+        // Normalize & scale by your strength
+        dir = dir.normalize().scale(strength);
+
+        // Apply knockback
+        player.setDeltaMovement(dir);
+
+        // important so the client actually updates
+        player.hurtMarked = true;
     }
 }

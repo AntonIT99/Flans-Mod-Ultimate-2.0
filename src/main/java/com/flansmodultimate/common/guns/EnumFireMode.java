@@ -1,7 +1,5 @@
 package com.flansmodultimate.common.guns;
 
-import java.util.Locale;
-
 public enum EnumFireMode
 {
     SEMIAUTO,
@@ -11,12 +9,11 @@ public enum EnumFireMode
 
     public static EnumFireMode getFireMode(String s)
     {
-        return switch (s.toLowerCase(Locale.ROOT))
+        for (EnumFireMode mode : EnumFireMode.values())
         {
-            case "fullauto" -> FULLAUTO;
-            case "minigun" -> MINIGUN;
-            case "burst" -> BURST;
-            default -> SEMIAUTO;
-        };
+            if (s.equalsIgnoreCase(mode.name()))
+                return mode;
+        }
+        return SEMIAUTO;
     }
 }

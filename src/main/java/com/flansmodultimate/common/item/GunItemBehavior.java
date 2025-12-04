@@ -164,7 +164,8 @@ public record GunItemBehavior(GunItem item)
                 }
 
                 animations.doShoot(gunType.getPumpDelay(), gunType.getPumpTime());
-                float recoil = gunType.getRecoil(gunStack);
+                //TODO: fix recoil
+                float recoil = gunType.getRecoilPitch(gunStack, false, false);
                 ModClient.setPlayerRecoil(ModClient.getPlayerRecoil() + recoil);
                 animations.recoil += recoil;
             }
