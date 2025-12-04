@@ -181,9 +181,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                     int max = bulletStack.getMaxDamage();
                     int remaining = max - bulletStack.getDamageValue();
                     String line = bulletType.getName() + " " + remaining + "/" + max;
-                    tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_GRAY));
+                    tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_BLUE));
                 }
             }
+
+            tooltipComponents.add(Component.empty());
 
             KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
             Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
@@ -191,9 +193,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         }
         else
         {
-            if (StringUtils.isNotBlank(originGunbox))
-                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
-
             AttachmentType barrel = configType.getBarrel(stack);
             if (barrel != null && barrel.isSilencer())
                 tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
@@ -201,13 +200,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.getSecondaryFire(stack))
                 tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
 
+            if (StringUtils.isNotBlank(originGunbox))
+                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
+            //TODO: Ammo
+
             // Stats
             if (configType.isShowDamage())
                 tooltipComponents.add(IFlanItem.statLine("Damage", IFlanItem.formatFloat(configType.getDamage(stack))));
 
             if (configType.isShowRecoil()) {
-                tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getRecoilPitch(stack, false, false))));
-                tooltipComponents.add(IFlanItem.statLine("Horizontal Recoil", IFlanItem.formatFloat(configType.getRecoilYaw(stack, false, false))));
+                tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine("Horizontal Recoil", IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
                 String sprintingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, true, false));
                 String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
@@ -234,9 +237,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
 
             float bulletSpeed = configType.getBulletSpeed(stack);
-            tooltipComponents.add(IFlanItem.statLine("Bullet Speed", (bulletSpeed == 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " blocks/s") : "instant"));
+            tooltipComponents.add(IFlanItem.statLine("Bullet Speed", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " blocks/s") : "instant"));
 
-            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + "rpm"));
+            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + " rpm"));
 
             tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
         }

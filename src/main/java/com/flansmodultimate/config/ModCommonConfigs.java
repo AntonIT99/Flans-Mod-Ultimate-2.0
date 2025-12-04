@@ -30,6 +30,7 @@ public class ModCommonConfigs
     // Armor Settings
     public static final ForgeConfigSpec.IntValue breakableArmor;
     public static final ForgeConfigSpec.IntValue defaultArmorDurability;
+    public static final ForgeConfigSpec.IntValue defaultArmorEnchantability;
 
     // Gun Settings
     public static final ForgeConfigSpec.DoubleValue gunDamageModifier;
@@ -78,6 +79,9 @@ public class ModCommonConfigs
         defaultArmorDurability = BUILDER
                 .comment("Default durability if breakableArmor = 1")
                 .defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
+        defaultArmorEnchantability = BUILDER
+                .comment("The quality of enchantments recieved for the same level of XP 0=UnEnchantable 25=Gold armor")
+                .defineInRange("defaultArmorEnchantability", 0, 0, Integer.MAX_VALUE);
         BUILDER.pop();
 
         BUILDER.push("Gun Settings");

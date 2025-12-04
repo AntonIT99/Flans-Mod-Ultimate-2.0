@@ -8,6 +8,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -26,13 +27,18 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     default void appendContentPackNameAndItemDescription(@NotNull ItemStack stack, @NotNull List<Component> tooltipComponents)
     {
         if (BooleanUtils.isTrue(ModClientConfigs.showPackNameInItemDescriptions.get()) && !getContentPack().isBlank())
-            tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.DARK_GRAY));
 
-        for (String line : getConfigType().getDescription().split("_"))
+        if (!Screen.hasShiftDown())
         {
-            if (!line.isBlank())
-                tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.WHITE));
+            for (String line : getConfigType().getDescription().split("_"))
+            {
+                if (!line.isBlank())
+                    tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
+            }
         }
+
+        tooltipComponents.add(Component.empty());
     }
 
     /**
@@ -67,6 +73,18 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
             return Integer.toString(Math.round(f));
         }
         return String.format(java.util.Locale.ROOT, "%.2f", f);
+    }
+
+    /**
+     * Format doubles nicely (no trailing .0 if not needed)
+     */
+    static String formatDouble(double d)
+    {
+        if (Math.abs(d - Math.round(d)) < 0.0001)
+        {
+            return Long.toString(Math.round(d));
+        }
+        return String.format(java.util.Locale.ROOT, "%.2f", d);
     }
 
     /**

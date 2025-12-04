@@ -43,8 +43,8 @@ public class ArmorType extends InfoType
     protected int durability;
     @Getter
     protected int toughness;
-    @Getter
-    protected int enchantability = 10;
+    protected int enchantability;
+    protected boolean readEnchantability;
     /** Modifier for move speed */
     @Getter
     protected float moveSpeedModifier = 1F;
@@ -100,7 +100,11 @@ public class ArmorType extends InfoType
             bulletDefence = readValue(split, "BulletDefence", bulletDefence, file);
             readBulletDefence = true;
         }
-        enchantability = readValue(split, "Enchantability", enchantability, file);
+        if (split[0].equalsIgnoreCase("Enchantability"))
+        {
+            enchantability = readValue(split, "Enchantability", enchantability, file);
+            readEnchantability = true;
+        }
         toughness = readValue(split, "Toughness", toughness, file);
         durability = readValue(split, "Durability", durability, file);
         damageReductionAmount = readValue(split, "DamageReductionAmount", damageReductionAmount, file);
@@ -165,6 +169,14 @@ public class ArmorType extends InfoType
     public IModelBase getDefaultModel()
     {
         return new DefaultArmor(armorItemType);
+    }
+
+    public int getEnchantability()
+    {
+        //TODO: fix this
+        /*if (!readEnchantability)
+            enchantability = ModCommonConfigs.defaultArmorEnchantability.get();*/
+        return enchantability;
     }
 
     public boolean hasDurability()

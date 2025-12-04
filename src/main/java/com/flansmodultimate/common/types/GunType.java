@@ -515,13 +515,13 @@ public class GunType extends PaintableType implements IScope
     /**
      * Set a hit marker texture
      */
-    protected String hitTextureName;
+    protected String hitTextureName = StringUtils.EMPTY;
 
     protected String muzzleFlashParticle = ParticleHelper.FM_MUZZLE_FLASH;
     protected float muzzleFlashParticleSize = 1F;
-    protected Boolean useMuzzleFlashDefaults = true;
-    protected Boolean showMuzzleFlashParticles = true;
-    protected Boolean showMuzzleFlashParticlesFirstPerson;
+    protected boolean useMuzzleFlashDefaults = true;
+    protected boolean showMuzzleFlashParticles = true;
+    protected boolean showMuzzleFlashParticlesFirstPerson;
     protected Vector3f muzzleFlashParticlesHandOffset = new Vector3f();
     protected Vector3f muzzleFlashParticlesShoulderOffset = new Vector3f();
 
@@ -1174,7 +1174,7 @@ public class GunType extends PaintableType implements IScope
      */
     public float getRecoilPitch(ItemStack stack, boolean sneaking, boolean sprinting)
     {
-        float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilPitchRange);
+        float stackRecoil = recoilPitch + ((rand.nextFloat() * 2F - 1F) * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
@@ -1209,7 +1209,7 @@ public class GunType extends PaintableType implements IScope
      */
     public float getRecoilYaw(ItemStack stack, boolean sneaking, boolean sprinting)
     {
-        float stackRecoilYaw = recoilYaw + ((rand.nextFloat() - 0.5F) * rndRecoilYawRange);
+        float stackRecoilYaw = recoilYaw + ((rand.nextFloat() * 2F - 1F) * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
@@ -1229,6 +1229,26 @@ public class GunType extends PaintableType implements IScope
         {
             stackRecoilYaw *= recoilSprintingMultiplierYaw;
         }
+
+        return (float) (stackRecoilYaw * ModCommonConfigs.gunRecoilModifier.get());
+    }
+
+    public float getDisplayVerticalRecoil(ItemStack stack)
+    {
+        float stackRecoil = recoilPitch;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackRecoil *= attachment.recoilMultiplier;
+
+        return (float) (stackRecoil * ModCommonConfigs.gunRecoilModifier.get());
+    }
+
+    public float getDisplayHorizontalRecoil(ItemStack stack)
+    {
+        float stackRecoilYaw = recoilYaw;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackRecoilYaw *= attachment.recoilMultiplier;
 
         return (float) (stackRecoilYaw * ModCommonConfigs.gunRecoilModifier.get());
     }

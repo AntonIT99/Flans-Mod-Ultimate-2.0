@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -117,21 +120,40 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
-        if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
-            tooltipComponents.add(Component.literal("+" + IFlanItem.formatFloat((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
+        if (!Screen.hasShiftDown())
+        {
+            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
+            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+        }
+        else
+        {
+            tooltipComponents.add(IFlanItem.statLine("Defence", IFlanItem.formatDouble(configType.getDefence())));
+            if (configType.getBulletDefence() != configType.getDefence())
+                tooltipComponents.add(IFlanItem.statLine("Bullet Defence", IFlanItem.formatDouble(configType.getBulletDefence())));
+            if (configType.getDamageReductionAmount() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Damage Reduction", IFlanItem.formatDouble(configType.getDamageReductionAmount())));
+            if (configType.getDurability() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Durability", IFlanItem.formatDouble(configType.getDurability())));
+            if (configType.getEnchantability() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(configType.getEnchantability())));
 
-        if (configType.isSmokeProtection())
-            tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));
-        if (configType.isNightVision())
-            tooltipComponents.add(Component.literal("+Night Vision").withStyle(ChatFormatting.DARK_GREEN));
-        if (configType.isInvisible())
-            tooltipComponents.add(Component.literal("+Invisibility").withStyle(ChatFormatting.DARK_GREEN));
-        if (configType.isNegateFallDamage())
-            tooltipComponents.add(Component.literal("+Negates Fall Damage").withStyle(ChatFormatting.DARK_GREEN));
-        if (configType.isFireResistance())
-            tooltipComponents.add(Component.literal("+Fire Resistance").withStyle(ChatFormatting.DARK_GREEN));
-        if (configType.isWaterBreathing())
-            tooltipComponents.add(Component.literal("+Water Breathing").withStyle(ChatFormatting.DARK_GREEN));
+            if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
+                tooltipComponents.add(Component.literal("+" + IFlanItem.formatFloat((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
+
+            if (configType.isSmokeProtection())
+                tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));
+            if (configType.isNightVision())
+                tooltipComponents.add(Component.literal("+Night Vision").withStyle(ChatFormatting.DARK_GREEN));
+            if (configType.isInvisible())
+                tooltipComponents.add(Component.literal("+Invisibility").withStyle(ChatFormatting.DARK_GREEN));
+            if (configType.isNegateFallDamage())
+                tooltipComponents.add(Component.literal("+Negates Fall Damage").withStyle(ChatFormatting.DARK_GREEN));
+            if (configType.isFireResistance())
+                tooltipComponents.add(Component.literal("+Fire Resistance").withStyle(ChatFormatting.DARK_GREEN));
+            if (configType.isWaterBreathing())
+                tooltipComponents.add(Component.literal("+Water Breathing").withStyle(ChatFormatting.DARK_GREEN));
+        }
     }
 
     @Override
