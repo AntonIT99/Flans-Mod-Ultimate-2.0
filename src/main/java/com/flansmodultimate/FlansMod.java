@@ -145,26 +145,6 @@ public class FlansMod
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
 
-        // Read content packs and register items & sounds
-        ContentManager.findContentInFlanFolder();
-        ContentManager.readContentPacks();
-
-        CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
-        registerSound(SOUND_EMPTY_CLICK, null);
-        registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
-        registerSound(SOUND_IMPACT_DIRT, null);
-        registerSound(SOUND_IMPACT_METAL, null);
-        registerSound(SOUND_IMPACT_BRICKS, null);
-        registerSound(SOUND_IMPACT_GLASS, null);
-        registerSound(SOUND_IMPACT_ROCK, null);
-        registerSound(SOUND_IMPACT_WOOD, null);
-        registerSound(SOUND_IMPACT_WATER, null);
-        registerSound(SOUND_BULLET, null);
-        registerSound(SOUND_BULLETFLYBY, null);
-        registerSound(SOUND_UNLOCKNOTCH, null);
-        registerSound(SOUND_SKULLBOSSLAUGH, null);
-        registerSound(SOUND_SKULLBOSSSPAWN, null);
-
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -183,6 +163,35 @@ public class FlansMod
         sounds.put(rl, soundEvent);
         if (typeFile != null)
             soundsOrigins.put(rl, typeFile);
+    }
+
+    public static void registerItemsInContentPacks()
+    {
+        ContentManager.findContentInFlanFolder();
+        ContentManager.readContentPacks();
+    }
+
+    public static void registerCreativeTabs()
+    {
+        CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
+    }
+
+    public static void registerSounds()
+    {
+        registerSound(SOUND_EMPTY_CLICK, null);
+        registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
+        registerSound(SOUND_IMPACT_DIRT, null);
+        registerSound(SOUND_IMPACT_METAL, null);
+        registerSound(SOUND_IMPACT_BRICKS, null);
+        registerSound(SOUND_IMPACT_GLASS, null);
+        registerSound(SOUND_IMPACT_ROCK, null);
+        registerSound(SOUND_IMPACT_WOOD, null);
+        registerSound(SOUND_IMPACT_WATER, null);
+        registerSound(SOUND_BULLET, null);
+        registerSound(SOUND_BULLETFLYBY, null);
+        registerSound(SOUND_UNLOCKNOTCH, null);
+        registerSound(SOUND_SKULLBOSSLAUGH, null);
+        registerSound(SOUND_SKULLBOSSSPAWN, null);
     }
 
     public static List<RegistryObject<Item>> getItems()

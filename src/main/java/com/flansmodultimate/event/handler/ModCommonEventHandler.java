@@ -1,6 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.network.PacketHandler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,12 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event)
     {
-        PacketHandler.registerPackets();
+        event.enqueueWork(() -> {
+            CategoryManager.loadAll();
+            FlansMod.registerItemsInContentPacks();
+            FlansMod.registerCreativeTabs();
+            FlansMod.registerSounds();
+            PacketHandler.registerPackets();
+        });
     }
 }

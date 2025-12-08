@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.config.Category;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -20,6 +21,11 @@ public class TypeFile
         this.type = type;
         this.contentPack = contentPack;
         this.lines.addAll(lines);
+    }
+
+    public void addCategoryLines(Category category)
+    {
+        lines.addAll(category.toLines());
     }
 
     public String toString()
