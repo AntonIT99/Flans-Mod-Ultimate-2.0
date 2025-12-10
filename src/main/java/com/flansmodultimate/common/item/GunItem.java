@@ -13,10 +13,12 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketReload;
+import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -202,13 +204,18 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
-            //TODO: Ammo
 
             // Stats
             if (configType.isShowDamage())
-                tooltipComponents.add(IFlanItem.statLine("Damage", IFlanItem.formatFloat(configType.getDamage(stack))));
+            {
+                //TODO: for old damage system: damage vs Entity colorized?
+                tooltipComponents.add(IFlanItem.statLine("Damage", StringUtils.EMPTY));
+                for (ShootableType shootableType : configType.getAmmoTypes())
+                    tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack))));
+            }
 
-            if (configType.isShowRecoil()) {
+            if (configType.isShowRecoil())
+            {
                 tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
                 tooltipComponents.add(IFlanItem.statLine("Horizontal Recoil", IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
@@ -237,9 +244,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
 
             float bulletSpeed = configType.getBulletSpeed(stack);
-            tooltipComponents.add(IFlanItem.statLine("Bullet Speed", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " blocks/s") : "instant"));
+            tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + "m/s") : "∞"));
 
-            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + " rpm"));
+            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + "rpm"));
 
             tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
         }

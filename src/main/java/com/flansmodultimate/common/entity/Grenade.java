@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ItemFactory;
@@ -757,9 +758,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             if (living == thrower && tickCount < 10)
                 continue;
 
-            float damageFactor = (float) (speedSq * 3.0D);
-
-            living.hurt(getDamageSource(), configType.getDamage().getDamageAgainstEntity(living) * damageFactor);
+            living.hurt(getDamageSource(), ShootingHelper.getDamage(living, this, null));
         }
     }
 

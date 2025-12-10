@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.mojang.logging.LogUtils;
@@ -49,10 +50,14 @@ public class FlansMod
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
 
+    public static final Logger log = LogUtils.getLogger();
+    public static final TeamsManager teamsManager = new TeamsManager();
+
     // Range for which sound packets are sent
     public static final float SOUND_RANGE = 64F;
     public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
 
+    // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";
     public static final String SOUND_DEFAULT_SHELL_INSERT = "defaultshellinsert";
     public static final String SOUND_IMPACT_DIRT = "impact_dirt";
@@ -70,17 +75,10 @@ public class FlansMod
     public static final String DEFAULT_BULLET_TEXTURE = "defaultbullet";
     public static final String DEFAULT_BULLET_TRAIL_TEXTURE = "defaultbullettrail";
 
+    // Resource Locations
     public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
     public static final ResourceLocation muzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/muzzleflash.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
-
-    public static final Logger log = LogUtils.getLogger();
-    //TODO: Make forceRecompileAllPacks configurable (does not work with mod config)
-    //TODO: forceRecompileAllPacks to true if mod version changed compared to last start up
-    //TODO: unzip/rezip in separate temp file to make sure the process can be safely interrupted
-    public static final boolean FORCE_RECOMPILE_ALL_PACKS = false;
-
-    public static final TeamsManager teamsManager = new TeamsManager();
 
     // Registries
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
@@ -134,18 +132,43 @@ public class FlansMod
 
         IEventBus modEventBus = context.getModEventBus();
 
-        // Configs
+        // Init Configs
         context.registerConfig(ModConfig.Type.COMMON, ModCommonConfigs.CONFIG);
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.CONFIG);
 
-        // Registries
+        // Init Registries
         itemRegistry.register(modEventBus);
         particleRegistry.register(modEventBus);
         soundEventRegistry.register(modEventBus);
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
 
+        // Register Everything
+        CategoryManager.loadAll();
+        ContentManager.findContentInFlanFolder();
+        ContentManager.readContentPacks();
+        registerSounds();
+        CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
+
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    private static void registerSounds()
+    {
+        registerSound(SOUND_EMPTY_CLICK, null);
+        registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
+        registerSound(SOUND_IMPACT_DIRT, null);
+        registerSound(SOUND_IMPACT_METAL, null);
+        registerSound(SOUND_IMPACT_BRICKS, null);
+        registerSound(SOUND_IMPACT_GLASS, null);
+        registerSound(SOUND_IMPACT_ROCK, null);
+        registerSound(SOUND_IMPACT_WOOD, null);
+        registerSound(SOUND_IMPACT_WATER, null);
+        registerSound(SOUND_BULLET, null);
+        registerSound(SOUND_BULLETFLYBY, null);
+        registerSound(SOUND_UNLOCKNOTCH, null);
+        registerSound(SOUND_SKULLBOSSLAUGH, null);
+        registerSound(SOUND_SKULLBOSSSPAWN, null);
     }
 
     public static void registerItem(String itemName, EnumType type, Supplier<? extends Item> initItem)
@@ -163,35 +186,6 @@ public class FlansMod
         sounds.put(rl, soundEvent);
         if (typeFile != null)
             soundsOrigins.put(rl, typeFile);
-    }
-
-    public static void registerItemsInContentPacks()
-    {
-        ContentManager.findContentInFlanFolder();
-        ContentManager.readContentPacks();
-    }
-
-    public static void registerCreativeTabs()
-    {
-        CreativeTabs.registerCreativeModeTabs(creativeModeTabRegistry);
-    }
-
-    public static void registerSounds()
-    {
-        registerSound(SOUND_EMPTY_CLICK, null);
-        registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
-        registerSound(SOUND_IMPACT_DIRT, null);
-        registerSound(SOUND_IMPACT_METAL, null);
-        registerSound(SOUND_IMPACT_BRICKS, null);
-        registerSound(SOUND_IMPACT_GLASS, null);
-        registerSound(SOUND_IMPACT_ROCK, null);
-        registerSound(SOUND_IMPACT_WOOD, null);
-        registerSound(SOUND_IMPACT_WATER, null);
-        registerSound(SOUND_BULLET, null);
-        registerSound(SOUND_BULLETFLYBY, null);
-        registerSound(SOUND_UNLOCKNOTCH, null);
-        registerSound(SOUND_SKULLBOSSLAUGH, null);
-        registerSound(SOUND_SKULLBOSSSPAWN, null);
     }
 
     public static List<RegistryObject<Item>> getItems()

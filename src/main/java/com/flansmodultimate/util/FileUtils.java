@@ -123,21 +123,25 @@ public class FileUtils
         return s;
     }
 
-    public static boolean filesHaveDifferentBytesContent(Path file1, Path file2)
+    public static boolean filesHaveDifferentBytes(Path file1, Path file2)
     {
         if (!Files.exists(file1) || !Files.exists(file2))
-        {
             return false;
-        }
+
         try
         {
-            return !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2));
+            return differentBytes(Files.readAllBytes(file1), Files.readAllBytes(file2));
         }
         catch (IOException e)
         {
             FlansMod.log.error("Could not compare files {} and {}", file1, file2, e);
             return false;
         }
+    }
+
+    public static boolean differentBytes(byte[] bytes1, byte[] bytes2)
+    {
+        return !Arrays.equals(bytes1, bytes2);
     }
 
     public static boolean isSameImage(Path file1, Path file2)

@@ -7,6 +7,7 @@ import com.flansmodultimate.common.types.PaintableType;
 import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -17,8 +18,10 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResourceUtils
 {
-    public static String sanitize(String name)
+    public static String sanitize(@Nullable String name)
     {
+        if (name == null)
+            return StringUtils.EMPTY;
         // Lowercase + swap spaces; keep only chars valid in resource paths
         return name.toLowerCase(Locale.ROOT).replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
     }

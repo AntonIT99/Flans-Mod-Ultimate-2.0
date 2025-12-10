@@ -1,5 +1,6 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Bullet;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
@@ -250,5 +251,13 @@ public final class ModUtils
             return;
 
         level.destroyBlock(pos, dropBlock);
+    }
+
+    public static String getItemLocalizedName(String itemId)
+    {
+        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
+        if (item != null)
+            return item.getDescription().getString();
+        return itemId;
     }
 }

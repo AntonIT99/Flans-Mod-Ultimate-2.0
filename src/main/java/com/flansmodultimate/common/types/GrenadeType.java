@@ -9,8 +9,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
 public class GrenadeType extends ShootableType
@@ -22,7 +21,6 @@ public class GrenadeType extends ShootableType
     protected static final float DEFAULT_BOUNCINESS = 0.9F;
 
     //Misc
-    protected boolean useDefaultBounciness = true;
     /** The damage imparted by smacking someone over the head with this grenade */
     @Getter
     protected int meleeDamage = 1;
@@ -128,76 +126,62 @@ public class GrenadeType extends ShootableType
     protected int numClips;
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
+        super.read(file);
 
-        if (split[0].equalsIgnoreCase("Bounciness"))
-            useDefaultBounciness = false;
+        if (!file.hasConfigLine("Bounciness") || !hasValueForConfigField("Bounciness", file))
+            bounciness = DEFAULT_BOUNCINESS;
 
-        meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
+        meleeDamage = readValue("MeleeDamage", meleeDamage, file);
 
         //Grenade Throwing
-        throwDelay = readValue(split, "ThrowDelay", throwDelay, file);
-        meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
-        throwSound = readValue(split, "ThrowSound", throwSound, file);
-        dropItemOnThrow = readValue(split, "DropItemOnThrow", dropItemOnThrow, file);
-        canThrow = readValue(split, "CanThrow", canThrow, file);
-        penetratesBlocks = readValue(split, "PenetratesBlocks", penetratesBlocks, file);
-        bounceSound = readValue(split, "BounceSound", bounceSound, file);
+        throwDelay = readValue("ThrowDelay", throwDelay, file);
+        meleeDamage = readValue("MeleeDamage", meleeDamage, file);
+        throwSound = readValue("ThrowSound", throwSound, file);
+        dropItemOnThrow = readValue("DropItemOnThrow", dropItemOnThrow, file);
+        canThrow = readValue("CanThrow", canThrow, file);
+        penetratesBlocks = readValue("PenetratesBlocks", penetratesBlocks, file);
+        bounceSound = readValue("BounceSound", bounceSound, file);
 
         //Sticky settings
-        sticky = readValue(split, "Sticky", sticky, file);
-        stickToThrower = readValue(split, "StickToThrower", stickToThrower, file);
-        stickToEntity = readValue(split, "StickToEntity", stickToEntity, file);
-        stickToDriveable = readValue(split, "StickToDriveable", stickToDriveable, file);
-        stickToEntityAfter = readValue(split, "StickToEntityAfter", stickToEntityAfter, file);
-        allowStickSound = readValue(split, "AllowStickSound", allowStickSound, file);
-        stickSoundRange = readValue(split, "StickSoundRange", stickSoundRange, file);
-        stickSound = readSound(split, "StickSound", stickSound, file);
+        sticky = readValue("Sticky", sticky, file);
+        stickToThrower = readValue("StickToThrower", stickToThrower, file);
+        stickToEntity = readValue("StickToEntity", stickToEntity, file);
+        stickToDriveable = readValue("StickToDriveable", stickToDriveable, file);
+        stickToEntityAfter = readValue("StickToEntityAfter", stickToEntityAfter, file);
+        allowStickSound = readValue("AllowStickSound", allowStickSound, file);
+        stickSoundRange = readValue("StickSoundRange", stickSoundRange, file);
+        stickSound = readSound("StickSound", stickSound, file);
 
-        spinWhenThrown = readValue(split, "SpinWhenThrown", spinWhenThrown, file);
-        remote = readValue(split, "Remote", remote, file);
+        spinWhenThrown = readValue("SpinWhenThrown", spinWhenThrown, file);
+        remote = readValue("Remote", remote, file);
 
-        flashBang = readValue(split, "FlashBang", flashBang, file);
-        flashTime = readValue(split, "FlashTime", flashTime, file);
-        flashRange = readValue(split, "FlashRange", flashRange, file);
-        flashSoundEnable = readValue(split, "FlashSoundEnable", flashSoundEnable, file);
-        flashSoundRange = readValue(split, "FlashSoundRange", flashSoundRange, file);
-        flashSound = readSound(split, "FlashSound", flashSound, file);
-        flashDamageEnable = readValue(split, "FlashDamageEnable", flashDamageEnable, file);
-        flashDamage = readValue(split, "FlashDamage", flashDamage, file);
-        flashEffects = readValue(split, "FlashEffects", flashEffects, file);
-        flashEffectsId = readValue(split, "FlashEffectsID", flashEffectsId, file);
-        flashEffectsDuration = readValue(split, "FlashEffectsDuration", flashEffectsDuration, file);
-        flashEffectsLevel = readValue(split, "FlashEffectsLevel", flashEffectsLevel, file);
-        flashBang = readValue(split, "FlashBang", flashBang, file);
+        flashBang = readValue("FlashBang", flashBang, file);
+        flashTime = readValue("FlashTime", flashTime, file);
+        flashRange = readValue("FlashRange", flashRange, file);
+        flashSoundEnable = readValue("FlashSoundEnable", flashSoundEnable, file);
+        flashSoundRange = readValue("FlashSoundRange", flashSoundRange, file);
+        flashSound = readSound("FlashSound", flashSound, file);
+        flashDamageEnable = readValue("FlashDamageEnable", flashDamageEnable, file);
+        flashDamage = readValue("FlashDamage", flashDamage, file);
+        flashEffects = readValue("FlashEffects", flashEffects, file);
+        flashEffectsId = readValue("FlashEffectsID", flashEffectsId, file);
+        flashEffectsDuration = readValue("FlashEffectsDuration", flashEffectsDuration, file);
+        flashEffectsLevel = readValue("FlashEffectsLevel", flashEffectsLevel, file);
+        flashBang = readValue("FlashBang", flashBang, file);
 
-        detonateWhenShot = readValue(split, "DetonateWhenShot", detonateWhenShot, file);
+        detonateWhenShot = readValue("DetonateWhenShot", detonateWhenShot, file);
 
         //Deployable Bag Stuff
-        if (split[0].equalsIgnoreCase("DeployableBag"))
-        {
-            if (split.length > 1)
-                isDeployableBag = true;
-            else
-                isDeployableBag = readValue(split, "DeployableBag", isDeployableBag, file);
-        }
+        isDeployableBag = readFieldWithOptionalValue("DeployableBag", isDeployableBag, file);
 
-        numUses = readValue(split, "NumUses", numUses, file);
-        healAmount = readValue(split, "HealAmount", healAmount, file);
+        numUses = readValue("NumUses", numUses, file);
+        healAmount = readValue("HealAmount", healAmount, file);
 
-        addEffects(readValues(split, "AddPotionEffect", file), potionEffects, line, file, false, false);
-        addEffects(readValues(split, "PotionEffect", file), potionEffects, line, file, false, false);
+        addEffects("AddPotionEffect", potionEffects, file, false, false);
+        addEffects("PotionEffect", potionEffects, file, false, false);
 
-        numClips = readValue(split, "NumClips", numClips, file);
-    }
-
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
-        if (useDefaultBounciness)
-            bounciness = DEFAULT_BOUNCINESS;
+        numClips = readValue("NumClips", numClips, file);
     }
 }

@@ -166,7 +166,7 @@ public class PlayerHitbox
         return null;
     }
 
-    public ShootingHelper.HitData hitByBullet(FiredShot shot, float damage, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
+    public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
         float lastHitPenAmount;
         float penetratingPower = hitData.penetratingPower();
@@ -227,7 +227,7 @@ public class PlayerHitbox
             case LEGS, BODY, HEAD, LEFTARM, RIGHTARM:
             {
                 //Calculate the hit damage
-                float hitDamage = ShootingHelper.getDamageAffectedByPenetration(damage, bulletType, bullet) * shot.getBulletType().getDamage().getDamageAgainstEntity(player) * damageModifier;
+                float hitDamage = ShootingHelper.getDamage(player, bullet, shot) * damageModifier;
                 //Create a damage source object
                 DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 

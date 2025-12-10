@@ -127,7 +127,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     /**
      * Called if the bullet actually hit the part returned by the raytrace
      */
-    public ShootingHelper.HitData bulletHit(BulletType bulletType, float damage, DriveableHit hit, ShootingHelper.HitData hitData)
+    public ShootingHelper.HitData bulletHit(BulletType bulletType, DriveableHit hit, ShootingHelper.HitData hitData)
     {
         //TODO: implement
         return hitData;

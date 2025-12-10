@@ -25,11 +25,4 @@ public class Category
         this.type = type;
         this.name = name;
     }
-
-    public List<String> toLines()
-    {
-        return properties.entrySet().stream()
-            .map(property -> property.getKey() + " " + property.getValue() + "\n")
-            .toList();
-    }
 }

@@ -10,6 +10,7 @@ import com.flansmodultimate.common.FlansExplosion;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
@@ -132,7 +133,6 @@ public final class ShootingHelper
         float penetratingPower = hitData.penetratingPower();
         float lastHitPenAmount = hitData.lastHitPenAmount();
         boolean lastHitHeadshot = hitData.lastHitHeadshot();
-        float damage = shot.getFireableGun().getDamage();
         boolean showHitMarker = false;
 
         BulletType bulletType = shot.getBulletType();
@@ -166,7 +166,7 @@ public final class ShootingHelper
                 penetratingPower = 0F;
             else
             {
-                HitData driveableHitData = driveableHit.getDriveable().bulletHit(bulletType, damage, driveableHit, hitData);
+                HitData driveableHitData = driveableHit.getDriveable().bulletHit(bulletType, driveableHit, hitData);
                 penetratingPower = driveableHitData.penetratingPower();
                 lastHitPenAmount = driveableHitData.lastHitPenAmount();
                 lastHitHeadshot = driveableHitData.lastHitHeadshot();
@@ -184,7 +184,7 @@ public final class ShootingHelper
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
 
             float prevPenetratingPower = penetratingPower;
-            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, damage, hitData, bullet);
+            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet);
             penetratingPower = playerHitData.penetratingPower();
             lastHitPenAmount = playerHitData.lastHitPenAmount();
             lastHitHeadshot = playerHitData.lastHitHeadshot();
@@ -205,7 +205,7 @@ public final class ShootingHelper
             if (owner instanceof Player)
                 lastHitPenAmount = 1F;
 
-            damage = getDamageAffectedByPenetration(damage, bulletType, bullet) * bulletType.getDamage().getDamageAgainstEntity(entity);
+            float damage = ShootingHelper.getDamage(entity, bullet, shot);
 
             if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
             {
@@ -352,6 +352,35 @@ public final class ShootingHelper
         Vec3 hitVec = hitResult.getLocation();
         Direction direction = hitResult.getDirection();
         PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionRadius(), type.getBlockHitFXScale(), bbWidth), hitVec, BLOCK_HIT_PARTICLE_RANGER, level.dimension());
+    }
+
+    public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
+    {
+        ShootableType type = null;
+        if (firedShot != null)
+            type = firedShot.getBulletType();
+        if (shootable != null)
+            type = shootable.getConfigType();
+
+        if (type == null)
+            return 0F;
+
+        if (shootable != null && type.getMass() > 0F)
+        {
+            return (float) (ModCommonConfigs.newDamageSystemReference.get() * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
+        }
+        else
+        {
+            float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
+            if (shootable instanceof Grenade)
+                return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);
+            else if (shootable instanceof Bullet bullet && firedShot != null)
+                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), bullet.getConfigType(), bullet);
+            else if (firedShot != null)
+                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), firedShot.getBulletType(), null);
+            else
+                return baseDamage;
+        }
     }
 
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)

@@ -78,7 +78,7 @@ public class FlansExplosion extends Explosion
     public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
         this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
-                type.isExplosionBreaksBlocks(), type.getDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+                type.isExplosionBreaksBlocks(), type.getExplosionDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
     private static boolean isSmoking(ShootableType type)

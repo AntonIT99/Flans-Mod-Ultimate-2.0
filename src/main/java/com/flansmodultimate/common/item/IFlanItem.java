@@ -46,9 +46,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static Component statLine(String label, String value)
     {
-        return Component.literal(label)
+        return Component.literal(label + ": ")
                 .withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
@@ -57,9 +56,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static Component indentedStatLine(String label, String value)
     {
-        return Component.literal("  " + label)
+        return Component.literal("  " + label + ": ")
                 .withStyle(ChatFormatting.DARK_AQUA)
-                .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 

@@ -38,6 +38,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,8 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class InfoType
@@ -65,25 +65,25 @@ public abstract class InfoType
     @Getter
     protected String name = StringUtils.EMPTY;
     @Getter
-    protected String originalShortName = StringUtils.EMPTY;
+    protected String originalShortName;
     @Getter
-    protected String icon = StringUtils.EMPTY;
+    protected String icon;
     @Getter
     protected String description = StringUtils.EMPTY;
-    protected String modelName = StringUtils.EMPTY;
+    protected String modelName;
     @Getter
-    protected String modelClassName = StringUtils.EMPTY;
-    protected String textureName = StringUtils.EMPTY;
-    protected String overlayName = StringUtils.EMPTY;
+    protected String modelClassName;
+    protected String textureName;
+    protected String overlayName;
     @Getter
     protected float modelScale = 1F;
     @Getter
     protected int colour = 0xFFFFFF;
-    protected String[] recipeLine;
+    protected final List<String> recipeLines = new ArrayList<>();
     protected char[][] recipeGrid = new char[3][3];
     protected int recipeOutput = 1;
     protected boolean shapeless;
-    protected String smeltableFrom = StringUtils.EMPTY;
+    protected String smeltableFrom;
     /** If this is set to false, then this item cannot be dropped */
     protected boolean canDrop = true;
     /**
@@ -123,87 +123,56 @@ public abstract class InfoType
         infoTypes.put(registeredItemId, this);
     }
 
-    public void read(TypeFile file)
+    public void load(TypeFile file)
     {
         fileName = file.getName();
         contentPack = file.getContentPack();
         type = file.getType();
-
-        for (String line : file.getLines())
-        {
-            if (line.isBlank() || line.startsWith("//"))
-                continue;
-
-            String[] split = line.trim().split("\\s+");
-            if (split.length == 0)
-                continue;
-
-            try
-            {
-                readLine(line, split, file);
-            }
-            catch (Exception e)
-            {
-                FlansMod.log.error("Reading line failed: {}", line);
-                FlansMod.log.error("In file: {}", file);
-                LogUtils.logWithoutStacktrace(e);
-            }
-        }
-
-        postRead();
+        read(file);
         if (FMLEnvironment.dist == Dist.CLIENT)
             postReadClient();
     }
 
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        name = readValues(split, "Name", name, file);
-        originalShortName = ResourceUtils.sanitize(readValue(split, "ShortName", originalShortName, file));
-        description = readValues(split, "Description", description, file);
-        icon = ResourceUtils.sanitize(readValue(split, "Icon", icon, file));
-        textureName = ResourceUtils.sanitize(readValue(split, "Texture", textureName, file));
-        overlayName = ResourceUtils.sanitize(readValue(split, "Overlay", overlayName, file));
-        modelName = readValue(split, "Model", modelName, file);
-        modelScale = readValue(split, "ModelScale", modelScale, file);
+        name = readValues("Name", name, file);
+        originalShortName = readResource("ShortName", originalShortName, file);
+        description = readValues("Description", description, file);
+        icon = readResource("Icon", icon, file);
+        textureName = readResource("Texture", textureName, file);
+        overlayName = readResource("Overlay", overlayName, file);
+        modelName = readValue("Model", modelName, file);
+        modelScale = readValue("ModelScale", modelScale, file);
 
-        dungeonChance = readValue(split, "DungeonProbability", dungeonChance, file);
-        dungeonChance = readValue(split, "DungeonLootChance", dungeonChance, file);
+        dungeonChance = readValue("DungeonProbability", dungeonChance, file);
+        dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
 
-        recipeOutput = readValue(split, "RecipeOutput", recipeOutput, file);
+        recipeOutput = readValue("RecipeOutput", recipeOutput, file);
 
-        smeltableFrom = readValue(split, "SmeltableFrom", smeltableFrom, file);
-        canDrop = readValue(split, "CanDrop", canDrop, file);
+        smeltableFrom = readResource("SmeltableFrom", smeltableFrom, file);
+        canDrop = readValue("CanDrop", canDrop, file);
 
-        // More complicated line reads
-        if (split[0].equalsIgnoreCase("Colour") || split[0].equalsIgnoreCase("Color"))
+        readIntValues("Colour", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
+        readIntValues("Color", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
+
+        readLines("Recipe", file).ifPresent(lines ->
         {
-            colour = (Integer.parseInt(split[1]) << 16) + ((Integer.parseInt(split[2])) << 8) + ((Integer.parseInt(split[3])));
-        }
-
-        if (split[0].equalsIgnoreCase("Recipe"))
-        {
-            addToRecipeGrid(line, file);
-            recipeLine = split;
+            recipeLines.addAll(lines);
+            addToRecipeGrid(recipeLines);
             shapeless = false;
-        }
-        else if(split[0].equalsIgnoreCase("ShapelessRecipe"))
+        });
+        readLines("ShapelessRecipe", file).ifPresent(lines ->
         {
-            recipeLine = split;
+            recipeLines.addAll(lines);
             shapeless = true;
-        }
+        });
     }
 
-    private void addToRecipeGrid(String line, TypeFile file)
+    private void addToRecipeGrid(List<String> recipeRows)
     {
-        List<String> lines = file.getLines();
-        int recipeLineIndex = lines.indexOf(line);
-        int fromIndex = recipeLineIndex + 1;
-        int toIndex = Math.min(fromIndex + 3, lines.size());
-        String[] recipeRows = lines.subList(fromIndex, toIndex).toArray(new String[0]);
-
-        for (int i = 0; i < recipeRows.length; i++)
+        for (int i = 0; i < recipeRows.size(); i++)
         {
-            String recipeRow = recipeRows[i];
+            String recipeRow = recipeRows.get(i);
             for (int j = 0; j < 3; j++)
             {
                 recipeGrid[i][j] = j < recipeRow.length() ? recipeRow.charAt(j) : ' ';
@@ -211,46 +180,48 @@ public abstract class InfoType
         }
     }
 
-    protected static String readSound(String[] split, String key, String currentValue, TypeFile file)
+    protected static String readResource(String key, String defaultValue, TypeFile file)
     {
-        String sound = readValue(split, key, currentValue, file);
+        return ResourceUtils.sanitize(readValue(key, defaultValue, file));
+    }
+
+    protected static String readSound(String key, String defaultValue, TypeFile file)
+    {
+        String sound = readResource(key, defaultValue, file);
         if (StringUtils.isNotBlank(sound))
-        {
-            sound = ResourceUtils.sanitize(sound);
             FlansMod.registerSound(sound, file);
-        }
         return sound;
     }
 
-    protected static void addEffects(List<String> effectValues, List<MobEffectInstance> effects, String line, TypeFile file, boolean ambient, boolean visible)
+    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible)
     {
-        if (!effectValues.isEmpty())
-        {
-            try
+        readValuesInLines(key, file).ifPresent(lines -> lines.forEach(effectValues -> {
+            if (effectValues.length > 0)
             {
-                int effectId = Integer.parseInt(effectValues.get(0));
-                int duration = (effectValues.size() > 1) ? Integer.parseInt(effectValues.get(1)) : 250;
-                int amplifier = (effectValues.size() > 2) ? Integer.parseInt(effectValues.get(2)) : 0;
-                ambient = (effectValues.size() > 3) ? Boolean.parseBoolean(effectValues.get(3)) : ambient;
-                visible = (effectValues.size() > 4) ? Boolean.parseBoolean(effectValues.get(4)) : visible;
-                MobEffect effect = MobEffect.byId(effectId);
-                if (effect != null)
+                try
                 {
-                    effects.add(new MobEffectInstance(effect,  duration, amplifier, ambient, visible));
+                    int effectId = Integer.parseInt(effectValues[0]);
+                    int duration = (effectValues.length > 1) ? Integer.parseInt(effectValues[1]) : 250;
+                    int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : 0;
+                    boolean isAmbient = (effectValues.length > 3) ? Boolean.parseBoolean(effectValues[3]) : ambient;
+                    boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
+                    MobEffect effect = MobEffect.byId(effectId);
+                    if (effect != null)
+                    {
+                        effects.add(new MobEffectInstance(effect,  duration, amplifier, isAmbient, isVisible));
+                    }
+                    else
+                    {
+                        TypeReaderUtils.logError(String.format("Potion ID %s does not exist in '%s %s'", effectId, key, String.join(StringUtils.SPACE, effectValues)), file);
+                    }
                 }
-                else
+                catch (NumberFormatException e)
                 {
-                    TypeReaderUtils.logError(String.format("Potion ID %s does not exist in '%s'", effectId, line), file);
+                    TypeReaderUtils.logError(String.format("NumberFormatException in '%s %s'", key, String.join(StringUtils.SPACE, effectValues)), file);
                 }
             }
-            catch (NumberFormatException e)
-            {
-                TypeReaderUtils.logError(String.format("NumberFormatException in '%s'", line), file);
-            }
-        }
+        }));
     }
-
-    protected void postRead() {}
 
     @OnlyIn(Dist.CLIENT)
     protected void postReadClient()
@@ -276,7 +247,7 @@ public abstract class InfoType
     protected static String findModelClass(String modelName, IContentProvider contentPack)
     {
         String modelClassName = StringUtils.EMPTY;
-        if (!modelName.isBlank() && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
+        if (StringUtils.isNotBlank(modelName) && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
         {
             String[] modelNameSplit = modelName.split("\\.");
             Path classFile;
@@ -326,7 +297,7 @@ public abstract class InfoType
                     FileSystem otherFs = FileUtils.createFileSystem(otherContentPack);
                     Path otherClassFile = otherContentPack.getModelPath(modelClassName, otherFs);
 
-                    if (FileUtils.filesHaveDifferentBytesContent(classFile, otherClassFile))
+                    if (FileUtils.filesHaveDifferentBytes(classFile, otherClassFile))
                     {
                         actualClassName = findNewValidClassName(modelClassName);
                         FlansMod.log.info("Duplicate model class name {} renamed at runtime to {} in [{}] to avoid a conflict with [{}].", modelClassName, actualClassName, contentPack.getName(), otherContentPack.getName());
@@ -373,7 +344,7 @@ public abstract class InfoType
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
         ResourceLocation texture = TextureManager.INTENTIONAL_MISSING_TEXTURE;
-        if (!textureName.isBlank())
+        if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;
             Map<String, DynamicReference> refsMap;
@@ -394,7 +365,7 @@ public abstract class InfoType
     @OnlyIn(Dist.CLIENT)
     public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
-        if (!overlayName.isBlank())
+        if (StringUtils.isNotBlank(overlayName))
         {
             var refsMap = ContentManager.getGuiTextureReferences().get(type.getContentPack());
 
@@ -413,7 +384,7 @@ public abstract class InfoType
     public static IModelBase loadModel(String modelClassName, InfoType type, @Nullable IModelBase defaultModel)
     {
         IModelBase model = null;
-        if (!modelClassName.isBlank())
+        if (StringUtils.isNotBlank(modelClassName))
         {
             if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
                 model = new ModelBullet();

@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
 public class GunType extends PaintableType implements IScope
@@ -70,11 +70,11 @@ public class GunType extends PaintableType implements IScope
      */
     protected float recoilYaw;
     /**
-     * Modifier for setting the maximum pitch divergence when randomizing recoil (Recoil 2 + rndRecoil 0.5 == 1.5-2.5 Recoil range)
+     * Modifier for setting the maximum additional pitch when randomizing recoil: randomized pitch recoil in [recoilPitch, recoilPitch + rndRecoilYawRange)
      */
     protected float rndRecoilPitchRange = 0.5F;
     /**
-     * Modifier for setting the maximum yaw divergence when randomizing recoil (Recoil 2 + rndRecoil 0.5 == 1.5-2.5 Recoil range)
+     * Modifier for setting the yaw divergence when randomizing recoil: randomized yaw recoil in [recoilYaw - rndRecoilYawRange/2, recoilYaw + rndRecoilYawRange/2)
      */
     protected float rndRecoilYawRange = 0.3F;
 
@@ -160,6 +160,11 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected float bulletSpeed = 5F;
     /**
+     * The muzzle velocity in m/s. Replaces BulletSpeed. Set to -1F to ignore.
+     */
+    @Getter
+    protected float muzzleVelocity = -1F;
+    /**
      * The number of bullet entities created by each shot
      */
     @Getter
@@ -185,7 +190,7 @@ public class GunType extends PaintableType implements IScope
      * The firing mode of the gun. One of semi-auto, full-auto, minigun or burst
      */
     @Getter
-    protected EnumFireMode mode = EnumFireMode.FULLAUTO;
+    protected EnumFireMode mode = EnumFireMode.SEMIAUTO;
     protected EnumFireMode[] submode = new EnumFireMode[]{EnumFireMode.FULLAUTO};
     protected EnumFireMode defaultmode = mode;
     /**
@@ -217,7 +222,6 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected EnumSecondaryFunction secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
     protected EnumSecondaryFunction secondaryFunctionWhenShoot = null;
-    protected boolean useCustomMeleeWhenShoot;
     /**
      * If true, then this gun can be dual wielded
      */
@@ -529,7 +533,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * If this is true, then all attachments are allowed. Otherwise, the list is checked.
      */
-    protected boolean allowAllAttachments = true;
+    protected boolean allowAllAttachments = true; // TODO: config option to force disable all attachments restrictions
     /**
      * The list of allowed attachments for this gun
      */
@@ -584,49 +588,44 @@ public class GunType extends PaintableType implements IScope
     protected int pumpTime = 1;
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
-
-        //TODO: ideally replace all length values by readValues
+        super.read(file);
 
         //Damage
-        damage = readValue(split, "Damage", damage, file);
-        meleeDamage = readValue(split, "MeleeDamage", meleeDamage, file);
-        //TODO: secondary Function priority?
-        if (split[0].equalsIgnoreCase("MeleeDamage") && meleeDamage > 0F)
-            secondaryFunction = EnumSecondaryFunction.MELEE; // !hasZoomOverlay() ? EnumSecondaryFunction.MELEE : secondaryFunction
-        meleeDamageDriveableModifier = readValue(split, "MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
+        damage = readValue("Damage", damage, file);
+        meleeDamage = readValue("MeleeDamage", meleeDamage, file);
+        meleeDamageDriveableModifier = readValue("MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
 
         //Reload
-        canForceReload = readValue(split, "CanForceReload", canForceReload, file);
-        reloadTime = readValue(split, "ReloadTime", reloadTime, file);
+        canForceReload = readValue("CanForceReload", canForceReload, file);
+        reloadTime = readValue("ReloadTime", reloadTime, file);
 
         //Fire Rate
-        shootDelay = readValue(split, "ShootDelay", shootDelay, file);
-        roundsPerMin = readValue(split, "RoundsPerMin", roundsPerMin, file);
+        shootDelay = readValue("ShootDelay", shootDelay, file);
+        roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
 
         //Accuracy
-        bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
-        bulletSpread = readValue(split, "Spread", bulletSpread, file);
-        spreadPattern = readValue(split, "SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
-        adsSpreadModifier = readValue(split, "ADSSpreadModifier", adsSpreadModifier, file);
-        adsSpreadModifierShotgun = readValue(split, "ADSSpreadModifierShotgun", adsSpreadModifierShotgun, file);
+        bulletSpread = readValue("Accuracy", bulletSpread, file);
+        bulletSpread = readValue("Spread", bulletSpread, file);
+        spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
+        adsSpreadModifier = readValue("ADSSpreadModifier", adsSpreadModifier, file);
+        adsSpreadModifierShotgun = readValue("ADSSpreadModifierShotgun", adsSpreadModifierShotgun, file);
 
         //Recoil
-        recoilPitch = readValue(split, "Recoil", recoilPitch, file);
-        recoilCounterCoefficient = readValue(split, "CounterRecoilForce", recoilCounterCoefficient, file);
-        recoilCounterCoefficientSneaking = readValue(split, "CounterRecoilForceSneaking", recoilCounterCoefficientSneaking, file);
-        recoilCounterCoefficientSprinting = readValue(split, "CounterRecoilForceSprinting", recoilCounterCoefficientSprinting, file);
-        recoilYaw = readValue(split, "RecoilYaw", recoilYaw, file);
-        rndRecoilPitchRange = readValue(split, "RandomRecoilRange", rndRecoilPitchRange, file);
-        rndRecoilYawRange = readValue(split, "RandomRecoilYawRange", rndRecoilYawRange, file);
-        decreaseRecoilPitch = readValue(split, "DecreaseRecoil", decreaseRecoilPitch, file);
-        decreaseRecoilYaw = readValue(split, "DecreaseRecoilYaw", decreaseRecoilYaw, file);
-        recoilSneakingMultiplier = readValue(split, "RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
-        recoilSprintingMultiplier = readValue(split, "RecoilSprintingMultiplier", recoilSprintingMultiplier, file);
-        recoilSneakingMultiplierYaw = readValue(split, "RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
-        recoilSprintingMultiplierYaw = readValue(split, "RecoilSprintingMultiplierYaw", recoilSprintingMultiplierYaw, file);
+        recoilPitch = readValue("Recoil", recoilPitch, file);
+        recoilCounterCoefficient = readValue("CounterRecoilForce", recoilCounterCoefficient, file);
+        recoilCounterCoefficientSneaking = readValue("CounterRecoilForceSneaking", recoilCounterCoefficientSneaking, file);
+        recoilCounterCoefficientSprinting = readValue("CounterRecoilForceSprinting", recoilCounterCoefficientSprinting, file);
+        recoilYaw = readValue("RecoilYaw", recoilYaw, file);
+        rndRecoilPitchRange = readValue("RandomRecoilRange", rndRecoilPitchRange, file);
+        rndRecoilYawRange = readValue("RandomRecoilYawRange", rndRecoilYawRange, file);
+        decreaseRecoilPitch = readValue("DecreaseRecoil", decreaseRecoilPitch, file);
+        decreaseRecoilYaw = readValue("DecreaseRecoilYaw", decreaseRecoilYaw, file);
+        recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
+        recoilSprintingMultiplier = readValue("RecoilSprintingMultiplier", recoilSprintingMultiplier, file);
+        recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
+        recoilSprintingMultiplierYaw = readValue("RecoilSprintingMultiplierYaw", recoilSprintingMultiplierYaw, file);
         //TODO: read fancy recoil
         /*String[] aSplit = ConfigUtils.getSplitFromKey(config, "FancyRecoil");
         try {
@@ -640,56 +639,50 @@ public class GunType extends PaintableType implements IScope
         }*/
 
         //Ammo
-        numBullets = readValue(split, "NumBullets", numBullets, file);
-        numPrimaryAmmoItems = readValue(split, "NumAmmoSlots", numPrimaryAmmoItems, file);
-        numPrimaryAmmoItems = readValue(split, "NumAmmoItemsInGun", numPrimaryAmmoItems, file);
-        numPrimaryAmmoItems = readValue(split, "LoadIntoGun", numPrimaryAmmoItems, file);
-        numBurstRounds = readValue(split, "NumBurstRounds", numBurstRounds, file);
-        allowSpreadByBullet = readValue(split, "AllowSpreadByBullet", allowSpreadByBullet, file);
-        allowNumBulletsByBulletType = readValue(split, "AllowNumBulletsByBulletType", allowNumBulletsByBulletType, file);
-        if (split[0].equalsIgnoreCase("BulletSpeed"))
-        {
-            if (split.length > 1 && split[1].equalsIgnoreCase("instant"))
-                bulletSpeed = 0F;
-            else
-                bulletSpeed = readValue(split, "BulletSpeed", bulletSpeed, file);
-        }
-        if (split[0].equals("Ammo") && split.length > 1)
-        {
-            ammo.add(ResourceUtils.sanitize(split[1]));
-        }
+        numBullets = readValue("NumBullets", numBullets, file);
+        numPrimaryAmmoItems = readValue("NumAmmoSlots", numPrimaryAmmoItems, file);
+        numPrimaryAmmoItems = readValue("NumAmmoItemsInGun", numPrimaryAmmoItems, file);
+        numPrimaryAmmoItems = readValue("LoadIntoGun", numPrimaryAmmoItems, file);
+        numBurstRounds = readValue("NumBurstRounds", numBurstRounds, file);
+        allowSpreadByBullet = readValue("AllowSpreadByBullet", allowSpreadByBullet, file);
+        allowNumBulletsByBulletType = readValue("AllowNumBulletsByBulletType", allowNumBulletsByBulletType, file);
+        bulletSpeed = readValue("BulletSpeed", StringUtils.EMPTY, file).equalsIgnoreCase("instant") ? 0F : readValue("BulletSpeed", bulletSpeed, file);
+        muzzleVelocity = readValue("MuzzleVelocity", muzzleVelocity, file);
+        if (muzzleVelocity > 0F)
+            bulletSpeed = muzzleVelocity / 20F;
+        readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
 
         //Lock on settings
-        canLockOnAngle = readValue(split, "CanLockAngle", canLockOnAngle, file);
-        lockOnToDriveables = readValue(split, "LockOnToDriveables", lockOnToDriveables, file);
-        lockOnToVehicles = readValue(split, "LockOnToVehicles", lockOnToVehicles, file);
-        lockOnToPlanes = readValue(split, "LockOnToPlanes", lockOnToPlanes, file);
-        lockOnToMechas = readValue(split, "LockOnToMechas", lockOnToMechas, file);
-        lockOnToPlayers = readValue(split, "LockOnToPlayers", lockOnToPlayers, file);
-        lockOnToLivings = readValue(split, "LockOnToLivings", lockOnToLivings, file);
-        maxRangeLockOn = readValue(split, "MaxRangeLockOn", maxRangeLockOn, file);
+        canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
+        lockOnToDriveables = readValue("LockOnToDriveables", lockOnToDriveables, file);
+        lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
+        lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
+        lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
+        lockOnToPlayers = readValue("LockOnToPlayers", lockOnToPlayers, file);
+        lockOnToLivings = readValue("LockOnToLivings", lockOnToLivings, file);
+        maxRangeLockOn = readValue("MaxRangeLockOn", maxRangeLockOn, file);
 
         //Other settings
-        knockback = readValue(split, "Knockback", knockback, file);
-        sneakSpreadModifier = readValue(split, "SneakSpreadModifier", sneakSpreadModifier, file);
-        sneakSpreadModifier = readValue(split, "SneakSpreadMultiplier", sneakSpreadModifier, file);
-        sprintSpreadModifier = readValue(split, "SprintSpreadModifier", sprintSpreadModifier, file);
-        sprintSpreadModifier = readValue(split, "SprintSpreadMultiplier", sprintSpreadModifier, file);
-        allowRearm = readValue(split, "AllowRearm", allowRearm, file);
-        consumeGunUponUse = readValue(split, "ConsumeGunOnUse", consumeGunUponUse, file);
-        showCrosshair = readValue(split, "ShowCrosshair", showCrosshair, file);
-        dropItemOnShoot = readValue(split, "DropItemOnShoot", dropItemOnShoot, file);
-        minigunStartSpeed = readValue(split, "MinigunStartSpeed", minigunStartSpeed, file);
-        canShootUnderwater = readValue(split, "CanShootUnderwater", canShootUnderwater, file);
-        canSetPosition = readValue(split, "CanSetPosition", canSetPosition, file);
-        oneHanded = readValue(split, "OneHanded", oneHanded, file);
-        usableByPlayers = readValue(split, "UsableByPlayers", usableByPlayers, file);
-        usableByMechas = readValue(split, "UsableByMechas", usableByMechas, file);
-        standBackDist = readValue(split, "StandBackDistance", standBackDist, file);
-        topViewLimit = readValue(split, "TopViewLimit", topViewLimit, file);
-        bottomViewLimit = readValue(split, "BottomViewLimit", bottomViewLimit, file);
-        sideViewLimit = readValue(split, "SideViewLimit", sideViewLimit, file);
-        pivotHeight = readValue(split, "PivotHeight", pivotHeight, file);
+        knockback = readValue("Knockback", knockback, file);
+        sneakSpreadModifier = readValue("SneakSpreadModifier", sneakSpreadModifier, file);
+        sneakSpreadModifier = readValue("SneakSpreadMultiplier", sneakSpreadModifier, file);
+        sprintSpreadModifier = readValue("SprintSpreadModifier", sprintSpreadModifier, file);
+        sprintSpreadModifier = readValue("SprintSpreadMultiplier", sprintSpreadModifier, file);
+        allowRearm = readValue("AllowRearm", allowRearm, file);
+        consumeGunUponUse = readValue("ConsumeGunOnUse", consumeGunUponUse, file);
+        showCrosshair = readValue("ShowCrosshair", showCrosshair, file);
+        dropItemOnShoot = readValue("DropItemOnShoot", dropItemOnShoot, file);
+        minigunStartSpeed = readValue("MinigunStartSpeed", minigunStartSpeed, file);
+        canShootUnderwater = readValue("CanShootUnderwater", canShootUnderwater, file);
+        canSetPosition = readValue("CanSetPosition", canSetPosition, file);
+        oneHanded = readValue("OneHanded", oneHanded, file);
+        usableByPlayers = readValue("UsableByPlayers", usableByPlayers, file);
+        usableByMechas = readValue("UsableByMechas", usableByMechas, file);
+        standBackDist = readValue("StandBackDistance", standBackDist, file);
+        topViewLimit = readValue("TopViewLimit", topViewLimit, file);
+        bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
+        sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
+        pivotHeight = readValue("PivotHeight", pivotHeight, file);
         //TODO: implement this
         /*String line = ConfigUtils.configString(config, "ItemUseAction", null);
         try {
@@ -703,169 +696,151 @@ public class GunType extends PaintableType implements IScope
         if (config.containsKey("HipFireWhileSprinting"))
             hipFireWhileSprinting = ConfigUtils.configBool(config, "HipFireWhileSprinting", false) ? 1 : 2;*/
 
-        //Secondary Function & Melee
-        if (split[0].equalsIgnoreCase("SecondaryFunction"))
-            secondaryFunction = EnumSecondaryFunction.get(split[1]);
-        if (split[0].equalsIgnoreCase("UseCustomMelee") && split.length > 1 && Boolean.parseBoolean(split[1]))
-            secondaryFunction = EnumSecondaryFunction.CUSTOM_MELEE;
-        meleeTime = readValue(split, "MeleeTime", meleeTime, file);
-        if (split[0].equalsIgnoreCase("AddNode") && split.length > 6)
-        {
-            meleePath.add(new Vector3f(Float.parseFloat(split[1]) / 16F, Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F));
-            meleePathAngles.add(new Vector3f(Float.parseFloat(split[4]), Float.parseFloat(split[5]), Float.parseFloat(split[6])));
-        }
-        if ((split[0].equalsIgnoreCase("MeleeDamagePoint") || split[0].equalsIgnoreCase("MeleeDamageOffset")) && split.length > 3)
-        {
-            meleeDamagePoints.add(new Vector3f(Float.parseFloat(split[1]) / 16F, Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F));
-        }
-        useCustomMeleeWhenShoot = readValue(split, "UseCustomMeleeWhenShoot", useCustomMeleeWhenShoot, file);
+
+        // Melee
+        meleeTime = readValue("MeleeTime", meleeTime, file);
+        readFloatValues("AddNode", file, 6).ifPresent(values -> {
+            meleePath.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F));
+            meleePathAngles.add(new Vector3f(values[3], values[4], values[5]));
+        });
+        readFloatValues("MeleeDamagePoint", file, 3)
+                .ifPresent(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F)));
+        readFloatValues("MeleeDamageOffset", file, 3)
+                .ifPresent(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F)));
 
         //Player modifiers
-        moveSpeedModifier = readValue(split, "MoveSpeedModifier", moveSpeedModifier, file);
-        moveSpeedModifier = readValue(split, "Slowness", moveSpeedModifier, file);
-        knockbackModifier = readValue(split, "KnockbackReduction", knockbackModifier, file);
-        knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
-        switchDelay = readValue(split, "SwitchDelay", switchDelay, file);
+        moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
+        moveSpeedModifier = readValue("Slowness", moveSpeedModifier, file);
+        knockbackModifier = readValue("KnockbackReduction", knockbackModifier, file);
+        knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
+        switchDelay = readValue("SwitchDelay", switchDelay, file);
 
         //Information
-        showAttachments = readValue(split, "ShowAttachments", showAttachments, file);
-        showDamage = readValue(split, "ShowDamage", showDamage, file);
-        showRecoil = readValue(split, "ShowRecoil", showRecoil, file);
-        showSpread = readValue(split, "ShowAccuracy", showSpread, file);
-        showReloadTime = readValue(split, "ShowReloadTime", showReloadTime, file);
+        showAttachments = readValue("ShowAttachments", showAttachments, file);
+        showDamage = readValue("ShowDamage", showDamage, file);
+        showRecoil = readValue("ShowRecoil", showRecoil, file);
+        showSpread = readValue("ShowAccuracy", showSpread, file);
+        showReloadTime = readValue("ShowReloadTime", showReloadTime, file);
 
         //Sounds
-        distortSound = readValue(split, "DistortSound", distortSound, file);
-        shootSoundLength = readValue(split, "SoundLength", shootSoundLength, file);
-        idleSoundLength = readValue(split, "IdleSoundLength", idleSoundLength, file);
-        warmupSoundLength = readValue(split, "WarmupSoundLength", warmupSoundLength, file);
-        idleSoundRange = readValue(split, "IdleSoundRange", idleSoundRange, file);
-        meleeSoundRange = readValue(split, "MeleeSoundRange", meleeSoundRange, file);
-        reloadSoundRange = readValue(split, "ReloadSoundRange", reloadSoundRange, file);
-        gunSoundRange = readValue(split, "GunSoundRange", gunSoundRange, file);
-        shootSound = readSound(split, "ShootSound", shootSound, file);
-        bulletInsert = readSound(split, "BulletInsertSound", bulletInsert, file);
-        actionSound = readSound(split, "ActionSound", actionSound, file);
-        lastShootSound = readSound(split, "LastShootSound", lastShootSound, file);
-        suppressedShootSound = readSound(split, "SuppressedShootSound", suppressedShootSound, file);
-        lastShootSoundSuppressed = readSound(split, "LastSuppressedShootSound", lastShootSoundSuppressed, file);
-        reloadSound = readSound(split, "ReloadSound", reloadSound, file);
-        reloadSoundOnEmpty = readSound(split, "EmptyReloadSound", reloadSoundOnEmpty, file);
-        clickSoundOnEmpty = readSound(split, "EmptyClickSound", clickSoundOnEmpty, file);
-        clickSoundOnEmptyRepeated = readSound(split, "EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
-        idleSound = readSound(split, "IdleSound", idleSound, file);
-        meleeSound = readSound(split, "MeleeSound", meleeSound, file);
+        distortSound = readValue("DistortSound", distortSound, file);
+        shootSoundLength = readValue("SoundLength", shootSoundLength, file);
+        idleSoundLength = readValue("IdleSoundLength", idleSoundLength, file);
+        warmupSoundLength = readValue("WarmupSoundLength", warmupSoundLength, file);
+        idleSoundRange = readValue("IdleSoundRange", idleSoundRange, file);
+        meleeSoundRange = readValue("MeleeSoundRange", meleeSoundRange, file);
+        reloadSoundRange = readValue("ReloadSoundRange", reloadSoundRange, file);
+        gunSoundRange = readValue("GunSoundRange", gunSoundRange, file);
+        shootSound = readSound("ShootSound", shootSound, file);
+        bulletInsert = readSound("BulletInsertSound", bulletInsert, file);
+        actionSound = readSound("ActionSound", actionSound, file);
+        lastShootSound = readSound("LastShootSound", lastShootSound, file);
+        suppressedShootSound = readSound("SuppressedShootSound", suppressedShootSound, file);
+        lastShootSoundSuppressed = readSound("LastSuppressedShootSound", lastShootSoundSuppressed, file);
+        reloadSound = readSound("ReloadSound", reloadSound, file);
+        reloadSoundOnEmpty = readSound("EmptyReloadSound", reloadSoundOnEmpty, file);
+        clickSoundOnEmpty = readSound("EmptyClickSound", clickSoundOnEmpty, file);
+        clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
+        idleSound = readSound("IdleSound", idleSound, file);
+        meleeSound = readSound("MeleeSound", meleeSound, file);
 
         //Looping sounds
-        warmupSound = readValue(split, "WarmupSound", warmupSound, file);
-        loopedSound = readValue(split, "LoopedSound", loopedSound, file);
-        loopedSound = readValue(split, "SpinSound", loopedSound, file);
-        cooldownSound = readValue(split, "CooldownSound", cooldownSound, file);
-        lockOnSound = readSound(split, "LockOnSound", lockOnSound, file);
-        distantShootSound = readSound(split, "DistantSound", distantShootSound, file);
-        distantShootSound = readSound(split, "DistantShootSound", distantShootSound, file);
-        loopedSoundLength = readValue(split, "LoopedSoundLength", loopedSoundLength, file);
-        loopedSoundLength = readValue(split, "SpinSoundLength", loopedSoundLength, file);
-        lockOnSoundTime = readValue(split, "LockOnSoundTime", lockOnSoundTime, file);
-        distantSoundRange = readValue(split, "DistantSoundRange", distantSoundRange, file);
+        warmupSound = readValue("WarmupSound", warmupSound, file);
+        loopedSound = readValue("LoopedSound", loopedSound, file);
+        loopedSound = readValue("SpinSound", loopedSound, file);
+        cooldownSound = readValue("CooldownSound", cooldownSound, file);
+        lockOnSound = readSound("LockOnSound", lockOnSound, file);
+        distantShootSound = readSound("DistantSound", distantShootSound, file);
+        distantShootSound = readSound("DistantShootSound", distantShootSound, file);
+        loopedSoundLength = readValue("LoopedSoundLength", loopedSoundLength, file);
+        loopedSoundLength = readValue("SpinSoundLength", loopedSoundLength, file);
+        lockOnSoundTime = readValue("LockOnSoundTime", lockOnSoundTime, file);
+        distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
+        useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
         //Mode
-        //TODO: compare code
-        /*aSplit = ConfigUtils.getSplitFromKey(config, "Mode");
-        if (aSplit != null) {
-            try {
-                mode = EnumFireMode.getFireMode(aSplit[1]);
-                defaultmode = mode;
-                submode = new EnumFireMode[aSplit.length - 1];
-                for (int i = 0; i < submode.length; i++) {
-                    submode[i] = EnumFireMode.getFireMode(aSplit[1 + i]);
-                }
-            } catch (Exception ex) {
-                FlansMod.logPackError(file.name, packName, shortName, "Error thrown while setting gun mode", aSplit, ex);
-            }
-        }*/
-        if (split[0].equalsIgnoreCase("Mode") && split.length > 1)
-            mode = EnumFireMode.getFireMode(split[1]);
+        mode = readValue("Mode", mode, EnumFireMode.class, file);
+        defaultmode = mode;
+        String[] submodeSplit = readValues("Mode", file);
+        if (submodeSplit.length > 0)
+        {
+            submode = new EnumFireMode[submodeSplit.length - 1];
+            for (int i = 0; i < submode.length; i++)
+                submode[i] = EnumFireMode.getFireMode(submodeSplit[i + 1]);
+        }
 
         //Overlay and zoom settings
-        overlayName = ResourceUtils.sanitize(readValue(split, "Scope", overlayName, file));
-        zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
-        fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
-        allowNightVision = readValue(split, "AllowNightVision", allowNightVision, file);
-        hasVariableZoom = readValue(split, "HasVariableZoom", hasVariableZoom, file);
-        minZoom = readValue(split, "MinZoom", minZoom, file);
-        maxZoom = readValue(split, "MaxZoom", maxZoom, file);
-        zoomAugment = readValue(split, "ZoomAugment", zoomAugment, file);
-        if (split[0].equalsIgnoreCase("ZoomLevel") && zoomFactor > 1F)
-            secondaryFunction = EnumSecondaryFunction.ZOOM;
-        if (split[0].equalsIgnoreCase("FOVZoomLevel") && fovFactor > 1F)
-            secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
+        overlayName = readResource("Scope", overlayName, file);
+        if (overlayName.equals("none"))
+            overlayName = StringUtils.EMPTY;
+        zoomFactor = readValue("ZoomLevel", zoomFactor, file);
+        fovFactor = readValue("FOVZoomLevel", fovFactor, file);
+        allowNightVision = readValue("AllowNightVision", allowNightVision, file);
+        hasVariableZoom = readValue("HasVariableZoom", hasVariableZoom, file);
+        minZoom = readValue("MinZoom", minZoom, file);
+        maxZoom = readValue("MaxZoom", maxZoom, file);
+        zoomAugment = readValue("ZoomAugment", zoomAugment, file);
         if (maxZoom > 1F && hasVariableZoom)
             secondaryFunction = EnumSecondaryFunction.ZOOM;
 
         //Models & Textures
-        deployable = readValue(split, "Deployable", deployable, file);
-        deployableModelName = ResourceUtils.sanitize(readValue(split, "DeployedModel", deployableModelName, file));
-        deployableTextureName = ResourceUtils.sanitize(readValue(split, "DeployedTexture", deployableTextureName, file));
-        casingModelName = ResourceUtils.sanitize(readValue(split, "CasingModel", casingModelName, file));
-        casingTextureName = ResourceUtils.sanitize(readValue(split, "CasingTexture", casingTextureName, file));
-        flashModelName = ResourceUtils.sanitize(readValue(split, "FlashModel", flashModelName, file));
-        flashTextureName = ResourceUtils.sanitize(readValue(split, "FlashTexture", flashTextureName, file));
-        muzzleFlashModelName = ResourceUtils.sanitize(readValue(split, "MuzzleFlashModel", muzzleFlashModelName, file));
-        hitTextureName = ResourceUtils.sanitize(readValue(split, "HitTexture", hitTextureName, file));
+        deployable = readValue("Deployable", deployable, file);
+        deployableModelName = readResource("DeployedModel", deployableModelName, file);
+        deployableTextureName = readResource("DeployedTexture", deployableTextureName, file);
+        casingModelName = readResource("CasingModel", casingModelName, file);
+        casingTextureName = readResource("CasingTexture", casingTextureName, file);
+        flashModelName = readResource("FlashModel", flashModelName, file);
+        flashTextureName = readResource("FlashTexture", flashTextureName, file);
+        muzzleFlashModelName = readResource("MuzzleFlashModel", muzzleFlashModelName, file);
+        hitTextureName = readResource("HitTexture", hitTextureName, file);
 
         //Particles
-        muzzleFlashParticle = readValue(split, "MuzzleFlashParticle", muzzleFlashParticle, file);
-        muzzleFlashParticleSize = readValue(split, "MuzzleFlashParticleSize", muzzleFlashParticleSize, file);
-        showMuzzleFlashParticlesFirstPerson = readValue(split, "ShowMuzzleFlashParticleFirstPerson", showMuzzleFlashParticlesFirstPerson, file);
-        //TODO: readValue with Vector
-        //muzzleFlashParticlesShoulderOffset = readValue(split, "MuzzleFlashParticleShoulderOffset", muzzleFlashParticlesShoulderOffset, file);
-        //muzzleFlashParticlesHandOffset = readValue(split, "MuzzleFlashParticleHandOffset", muzzleFlashParticlesHandOffset, file);
-        if (split[0].equalsIgnoreCase("ShowMuzzleFlashParticle"))
-        {
-            showMuzzleFlashParticles = readValue(split, "ShowMuzzleFlashParticle", showMuzzleFlashParticles, file);
-            useMuzzleFlashDefaults = false;
-        }
+        muzzleFlashParticle = readValue("MuzzleFlashParticle", muzzleFlashParticle, file);
+        muzzleFlashParticleSize = readValue("MuzzleFlashParticleSize", muzzleFlashParticleSize, file);
+        showMuzzleFlashParticlesFirstPerson = readValue("ShowMuzzleFlashParticleFirstPerson", showMuzzleFlashParticlesFirstPerson, file);
+        muzzleFlashParticlesShoulderOffset = readVector("MuzzleFlashParticleShoulderOffset", muzzleFlashParticlesShoulderOffset, file);
+        muzzleFlashParticlesHandOffset = readVector("MuzzleFlashParticleHandOffset", muzzleFlashParticlesHandOffset, file);
+        showMuzzleFlashParticles = readValue("ShowMuzzleFlashParticle", showMuzzleFlashParticles, file);
+        useMuzzleFlashDefaults = file.hasConfigLine("ShowMuzzleFlashParticle");
 
         //Attachment settings
-        allowAllAttachments = readValue(split, "AllowAllAttachments", allowAllAttachments, file);
-        if (split[0].equalsIgnoreCase("AllowAttachments"))
-        {
-            for (int i = 1; i < split.length; i++)
-                allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(split[i])));
-        }
-        allowBarrelAttachments = readValue(split, "AllowBarrelAttachments", allowBarrelAttachments, file);
-        allowScopeAttachments = readValue(split, "AllowScopeAttachments", allowScopeAttachments, file);
-        allowStockAttachments = readValue(split, "AllowStockAttachments", allowStockAttachments, file);
-        allowGripAttachments = readValue(split, "AllowGripAttachments", allowGripAttachments, file);
-        allowGadgetAttachments = readValue(split, "AllowGadgetAttachments", allowGadgetAttachments, file);
-        allowSlideAttachments = readValue(split, "AllowSlideAttachments", allowSlideAttachments, file);
-        allowPumpAttachments = readValue(split, "AllowPumpAttachments", allowPumpAttachments, file);
-        allowAccessoryAttachments = readValue(split, "AllowAccessoryAttachments", allowAccessoryAttachments, file);
-        numGenericAttachmentSlots = readValue(split, "NumGenericAttachmentSlots", numGenericAttachmentSlots, file);
+        allowAllAttachments = readValue("AllowAllAttachments", allowAllAttachments, file);
+        if (hasValueForConfigField("AllowAttachments", file))
+            readValuesToList("AllowAttachments", file).forEach(attachment -> allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(attachment))));
+
+        allowBarrelAttachments = readValue("AllowBarrelAttachments", allowBarrelAttachments, file);
+        allowScopeAttachments = readValue("AllowScopeAttachments", allowScopeAttachments, file);
+        allowStockAttachments = readValue("AllowStockAttachments", allowStockAttachments, file);
+        allowGripAttachments = readValue("AllowGripAttachments", allowGripAttachments, file);
+        allowGadgetAttachments = readValue("AllowGadgetAttachments", allowGadgetAttachments, file);
+        allowSlideAttachments = readValue("AllowSlideAttachments", allowSlideAttachments, file);
+        allowPumpAttachments = readValue("AllowPumpAttachments", allowPumpAttachments, file);
+        allowAccessoryAttachments = readValue("AllowAccessoryAttachments", allowAccessoryAttachments, file);
+        numGenericAttachmentSlots = readValue("NumGenericAttachmentSlots", numGenericAttachmentSlots, file);
 
         //Shield settings
-        if (split[0].equalsIgnoreCase("Shield") && split.length > 7)
-        {
+        readFloatValues("Shield", file, 7).ifPresent(values -> {
             shield = true;
-            shieldDamageAbsorption = Float.parseFloat(split[1]);
-            shieldOrigin = new Vector3f(Float.parseFloat(split[2]) / 16F, Float.parseFloat(split[3]) / 16F, Float.parseFloat(split[4]) / 16F);
-            shieldDimensions = new Vector3f(Float.parseFloat(split[5]) / 16F, Float.parseFloat(split[6]) / 16F, Float.parseFloat(split[7]) / 16F);
-        }
+            shieldDamageAbsorption = values[0];
+            shieldOrigin = new Vector3f(values[1] / 16F, values[2] / 16F, values[3] / 16F);
+            shieldDimensions = new Vector3f(values[4] / 16F, values[5] / 16F, values[6] / 16F);
+        });
 
-        if (FMLEnvironment.dist == Dist.CLIENT)
-            processAnimationConfigs(line, split, file);
-    }
+        //Secondary Function
+        if (readValue("UseCustomMeleeWhenShoot", false, file))
+            secondaryFunctionWhenShoot = EnumSecondaryFunction.CUSTOM_MELEE;
+        if (file.hasConfigLine("ZoomLevel") && zoomFactor > 1F)
+            secondaryFunction = EnumSecondaryFunction.ZOOM;
+        if (file.hasConfigLine("FOVZoomLevel") && fovFactor > 1F)
+            secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
+        if (maxZoom > 1F && hasVariableZoom)
+            secondaryFunction = EnumSecondaryFunction.ZOOM;
+        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && StringUtils.isBlank(overlayName))
+            secondaryFunction = EnumSecondaryFunction.MELEE;
+        if (readFieldWithOptionalValue("UseCustomMelee", false, file))
+            secondaryFunction = EnumSecondaryFunction.CUSTOM_MELEE;
+        secondaryFunction = EnumSecondaryFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
 
-    protected void processAnimationConfigs(String line, String[] split, TypeFile file)
-    {
-        //TODO: use a record class and pass it to the model via setter call in ModelCache
-    }
-
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
         defaultSpread = bulletSpread;
         recoilYaw /= 10F;
         decreaseRecoilYaw = (decreaseRecoilYaw > 0F) ? decreaseRecoilYaw : 0.5F;
@@ -877,13 +852,13 @@ public class GunType extends PaintableType implements IScope
             lockOnToMechas = true;
         }
 
-        if (useCustomMeleeWhenShoot)
-            secondaryFunctionWhenShoot = EnumSecondaryFunction.CUSTOM_MELEE;
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            processAnimationConfigs(file);
+    }
 
-        useLoopingSounds = StringUtils.isNotBlank(loopedSound);
-
-        if (overlayName.equals("none"))
-            overlayName = StringUtils.EMPTY;
+    protected void processAnimationConfigs(TypeFile file)
+    {
+        //TODO: use a record class and pass it to the model via setter call in ModelCache
     }
 
     @Override
@@ -1174,7 +1149,7 @@ public class GunType extends PaintableType implements IScope
      */
     public float getRecoilPitch(ItemStack stack, boolean sneaking, boolean sprinting)
     {
-        float stackRecoil = recoilPitch + ((rand.nextFloat() * 2F - 1F) * rndRecoilYawRange);
+        float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
@@ -1209,7 +1184,7 @@ public class GunType extends PaintableType implements IScope
      */
     public float getRecoilYaw(ItemStack stack, boolean sneaking, boolean sprinting)
     {
-        float stackRecoilYaw = recoilYaw + ((rand.nextFloat() * 2F - 1F) * rndRecoilYawRange);
+        float stackRecoilYaw = recoilYaw + ((rand.nextFloat() - 0.5F) * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;

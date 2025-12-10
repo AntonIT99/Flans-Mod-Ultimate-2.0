@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.flansmodultimate.util.TypeReaderUtils.logError;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PaintableType extends InfoType
@@ -33,7 +33,7 @@ public abstract class PaintableType extends InfoType
     @Getter
     protected Paintjob defaultPaintjob;
     /** Whether to add this paintjob to the paintjob table, gunmode table e.t.c. */
-    protected Boolean addAnyPaintjobToTables = true;
+    protected boolean addAnyPaintjobToTables = true;
     /** Assigns IDs to paintjobs */
     private int nextPaintjobId = 0;
 
@@ -43,64 +43,57 @@ public abstract class PaintableType extends InfoType
     }
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
+        super.read(file);
 
-        if (split[0].equalsIgnoreCase("Paintjob") && split.length > 2)
-        {
+        readValuesInLines("Paintjob", file, 2).ifPresent(lines -> lines.forEach(split -> {
+            List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 2) / 2);
+            for (int i = 0; i < (split.length - 2) / 2; i++)
+            {
+                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 2], split[i * 2 + 3], "Paintjob", split, file));
+            }
+            nextPaintjobId++;
+            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]), dyeStacks));
+        }));
+
+        readValuesInLines("AdvPaintJob", file, 3).ifPresent(lines -> lines.forEach(split -> {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 3) / 2);
             for (int i = 0; i < (split.length - 3) / 2; i++)
             {
-                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 3], split[i * 2 + 4], line, file));
+                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 3], split[i * 2 + 4], "AdvPaintJob", split, file));
             }
             nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, ResourceUtils.sanitize(split[1]), ResourceUtils.sanitize(split[2]), dyeStacks));
-        }
+            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, split[0], ResourceUtils.sanitize(split[1]), ResourceUtils.sanitize(split[2]), dyeStacks));
+        }));
 
-        if (split[0].equalsIgnoreCase("AdvPaintJob") && split.length > 3)
-        {
-            List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 4) / 2);
-            for (int i = 0; i < (split.length - 4) / 2; i++)
+        readValues("AddPaintableToTables", file, 2).ifPresent(values -> {
+            if (values.length > 1)
             {
-                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 4], split[i * 2 + 5], line, file));
-            }
-            nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, split[1], ResourceUtils.sanitize(split[2]), ResourceUtils.sanitize(split[3]), dyeStacks));
-        }
-
-        if (split[0].equalsIgnoreCase("AddPaintableToTables"))
-        {
-            if (split.length == 2)
-            {
-                addAnyPaintjobToTables = Boolean.parseBoolean(split[1]);
-            }
-            else if (split.length >= 3)
-            {
-                String paintjobName = split[1];
+                String paintjobName = values[0];
 
                 for (Paintjob paintjob : paintjobs.values())
                 {
                     if (paintjob.getTextureName().equals(paintjobName))
-                        paintjob.setAddToTables(Boolean.parseBoolean(split[2]));
+                        paintjob.setAddToTables(Boolean.parseBoolean(values[1]));
                 }
             }
-        }
-    }
+            else
+            {
+                addAnyPaintjobToTables = Boolean.parseBoolean(values[0]);
+            }
+        });
 
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
+        //TODO: fix this (is legendary can not be invoked at this point)
+        // Add all custom paintjobs to dungeon loot. Equal chance for each
+        //InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonlegendarypaintjobs.size() - 1));
+
+        // For servers, do not wait for resource initialization to create the default paintjob
         if (FMLEnvironment.dist == Dist.DEDICATED_SERVER)
         {
             defaultPaintjob = new Paintjob(this, 0, StringUtils.EMPTY, icon, textureName, texture, Collections.emptyList());
             paintjobs.put(0, defaultPaintjob);
         }
-
-        //TODO: fix this (is legendary can not be invoked at this point)
-        // Add all custom paintjobs to dungeon loot. Equal chance for each
-        //InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonlegendarypaintjobs.size() - 1));
     }
 
     @Override
@@ -111,7 +104,7 @@ public abstract class PaintableType extends InfoType
         paintjobs.put(0, defaultPaintjob);
     }
 
-    private static Supplier<ItemStack> dyeNameToItemStack(String dyeName, String stackSize, String line, TypeFile file)
+    private static Supplier<ItemStack> dyeNameToItemStack(String dyeName, String stackSize, String key, String[] values, TypeFile file)
     {
         if (dyeName.equalsIgnoreCase("rainbow"))
             return () -> new ItemStack(FlansMod.rainbowPaintcan.get(), Integer.parseInt(stackSize));
@@ -123,7 +116,7 @@ public abstract class PaintableType extends InfoType
             }
             catch (Exception e)
             {
-                logError(String.format("%s in '%s'", e.getMessage(), line), file);
+                logError(String.format("%s in '%s %s'", e.getMessage(), key, String.join(StringUtils.SPACE, values)), file);
             }
         }
         return () -> ItemStack.EMPTY;

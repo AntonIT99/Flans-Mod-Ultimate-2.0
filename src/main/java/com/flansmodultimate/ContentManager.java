@@ -6,6 +6,8 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.config.CategoryManager;
+import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.util.AliasFileManager;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
@@ -59,7 +61,7 @@ public class ContentManager
     //TODO: Make flan folder path configurable
     @Getter
     private static Path flanFolder;
-    private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve("flan");
+    private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve(ContentLoadingConfig.contentPacksRelativePath);
     private static final Path fallbackFlanPath = FMLPaths.GAMEDIR.get().resolve("Flan");
 
     // Mappings which allow to use aliases for duplicate short names and texture names (also contain unmodified references)
@@ -366,14 +368,14 @@ public class ContentManager
         {
             try
             {
-                Class<? extends InfoType> typeClass = typeFile.getType().getTypeClass();
-                InfoType config = typeClass.getConstructor().newInstance();
-                config.read(typeFile);
+                CategoryManager.applyCategoriesToFile(typeFile);
+                InfoType config = typeFile.getType().getTypeClass().getConstructor().newInstance();
+                config.load(typeFile);
                 String shortName = config.getOriginalShortName();
-                boolean isItem = typeFile.getType().isItemType();
+
                 if (!shortName.isBlank())
                 {
-                    if (isItem)
+                    if (typeFile.getType().isItemType())
                     {
                         shortName = findNewValidShortName(shortName, contentPack, typeFile);
                         if (!shortName.isBlank())
@@ -400,6 +402,7 @@ public class ContentManager
                 LogUtils.logWithoutStacktrace(e);
             }
         }
+        files.clear();
     }
 
     private static String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
@@ -493,7 +496,7 @@ public class ContentManager
             TextureFile otherFile = textures.get(folderName).get(fileName);
             FileSystem fs = FileUtils.createFileSystem(otherFile.contentPack());
             Path otherPath = otherFile.contentPack().getAssetsPath(fs).resolve(folderName).resolve(otherFile.name());
-            if (FileUtils.filesHaveDifferentBytesContent(texturePath, otherPath) && !FileUtils.isSameImage(texturePath, otherPath))
+            if (FileUtils.filesHaveDifferentBytes(texturePath, otherPath) && !FileUtils.isSameImage(texturePath, otherPath))
             {
                 aliasName = findValidTextureName(fileName, folderName, provider, otherFile.contentPack(), aliasMapping);
             }
@@ -562,7 +565,7 @@ public class ContentManager
         if (FMLEnvironment.dist != Dist.CLIENT)
             return false;
 
-        if (FlansMod.FORCE_RECOMPILE_ALL_PACKS)
+        if (ContentLoadingConfig.forceRegenContentPacksAssetsAndIds)
             return true;
 
         if (provider.isJarFile() // JAR File means it's the first time we've loaded the pack

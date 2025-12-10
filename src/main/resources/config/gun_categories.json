@@ -1,2 +1,11 @@
 {
+    "MP 40": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "550.0"
+        },
+        "items": [
+            "mp40"
+        ]
+    }
 }

@@ -16,8 +16,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
 public class BulletType extends ShootableType
@@ -154,106 +153,98 @@ public class BulletType extends ShootableType
     protected boolean readBlockHitFXScale;
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
+        super.read(file);
 
-        flak = readValue(split, "FlakParticles", flak, file);
-        flakParticles = readValue(split, "FlakParticleType", flakParticles, file);
-        setEntitiesOnFire = readValue(split, "SetEntitiesOnFire", setEntitiesOnFire, file);
-        hitSoundEnable = readValue(split, "HitSoundEnable", hitSoundEnable, file);
-        entityHitSoundEnable = readValue(split, "EntityHitSoundEnable", entityHitSoundEnable, file);
+        flak = readValue("FlakParticles", flak, file);
+        flakParticles = readValue("FlakParticleType", flakParticles, file);
+        setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
+        hitSoundEnable = readValue("HitSoundEnable", hitSoundEnable, file);
+        entityHitSoundEnable = readValue("EntityHitSoundEnable", entityHitSoundEnable, file);
         // Many content packs have a HitSound line with no parameter for no hit sound -> don't consider it a syntax error
-        if (split.length > 1)
-            hitSound = readSound(split, "HitSound", hitSound, file);
-        hitSoundRange = readValue(split, "HitSoundRange", hitSoundRange, file);
+        if (hasValueForConfigField("HitSound", file))
+            hitSound = readSound("HitSound", hitSound, file);
+        hitSoundRange = readValue("HitSoundRange", hitSoundRange, file);
 
-        penetrates = readValue(split, "Penetrates", true, file);
-        penetratingPower = readValue(split, "Penetration", penetratingPower, file);
-        penetratingPower = readValue(split, "PenetratingPower", penetratingPower, file);
-        penetrationDecay = readValue(split, "PenetrationDecay", penetrationDecay, file);
-        blockPenetrationModifier = readValue(split, "BlockPenetrationModifier", blockPenetrationModifier, file);
+        penetrates = readValue("Penetrates", true, file);
+        penetratingPower = readValue("Penetration", penetratingPower, file);
+        penetratingPower = readValue("PenetratingPower", penetratingPower, file);
+        penetrationDecay = readValue("PenetrationDecay", penetrationDecay, file);
+        blockPenetrationModifier = readValue("BlockPenetrationModifier", blockPenetrationModifier, file);
 
-        playerPenetrationEffectOnDamage = readValue(split, "PlayerPenetrationDamageEffect", playerPenetrationEffectOnDamage, file);
-        entityPenetrationEffectOnDamage = readValue(split, "EntityPenetrationDamageEffect", entityPenetrationEffectOnDamage, file);
-        blockPenetrationEffectOnDamage = readValue(split, "BlockPenetrationDamageEffect", blockPenetrationEffectOnDamage, file);
-        penetrationDecayEffectOnDamage = readValue(split, "PenetrationDecayDamageEffect", penetrationDecayEffectOnDamage, file);
+        playerPenetrationEffectOnDamage = readValue("PlayerPenetrationDamageEffect", playerPenetrationEffectOnDamage, file);
+        entityPenetrationEffectOnDamage = readValue("EntityPenetrationDamageEffect", entityPenetrationEffectOnDamage, file);
+        blockPenetrationEffectOnDamage = readValue("BlockPenetrationDamageEffect", blockPenetrationEffectOnDamage, file);
+        penetrationDecayEffectOnDamage = readValue("PenetrationDecayDamageEffect", penetrationDecayEffectOnDamage, file);
         
-        dragInAir = readValue(split, "DragInAir", dragInAir, file);
-        dragInWater = readValue(split, "DragInWater", dragInWater, file);
+        dragInAir = readValue("DragInAir", dragInAir, file);
+        dragInWater = readValue("DragInWater", dragInWater, file);
 
-        bulletSpread = readValue(split, "Accuracy", bulletSpread, file);
-        bulletSpread = readValue(split, "Spread", bulletSpread, file);
+        bulletSpread = readValue("Accuracy", bulletSpread, file);
+        bulletSpread = readValue("Spread", bulletSpread, file);
 
-        vls = readValue(split, "VLS", vls, file);
-        vls = readValue(split, "HasDeadZone", vls, file);
-        vlsTime = readValue(split, "DeadZoneTime", vlsTime, file);
-        fixedDirection = readValue(split, "FixedTrackDirection", fixedDirection, file);
-        turnRadius = readValue(split, "GuidedTurnRadius", turnRadius, file);
-        trackPhaseSpeed = readValue(split, "GuidedPhaseSpeed", trackPhaseSpeed, file);
-        trackPhaseTurn = readValue(split, "GuidedPhaseTurnSpeed", trackPhaseTurn, file);
-        boostPhaseParticle = readValue(split, "BoostParticle", boostPhaseParticle, file);
-        torpedo = readValue(split, "Torpedo", torpedo, file);
+        vls = readValue("VLS", vls, file);
+        vls = readValue("HasDeadZone", vls, file);
+        vlsTime = readValue("DeadZoneTime", vlsTime, file);
+        fixedDirection = readValue("FixedTrackDirection", fixedDirection, file);
+        turnRadius = readValue("GuidedTurnRadius", turnRadius, file);
+        trackPhaseSpeed = readValue("GuidedPhaseSpeed", trackPhaseSpeed, file);
+        trackPhaseTurn = readValue("GuidedPhaseTurnSpeed", trackPhaseTurn, file);
+        boostPhaseParticle = readValue("BoostParticle", boostPhaseParticle, file);
+        torpedo = readValue("Torpedo", torpedo, file);
 
-        // Some content packs use 'true' and false after this, which confuses things...
-        if (split[0].equalsIgnoreCase("Bomb") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+        // Some content packs use true and false after this, which confuses things...
+        if (readFieldWithOptionalValue("Bomb", false, file))
             weaponType = EnumWeaponType.BOMB;
-        if (split[0].equalsIgnoreCase("Shell") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+        if (readFieldWithOptionalValue("Shell", false, file))
             weaponType = EnumWeaponType.SHELL;
-        if (split[0].equalsIgnoreCase("Missile") && !(split.length > 1 && split[1].equalsIgnoreCase(Boolean.FALSE.toString())))
+        if (readFieldWithOptionalValue("Missile", false, file))
             weaponType = EnumWeaponType.MISSILE;
-        weaponType = readValue(split, "WeaponType", weaponType, EnumWeaponType.class, file);
 
-        trailTexture = ResourceUtils.sanitize(readValue(split, "TrailTexture", trailTexture, file));
+        weaponType = readValue("WeaponType", weaponType, EnumWeaponType.class, file);
 
-        if (split[0].equalsIgnoreCase("LockOnToDriveables"))
-            lockOnToPlanes = lockOnToVehicles = lockOnToMechas =  readValue(split, "LockOnToDriveables", lockOnToVehicles, file);
+        trailTexture = ResourceUtils.sanitize(readValue("TrailTexture", trailTexture, file));
 
-        lockOnToVehicles = readValue(split, "LockOnToVehicles", lockOnToVehicles, file);
-        lockOnToPlanes = readValue(split, "LockOnToPlanes", lockOnToPlanes, file);
-        lockOnToMechas = readValue(split, "LockOnToMechas", lockOnToMechas, file);
-        lockOnToPlayers = readValue(split, "LockOnToPlayers", lockOnToPlayers, file);
-        lockOnToLivings = readValue(split, "LockOnToLivings", lockOnToLivings, file);
+        lockOnToPlanes = lockOnToVehicles = lockOnToMechas = readValue("LockOnToDriveables", lockOnToVehicles, file);
+        lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
+        lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
+        lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
+        lockOnToPlayers = readValue("LockOnToPlayers", lockOnToPlayers, file);
+        lockOnToLivings = readValue("LockOnToLivings", lockOnToLivings, file);
 
-        maxLockOnAngle = readValue(split, "MaxLockOnAngle", maxLockOnAngle, file);
-        lockOnForce = readValue(split, "LockOnForce", lockOnForce, file);
-        lockOnForce = readValue(split, "TurningForce", lockOnForce, file);
-        maxDegreeOfMissile = readValue(split, "MaxDegreeOfLockOnMissile", maxDegreeOfMissile, file);
-        tickStartHoming = readValue(split, "TickStartHoming", tickStartHoming, file);
-        enableSACLOS = readValue(split, "EnableSACLOS", enableSACLOS, file);
-        maxDegreeOfSACLOS = readValue(split, "MaxDegreeOFSACLOS", maxDegreeOfSACLOS, file);
-        maxRangeOfMissile = readValue(split, "MaxRangeOfMissile", maxRangeOfMissile, file);
-        canSpotEntityDriveable = readValue(split, "CanSpotEntityDriveable", canSpotEntityDriveable, file);
-        shootForSettingPos = readValue(split, "ShootForSettingPos", shootForSettingPos, file);
-        shootForSettingPosHeight = readValue(split, "ShootForSettingPosHeight", shootForSettingPosHeight, file);
-        isDoTopAttack = readValue(split, "IsDoTopAttack", isDoTopAttack, file);
-        knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
+        maxLockOnAngle = readValue("MaxLockOnAngle", maxLockOnAngle, file);
+        lockOnForce = readValue("LockOnForce", lockOnForce, file);
+        lockOnForce = readValue("TurningForce", lockOnForce, file);
+        maxDegreeOfMissile = readValue("MaxDegreeOfLockOnMissile", maxDegreeOfMissile, file);
+        tickStartHoming = readValue("TickStartHoming", tickStartHoming, file);
+        enableSACLOS = readValue("EnableSACLOS", enableSACLOS, file);
+        maxDegreeOfSACLOS = readValue("MaxDegreeOFSACLOS", maxDegreeOfSACLOS, file);
+        maxRangeOfMissile = readValue("MaxRangeOfMissile", maxRangeOfMissile, file);
+        canSpotEntityDriveable = readValue("CanSpotEntityDriveable", canSpotEntityDriveable, file);
+        shootForSettingPos = readValue("ShootForSettingPos", shootForSettingPos, file);
+        shootForSettingPosHeight = readValue("ShootForSettingPosHeight", shootForSettingPosHeight, file);
+        isDoTopAttack = readValue("IsDoTopAttack", isDoTopAttack, file);
+        knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
 
-        addEffects(readValues(split, "AddPotionEffect", file), hitEffects, line, file, false, false);
-        addEffects(readValues(split, "PotionEffect", file), hitEffects, line, file, false, false);
+        addEffects("AddPotionEffect", hitEffects, file, false, false);
+        addEffects("PotionEffect", hitEffects, file, false, false);
 
-        manualGuidance = readValue(split, "ManualGuidance", manualGuidance, file);
-        laserGuidance = readValue(split, "LaserGuidance", laserGuidance, file);
-        maxRange = readValue(split, "MaxRange", maxRange, file);
-        speedMultiplier = readValue(split, "BulletSpeedMultiplier", speedMultiplier, file);
+        manualGuidance = readValue("ManualGuidance", manualGuidance, file);
+        laserGuidance = readValue("LaserGuidance", laserGuidance, file);
+        maxRange = readValue("MaxRange", maxRange, file);
+        speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
 
-        blockHitFXScale = readValue(split, "BlockHitFXScale", blockHitFXScale, file);
-        if (split[0].equalsIgnoreCase("BlockHitFXScale"))
-            readBlockHitFXScale = true;
-    }
+        blockHitFXScale = readValue("BlockHitFXScale", blockHitFXScale, file);
+        readBlockHitFXScale = file.hasConfigLine("BlockHitFXScale");
 
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
-        
         if (!penetrates)
             penetratingPower = DEFAULT_PENETRATING_POWER;
 
         // Clamp to [0, 1]
-        dragInAir = Math.max(0, Math.min(1, dragInAir)); 
+        dragInAir = Math.max(0, Math.min(1, dragInAir));
         dragInWater = Math.max(0, Math.min(1, dragInWater));
-        
+
         if (!readBlockHitFXScale)
             blockHitFXScale = (float) ((Math.log(explosionRadius + 2) / Math.log(2.15)) + 0.05);
 

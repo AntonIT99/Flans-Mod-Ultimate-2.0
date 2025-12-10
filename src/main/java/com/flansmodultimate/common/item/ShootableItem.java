@@ -48,12 +48,17 @@ public abstract class ShootableItem extends Item
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
-        IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
-
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
+
+        if (getConfigType().useNewDamageSystem())
+            tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + "g"));
+        else
+            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
+
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Fall Speed Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+            tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+
         if (getConfigType().getBulletSpread() > 0F)
         {
             float spread = getConfigType().getBulletSpread();
@@ -61,10 +66,12 @@ public abstract class ShootableItem extends Item
             tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * spread) + "°"));
         }
 
-        IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
-
         if (getConfigType().getExplosionRadius() > 0F)
+        {
+            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
             tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius())));
+        }
+
         if (getConfigType().getExplosionPower() > 1F || getConfigType().getExplosionPower() < 1F)
             tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower())));
     }

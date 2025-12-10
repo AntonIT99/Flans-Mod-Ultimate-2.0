@@ -11,7 +11,7 @@ public enum EnumFireMode
     {
         for (EnumFireMode mode : EnumFireMode.values())
         {
-            if (s.equalsIgnoreCase(mode.name()))
+            if (s.equalsIgnoreCase(mode.toString()))
                 return mode;
         }
         return SEMIAUTO;

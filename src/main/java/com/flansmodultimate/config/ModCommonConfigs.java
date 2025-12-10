@@ -21,6 +21,7 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.BooleanValue addAllPaintjobsToCreative;
 
     // Damage Settings
+    public static final ForgeConfigSpec.DoubleValue newDamageSystemReference;
     public static final ForgeConfigSpec.DoubleValue headshotDamageModifier;
     public static final ForgeConfigSpec.DoubleValue chestshotDamageModifier;
     public static final ForgeConfigSpec.DoubleValue armshotDamageModifier;
@@ -55,18 +56,21 @@ public class ModCommonConfigs
         BUILDER.pop();
 
         BUILDER.push("Damage Settings");
+        newDamageSystemReference = BUILDER
+                .comment("Reference for the new damage system using kinetic energy (when 'Mass' is set). This value should correspond approximate damage of a hand gun.")
+                .defineInRange("newDamageSystemReference", 5.0, 0.0, 1000.0);
         headshotDamageModifier = BUILDER
                 .comment("All headshot damage will be modified by this amount")
-                .defineInRange("headshotDamageModifier", 2.0, 0.0, 100.0);
+                .defineInRange("headshotDamageModifier", 2.0, 0.0, 1000.0);
         chestshotDamageModifier = BUILDER
                 .comment("All chest shot damage will be modified by this amount")
-                .defineInRange("headshotDamageModifier", 1.0, 0.0, 100.0);
+                .defineInRange("headshotDamageModifier", 1.0, 0.0, 1000.0);
         armshotDamageModifier = BUILDER
                 .comment("All arm shot damage will be modified by this amount")
-                .defineInRange("armshotDamageModifier", 0.7, 0.0, 100.0);
+                .defineInRange("armshotDamageModifier", 0.7, 0.0, 1000.0);
         legshotModifier = BUILDER
                 .comment("All leg shot damage will be modified by this amount")
-                .defineInRange("legshotModifier", 0.8, 0.0, 100.0);
+                .defineInRange("legshotModifier", 0.8, 0.0, 1000.0);
         vehicleWheelSeatExplosionModifier = BUILDER
                 .comment("Proportion of damage from an explosion when it has hit a wheel or seat")
                 .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);

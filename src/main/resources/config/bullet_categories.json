@@ -1,2 +1,14 @@
 {
+    "9x19mm Parabellum": {
+        "properties": {
+            "Mass": "8.0",
+            "FallSpeed": "1.0"
+        },
+        "items": [
+            "lugerAmmo",
+            "mp34ammo",
+            "mp40ammo",
+            "stenammo"
+        ]
+    }
 }

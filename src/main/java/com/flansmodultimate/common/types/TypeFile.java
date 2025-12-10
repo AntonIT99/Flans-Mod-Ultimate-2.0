@@ -5,27 +5,50 @@ import com.flansmodultimate.config.Category;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-@Getter
 public class TypeFile
 {
+    @Getter
     private final String name;
+    @Getter
     private final EnumType type;
+    @Getter
     private final IContentProvider contentPack;
-    private final List<String> lines = new ArrayList<>();
+    private final Map<String, List<String>> configMap = new HashMap<>();
 
     public TypeFile(String name, EnumType type, IContentProvider contentPack, List<String> lines)
     {
         this.name = name;
         this.type = type;
         this.contentPack = contentPack;
-        this.lines.addAll(lines);
+        for (String line : lines)
+        {
+            if (line.isBlank() || line.startsWith("//"))
+                continue;
+
+            String[] split = line.trim().split("\\s+", 2);
+            configMap.putIfAbsent(split[0].toLowerCase(Locale.ROOT), new ArrayList<>());
+            configMap.get(split[0].toLowerCase(Locale.ROOT)).add((split.length > 1) ? split[1] : null);
+        }
     }
 
-    public void addCategoryLines(Category category)
+    public boolean hasConfigLine(String key)
     {
-        lines.addAll(category.toLines());
+        return configMap.containsKey(key.toLowerCase(Locale.ROOT));
+    }
+
+    public List<String> getConfigLines(String key)
+    {
+        return configMap.get(key.toLowerCase(Locale.ROOT));
+    }
+
+    public void addCategoryConfigMap(Category category)
+    {
+        category.getProperties().forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).add(value));
     }
 
     public String toString()

@@ -2,7 +2,6 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.DefaultArmor;
-import com.flansmodultimate.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 
 @NoArgsConstructor
 public class ArmorType extends InfoType
@@ -86,54 +84,43 @@ public class ArmorType extends InfoType
     protected List<MobEffectInstance> effects = new ArrayList<>();
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
-        rawArmorItemType = readValue(split, "Type", rawArmorItemType, file);
-        textureName = ResourceUtils.sanitize(readValue(split, "ArmourTexture", textureName, file));
-        textureName = ResourceUtils.sanitize(readValue(split, "ArmorTexture", textureName, file));
-        defence = readValue(split, "DamageReduction", defence, file);
-        defence = readValue(split, "Defence", defence, file);
-        defence = readValue(split, "OtherDefence", defence, file);
-        if (split[0].equalsIgnoreCase("BulletDefence"))
-        {
-            bulletDefence = readValue(split, "BulletDefence", bulletDefence, file);
-            readBulletDefence = true;
-        }
-        if (split[0].equalsIgnoreCase("Enchantability"))
-        {
-            enchantability = readValue(split, "Enchantability", enchantability, file);
-            readEnchantability = true;
-        }
-        toughness = readValue(split, "Toughness", toughness, file);
-        durability = readValue(split, "Durability", durability, file);
-        damageReductionAmount = readValue(split, "DamageReductionAmount", damageReductionAmount, file);
-        moveSpeedModifier = readValue(split, "MoveSpeedModifier", moveSpeedModifier, file);
-        moveSpeedModifier = readValue(split, "Slowness", moveSpeedModifier, file);
-        jumpModifier = readValue(split, "JumpModifier", jumpModifier, file);
-        knockbackModifier = readValue(split, "KnockbackReduction", knockbackModifier, file);
-        knockbackModifier = readValue(split, "KnockbackModifier", knockbackModifier, file);
-        nightVision = readValue(split, "NightVision", nightVision, file);
-        invisible = readValue(split, "Invisible", invisible, file);
-        invisible = readValue(split, "playermodel", invisible, file);
-        negateFallDamage = readValue(split, "NegateFallDamage", negateFallDamage, file);
-        fireResistance = readValue(split, "FireResistance", fireResistance, file);
-        waterBreathing = readValue(split, "WaterBreathing", waterBreathing, file);
-        waterBreathing = readValue(split, "submarine", waterBreathing, file);
-        smokeProtection = readValue(split, "SmokeProtection", smokeProtection, file);
-        onWaterWalking = readValue(split, "OnWaterWalking", onWaterWalking, file);
-        hunger = readValue(split, "hunger", hunger, file);
-        regeneration = readValue(split, "regenerate", regeneration, file);
+        super.read(file);
+        rawArmorItemType = readValue("Type", rawArmorItemType, file);
+        textureName = readResource("ArmourTexture", textureName, file);
+        textureName = readResource("ArmorTexture", textureName, file);
+        defence = readValue("DamageReduction", defence, file);
+        defence = readValue("Defence", defence, file);
+        defence = readValue("OtherDefence", defence, file);
+        bulletDefence = readValue("BulletDefence", bulletDefence, file);
+        readBulletDefence = file.hasConfigLine("BulletDefence");
+        enchantability = readValue("Enchantability", enchantability, file);
+        readEnchantability = file.hasConfigLine("Enchantability");
+        toughness = readValue("Toughness", toughness, file);
+        durability = readValue("Durability", durability, file);
+        damageReductionAmount = readValue("DamageReductionAmount", damageReductionAmount, file);
+        moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
+        moveSpeedModifier = readValue("Slowness", moveSpeedModifier, file);
+        jumpModifier = readValue("JumpModifier", jumpModifier, file);
+        knockbackModifier = readValue("KnockbackReduction", knockbackModifier, file);
+        knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
+        nightVision = readValue("NightVision", nightVision, file);
+        invisible = readValue("Invisible", invisible, file);
+        invisible = readValue("playermodel", invisible, file);
+        negateFallDamage = readValue("NegateFallDamage", negateFallDamage, file);
+        fireResistance = readValue("FireResistance", fireResistance, file);
+        waterBreathing = readValue("WaterBreathing", waterBreathing, file);
+        waterBreathing = readValue("submarine", waterBreathing, file);
+        smokeProtection = readValue("SmokeProtection", smokeProtection, file);
+        onWaterWalking = readValue("OnWaterWalking", onWaterWalking, file);
+        hunger = readValue("hunger", hunger, file);
+        regeneration = readValue("regenerate", regeneration, file);
 
-        addEffects(readValues(split, "AddEffect", file), effects, line, file, true, false);
-        addEffects(readValues(split, "AddPotionEffect", file), effects, line, file, true, false);
-        addEffects(readValues(split, "PotionEffect", file), effects, line, file, true, false);
-    }
+        addEffects("AddEffect", effects, file, true, false);
+        addEffects("AddPotionEffect", effects, file, true, false);
+        addEffects("PotionEffect", effects, file, true, false);
 
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
         switch (rawArmorItemType.toLowerCase(Locale.ROOT))
         {
             case "helmet", "hat", "head":

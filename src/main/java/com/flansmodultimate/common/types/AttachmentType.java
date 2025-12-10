@@ -4,7 +4,6 @@ import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.AttachmentItem;
-import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -120,76 +119,70 @@ public class AttachmentType extends PaintableType implements IScope
     protected float zoomAugment = 1;
 
     @Override
-    protected void readLine(String line, String[] split, TypeFile file)
+    protected void read(TypeFile file)
     {
-        super.readLine(line, split, file);
+        super.read(file);
 
-        attachmentTypeString = readValue(split, "AttachmentType", attachmentTypeString, file);
+        attachmentTypeString = readValue("AttachmentType", attachmentTypeString, file);
 
-        silencer = readValue(split, "Silencer", silencer, file);
-        disableMuzzleFlash = readValue(split, "DisableMuzzleFlash", disableMuzzleFlash, file);
-        disableMuzzleFlash = readValue(split, "DisableFlash", disableMuzzleFlash, file);
+        silencer = readValue("Silencer", silencer, file);
+        disableMuzzleFlash = readValue("DisableMuzzleFlash", disableMuzzleFlash, file);
+        disableMuzzleFlash = readValue("DisableFlash", disableMuzzleFlash, file);
 
         //Flashlight settings
-        flashlight = readValue(split, "Flashlight", flashlight, file);
-        flashlightRange = readValue(split, "FlashlightRange", flashlightRange, file);
-        flashlightStrength = readValue(split, "FlashlightStrength", flashlightStrength, file);
+        flashlight = readValue("Flashlight", flashlight, file);
+        flashlightRange = readValue("FlashlightRange", flashlightRange, file);
+        flashlightStrength = readValue("FlashlightStrength", flashlightStrength, file);
 
         //Mode override
-        modeOverrideString = readValue(split, "ModeOverride", modeOverrideString, file);
+        modeOverrideString = readValue("ModeOverride", modeOverrideString, file);
 
         //Secondary Stuff
-        secondaryFire = readValue(split, "SecondaryMode", secondaryFire, file);
+        secondaryFire = readValue("SecondaryMode", secondaryFire, file);
 
-        String ammo = readValue(split, "SecondaryAmmo", StringUtils.EMPTY, file);
+        String ammo = readValue("SecondaryAmmo", StringUtils.EMPTY, file);
         if (!ammo.isBlank())
             secondaryAmmo.add(ammo);
 
-        secondaryDamage = readValue(split, "SecondaryDamage", secondaryDamage, file);
-        secondarySpread = readValue(split, "SecondarySpread", secondarySpread, file);
-        secondarySpread = readValue(split, "SecondaryAccuracy", secondarySpread, file);
-        secondarySpeed = readValue(split, "SecondaryBulletSpeed", secondarySpeed, file);
-        secondaryShootDelay = readValue(split, "SecondaryShootDelay", secondaryShootDelay, file);
-        secondaryReloadTime = readValue(split, "SecondaryReloadTime", secondaryReloadTime, file);
-        secondaryShootDelay = readValue(split, "SecondaryShootDelay", secondaryShootDelay, file);
-        secondaryNumBullets = readValue(split, "SecondaryNumBullets", secondaryNumBullets, file);
-        numSecAmmoItems = readValue(split, "LoadSecondaryIntoGun", numSecAmmoItems, file);
+        secondaryDamage = readValue("SecondaryDamage", secondaryDamage, file);
+        secondarySpread = readValue("SecondarySpread", secondarySpread, file);
+        secondarySpread = readValue("SecondaryAccuracy", secondarySpread, file);
+        secondarySpeed = readValue("SecondaryBulletSpeed", secondarySpeed, file);
+        secondaryShootDelay = readValue("SecondaryShootDelay", secondaryShootDelay, file);
+        secondaryReloadTime = readValue("SecondaryReloadTime", secondaryReloadTime, file);
+        secondaryShootDelay = readValue("SecondaryShootDelay", secondaryShootDelay, file);
+        secondaryNumBullets = readValue("SecondaryNumBullets", secondaryNumBullets, file);
+        numSecAmmoItems = readValue("LoadSecondaryIntoGun", numSecAmmoItems, file);
 
-        secondaryFireModeString = readValue(split, "SecondaryFireMode", secondaryFireModeString, file);
+        secondaryFireModeString = readValue("SecondaryFireMode", secondaryFireModeString, file);
 
-        secondaryShootSound = readSound(split, "SecondaryShootSound", secondaryShootSound, file);
-        secondaryReloadSound = readSound(split, "SecondaryReloadSound", secondaryReloadSound, file);
-        toggleSound = readSound(split, "ModeSwitchSound", toggleSound, file);
+        secondaryShootSound = readSound("SecondaryShootSound", secondaryShootSound, file);
+        secondaryReloadSound = readSound("SecondaryReloadSound", secondaryReloadSound, file);
+        toggleSound = readSound("ModeSwitchSound", toggleSound, file);
 
         //Multipliers
-        meleeDamageMultiplier = readValue(split, "MeleeDamageMultiplier", meleeDamageMultiplier, file);
-        damageMultiplier = readValue(split, "DamageMultiplier", damageMultiplier, file);
-        spreadMultiplier = readValue(split, "SpreadMultiplier", spreadMultiplier, file);
-        recoilMultiplier = readValue(split, "RecoilMultiplier", recoilMultiplier, file);
-        recoilControlMultiplier = readValue(split, "RecoilControlMultiplier", recoilControlMultiplier, file);
-        recoilControlMultiplierSneaking = readValue(split, "RecoilControlMultiplierSneaking", recoilControlMultiplierSneaking, file);
-        recoilControlMultiplierSprinting = readValue(split, "RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
-        bulletSpeedMultiplier = readValue(split, "BulletSpeedMultiplier", bulletSpeedMultiplier, file);
-        recoilControlMultiplierSprinting = readValue(split, "RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
-        moveSpeedMultiplier = readValue(split, "MovementSpeedMultiplier", moveSpeedMultiplier, file);
-        moveSpeedMultiplier = readValue(split, "MoveSpeedModifier", moveSpeedMultiplier, file);
+        meleeDamageMultiplier = readValue("MeleeDamageMultiplier", meleeDamageMultiplier, file);
+        damageMultiplier = readValue("DamageMultiplier", damageMultiplier, file);
+        spreadMultiplier = readValue("SpreadMultiplier", spreadMultiplier, file);
+        recoilMultiplier = readValue("RecoilMultiplier", recoilMultiplier, file);
+        recoilControlMultiplier = readValue("RecoilControlMultiplier", recoilControlMultiplier, file);
+        recoilControlMultiplierSneaking = readValue("RecoilControlMultiplierSneaking", recoilControlMultiplierSneaking, file);
+        recoilControlMultiplierSprinting = readValue("RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
+        bulletSpeedMultiplier = readValue("BulletSpeedMultiplier", bulletSpeedMultiplier, file);
+        recoilControlMultiplierSprinting = readValue("RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
+        moveSpeedMultiplier = readValue("MovementSpeedMultiplier", moveSpeedMultiplier, file);
+        moveSpeedMultiplier = readValue("MoveSpeedModifier", moveSpeedMultiplier, file);
 
         //Scope Variables
-        minZoom = readValue(split, "MinZoom", minZoom, file);
-        maxZoom = readValue(split, "MaxZoom", maxZoom, file);
-        zoomAugment = readValue(split, "ZoomAugment", zoomAugment, file);
-        zoomFactor = readValue(split, "ZoomLevel", zoomFactor, file);
-        fovFactor = readValue(split, "FOVZoomLevel", fovFactor, file);
+        minZoom = readValue("MinZoom", minZoom, file);
+        maxZoom = readValue("MaxZoom", maxZoom, file);
+        zoomAugment = readValue("ZoomAugment", zoomAugment, file);
+        zoomFactor = readValue("ZoomLevel", zoomFactor, file);
+        fovFactor = readValue("FOVZoomLevel", fovFactor, file);
 
-        overlayName = ResourceUtils.sanitize(readValue(split, "ZoomOverlay", overlayName, file));
+        overlayName = readResource("ZoomOverlay", overlayName, file);
 
-        hasNightVision = readValue(split, "HasNightVision", hasNightVision, file);
-    }
-
-    @Override
-    protected void postRead()
-    {
-        super.postRead();
+        hasNightVision = readValue("HasNightVision", hasNightVision, file);
 
         attachmentType = EnumAttachmentType.get(attachmentTypeString);
 

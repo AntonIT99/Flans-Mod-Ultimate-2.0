@@ -84,7 +84,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
     {
-        if (Files.exists(ContentManager.getFlanFolder()))
+        if (ContentManager.getFlanFolder() != null && Files.exists(ContentManager.getFlanFolder()))
         {
             event.addRepositorySource(new ModRepositorySource(ContentManager.getFlanFolder()));
         }
