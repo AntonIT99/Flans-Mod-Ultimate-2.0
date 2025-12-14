@@ -6,6 +6,8 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
 import com.flansmodultimate.common.guns.FireDecision;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -42,6 +44,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -208,10 +211,37 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             // Stats
             if (configType.isShowDamage())
             {
-                //TODO: for old damage system: damage vs Entity colorized?
                 tooltipComponents.add(IFlanItem.statLine("Damage", StringUtils.EMPTY));
                 for (ShootableType shootableType : configType.getAmmoTypes())
-                    tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack))));
+                {
+                    if (shootableType.useNewDamageSystem())
+                    {
+                        tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, null))));
+                    }
+                    else
+                    {
+                        float damage = shootableType.getDamageForDisplay(configType, stack, null);
+                        MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(damage));
+
+                        final float EPS = 0.0001F;
+
+                        // vs Living: only show if explicitly configured AND different from base
+                        if (shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - shootableType.getDamageForDisplay(configType, stack, LivingEntity.class)) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, LivingEntity.class))).withStyle(ChatFormatting.GREEN));
+
+                        // vs Player: inherits from vsLiving
+                        if (shootableType.getDamage().isReadDamageVsPlayer() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Player.class) - shootableType.getDamageForDisplay(configType, stack, LivingEntity.class)) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Player.class))).withStyle(ChatFormatting.RED));
+
+                        // vs Vehicle: inherits from base
+                        if (shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Vehicle.class) - damage) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Vehicle.class))).withStyle(ChatFormatting.AQUA));
+
+                        // vs Plane: inherits from vsVehicle
+                        if (shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Plane.class) - shootableType.getDamageForDisplay(configType, stack, Vehicle.class)) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Plane.class))).withStyle(ChatFormatting.LIGHT_PURPLE));
+                    }
+                }
             }
 
             if (configType.isShowRecoil())

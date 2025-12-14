@@ -6,8 +6,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -308,12 +310,12 @@ public abstract class ShootableType extends InfoType
         explosionDamage.calculate();
     }
 
-    public float getDamageForDisplay(GunType gunType, ItemStack gunStack)
+    public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (useNewDamageSystem())
             return (float) (ModCommonConfigs.newDamageSystemReference.get() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
-            return getDamage().getDamageVsLiving() * gunType.getDamage(gunStack);
+            return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }
 
     public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)

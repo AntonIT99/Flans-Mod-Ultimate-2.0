@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Plane;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -106,7 +107,7 @@ public final class DamageStats
             damageVsPlanes = damageVsVehicles;
     }
 
-    public float getDamageAgainstEntity(Entity entity)
+    public float getDamageAgainstEntity(@Nullable Entity entity)
     {
         if (entity instanceof Player)
             return damageVsPlayer;
@@ -115,6 +116,22 @@ public final class DamageStats
         else if (entity instanceof Driveable)
             return damageVsVehicles;
         else if (entity instanceof LivingEntity)
+            return damageVsLiving;
+        else
+            return damage;
+    }
+
+    public float getDamageAgainstEntityClass(@Nullable Class<? extends Entity> entityClass)
+    {
+        if (entityClass == null)
+            return damage;
+        else if (entityClass.equals(Player.class))
+            return damageVsPlayer;
+        else if (entityClass.equals(Plane.class))
+            return damageVsPlanes;
+        else if (entityClass.equals(Driveable.class))
+            return damageVsVehicles;
+        else if (entityClass.equals(LivingEntity.class))
             return damageVsLiving;
         else
             return damage;

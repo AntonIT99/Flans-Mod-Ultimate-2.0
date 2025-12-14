@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -44,7 +45,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     /**
      * Helper to render "BlueLabel: gray value"
      */
-    static Component statLine(String label, String value)
+    static MutableComponent statLine(String label, String value)
     {
         return Component.literal(label + ": ")
                 .withStyle(ChatFormatting.BLUE)
@@ -54,7 +55,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     /**
      * Slightly indented stat line for sub-values (vs Living / vs Player / etc.)
      */
-    static Component indentedStatLine(String label, String value)
+    static MutableComponent indentedStatLine(String label, String value)
     {
         return Component.literal("  " + label + ": ")
                 .withStyle(ChatFormatting.DARK_AQUA)
