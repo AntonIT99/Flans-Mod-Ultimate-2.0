@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -331,7 +332,7 @@ public abstract class ShootableType extends InfoType
             }
             else
             {
-                list.addAll(registeredAmmoList.values().stream().map(pack -> pack.get(shortname)).toList());
+                list.addAll(registeredAmmoList.values().stream().map(shootableTypeMap -> shootableTypeMap.get(shortname)).filter(Objects::nonNull).toList());
             }
         }
         return list;
