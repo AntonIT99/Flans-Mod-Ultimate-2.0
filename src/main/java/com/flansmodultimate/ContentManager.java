@@ -725,7 +725,7 @@ public class ContentManager
             {
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {
-                    outputFile = outputFolder.resolve(p.getIcon() + ".json");
+                    outputFile = outputFolder.resolve(p.getIconName() + ".json");
                     model = ResourceUtils.ItemModel.create(p);
                     jsonContent = gson.toJson(model);
                     try

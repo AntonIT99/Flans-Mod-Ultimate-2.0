@@ -38,8 +38,6 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
                     tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
             }
         }
-
-        tooltipComponents.add(Component.empty());
     }
 
     /**

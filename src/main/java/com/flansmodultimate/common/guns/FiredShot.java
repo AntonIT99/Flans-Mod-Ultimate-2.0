@@ -41,7 +41,7 @@ public class FiredShot
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isShiftKeyDown(), shooter.isSprinting()), bulletType, shooter, shooter);
+        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter);
     }
 
     /** General Constructor */

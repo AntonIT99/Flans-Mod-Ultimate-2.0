@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -44,11 +45,6 @@ public class PlayerData
     private PlayerSnapshot[] snapshots;
 
     //Gun-related fields
-    /** The slotID of the gun being used by the off-hand. 0 = no slot. 1 ~ 9 = hotbar slots */
-    private int offHandGunSlot = 0;
-    /** The off hand gun stack. For viewing other player's off hand weapons only (since you don't know what is in their inventory and hence just the ID is insufficient) */
-    @OnlyIn(Dist.CLIENT)
-    private ItemStack offHandGunStack;
     /** The MG this player is using */
     private DeployedGun mountingGun;
     /** Tickers to stop shooting too fast */
@@ -73,18 +69,18 @@ public class PlayerData
     private boolean reloadingLeft;
     /** When remote explosives are thrown they are added to this list. When the player uses a remote, the first one from this list detonates */
     @Getter
-    private final ArrayList<Grenade> remoteExplosives = new ArrayList<>(); //TODO: add Tools to detonate remote explosives
+    private final List<Grenade> remoteExplosives = new ArrayList<>(); //TODO: add Tools to detonate remote explosives
     /** Sound delay parameters */
     @Getter @Setter
     private int loopedSoundDelay;
     /** Sound delay parameters */
-    private boolean shouldPlayCooldownSound;
-    private boolean shouldPlayWarmupSound;
-    /** Sound delay parameters */
     @Getter @Setter
     private boolean isSpinning;
     /** Melee weapon custom hit simulation */
-    private int meleeProgress, meleeLength;
+    @Getter @Setter
+    private int meleeProgress;
+    @Getter @Setter
+    private int meleeLength;
     /** When the player shoots a burst fire weapon, one shot is fired immediately and this counter keeps track of how many more should be fired */
     private int burstRoundsRemainingLeft = 0;
     @Getter @Setter
@@ -97,6 +93,7 @@ public class PlayerData
     private boolean isAmmoEmpty;
     private boolean reloadedAfterRespawn = false;
 
+    @Getter
     private Vector3f[] lastMeleePositions;
 
     //TODO: implement Teams
@@ -113,7 +110,7 @@ public class PlayerData
     @Getter
     private Team team;
     /** The team this player will switch to upon respawning */
-    //private Team newTeam;
+    private Team newTeam;
     /** The class the player is currently using */
     //private PlayerClass playerClass;
     /** The class the player will switch to upon respawning */
@@ -132,21 +129,25 @@ public class PlayerData
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 
+    @NotNull
     public static PlayerData getInstance(@NotNull Player player)
     {
         return getInstance(player.getUUID(), player.level().isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
     }
 
+    @NotNull
     public static PlayerData getInstance(UUID playerId)
     {
         return getInstance(playerId, LogicalSide.SERVER);
     }
 
+    @NotNull
     public static PlayerData getInstance(@NotNull Player player, LogicalSide side)
     {
         return getInstance(player.getUUID(), side);
     }
 
+    @NotNull
     public static PlayerData getInstance(UUID playerId, LogicalSide side)
     {
         if (side.isClient())

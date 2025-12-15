@@ -5,7 +5,6 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
@@ -165,7 +164,10 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 
     protected EnumAnimationType animationType = EnumAnimationType.NONE;
     protected EnumMeleeAnimation meleeAnimation = EnumMeleeAnimation.DEFAULT;
-    protected float tiltGunTime = 0.15F, unloadClipTime = 0.35F, loadClipTime = 0.35F, untiltGunTime = 0.15F;
+    protected float tiltGunTime = 0.15F;
+    protected float unloadClipTime = 0.35F;
+    protected float loadClipTime = 0.35F;
+    protected float untiltGunTime = 0.15F;
     /** If true, then the scope attachment will move with the top slide */
     protected boolean scopeIsOnSlide;
     /** If true, then the scope attachment will move with the break action. Can be combined with the above */
@@ -423,7 +425,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     private void applyFirstPersonAdjustments(ItemStack item, PoseStack poseStack, boolean leftHand, GunAnimations animations)
     {
         float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
-        boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && GunItem.isCrouching() && !animations.reloading;
+        boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching() && !animations.reloading;
 
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 

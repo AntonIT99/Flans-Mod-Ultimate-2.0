@@ -25,10 +25,15 @@ public final class FlansDamageSources
     public static final ResourceKey<DamageType> FLANS_HEADSHOT = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_headshot"));
     public static final ResourceKey<DamageType> FLANS_EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_explosion"));
 
-    public static DamageSource createDamageSource(Level level, @Nullable Entity direct, @Nullable Entity attacker, ResourceKey<DamageType> damageType)
+    public static DamageSource createDamageSource(Level level, @Nullable Entity directAttacker, @Nullable Entity indirectAttacker, ResourceKey<DamageType> damageType)
     {
         var holder = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(damageType);
-        return new DamageSource(holder, direct, attacker);
+        return new DamageSource(holder, directAttacker, indirectAttacker);
+    }
+
+    public static DamageSource createDamageSource(Level level, @Nullable Entity attacker, ResourceKey<DamageType> damageType)
+    {
+        return createDamageSource(level, attacker, attacker, damageType);
     }
 
     public static boolean isShootableDamage(DamageSource source)

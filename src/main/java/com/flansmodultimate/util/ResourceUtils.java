@@ -71,7 +71,7 @@ public final class ResourceUtils
             {
                 overrides = paintableType.getPaintjobs().values().stream()
                         .filter(p -> !p.equals(paintableType.getDefaultPaintjob()))
-                        .map(p -> new Override(FlansMod.paintjob.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIcon()))
+                        .map(p -> new Override(FlansMod.paintjob.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIconName()))
                         .toList();
             }
             return new ItemModel("item/generated", null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + config.getIcon()), overrides);
@@ -79,7 +79,7 @@ public final class ResourceUtils
 
         public static ItemModel create(Paintjob paintjob)
         {
-            return new ItemModel("item/generated", null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + paintjob.getIcon()), null);
+            return new ItemModel("item/generated", null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + paintjob.getIconName()), null);
         }
     }
 }

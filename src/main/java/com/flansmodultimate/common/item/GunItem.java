@@ -4,6 +4,7 @@ import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
@@ -16,7 +17,6 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketReload;
@@ -25,10 +25,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,18 +63,18 @@ import java.util.function.Consumer;
 
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
 {
+    public static final int LOCK_ON_SOUND_RANGE = 10;
+
     protected static final String NBT_AMMO = "ammo";
     protected static final String NBT_SECONDARY_AMMO = "secondary_ammo";
+    protected static final String NBT_PAINT = "paint";
     protected static final String NBT_LEGENDARY_CRAFTER = "legendary_crafter";
+    protected static final String NBT_ENTITY_LOCK_ON = "lock_on";
 
     protected static boolean rightMouseHeld;
     protected static boolean lastRightMouseHeld;
     protected static boolean leftMouseHeld;
     protected static boolean lastLeftMouseHeld;
-    @Getter
-    protected static boolean crouching;
-    protected static boolean sprinting;
-    protected static boolean shooting;
 
     @Getter
     protected final GunType configType;
@@ -82,14 +82,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Getter
     protected final GunItemBehavior behavior;
     protected String originGunbox;
+    @Setter
+    protected boolean isScoped;
     protected int soundDelay;
+    @Getter
+    protected int lockOnSoundDelay;
     @Getter
     protected int impactX;
     @Getter
     protected int impactY;
     @Getter
     protected int impactZ;
-    //TODO: implement checkForLockOn
 
     public GunItem(GunType configType)
     {
@@ -198,6 +201,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         }
         else
         {
+            tooltipComponents.add(Component.empty());
+
             AttachmentType barrel = configType.getBarrel(stack);
             if (barrel != null && barrel.isSilencer())
                 tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
@@ -240,6 +245,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                         // vs Plane: inherits from vsVehicle
                         if (shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Plane.class) - shootableType.getDamageForDisplay(configType, stack, Vehicle.class)) > EPS)
                             damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Plane.class))).withStyle(ChatFormatting.LIGHT_PURPLE));
+
+                        tooltipComponents.add(damageComponent);
                     }
                 }
             }
@@ -254,8 +261,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
 
                 Component recoilControl = Component.literal("Recoil Control: ").withStyle(ChatFormatting.BLUE)
-                        .append(Component.literal(" " + sprintingControl).withStyle(ChatFormatting.RED))
-                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(sprintingControl).withStyle(ChatFormatting.RED))
+                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
                         .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN));
                 tooltipComponents.add(recoilControl);
             }
@@ -425,8 +432,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (!(entity instanceof Player player))
             return;
 
-        // Figure out which hand holds this stack.
-        // Not held -> ignore
         InteractionHand hand;
         if (player.getMainHandItem() == stack)
             hand = InteractionHand.MAIN_HAND;
@@ -435,65 +440,82 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
             return;
 
-        pollMouseButtonStateWhenNoScreen(level);
-
-        boolean hasOffHand = !player.getMainHandItem().isEmpty() && !player.getOffhandItem().isEmpty();
+        boolean dualWield = !player.getMainHandItem().isEmpty() && !player.getOffhandItem().isEmpty();
+        PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            onUpdateClient(stack, slotId, level, player, hand, hasOffHand);
+            onUpdateClient(stack, level, player, data, hand, dualWield);
         else
-            onUpdateServer(stack, slotId, level, player, hand, hasOffHand);
+            onUpdateServer(stack, player, data);
 
-        //TODO from FMUltimate
-        //checkForLockOn()
-        //checkForMelee()
+        behavior.checkForLockOn(level, player, data);
+        behavior.checkForMelee(level, player, data, stack);
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void onUpdateClient(ItemStack gunStack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
+    protected void onUpdateClient(ItemStack gunStack, Level level, @NotNull Player player, @NotNull PlayerData data, InteractionHand hand, boolean dualWield)
     {
-        //TODO: implement FMU stuff
-
         // Not for deployables
         if (configType.isDeployable())
             return;
-
-        // Scope handling
-        behavior.handleScopeToggleIfNeeded(gunStack, hand, hasOffHand);
-
-        // Grab per-player data and input edge
-        PlayerData data = PlayerData.getInstance(player);
-        data.setMinigunSpeed(data.getMinigunSpeed() * 0.9F); // slow down minigun each tick
-
-        boolean hold = getMouseHeld(hand);
-        boolean held = getLastMouseHeld(hand);
-
-        // Don’t shoot certain entities under crosshair
-        if (behavior.shouldBlockFireAtCrosshair())
-            hold = false;
-
-        // Idle sound (TODO: ideally server-side)
-        behavior.playIdleSoundIfAny(level, player);
-
-        if (!behavior.gunCanBeHandled(player))
-            return;
         if (!configType.isUsableByPlayers())
             return;
+        if (!behavior.gunCanBeHandled(player))
+            return;
 
-        // Fire-mode decision
-        GunAnimations anim = ModClient.getGunAnimations(player, hand);
-        FireDecision decision = FireDecision.computeFireDecision(this, gunStack, hand, data, hold, held, anim);
+        // Scope handling
+        behavior.handleScope(gunStack, hand, dualWield);
 
-        if (decision.needsReload())
-            PacketHandler.sendToServer(new PacketReload(hand, false));
-        else if (decision.shouldShoot())
-            behavior.shoot(hand, player, gunStack, data, level, anim);
+        // Slow down minigun each tick
+        data.setMinigunSpeed(data.getMinigunSpeed() * 0.9F);
+
+        GunAnimations animations = ModClient.getGunAnimations(player, hand);
+        
+        // Switch Delay
+        handleGunSwitchDelay(data, animations, hand);
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen == null && ModClient.getSwitchTime() <= 0)
+        {
+            boolean shootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isOffhandShootPressed() : GunInputState.isShootPressed();
+            boolean prevShootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isPrevOffhandShootPressed() : GunInputState.isPrevShootPressed();
+
+            // Don’t shoot certain entities under crosshair
+            if (behavior.shouldBlockFireAtCrosshair())
+                shootKeyPressed = false;
+
+            FireDecision decision = FireDecision.computeFireDecision(this, gunStack, hand, data, shootKeyPressed, prevShootKeyPressed, animations);
+
+            if (decision.needsReload())
+                PacketHandler.sendToServer(new PacketReload(hand, false));
+            else if (decision.shouldShoot())
+                behavior.shoot(hand, player, gunStack, data, level, animations);
+        }
+    }
+    
+    private void handleGunSwitchDelay(@NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand) 
+    {
+        float animationLength = configType.getSwitchDelay();
+        if (animationLength == 0)
+        {
+            animations.switchAnimationLength = animations.switchAnimationProgress = 0;
+        }
+        else
+        {
+            animations.switchAnimationProgress = 1;
+            animations.switchAnimationLength = animationLength;
+            ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
+
+            if (hand == InteractionHand.MAIN_HAND)
+                data.setShootTimeRight(Math.max(data.getShootTimeRight(), animationLength));
+            else if (hand == InteractionHand.OFF_HAND)
+                data.setShootTimeLeft(Math.max(data.getShootTimeLeft(), animationLength));
+        }
     }
 
-    protected void onUpdateServer(ItemStack gunStack, int gunSlot, Level level, @NotNull Player player, InteractionHand hand, boolean hasOffHand)
+    protected void onUpdateServer(ItemStack gunStack, @NotNull Player player, @NotNull PlayerData data)
     {
-        //TODO: implement FMU stuff
-        PlayerData data = PlayerData.getInstance(player);
+        ensureGunTags(gunStack);
 
         //If the player is no longer holding a gun, emulate a release of the shoot button
         ItemStack mainHand = player.getMainHandItem();
@@ -503,37 +525,45 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (offHand.isEmpty() || !(offHand.getItem() instanceof GunItem))
             data.setShootingLeft(false);
 
+        if ((mainHand.isEmpty() || mainHand.getItem() != this) && (offHand.isEmpty() || offHand.getItem() != this))
+            isScoped = false;
+
         // And finally do sounds
-        if(soundDelay > 0)
+        behavior.playIdleSoundIfAny(player);
+        
+        if (soundDelay > 0)
             soundDelay--;
     }
 
-    protected static boolean getMouseHeld(InteractionHand hand)
+    private void ensureGunTags(ItemStack stack)
     {
-        if (BooleanUtils.isTrue(ModClientConfigs.shootOnRightClick.get()))
-            return hand == InteractionHand.MAIN_HAND ? rightMouseHeld : leftMouseHeld;
-        else
-            return hand == InteractionHand.MAIN_HAND ? leftMouseHeld : rightMouseHeld;
-    }
+        CompoundTag tag = stack.getTag();
 
-    protected static boolean getLastMouseHeld(InteractionHand hand)
-    {
-        if (BooleanUtils.isTrue(ModClientConfigs.shootOnRightClick.get()))
-            return hand == InteractionHand.MAIN_HAND ? lastRightMouseHeld : lastLeftMouseHeld;
-        else
-            return hand == InteractionHand.MAIN_HAND ? lastLeftMouseHeld : lastRightMouseHeld;
-    }
-
-    protected static void pollMouseButtonStateWhenNoScreen(Level level)
-    {
-        // Client-side input read (only when no GUI is open)
-        if (level.isClientSide && Minecraft.getInstance().screen == null)
+        // Create tag if missing or empty
+        if (tag == null || tag.isEmpty())
         {
-            Minecraft mc = Minecraft.getInstance();
-            lastRightMouseHeld = rightMouseHeld;
-            lastLeftMouseHeld  = leftMouseHeld;
-            rightMouseHeld = mc.options.keyUse.isDown();
-            leftMouseHeld  = mc.options.keyAttack.isDown();
+            CompoundTag newTag = new CompoundTag();
+            newTag.putString(NBT_PAINT, configType.getDefaultPaintjob().getIconName());
+
+            ListTag ammoList = new ListTag();
+            for (int j = 0; j < configType.getNumAmmoItemsInGun(stack); j++)
+                ammoList.add(new CompoundTag());
+
+            newTag.put(NBT_AMMO, ammoList);
+            stack.setTag(newTag);
+            tag = newTag;
+        }
+
+        // Repair missing keys
+        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST) || !tag.contains(NBT_PAINT, Tag.TAG_STRING))
+        {
+            ListTag ammoList = new ListTag();
+            for (int j = 0; j < configType.getNumAmmoItemsInGun(stack); j++)
+                ammoList.add(new CompoundTag());
+
+            tag.put(NBT_AMMO, ammoList);
+            tag.putString(NBT_PAINT, configType.getDefaultPaintjob().getIconName());
+            configType.checkForTags(stack);
         }
     }
 

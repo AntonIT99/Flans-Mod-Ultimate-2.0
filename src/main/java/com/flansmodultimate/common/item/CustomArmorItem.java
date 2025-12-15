@@ -51,6 +51,14 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     @Override
+    public int getEnchantmentValue()
+    {
+        if (!configType.isReadEnchantability())
+            return ModCommonConfigs.defaultArmorEnchantability.get();
+        return material.getEnchantmentValue();
+    }
+
+    @Override
     public void onInventoryTick(ItemStack stack, Level level, Player player, int slotIndex, int selectedIndex)
     {
         super.onInventoryTick(stack, level, player, slotIndex, selectedIndex);
@@ -119,6 +127,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        tooltipComponents.add(Component.empty());
 
         if (!Screen.hasShiftDown())
         {
@@ -128,15 +137,17 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
         else
         {
-            tooltipComponents.add(IFlanItem.statLine("Defence", IFlanItem.formatDouble(configType.getDefence())));
+            String defense = ModCommonConfigs.enableOldArmorRatioSystem.get() ? IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
+            String bulletDefense = ModCommonConfigs.enableOldArmorRatioSystem.get() ? IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
+
+            tooltipComponents.add(IFlanItem.statLine("Defense", defense));
             if (configType.getBulletDefence() != configType.getDefence())
-                tooltipComponents.add(IFlanItem.statLine("Bullet Defence", IFlanItem.formatDouble(configType.getBulletDefence())));
-            if (configType.getDamageReductionAmount() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Damage Reduction", IFlanItem.formatDouble(configType.getDamageReductionAmount())));
+                tooltipComponents.add(IFlanItem.statLine("Bullet Defense", String.valueOf(bulletDefense)));
+
             if (configType.getDurability() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Durability", IFlanItem.formatDouble(configType.getDurability())));
             if (configType.getEnchantability() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(configType.getEnchantability())));
+                tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(getEnchantmentValue())));
 
             if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
                 tooltipComponents.add(Component.literal("+" + IFlanItem.formatFloat((configType.getJumpModifier() - 1F) * 100F) + "% Jump Height").withStyle(ChatFormatting.AQUA));
@@ -172,13 +183,29 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     @Override
     @NotNull
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot pEquipmentSlot) {
-        Multimap<Attribute, AttributeModifier> modifiers = super.getDefaultAttributeModifiers(pEquipmentSlot);
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
+        Multimap<Attribute, AttributeModifier> vanilla = super.getDefaultAttributeModifiers(slot);
 
-        if (pEquipmentSlot == configType.getArmorItemType().getSlot())
+        if (slot == configType.getArmorItemType().getSlot())
         {
             ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-            builder.putAll(modifiers);
+
+            if (ModCommonConfigs.enableOldArmorRatioSystem.get())
+            {
+                // Copy everything EXCEPT vanilla armor/toughness (disables vanilla mitigation for this piece)
+                for (var entry : vanilla.entries())
+                {
+                    Attribute attr = entry.getKey();
+                    if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == null || entry.getValue() == null)
+                        continue;
+                    builder.put(attr, entry.getValue());
+                }
+            }
+            else
+            {
+                builder.putAll(vanilla);
+            }
+
             builder.put(Attributes.MOVEMENT_SPEED,
                     new AttributeModifier(uuid[configType.getArmorItemType().getSlot().getIndex()], "Movement Speed", configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
             builder.put(Attributes.KNOCKBACK_RESISTANCE,
@@ -186,6 +213,6 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             return builder.build();
         }
 
-        return modifiers;
+        return vanilla;
     }
 }

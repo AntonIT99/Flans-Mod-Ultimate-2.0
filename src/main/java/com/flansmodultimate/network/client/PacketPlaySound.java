@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -113,8 +113,8 @@ public class PacketPlaySound implements IClientPacket
         sendSoundPacket(position.x, position.y, position.z, range, dimension, sound, distort, silenced);
     }
 
-    public static void sendSoundPacket(Player player, double range, String sound, boolean distort)
+    public static void sendSoundPacket(Entity entity, double range, String sound, boolean distort)
     {
-        sendSoundPacket(player.getX(), player.getY(), player.getZ(), range, player.level().dimension(), sound, distort, false);
+        sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), range, entity.level().dimension(), sound, distort, false);
     }
 }

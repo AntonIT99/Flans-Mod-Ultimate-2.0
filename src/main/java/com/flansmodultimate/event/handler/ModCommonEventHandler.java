@@ -23,7 +23,7 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void onModConfigReload(ModConfigEvent event)
     {
-        if (event.getConfig().getSpec() == ModCommonConfigs.CONFIG)
+        if (event.getConfig().getSpec() == ModCommonConfigs.config)
             ModCommonConfigs.bake();
     }
 }

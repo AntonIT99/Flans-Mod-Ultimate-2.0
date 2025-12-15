@@ -118,6 +118,11 @@ public class PlayerSnapshot
         }
     }
 
+    public List<BulletHit> raytrace(Vector3f origin, Vector3f motion)
+    {
+        return raytrace(origin, motion, 0F, 1F);
+    }
+
     public List<BulletHit> raytrace(Vec3 origin, Vec3 motion, float lowerBound, float upperBound)
     {
         return raytrace(new Vector3f(origin), new Vector3f(motion), lowerBound, upperBound);

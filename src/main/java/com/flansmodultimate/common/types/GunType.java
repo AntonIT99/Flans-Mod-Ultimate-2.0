@@ -135,6 +135,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The amount that bullets spread out when fired from this gun
      */
+    @Getter @Setter
     protected float bulletSpread;
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CUBE;
     protected float sneakSpreadModifier = 0.63F;
@@ -274,19 +275,30 @@ public class GunType extends PaintableType implements IScope
     protected int hipFireWhileSprinting;
 
     //Launcher variables
+    @Getter
     protected int canLockOnAngle = 5;
+    @Getter
     protected int lockOnSoundTime;
+    @Getter
     protected String lockOnSound = StringUtils.EMPTY;
+    @Getter
     protected int maxRangeLockOn = 80;
+    @Getter
     protected boolean canSetPosition;
     /**
      * Determines what the launcher can lock on to
      */
+    @Getter
     protected boolean lockOnToDriveables;
+    @Getter
     protected boolean lockOnToPlanes;
+    @Getter
     protected boolean lockOnToVehicles;
+    @Getter
     protected boolean lockOnToMechas;
+    @Getter
     protected boolean lockOnToPlayers;
+    @Getter
     protected boolean lockOnToLivings;
 
     //Shields
@@ -487,7 +499,8 @@ public class GunType extends PaintableType implements IScope
     /**
      * Gives night vision while scoped if true
      */
-    protected boolean allowNightVision = false;
+    @Getter
+    protected boolean allowNightVision;
 
     /**
      * For adding a bullet casing model to render
@@ -568,8 +581,10 @@ public class GunType extends PaintableType implements IScope
      */
     protected float defaultSpread;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg */
+    @Getter
     protected float adsSpreadModifier = -1F;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg. For shotguns. */
+    @Getter
     protected float adsSpreadModifierShotgun = -1F;
     @Getter
     protected float switchDelay;
@@ -1045,7 +1060,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Method to check for null tags and assign default empty tags in that case
      */
-    private void checkForTags(ItemStack gun)
+    public void checkForTags(ItemStack gun)
     {
         // Ensure the root tag exists
         CompoundTag tag = gun.getOrCreateTag();
@@ -1074,14 +1089,14 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the melee damage of a specific gun, taking into account attachments
      */
-    public float getMeleeDamage(ItemStack stack)
+    public float getMeleeDamage(ItemStack stack, boolean driveable)
     {
         float stackMeleeDamage = meleeDamage;
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackMeleeDamage *= attachment.meleeDamageMultiplier;
 
-        return stackMeleeDamage;
+        return stackMeleeDamage * (driveable ? meleeDamageDriveableModifier : 1F);
     }
 
     /**

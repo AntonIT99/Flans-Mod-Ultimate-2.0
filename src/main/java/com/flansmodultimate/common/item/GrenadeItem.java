@@ -102,6 +102,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        tooltipComponents.add(Component.empty());
 
         if (!Screen.hasShiftDown())
         {

@@ -16,7 +16,7 @@ import java.util.Objects;
 
 public record FireDecision(boolean shouldShoot, boolean needsReload)
 {
-    public static FireDecision computeFireDecision(GunItem gunItem, ItemStack gunstack, InteractionHand hand, PlayerData data, boolean hold, boolean held, GunAnimations anim)
+    public static FireDecision computeFireDecision(GunItem gunItem, ItemStack gunstack, InteractionHand hand, PlayerData data, boolean shootKeyPressed, boolean prevShootKeyPressed, GunAnimations anim)
     {
         GunType type = gunItem.getConfigType();
 
@@ -31,13 +31,13 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
                     shouldShoot = true;
 
                 // then behave like SEMIAUTO for edge press
-                if (hold && !held)
+                if (shootKeyPressed && !prevShootKeyPressed)
                     shouldShoot = true;
                 else
                     needsToReload = false;
             }
             case SEMIAUTO -> {
-                if (hold && !held)
+                if (shootKeyPressed && !prevShootKeyPressed)
                     shouldShoot = true;
                 else
                     needsToReload = false;
@@ -45,10 +45,10 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
             case MINIGUN -> {
                 // if empty, only reload while holding
                 if (needsToReload)
-                    return new FireDecision(false, hold);
+                    return new FireDecision(false, shootKeyPressed);
 
                 // spin-up
-                if (hold) {
+                if (shootKeyPressed) {
                     accelerateMinigun(type, data, anim);
                     if (data.getMinigunSpeed() < type.getMinigunStartSpeed())
                     {
@@ -57,11 +57,11 @@ public record FireDecision(boolean shouldShoot, boolean needsReload)
                     }
                 }
                 // fall-through into FULLAUTO behavior
-                shouldShoot = hold;
+                shouldShoot = shootKeyPressed;
                 handleMinigunLoopingSounds(type, data);
             }
             case FULLAUTO -> {
-                shouldShoot = hold;
+                shouldShoot = shootKeyPressed;
                 if (!shouldShoot)
                     needsToReload = false;
                 handleMinigunLoopingSounds(type, data);

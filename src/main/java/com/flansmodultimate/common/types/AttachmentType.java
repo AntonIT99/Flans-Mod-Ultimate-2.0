@@ -6,6 +6,7 @@ import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.AttachmentItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,6 +84,7 @@ public class AttachmentType extends PaintableType implements IScope
     /** The delay between shots in ticks (1/20ths of seconds) */
     protected float secondaryDamage = 1;
     /** The delay between shots in ticks (1/20ths of seconds) */
+    @Getter @Setter
     protected float secondarySpread = 1;
     /** The speed of bullets upon leaving this gun */
     protected float secondarySpeed = 5.0F;
@@ -112,6 +114,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected float fovFactor = 1F;
     /** If true, then this scope will active night vision potion effect*/
+    @Getter
     protected boolean hasNightVision;
 
     protected float minZoom = 1;

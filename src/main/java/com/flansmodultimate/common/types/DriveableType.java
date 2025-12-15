@@ -12,8 +12,13 @@ public class DriveableType extends PaintableType
     protected int soundTime;
     @Getter
     protected int lockedOnSoundRange = 5;
+    @Getter
+    public String lockingOnSound = StringUtils.EMPTY;
 
     /** The radius within which to check for bullets */
     @Getter
     protected float bulletDetectionRadius = 5F;
+
+    @Getter
+    protected boolean hasFlare;
 }

@@ -4,7 +4,10 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlansDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModCommonConfigs;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +16,22 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -26,15 +39,51 @@ public final class CommonEventHandler
 {
     @Getter
     private static long ticker;
+    @Getter
+    private static final Set<UUID> nightVisionPlayers = new HashSet<>();
+    private static final Map<UUID, Integer> regenTimers = new HashMap<>();
+
     private static final RandomSource random = RandomSource.create();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.END)
-        {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+
+        if (ticker == Long.MAX_VALUE)
+            ticker = 0;
+        else
             ticker++;
+
+
+        MinecraftServer server = event.getServer();
+        if (server == null)
+            return;
+
+        Iterator<UUID> it = nightVisionPlayers.iterator();
+        while (it.hasNext())
+        {
+            UUID uuid = it.next();
+            ServerPlayer player = server.getPlayerList().getPlayer(uuid);
+
+            if (player == null || !shouldKeepNightVision(player))
+            {
+                if (player != null)
+                    player.removeEffect(MobEffects.NIGHT_VISION);
+                it.remove();
+            }
         }
+    }
+
+    private static boolean shouldKeepNightVision(ServerPlayer player)
+    {
+        ItemStack currentItem = player.getMainHandItem();
+        if (currentItem.isEmpty() || !(currentItem.getItem() instanceof GunItem itemGun))
+            return false;
+
+        AttachmentType scope = itemGun.getConfigType().getScope(currentItem);
+        return itemGun.getConfigType().isAllowNightVision() || (scope != null && scope.isHasNightVision());
     }
 
     @SubscribeEvent
@@ -43,12 +92,22 @@ public final class CommonEventHandler
         if (e.phase != TickEvent.Phase.END)
             return;
 
-        Player p = e.player;
+        Player player = e.player;
 
-        if (!p.level().isClientSide)
-            PlayerData.getInstance(p).serverTick(p);
+        if (!player.level().isClientSide)
+            PlayerData.getInstance(player).serverTick(player);
         else
-            PlayerData.getInstance(p).clientTick(p);
+            PlayerData.getInstance(player).clientTick(player);
+
+        int regenTimer = regenTimers.getOrDefault(player.getUUID(), 0);
+        if (regenTimer >= ModCommonConfigs.bonusRegenTickDelay.get())
+        {
+            if (player.getFoodData().getFoodLevel() >= ModCommonConfigs.bonusRegenFoodLimit.get())
+                player.heal(ModCommonConfigs.bonusRegenAmount.get());
+            regenTimer = 0;
+        }
+
+        regenTimers.put(player.getUUID(), regenTimer + 1);
     }
 
     @SubscribeEvent
@@ -57,14 +116,49 @@ public final class CommonEventHandler
         LivingEntity entity = event.getEntity();
         DamageSource source = event.getSource();
 
-        // server side only
-        if (entity.level().isClientSide || !FlansDamageSources.isShootableDamage(source))
+        if (entity.level().isClientSide)
             return;
 
-        if (tryApplyIgnoreArmorShot(event, entity, source))
+        if (ModCommonConfigs.enableOldArmorRatioSystem.get())
+            applyOldArmorRatioSystem(event, entity);
+
+        if (FlansDamageSources.isShootableDamage(source))
+        {
+            if (tryApplyIgnoreArmorShot(event, entity, source))
+                return;
+
+            applyArmorBulletDefense(event, entity);
+        }
+    }
+
+    private static void applyOldArmorRatioSystem(LivingHurtEvent event, LivingEntity entity)
+    {
+        float incoming = event.getAmount();
+        if (incoming <= 0F)
             return;
 
-        applyArmorScaling(event, entity);
+        double rSum = 0.0;
+
+        for (ItemStack stack : entity.getArmorSlots())
+        {
+            if (stack.getItem() instanceof CustomArmorItem armorItem)
+            {
+                double r = armorItem.getConfigType().getDefence();
+                if (r > 0.0)
+                    rSum += r;
+            }
+        }
+
+        if (rSum <= 0.0)
+            return;
+
+        // Clamp so you never “heal” damage by accident
+        rSum = Math.min(1.0, Math.max(0.0, rSum));
+
+        float absorbed = (float) (incoming * rSum);
+        float remaining = incoming - absorbed;
+
+        event.setAmount(remaining);
     }
 
     private static boolean tryApplyIgnoreArmorShot(LivingHurtEvent event, LivingEntity entity, DamageSource source)
@@ -114,7 +208,7 @@ public final class CommonEventHandler
         return true;
     }
 
-    private static void applyArmorScaling(LivingHurtEvent event, LivingEntity entity)
+    private static void applyArmorBulletDefense(LivingHurtEvent event, LivingEntity entity)
     {
         float totalNormalDef = 0.0F;
         float totalBulletDef = 0.0F;

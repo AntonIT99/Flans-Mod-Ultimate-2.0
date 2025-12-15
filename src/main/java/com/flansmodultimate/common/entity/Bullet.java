@@ -782,7 +782,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             String lockedOnSound = driveable.getConfigType().getLockedOnSound();
             if (StringUtils.isNotBlank(lockedOnSound) && soundTime <= 0 && !level.isClientSide)
             {
-                PacketPlaySound.sendSoundPacket(lockedOnTo.getX(), lockedOnTo.getY(), lockedOnTo.getZ(), driveable.getConfigType().getLockedOnSoundRange(), level.dimension(), lockedOnSound ,false);
+                PacketPlaySound.sendSoundPacket(lockedOnTo, driveable.getConfigType().getLockedOnSoundRange(), lockedOnSound, false);
                 soundTime = driveable.getConfigType().getSoundTime();
             }
         }

@@ -12,7 +12,11 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.handler.CommonEventHandler;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.network.server.PacketGunState;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -79,6 +83,12 @@ public class ModClient
     private static boolean controlModeMouse = true;
     /** A delayer on the mouse control switch */
     private static int controlModeSwitchTimer = 20;
+    /** The delay between shots / reloading */
+    private static float shootTimeLeft;
+    private static float shootTimeRight;
+    /** The delay between switching slots */
+    @Getter @Setter
+    private static float switchTime;
 
     // Recoil variables
     /** The recoil applied to the player view by shooting */
@@ -223,42 +233,67 @@ public class ModClient
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void setScope(IScope scope)
+    public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem)
     {
         Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
         Options opts = mc.options;
 
-        if (scopeTime <= 0 && mc.screen == null)
+        if (scopeTime > 0 || player == null || mc.screen != null || currentScope == desiredScope)
+            return;
+
+        if (currentScope == null)
         {
-            if (currentScope == null)
-            {
-                // entering scope
-                currentScope = scope;
-                lastZoomLevel = scope.getZoomFactor();
-                lastFOVZoomLevel = scope.getFovFactor();
+            // entering scope
+            currentScope = desiredScope;
+            lastZoomLevel = desiredScope.getZoomFactor();
+            lastFOVZoomLevel = desiredScope.getFovFactor();
 
-                // save originals
-                originalMouseSensitivity = opts.sensitivity().get();
-                originalCameraType = opts.getCameraType();
+            // save originals
+            originalMouseSensitivity = opts.sensitivity().get();
+            originalCameraType = opts.getCameraType();
 
-                // adjust sensitivity by sqrt(zoom)
-                double newSensitivity = originalMouseSensitivity / Math.sqrt(scope.getZoomFactor());
-                opts.sensitivity().set(newSensitivity);
+            // adjust sensitivity by sqrt(zoom)
+            double newSensitivity = originalMouseSensitivity / Math.sqrt(desiredScope.getZoomFactor());
+            opts.sensitivity().set(newSensitivity);
 
-                // force first-person while scoped
-                opts.setCameraType(CameraType.FIRST_PERSON);
-            }
-            else
-            {
-                // exiting scope
-                currentScope = null;
+            // force first-person while scoped
+            opts.setCameraType(CameraType.FIRST_PERSON);
 
-                // restore
-                opts.sensitivity().set(originalMouseSensitivity);
-                opts.setCameraType(originalCameraType);
-            }
-            scopeTime = 10;
+            //Send ads spread packet to server
+            sendADSSpreadToServer(gunStack, gunItem, player.isCrouching(), player.isSprinting());
+
+            gunItem.setScoped(true);
+            PacketHandler.sendToServer(new PacketGunState(true));
         }
+        else
+        {
+            // exiting scope
+            currentScope = null;
+
+            // restore
+            opts.sensitivity().set(originalMouseSensitivity);
+            opts.setCameraType(originalCameraType);
+
+            //Send default spread packet to server
+            PacketHandler.sendToServer(new PacketGunSpread(gunStack, gunItem.getConfigType().getDefaultSpread(gunStack)));
+
+            gunItem.setScoped(false);
+            PacketHandler.sendToServer(new PacketGunState(false));
+        }
+        scopeTime = 10;
+    }
+
+    private static void sendADSSpreadToServer(ItemStack gunStack, GunItem gunItem, boolean sneaking, boolean sprinting)
+    {
+        float spread = gunItem.getConfigType().getSpread(gunStack, sneaking, sprinting);
+
+        if (gunItem.getConfigType().getNumBullets() == 1)
+            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfigs.defaultADSSpreadMultiplier.get().floatValue() : gunItem.getConfigType().getAdsSpreadModifier();
+        else
+            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? ModCommonConfigs.defaultADSSpreadMultiplierShotgun.get().floatValue() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
+
+        PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
 
     @OnlyIn(Dist.CLIENT)

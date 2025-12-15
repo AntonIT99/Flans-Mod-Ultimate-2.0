@@ -212,7 +212,7 @@ public final class ShootingHelper
                 PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
                 bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                 // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                living.invulnerableTime = 0;
+                living.invulnerableTime = living.hurtDuration / 2;
             }
 
             if (bulletType.isSetEntitiesOnFire())

@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.common.item.GunItem;
@@ -52,6 +53,8 @@ public final class ClientEventHandler
     {
         if (event.phase != TickEvent.Phase.END)
             return;
+
+        GunInputState.tick();
 
         //TODO: complete commented code
         //renderHooks.update();

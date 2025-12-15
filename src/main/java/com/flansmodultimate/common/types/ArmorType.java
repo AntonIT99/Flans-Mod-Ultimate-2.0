@@ -22,6 +22,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor
 public class ArmorType extends InfoType
 {
+    public static final float ARMOR_POINT_FACTOR = 25.0F;
+
     protected String rawArmorItemType = StringUtils.EMPTY;
     @Getter
     protected ArmorItem.Type armorItemType;
@@ -36,12 +38,12 @@ public class ArmorType extends InfoType
     @Getter
     protected float penetrationResistance;
     @Getter
-    protected int damageReductionAmount;
-    @Getter
     protected int durability;
     @Getter
     protected int toughness;
+    @Getter
     protected int enchantability;
+    @Getter
     protected boolean readEnchantability;
     /** Modifier for move speed */
     @Getter
@@ -81,7 +83,8 @@ public class ArmorType extends InfoType
     protected boolean regeneration;
     /** Map of effects and effect Amplifiers */
     @Getter
-    protected List<MobEffectInstance> effects = new ArrayList<>();
+    protected List<MobEffectInstance> effects = new ArrayList<>();@Getter
+    protected String equipSound = StringUtils.EMPTY;
 
     @Override
     protected void read(TypeFile file)
@@ -92,14 +95,16 @@ public class ArmorType extends InfoType
         textureName = readResource("ArmorTexture", textureName, file);
         defence = readValue("DamageReduction", defence, file);
         defence = readValue("Defence", defence, file);
+        defence = readValue("Defense", defence, file);
         defence = readValue("OtherDefence", defence, file);
+        defence = readValue("OtherDefense", defence, file);
+        defence = Math.max(readValue("DamageReductionAmount", 0, file) / ARMOR_POINT_FACTOR, defence);
         bulletDefence = readValue("BulletDefence", bulletDefence, file);
         readBulletDefence = file.hasConfigLine("BulletDefence");
         enchantability = readValue("Enchantability", enchantability, file);
         readEnchantability = file.hasConfigLine("Enchantability");
         toughness = readValue("Toughness", toughness, file);
         durability = readValue("Durability", durability, file);
-        damageReductionAmount = readValue("DamageReductionAmount", damageReductionAmount, file);
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
         moveSpeedModifier = readValue("Slowness", moveSpeedModifier, file);
         jumpModifier = readValue("JumpModifier", jumpModifier, file);
@@ -107,15 +112,16 @@ public class ArmorType extends InfoType
         knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
         nightVision = readValue("NightVision", nightVision, file);
         invisible = readValue("Invisible", invisible, file);
-        invisible = readValue("playermodel", invisible, file);
+        invisible = readValue("Playermodel", invisible, file);
         negateFallDamage = readValue("NegateFallDamage", negateFallDamage, file);
         fireResistance = readValue("FireResistance", fireResistance, file);
         waterBreathing = readValue("WaterBreathing", waterBreathing, file);
-        waterBreathing = readValue("submarine", waterBreathing, file);
+        waterBreathing = readValue("Submarine", waterBreathing, file);
         smokeProtection = readValue("SmokeProtection", smokeProtection, file);
         onWaterWalking = readValue("OnWaterWalking", onWaterWalking, file);
-        hunger = readValue("hunger", hunger, file);
-        regeneration = readValue("regenerate", regeneration, file);
+        hunger = readValue("Hunger", hunger, file);
+        regeneration = readValue("Regenerate", regeneration, file);
+        equipSound = readSound("EquipSound", equipSound, file);
 
         addEffects("AddEffect", effects, file, true, false);
         addEffects("AddPotionEffect", effects, file, true, false);
@@ -156,14 +162,6 @@ public class ArmorType extends InfoType
     public IModelBase getDefaultModel()
     {
         return new DefaultArmor(armorItemType);
-    }
-
-    public int getEnchantability()
-    {
-        //TODO: fix this
-        /*if (!readEnchantability)
-            enchantability = ModCommonConfigs.defaultArmorEnchantability.get();*/
-        return enchantability;
     }
 
     public boolean hasDurability()

@@ -11,6 +11,8 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketGunFire;
+import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.network.server.PacketGunState;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketReload;
 import com.flansmodultimate.network.server.PacketRequestDebug;
@@ -75,6 +77,8 @@ public final class PacketHandler {
 
         // Client to Server Packets
         registerC2S(PacketGunFire.class);
+        registerC2S(PacketGunSpread.class);
+        registerC2S(PacketGunState.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
         registerC2S(PacketReload.class);

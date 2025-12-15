@@ -36,6 +36,7 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        tooltipComponents.add(Component.empty());
 
         if (configType.getShootDelayMultiplier() != 1.0f)
             tooltipComponents.add(Component.literal("Rate of Fire x" + IFlanItem.formatFloat(100.0F / configType.getShootDelayMultiplier()) + "%").withStyle(ChatFormatting.BLUE));

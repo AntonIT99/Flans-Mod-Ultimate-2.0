@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.sounds.SoundEvent;
@@ -16,7 +18,7 @@ public record CustomArmorMaterial(String name, int durability, int defense, int 
 {
     CustomArmorMaterial(ArmorType type)
     {
-        this(type.getShortName(), type.getDurability(), (int) Math.max(type.getDamageReductionAmount(), Math.round(type.getDefence() * 20.0F)), type.getEnchantability(), SoundEvents.ARMOR_EQUIP_IRON, type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
+        this(type.getShortName(), type.getDurability(), (int) Math.round(type.getDefence() * ArmorType.ARMOR_POINT_FACTOR), type.getEnchantability(), FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryObject::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
     }
 
     @Override

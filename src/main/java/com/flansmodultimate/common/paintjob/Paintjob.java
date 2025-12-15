@@ -32,7 +32,7 @@ public class Paintjob
     @Getter
     private final String displayName;
     @Getter
-    private final String icon;
+    private final String iconName;
     @Getter
     private final String textureName;
     @Getter
@@ -46,21 +46,21 @@ public class Paintjob
     private boolean addToTables;
 
 
-    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
+    public Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {
         this.type = type;
         this.id = id;
         this.displayName = displayName;
-        this.icon = icon;
+        this.iconName = iconName;
         this.dyesNeeded = dyesNeeded;
         this.rarity = EnumPaintjobRarity.UNKNOWN;
         this.texture = texture;
         this.textureName = textureName;
     }
 
-    public Paintjob(PaintableType type, int id, String displayName, String icon, String textureName, List<Supplier<ItemStack>> dyesNeeded)
+    public Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, List<Supplier<ItemStack>> dyesNeeded)
     {
-        this(type, id, displayName, icon, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
+        this(type, id, displayName, iconName, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
     }
 
     public boolean isLegendary()

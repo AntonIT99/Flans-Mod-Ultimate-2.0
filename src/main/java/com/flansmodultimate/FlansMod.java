@@ -133,8 +133,8 @@ public class FlansMod
         IEventBus modEventBus = context.getModEventBus();
 
         // Init Configs
-        context.registerConfig(ModConfig.Type.COMMON, ModCommonConfigs.CONFIG);
-        context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.CONFIG);
+        context.registerConfig(ModConfig.Type.COMMON, ModCommonConfigs.config);
+        context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.config);
 
         // Init Registries
         itemRegistry.register(modEventBus);

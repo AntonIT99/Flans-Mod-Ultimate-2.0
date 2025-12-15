@@ -85,7 +85,6 @@ public class GunAnimations
      */
     public float switchAnimationProgress;
     public float switchAnimationLength;
-    public static int lastInventorySlot = -1;
 
     /** Fancy stance / running animation stuff */
     public float runningStanceAnimationProgress;
