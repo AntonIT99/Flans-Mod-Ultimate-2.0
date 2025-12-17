@@ -15,8 +15,8 @@ import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
-import com.flansmodultimate.network.server.PacketGunState;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,6 +56,7 @@ import net.minecraft.world.phys.HitResult;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -167,30 +168,8 @@ public class ModClient
     @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(LivingEntity living, InteractionHand hand)
     {
-        GunAnimations animations = null;
-
-        if (hand == InteractionHand.MAIN_HAND)
-        {
-            if (gunAnimationsRight.containsKey(living))
-                animations = gunAnimationsRight.get(living);
-            else
-            {
-                animations = new GunAnimations();
-                gunAnimationsRight.put(living, animations);
-            }
-        }
-        else if (hand == InteractionHand.OFF_HAND)
-        {
-            if (gunAnimationsLeft.containsKey(living))
-                animations = gunAnimationsLeft.get(living);
-            else
-            {
-                animations = new GunAnimations();
-                gunAnimationsLeft.put(living, animations);
-            }
-        }
-
-        return Objects.requireNonNullElse(animations, new GunAnimations());
+        Map<LivingEntity, GunAnimations> map = (hand == InteractionHand.OFF_HAND) ? gunAnimationsLeft : gunAnimationsRight;
+        return map.computeIfAbsent(living, k -> new GunAnimations());
     }
 
     @NotNull
@@ -264,7 +243,7 @@ public class ModClient
             sendADSSpreadToServer(gunStack, gunItem, player.isCrouching(), player.isSprinting());
 
             gunItem.setScoped(true);
-            PacketHandler.sendToServer(new PacketGunState(true));
+            PacketHandler.sendToServer(new PacketGunScopedState(true));
         }
         else
         {
@@ -279,7 +258,7 @@ public class ModClient
             PacketHandler.sendToServer(new PacketGunSpread(gunStack, gunItem.getConfigType().getDefaultSpread(gunStack)));
 
             gunItem.setScoped(false);
-            PacketHandler.sendToServer(new PacketGunState(false));
+            PacketHandler.sendToServer(new PacketGunScopedState(false));
         }
         scopeTime = 10;
     }

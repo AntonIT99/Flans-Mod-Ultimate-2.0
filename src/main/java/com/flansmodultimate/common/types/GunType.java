@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -350,6 +349,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * The length of the sound for looping sounds
      */
+    @Getter
     protected int shootSoundLength;
     /**
      * Whether to distort the sound or not. Generally only set to false for looping sounds
@@ -593,14 +593,8 @@ public class GunType extends PaintableType implements IScope
     protected float maxZoom = 4F;
     protected float zoomAugment = 1F;
 
-    //TODO: remove these variables from the GunType -> move into a record class
-    /** For shotgun pump handles and rifle bolts */
-    @Getter @Setter
-    protected int pumpDelay;
-    @Getter @Setter
-    protected int pumpDelayAfterReload;
-    @Getter @Setter
-    protected int pumpTime = 1;
+    @Getter
+    protected final GunAnim anim = new GunAnim();
 
     @Override
     protected void read(TypeFile file)
@@ -641,6 +635,19 @@ public class GunType extends PaintableType implements IScope
         recoilSprintingMultiplier = readValue("RecoilSprintingMultiplier", recoilSprintingMultiplier, file);
         recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
         recoilSprintingMultiplierYaw = readValue("RecoilSprintingMultiplierYaw", recoilSprintingMultiplierYaw, file);
+        readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil -> {
+            try
+            {
+                recoil.read(fancyRecoil);
+                useFancyRecoil = true;
+            }
+            catch (Exception ex)
+            {
+                useFancyRecoil = false;
+                logError("Failed to read fancy recoil", file);
+            }
+        });
+
         //TODO: read fancy recoil
         /*String[] aSplit = ConfigUtils.getSplitFromKey(config, "FancyRecoil");
         try {
@@ -698,19 +705,10 @@ public class GunType extends PaintableType implements IScope
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
-        //TODO: implement this
-        /*String line = ConfigUtils.configString(config, "ItemUseAction", null);
-        try {
-            if (line != null) {
-                itemUseAction = EnumAction.valueOf(line.toLowerCase());
-            }
-        } catch (Exception ex) {
-            FlansMod.logPackError(file.name, packName, shortName, "ItemUseAction not recognised in gun", new String[]{"ItemUseAction", line}, ex);
-        }
+        itemUseAction = readValue("ItemUseAction", itemUseAction, UseAnim.class, file);
         // This is needed, because the presence of the value overrides the default value of zero.
-        if (config.containsKey("HipFireWhileSprinting"))
-            hipFireWhileSprinting = ConfigUtils.configBool(config, "HipFireWhileSprinting", false) ? 1 : 2;*/
-
+        if (file.hasConfigLine("HipFireWhileSprinting"))
+            hipFireWhileSprinting = readValue("HipFireWhileSprinting", false, file) ? 1 : 2;
 
         // Melee
         meleeTime = readValue("MeleeTime", meleeTime, file);
@@ -866,21 +864,14 @@ public class GunType extends PaintableType implements IScope
             lockOnToVehicles = true;
             lockOnToMechas = true;
         }
-
-        if (FMLEnvironment.dist == Dist.CLIENT)
-            processAnimationConfigs(file);
-    }
-
-    protected void processAnimationConfigs(TypeFile file)
-    {
-        //TODO: use a record class and pass it to the model via setter call in ModelCache
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    protected void postReadClient()
+    protected void readClient(TypeFile file)
     {
-        super.postReadClient();
+        super.readClient(file);
+
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
         casingModelClassName = findModelClass(casingModelName, contentPack);
@@ -888,6 +879,8 @@ public class GunType extends PaintableType implements IScope
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = loadTexture(flashTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
+
+        anim.read(this, file);
     }
 
     @Override

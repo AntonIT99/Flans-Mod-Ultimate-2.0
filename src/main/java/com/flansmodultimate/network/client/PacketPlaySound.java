@@ -6,6 +6,7 @@ import com.flansmodultimate.network.PacketHandler;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -74,7 +75,7 @@ public class PacketPlaySound implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(LocalPlayer player, ClientLevel level)
+    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
         if (sound.isBlank())
             return;

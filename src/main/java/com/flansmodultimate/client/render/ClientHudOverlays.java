@@ -131,9 +131,8 @@ public final class ClientHudOverlays
             GunType gunType = gunItem.getConfigType();
             int xAccum = 0;
 
-            for (int n = 0; n < gunType.getNumAmmoItemsInGun(stack); n++)
+            for (ItemStack bulletStack : gunItem.getBulletItemStackList(stack))
             {
-                ItemStack bulletStack = gunItem.getBulletItemStack(stack, n);
                 if (bulletStack == null || bulletStack.isEmpty())
                     continue;
 
@@ -147,7 +146,6 @@ public final class ClientHudOverlays
 
                 // Position: right of center for MAIN_HAND, left for OFF_HAND
                 int iconX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 96 + xAccum : sw / 2 - 176 - xAccum;
-                //int iconY = sh - 65;
                 int iconY = sh - 19;
 
                 // Draw the item icon (no manual lighting/GL in 1.20+)

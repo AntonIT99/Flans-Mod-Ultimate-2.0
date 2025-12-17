@@ -36,9 +36,9 @@ public final class GunInputState
             return;
 
         // Read config every tick (fine) or cache & refresh on config reload if you prefer
-        EnumActionButton shootBtn = ModClientConfigs.shootButton.get();
-        EnumActionButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
-        EnumActionButton aimBtn = ModClientConfigs.aimButton.get();
+        EnumMouseButton shootBtn = ModClientConfigs.shootButton.get();
+        EnumMouseButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
+        EnumMouseButton aimBtn = ModClientConfigs.aimButton.get();
 
         prevShootPressed = shootPressed;
         prevOffhandShootPressed = offhandShootPressed;
@@ -48,7 +48,7 @@ public final class GunInputState
         aimPressed = isMousePressed(aimBtn);
     }
 
-    private static boolean isMousePressed(EnumActionButton btn)
+    private static boolean isMousePressed(EnumMouseButton btn)
     {
         long window = Minecraft.getInstance().getWindow().getWindow();
         return GLFW.glfwGetMouseButton(window, btn.toGlfw()) == GLFW.GLFW_PRESS;

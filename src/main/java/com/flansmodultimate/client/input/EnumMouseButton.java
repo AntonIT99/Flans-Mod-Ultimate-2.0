@@ -2,11 +2,11 @@ package com.flansmodultimate.client.input;
 
 import org.lwjgl.glfw.GLFW;
 
-public enum EnumActionButton
+public enum EnumMouseButton
 {
-    LEFT_MOUSE,
-    RIGHT_MOUSE,
-    MIDDLE_MOUSE,
+    MOUSE_LEFT,
+    MOUSE_RIGHT,
+    MOUSE_MIDDLE,
     MOUSE_4,
     MOUSE_5;
 
@@ -14,9 +14,9 @@ public enum EnumActionButton
     {
         return switch (this)
         {
-            case LEFT_MOUSE -> GLFW.GLFW_MOUSE_BUTTON_LEFT;
-            case RIGHT_MOUSE -> GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-            case MIDDLE_MOUSE -> GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
+            case MOUSE_LEFT -> GLFW.GLFW_MOUSE_BUTTON_LEFT;
+            case MOUSE_RIGHT -> GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+            case MOUSE_MIDDLE -> GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
             case MOUSE_4 -> GLFW.GLFW_MOUSE_BUTTON_4;
             case MOUSE_5 -> GLFW.GLFW_MOUSE_BUTTON_5;
         };

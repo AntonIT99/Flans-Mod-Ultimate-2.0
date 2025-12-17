@@ -1,7 +1,7 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.client.input.EnumActionButton;
 import com.flansmodultimate.client.input.EnumAimType;
+import com.flansmodultimate.client.input.EnumMouseButton;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -11,9 +11,9 @@ public class ModClientConfigs
 {
     public static final ForgeConfigSpec config;
 
-    public static final ForgeConfigSpec.EnumValue<EnumActionButton> shootButton;
-    public static final ForgeConfigSpec.EnumValue<EnumActionButton> shootButtonOffhand;
-    public static final ForgeConfigSpec.EnumValue<EnumActionButton> aimButton;
+    public static final ForgeConfigSpec.EnumValue<EnumMouseButton> shootButton;
+    public static final ForgeConfigSpec.EnumValue<EnumMouseButton> shootButtonOffhand;
+    public static final ForgeConfigSpec.EnumValue<EnumMouseButton> aimButton;
     public static final ForgeConfigSpec.EnumValue<EnumAimType> aimType;
     public static final ForgeConfigSpec.BooleanValue showPackNameInItemDescriptions;
 
@@ -29,13 +29,13 @@ public class ModClientConfigs
         builder.push("Input Settings");
         shootButton = builder
                 .comment("Primary shooting button")
-                .defineEnum("shootButton", EnumActionButton.LEFT_MOUSE);
+                .defineEnum("shootButton", EnumMouseButton.MOUSE_LEFT);
         shootButtonOffhand = builder
                 .comment("Offhand shooting button")
-                .defineEnum("shootButtonOffhand", EnumActionButton.RIGHT_MOUSE);
+                .defineEnum("shootButtonOffhand", EnumMouseButton.MOUSE_RIGHT);
         aimButton = builder
                 .comment("Aiming button")
-                .defineEnum("aimButton", EnumActionButton.RIGHT_MOUSE);
+                .defineEnum("aimButton", EnumMouseButton.MOUSE_RIGHT);
         aimType = builder
                 .comment("Aim behavior")
                 .defineEnum("aimType", EnumAimType.TOGGLE);

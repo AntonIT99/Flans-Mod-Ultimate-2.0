@@ -96,10 +96,9 @@ public abstract class PaintableType extends InfoType
         }
     }
 
-    @Override
-    protected void postReadClient()
+    protected void readClient(TypeFile file)
     {
-        super.postReadClient();
+        super.readClient(file);
         defaultPaintjob = new Paintjob(this, 0, StringUtils.EMPTY, icon, textureName, texture, Collections.emptyList());
         paintjobs.put(0, defaultPaintjob);
     }

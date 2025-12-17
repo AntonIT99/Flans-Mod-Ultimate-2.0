@@ -9,8 +9,8 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
-import com.flansmodultimate.common.guns.FireDecision;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.BulletType;
@@ -19,7 +19,7 @@ import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketReload;
+import com.flansmodultimate.network.server.PacketTriggerShootState;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -45,6 +45,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -60,6 +61,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
 {
@@ -180,9 +182,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
 
             // Ammo info
-            for (int i = 0; i < configType.getNumAmmoItemsInGun(stack); i++)
+            for (ItemStack bulletStack : getBulletItemStackList(stack))
             {
-                ItemStack bulletStack = getBulletItemStack(stack, i);
                 if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
                 {
                     BulletType bulletType = bulletItem.getConfigType();
@@ -444,38 +445,31 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            onUpdateClient(stack, level, player, data, hand, dualWield);
+            onUpdateClient(level, player, data, stack, hand, dualWield);
         else
-            onUpdateServer(stack, player, data);
+            onUpdateServer(level, (ServerPlayer) player, data, stack, hand, dualWield);
 
-        behavior.checkForLockOn(level, player, data);
+        behavior.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
+        behavior.checkForLockOn(level, player, data, hand);
         behavior.checkForMelee(level, player, data, stack);
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void onUpdateClient(ItemStack gunStack, Level level, @NotNull Player player, @NotNull PlayerData data, InteractionHand hand, boolean dualWield)
+    protected void onUpdateClient(Level level, @NotNull Player player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        // Not for deployables
-        if (configType.isDeployable())
-            return;
-        if (!configType.isUsableByPlayers())
-            return;
-        if (!behavior.gunCanBeHandled(player))
+        if (configType.isDeployable() || !configType.isUsableByPlayers() || !behavior.gunCanBeHandled(player))
             return;
 
         // Scope handling
         behavior.handleScope(gunStack, hand, dualWield);
 
-        // Slow down minigun each tick
-        data.setMinigunSpeed(data.getMinigunSpeed() * 0.9F);
-
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
         
         // Switch Delay
-        handleGunSwitchDelay(data, animations, hand);
+        behavior.handleGunSwitchDelay(data, animations, hand);
 
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.screen == null && ModClient.getSwitchTime() <= 0)
+        // Shooting input handling
+        if (Minecraft.getInstance().screen == null && ModClient.getSwitchTime() <= 0)
         {
             boolean shootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isOffhandShootPressed() : GunInputState.isShootPressed();
             boolean prevShootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isPrevOffhandShootPressed() : GunInputState.isPrevShootPressed();
@@ -484,53 +478,36 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (behavior.shouldBlockFireAtCrosshair())
                 shootKeyPressed = false;
 
-            FireDecision decision = FireDecision.computeFireDecision(this, gunStack, hand, data, shootKeyPressed, prevShootKeyPressed, animations);
+            data.setShootKeyPressed(hand, shootKeyPressed);
+            data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
 
-            if (decision.needsReload())
-                PacketHandler.sendToServer(new PacketReload(hand, false));
-            else if (decision.shouldShoot())
-                behavior.shoot(hand, player, gunStack, data, level, animations);
-        }
-    }
-    
-    private void handleGunSwitchDelay(@NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand) 
-    {
-        float animationLength = configType.getSwitchDelay();
-        if (animationLength == 0)
-        {
-            animations.switchAnimationLength = animations.switchAnimationProgress = 0;
-        }
-        else
-        {
-            animations.switchAnimationProgress = 1;
-            animations.switchAnimationLength = animationLength;
-            ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
-
-            if (hand == InteractionHand.MAIN_HAND)
-                data.setShootTimeRight(Math.max(data.getShootTimeRight(), animationLength));
-            else if (hand == InteractionHand.OFF_HAND)
-                data.setShootTimeLeft(Math.max(data.getShootTimeLeft(), animationLength));
+            if (shootKeyPressed != prevShootKeyPressed)
+                PacketHandler.sendToServer(new PacketTriggerShootState(shootKeyPressed, prevShootKeyPressed, hand));
         }
     }
 
-    protected void onUpdateServer(ItemStack gunStack, @NotNull Player player, @NotNull PlayerData data)
+    protected void onUpdateServer(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
         ensureGunTags(gunStack);
 
-        //If the player is no longer holding a gun, emulate a release of the shoot button
-        ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
-        if (mainHand.isEmpty() || !(mainHand.getItem() instanceof GunItem))
-            data.setShootingRight(false);
-        if (offHand.isEmpty() || !(offHand.getItem() instanceof GunItem))
-            data.setShootingLeft(false);
-
-        if ((mainHand.isEmpty() || mainHand.getItem() != this) && (offHand.isEmpty() || offHand.getItem() != this))
+        if (player.getItemInHand(hand).isEmpty() || !(player.getItemInHand(hand).getItem() instanceof GunItem))
+            data.setShooting(hand, false);
+        if (player.getItemInHand(hand).isEmpty() || player.getItemInHand(hand).getItem() != this)
             isScoped = false;
 
-        // And finally do sounds
-        behavior.playIdleSoundIfAny(player);
-        
+        EnumFireDecision decision = behavior.computeFireDecision(data, gunStack, hand);
+
+        if (decision == EnumFireDecision.RELOAD)
+            behavior.doPlayerReload(level, player, data, gunStack, hand, false);
+        else if (decision == EnumFireDecision.SHOOT)
+            behavior.doPlayerShoot(level, player, data, gunStack, hand);
+
+        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
+        {
+            PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, configType.getIdleSound(), false);
+            soundDelay = configType.getIdleSoundLength();
+        }
+
         if (soundDelay > 0)
             soundDelay--;
     }
@@ -632,5 +609,27 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         list.set(id, slotTag);
         tag.put(nbt, list);
+    }
+
+    public List<ItemStack> getBulletItemStackList(ItemStack gun)
+    {
+        return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
+            .mapToObj(i -> getBulletItemStack(gun, i))
+            .filter(s -> s != null && s.getItem() instanceof ShootableItem)
+            .toList();
+    }
+
+    public int getReloadCount(ItemStack gunStack)
+    {
+        int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
+        return (maxAmmo <= 1) ? 1 : Math.toIntExact(getBulletItemStackList(gunStack).stream()
+            .filter(stack -> (gunStack.getMaxDamage() - gunStack.getDamageValue()) == 0)
+            .count());
+    }
+
+    public float getActualReloadTime(ItemStack gunStack)
+    {
+        int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
+        return (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
     }
 }

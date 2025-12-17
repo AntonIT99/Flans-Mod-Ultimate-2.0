@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
@@ -108,7 +109,7 @@ public class PacketBlockHitEffect implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(LocalPlayer player, ClientLevel level)
+    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
         if (explosionRadius > 30 || blockHitFXScale <= 0)
             return;

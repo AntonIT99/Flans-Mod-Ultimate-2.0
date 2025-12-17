@@ -48,14 +48,14 @@ public class GunRecoil
 
     public GunRecoil read(String[] split)
     {
-        vertical = read(split, 1, vertical);
-        horizontal = read(split, 2, horizontal);
-        recovery = read(split, 3, recovery);
-        recoveryScope = read(split, 4, recoveryScope);
-        fall = read(split, 5, fall);
-        increase = read(split, 6, increase);
-        sneak = read(split, 7, sneak);
-        speed = read(split, 8, speed);
+        vertical = read(split, 0, vertical);
+        horizontal = read(split, 1, horizontal);
+        recovery = read(split, 2, recovery);
+        recoveryScope = read(split, 3, recoveryScope);
+        fall = read(split, 4, fall);
+        increase = read(split, 5, increase);
+        sneak = read(split, 6, sneak);
+        speed = read(split, 7, speed);
 
         if (split.length < 2)
             horizontal = vertical * 0.3F;

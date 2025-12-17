@@ -93,11 +93,7 @@ public final class CommonEventHandler
             return;
 
         Player player = e.player;
-
-        if (!player.level().isClientSide)
-            PlayerData.getInstance(player).serverTick(player);
-        else
-            PlayerData.getInstance(player).clientTick(player);
+        PlayerData.getInstance(player).tick(player);
 
         int regenTimer = regenTimers.getOrDefault(player.getUUID(), 0);
         if (regenTimer >= ModCommonConfigs.bonusRegenTickDelay.get())

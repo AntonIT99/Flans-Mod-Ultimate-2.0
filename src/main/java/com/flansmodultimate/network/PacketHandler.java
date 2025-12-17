@@ -5,17 +5,18 @@ import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.network.client.PacketGunAnimation;
+import com.flansmodultimate.network.client.PacketGunReloadClient;
+import com.flansmodultimate.network.client.PacketGunShoot;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketGunFire;
+import com.flansmodultimate.network.server.PacketGunReload;
+import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
-import com.flansmodultimate.network.server.PacketGunState;
 import com.flansmodultimate.network.server.PacketManualGuidance;
-import com.flansmodultimate.network.server.PacketReload;
 import com.flansmodultimate.network.server.PacketRequestDebug;
+import com.flansmodultimate.network.server.PacketTriggerShootState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.network.NetworkDirection;
@@ -69,19 +70,20 @@ public final class PacketHandler {
         registerS2C(PacketBlockHitEffect.class);
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketFlak.class);
-        registerS2C(PacketGunAnimation.class);
+        registerS2C(PacketGunReloadClient.class);
+        registerS2C(PacketGunShoot.class);
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
         registerS2C(PacketParticles.class);
         registerS2C(PacketPlaySound.class);
 
         // Client to Server Packets
-        registerC2S(PacketGunFire.class);
+        registerC2S(PacketGunReload.class);
+        registerC2S(PacketGunScopedState.class);
         registerC2S(PacketGunSpread.class);
-        registerC2S(PacketGunState.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
-        registerC2S(PacketReload.class);
+        registerC2S(PacketTriggerShootState.class);
 
         initAndRegister();
     }
@@ -152,7 +154,7 @@ public final class PacketHandler {
                             // Server
                             ServerPlayer sender = ctx.getSender();
                             if (sender != null)
-                                serverPacket.handleServerSide(sender);
+                                serverPacket.handleServerSide(sender, sender.serverLevel());
                         }
                         else if (msg instanceof IClientPacket clientPacket)
                         {

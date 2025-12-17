@@ -7,6 +7,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanTypeModel<ArmorType>
 {
+    @Setter
     protected ArmorType type;
 
     protected ModelRendererTurbo[] headModel = new ModelRendererTurbo[0];
@@ -32,9 +35,11 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     protected ModelRendererTurbo[] skirtFrontModel = new ModelRendererTurbo[0]; //Acts like a leg piece, but its pitch is set to the maximum of the two legs
     protected ModelRendererTurbo[] skirtRearModel = new ModelRendererTurbo[0]; //Acts like a leg piece, but its pitch is set to the minimum of the two legs
 
+    @Getter
     private final List<ModelRenderer> boxList = new ArrayList<>();
+    @Getter
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
-
+    @Getter @Setter
     private ResourceLocation texture;
 
     public ModelCustomArmour()
@@ -152,35 +157,5 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotationPointY = bodyPart.y / scale;
             mod.rotationPointZ = bodyPart.z / scale;
         }
-    }
-
-    @Override
-    public List<ModelRenderer> getBoxList()
-    {
-        return boxList;
-    }
-
-    @Override
-    public Map<String, TextureOffset> getModelTextureMap()
-    {
-        return modelTextureMap;
-    }
-
-    @Override
-    public ResourceLocation getTexture()
-    {
-        return texture;
-    }
-
-    @Override
-    public void setTexture(ResourceLocation texture)
-    {
-        this.texture = texture;
-    }
-
-    @Override
-    public void setType(ArmorType type)
-    {
-        this.type = type;
     }
 }

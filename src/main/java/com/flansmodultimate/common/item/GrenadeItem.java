@@ -14,7 +14,7 @@ import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.LogicalSide;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -144,7 +144,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
         PlayerData data = PlayerData.getInstance(player, level.isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
 
         // If can throw grenade
-        if (configType.isCanThrow() && data != null && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
+        if (configType.isCanThrow() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
         {
             // Delay the next throw / weapon fire / whatnot
             data.setShootTimeRight(configType.getThrowDelay());

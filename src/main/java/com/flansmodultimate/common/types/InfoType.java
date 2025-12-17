@@ -130,7 +130,7 @@ public abstract class InfoType
         type = file.getType();
         read(file);
         if (FMLEnvironment.dist == Dist.CLIENT)
-            postReadClient();
+            readClient(file);
     }
 
     protected void read(TypeFile file)
@@ -224,7 +224,7 @@ public abstract class InfoType
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void postReadClient()
+    protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
         texture = loadTexture(textureName, this);

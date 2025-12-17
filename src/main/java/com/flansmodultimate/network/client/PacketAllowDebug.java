@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.network.IClientPacket;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,7 +23,7 @@ public class PacketAllowDebug implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(LocalPlayer player, ClientLevel level)
+    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
         ModClient.setDebug(true);
     }

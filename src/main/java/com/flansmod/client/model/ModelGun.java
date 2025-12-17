@@ -159,7 +159,9 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Charge handle distance/delay/time */
     protected float chargeHandleDistance = 0F;
     protected int chargeDelay = 0;
+    @Getter
     protected int chargeDelayAfterReload = 0;
+    @Getter
     protected int chargeTime = 1;
 
     protected EnumAnimationType animationType = EnumAnimationType.NONE;
@@ -173,11 +175,16 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** If true, then the scope attachment will move with the break action. Can be combined with the above */
     protected boolean scopeIsOnBreakAction;
     /** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
+    @Getter @Setter
     protected float numBulletsInReloadAnimation = 1;
     /** For shotgun pump handles, rifle bolts and hammer pullbacks */
+    @Getter @Setter
     protected int pumpDelay = 0;
+    @Getter @Setter
     protected int pumpDelayAfterReload = 0;
+    @Getter @Setter
     protected int pumpTime = 1;
+    @Getter @Setter
     protected int hammerDelay = 0;
     /** For shotgun pump handle */
     protected float pumpHandleDistance = 4F / 16F;
@@ -278,9 +285,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void setType(GunType type)
     {
         this.type = type;
-        this.type.setPumpDelay(pumpDelay);
-        this.type.setPumpDelayAfterReload(pumpDelayAfterReload);
-        this.type.setPumpTime(pumpTime);
+        this.type.getAnim().write(this);
     }
 
     @Override
@@ -636,7 +641,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             ItemStack gripItemStack = type.getGripItemStack(item);
 
             render(gunModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-            renderCustom(scale, animations);
+            renderCustom(poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations);
             if (scopeAttachment == null && !scopeIsOnSlide && !scopeIsOnBreakAction)
                 render(defaultScopeModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
             if (barrelAttachment == null)
@@ -684,7 +689,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
             {
                 poseStack.pushPose();
                 poseStack.translate(minigunBarrelOrigin.x, minigunBarrelOrigin.y, minigunBarrelOrigin.z);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(animations.minigunBarrelRotation));
+                poseStack.mulPose(Axis.XP.rotationDegrees(animations.minigunBarrelRotation));
                 poseStack.translate(-minigunBarrelOrigin.x, -minigunBarrelOrigin.y, -minigunBarrelOrigin.z);
                 render(minigunBarrelModel, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha, scale);
                 poseStack.popPose();
@@ -857,5 +862,11 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderCustom(float scale, GunAnimations anims) {}
+    public void renderCustom(PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, GunAnimations anims) {}
+
+    @Deprecated
+    public void renderCustom(float scale, GunAnimations anims)
+    {
+        // Do not call this method since it usually contain calls to the old GlStateManager API
+    }
 }

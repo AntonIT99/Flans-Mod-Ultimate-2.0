@@ -364,17 +364,7 @@ public class GunAnimations
             ModClient.setShotState(1);
     }
 
-    //TODO: replace doReload()
-    public void doReload(float reloadTime, int pumpDelay, int pumpTime)
-    {
-        reloading = true;
-        lastReloadAnimationProgress = reloadAnimationProgress = 0F;
-        reloadAnimationTime = reloadTime;
-        timeUntilPump = pumpDelay;
-        timeToPumpFor = pumpTime;
-    }
-
-    public void doReload(int reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean single)
+    public void doReload(float reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean single)
     {
         reloading = true;
         lastReloadAnimationProgress = reloadAnimationProgress = 0F;

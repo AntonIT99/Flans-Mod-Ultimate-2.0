@@ -29,13 +29,19 @@ import java.util.UUID;
 
 public class PlayerData
 {
-    public static final Map<UUID, PlayerData> serverSideData = new HashMap<>();
-    public static final Map<UUID, PlayerData> clientSideData = new HashMap<>();
+    private static final Map<UUID, PlayerData> serverSideData = new HashMap<>();
+    private static final Map<UUID, PlayerData> clientSideData = new HashMap<>();
 
     /** Their UUID */
     private UUID playerId;
 
-    //Movement related fields
+    // Input related fields
+    private boolean isShootKeyPressedRight;
+    private boolean isPrevShootKeyPressedRight;
+    private boolean isShootKeyPressedLeft;
+    private boolean isPrevShootKeyPressedLeft;
+
+    // Movement related fields
     /** Roll variables */
     private float prevRotationRoll;
     private float rotationRoll;
@@ -44,7 +50,7 @@ public class PlayerData
     @Getter
     private PlayerSnapshot[] snapshots;
 
-    //Gun-related fields
+    // Gun-related fields
     /** The MG this player is using */
     private DeployedGun mountingGun;
     /** Tickers to stop shooting too fast */
@@ -55,27 +61,20 @@ public class PlayerData
     /** Stops player shooting immediately after swapping weapons */
     private int shootClickDelay;
     /** True if this player is shooting */
-    @Getter @Setter
     private boolean isShootingRight;
-    @Getter @Setter
     private boolean isShootingLeft;
     /** The speed of the minigun the player is using */
     @Getter @Setter
     private float minigunSpeed = 0F;
     /** Reloading booleans */
-    @Getter @Setter
-    private boolean reloadingRight;
-    @Getter @Setter
-    private boolean reloadingLeft;
+    private boolean isReloadingRight;
+    private boolean isReloadingLeft;
     /** When remote explosives are thrown they are added to this list. When the player uses a remote, the first one from this list detonates */
     @Getter
     private final List<Grenade> remoteExplosives = new ArrayList<>(); //TODO: add Tools to detonate remote explosives
     /** Sound delay parameters */
     @Getter @Setter
     private int loopedSoundDelay;
-    /** Sound delay parameters */
-    @Getter @Setter
-    private boolean isSpinning;
     /** Melee weapon custom hit simulation */
     @Getter @Setter
     private int meleeProgress;
@@ -156,34 +155,109 @@ public class PlayerData
             return serverSideData.computeIfAbsent(playerId, PlayerData::new);
     }
 
-    public void serverTick(Player player)
+    public boolean isShootKeyPressed(InteractionHand hand)
     {
-        if(shootTimeRight > 0)
+        return hand == InteractionHand.OFF_HAND ? isShootKeyPressedLeft : isShootKeyPressedRight;
+    }
+
+    public void setShootKeyPressed(InteractionHand hand, boolean value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            isShootKeyPressedLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            isShootKeyPressedRight = value;
+    }
+
+    public boolean isPrevShootKeyPressed(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? isPrevShootKeyPressedLeft : isPrevShootKeyPressedRight;
+    }
+
+    public void setPrevShootKeyPressed(InteractionHand hand, boolean value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            isPrevShootKeyPressedLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            isPrevShootKeyPressedRight = value;
+    }
+
+    public float getShootTime(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+    }
+
+    public void setShootTime(InteractionHand hand, float value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            shootTimeLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            shootTimeRight = value;
+    }
+
+    public boolean isReloading(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? isReloadingLeft : isReloadingRight;
+    }
+
+    public void setReloading(InteractionHand hand, boolean value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            isReloadingLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            isReloadingRight = value;
+    }
+
+    public boolean isShooting(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? isShootingLeft : isShootingRight;
+    }
+
+    public void setShooting(InteractionHand hand, boolean value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            isShootingLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            isShootingRight = value;
+    }
+
+    public int getBurstRoundsRemaining(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? burstRoundsRemainingLeft : burstRoundsRemainingRight;
+    }
+
+    public void setBurstRoundsRemaining(InteractionHand hand, int value)
+    {
+        if (hand == InteractionHand.OFF_HAND)
+            burstRoundsRemainingLeft = value;
+        else if (hand == InteractionHand.MAIN_HAND)
+            burstRoundsRemainingRight = value;
+    }
+
+    public void tick(Player player)
+    {
+        if (shootTimeRight > 0)
             shootTimeRight--;
-        if(shootTimeRight == 0)
-            reloadingRight = false;
+        if (shootTimeRight == 0)
+            isReloadingRight = false;
 
-        if(shootTimeLeft > 0)
+        if (shootTimeLeft > 0)
             shootTimeLeft--;
-        if(shootTimeLeft == 0)
-            reloadingLeft = false;
+        if (shootTimeLeft == 0)
+            isReloadingLeft = false;
 
-        if(shootClickDelay > 0)
+        if (shootClickDelay > 0)
             shootClickDelay--;
+
+        // Slow down minigun each tick
+        minigunSpeed *= 0.9F;
+
+        if (loopedSoundDelay > 0)
+            loopedSoundDelay--;
 
         //Move all snapshots along one place
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         //Take new snapshot
         snapshots[0] = new PlayerSnapshot(player);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void clientTick(Player player)
-    {
-        serverTick(player);
-
-        if (loopedSoundDelay > 0)
-            loopedSoundDelay--;
     }
 
     public void resetScore()
@@ -199,32 +273,6 @@ public class PlayerData
         mountingGun = null;
         isShootingRight = isShootingLeft = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
-    }
-
-    public float getShootTime(InteractionHand hand)
-    {
-        return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
-    }
-
-    public void setShootTime(InteractionHand hand, float set)
-    {
-        if (hand == InteractionHand.OFF_HAND)
-            shootTimeLeft = set;
-        else
-            shootTimeRight = set;
-    }
-
-    public int getBurstRoundsRemaining(InteractionHand hand)
-    {
-        return hand == InteractionHand.OFF_HAND ? burstRoundsRemainingLeft : burstRoundsRemainingRight;
-    }
-
-    public void setBurstRoundsRemaining(InteractionHand hand, int set)
-    {
-        if (hand == InteractionHand.OFF_HAND)
-            burstRoundsRemainingLeft = set;
-        else
-            burstRoundsRemainingRight = set;
     }
 
     public void doMelee(Player player, int meleeTime, GunType type)

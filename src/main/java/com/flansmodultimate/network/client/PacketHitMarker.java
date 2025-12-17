@@ -3,6 +3,7 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -39,7 +40,7 @@ public class PacketHitMarker implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(LocalPlayer player, ClientLevel level)
+    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
         ModClient.setHitMarkerTime(20);
         ModClient.setHitMarkerPenAmount(penAmount);

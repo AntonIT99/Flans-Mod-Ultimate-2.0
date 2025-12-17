@@ -1,44 +1,39 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.ModClient;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 
 @NoArgsConstructor
-public class PacketFlashBang implements IClientPacket
+public class PacketGunShoot implements IClientPacket
 {
-    private int time = 10;
+    private InteractionHand hand;
 
-    public PacketFlashBang(int flashTime)
+    public PacketGunShoot(InteractionHand hand)
     {
-        time = flashTime;
+        this.hand = hand;
     }
 
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
-        data.writeInt(time);
+        data.writeEnum(hand);
     }
 
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
-        time = data.readInt();
+        hand = data.readEnum(InteractionHand.class);
     }
 
     @Override
     public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
-        if (ModUtils.isThePlayer(player))
-        {
-            ModClient.setInFlash(true);
-            ModClient.setFlashTime(time);
-        }
+
     }
 }

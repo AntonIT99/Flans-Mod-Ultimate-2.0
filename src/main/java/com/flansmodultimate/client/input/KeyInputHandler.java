@@ -5,9 +5,8 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketReload;
+import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
@@ -18,6 +17,7 @@ import net.minecraftforge.fml.LogicalSide;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -77,38 +77,38 @@ public final class KeyInputHandler
 
     private static void doReload()
     {
-        Player player = Objects.requireNonNull(Minecraft.getInstance().player);
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
-        ItemStack stack = player.getMainHandItem();
+        ItemStack mainHandStack = player.getMainHandItem();
+        ItemStack offhandStack = player.getOffhandItem();
 
-        if (data.getShootTimeRight() <= 0.0F && stack.getItem() instanceof GunItem gunItem)
+        if (data.getShootTimeRight() <= 0.0F && data.getShootTimeLeft() <= 0.0F)
         {
-            GunType type = gunItem.getConfigType();
-
-            if (gunItem.getBehavior().canReload(player.getInventory()))
+            if (mainHandStack.getItem() instanceof GunItem gunItem && !(offhandStack.getItem() instanceof GunItem))
             {
-                PacketHandler.sendToServer(new PacketReload(InteractionHand.MAIN_HAND, true));
-
-                // Set player shoot delay to be the reload delay
-                // Set both gun delays to avoid reloading two guns at once
-                float reloadTime = type.getReloadTime(stack);
-                data.setShootTimeRight(reloadTime);
-                data.setShootTimeLeft(reloadTime);
-
-                //TODO: Implement EnchantmentModule
-                //float reloadDelay = EnchantmentModule.modifyReloadTime(type.reloadTime, player, player.getHeldItemOffhand());
-
-                GunAnimations animations = ModClient.getGunAnimations(player, InteractionHand.MAIN_HAND);
-
-                int pumpDelay = type.getPumpDelayAfterReload();
-                int pumpTime = type.getPumpTime();
-                animations.doReload(type.getReloadTime(), pumpDelay, pumpTime);
-
-                data.setReloadingRight(true);
-                data.setBurstRoundsRemainingRight(0);
+                if (gunItem.getBehavior().canReload(player.getInventory()))
+                    PacketHandler.sendToServer(new PacketGunReload(InteractionHand.MAIN_HAND));
+            }
+            else if (offhandStack.getItem() instanceof GunItem gunItem && !(mainHandStack.getItem() instanceof GunItem))
+            {
+                if (gunItem.getBehavior().canReload(player.getInventory()))
+                    PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
+            }
+            else if (mainHandStack.getItem() instanceof GunItem mainHandGunItem && offhandStack.getItem() instanceof GunItem offhandGunItem)
+            {
+                if (offhandGunItem.getBehavior().canReload(player.getInventory())
+                        && (!mainHandGunItem.getBehavior().canReload(player.getInventory()) || (!mainHandGunItem.getBehavior().hasEmptyAmmo(mainHandStack) && offhandGunItem.getBehavior().hasEmptyAmmo(offhandStack))))
+                {
+                    PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
+                }
+                else if (mainHandGunItem.getBehavior().canReload(player.getInventory()))
+                {
+                   PacketHandler.sendToServer(new PacketGunReload(InteractionHand.MAIN_HAND));
+                }
             }
         }
     }
+
 
     private static void doLookAtGun()
     {

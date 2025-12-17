@@ -1,3 +1,6 @@
+General:
+- Sounds: Interface for sound handling? Is it a good idea to always use playLocalSound with custom packets?
+
 Entities:
 - AAGun - TODO
 - Bullet - Done

@@ -3,8 +3,10 @@ package com.flansmodultimate.network.server;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -64,12 +66,9 @@ public class PacketManualGuidance implements IServerPacket
     }
 
     @Override
-    public void handleServerSide(ServerPlayer player)
+    public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        if (player == null)
-            return;
-
-        if (player.level().getEntity(bulletEntityId) instanceof Bullet bullet)
+        if (level.getEntity(bulletEntityId) instanceof Bullet bullet)
         {
             LivingEntity owner = bullet.getOwner().orElse(null);
             if (player != owner)

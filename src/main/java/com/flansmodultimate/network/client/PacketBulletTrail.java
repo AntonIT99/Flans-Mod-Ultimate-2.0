@@ -6,6 +6,7 @@ import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -65,7 +66,7 @@ public class PacketBulletTrail implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(LocalPlayer player, ClientLevel level)
+    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
         //TODO trails not visible when trail origin position and player camera position are to close. the can only be seen with an slight angle
         ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + ".png");

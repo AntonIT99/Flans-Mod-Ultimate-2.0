@@ -2,6 +2,7 @@ package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.item.GunItem;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -91,15 +92,20 @@ public final class ModUtils
         return path.contains("plane");
     }
 
+    public static boolean hasGunItemInHand(LivingEntity living)
+    {
+        return living.getMainHandItem().getItem() instanceof GunItem || living.getOffhandItem().getItem() instanceof GunItem;
+    }
+
     //TODO: add exceptions for other entities of this mod that should not be hit by bullets
     public static boolean canEntityBeHitByBullets(Entity entity)
     {
         return !(entity instanceof Bullet)
-                && !(entity instanceof ItemEntity)
-                && !(entity instanceof Projectile)
-                && !(entity instanceof ExperienceOrb)
-                && !(entity instanceof Display)
-                && !(entity instanceof Interaction);
+            && !(entity instanceof ItemEntity)
+            && !(entity instanceof Projectile)
+            && !(entity instanceof ExperienceOrb)
+            && !(entity instanceof Display)
+            && !(entity instanceof Interaction);
     }
 
     public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box, @Nullable Predicate<? super Entity> filter)

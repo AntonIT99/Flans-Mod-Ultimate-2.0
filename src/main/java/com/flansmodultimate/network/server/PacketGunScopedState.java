@@ -5,19 +5,21 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor
-public class PacketGunState implements IServerPacket
+public class PacketGunScopedState implements IServerPacket
 {
     private boolean isScoped;
 
-    public PacketGunState(boolean isScoped)
+    public PacketGunScopedState(boolean isScoped)
     {
         this.isScoped = isScoped;
     }
@@ -35,7 +37,7 @@ public class PacketGunState implements IServerPacket
     }
 
     @Override
-    public void handleServerSide(ServerPlayer player)
+    public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
         ItemStack stack = player.getInventory().getSelected();
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
