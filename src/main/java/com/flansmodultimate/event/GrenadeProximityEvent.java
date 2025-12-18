@@ -8,11 +8,10 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraft.world.entity.Entity;
 
 @Cancelable
+@Getter
 public class GrenadeProximityEvent extends Event
 {
-    @Getter
     private final Grenade grenade;
-    @Getter
     private final Entity trigger;
 
     public GrenadeProximityEvent(Grenade grenade, Entity trigger)

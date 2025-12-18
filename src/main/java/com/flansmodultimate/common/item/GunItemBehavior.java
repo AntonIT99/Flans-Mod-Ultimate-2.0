@@ -3,7 +3,6 @@ package com.flansmodultimate.common.item;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
@@ -21,9 +20,9 @@ import com.flansmodultimate.common.guns.DefaultShootingHandler;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSecondaryFunction;
-import com.flansmodultimate.common.guns.InventoryHelper;
 import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.EnumHitboxType;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.raytracing.PlayerHitbox;
@@ -36,18 +35,19 @@ import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
-import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
+import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -56,7 +56,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -73,8 +72,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public record GunItemBehavior(GunItem item)
+public class GunItemBehavior
 {
+    private final GunItem item;
+    @Getter
+    private final GunReloader gunReloader;
+
+    public GunItemBehavior(GunItem item)
+    {
+        this.item = item;
+        gunReloader = new GunReloader(item);
+    }
+
     /**
      * Used to determine if, for example, a player is holding a two-handed gun but the other hand (the one without a gun) is holding something else
      * For example a player is holding two miniguns, a gun requiring both hands, so this method returns true
@@ -155,14 +164,16 @@ public record GunItemBehavior(GunItem item)
         // Do not shoot ammo bags, flags or dropped gun items
         Entity entity = ehr.getEntity();
         return (entity instanceof Flagpole
-                || entity instanceof Flag
-                || entity instanceof GunItemEntity
-                || entity instanceof Grenade grenade && grenade.getConfigType().isDeployableBag());
+            || entity instanceof Flag
+            || entity instanceof GunItemEntity
+            || entity instanceof Grenade grenade && grenade.getConfigType().isDeployableBag());
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        //TODO: here only server code
+        //TODO: compare with tryToShoot() and shoot() (Server side)
+        //TODO: compare with clientSideShoot() (Client side)
+        //TODO: here only server code, client side code should be moved either to packet PacketGunShoot or updateClient()
         if (item.configType.isDeployable() || !item.configType.isUsableByPlayers() || !gunCanBeHandled(player))
             return;
 
@@ -316,123 +327,21 @@ public record GunItemBehavior(GunItem item)
 
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
-        //TODO: compare with handleServerSide() from PacketReload
-        if (reload(level, player, gunStack, player.getInventory(), isForced, player.isCreative()))
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.isCreative(), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get())))
         {
-            int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
+            int maxAmmo = item.getConfigType().getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack);
             float reloadTime = item.getActualReloadTime(gunStack);
 
-            //TODO: implement Enchantments
-            //reloadTime = EnchantmentModule.ModifyReloadTime(reloadTime, player, otherHand);
-
             // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
-            data.setShootTimeRight(reloadTime);
-            data.setShootTimeLeft(reloadTime);
-            data.setReloading(hand, true);
-            data.setBurstRoundsRemaining(hand,0);
+            data.doGunReload(hand, reloadTime);
 
             PacketHandler.sendTo(new PacketGunReloadClient(hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 
             // Play reload sound
-            if (StringUtils.isNotBlank(item.configType.getReloadSound()))
-                PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.configType.getReloadSound(), false);
-        }
-    }
-
-    /**
-     * Returns true if the gun was actually reloaded
-     */
-    public boolean reload(Level level, Entity reloadingEntity, ItemStack gunStack, Inventory inventory, boolean forceReload, boolean isCreative)
-    {
-        //Deployable guns cannot be reloaded in the inventory
-        //TODO investigate if this code can can actually be called by an deployable
-        if (item.configType.isDeployable())
-            return false;
-
-        //If you cannot reload halfway through a clip, reject the player for trying to do so
-        if (forceReload && !item.configType.isCanForceReload())
-            return false;
-
-        boolean reloadedSomething = false;
-
-        //Check each ammo slot, one at a time
-        for (int i = 0; i < item.configType.getNumAmmoItemsInGun(gunStack); i++)
-        {
-            //Get the stack in the slot
-            ItemStack bulletStack = item.getBulletItemStack(gunStack, i);
-
-            //If there is no magazine, if the magazine is empty or if this is a forced reload
-            if (bulletStack == null || bulletStack.isEmpty() || bulletStack.getDamageValue() == bulletStack.getMaxDamage() || forceReload)
-            {
-                //Iterate over all inventory slots and find the magazine / bullet item with the most bullets
-                int bestSlot = -1;
-                int bulletsInBestSlot = 0;
-
-                List<ShootableType> allowedAmmoTypes = item.getConfigType().getAmmoTypes();
-
-                for (int j = 0; j < inventory.getContainerSize(); j++)
-                {
-                    ItemStack item = inventory.getItem(j);
-                    if (item.isEmpty())
-                        continue;
-                    if (item.getItem() instanceof ShootableItem shootableItem && allowedAmmoTypes.contains(shootableItem.getConfigType()))
-                    {
-                        int bulletsInThisSlot = item.getMaxDamage() - item.getDamageValue();
-                        if (bulletsInThisSlot > bulletsInBestSlot)
-                        {
-                            bestSlot = j;
-                            bulletsInBestSlot = bulletsInThisSlot;
-                        }
-                    }
-                }
-                //If there was a valid non-empty magazine / bullet item somewhere in the inventory, load it
-                if (bestSlot != -1)
-                {
-                    ItemStack newBulletStack = inventory.getItem(bestSlot);
-
-                    //Unload the old magazine (Drop an item if it is required and the player is not in creative mode)
-                    if (bulletStack != null && bulletStack.getItem() instanceof ShootableItem shootableItem && !isCreative && bulletStack.getDamageValue() == bulletStack.getMaxDamage())
-                    {
-                        dropItem(level, reloadingEntity, shootableItem.getConfigType().getDropItemOnReload(), shootableItem.getConfigType().getContentPack());
-                    }
-
-                    //The magazine was not finished, pull it out and give it back to the player or, failing that, drop it
-                    if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getDamageValue() < bulletStack.getMaxDamage() && !InventoryHelper.addItemStackToInventory(inventory, bulletStack, isCreative))
-                    {
-                        reloadingEntity.spawnAtLocation(bulletStack, 0.5F);
-                    }
-
-                    //Load the new magazine
-                    ItemStack stackToLoad = newBulletStack.copy();
-                    stackToLoad.setCount(1);
-                    item.setBulletItemStack(gunStack, stackToLoad, i);
-
-                    //Remove the magazine from the inventory
-                    if(!isCreative)
-                        newBulletStack.setCount(newBulletStack.getCount() - 1);
-                    if(newBulletStack.getCount() <= 0)
-                        newBulletStack = ItemStack.EMPTY.copy();
-                    inventory.setItem(bestSlot, newBulletStack);
-
-                    //Tell the sound player that we reloaded something
-                    reloadedSomething = true;
-                }
-            }
-        }
-        return reloadedSomething;
-    }
-
-    /**
-     * Method for dropping items on reload and on shoot
-     */
-    public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
-    {
-        if (!level.isClientSide && StringUtils.isNotBlank(itemName))
-        {
-            ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
-            entity.spawnAtLocation(dropStack, 0.5F);
+            if (StringUtils.isNotBlank(item.getConfigType().getReloadSound()))
+                PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.getConfigType().getReloadSound(), false);
         }
     }
 

@@ -43,6 +43,9 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.DoubleValue gunRecoilModifier;
     public static final ForgeConfigSpec.DoubleValue defaultADSSpreadMultiplier;
     public static final ForgeConfigSpec.DoubleValue defaultADSSpreadMultiplierShotgun;
+    public static final ForgeConfigSpec.BooleanValue cancelReloadOnWeaponSwitch;
+    public static final ForgeConfigSpec.BooleanValue combineAmmoOnReload;
+    public static final ForgeConfigSpec.BooleanValue ammoToUpperInventoryOnReload;
 
     // Shootable Settings
     //TODO: idea - teams command to enable / disable friendly fire
@@ -127,6 +130,15 @@ public class ModCommonConfigs
         defaultADSSpreadMultiplierShotgun = builder
                 .comment("Modifier for spread when the player is aiming. (Multishot guns only).")
                 .defineInRange("defaultADSSpreadMultiplierShotgun", 0.8, 0.0, 10.0);
+        cancelReloadOnWeaponSwitch = builder
+                .comment("This will cause the reload to be cancelled when switching to a different item")
+                .define("cancelReloadOnWeaponSwitch", true);
+        combineAmmoOnReload = builder
+                .comment("Whether or not to combine unloaded ammo with damaged ammo in the inventory")
+                .define("combineAmmoOnReload", true);
+        ammoToUpperInventoryOnReload = builder
+                .comment("Whether or not to first try to put unloaded ammo in the upper inventory instead of the hotbar")
+                .define("ammoToUpperInventoryOnReload", false);
         builder.pop();
 
         builder.push("Shootable Settings");

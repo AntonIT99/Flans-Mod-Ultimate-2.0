@@ -3,7 +3,8 @@ package com.flansmodultimate.common;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
-import com.flansmodultimate.common.guns.QueuedReload;
+import com.flansmodultimate.common.guns.reload.GunReloader;
+import com.flansmodultimate.common.guns.reload.PendingReload;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.teams.Team;
@@ -17,14 +18,15 @@ import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PlayerData
@@ -85,9 +87,7 @@ public class PlayerData
     @Getter @Setter
     private int burstRoundsRemainingRight = 0;
 
-    private ItemStack gunToReload;
-    private int reloadSlot;
-    private QueuedReload queuedReload;
+    private PendingReload pendingReload;
 
     private boolean isAmmoEmpty;
     private boolean reloadedAfterRespawn = false;
@@ -254,18 +254,40 @@ public class PlayerData
         if (loopedSoundDelay > 0)
             loopedSoundDelay--;
 
+        if (!player.level().isClientSide)
+            GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
+
         //Move all snapshots along one place
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         //Take new snapshot
         snapshots[0] = new PlayerSnapshot(player);
     }
 
+    public Optional<PendingReload> getPendingReload()
+    {
+        return Optional.ofNullable(pendingReload);
+    }
+
+    public void clearPendingReload()
+    {
+        pendingReload = null;
+    }
+
+    public boolean queuePendingReload(PendingReload pr)
+    {
+        if (pendingReload != null)
+            return false;
+
+        pendingReload = pr;
+        return true;
+    }
+
     public void resetScore()
     {
         score = zombieScore = kills = deaths = 0;
+        team = newTeam = null;
         //TODO: Uncomment for Teams
-        /*team = newTeam = null;
-        playerClass = newPlayerClass = null;*/
+        //playerClass = newPlayerClass = null;*/
     }
 
     public void playerKilled()
@@ -273,6 +295,15 @@ public class PlayerData
         mountingGun = null;
         isShootingRight = isShootingLeft = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
+    }
+
+    public void doGunReload(InteractionHand hand, float reloadTime)
+    {
+        // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
+        shootTimeRight = reloadTime;
+        shootTimeLeft = reloadTime;
+        setReloading(hand, true);
+        setBurstRoundsRemaining(hand,0);
     }
 
     public void doMelee(Player player, int meleeTime, GunType type)

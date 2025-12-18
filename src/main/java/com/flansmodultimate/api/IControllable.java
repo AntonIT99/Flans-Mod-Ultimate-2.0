@@ -1,6 +1,6 @@
 package com.flansmodultimate.api;
 
-import com.flansmodultimate.common.driveables.Seat;
+import com.flansmodultimate.common.entity.Seat;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

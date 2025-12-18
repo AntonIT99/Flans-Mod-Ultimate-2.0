@@ -2,8 +2,8 @@ package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.common.driveables.Seat;
-import com.flansmodultimate.common.driveables.Wheel;
+import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.GrenadeType;

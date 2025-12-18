@@ -26,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -113,7 +113,8 @@ public class GunType extends PaintableType implements IScope
     /**
      * The list of bullet types that can be used in this gun
      */
-    protected Set<String> ammo = new HashSet<>();
+    @Getter
+    protected Set<String> ammo = new LinkedHashSet<>();
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -880,7 +881,15 @@ public class GunType extends PaintableType implements IScope
         flashTexture = loadTexture(flashTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
 
-        anim.read(this, file);
+        anim.read(file);
+    }
+
+    public Optional<ShootableType> getDefaultAmmo()
+    {
+        if (!ammo.isEmpty()) {
+            return ShootableType.getAmmoType(ammo.iterator().next(), contentPack);
+        }
+        return Optional.empty();
     }
 
     @Override

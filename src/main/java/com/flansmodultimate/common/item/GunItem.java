@@ -69,14 +69,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     protected static final String NBT_AMMO = "ammo";
     protected static final String NBT_SECONDARY_AMMO = "secondary_ammo";
+    protected static final String NBT_PREFERRED_AMMO = "preferred_ammo";
     protected static final String NBT_PAINT = "paint";
     protected static final String NBT_LEGENDARY_CRAFTER = "legendary_crafter";
     protected static final String NBT_ENTITY_LOCK_ON = "lock_on";
-
-    protected static boolean rightMouseHeld;
-    protected static boolean lastRightMouseHeld;
-    protected static boolean leftMouseHeld;
-    protected static boolean lastLeftMouseHeld;
 
     @Getter
     protected final GunType configType;
@@ -341,21 +337,16 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         Level level = entity.level();
 
-        if (configType.getMeleeSound() != null)
-        {
-            // Your packet/util for playing a sound (server -> clients near position)
+        if (!level.isClientSide && StringUtils.isNotBlank(configType.getMeleeSound()))
             PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), FlansMod.SOUND_RANGE, level.dimension(), configType.getMeleeSound(), true);
-        }
 
         if (configType.getSecondaryFunction() == EnumSecondaryFunction.CUSTOM_MELEE)
         {
-            // Client-side animation
             if (level.isClientSide)
             {
                 GunAnimations anim = ModClient.getGunAnimations(entity, InteractionHand.MAIN_HAND);
                 anim.doMelee(configType.getMeleeTime());
             }
-            // Server-side custom melee hit detection/logic
             if (entity instanceof Player player)
             {
                 PlayerData data = PlayerData.getInstance(player);
@@ -629,7 +620,24 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     public float getActualReloadTime(ItemStack gunStack)
     {
+        //TODO: implement Enchantments
+        //reloadTime = EnchantmentModule.ModifyReloadTime(reloadTime, player, otherHand);
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
         return (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
+    }
+
+    public void setPreferredAmmo(ItemStack gun, String ammoName)
+    {
+        CompoundTag tag = gun.getOrCreateTag();
+        tag.putString(NBT_PREFERRED_AMMO, ammoName);
+    }
+
+    public String getPreferredAmmo(ItemStack gun)
+    {
+        CompoundTag tag = gun.getOrCreateTag();
+        if (!tag.contains(NBT_PREFERRED_AMMO))
+            setPreferredAmmo(gun, configType.getAmmo().iterator().next());
+
+        return tag.getString(NBT_PREFERRED_AMMO);
     }
 }

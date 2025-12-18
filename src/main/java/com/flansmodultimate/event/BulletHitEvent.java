@@ -15,17 +15,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 
 @Cancelable
+@Getter
 public class BulletHitEvent extends Event
 {
-    @Getter
     private final Bullet bullet;
-    @Getter
     private final BulletHit hit;
-    @Getter
     private Entity hitEntity;
-    @Getter
     private BlockState hitBlockState;
-    @Getter @Setter
+    @Setter
     private boolean allowBlockDestruction = true;
 
     public BulletHitEvent(Bullet bullet, BulletHit hit)

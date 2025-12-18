@@ -338,7 +338,8 @@ public abstract class ShootableType extends InfoType
         return list;
     }
 
-    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack) {
+    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack)
+    {
         return getAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
     }
 }

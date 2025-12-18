@@ -90,6 +90,24 @@ public class TypeReaderUtils
         return defaultValue;
     }
 
+    @Nullable
+    public static Integer readInteger(String key, TypeFile file)
+    {
+        String strValue = readValue(key, null, file);
+        if (strValue != null)
+        {
+            try
+            {
+                return Integer.parseInt(strValue);
+            }
+            catch (Exception e)
+            {
+                logError(incorrectFormatWrongType(key, strValue, "an integer"), file);
+            }
+        }
+        return null;
+    }
+
     public static float readValue(String key, float defaultValue, TypeFile file)
     {
         String strValue = readValue(key, null, file);
@@ -105,6 +123,24 @@ public class TypeReaderUtils
             }
         }
         return defaultValue;
+    }
+
+    @Nullable
+    public static Float readFloat(String key, TypeFile file)
+    {
+        String strValue = readValue(key, null, file);
+        if (strValue != null)
+        {
+            try
+            {
+                return Float.parseFloat(strValue);
+            }
+            catch (Exception e)
+            {
+                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+            }
+        }
+        return null;
     }
 
     public static double readValue(String key, double defaultValue, TypeFile file)
@@ -124,6 +160,24 @@ public class TypeReaderUtils
         return defaultValue;
     }
 
+    @Nullable
+    public static Double readDouble(String key, TypeFile file)
+    {
+        String strValue = readValue(key, null, file);
+        if (strValue != null)
+        {
+            try
+            {
+                return Double.parseDouble(strValue);
+            }
+            catch (Exception e)
+            {
+                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+            }
+        }
+        return null;
+    }
+
     public static boolean readValue(String key, boolean defaultValue, TypeFile file)
     {
         String strValue = readValue(key, null, file);
@@ -139,6 +193,24 @@ public class TypeReaderUtils
             return Boolean.parseBoolean(strValue);
         }
         return defaultValue;
+    }
+
+    @Nullable
+    public static Boolean readBoolean(String key, TypeFile file)
+    {
+        String strValue = readValue(key, null, file);
+        if (strValue != null)
+        {
+            strValue = strValue.equals("1") ? Boolean.TRUE.toString() : strValue;
+            strValue = strValue.equals("0") ? Boolean.FALSE.toString() : strValue;
+            if (!Boolean.TRUE.toString().equalsIgnoreCase(strValue) && !Boolean.FALSE.toString().equalsIgnoreCase(strValue))
+            {
+                logError(incorrectFormatWrongType(key, strValue, "a boolean"), file);
+                return null;
+            }
+            return Boolean.parseBoolean(strValue);
+        }
+        return null;
     }
 
     public static <E extends Enum<E>> E readValue(String key, E defaultValue, Class<E> enumType, TypeFile file)

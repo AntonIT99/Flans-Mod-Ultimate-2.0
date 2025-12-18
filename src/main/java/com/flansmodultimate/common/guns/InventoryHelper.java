@@ -6,127 +6,101 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Objects;
-
 /**
- * Adds access to the InventoryPlayer stack combination methods for arbitrary inventories
+ * Adds access to the ContainerPlayer stack combination methods for arbitrary inventories
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class InventoryHelper
 {
-    /** Tries to insert the whole stack into the container. Returns true if *anything* was inserted.
-     *  If {@code creative} is true and insertion couldn’t find space, the input stack is cleared. */
-    public static boolean addItemStackToInventory(Container inventory, ItemStack stack, boolean creative)
+    public static boolean addItemStackToContainer(Container inv, ItemStack stack, boolean creative, boolean combine, boolean toUpperContainer)
     {
-        if (stack == null || stack.isEmpty() || stack.getCount() <= 0) return false;
+        if (creative || stack.isEmpty())
+            return true;
 
-        try {
-            // Non-stackable (or damaged items that don’t stack): place single copy into an empty slot.
-            if (stack.getMaxStackSize() == 1 || stack.isDamaged()) {
-                int slot = getFirstEmptyStack(inventory);
-                if (slot >= 0) {
-                    ItemStack toAdd = stack.copy();
-                    toAdd.setPopTime(5);
-                    inventory.setItem(slot, toAdd);
-                    stack.setCount(0);
-                    return true;
-                } else if (creative) {
-                    stack.setCount(0);
-                    return true;
-                }
-                return false;
-            }
-
-            // Stackable path: keep merging until no progress
-            boolean insertedAny = false;
-            int before;
-            do {
-                before = stack.getCount();
-                int remaining = storePartialItemStack(inventory, stack);
-                stack.setCount(remaining);
-                insertedAny |= (remaining < before);
-            } while (stack.getCount() > 0 && stack.getCount() < before);
-
-            if (stack.getCount() == before && creative) { // couldn’t place more, but creative: delete
-                stack.setCount(0);
+        if (combine)
+        {
+            mergeIntoExisting(inv, stack, toUpperContainer);
+            if (stack.isEmpty())
                 return true;
-            }
-            return insertedAny;
-        } catch (Throwable t) {
-            // Log if you like
-            return false;
+        }
+
+        int empty = findEmptySlot(inv, toUpperContainer);
+        if (empty != -1)
+        {
+            inv.setItem(empty, stack.copy());
+            stack.setCount(0);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void mergeIntoExisting(Container inv, ItemStack stack, boolean upper)
+    {
+        mergeRange(inv, stack, primaryStart(inv, upper), primaryEnd(inv, upper));
+
+        if (!stack.isEmpty())
+            mergeRange(inv, stack, secondaryStart(inv, upper), secondaryEnd(inv, upper));
+    }
+
+    private static void mergeRange(Container inv, ItemStack stack, int start, int end)
+    {
+        for (int i = start; i < end && !stack.isEmpty(); i++)
+        {
+            ItemStack slot = inv.getItem(i);
+            if (slot.isEmpty())
+                continue;
+            if (!ItemStack.isSameItemSameTags(slot, stack))
+                continue;
+            if (!slot.isStackable())
+                continue;
+
+            int max = Math.min(slot.getMaxStackSize(), inv.getMaxStackSize());
+            int space = max - slot.getCount();
+            if (space <= 0)
+                continue;
+
+            int move = Math.min(space, stack.getCount());
+            slot.setCount(slot.getCount() + move);
+            stack.setCount(stack.getCount() - move);
         }
     }
 
-    /** Finds a slot that can merge with {@code stack}. Returns -1 if none. */
-    public static int storeItemStack(Container inventory, ItemStack stack)
+    private static int findEmptySlot(Container inv, boolean upper)
     {
-        for (int i = 0; i < inventory.getContainerSize(); ++i) {
-            ItemStack old = inventory.getItem(i);
-            if (!old.isEmpty()
-                    && old.isStackable()
-                    && ItemStack.isSameItemSameTags(old, stack)
-                    && old.getCount() < Math.min(old.getMaxStackSize(), inventory.getMaxStackSize())) {
+        int s = primaryStart(inv, upper);
+        int e = primaryEnd(inv, upper);
+
+        for (int i = s; i < e; i++)
+            if (inv.getItem(i).isEmpty())
                 return i;
-            }
-        }
+
+        s = secondaryStart(inv, upper); e = secondaryEnd(inv, upper);
+
+        for (int i = s; i < e; i++)
+            if (inv.getItem(i).isEmpty())
+                return i;
+
         return -1;
     }
 
-    /** Tries to put as much of {@code stack} as possible into the container.
-     *  Returns the remaining count that couldn’t be inserted. */
-    public static int storePartialItemStack(Container inventory, ItemStack stack)
+    private static int primaryStart(Container inv, boolean upper)
     {
-        Objects.requireNonNull(stack);
-        int remaining = stack.getCount();
-
-        // Non-stackable: just place a copy in the first empty slot
-        if (stack.getMaxStackSize() == 1) {
-            int slot = getFirstEmptyStack(inventory);
-            if (slot < 0) return remaining;
-
-            if (inventory.getItem(slot).isEmpty()) {
-                inventory.setItem(slot, stack.copy());
-                return 0;
-            }
-            return remaining;
-        }
-
-        // First try to merge into existing stacks
-        int slot = storeItemStack(inventory, stack);
-        if (slot < 0) {
-            // Then try an empty slot
-            slot = getFirstEmptyStack(inventory);
-        }
-        if (slot < 0) {
-            return remaining; // nowhere to go
-        }
-
-        ItemStack target = inventory.getItem(slot);
-        if (target.isEmpty()) {
-            // Create a zero-count target with same item/tags to merge into (then we’ll increase count)
-            target = stack.copy();
-            target.setCount(0);
-            inventory.setItem(slot, target);
-        }
-
-        int maxPerSlot = Math.min(target.getMaxStackSize(), inventory.getMaxStackSize());
-        int canMove = Math.min(remaining, maxPerSlot - target.getCount());
-        if (canMove <= 0) return remaining;
-
-        target.grow(canMove);
-        target.setPopTime(5);
-        remaining -= canMove;
-
-        return remaining;
+        return upper ? 0 : 9;
     }
 
-    /** First empty slot or -1. */
-    public static int getFirstEmptyStack(Container inventory)
+    private static int primaryEnd(Container inv, boolean upper)
     {
-        for (int i = 0; i < inventory.getContainerSize(); ++i) {
-            if (inventory.getItem(i).isEmpty()) return i;
-        }
-        return -1;
+        return upper ? 9 : inv.getContainerSize();
+    }
+
+    private static int secondaryStart(Container inv, boolean upper)
+    {
+        return upper ? 9 : 0;
+    }
+
+    private static int secondaryEnd(Container inv, boolean upper)
+    {
+        return upper ? inv.getContainerSize() : 9;
     }
 }

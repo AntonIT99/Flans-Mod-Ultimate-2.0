@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.common.driveables.Seat;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;

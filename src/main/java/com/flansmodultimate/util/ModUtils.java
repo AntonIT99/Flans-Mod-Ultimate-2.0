@@ -1,8 +1,10 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.InfoType;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -155,6 +157,41 @@ public final class ModUtils
         return queryEntities(level, null, box, LivingEntity.class, null);
     }
 
+    public static Optional<ItemStack> getItemStack(InfoType infoType)
+    {
+        return getItemStack(infoType, 1);
+    }
+
+    public static Optional<ItemStack> getItemStack(InfoType infoType, int amount)
+    {
+        return getItemStack(infoType, amount, 0);
+    }
+
+    public static Optional<ItemStack> getItemStack(InfoType infoType, int amount, int damage)
+    {
+        Optional<Item> item = getItem(infoType);
+        if (item.isPresent())
+        {
+            ItemStack stack = new ItemStack(item.get(), amount);
+            if (damage > 0)
+                stack.setDamageValue(damage);
+            return Optional.of(stack);
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Item> getItem(InfoType infoType)
+    {
+        if (infoType.getType().isItemType())
+        {
+            return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * get an ItemStack from id "modid:name"
+     */
     public static Optional<ItemStack> getItemStack(@Nullable String id, int amount, int damage)
     {
         Optional<Item> item = getItemById(id);
@@ -168,6 +205,9 @@ public final class ModUtils
         return Optional.empty();
     }
 
+    /**
+     * get an Item from id "modid:name"
+     */
     public static Optional<Item> getItemById(@Nullable String id)
     {
         if (StringUtils.isBlank(id))
@@ -257,6 +297,18 @@ public final class ModUtils
             return;
 
         level.destroyBlock(pos, dropBlock);
+    }
+
+    /**
+     * Method for dropping Flan's Mod items at the entity's location
+     */
+    public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
+    {
+        if (!level.isClientSide && StringUtils.isNotBlank(itemName))
+        {
+            ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
+            entity.spawnAtLocation(dropStack, 0.5F);
+        }
     }
 
     public static String getItemLocalizedName(String itemId)

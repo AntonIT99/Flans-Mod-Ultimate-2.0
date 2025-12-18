@@ -5,6 +5,7 @@ import com.flansmodultimate.common.item.GunItemBehavior;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.util.ModUtils;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -88,11 +89,11 @@ public final class DefaultShootingHandler implements ShootingHandler
         // Drop item on shooting if bullet requires it
         if (!player.isCreative())
         {
-            GunItemBehavior.dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
+            ModUtils.dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
         }
 
         // Drop item on shooting if gun requires it
-        GunItemBehavior.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
+        ModUtils.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
         if (gunType.getKnockback() > 0F)
             knockbackOppositeLook(player, gunType.getKnockback());

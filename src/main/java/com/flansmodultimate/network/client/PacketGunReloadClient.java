@@ -55,12 +55,7 @@ public class PacketGunReloadClient implements IClientPacket
         if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
             PlayerData data = PlayerData.getInstance(player);
-
-            // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
-            data.setShootTimeRight(reloadTime);
-            data.setShootTimeLeft(reloadTime);
-            data.setReloading(hand,true);
-            data.setBurstRoundsRemaining(hand,0);
+            data.doGunReload(hand, reloadTime);
 
             GunAnimations animations = ModClient.getGunAnimations(player, hand);
 

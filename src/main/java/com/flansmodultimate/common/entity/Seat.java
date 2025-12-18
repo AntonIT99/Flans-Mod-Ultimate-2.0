@@ -1,6 +1,5 @@
-package com.flansmodultimate.common.driveables;
+package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.common.entity.Driveable;
 import lombok.Getter;
 
 import net.minecraft.nbt.CompoundTag;

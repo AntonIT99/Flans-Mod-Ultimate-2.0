@@ -84,9 +84,6 @@ public class ModClient
     private static boolean controlModeMouse = true;
     /** A delayer on the mouse control switch */
     private static int controlModeSwitchTimer = 20;
-    /** The delay between shots / reloading */
-    private static float shootTimeLeft;
-    private static float shootTimeRight;
     /** The delay between switching slots */
     @Getter @Setter
     private static float switchTime;
@@ -287,14 +284,11 @@ public class ModClient
 
         updateFlashlights(mc, level);
         InstantBulletRenderer.updateAllTrails();
-        updateScopeAndHitMarkerTime();
+        updateTimers();
         updateRecoil();
         updateGunAnimations();
         updateScopeState(mc, player);
         updateZoom();
-
-        if (controlModeSwitchTimer > 0)
-            controlModeSwitchTimer--;
 
         if (changedCameraEntity && (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive()))
         {
@@ -461,12 +455,16 @@ public class ModClient
         }
     }
 
-    private static void updateScopeAndHitMarkerTime()
+    private static void updateTimers()
     {
+        if (switchTime > 0)
+            switchTime--;
         if (scopeTime > 0)
             scopeTime--;
         if (hitMarkerTime > 0)
             hitMarkerTime--;
+        if (controlModeSwitchTimer > 0)
+            controlModeSwitchTimer--;
     }
 
     private static void updateRecoil()
