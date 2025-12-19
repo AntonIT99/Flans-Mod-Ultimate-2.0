@@ -35,6 +35,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -73,6 +75,9 @@ public class ModClient
             model.leftArm.yRot = 0.05F;
             model.leftArm.zRot = 0F;
         });
+
+    @Getter
+    private static final Map<UUID, SoundInstance> cancellableSounds = new HashMap<>();
 
     @Getter
     private static boolean isDebug;
@@ -304,8 +309,9 @@ public class ModClient
         if (dx * dx + dy * dy > 0.001)
             MouseInputHandler.handleMouseMove(dx, dy);
 
-        for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
-            debugEntity.tick();
+        DebugHelper.activeDebugEntities.forEach(DebugColor::tick);
+
+        cancellableSounds.values().removeIf(soundInstance -> !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
     /** Handle flashlight block light override */

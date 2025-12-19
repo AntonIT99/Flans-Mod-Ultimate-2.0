@@ -2,7 +2,6 @@ package com.flansmodultimate.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModClient;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
@@ -338,7 +337,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         Level level = entity.level();
 
         if (!level.isClientSide && StringUtils.isNotBlank(configType.getMeleeSound()))
-            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), FlansMod.SOUND_RANGE, level.dimension(), configType.getMeleeSound(), true);
+            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), configType.getMeleeSoundRange(), level.dimension(), configType.getMeleeSound(), true);
 
         if (configType.getSecondaryFunction() == EnumSecondaryFunction.CUSTOM_MELEE)
         {
@@ -495,7 +494,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
         {
-            PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, configType.getIdleSound(), false);
+            PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false);
             soundDelay = configType.getIdleSoundLength();
         }
 

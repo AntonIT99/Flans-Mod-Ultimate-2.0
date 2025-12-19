@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class GunItemBehavior
 {
@@ -179,7 +180,7 @@ public class GunItemBehavior
 
         data.setShooting(hand, true);
 
-        GunType gunType = item.getConfigType();
+        GunType gunType = item.configType;
 
         float shootTime = data.getShootTime(hand);
 
@@ -238,7 +239,7 @@ public class GunItemBehavior
                 // Play shot sounds
                 if (StringUtils.isNotBlank(item.configType.getShootSound()))
                 {
-                    PacketPlaySound.sendSoundPacket(player.getEyePosition(), FlansMod.SOUND_RANGE, level.dimension(), item.configType.getShootSound(), silenced);
+                    PacketPlaySound.sendSoundPacket(player.getEyePosition(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), silenced);
                     item.soundDelay = item.configType.getShootSoundLength();
                 }
 
@@ -255,7 +256,7 @@ public class GunItemBehavior
 
     public EnumFireDecision computeFireDecision(PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        GunType type = item.getConfigType();
+        GunType type = item.configType;
         EnumFireMode mode = type.getFireMode(gunStack);
         boolean emptyAmmo = hasEmptyAmmo(gunStack);
         boolean shootPressed = data.isShootKeyPressed(hand);
@@ -327,9 +328,10 @@ public class GunItemBehavior
 
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.isCreative(), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get())))
+        UUID reloadSoundUUID = UUID.randomUUID();
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.isCreative(), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), reloadSoundUUID))
         {
-            int maxAmmo = item.getConfigType().getNumAmmoItemsInGun(gunStack);
+            int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack);
             float reloadTime = item.getActualReloadTime(gunStack);
@@ -339,15 +341,16 @@ public class GunItemBehavior
 
             PacketHandler.sendTo(new PacketGunReloadClient(hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 
+            String reloadSound = item.configType.getReloadSound(gunStack);
             // Play reload sound
-            if (StringUtils.isNotBlank(item.getConfigType().getReloadSound()))
-                PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.getConfigType().getReloadSound(), false);
+            if (StringUtils.isNotBlank(reloadSound))
+                PacketPlaySound.sendSoundPacket(player, item.configType.getReloadSoundRange(), reloadSound, false, false, true, reloadSoundUUID);
         }
     }
 
     public boolean canReload(Container inventory)
     {
-        List<ShootableType> allowedAmmoTypes = item.getConfigType().getAmmoTypes();
+        List<ShootableType> allowedAmmoTypes = item.configType.getAmmoTypes();
 
         for (int i = 0; i < inventory.getContainerSize(); i++)
         {

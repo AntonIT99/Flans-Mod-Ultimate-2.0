@@ -4,6 +4,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.UUID;
 
 public record PendingReload(
         ItemStack gunStack,
@@ -13,5 +14,6 @@ public record PendingReload(
         boolean forceReload,
         boolean creative,
         boolean combineAmmoOnReload,
-        boolean ammoToUpperInventory)
+        boolean ammoToUpperInventory,
+        UUID reloadSoundUUID)
 {}

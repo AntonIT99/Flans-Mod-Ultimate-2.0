@@ -54,8 +54,8 @@ public class FlansMod
     public static final TeamsManager teamsManager = new TeamsManager();
 
     // Range for which sound packets are sent
-    public static final float SOUND_RANGE = 64F;
-    public static final float SOUND_VOLUME = SOUND_RANGE / 16F;
+    public static final float SOUND_RANGE = 48F;
+    public static final float GUN_FIRE_SOUND_RANGE = 96F;
 
     // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";

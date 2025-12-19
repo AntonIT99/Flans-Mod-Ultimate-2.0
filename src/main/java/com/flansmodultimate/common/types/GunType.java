@@ -355,7 +355,6 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether to distort the sound or not. Generally only set to false for looping sounds
      */
-    @Getter
     protected String reloadSound;
     /**
      * The sound to play upon reloading when empty
@@ -388,19 +387,23 @@ public class GunType extends PaintableType implements IScope
     /**
      * The block range for idle sounds (for miniguns etc.)
      */
-    protected int idleSoundRange = 50;
+    @Getter
+    protected int idleSoundRange = (int) FlansMod.SOUND_RANGE;
     /**
      * The block range for melee sounds
      */
-    protected int meleeSoundRange = 50;
+    @Getter
+    protected int meleeSoundRange = (int) FlansMod.SOUND_RANGE;
     /**
      * The block range for reload sounds
      */
-    protected int reloadSoundRange = 50;
+    @Getter
+    protected int reloadSoundRange = (int) FlansMod.SOUND_RANGE;
     /**
      * The block range for gunshots sounds
      */
-    protected int gunSoundRange = 50;
+    @Getter
+    protected int gunSoundRange = (int) FlansMod.GUN_FIRE_SOUND_RANGE;
 
     /**
      * Sound to be played outside of normal range
@@ -1086,6 +1089,15 @@ public class GunType extends PaintableType implements IScope
 
             tag.put(NBT_ATTACHMENTS, attachments);
         }
+    }
+
+    public String getReloadSound(ItemStack stack)
+    {
+        if (getSecondaryFire(stack) && getGrip(stack) != null && StringUtils.isNotBlank(getGrip(stack).secondaryReloadSound))
+            return getGrip(stack).secondaryReloadSound;
+        else if (StringUtils.isNotBlank(reloadSoundOnEmpty))
+            return reloadSoundOnEmpty;
+        return reloadSound;
     }
 
     /**

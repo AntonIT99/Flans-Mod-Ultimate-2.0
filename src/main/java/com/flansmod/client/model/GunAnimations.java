@@ -378,6 +378,13 @@ public class GunAnimations
         ModClient.setLastBulletReload(ammoCount - 1);
     }
 
+    public void cancelReload()
+    {
+        reloading = false;
+        lastReloadAnimationProgress = reloadAnimationProgress = 0F;
+        reloadAnimationTime = 0;
+    }
+
     public void doMelee(int meleeTime)
     {
         meleeAnimationLength = meleeTime;

@@ -4,6 +4,8 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
+import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
+import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShoot;
@@ -69,6 +71,8 @@ public final class PacketHandler {
         registerS2C(PacketAllowDebug.class);
         registerS2C(PacketBlockHitEffect.class);
         registerS2C(PacketBulletTrail.class);
+        registerS2C(PacketCancelGunReloadClient.class);
+        registerS2C(PacketCancelSound.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShoot.class);

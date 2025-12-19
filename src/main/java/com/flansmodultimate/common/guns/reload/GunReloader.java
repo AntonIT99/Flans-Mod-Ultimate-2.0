@@ -6,6 +6,9 @@ import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.GunReloadEvent;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
+import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,13 +24,14 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public record GunReloader(GunItem item)
 {
     /**
      * Returns true if we reloaded or successfully queued a reload
      */
-    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean creative, boolean combineAmmoOnReload, boolean ammoToUpperInventory)
+    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean creative, boolean combineAmmoOnReload, boolean ammoToUpperInventory, UUID reloadSoundUUID)
     {
         // Deployable guns cannot be reloaded in the inventory
         if (item.getConfigType().isDeployable())
@@ -62,7 +66,7 @@ public record GunReloader(GunItem item)
         long ticks = (long) Math.ceil(item.getActualReloadTime(gunStack));
         long applyAt = level.getGameTime() + ticks;
 
-        return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, creative, combineAmmoOnReload, ammoToUpperInventory));
+        return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, creative, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID));
     }
 
     public static void handlePendingReload(Level level, ServerPlayer player, PlayerData data)
@@ -72,11 +76,14 @@ public record GunReloader(GunItem item)
             return;
 
         //TODO: test cancel
+
         // cancel on weapon switch
         boolean canceled = cancelReloadIfSwitched(player, pendingReload);
         if (canceled)
         {
-            //TODO: cancel client reload (sound) via network packet
+            PacketHandler.sendTo(new PacketCancelGunReloadClient(pendingReload.hand()), player);
+            // Position of the player reloading might have changed, so send it to all players to be sure
+            PacketHandler.sendToAll(new PacketCancelSound(pendingReload.reloadSoundUUID()));
             data.clearPendingReload();
         }
 
