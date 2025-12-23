@@ -5,8 +5,5 @@ package com.flansmodultimate.common.guns;
  */
 public interface ShootingHandler
 {
-    /**
-     * @param isExtraBullet is true whenever the current bullet is not the last one to be shot in this batch
-     */
-    void shooting(boolean isExtraBullet);
+    void onShoot();
 }

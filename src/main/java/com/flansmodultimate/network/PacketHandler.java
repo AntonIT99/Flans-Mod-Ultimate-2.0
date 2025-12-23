@@ -8,7 +8,7 @@ import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
-import com.flansmodultimate.network.client.PacketGunShoot;
+import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
@@ -18,7 +18,7 @@ import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
-import com.flansmodultimate.network.server.PacketTriggerShootState;
+import com.flansmodultimate.network.server.PacketShootInput;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.network.NetworkDirection;
@@ -57,8 +57,8 @@ public final class PacketHandler {
             .simpleChannel();
 
     private static final List<Entry> entries = new ArrayList<>();
-    private static boolean frozen = false;
-    private static int nextId = 0;
+    private static boolean frozen;
+    private static int nextId;
 
     private record Entry(Class<? extends IPacket> clazz, NetworkDirection dir) {}
 
@@ -75,7 +75,7 @@ public final class PacketHandler {
         registerS2C(PacketCancelSound.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketGunReloadClient.class);
-        registerS2C(PacketGunShoot.class);
+        registerS2C(PacketGunShootClient.class);
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
         registerS2C(PacketParticles.class);
@@ -87,7 +87,7 @@ public final class PacketHandler {
         registerC2S(PacketGunSpread.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
-        registerC2S(PacketTriggerShootState.class);
+        registerC2S(PacketShootInput.class);
 
         initAndRegister();
     }
@@ -110,10 +110,6 @@ public final class PacketHandler {
         {
             FlansMod.log.warn("Tried to register {} after init", clz.getCanonicalName());
         }
-        if (entries.size() >= 256)
-        {
-            FlansMod.log.error("Packet limit exceeded by {}", clz.getCanonicalName());
-        }
         if (entries.stream().anyMatch(e -> e.clazz == clz && e.dir == dir))
         {
             FlansMod.log.warn("Duplicate packet registration for {} {}", clz.getCanonicalName(), dir);
@@ -126,53 +122,63 @@ public final class PacketHandler {
     {
         if (frozen)
             return;
-        frozen = true;
 
-        entries.sort(Comparator.comparing(e -> e.getClass().getCanonicalName(), String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(e -> e.getClass().getCanonicalName()));
+        frozen = true;
+        nextId = 0;
+
+        entries.sort(Comparator
+            .comparing((Entry e) -> e.clazz().getName(), String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(e -> e.dir().name()));
 
         for (Entry e : entries)
             registerOne(e.clazz, e.dir);
     }
 
-    private static <T extends IPacket> void registerOne(Class<T> clz, NetworkDirection dir) {
+    private static <T extends IPacket> void registerOne(Class<T> clz, NetworkDirection dir)
+    {
         CHANNEL.messageBuilder(clz, nextId++, dir)
-                .encoder(IPacket::encodeInto)
-                .decoder(buf -> {
-                    try
+            .encoder(IPacket::encodeInto)
+            .decoder(buf -> {
+                try
+                {
+                    T p = clz.getDeclaredConstructor().newInstance();
+                    p.decodeInto(buf);
+                    return p;
+                }
+                catch (Exception ex)
+                {
+                    throw new RuntimeException("Failed to construct/decode " + clz.getCanonicalName(), ex);
+                }
+            })
+            .consumerMainThread((msg, ctxSup) -> {
+                NetworkEvent.Context ctx = ctxSup.get();
+                ctx.enqueueWork(() -> {
+                    if (ctx.getDirection().getReceptionSide().isServer() && msg instanceof IServerPacket serverPacket)
                     {
-                        T p = clz.getDeclaredConstructor().newInstance();
-                        p.decodeInto(buf);
-                        return p;
+                        // Server
+                        ServerPlayer sender = ctx.getSender();
+                        if (sender != null)
+                            serverPacket.handleServerSide(sender, sender.serverLevel());
                     }
-                    catch (Exception ex)
+                    else if (msg instanceof IClientPacket clientPacket)
                     {
-                        throw new RuntimeException("Failed to construct/decode " + clz.getCanonicalName(), ex);
+                        // Client
+                        Minecraft mc = Minecraft.getInstance();
+                        ClientLevel level = mc.level;
+                        LocalPlayer player = mc.player;
+                        if (level != null && player != null)
+                            clientPacket.handleClientSide(player, level);
                     }
-                })
-                .consumerMainThread((msg, ctxSup) -> {
-                    NetworkEvent.Context ctx = ctxSup.get();
-                    ctx.enqueueWork(() -> {
-                        if (ctx.getDirection().getReceptionSide().isServer() && msg instanceof IServerPacket serverPacket)
-                        {
-                            // Server
-                            ServerPlayer sender = ctx.getSender();
-                            if (sender != null)
-                                serverPacket.handleServerSide(sender, sender.serverLevel());
-                        }
-                        else if (msg instanceof IClientPacket clientPacket)
-                        {
-                            // Client
-                            Minecraft mc = Minecraft.getInstance();
-                            ClientLevel level = mc.level;
-                            LocalPlayer player = mc.player;
-                            if (level != null && player != null)
-                                clientPacket.handleClientSide(player, level);
-                        }
-                    });
-                    ctx.setPacketHandled(true);
-                })
-                .add();
+                });
+                ctx.setPacketHandled(true);
+            })
+            .add();
+    }
+
+    /** client -> server */
+    public static void sendToServer(IServerPacket msg)
+    {
+        CHANNEL.sendToServer(msg);
     }
 
     /** server -> specific player */
@@ -193,22 +199,17 @@ public final class PacketHandler {
         CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), msg);
     }
 
-    /** server -> players near a point (like your TargetPoint) */
+    /** server -> players near a point */
     public static void sendToAllAround(IClientPacket msg, double x, double y, double z, double range, ResourceKey<Level> dim)
     {
         PacketDistributor.TargetPoint tp = new PacketDistributor.TargetPoint(x, y, z, range, dim);
         CHANNEL.send(PacketDistributor.NEAR.with(() -> tp), msg);
     }
 
+    /** server -> players near a point */
     public static void sendToAllAround(IClientPacket msg, Vec3 position, double range, ResourceKey<Level> dim)
     {
         sendToAllAround(msg, position.x, position.y, position.z, range, dim);
-    }
-
-    /** client -> server */
-    public static void sendToServer(IServerPacket msg)
-    {
-        CHANNEL.sendToServer(msg);
     }
 
     /** server -> all in a donut (min..max radius) */

@@ -14,6 +14,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
@@ -60,16 +62,21 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
                 .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
+    DecimalFormat floatFormat = initFloatFormat();
+
+    private static DecimalFormat initFloatFormat()
+    {
+        DecimalFormat df = new DecimalFormat("0.##", DecimalFormatSymbols.getInstance(java.util.Locale.ROOT));
+        df.setRoundingMode(java.math.RoundingMode.HALF_UP);
+        return df;
+    }
+
     /**
      * Format floats nicely (no trailing .0 if not needed)
      */
     static String formatFloat(float f)
     {
-        if (Math.abs(f - Math.round(f)) < 0.0001F)
-        {
-            return Integer.toString(Math.round(f));
-        }
-        return String.format(java.util.Locale.ROOT, "%.2f", f);
+        return floatFormat.format(f);
     }
 
     /**
@@ -77,11 +84,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static String formatDouble(double d)
     {
-        if (Math.abs(d - Math.round(d)) < 0.0001)
-        {
-            return Long.toString(Math.round(d));
-        }
-        return String.format(java.util.Locale.ROOT, "%.2f", d);
+        return floatFormat.format(d);
     }
 
     /**

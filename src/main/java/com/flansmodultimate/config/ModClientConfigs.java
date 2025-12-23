@@ -22,7 +22,7 @@ public class ModClientConfigs
     static {
         builder.push("Client General Settings");
         showPackNameInItemDescriptions = builder
-                .comment("Show pack names in item descriptions")
+                .comment("Show content pack names in item descriptions")
                 .define("showPackNameInItemDescriptions", true);
         builder.pop();
 

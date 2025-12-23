@@ -16,7 +16,7 @@ public class GrenadeType extends ShootableType
 {
     //TODO: Make Configurable
     public static final int SMOKE_PARTICLES_COUNT = 50;
-    public static final int SMOKE_PARTICLES_RANGE = 30;
+    public static final int SMOKE_PARTICLES_RANGE = 32;
 
     protected static final float DEFAULT_BOUNCINESS = 0.9F;
 
@@ -104,6 +104,20 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean spinWhenThrown = true;
 
+    //Smoke
+    /** Time to remain after detonation */
+    @Getter
+    protected int smokeTime;
+    /** Particles given off after detonation */
+    @Getter
+    protected String smokeParticleType = "explode";
+    /** The effects to be given to people coming too close */
+    @Getter
+    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
+    /** The radius for smoke effects to take place in */
+    @Getter
+    protected float smokeRadius = 5F;
+
     //Deployed bag functionality
     /** If true, then right clicking this "grenade" will give the player health or buffs or ammo as defined below */
     @Getter
@@ -170,6 +184,11 @@ public class GrenadeType extends ShootableType
         flashEffectsDuration = readValue("FlashEffectsDuration", flashEffectsDuration, file);
         flashEffectsLevel = readValue("FlashEffectsLevel", flashEffectsLevel, file);
         flashBang = readValue("FlashBang", flashBang, file);
+
+        smokeTime = readValue("SmokeTime", smokeTime, file);
+        smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);
+        smokeRadius = readValue("SmokeRadius", smokeRadius, file);
+        addEffects("SmokeEffect", smokeEffects, file, false, false);
 
         detonateWhenShot = readValue("DetonateWhenShot", detonateWhenShot, file);
 

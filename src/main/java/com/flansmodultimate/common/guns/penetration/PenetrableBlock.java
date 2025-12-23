@@ -1,4 +1,4 @@
-package com.flansmodultimate;
+package com.flansmodultimate.common.guns.penetration;
 
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;

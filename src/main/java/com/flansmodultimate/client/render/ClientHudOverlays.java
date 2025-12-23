@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;

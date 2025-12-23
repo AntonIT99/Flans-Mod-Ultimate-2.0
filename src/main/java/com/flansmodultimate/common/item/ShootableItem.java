@@ -51,7 +51,7 @@ public abstract class ShootableItem extends Item
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
 
-        if (getConfigType().useNewDamageSystem())
+        if (getConfigType().useKineticDamageSystem())
             tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + "g"));
         else
             IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
@@ -60,11 +60,7 @@ public abstract class ShootableItem extends Item
             tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
 
         if (getConfigType().getBulletSpread() > 0F)
-        {
-            float spread = getConfigType().getBulletSpread();
-            tooltipComponents.add(IFlanItem.statLine("Spread", IFlanItem.formatFloat(spread)));
-            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * spread) + "°"));
-        }
+            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * getConfigType().getBulletSpread()) + "°"));
 
         if (getConfigType().getExplosionRadius() > 0F)
         {

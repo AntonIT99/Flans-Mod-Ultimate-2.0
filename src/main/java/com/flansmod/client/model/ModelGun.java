@@ -2,7 +2,7 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.types.AttachmentType;
@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 @NoArgsConstructor
 public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 {
-    protected static final Vector3f invalid = new Vector3f(0f, Float.MAX_VALUE, 0f);
+    protected static final Vector3f invalid = new Vector3f(0F, Float.MAX_VALUE, 0F);
 
     @Setter
     protected static float smoothing;
@@ -142,25 +142,26 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected Vector3f casingRotateVector = new Vector3f(0.1F, 1F, 0.1F);
     protected Vector3f casingAttachPoint = new Vector3f(0F, 0F, 0F);
     // Time before the casing is ejected from gun
-    protected int casingDelay = 0;
+    @Getter
+    protected int casingDelay;
     // Scale the bullet casing separately from gun
     protected float caseScale = 1F;
     protected float flashScale = 1F;
 
     /** Recoil and slide based parameters */
-    protected float gunSlideDistance = 1F / 4F;
-    protected float altgunSlideDistance = 1F / 4F;
-    protected float RecoilSlideDistance = 2F / 16F;
+    protected float gunSlideDistance = 0.25F;
+    protected float altgunSlideDistance = 0.25F;
+    protected float RecoilSlideDistance = 0.125F;
     protected float RotateSlideDistance = -3F;
-    protected float ShakeDistance = 0F;
+    protected float ShakeDistance;
     /** Select an amount of recoil per shot, between 0 and 1 */
     protected float recoilAmount = 0.33F;
 
     /** Charge handle distance/delay/time */
-    protected float chargeHandleDistance = 0F;
-    protected int chargeDelay = 0;
+    protected float chargeHandleDistance;
+    protected int chargeDelay;
     @Getter
-    protected int chargeDelayAfterReload = 0;
+    protected int chargeDelayAfterReload;
     @Getter
     protected int chargeTime = 1;
 
@@ -176,16 +177,16 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected boolean scopeIsOnBreakAction;
     /** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
     @Getter @Setter
-    protected float numBulletsInReloadAnimation = 1;
+    protected float numBulletsInReloadAnimation = 1F;
     /** For shotgun pump handles, rifle bolts and hammer pullbacks */
     @Getter @Setter
-    protected int pumpDelay = 0;
+    protected int pumpDelay;
     @Getter @Setter
-    protected int pumpDelayAfterReload = 0;
+    protected int pumpDelayAfterReload;
     @Getter @Setter
     protected int pumpTime = 1;
     @Getter @Setter
-    protected int hammerDelay = 0;
+    protected int hammerDelay;
     /** For shotgun pump handle */
     protected float pumpHandleDistance = 4F / 16F;
     /** For end loaded projectiles */
@@ -217,7 +218,9 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** The point where the hammer will pivot and spin from */
     protected Vector3f hammerSpinPoint = new Vector3f();
     protected Vector3f althammerSpinPoint = new Vector3f();
+    @Getter
     protected float hammerAngle = 75F;
+    @Getter
     protected float althammerAngle = 75F;
     /** Single action cocking check */
     protected boolean isSingleAction;
@@ -233,7 +236,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected boolean rightHandBolt;
     protected boolean leftHandBolt;
     /** How far to rotate the bolt */
-    protected float boltRotationAngle = 0F;
+    protected float boltRotationAngle;
     /** How far to translate the bolt */
     protected float boltCycleDistance = 1F;
     /** Offsets the bolt rotation point to help align it properly */
@@ -242,8 +245,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Hand offset when gun is charging */
     protected Vector3f chargeModifier = new Vector3f(8F, 4F, 4F);
     /**If true, gun will translate when equipped with a sight attachment */
-    protected float gunOffset = 0F;
-    protected float crouchZoom = 0F;
+    protected float gunOffset;
+    protected float crouchZoom;
     protected boolean fancyStance = true;
     /** deprecated, do not use, use sprintStanceTranslate */
     protected Vector3f stanceTranslate = new Vector3f();
@@ -253,17 +256,17 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected Vector3f sprintStanceRotate = new Vector3f();
 
     /** Custom reload Parameters. If Enum.CUSTOM is set, these parameters can build an animation within the gun model classes */
-    protected float rotateGunVertical = 0F;
-    protected float rotateGunHorizontal = 0F;
-    protected float tiltGun = 0F;
+    protected float rotateGunVertical;
+    protected float rotateGunHorizontal;
+    protected float tiltGun;
     protected Vector3f translateGun = new Vector3f(0F, 0F, 0F);
     /** Ammo Model reload parameters */
-    protected float rotateClipVertical = 0F;
-    protected float stagedrotateClipVertical = 0F;
-    protected float rotateClipHorizontal = 0F;
-    protected float stagedrotateClipHorizontal = 0F;
-    protected float tiltClip = 0F;
-    protected float stagedtiltClip = 0F;
+    protected float rotateClipVertical;
+    protected float stagedrotateClipVertical;
+    protected float rotateClipHorizontal;
+    protected float stagedrotateClipHorizontal;
+    protected float tiltClip;
+    protected float stagedtiltClip;
     protected Vector3f translateClip = new Vector3f(0F, 0F, 0F);
     protected Vector3f stagedtranslateClip = new Vector3f(0F, 0F, 0F);
     protected boolean stagedReload;

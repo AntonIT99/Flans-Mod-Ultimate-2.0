@@ -398,50 +398,24 @@ public class FlansExplosion extends Explosion
         if (level.isClientSide)
             return;
 
-        float mod = radius * 0.1F;
+        spawn(ParticleHelper.FM_FLARE, numSmoke, radius * 0.1F);
+        spawn(ParticleHelper.FM_DEBRIS_1, numDebris, radius * 0.1F);
+    }
 
-        for (int smoke = 0; smoke < numSmoke; smoke++)
+    private void spawn(String particleType, int count, float mod)
+    {
+        for (int i = 0; i < count; i++)
         {
-            float smokeRand = (float) Math.random();
-
-            if (smokeRand < 0.25)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.25 && smokeRand < 0.5)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.5 && smokeRand < 0.75)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.75)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_FLARE, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            }
+            float vx = signedRand(mod);
+            float vy = (float) Math.random() * mod;
+            float vz = signedRand(mod);
+            PacketHandler.sendToAllAround(new PacketParticle(particleType, center.x, center.y, center.z, vx, vy, vz), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
         }
+    }
 
-        for (int debris = 0; debris < numDebris; debris++)
-        {
-            float smokeRand = (float) Math.random();
-
-            if (smokeRand < 0.25)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.25 && smokeRand < 0.5)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, (float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.5 && smokeRand < 0.75)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, (float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            } 
-            else if (smokeRand > 0.75)
-            {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.FM_DEBRIS_1, center.x, center.y, center.z, -(float)Math.random()*mod, (float)Math.random()*mod, -(float)Math.random()*mod), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-            }
-        }
+    private static float signedRand(float mod)
+    {
+        float v = (float) Math.random() * mod;
+        return Math.random() < 0.5 ? v : -v;
     }
 }

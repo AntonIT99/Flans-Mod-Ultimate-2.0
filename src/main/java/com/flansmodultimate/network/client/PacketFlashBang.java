@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;

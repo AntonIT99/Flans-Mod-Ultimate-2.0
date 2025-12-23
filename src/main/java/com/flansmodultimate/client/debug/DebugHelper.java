@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.debug;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

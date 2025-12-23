@@ -449,7 +449,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         // Send flak packet to spawn particles
         if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), position(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
         // Apply potion effects in smoke radius
         double r = configType.getSmokeRadius();
@@ -809,12 +809,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), getX(), getY(), getZ(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), position(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
         if (configType.isFlashSoundEnable())
-            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), configType.getFlashSoundRange(), level.dimension(), configType.getFlashSound(), true);
+            PacketPlaySound.sendSoundPacket(position(), configType.getFlashSoundRange(), level.dimension(), configType.getFlashSound(), true);
 
-        PacketHandler.sendToAllAround(new PacketFlashBang(configType.getFlashTime()), getX(), getY(), getZ(), configType.getFlashRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlashBang(configType.getFlashTime()), position(), configType.getFlashRange(), level.dimension());
 
         discard();
     }

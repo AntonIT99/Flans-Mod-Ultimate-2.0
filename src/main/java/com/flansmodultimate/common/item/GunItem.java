@@ -2,7 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
@@ -17,8 +17,9 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketTriggerShootState;
+import com.flansmodultimate.network.server.PacketShootInput;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -77,7 +78,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     protected final GunType configType;
     protected final String shortname;
     @Getter
-    protected final GunItemBehavior behavior;
+    protected final GunItemHandler gunItemHandler;
     protected String originGunbox;
     @Setter
     protected boolean isScoped;
@@ -96,7 +97,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         super(new Properties().stacksTo(1));
         this.configType = configType;
         shortname = configType.getShortName();
-        behavior = new GunItemBehavior(this);
+        gunItemHandler = new GunItemHandler(this);
     }
 
     @Override
@@ -215,7 +216,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Damage", StringUtils.EMPTY));
                 for (ShootableType shootableType : configType.getAmmoTypes())
                 {
-                    if (shootableType.useNewDamageSystem())
+                    if (shootableType.useKineticDamageSystem())
                     {
                         tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, null))));
                     }
@@ -264,11 +265,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.isShowSpread())
-            {
-                float spread = configType.getSpread(stack, false, false);
-                tooltipComponents.add(IFlanItem.statLine("Accuracy", IFlanItem.formatFloat(spread)));
-                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * spread) + "°"));
-            }
+                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * configType.getSpread(stack, false, false)) + "°"));
 
             if (configType.getSwitchDelay() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Switch Delay", IFlanItem.formatFloat(configType.getSwitchDelay())));
@@ -279,9 +276,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             float bulletSpeed = configType.getBulletSpeed(stack);
             tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + "m/s") : "∞"));
 
-            tooltipComponents.add(IFlanItem.statLine("FireRate", (1200 / configType.getShootDelay(stack)) + "rpm"));
+            tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
 
             tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
+
+            if (configType.getKnockback() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
         }
     }
 
@@ -423,6 +423,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (!(entity instanceof Player player))
             return;
 
+        // Only tick item if in hand
         InteractionHand hand;
         if (player.getMainHandItem() == stack)
             hand = InteractionHand.MAIN_HAND;
@@ -439,40 +440,50 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
             onUpdateServer(level, (ServerPlayer) player, data, stack, hand, dualWield);
 
-        behavior.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
-        behavior.checkForLockOn(level, player, data, hand);
-        behavior.checkForMelee(level, player, data, stack);
+        gunItemHandler.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
+        gunItemHandler.checkForLockOn(level, player, data, hand);
+        gunItemHandler.checkForMelee(level, player, data, stack);
     }
 
     @OnlyIn(Dist.CLIENT)
     protected void onUpdateClient(Level level, @NotNull Player player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        if (configType.isDeployable() || !configType.isUsableByPlayers() || !behavior.gunCanBeHandled(player))
+        if (configType.isDeployable() || !configType.isUsableByPlayers() || !gunItemHandler.gunCanBeHandled(player))
             return;
 
         // Scope handling
-        behavior.handleScope(gunStack, hand, dualWield);
+        gunItemHandler.handleScope(gunStack, hand, dualWield);
 
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
         
         // Switch Delay
-        behavior.handleGunSwitchDelay(data, animations, hand);
+        gunItemHandler.handleGunSwitchDelay(data, animations, hand);
+
+        // Client Shooting
+        if (data.isShooting(hand))
+            gunItemHandler.doPlayerShootClient(level, player, data, animations, gunStack, hand);
+
+        boolean shootKeyPressed = GunInputState.isShootPressed(hand);
+        boolean prevShootKeyPressed = GunInputState.isPrevShootPressed(hand);
 
         // Shooting input handling
-        if (Minecraft.getInstance().screen == null && ModClient.getSwitchTime() <= 0)
+        if (Minecraft.getInstance().screen != null)
         {
-            boolean shootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isOffhandShootPressed() : GunInputState.isShootPressed();
-            boolean prevShootKeyPressed = (hand == InteractionHand.OFF_HAND) ? GunInputState.isPrevOffhandShootPressed() : GunInputState.isPrevShootPressed();
-
+            // Stop shooting when entering a GUI
+            if (prevShootKeyPressed)
+                PacketHandler.sendToServer(new PacketShootInput(false, true, hand));
+        }
+        else if (ModClient.getSwitchTime() <= 0)
+        {
             // Don’t shoot certain entities under crosshair
-            if (behavior.shouldBlockFireAtCrosshair())
+            if (gunItemHandler.shouldBlockFireAtCrosshair())
                 shootKeyPressed = false;
 
             data.setShootKeyPressed(hand, shootKeyPressed);
             data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
 
             if (shootKeyPressed != prevShootKeyPressed)
-                PacketHandler.sendToServer(new PacketTriggerShootState(shootKeyPressed, prevShootKeyPressed, hand));
+                PacketHandler.sendToServer(new PacketShootInput(shootKeyPressed, prevShootKeyPressed, hand));
         }
     }
 
@@ -480,17 +491,18 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         ensureGunTags(gunStack);
 
-        if (player.getItemInHand(hand).isEmpty() || !(player.getItemInHand(hand).getItem() instanceof GunItem))
-            data.setShooting(hand, false);
-        if (player.getItemInHand(hand).isEmpty() || player.getItemInHand(hand).getItem() != this)
-            isScoped = false;
-
-        EnumFireDecision decision = behavior.computeFireDecision(data, gunStack, hand);
-
+        EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
         if (decision == EnumFireDecision.RELOAD)
-            behavior.doPlayerReload(level, player, data, gunStack, hand, false);
+            gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
         else if (decision == EnumFireDecision.SHOOT)
-            behavior.doPlayerShoot(level, player, data, gunStack, hand);
+            gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
+
+        // Stop shooting
+        if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
+        {
+            data.setShooting(hand, false);
+            PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+        }
 
         if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
         {

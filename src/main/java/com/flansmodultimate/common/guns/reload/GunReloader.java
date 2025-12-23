@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -75,15 +76,13 @@ public record GunReloader(GunItem item)
         if (pendingReload == null)
             return;
 
-        //TODO: test cancel
-
         // cancel on weapon switch
         boolean canceled = cancelReloadIfSwitched(player, pendingReload);
         if (canceled)
         {
             PacketHandler.sendTo(new PacketCancelGunReloadClient(pendingReload.hand()), player);
-            // Position of the player reloading might have changed, so send it to all players to be sure
-            PacketHandler.sendToAll(new PacketCancelSound(pendingReload.reloadSoundUUID()));
+            // Position of the player reloading might have changed, so send it to all players in dimension to be sure
+            PacketHandler.sendToDimension(level.dimension(), new PacketCancelSound(pendingReload.reloadSoundUUID()));
             data.clearPendingReload();
         }
 
@@ -151,7 +150,7 @@ public record GunReloader(GunItem item)
         {
 
             ItemStack toReturn = oldMag.copy();
-            boolean added = InventoryHelper.addItemStackToInventory(inventory, toReturn, pending.creative(), pending.combineAmmoOnReload(), pending.ammoToUpperInventory());
+            boolean added = InventoryHelper.addItemStackToContainer(inventory, toReturn, pending.creative(), pending.combineAmmoOnReload(), pending.ammoToUpperInventory(), Inventory.getSelectionSize());
             if (!added)
                 reloadingEntity.spawnAtLocation(toReturn, 0.5F);
         }
@@ -211,12 +210,12 @@ public record GunReloader(GunItem item)
         int bestPrefSlot = -1;
         int bestPrefBullets = 0;
 
-        for (int j = 0; j < inventory.getContainerSize(); j++)
+        for (int i = 0; i < inventory.getContainerSize(); i++)
         {
-            if (reservedSlots != null && reservedSlots[j])
+            if (reservedSlots != null && reservedSlots[i])
                 continue;
 
-            ItemStack stack = inventory.getItem(j);
+            ItemStack stack = inventory.getItem(i);
             if (stack.isEmpty())
                 continue;
 
@@ -238,13 +237,13 @@ public record GunReloader(GunItem item)
                 if (bullets > bestPrefBullets)
                 {
                     bestPrefBullets = bullets;
-                    bestPrefSlot = j;
+                    bestPrefSlot = i;
                 }
             }
             else if (bestPrefSlot == -1 && bullets > bestAnyBullets)
             {
                 bestAnyBullets = bullets;
-                bestAnySlot = j;
+                bestAnySlot = i;
             }
         }
         return bestPrefSlot != -1 ? bestPrefSlot : bestAnySlot;

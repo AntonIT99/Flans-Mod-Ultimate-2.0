@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.ArrayList;
@@ -147,6 +149,20 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean laserGuidance;
 
+    //Submunitions
+    @Getter
+    protected boolean hasSubmunitions;
+    @Getter
+    protected String submunition = StringUtils.EMPTY;
+    @Getter
+    protected int numSubmunitions;
+    @Getter
+    protected int subMunitionTimer;
+    @Getter
+    protected float submunitionSpread = 1F;
+    @Getter
+    protected boolean destroyOnDeploySubmunition;
+
     /** 0 = disable, otherwise sets velocity scale on block hit particle fx */
     @Getter
     protected float blockHitFXScale;
@@ -183,6 +199,8 @@ public class BulletType extends ShootableType
 
         bulletSpread = readValue("Accuracy", bulletSpread, file);
         bulletSpread = readValue("Spread", bulletSpread, file);
+        if (hasValueForConfigField("Dispersion", file))
+            bulletSpread = (readValue("Dispersion", 0F, file) * Mth.DEG_TO_RAD) / ShootingHelper.ANGULAR_SPREAD_FACTOR;
 
         vls = readValue("VLS", vls, file);
         vls = readValue("HasDeadZone", vls, file);
@@ -226,6 +244,14 @@ public class BulletType extends ShootableType
         shootForSettingPosHeight = readValue("ShootForSettingPosHeight", shootForSettingPosHeight, file);
         isDoTopAttack = readValue("IsDoTopAttack", isDoTopAttack, file);
         knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
+
+        //Submunitions
+        hasSubmunitions = readValue("HasSubmunitions", hasSubmunitions, file);
+        submunition = readValue("Submunition", submunition, file);
+        numSubmunitions = readValue("NumSubmunitions", numSubmunitions, file);
+        subMunitionTimer = readValue("SubmunitionDelay", subMunitionTimer, file);
+        submunitionSpread = readValue("SubmunitionSpread", submunitionSpread, file);
+        destroyOnDeploySubmunition = readValue("DestroyOnDeploySubmunition", destroyOnDeploySubmunition, file);
 
         addEffects("AddPotionEffect", hitEffects, file, false, false);
         addEffects("PotionEffect", hitEffects, file, false, false);

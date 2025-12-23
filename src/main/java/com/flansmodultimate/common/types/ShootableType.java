@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
@@ -139,20 +138,6 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
 
-    //Submunitions
-    @Getter
-    protected boolean hasSubmunitions;
-    @Getter
-    protected String submunition = StringUtils.EMPTY;
-    @Getter
-    protected int numSubmunitions;
-    @Getter
-    protected int subMunitionTimer;
-    @Getter
-    protected float submunitionSpread = 1F;
-    @Getter
-    protected boolean destroyOnDeploySubmunition;
-
     //Particles and Smoke
     /** Whether trail particles are given off */
     @Getter
@@ -164,25 +149,13 @@ public abstract class ShootableType extends InfoType
     protected int smokeParticleCount;
     @Getter
     protected int debrisParticleCount;
-    /** Time to remain after detonation */
-    @Getter
-    protected int smokeTime;
-    /** Particles given off after detonation */
-    @Getter
-    protected String smokeParticleType = "explode";
-    /** The effects to be given to people coming too close */
-    @Getter
-    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
-    /** The radius for smoke effects to take place in */
-    @Getter
-    protected float smokeRadius = 5F;
     /** Particles given off in the detonation */
     @Getter
     protected int explodeParticles;
     @Getter
     protected String explodeParticleType = "largesmoke";
 
-    public boolean useNewDamageSystem()
+    public boolean useKineticDamageSystem()
     {
         return mass > 0F;
     }
@@ -286,26 +259,14 @@ public abstract class ShootableType extends InfoType
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readValue("DetonateSound", detonateSound, file);
 
-        //Submunitions
-        hasSubmunitions = readValue("HasSubmunitions", hasSubmunitions, file);
-        submunition = readValue("Submunition", submunition, file);
-        numSubmunitions = readValue("NumSubmunitions", numSubmunitions, file);
-        subMunitionTimer = readValue("SubmunitionDelay", subMunitionTimer, file);
-        submunitionSpread = readValue("SubmunitionSpread", submunitionSpread, file);
-        destroyOnDeploySubmunition = readValue("DestroyOnDeploySubmunition", destroyOnDeploySubmunition, file);
+        //Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
         debrisParticleCount = readValue("DebrisParticleCount", debrisParticleCount, file);
-
-        //Particles
         trailParticles = readValue("TrailParticles", trailParticles, file);
         trailParticles = readValue("SmokeTrail", trailParticles, file);
         trailParticleType = readValue("TrailParticleType", trailParticleType, file);
         explodeParticles = readValue("NumExplodeParticles", explodeParticles, file);
         explodeParticleType = readValue("ExplodeParticles", explodeParticleType, file);
-        smokeTime = readValue("SmokeTime", smokeTime, file);
-        smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);
-        smokeRadius = readValue("SmokeRadius", smokeRadius, file);
-        addEffects("SmokeEffect", smokeEffects, file, false, false);
 
         damage.calculate();
         explosionDamage.calculate();
@@ -313,7 +274,7 @@ public abstract class ShootableType extends InfoType
 
     public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
-        if (useNewDamageSystem())
+        if (useKineticDamageSystem())
             return (float) (ModCommonConfigs.newDamageSystemReference.get() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
             return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);

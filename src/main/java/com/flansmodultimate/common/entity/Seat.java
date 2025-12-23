@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.common.driveables.SeatInfo;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +18,9 @@ public class Seat extends Entity
     @Getter
     protected Entity riddenByEntity;
 
+    @Getter
+    protected SeatInfo seatInfo;
+
     public Seat(EntityType<?> pEntityType, Level pLevel)
     {
         super(pEntityType, pLevel);
@@ -28,13 +33,13 @@ public class Seat extends Entity
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag pCompound)
+    protected void readAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag pCompound)
+    protected void addAdditionalSaveData(@NotNull CompoundTag pCompound)
     {
 
     }

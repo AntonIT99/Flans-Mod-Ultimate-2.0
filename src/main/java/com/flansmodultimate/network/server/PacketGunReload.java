@@ -46,7 +46,7 @@ public class PacketGunReload implements IServerPacket
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
         {
             PlayerData data = PlayerData.getInstance(player, LogicalSide.SERVER);
-            gunItem.getBehavior().doPlayerReload(level, player, data, stack, hand, true);
+            gunItem.getGunItemHandler().doPlayerReload(level, player, data, stack, hand, true);
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.flansmodultimate.config;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.PenetrableBlock;
+import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -20,6 +20,8 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.BooleanValue addAllPaintjobsToCreative;
 
     // Gameplay Settings
+    public static final ForgeConfigSpec.BooleanValue realisticRecoil;
+    public static final ForgeConfigSpec.BooleanValue enableSightDownwardMovement;
     public static final ForgeConfigSpec.IntValue bonusRegenAmount;
     public static final ForgeConfigSpec.IntValue bonusRegenTickDelay;
     public static final ForgeConfigSpec.DoubleValue bonusRegenFoodLimit;
@@ -69,7 +71,13 @@ public class ModCommonConfigs
                 .define("addAllPaintjobsToCreative", true);
         builder.pop();
 
-        builder.push("General Settings");
+        builder.push("Gameplay Settings");
+        realisticRecoil = builder
+                .comment("Changes recoil to be more realistic")
+                .define("realisticRecoil", false);
+        enableSightDownwardMovement = builder
+                .comment("Enable downward movement of the sight after shot")
+                .define("enableSightDownwardMovement", true);
         bonusRegenAmount = builder
                 .comment("Allows you to increase health regen, best used alongside increased max health")
                 .defineInRange("bonusRegenAmount", 0, 0, 1000);

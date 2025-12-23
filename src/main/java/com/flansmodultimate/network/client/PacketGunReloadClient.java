@@ -1,30 +1,34 @@
 package com.flansmodultimate.network.client;
 
 import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelGun;
-import com.flansmodultimate.ModClient;
-import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+
+import java.util.UUID;
 
 @NoArgsConstructor
 public class PacketGunReloadClient implements IClientPacket
 {
+    private UUID playerUUID;
     private InteractionHand hand;
     private float reloadTime;
     private int reloadCount;
     private boolean hasMultipleAmmo;
 
-    public PacketGunReloadClient(InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public PacketGunReloadClient(UUID playerUUID, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
     {
+        this.playerUUID = playerUUID;
         this.hand = hand;
         this.reloadTime = reloadTime;
         this.reloadCount = reloadCount;
@@ -34,6 +38,7 @@ public class PacketGunReloadClient implements IClientPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
+        data.writeUtf(playerUUID.toString());
         data.writeEnum(hand);
         data.writeFloat(reloadTime);
         data.writeInt(reloadCount);
@@ -43,6 +48,7 @@ public class PacketGunReloadClient implements IClientPacket
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
+        playerUUID = UUID.fromString(data.readUtf());
         hand = data.readEnum(InteractionHand.class);
         reloadTime = data.readFloat();
         reloadCount = data.readInt();
@@ -52,27 +58,12 @@ public class PacketGunReloadClient implements IClientPacket
     @Override
     public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
-        if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem)
+        Player reloadingPlayer = level.getPlayerByUUID(playerUUID);
+        if (reloadingPlayer != null && reloadingPlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            PlayerData data = PlayerData.getInstance(player);
-            data.doGunReload(hand, reloadTime);
-
+            PlayerData data = PlayerData.getInstance(reloadingPlayer, LogicalSide.CLIENT);
             GunAnimations animations = ModClient.getGunAnimations(player, hand);
-
-            int pumpDelay = 0;
-            int pumpTime = 1;
-            int chargeDelay = 0;
-            int chargeTime = 1;
-
-            if (ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
-            {
-                pumpDelay = modelGun.getPumpDelayAfterReload();
-                pumpTime = modelGun.getPumpTime();
-                chargeDelay = modelGun.getChargeDelayAfterReload();
-                chargeTime = modelGun.getChargeTime();
-            }
-
-            animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo);
+            gunItem.getGunItemHandler().doPlayerReloadClient(data, animations, hand, reloadTime, reloadCount, hasMultipleAmmo);
         }
     }
 }

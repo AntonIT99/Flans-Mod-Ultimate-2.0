@@ -1,7 +1,7 @@
 package com.flansmod.client.model;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import lombok.NoArgsConstructor;
 
 import java.security.MessageDigest;
@@ -14,6 +14,7 @@ public class GunAnimations
     public static GunAnimations defaults = new GunAnimations();
     public static Random random = new Random();
 
+    //TODO: check recoil mess here
     /** (Purely aesthetic) gun animation variables */
     public boolean isGunEmpty;
     /** Recoil */
@@ -326,15 +327,6 @@ public class GunAnimations
         minigunBarrelRotationSpeed += speed;
     }
 
-    //TODO: replace by doShoot()
-    public void doShoot(int pumpDelay, int pumpTime)
-    {
-        lastGunSlide = gunSlide = 1F;
-        timeUntilPump = pumpDelay;
-        timeToPumpFor = pumpTime;
-        muzzleFlash = 2;
-    }
-
     public void doShoot(int pumpDelay, int pumpTime, int hammerDelay, float hammerAngle, float althammerAngle, int casingDelay)
     {
         //Accumulative recoil function
@@ -364,7 +356,7 @@ public class GunAnimations
             ModClient.setShotState(1);
     }
 
-    public void doReload(float reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean single)
+    public void doReload(float reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean hasMultipleAmmo)
     {
         reloading = true;
         lastReloadAnimationProgress = reloadAnimationProgress = 0F;
@@ -374,7 +366,7 @@ public class GunAnimations
         timeUntilCharge = chargeDelay;
         timeToChargeFor = chargeTime;
         reloadAmmoCount = ammoCount;
-        singlesReload = single;
+        singlesReload = hasMultipleAmmo;
         ModClient.setLastBulletReload(ammoCount - 1);
     }
 

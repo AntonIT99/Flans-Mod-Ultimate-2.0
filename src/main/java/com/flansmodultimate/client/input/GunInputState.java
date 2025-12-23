@@ -10,22 +10,19 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GunInputState
 {
-    @Getter
     private static boolean shootPressed;
-    @Getter
-    private static boolean offhandShootPressed;
-    @Getter
-    private static boolean aimPressed;
-    @Getter
     private static boolean prevShootPressed;
-    @Getter
+    private static boolean offhandShootPressed;
     private static boolean prevOffhandShootPressed;
     @Getter
     private static boolean prevAimPressed;
+    @Getter
+    private static boolean aimPressed;
 
     @OnlyIn(Dist.CLIENT)
     public static void tick()
@@ -52,5 +49,15 @@ public final class GunInputState
     {
         long window = Minecraft.getInstance().getWindow().getWindow();
         return GLFW.glfwGetMouseButton(window, btn.toGlfw()) == GLFW.GLFW_PRESS;
+    }
+
+    public static boolean isShootPressed(InteractionHand hand)
+    {
+        return (hand == InteractionHand.OFF_HAND) ? offhandShootPressed : shootPressed;
+    }
+
+    public static boolean isPrevShootPressed(InteractionHand hand)
+    {
+        return (hand == InteractionHand.OFF_HAND) ? prevOffhandShootPressed : prevShootPressed;
     }
 }

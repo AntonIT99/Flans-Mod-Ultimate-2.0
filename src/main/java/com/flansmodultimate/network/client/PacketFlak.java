@@ -8,24 +8,21 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.Vec3;
 
 @NoArgsConstructor
 public class PacketFlak implements IClientPacket
 {
     /** Position of this flak */
-    private double x;
-    private double y;
-    private double z;
+    private Vec3 position;
     /** Num particles */
     private int numParticles;
     /** Particle type */
     private String particleType;
 
-    public PacketFlak(double x1, double y1, double z1, int n, String s)
+    public PacketFlak(Vec3 position, int n, String s)
     {
-        x = x1;
-        y = y1;
-        z = z1;
+        this.position = position;
         numParticles = n;
         particleType = s;
     }
@@ -33,9 +30,9 @@ public class PacketFlak implements IClientPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
-        data.writeDouble(x);
-        data.writeDouble(y);
-        data.writeDouble(z);
+        data.writeDouble(position.x);
+        data.writeDouble(position.y);
+        data.writeDouble(position.z);
         data.writeInt(numParticles);
         data.writeUtf(particleType);
     }
@@ -43,9 +40,7 @@ public class PacketFlak implements IClientPacket
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
-        x = data.readDouble();
-        y = data.readDouble();
-        z = data.readDouble();
+        position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         numParticles = data.readInt();
         particleType = data.readUtf();
     }
@@ -55,9 +50,9 @@ public class PacketFlak implements IClientPacket
     {
         for (int i = 0; i < numParticles; i++)
         {
-            double ox = x + level.random.nextGaussian();
-            double oy = y + level.random.nextGaussian();
-            double oz = z + level.random.nextGaussian();
+            double ox = position.x + level.random.nextGaussian();
+            double oy = position.y + level.random.nextGaussian();
+            double oz = position.z + level.random.nextGaussian();
             double vx = level.random.nextGaussian() / 20.0;
             double vy = level.random.nextGaussian() / 20.0;
             double vz = level.random.nextGaussian() / 20.0;

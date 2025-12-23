@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.GunItemBehavior;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -13,12 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
-
 /**
  * Applies all "on shoot" side-effects for the final bullet in a burst.
  */
-public final class DefaultShootingHandler implements ShootingHandler
+public final class PlayerShootingHandler implements ShootingHandler
 {
 
     private final Level level;
@@ -30,9 +27,9 @@ public final class DefaultShootingHandler implements ShootingHandler
     private GunType gunType;
     private ItemStack bulletStack;
     private ShootableType shootableType;
-    private int bulletId;
+    private int ammoIndex;
 
-    public DefaultShootingHandler(Level level, Player player, ItemStack gunStack, InteractionHand hand)
+    public PlayerShootingHandler(Level level, Player player, InteractionHand hand, ItemStack gunStack, ItemStack bulletStack, int ammoIndex)
     {
         this.level = level;
         this.player = player;
@@ -43,35 +40,8 @@ public final class DefaultShootingHandler implements ShootingHandler
         {
             gunItem = item;
             gunType = gunItem.getConfigType();
-
-            Optional<GunItemBehavior.AmmoSlot> ammoSlot = GunItemBehavior.findUsableAmmo(gunItem, gunStack, gunType);
-
-            if (ammoSlot.isPresent())
-            {
-                bulletId = ammoSlot.get().index();
-                bulletStack = ammoSlot.get().stack();
-
-                if (bulletStack.getItem() instanceof ShootableItem shootableItem)
-                {
-                    shootableType = shootableItem.getConfigType();
-                }
-            }
-        }
-    }
-
-    public DefaultShootingHandler(Level level, Player player, ItemStack gunStack, InteractionHand hand, GunItemBehavior.AmmoSlot ammoSlot)
-    {
-        this.level = level;
-        this.player = player;
-        this.hand = hand;
-        this.gunStack = gunStack;
-
-        if (gunStack.getItem() instanceof GunItem item)
-        {
-            gunItem = item;
-            gunType = gunItem.getConfigType();
-            bulletId = ammoSlot.index();
-            bulletStack = ammoSlot.stack();
+            this.bulletStack = bulletStack;
+            this.ammoIndex = ammoIndex;
 
             if (bulletStack.getItem() instanceof ShootableItem shootableItem)
             {
@@ -81,34 +51,31 @@ public final class DefaultShootingHandler implements ShootingHandler
     }
 
     @Override
-    public void shooting(boolean isExtraBullet)
+    public void onShoot()
     {
-        if (isExtraBullet || gunType == null || shootableType == null)
+        if (gunType == null || shootableType == null)
             return;
 
         // Drop item on shooting if bullet requires it
         if (!player.isCreative())
-        {
             ModUtils.dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
-        }
 
         // Drop item on shooting if gun requires it
         ModUtils.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
-        if (gunType.getKnockback() > 0F)
+        // Apply knockback to Player
+        if (gunType.getKnockback() > 0F && !player.isCrouching())
             knockbackOppositeLook(player, gunType.getKnockback());
 
         // Damage the bullet item
         bulletStack.setDamageValue(bulletStack.getDamageValue() + 1);
 
         // Update the stack in the gun
-        gunItem.setBulletItemStack(gunStack, bulletStack, bulletId);
+        gunItem.setBulletItemStack(gunStack, bulletStack, ammoIndex);
 
         // Optionally consume the gun
         if (gunType.isConsumeGunUponUse())
-        {
             player.setItemInHand(hand, ItemStack.EMPTY);
-        }
     }
 
     public static void knockbackOppositeLook(Player player, double strength)
@@ -117,13 +84,13 @@ public final class DefaultShootingHandler implements ShootingHandler
             return;
 
         // Get where the player is looking
-        Vec3 look = player.getLookAngle(); // (x, y, z)
+        Vec3 look = player.getLookAngle();
 
-        // Invert the look direction (opposite of where they look) and optionally flatten Y so it's mostly horizontal
+        // Invert the look direction (opposite of where they look) and flatten Y so it's mostly horizontal
         Vec3 dir = new Vec3(-look.x, 0.0, -look.z);
 
         if (dir.lengthSqr() < 1.0E-4)
-            return; // avoid NaN if the vector is too small
+            return;
 
         // Normalize & scale by your strength
         dir = dir.normalize().scale(strength);

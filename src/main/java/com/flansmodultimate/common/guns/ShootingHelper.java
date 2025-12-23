@@ -3,7 +3,6 @@ package com.flansmodultimate.common.guns;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.PenetrableBlock;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlansExplosion;
@@ -13,6 +12,8 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
+import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.raytracing.hits.BlockHit;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -77,56 +78,49 @@ public final class ShootingHelper
     private static final double BLOCK_HIT_PARTICLE_RANGER = 64.0;
 
     /** Call this when fire bullets from vehicles or other sources (Server side) */
-    public static void fireGun(Level level, @NotNull FiredShot firedShot, int bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
+    public static void fireGun(Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
     {
-        if (firedShot.getFireableGun().getBulletSpeed() == 0F && firedShot.getBulletType() instanceof BulletType)
+        if (firedShot.getFireableGun().getBulletSpeed() == 0F)
         {
             // Raytrace without entity
-            createMultipleShots(level, firedShot, bulletAmount, rayTraceOrigin, shootingDirection, handler);
+            for (int i = 0; i < numBullets; i++)
+                createShot(level, firedShot, rayTraceOrigin, shootingDirection);
         }
         else
         {
             // Spawn shootable entities
             Bullet bullet = new Bullet(level, firedShot, rayTraceOrigin, shootingDirection);
-
-            for (int i = 0; i < bulletAmount; i++)
-            {
+            for (int i = 0; i < numBullets; i++)
                 level.addFreshEntity(bullet);
-                handler.shooting(i < bulletAmount - 1);
-            }
         }
+
+        handler.onShoot();
     }
 
     /** Call this to fire bullets or grenades from a living entity holding a gun (Server side) */
     public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
     {
-        int bulletAmount = gunType.getNumBullets() * shootableType.getNumBullets();
+        int numBullets = gunType.getNumBullets(shootableType);
 
         if (gunType.getBulletSpeed(gunStack, shootableStack) == 0F && shootableType instanceof BulletType bulletType)
         {
             // Raytrace without entity
-            createMultipleShots(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), bulletAmount, shooter.getEyePosition(0.0F), shooter.getLookAngle(), handler);
+            FiredShot firedShot = new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter);
+            for (int i = 0; i < numBullets; i++)
+                createShot(level, firedShot, shooter.getEyePosition(0.0F), shooter.getLookAngle());
         }
         else
         {
             // Spawn shootable entities
             Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
-
-            for (int i = 0; i < bulletAmount; i++)
-            {
-
+            for (int i = 0; i < numBullets; i++)
                 level.addFreshEntity(shootable);
-                handler.shooting(i < bulletAmount - 1);
-            }
         }
+
+        handler.onShoot();
     }
 
     public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot) {}
-
-    public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData)
-    {
-        return onHit(level, shot, bulletHit, hit, shootingMotion, hitData, null);
-    }
 
     public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData, @Nullable Bullet bullet)
     {
@@ -499,7 +493,7 @@ public final class ShootingHelper
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
     {
         if (type.getFlak() > 0)
-            PacketHandler.sendToAllAround(new PacketFlak(position.x, position.y, position.z, type.getFlak(), type.getFlakParticles()), position, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position, type.getFlak(), type.getFlakParticles()), position, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
     }
 
     private static void dropItemsOnDetonate(Level level, String itemName, IContentProvider contentPack, Vec3 position, @Nullable Shootable shootable)
@@ -520,15 +514,6 @@ public final class ShootingHelper
                 entityitem.setDefaultPickUpDelay();
                 level.addFreshEntity(entityitem);
             }
-        }
-    }
-
-    private static void createMultipleShots(Level level, FiredShot shot, Integer bulletAmount, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
-    {
-        for (int i = 0; i < bulletAmount; i++)
-        {
-            createShot(level, shot, rayTraceOrigin, shootingDirection);
-            handler.shooting(i < bulletAmount - 1);
         }
     }
 
@@ -554,7 +539,7 @@ public final class ShootingHelper
             DebugHelper.spawnDebugVector(level, previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
-            hitData = onHit(level, shot, hit, hitPos, shotVector, hitData);
+            hitData = onHit(level, shot, hit, hitPos, shotVector, hitData, null);
 
             if (hitData.penetratingPower() <= 0F)
             {

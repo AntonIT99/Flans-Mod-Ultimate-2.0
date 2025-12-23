@@ -1,4 +1,4 @@
-package com.flansmodultimate;
+package com.flansmodultimate.client;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.client.debug.DebugColor;
@@ -6,8 +6,11 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
@@ -24,6 +27,8 @@ import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.fml.LogicalSide;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,29 +94,28 @@ public class ModClient
     private static boolean controlModeMouse = true;
     /** A delayer on the mouse control switch */
     private static int controlModeSwitchTimer = 20;
+
     /** The delay between switching slots */
     @Getter @Setter
     private static float switchTime;
 
     // Recoil variables
+    /** Fancy Recoil System */
+    @Getter @Setter
+    private static GunRecoil playerRecoil = new GunRecoil();
     /** The recoil applied to the player view by shooting */
     @Getter @Setter
-    private static float playerRecoil;
+    private static float playerRecoilPitch;
+    @Getter @Setter
+    private static float playerRecoilYaw;
     /** The amount of compensation to apply to the recoil in order to bring it back to normal */
-    private static float antiRecoil;
-    /** equals the old "minecraft.player.rotationPitch" delta */
-    private static float recoilOffset;
-    /** For interpolation */
-    private static float recoilOffsetPrev;
+    private static float antiRecoilPitch;
+    private static float antiRecoilYaw;
+
     @Getter @Setter
     private static int lastBulletReload;
     @Getter @Setter
     private static int shotState = -1;
-
-    // Gun animations
-    /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
-    private static final HashMap<LivingEntity, GunAnimations> gunAnimationsRight = new HashMap<>();
-    private static final HashMap<LivingEntity, GunAnimations> gunAnimationsLeft = new HashMap<>();
 
     // Scope variables
     /** A delayer on the scope button to avoid repeat presses */
@@ -127,13 +131,8 @@ public class ModClient
     /** The zoom level of the last scope used for transitioning out of being scoped, even after the scope is forgotten */
     private static float lastZoomLevel = 1F;
     private static float lastFOVZoomLevel = 1F;
-    private static double currentFOV = 1.0;
-
-    // Variables to hold the state of some settings so that after being hacked for scopes, they may be restored
     /** The player's mouse sensitivity setting, as it was before being hacked by my mod */
     private static double originalMouseSensitivity = 0.5;
-    /** The player's original FOV */
-    private static double originalFOV = 70.0;
     /** The original CameraType */
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
@@ -157,6 +156,11 @@ public class ModClient
     /** Lighting */
     private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
     private static int lightOverrideRefreshRate = 5;
+
+    // Gun animations
+    /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
+    private static final HashMap<LivingEntity, GunAnimations> gunAnimationsRight = new HashMap<>();
+    private static final HashMap<LivingEntity, GunAnimations> gunAnimationsLeft = new HashMap<>();
 
     public static void setDebug(boolean value)
     {
@@ -290,7 +294,7 @@ public class ModClient
         updateFlashlights(mc, level);
         InstantBulletRenderer.updateAllTrails();
         updateTimers();
-        updateRecoil();
+        updateRecoil(player);
         updateGunAnimations();
         updateScopeState(mc, player);
         updateZoom();
@@ -473,18 +477,82 @@ public class ModClient
             controlModeSwitchTimer--;
     }
 
-    private static void updateRecoil()
+    private static void updateRecoil(LocalPlayer player)
     {
-        if (playerRecoil > 0)
-            playerRecoil *= 0.8F;
+        boolean useFancyReocil = (player.getMainHandItem().getItem() instanceof GunItem mainHandGunItem && mainHandGunItem.getConfigType().isUseFancyRecoil())
+            || (player.getMainHandItem().getItem() instanceof GunItem offhandGunItem && offhandGunItem.getConfigType().isUseFancyRecoil());
 
-        recoilOffsetPrev = recoilOffset;
+        if (useFancyReocil)
+        {
+            float recoilToAdd = playerRecoil.update(player.isCrouching(), currentScope != null, (float) player.getDeltaMovement().length());
+            if (player.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null)
+            {
+                //TODO: uncomment for Seats
+                /*EntitySeat s = (EntitySeat) p.ridingEntity;
+                float newPlayerPitch = s.playerLooking.getPitch() + recoilToAdd;
+                float horizontal = playerRecoil.horizontal;
+                float newPlayerYaw = s.playerLooking.getYaw() + horizontal;
+                if (newPlayerPitch > -s.seatInfo.minPitch) {
+                    newPlayerPitch = -s.seatInfo.minPitch;
+                }
+                if (newPlayerPitch < -s.seatInfo.maxPitch) {
+                    newPlayerPitch = -s.seatInfo.maxPitch;
+                }
+                s.playerLooking.setAngles(newPlayerYaw, newPlayerPitch, 0);*/
+            }
+            else
+            {
+                float pitch = Mth.clamp(player.getXRot() + recoilToAdd, -90.0F, 90.0F);
+                player.setXRot(pitch);
 
-        recoilOffset -= playerRecoil;
-        antiRecoil += playerRecoil;
+                if (pitch > -90.0F && pitch < 90.0F)
+                {
+                    float horizontal = playerRecoil.getHorizontal();
+                    player.setYRot(player.getYRot() + horizontal);
+                    player.yHeadRot = player.getYRot();
+                }
+            }
+        }
+        else
+        {
+            if (playerRecoilPitch > 0.0F)
+            {
+                ItemStack itemBeingUsed = player.getMainHandItem(); // was getCurrentEquippedItem()
+                GunType typeHeld = null;
 
-        recoilOffset += antiRecoil * 0.2F;
-        antiRecoil *= 0.8F;
+                if (itemBeingUsed.getItem() instanceof GunItem gun)
+                    typeHeld = gun.getConfigType();
+
+                if (typeHeld != null)
+                    playerRecoilPitch *= typeHeld.getRecoilControl(itemBeingUsed, player.isSprinting(), player.isCrouching());
+                else
+                    playerRecoilPitch *= 0.8F;
+            }
+
+            // Apply recoil (subtract)
+            float newPitch = Mth.clamp(player.getXRot() - playerRecoilPitch, -90.0F, 90.0F);
+            float newYaw = player.getYRot() - playerRecoilYaw;
+
+            player.setXRot(newPitch);
+            player.setYRot(newYaw);
+
+            antiRecoilPitch += playerRecoilPitch;
+            antiRecoilYaw += playerRecoilYaw;
+
+            PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+            boolean firingGun = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
+
+            // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
+            if (BooleanUtils.isNotTrue(ModCommonConfigs.realisticRecoil.get()) && ((!firingGun) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
+                player.setXRot(Mth.clamp(player.getXRot() + antiRecoilPitch * 0.2F, -90.0F, 90.0F));
+
+            player.setYRot(player.getYRot() + antiRecoilYaw * 0.2F);
+
+            antiRecoilPitch *= 0.8F;
+            antiRecoilYaw *= 0.8F;
+
+            player.yHeadRot = player.getYRot();
+        }
     }
 
     private static void updateGunAnimations()
@@ -529,8 +597,6 @@ public class ModClient
     @OnlyIn(Dist.CLIENT)
     public static void updateCameraZoom(ViewportEvent.ComputeFov event)
     {
-        originalFOV = event.getFOV();
-
         // If the zoom has changed sufficiently, update it
         if (Math.abs(zoomProgress - lastZoomProgress) > 0.0001F)
         {
@@ -541,20 +607,27 @@ public class ModClient
             if (Math.abs(zoomLevel - 1F) < 0.01F)
                 zoomLevel = 1.0F;
 
-            currentFOV = originalFOV / Math.max(fovZoomLevel, zoomLevel);
-            event.setFOV(currentFOV);
+            event.setFOV(event.getFOV() / Math.max(fovZoomLevel, zoomLevel));
         }
         else if (currentScope != null)
         {
-            currentFOV = originalFOV / Math.max(lastZoomLevel, lastFOVZoomLevel);
-            event.setFOV(currentFOV);
+            event.setFOV(event.getFOV() / Math.max(lastZoomLevel, lastFOVZoomLevel));
         }
     }
 
     @OnlyIn(Dist.CLIENT)
     public static void updateCameraAngles(ViewportEvent.ComputeCameraAngles event)
     {
-        float angle = Mth.lerp((float) event.getPartialTick(), recoilOffsetPrev, recoilOffset);
-        event.setPitch(Mth.clamp(event.getPitch() + angle, -90F, 90F));
+        Player player = Minecraft.getInstance().player;
+        if (player == null)
+            return;
+
+        // Interpolation for smooth recoil
+        float partialTick = (float) event.getPartialTick();
+        float recoilPitch = Mth.lerp(partialTick, player.xRotO, event.getPitch());
+        float recoilYaw = Mth.lerp(partialTick, player.yRotO, event.getYaw());
+
+        event.setPitch(Mth.clamp(recoilPitch, -90F, 90F));
+        event.setYaw(recoilYaw);
     }
 }

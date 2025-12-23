@@ -34,19 +34,12 @@ public class PlayerData
     private static final Map<UUID, PlayerData> serverSideData = new HashMap<>();
     private static final Map<UUID, PlayerData> clientSideData = new HashMap<>();
 
-    /** Their UUID */
-    private UUID playerId;
-
     // Input related fields
     private boolean isShootKeyPressedRight;
     private boolean isPrevShootKeyPressedRight;
     private boolean isShootKeyPressedLeft;
     private boolean isPrevShootKeyPressedLeft;
 
-    // Movement related fields
-    /** Roll variables */
-    private float prevRotationRoll;
-    private float rotationRoll;
     /** Snapshots for bullet hit detection. Array size is set to number of snapshots required. When a new one is taken,
      * each snapshot is moved along one place and new one is added at the start, so that when the array fills up, the oldest one is lost */
     @Getter
@@ -61,13 +54,13 @@ public class PlayerData
     @Getter @Setter
     private float shootTimeLeft;
     /** Stops player shooting immediately after swapping weapons */
-    private int shootClickDelay;
+    private int shootClickDelay; //TODO: implement shootClick
     /** True if this player is shooting */
     private boolean isShootingRight;
     private boolean isShootingLeft;
     /** The speed of the minigun the player is using */
     @Getter @Setter
-    private float minigunSpeed = 0F;
+    private float minigunSpeed;
     /** Reloading booleans */
     private boolean isReloadingRight;
     private boolean isReloadingLeft;
@@ -83,15 +76,11 @@ public class PlayerData
     @Getter @Setter
     private int meleeLength;
     /** When the player shoots a burst fire weapon, one shot is fired immediately and this counter keeps track of how many more should be fired */
-    private int burstRoundsRemainingLeft = 0;
+    private int burstRoundsRemainingLeft = 0; //TODO: implement burst
     @Getter @Setter
     private int burstRoundsRemainingRight = 0;
-
     private PendingReload pendingReload;
-
-    private boolean isAmmoEmpty;
-    private boolean reloadedAfterRespawn = false;
-
+    private boolean reloadedAfterRespawn; //TODO: implement
     @Getter
     private Vector3f[] lastMeleePositions;
 
@@ -117,14 +106,13 @@ public class PlayerData
     /** Keeps the player out of having to rechose their team each round */
     private boolean builder;
     /** e.e */
-    private boolean playerMovedByAutobalancer = false;
+    private boolean playerMovedByAutobalancer;
     /** Save the player's skin here, to replace after having done a swap for a certain class override */
     @OnlyIn(Dist.CLIENT)
     private ResourceLocation skin;
 
     private PlayerData(UUID id)
     {
-        playerId = id;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 

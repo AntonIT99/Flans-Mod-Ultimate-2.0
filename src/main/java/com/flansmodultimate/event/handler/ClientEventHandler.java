@@ -2,12 +2,13 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.client.KeyMapping;
@@ -143,6 +145,14 @@ public final class ClientEventHandler
         if (!(event.getEntity() instanceof Player player))
             return;
 
+        // Render debug boxes for player snapshots
+        if (ModClient.isDebug())
+        {
+            PlayerData data = PlayerData.getInstance(player , LogicalSide.CLIENT);
+            if (data.getSnapshots()[0] != null)
+                data.getSnapshots()[0].renderSnapshot();
+        }
+
         var model = event.getRenderer().getModel();
         if (!(model instanceof HumanoidModel<?> humanoid))
             return;
@@ -211,7 +221,7 @@ public final class ClientEventHandler
         DebugHelper.activeDebugEntities.clear(); // cleanup on world/connection change
     }
 
-    //TODO: check these methods
+    //TODO: check these methods (1.12.2)
     //renderItemFrame()
     //renderHeldItem()
     //renderThirdPersonWeapons()

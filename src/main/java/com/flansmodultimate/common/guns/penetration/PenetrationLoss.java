@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.guns;
+package com.flansmodultimate.common.guns.penetration;
 
 import com.flansmodultimate.common.types.BulletType;
 

@@ -2,7 +2,7 @@ package com.flansmodultimate.client.input;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.PacketHandler;
@@ -86,22 +86,22 @@ public final class KeyInputHandler
         {
             if (mainHandStack.getItem() instanceof GunItem gunItem && !(offhandStack.getItem() instanceof GunItem))
             {
-                if (gunItem.getBehavior().canReload(player.getInventory()))
+                if (gunItem.getGunItemHandler().canReload(player.getInventory()))
                     PacketHandler.sendToServer(new PacketGunReload(InteractionHand.MAIN_HAND));
             }
             else if (offhandStack.getItem() instanceof GunItem gunItem && !(mainHandStack.getItem() instanceof GunItem))
             {
-                if (gunItem.getBehavior().canReload(player.getInventory()))
+                if (gunItem.getGunItemHandler().canReload(player.getInventory()))
                     PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
             }
             else if (mainHandStack.getItem() instanceof GunItem mainHandGunItem && offhandStack.getItem() instanceof GunItem offhandGunItem)
             {
-                if (offhandGunItem.getBehavior().canReload(player.getInventory())
-                        && (!mainHandGunItem.getBehavior().canReload(player.getInventory()) || (!mainHandGunItem.getBehavior().hasEmptyAmmo(mainHandStack) && offhandGunItem.getBehavior().hasEmptyAmmo(offhandStack))))
+                if (offhandGunItem.getGunItemHandler().canReload(player.getInventory())
+                        && (!mainHandGunItem.getGunItemHandler().canReload(player.getInventory()) || (!mainHandGunItem.getGunItemHandler().hasEmptyAmmo(mainHandStack) && offhandGunItem.getGunItemHandler().hasEmptyAmmo(offhandStack))))
                 {
                     PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
                 }
-                else if (mainHandGunItem.getBehavior().canReload(player.getInventory()))
+                else if (mainHandGunItem.getGunItemHandler().canReload(player.getInventory()))
                 {
                    PacketHandler.sendToServer(new PacketGunReload(InteractionHand.MAIN_HAND));
                 }

@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.debug;
 
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

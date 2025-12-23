@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.debug;
 
-import com.flansmodultimate.ModClient;
+import com.flansmodultimate.client.ModClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

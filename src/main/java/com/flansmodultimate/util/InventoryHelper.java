@@ -6,92 +6,121 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
+/**
+ * Adds access to stack-combine + empty-slot insertion for arbitrary containers.
+ * <p>
+ * Notes:
+ * - "splitIndex" is the boundary between "upper" and "lower" sections (e.g. 9 for player hotbar).
+ * - All ranges are clamped to [0, containerSize] to avoid out-of-bounds for small containers.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InventoryHelper
 {
-    public static boolean addItemStackToInventory(Container inv, ItemStack stack, boolean creative, boolean combine, boolean toUpperInventory)
+    /**
+     * @param inv              target container
+     * @param stack            stack to insert/merge (will be decremented/emptied)
+     * @param creative         if true, treat as success without modifying
+     * @param combine          if true, merge into existing stacks first
+     * @param toUpperContainer if true, prefer the "upper" range first, otherwise the "lower" range first
+     * @param splitIndex       boundary between ranges (player inventory hotbar = 9). Use inv.getContainerSize() to mean "no split".
+     */
+    public static boolean addItemStackToContainer(Container inv, ItemStack stack, boolean creative, boolean combine, boolean toUpperContainer, int splitIndex)
     {
         if (creative || stack.isEmpty())
             return true;
 
-        // combine into existing stacks (including partial mags) first (optional)
-        if (combine && tryMerge(inv, stack, toUpperInventory))
-            return stack.isEmpty();
+        int size = inv.getContainerSize();
+        int split = Math.max(0, Math.min(size, splitIndex));
 
+        if (combine)
+        {
+            mergeIntoExisting(inv, stack, toUpperContainer, split);
+            if (stack.isEmpty())
+                return true;
+        }
 
-        // then place into an empty slot
-        int empty = findEmptySlot(inv, toUpperInventory);
+        int empty = findEmptySlot(inv, stack, toUpperContainer, split);
         if (empty != -1)
         {
-            inv.setItem(empty, stack.copy());
-            stack.setCount(0);
-            return true;
+            // place as much as possible into this slot (respecting max stack sizes)
+            ItemStack placed = stack.copy();
+            int max = Math.min(placed.getMaxStackSize(), inv.getMaxStackSize());
+            placed.setCount(Math.min(max, stack.getCount()));
+
+            inv.setItem(empty, placed);
+            stack.shrink(placed.getCount());
+            return stack.isEmpty();
         }
 
         return false;
     }
 
-    private static boolean tryMerge(Container inv, ItemStack stack, boolean toUpperInventory)
+    private static void mergeIntoExisting(Container inv, ItemStack stack, boolean upperFirst, int split)
     {
-        // This merges by Item + tags (NBT) + damage value.
-        int start = toUpperInventory ? 0 : 9;
-        int end = inv.getContainerSize();
-        int altStart = toUpperInventory ? 9 : 0;
-        int altEnd = toUpperInventory ? inv.getContainerSize() : 9;
+        // Primary = preferred section, Secondary = the other section
+        mergeRange(inv, stack, primaryStart(upperFirst, split), primaryEnd(upperFirst, split, inv.getContainerSize()));
 
-        if (mergeRange(inv, stack, start, end))
-            return true;
-
-        return mergeRange(inv, stack, altStart, altEnd);
+        if (!stack.isEmpty())
+            mergeRange(inv, stack, secondaryStart(upperFirst, split), secondaryEnd(upperFirst, split, inv.getContainerSize()));
     }
 
-    private static boolean mergeRange(Container inv, ItemStack stack, int start, int end)
+    private static void mergeRange(Container inv, ItemStack stack, int start, int end)
     {
-        for (int i = start; i < end; i++)
+        for (int i = start; i < end && !stack.isEmpty(); i++)
         {
-            if (stack.isEmpty())
-                return true;
-            ItemStack inSlot = inv.getItem(i);
-            if (inSlot.isEmpty())
+            ItemStack slot = inv.getItem(i);
+            if (slot.isEmpty() || !ItemStack.isSameItemSameTags(slot, stack) || !slot.isStackable())
                 continue;
 
-            if (!ItemStack.isSameItemSameTags(inSlot, stack))
-                continue;
-            if (!inSlot.isStackable())
-                continue;
-
-            int max = Math.min(inSlot.getMaxStackSize(), inv.getMaxStackSize());
-            int space = max - inSlot.getCount();
+            int max = Math.min(slot.getMaxStackSize(), inv.getMaxStackSize());
+            int space = max - slot.getCount();
             if (space <= 0)
                 continue;
 
             int move = Math.min(space, stack.getCount());
-            inSlot.setCount(inSlot.getCount() + move);
-            stack.setCount(stack.getCount() - move);
+            slot.grow(move);
+            stack.shrink(move);
         }
-        return stack.isEmpty();
     }
 
-    private static int findEmptySlot(Container inv, boolean toUpperInventory)
+    private static int findEmptySlot(Container inv, ItemStack toInsert, boolean upperFirst, int split)
     {
-        int start = toUpperInventory ? 0 : 9;
-        int end = inv.getContainerSize();
-        int altStart = toUpperInventory ? 9 : 0;
-        int altEnd = toUpperInventory ? inv.getContainerSize() : 9;
-
-        int slot = emptyInRange(inv, start, end);
+        int slot = emptyInRange(inv, toInsert, primaryStart(upperFirst, split), primaryEnd(upperFirst, split, inv.getContainerSize()));
         if (slot != -1)
             return slot;
 
-        return emptyInRange(inv, altStart, altEnd);
+        return emptyInRange(inv, toInsert, secondaryStart(upperFirst, split), secondaryEnd(upperFirst, split, inv.getContainerSize()));
     }
 
-    private static int emptyInRange(Container inv, int start, int end)
+    private static int emptyInRange(Container inv, ItemStack stack, int start, int end)
     {
-        for (int i = start; i < end; i++) {
-            if (inv.getItem(i).isEmpty())
-                return i;
+        for (int i = start; i < end; i++)
+        {
+            if (!inv.getItem(i).isEmpty() || !inv.canPlaceItem(i, stack))
+                continue;
+
+            return i;
         }
         return -1;
+    }
+
+    private static int primaryStart(boolean upperFirst, int split)
+    {
+        return upperFirst ? 0 : split;
+    }
+
+    private static int primaryEnd(boolean upperFirst, int split, int containerSize)
+    {
+        return upperFirst ? split : containerSize;
+    }
+
+    private static int secondaryStart(boolean upperFirst, int split)
+    {
+        return upperFirst ? split : 0;
+    }
+
+    private static int secondaryEnd(boolean upperFirst, int split, int containerSize)
+    {
+        return upperFirst ? containerSize : split;
     }
 }

@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.guns;
 
+import lombok.Getter;
+
 import java.util.Random;
 
 public class GunRecoil
@@ -7,6 +9,7 @@ public class GunRecoil
     private static final Random rand = new Random();
 
     private float vertical;
+    @Getter
     private float horizontal;
     /** how fast the upwards motion stops after shooting. lower is better. 0-2, default 1 */
     private float recovery;
@@ -115,12 +118,9 @@ public class GunRecoil
 
         sprayLength *= 0.95F;
 
-        if (playerSpeed > 0.00F)
-        {
-            float speedMod = (1 + playerSpeed * speed);
-            vertical *= speedMod;
-            horizontal *= speedMod;
-        }
+        float speedMod = (1 + Math.min(0.3F, 3.0F * playerSpeed * playerSpeed) * speed);
+        vertical *= speedMod;
+        horizontal *= speedMod;
 
         float anti = antiRecoil * 0.2F;
 

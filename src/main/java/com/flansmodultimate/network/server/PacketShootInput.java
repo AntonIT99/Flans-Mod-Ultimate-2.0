@@ -12,13 +12,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 
 @NoArgsConstructor
-public class PacketTriggerShootState implements IServerPacket
+public class PacketShootInput implements IServerPacket
 {
     private boolean shootKeyPressed;
     private boolean prevShootKeyPressed;
     InteractionHand hand;
 
-    public PacketTriggerShootState(boolean shootKeyPressed, boolean prevShootKeyPressed, InteractionHand hand)
+    public PacketShootInput(boolean shootKeyPressed, boolean prevShootKeyPressed, InteractionHand hand)
     {
         this.shootKeyPressed = shootKeyPressed;
         this.prevShootKeyPressed = prevShootKeyPressed;

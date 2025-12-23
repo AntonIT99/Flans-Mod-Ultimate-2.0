@@ -54,9 +54,9 @@ public class GunType extends PaintableType implements IScope
     protected static final String NBT_SECONDARY_FIRE = "secondary_fire";
     protected static final String NBT_GUN_MODE = "gun_mode";
 
-
     /** Extended Recoil System */
     protected GunRecoil recoil = new GunRecoil();
+    @Getter
     protected boolean useFancyRecoil;
 
     //Recoil Variables
@@ -213,7 +213,7 @@ public class GunType extends PaintableType implements IScope
      */
     protected boolean canShootUnderwater = true;
     /**
-     * The amount of knockback to impact upon the player per shot (1 is one block)
+     * The amount of knockback to impact upon the player per shot (1 is one block). Negated by sneaking
      */
     @Getter
     protected float knockback;
@@ -1091,6 +1091,16 @@ public class GunType extends PaintableType implements IScope
         }
     }
 
+    public int getNumBullets(ShootableType type)
+    {
+        int bullets = -1;
+        if (allowNumBulletsByBulletType)
+            bullets = type.getNumBullets();
+        if (bullets <= 0)
+            bullets = numBullets;
+        return bullets;
+    }
+
     public String getReloadSound(ItemStack stack)
     {
         if (getSecondaryFire(stack) && getGrip(stack) != null && StringUtils.isNotBlank(getGrip(stack).secondaryReloadSound))
@@ -1476,5 +1486,15 @@ public class GunType extends PaintableType implements IScope
         // Reset fire mode to default for the gun stack
         setFireMode(stack, mode);
         return mode;
+    }
+
+    public GunRecoil getRecoil(ItemStack stack)
+    {
+        GunRecoil stackRecoil = recoil.copy();
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            stackRecoil.applyModifier(attachment.recoilMultiplier);
+
+        return stackRecoil;
     }
 }
