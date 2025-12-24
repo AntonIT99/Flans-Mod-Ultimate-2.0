@@ -101,7 +101,7 @@ public class ModClient
 
     // Recoil variables
     /** Fancy Recoil System */
-    @Getter @Setter
+    @Getter
     private static GunRecoil playerRecoil = new GunRecoil();
     /** The recoil applied to the player view by shooting */
     @Getter @Setter
@@ -111,6 +111,11 @@ public class ModClient
     /** The amount of compensation to apply to the recoil in order to bring it back to normal */
     private static float antiRecoilPitch;
     private static float antiRecoilYaw;
+    /** To update camera angles */
+    private static float pitchDelta;
+    private static float prevPitchDelta;
+    private static float yawDelta;
+    private static float prevYawDelta;
 
     @Getter @Setter
     private static int lastBulletReload;
@@ -479,80 +484,134 @@ public class ModClient
 
     private static void updateRecoil(LocalPlayer player)
     {
-        boolean useFancyReocil = (player.getMainHandItem().getItem() instanceof GunItem mainHandGunItem && mainHandGunItem.getConfigType().isUseFancyRecoil())
-            || (player.getMainHandItem().getItem() instanceof GunItem offhandGunItem && offhandGunItem.getConfigType().isUseFancyRecoil());
+        prevPitchDelta = pitchDelta;
+        prevYawDelta = yawDelta;
 
-        if (useFancyReocil)
+        if (isFancyRecoilEnabled(player))
+            applyFancyRecoil(player);
+        else
+            applyLegacyRecoil(player);
+    }
+
+    private static boolean isFancyRecoilEnabled(LocalPlayer player)
+    {
+        return (player.getMainHandItem().getItem() instanceof GunItem mainHandGunItem
+            && mainHandGunItem.getConfigType().isUseFancyRecoil())
+            || (player.getOffhandItem().getItem() instanceof GunItem offhandGunItem
+            && offhandGunItem.getConfigType().isUseFancyRecoil());
+    }
+
+    private static void applyFancyRecoil(LocalPlayer player)
+    {
+        float recoilToAdd = playerRecoil.update(player.isCrouching(), currentScope != null, (float) player.getDeltaMovement().length());
+
+        if (player.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null)
         {
-            float recoilToAdd = playerRecoil.update(player.isCrouching(), currentScope != null, (float) player.getDeltaMovement().length());
-            if (player.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null)
-            {
-                //TODO: uncomment for Seats
-                /*EntitySeat s = (EntitySeat) p.ridingEntity;
-                float newPlayerPitch = s.playerLooking.getPitch() + recoilToAdd;
-                float horizontal = playerRecoil.horizontal;
-                float newPlayerYaw = s.playerLooking.getYaw() + horizontal;
-                if (newPlayerPitch > -s.seatInfo.minPitch) {
-                    newPlayerPitch = -s.seatInfo.minPitch;
-                }
-                if (newPlayerPitch < -s.seatInfo.maxPitch) {
-                    newPlayerPitch = -s.seatInfo.maxPitch;
-                }
-                s.playerLooking.setAngles(newPlayerYaw, newPlayerPitch, 0);*/
+            //TODO: uncomment for Seats
+            /*EntitySeat s = (EntitySeat) p.ridingEntity;
+            float newPlayerPitch = s.playerLooking.getPitch() + recoilToAdd;
+            float horizontal = playerRecoil.horizontal;
+            float newPlayerYaw = s.playerLooking.getYaw() + horizontal;
+            if (newPlayerPitch > -s.seatInfo.minPitch) {
+                newPlayerPitch = -s.seatInfo.minPitch;
             }
-            else
-            {
-                float pitch = Mth.clamp(player.getXRot() + recoilToAdd, -90.0F, 90.0F);
-                player.setXRot(pitch);
+            if (newPlayerPitch < -s.seatInfo.maxPitch) {
+                newPlayerPitch = -s.seatInfo.maxPitch;
+            }
+            s.playerLooking.setAngles(newPlayerYaw, newPlayerPitch, 0);*/
+            return;
+        }
 
-                if (pitch > -90.0F && pitch < 90.0F)
-                {
-                    float horizontal = playerRecoil.getHorizontal();
-                    player.setYRot(player.getYRot() + horizontal);
-                    player.yHeadRot = player.getYRot();
-                }
-            }
+        float newPitch = Mth.clamp(player.getXRot() + recoilToAdd, -90.0F, 90.0F);
+        pitchDelta = player.getXRot() - newPitch;
+        player.setXRot(newPitch);
+        player.setXRot(newPitch);
+        player.xRotO = newPitch;
+
+        if (newPitch > -90.0F && newPitch < 90.0F)
+        {
+            yawDelta = playerRecoil.getHorizontal();
+            float newYaw = Mth.wrapDegrees(player.getYRot() + yawDelta);
+            player.setYRot(newYaw);
+            player.yRotO = newYaw;
+            player.yHeadRot = newYaw;
+            player.yHeadRotO = newYaw;
         }
         else
         {
-            if (playerRecoilPitch > 0.0F)
-            {
-                ItemStack itemBeingUsed = player.getMainHandItem(); // was getCurrentEquippedItem()
-                GunType typeHeld = null;
-
-                if (itemBeingUsed.getItem() instanceof GunItem gun)
-                    typeHeld = gun.getConfigType();
-
-                if (typeHeld != null)
-                    playerRecoilPitch *= typeHeld.getRecoilControl(itemBeingUsed, player.isSprinting(), player.isCrouching());
-                else
-                    playerRecoilPitch *= 0.8F;
-            }
-
-            // Apply recoil (subtract)
-            float newPitch = Mth.clamp(player.getXRot() - playerRecoilPitch, -90.0F, 90.0F);
-            float newYaw = player.getYRot() - playerRecoilYaw;
-
-            player.setXRot(newPitch);
-            player.setYRot(newYaw);
-
-            antiRecoilPitch += playerRecoilPitch;
-            antiRecoilYaw += playerRecoilYaw;
-
-            PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
-            boolean firingGun = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
-
-            // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
-            if (BooleanUtils.isNotTrue(ModCommonConfigs.realisticRecoil.get()) && ((!firingGun) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
-                player.setXRot(Mth.clamp(player.getXRot() + antiRecoilPitch * 0.2F, -90.0F, 90.0F));
-
-            player.setYRot(player.getYRot() + antiRecoilYaw * 0.2F);
-
-            antiRecoilPitch *= 0.8F;
-            antiRecoilYaw *= 0.8F;
-
-            player.yHeadRot = player.getYRot();
+            yawDelta = 0;
         }
+    }
+
+    private static void applyLegacyRecoil(LocalPlayer player)
+    {
+        dampenRecoilPitch(player);
+
+        // Apply recoil (subtract)
+        float newPitch = Mth.clamp(player.getXRot() - playerRecoilPitch, -90.0F, 90.0F);
+        float newYaw = player.getYRot() - playerRecoilYaw;
+
+        antiRecoilPitch += playerRecoilPitch;
+        antiRecoilYaw += playerRecoilYaw;
+
+        boolean firingGun = isPlayerFiringGun(player);
+
+        // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
+        if (BooleanUtils.isNotTrue(ModCommonConfigs.realisticRecoil.get())
+            && ((!firingGun) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
+        {
+            newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
+        }
+
+        newYaw = Mth.wrapDegrees(newYaw + antiRecoilYaw * 0.2F);
+
+        pitchDelta = player.getXRot() - newPitch;
+        yawDelta = player.getYRot() - newYaw;
+
+        player.setXRot(newPitch);
+        player.xRotO = newPitch;
+        player.setYRot(newYaw);
+        player.yRotO = newYaw;
+        player.yHeadRot = newYaw;
+        player.yHeadRotO = newYaw;
+
+        antiRecoilPitch *= 0.8F;
+        antiRecoilYaw *= 0.8F;
+    }
+
+    private static void dampenRecoilPitch(LocalPlayer player)
+    {
+        if (playerRecoilPitch <= 0.0F)
+            return;
+
+        float recoilControl = 0.8F;
+
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offhand = player.getOffhandItem();
+
+        if (mainHand.getItem() instanceof GunItem mainHandGunItem && offhand.getItem() instanceof GunItem offhandGunItem)
+        {
+            recoilControl = Math.max(
+                    mainHandGunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching()),
+                    offhandGunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching())
+            );
+        }
+        else if (mainHand.getItem() instanceof GunItem gunItem)
+        {
+            recoilControl = gunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching());
+        }
+        else if (offhand.getItem() instanceof GunItem gunItem)
+        {
+            recoilControl = gunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching());
+        }
+
+        playerRecoilPitch *= recoilControl;
+    }
+
+    private static boolean isPlayerFiringGun(LocalPlayer player)
+    {
+        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        return data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
     }
 
     private static void updateGunAnimations()
@@ -622,12 +681,12 @@ public class ModClient
         if (player == null)
             return;
 
-        // Interpolation for smooth recoil
-        float partialTick = (float) event.getPartialTick();
-        float recoilPitch = Mth.lerp(partialTick, player.xRotO, event.getPitch());
-        float recoilYaw = Mth.lerp(partialTick, player.yRotO, event.getYaw());
-
-        event.setPitch(Mth.clamp(recoilPitch, -90F, 90F));
-        event.setYaw(recoilYaw);
+        float pt = (float) event.getPartialTick();
+        float rp = pitchDelta * (1.0F - pt);
+        float ry = yawDelta * (1.0F - pt);
+        if (rp != 0.0F)
+            event.setPitch(Mth.clamp(event.getPitch() + rp, -90F, 90F));
+        if (ry != 0.0F)
+            event.setYaw(Mth.wrapDegrees(event.getYaw() + ry));
     }
 }

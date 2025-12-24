@@ -1,6 +1,5 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
@@ -38,7 +37,6 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
-        ModelGun.setSmoothing((float) event.getPartialTick());
         ModClient.updateCameraZoom(event);
     }
 

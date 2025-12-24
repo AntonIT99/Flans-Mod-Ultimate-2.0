@@ -21,11 +21,11 @@ public class ModelBullet extends ModelBase
     }
 
     @Override
-    public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        pPoseStack.pushPose();
-        pPoseStack.translate(0F, 2F, 0F);
-        bulletModel.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, getScale());
-        pPoseStack.popPose();
+        poseStack.pushPose();
+        poseStack.translate(0F, 2F, 0F);
+        bulletModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale());
+        poseStack.popPose();
     }
 }

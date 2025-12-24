@@ -28,7 +28,6 @@ import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.EnumHitboxType;
 import com.flansmodultimate.common.raytracing.PlayerHitbox;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
-import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
@@ -292,7 +291,7 @@ public class GunItemHandler
         }
         data.setShootTime(hand, shootTime);
 
-        DebugHelper.spawnDebugDot(level, Raytracer.getPlayerMuzzlePosition(player, hand), 1000);
+        DebugHelper.spawnDebugDot(level, player.getEyePosition(0.0F), 1000);
     }
 
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)

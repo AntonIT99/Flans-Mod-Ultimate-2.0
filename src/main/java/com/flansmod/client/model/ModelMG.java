@@ -27,27 +27,27 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         return GunType.class;
     }
 
-    public void renderBipod(DeployedGun mg, PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         for(ModelRendererTurbo bipodPart : bipodModel)
         {
-            bipodPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            bipodPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
             return;
 
         for(ModelRendererTurbo ammoBoxPart : ammoBoxModel)
         {
-            ammoBoxPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            ammoBoxPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
     }
 
-    public void renderGun(DeployedGun mg, float partialTick, PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         for (ModelRendererTurbo gunPart : gunModel)
         {
             gunPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
-            gunPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            gunPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
 
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
@@ -56,7 +56,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         for (ModelRendererTurbo ammoPart : ammoModel)
         {
             ammoPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
-            ammoPart.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            ammoPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
         }
     }
 

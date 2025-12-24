@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.RenderGun;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
@@ -141,7 +142,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             float red = (color >> 16 & 255) / 255F;
             float green = (color >> 8 & 255) / 255F;
             float blue = (color & 255) / 255F;
-            modelGun.renderItem(stack, itemDisplayContext, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
+            RenderGun.renderItem(modelGun, stack, itemDisplayContext, poseStack, buffer, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
         }
     }
 

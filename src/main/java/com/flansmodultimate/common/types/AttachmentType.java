@@ -42,6 +42,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected int flashlightStrength = 12;
     /** If true, disable the muzzle flash model */
+    @Getter
     protected boolean disableMuzzleFlash;
 
     //Gun behaviour modifiers

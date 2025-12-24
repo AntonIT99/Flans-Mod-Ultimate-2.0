@@ -27,11 +27,11 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
     }
 
     @Override
-    public void renderToBuffer(@NotNull PoseStack pPoseStack, @NotNull VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         for (ModelRendererTurbo mod : mfModel)
         {
-            mod.render(pPoseStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, getScale());
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale());
         }
     }
 

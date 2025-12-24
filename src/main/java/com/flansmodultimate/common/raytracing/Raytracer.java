@@ -18,11 +18,9 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -351,22 +349,5 @@ public class Raytracer
         ClipContext.Fluid fluidMode = interact ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE;
         ClipContext ctx = new ClipContext(eyePos, targetPos, ClipContext.Block.OUTLINE, fluidMode, entity);
         return entity.level().clip(ctx);
-    }
-
-    public static Vector3f getPlayerMuzzlePosition(Player player, InteractionHand hand)
-    {
-        PlayerSnapshot snapshot = new PlayerSnapshot(player);
-
-        ItemStack itemstack = (hand == InteractionHand.OFF_HAND) ? player.getOffhandItem() : player.getMainHandItem();
-
-        //TODO: Fix this code
-        /*if (itemstack.getItem() instanceof GunItem gunItem)
-        {
-            GunType gunType = gunItem.getConfigType();
-            AttachmentType barrelType = gunType.getBarrel(itemstack);
-            return Vector3f.add(new Vector3f(player.getX(), player.getY(), player.getZ()), snapshot.getMuzzleLocation(gunType, barrelType, hand), null);
-        }*/
-
-        return new Vector3f(player.getEyePosition(0.0F));
     }
 }

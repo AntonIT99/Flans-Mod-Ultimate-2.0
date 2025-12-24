@@ -31,16 +31,16 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @Override
-    public void render(@NotNull PoseStack pPoseStack, @NotNull MultiBufferSource pBuffer, int pPackedLight, @NotNull T pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTicks, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch)
+    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource pBuffer, int packedLight, @NotNull T pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTicks, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch)
     {
-        renderArmorPiece(pPoseStack, pBuffer, pLivingEntity, EquipmentSlot.HEAD, pPackedLight);
-        renderArmorPiece(pPoseStack, pBuffer, pLivingEntity, EquipmentSlot.LEGS, pPackedLight);
-        renderArmorPiece(pPoseStack, pBuffer, pLivingEntity, EquipmentSlot.FEET, pPackedLight);
-        renderArmorPiece(pPoseStack, pBuffer, pLivingEntity, EquipmentSlot.CHEST, pPackedLight);
+        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.HEAD, packedLight);
+        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.LEGS, packedLight);
+        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.FEET, packedLight);
+        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.CHEST, packedLight);
     }
 
     @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack pPoseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int pPackedLight)
+    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int packedLight)
     {
         ItemStack itemStack = pLivingEntity.getItemBySlot(pSlot);
         Item item = itemStack.getItem();
@@ -50,13 +50,13 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
             ModelCustomArmour modelCustomArmour = (ModelCustomArmour) ModelCache.getOrLoadTypeModel(armorItem.getConfigType());
             ResourceLocation texture = armorItem.getConfigType().getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
-            renderModel(pPoseStack, pBuffer, pPackedLight, modelCustomArmour, texture);
+            renderModel(poseStack, pBuffer, packedLight, modelCustomArmour, texture);
         }
     }
 
-    private void renderModel(PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight, Model pModel, ResourceLocation armorTexture)
+    private void renderModel(PoseStack poseStack, MultiBufferSource pBuffer, int packedLight, Model pModel, ResourceLocation armorTexture)
     {
         VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(armorTexture));
-        pModel.renderToBuffer(pPoseStack, vertexconsumer, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        pModel.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

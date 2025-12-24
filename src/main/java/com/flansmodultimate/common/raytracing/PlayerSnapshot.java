@@ -1,19 +1,15 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
-import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -159,33 +155,5 @@ public class PlayerSnapshot
         {
             hitbox.renderHitbox(player.level(), pos);
         }
-    }
-
-    public PlayerHitbox getHitbox(EnumHitboxType type)
-    {
-        for (PlayerHitbox hitbox : hitboxes)
-        {
-            if (hitbox.type == type)
-                return hitbox;
-        }
-        return null;
-    }
-
-    public Vector3f getMuzzleLocation(GunType gunType, AttachmentType barrelAttachment, InteractionHand hand)
-    {
-        PlayerHitbox hitbox = getHitbox(hand == InteractionHand.OFF_HAND ? EnumHitboxType.LEFTARM : EnumHitboxType.RIGHTARM);
-        Vector3f muzzlePos = new Vector3f(hitbox.o.x, hitbox.o.y + hitbox.d.y * 0.5f, hitbox.o.z + hitbox.d.z * 0.5f);
-
-        ModelGun modelGun = (ModelGun) ModelCache.getOrLoadTypeModel(gunType);
-        if (modelGun != null)
-        {
-            Vector3f barrelAttach = new Vector3f(modelGun.getBarrelAttachPoint().z, -modelGun.getBarrelAttachPoint().x, modelGun.getBarrelAttachPoint().y);
-            Vector3f.add(muzzlePos, barrelAttach, muzzlePos);
-        }
-
-        muzzlePos = hitbox.axes.findLocalVectorGlobally(muzzlePos);
-
-        Vector3f.add(muzzlePos, hitbox.rP, muzzlePos);
-        return muzzlePos;
     }
 }

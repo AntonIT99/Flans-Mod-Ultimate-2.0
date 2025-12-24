@@ -70,7 +70,7 @@ public class TexturedPolygon
         iNormals = vec;
     }
 
-    public void draw(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    public void draw(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
         Matrix4f matrix4f = pPose.pose();
         Matrix3f matrix3f = pPose.normal();
@@ -137,7 +137,7 @@ public class TexturedPolygon
             float f5 = (float) positionTexturevertex.vector3D.z() / 16.0F;
 
             Vector4f vector4f = matrix4f.transform(new Vector4f(f3, f4, f5, 1.0F));
-            pVertexConsumer.vertex(vector4f.x(), vector4f.y(), vector4f.z(), pRed, pGreen, pBlue, pAlpha, positionTexturevertex.texturePositionX, positionTexturevertex.texturePositionY, pPackedOverlay, pPackedLight, f, f1, f2);
+            pVertexConsumer.vertex(vector4f.x(), vector4f.y(), vector4f.z(), pRed, pGreen, pBlue, pAlpha, positionTexturevertex.texturePositionX, positionTexturevertex.texturePositionY, packedOverlay, packedLight, f, f1, f2);
         }
     }
 

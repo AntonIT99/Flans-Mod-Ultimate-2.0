@@ -9,11 +9,11 @@ public class ModelCasing extends ModelBase
 {
     protected ModelRendererTurbo[] casingModel = new ModelRendererTurbo[0];
 
-    public void renderCasing(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderCasing(PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
     {
         for (ModelRendererTurbo model : casingModel)
             if (model != null)
-                model.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+                model.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
     }
 
     protected void flipAll()

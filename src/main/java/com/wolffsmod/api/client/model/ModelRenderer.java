@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.model.geom.ModelPart;
@@ -142,22 +143,22 @@ public class ModelRenderer
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
         if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty())) return;
 
-        pPoseStack.pushPose();
-        pPoseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(pPoseStack, scale);
-        compile(pPoseStack.last(), pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        poseStack.pushPose();
+        poseStack.translate(offsetX, offsetY, offsetZ);
+        translateAndRotate(poseStack, scale);
+        compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
         {
-            childModel.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
-        pPoseStack.translate(-offsetX, -offsetY, -offsetZ);
-        pPoseStack.popPose();
+        poseStack.translate(-offsetX, -offsetY, -offsetZ);
+        poseStack.popPose();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -178,11 +179,11 @@ public class ModelRenderer
         }
     }
 
-    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
         for (ModelPart.Cube cube : cubeList)
         {
-            cube.compile(pPose, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+            cube.compile(pPose, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha);
         }
     }
 

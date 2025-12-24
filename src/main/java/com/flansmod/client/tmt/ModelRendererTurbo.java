@@ -7,6 +7,7 @@ import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.renderer.LightTexture;
@@ -2076,13 +2077,14 @@ public class ModelRendererTurbo extends ModelRenderer
      *
      * @param scale     The scale of the shape. Default is 1.
      */
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    @Override
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
         if (!isVisible()) return;
 
         if (glow)
         {
-            pPackedLight = LightTexture.FULL_BRIGHT;
+            packedLight = LightTexture.FULL_BRIGHT;
         }
 
         RenderSystem.enableBlend();
@@ -2090,18 +2092,18 @@ public class ModelRendererTurbo extends ModelRenderer
         RenderSystem.depthMask(false);
         RenderSystem.enableDepthTest();
 
-        pPoseStack.pushPose();
-        pPoseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(pPoseStack, scale);
-        compile(pPoseStack.last(), pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        poseStack.pushPose();
+        poseStack.translate(offsetX, offsetY, offsetZ);
+        translateAndRotate(poseStack, scale);
+        compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
         {
-            childModel.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
-        pPoseStack.translate(-offsetX, -offsetY, -offsetZ);
-        pPoseStack.popPose();
+        poseStack.translate(-offsetX, -offsetY, -offsetZ);
+        poseStack.popPose();
 
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
@@ -2142,13 +2144,13 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     @Override
-    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
     {
         for (TextureGroup usedGroup : textureGroup.values())
         {
             for (TexturedPolygon poly : usedGroup.poly)
             {
-                poly.draw(pPose, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+                poly.draw(pPose, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha);
             }
         }
     }

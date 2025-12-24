@@ -520,7 +520,7 @@ public class GunType extends PaintableType implements IScope
     protected String flashModelName = StringUtils.EMPTY;
     @Getter
     protected String flashModelClassName = StringUtils.EMPTY;
-    @OnlyIn(Dist.CLIENT)
+    @Getter @OnlyIn(Dist.CLIENT)
     protected ResourceLocation flashTexture;
     protected String muzzleFlashModelName = StringUtils.EMPTY;
     @Getter
@@ -802,13 +802,13 @@ public class GunType extends PaintableType implements IScope
 
         //Models & Textures
         deployable = readValue("Deployable", deployable, file);
-        deployableModelName = readResource("DeployedModel", deployableModelName, file);
+        deployableModelName = readValue("DeployedModel", deployableModelName, file);
         deployableTextureName = readResource("DeployedTexture", deployableTextureName, file);
-        casingModelName = readResource("CasingModel", casingModelName, file);
+        casingModelName = readValue("CasingModel", casingModelName, file);
         casingTextureName = readResource("CasingTexture", casingTextureName, file);
-        flashModelName = readResource("FlashModel", flashModelName, file);
+        flashModelName = readValue("FlashModel", flashModelName, file);
         flashTextureName = readResource("FlashTexture", flashTextureName, file);
-        muzzleFlashModelName = readResource("MuzzleFlashModel", muzzleFlashModelName, file);
+        muzzleFlashModelName = readValue("MuzzleFlashModel", muzzleFlashModelName, file);
         hitTextureName = readResource("HitTexture", hitTextureName, file);
 
         //Particles

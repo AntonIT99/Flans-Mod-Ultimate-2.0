@@ -17,7 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 public abstract class HumanoidArmorLayerMixin<T extends LivingEntity, M extends HumanoidModel<T>, A extends HumanoidModel<T>>
 {
     @Inject(method = "renderArmorPiece", at = @At("HEAD"), cancellable = true)
-    private void skipCustomArmorRendering(PoseStack pPoseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int pPackedLight, A pModel, CallbackInfo ci)
+    private void skipCustomArmorRendering(PoseStack poseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int packedLight, A pModel, CallbackInfo ci)
     {
         if (pLivingEntity.getItemBySlot(pSlot).getItem() instanceof CustomArmorItem)
         {
