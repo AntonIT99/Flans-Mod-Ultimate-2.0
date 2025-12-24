@@ -107,7 +107,7 @@ public class BulletType extends ShootableType
     @Getter
     protected int maxDegreeOfSACLOS = 5;
     @Getter
-    protected int maxRangeOfMissile = 150;
+    protected int maxRangeOfMissile = 256;
     @Getter
     protected boolean manualGuidance;
 

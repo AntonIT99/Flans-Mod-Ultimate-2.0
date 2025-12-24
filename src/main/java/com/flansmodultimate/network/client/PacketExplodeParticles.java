@@ -11,7 +11,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 
 @NoArgsConstructor
-public class PacketParticles implements IClientPacket
+public class PacketExplodeParticles implements IClientPacket
 {
     private String particleType;
     private int number;
@@ -19,7 +19,7 @@ public class PacketParticles implements IClientPacket
     private float y;
     private float z;
 
-    public PacketParticles(String particleType, int number, Vec3 position)
+    public PacketExplodeParticles(String particleType, int number, Vec3 position)
     {
         this.particleType = particleType;
         this.number = number;

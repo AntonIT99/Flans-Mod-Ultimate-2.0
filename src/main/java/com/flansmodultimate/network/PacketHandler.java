@@ -6,12 +6,13 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
@@ -73,12 +74,13 @@ public final class PacketHandler {
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
+        registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
+        registerS2C(PacketFlanExplosionParticles.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShootClient.class);
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
-        registerS2C(PacketParticles.class);
         registerS2C(PacketPlaySound.class);
 
         // Client to Server Packets

@@ -18,9 +18,9 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public class FlansEntityRenderer<T extends Entity> extends EntityRenderer<T>
+public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
 {
-    public FlansEntityRenderer(EntityRendererProvider.Context ctx)
+    public FlanEntityRenderer(EntityRendererProvider.Context ctx)
     {
         super(ctx);
     }

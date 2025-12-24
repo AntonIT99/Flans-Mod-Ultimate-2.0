@@ -3,7 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -821,6 +821,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected DamageSource getDamageSource()
     {
-        return FlansDamageSources.createDamageSource(level(), this, thrower, FlansDamageSources.FLANS_SHOOTABLE);
+        return FlanDamageSources.createDamageSource(level(), this, thrower, FlanDamageSources.SHOOTABLE);
     }
 }

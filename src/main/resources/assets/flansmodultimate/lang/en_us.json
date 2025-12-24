@@ -8,12 +8,12 @@
   "key.flansmodultimate.reload": "Reload",
   "key.flansmodultimate.lookAtGun": "Look at gun",
   "key.flansmodultimate.debug": "Debug Mode",
-  "death.attack.flans_melee": "%1$s was slain",
-  "death.attack.flans_melee.player": "%1$s was slain by %2$s",
-  "death.attack.flans_shootable": "%1$s was shot",
-  "death.attack.flans_shootable.player": "%1$s was shot by %2$s",
-  "death.attack.flans_headshot": "%1$s was headshot",
-  "death.attack.flans_headshot.player": "%1$s was headshot by %2$s",
-  "death.attack.flans_explosion": "%1$s was blown up",
-  "death.attack.flans_explosion.player": "%1$s was blown up by %2$s"
+  "death.attack.melee": "%1$s was slain",
+  "death.attack.melee.player": "%1$s was slain by %2$s",
+  "death.attack.shootable": "%1$s was shot",
+  "death.attack.shootable.player": "%1$s was shot by %2$s",
+  "death.attack.headshot": "%1$s was headshot",
+  "death.attack.headshot.player": "%1$s was headshot by %2$s",
+  "death.attack.explosion": "%1$s was blown up",
+  "death.attack.explosion.player": "%1$s was blown up by %2$s"
 }

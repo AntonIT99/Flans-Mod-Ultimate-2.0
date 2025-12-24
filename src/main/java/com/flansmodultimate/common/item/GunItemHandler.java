@@ -9,7 +9,7 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -26,9 +26,9 @@ import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.EnumHitboxType;
-import com.flansmodultimate.common.raytracing.FlansModRaytracer;
 import com.flansmodultimate.common.raytracing.PlayerHitbox;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
+import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
@@ -292,7 +292,7 @@ public class GunItemHandler
         }
         data.setShootTime(hand, shootTime);
 
-        DebugHelper.spawnDebugDot(level, FlansModRaytracer.getPlayerMuzzlePosition(player, hand), 1000);
+        DebugHelper.spawnDebugDot(level, Raytracer.getPlayerMuzzlePosition(player, hand), 1000);
     }
 
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
@@ -691,7 +691,7 @@ public class GunItemHandler
         Player attackedPlayer = hit.getHitbox().player;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
-        boolean didHurt = attackedPlayer.hurt(FlansDamageSources.createDamageSource(level, attacker, FlansDamageSources.FLANS_MELEE), damage);
+        boolean didHurt = attackedPlayer.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
         if (didHurt)
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
@@ -703,7 +703,7 @@ public class GunItemHandler
         Entity target = hit.getEntity();
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, target instanceof Driveable));
 
-        boolean didHurt = target.hurt(FlansDamageSources.createDamageSource(level, attacker, FlansDamageSources.FLANS_MELEE), damage);
+        boolean didHurt = target.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
         if (didHurt && target instanceof LivingEntity living)
             living.invulnerableTime = living.hurtDuration / 2;
 

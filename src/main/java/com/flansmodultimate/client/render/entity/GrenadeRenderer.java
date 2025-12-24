@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 
-public class GrenadeRenderer extends FlansEntityRenderer<Grenade>
+public class GrenadeRenderer extends FlanEntityRenderer<Grenade>
 {
     public GrenadeRenderer(EntityRendererProvider.Context ctx)
     {

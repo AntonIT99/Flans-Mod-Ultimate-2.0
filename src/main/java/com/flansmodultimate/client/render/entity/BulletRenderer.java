@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 
-public class BulletRenderer extends FlansEntityRenderer<Bullet>
+public class BulletRenderer extends FlanEntityRenderer<Bullet>
 {
     public BulletRenderer(EntityRendererProvider.Context ctx)
     {

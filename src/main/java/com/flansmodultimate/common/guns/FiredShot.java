@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
@@ -79,7 +79,7 @@ public class FiredShot
      */
     public DamageSource getDamageSource(boolean headshot, Level level, @Nullable Bullet bullet)
     {
-        return FlansDamageSources.createDamageSource(level, (bullet != null) ? bullet : shooter, attacker, headshot ? FlansDamageSources.FLANS_HEADSHOT : FlansDamageSources.FLANS_SHOOTABLE);
+        return FlanDamageSources.createDamageSource(level, (bullet != null) ? bullet : shooter, attacker, headshot ? FlanDamageSources.HEADSHOT : FlanDamageSources.SHOOTABLE);
     }
 
     public Optional<ServerPlayer> getPlayerAttacker()

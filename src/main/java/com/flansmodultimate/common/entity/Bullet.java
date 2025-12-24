@@ -10,7 +10,7 @@ import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.raytracing.FlansModRaytracer;
+import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
@@ -609,7 +609,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         Vec3 origin = position();
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
+        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
 
         if (hits.isEmpty())
             return;
@@ -769,7 +769,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         {
             if (configType.isLaserGuidance() && owner != null)
             {
-                BlockHitResult hit = FlansModRaytracer.getSpottedPoint(owner, 1.0F, configType.getMaxRangeOfMissile(), false);
+                BlockHitResult hit = Raytracer.getSpottedPoint(owner, 1.0F, configType.getMaxRangeOfMissile(), false);
                 if (hit.getType() != HitResult.Type.MISS)
                     applyLaserGuidance(Vec3.atCenterOf(hit.getBlockPos()));
             }

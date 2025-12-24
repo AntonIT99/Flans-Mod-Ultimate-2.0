@@ -5,7 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.common.FlansExplosion;
+import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Grenade;
@@ -14,7 +14,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
-import com.flansmodultimate.common.raytracing.FlansModRaytracer;
+import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BlockHit;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
@@ -28,10 +28,10 @@ import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
+import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -441,7 +441,7 @@ public final class ShootingHelper
         if (type.getExplosionRadius() <= 0.1F)
             return;
 
-        new FlansExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+        new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
 
         // Despawn bullets (not grenades)
         if (explosive instanceof Bullet bullet)
@@ -487,7 +487,7 @@ public final class ShootingHelper
     private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
     {
         if (type.getExplodeParticles() > 0)
-            PacketHandler.sendToAllAround(new PacketParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketExplodeParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
     }
 
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
@@ -522,7 +522,7 @@ public final class ShootingHelper
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
 
         HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
-        List<BulletHit> hits = FlansModRaytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
+        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = rayTraceOrigin;
         Vec3 finalhit = null;
 

@@ -1,7 +1,6 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.types.BulletType;
@@ -10,8 +9,8 @@ import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketHitMarker;
-import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,9 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FlansExplosion extends Explosion
+public class FlanExplosion extends Explosion
 {
-    private static final double EXPLOSION_PARTICLE_RANGE = 150.0; 
+    private static final double EXPLOSION_PARTICLE_RANGE = 256;
     
     // Config
     private final boolean causesFire;
@@ -75,7 +74,7 @@ public class FlansExplosion extends Explosion
     private final List<BlockPos> affectedBlockPositions;
     private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
-    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
+    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
         this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
                 type.isExplosionBreaksBlocks(), type.getExplosionDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
@@ -90,8 +89,8 @@ public class FlansExplosion extends Explosion
         return false;
     }
 
-    public FlansExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, float explosionRadius, float explosionPower,
-                          boolean causesFire, boolean smoking, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
+    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, float explosionRadius, float explosionPower,
+                         boolean causesFire, boolean smoking, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
         super(level, explosive, x, y, z, explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
@@ -258,7 +257,7 @@ public class FlansExplosion extends Explosion
 
                 if (explosionDamage > 0.5F)
                 {
-                    DamageSource damageSource = FlansDamageSources.createDamageSource(level, explosive, causingEntity, FlansDamageSources.FLANS_EXPLOSION);
+                    DamageSource damageSource = FlanDamageSources.createDamageSource(level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
                     boolean hurt = e.hurt(damageSource, explosionDamage);
                     if (hurt && causingEntity instanceof ServerPlayer serverPlayer)
                         PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), serverPlayer);
@@ -398,24 +397,6 @@ public class FlansExplosion extends Explosion
         if (level.isClientSide)
             return;
 
-        spawn(ParticleHelper.FM_FLARE, numSmoke, radius * 0.1F);
-        spawn(ParticleHelper.FM_DEBRIS_1, numDebris, radius * 0.1F);
-    }
-
-    private void spawn(String particleType, int count, float mod)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            float vx = signedRand(mod);
-            float vy = (float) Math.random() * mod;
-            float vz = signedRand(mod);
-            PacketHandler.sendToAllAround(new PacketParticle(particleType, center.x, center.y, center.z, vx, vy, vz), center.x, center.y, center.z, EXPLOSION_PARTICLE_RANGE, level.dimension());
-        }
-    }
-
-    private static float signedRand(float mod)
-    {
-        float v = (float) Math.random() * mod;
-        return Math.random() < 0.5 ? v : -v;
+        PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, numSmoke, numDebris, radius), center, Math.max(EXPLOSION_PARTICLE_RANGE, radius), level.dimension());
     }
 }

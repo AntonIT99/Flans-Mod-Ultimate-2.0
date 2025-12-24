@@ -18,12 +18,12 @@ import net.minecraft.world.level.Level;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FlansDamageSources
+public final class FlanDamageSources
 {
-    public static final ResourceKey<DamageType> FLANS_MELEE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_melee"));
-    public static final ResourceKey<DamageType> FLANS_SHOOTABLE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_shootable"));
-    public static final ResourceKey<DamageType> FLANS_HEADSHOT = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_headshot"));
-    public static final ResourceKey<DamageType> FLANS_EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flans_explosion"));
+    public static final ResourceKey<DamageType> MELEE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "melee"));
+    public static final ResourceKey<DamageType> SHOOTABLE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "shootable"));
+    public static final ResourceKey<DamageType> HEADSHOT = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "headshot"));
+    public static final ResourceKey<DamageType> EXPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "explosion"));
 
     public static DamageSource createDamageSource(Level level, @Nullable Entity directAttacker, @Nullable Entity indirectAttacker, ResourceKey<DamageType> damageType)
     {
@@ -38,7 +38,7 @@ public final class FlansDamageSources
 
     public static boolean isShootableDamage(DamageSource source)
     {
-        return source.is(FlansDamageSources.FLANS_SHOOTABLE) || source.is(FlansDamageSources.FLANS_HEADSHOT);
+        return source.is(FlanDamageSources.SHOOTABLE) || source.is(FlanDamageSources.HEADSHOT);
     }
 
     public static Optional<ShootableType> getShootableTypeFromSource(DamageSource source)

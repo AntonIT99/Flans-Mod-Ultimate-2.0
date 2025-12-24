@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class FlansModRaytracer
+public class Raytracer
 {
     public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize, BulletType type)
     {

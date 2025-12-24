@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "flansmodultimate:flans_shootable",
-    "flansmodultimate:flans_headshot"
+    "flansmodultimate:shootable",
+    "flansmodultimate:headshot"
   ]
 }

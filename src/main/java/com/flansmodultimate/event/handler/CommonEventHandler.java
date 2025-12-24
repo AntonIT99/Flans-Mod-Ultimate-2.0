@@ -1,7 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.FlansDamageSources;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -118,7 +118,7 @@ public final class CommonEventHandler
         if (ModCommonConfigs.enableOldArmorRatioSystem.get())
             applyOldArmorRatioSystem(event, entity);
 
-        if (FlansDamageSources.isShootableDamage(source))
+        if (FlanDamageSources.isShootableDamage(source))
         {
             if (tryApplyIgnoreArmorShot(event, entity, source))
                 return;
@@ -163,7 +163,7 @@ public final class CommonEventHandler
         if (damage <= 0.0F)
             return false;
 
-        ShootableType shootableType = FlansDamageSources.getShootableTypeFromSource(source).orElse(null);
+        ShootableType shootableType = FlanDamageSources.getShootableTypeFromSource(source).orElse(null);
         if (shootableType == null)
             return false;
 
