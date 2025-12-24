@@ -149,6 +149,7 @@ public class PacketBlockHitEffect implements IClientPacket
             double vy2 = -motion.y * (0.425 + Math.abs(level.random.nextGaussian() * 0.1)) * velocityFactor;
             double vz2 = -motion.z * (0.415 + level.random.nextGaussian() * 0.1) * velocityFactor;
 
+            //TODO: implement custom particles with physics from 1.7.10
             level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state), px1, py1, pz1, vx1, vy1, vz1);
             level.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, state), px2, py2, pz2, vx2, vy2, vz2);
         }

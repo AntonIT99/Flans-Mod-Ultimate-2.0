@@ -604,10 +604,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     protected void performRaytraceAndApplyHits(Level level)
     {
-        //TODO: allow client interpolation?
-        if (level.isClientSide)
-            return;
-
         Vec3 origin = position();
         List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
 

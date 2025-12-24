@@ -226,25 +226,28 @@ public class PlayerHitbox
         {
             case LEGS, BODY, HEAD, LEFTARM, RIGHTARM:
             {
-                //Calculate the hit damage
-                float hitDamage = ShootingHelper.getDamage(player, bullet, shot) * damageModifier;
-                //Create a damage source object
-                DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
-
-                //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
-                Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
-
-                if (!player.level().isClientSide && hitDamage == 0 && currentRound.isPresent())
-                    currentRound.get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
-
                 Vec3 motBefore = player.getDeltaMovement();
 
-                //Attack the entity!
-                if (player.hurt(damagesource, hitDamage))
+                if (!player.level().isClientSide)
                 {
-                    //If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                    player.hurtTime = Math.min(player.hurtTime + 1, player.hurtDuration);
-                    player.invulnerableTime = player.hurtDuration / 2;
+                    //Calculate the hit damage
+                    float hitDamage = ShootingHelper.getDamage(player, bullet, shot) * damageModifier;
+                    //Create a damage source object
+                    DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
+
+                    //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
+                    Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
+
+                    if (hitDamage == 0 && currentRound.isPresent())
+                        currentRound.get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
+
+                    //Attack the entity!
+                    if (player.hurt(damagesource, hitDamage))
+                    {
+                        //If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                        player.hurtTime = Math.min(player.hurtTime + 1, player.hurtDuration);
+                        player.invulnerableTime = player.hurtDuration / 2;
+                    }
                 }
 
                 //Slowdown when shot in the legs

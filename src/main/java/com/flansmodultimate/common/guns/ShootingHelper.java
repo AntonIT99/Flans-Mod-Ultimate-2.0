@@ -135,7 +135,7 @@ public final class ShootingHelper
 
         if (bulletHit instanceof DriveableHit driveableHit)
         {
-            if (bulletType.isEntityHitSoundEnable())
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
 
             AtomicBoolean isFriendly = new AtomicBoolean(false);
@@ -174,7 +174,7 @@ public final class ShootingHelper
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
-            if (bulletType.isEntityHitSoundEnable())
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
 
             float prevPenetratingPower = penetratingPower;
@@ -193,20 +193,23 @@ public final class ShootingHelper
         {
             Entity entity = entityHit.getEntity();
 
-            if (bulletType.isEntityHitSoundEnable())
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
 
             if (owner instanceof Player)
                 lastHitPenAmount = 1F;
 
-            float damage = ShootingHelper.getDamage(entity, bullet, shot);
-
-            if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            if (!level.isClientSide)
             {
-                PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
-                bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
-                // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                living.invulnerableTime = living.hurtDuration / 2;
+                float damage = ShootingHelper.getDamage(entity, bullet, shot);
+
+                if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+                {
+                    PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
+                    bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
+                    // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                    living.invulnerableTime = living.hurtDuration / 2;
+                }
             }
 
             if (bulletType.isSetEntitiesOnFire())
@@ -231,7 +234,7 @@ public final class ShootingHelper
             penetratingPower = -1F;
 
         //Send hit marker, if player is present
-        if (showHitMarker && playerOwner.isPresent())
+        if (!level.isClientSide && showHitMarker && playerOwner.isPresent())
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
@@ -278,7 +281,7 @@ public final class ShootingHelper
         return penetratingPower;
     }
 
-    private static  void handleGlassBreak(Level level, BlockPos pos, BlockState state, FiredShot shot)
+    private static void handleGlassBreak(Level level, BlockPos pos, BlockState state, FiredShot shot)
     {
         if (level.isClientSide || !shot.getBulletType().isBreaksGlass() || !ModUtils.isGlass(state) || !FlansMod.teamsManager.isCanBreakGlass())
             return;

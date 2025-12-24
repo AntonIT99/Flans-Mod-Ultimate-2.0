@@ -3,9 +3,7 @@ package com.flansmodultimate.common;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Wheel;
-import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DamageStats;
-import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
@@ -76,21 +74,12 @@ public class FlanExplosion extends Explosion
 
     public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
-        this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0, isSmoking(type),
-                type.isExplosionBreaksBlocks(), type.getExplosionDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
-    }
-
-    private static boolean isSmoking(ShootableType type)
-    {
-        if (type instanceof BulletType bulletType)
-            return bulletType.getFlak() > 0;
-        else if (type instanceof GrenadeType grenadeType)
-            return grenadeType.getSmokeRadius() > 0;
-        return false;
+        this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0,
+            type.isExplosionBreaksBlocks(), type.getExplosionDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
 
     public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, float explosionRadius, float explosionPower,
-                         boolean causesFire, boolean smoking, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
+                         boolean causesFire, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
         super(level, explosive, x, y, z, explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
@@ -114,7 +103,7 @@ public class FlanExplosion extends Explosion
         if (!ForgeEventFactory.onExplosionStart(level, this))
         {
             explode();
-            finalizeExplosion(smoking);
+            finalizeExplosion(true);
             // Custom Flan’s extra particles
             spawnParticles(smokeCount, debrisCount);
         }
