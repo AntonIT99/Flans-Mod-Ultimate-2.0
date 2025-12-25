@@ -264,6 +264,33 @@ public class TypeReaderUtils
         return defaultValue;
     }
 
+    @Nullable
+    public static Vector3f readVector(String key, TypeFile file)
+    {
+        String strValue = readValue(key, null, file);
+        if (strValue != null)
+        {
+            try
+            {
+                if (strValue.contains("["))
+                {
+                    return new Vector3f(strValue);
+                }
+                else
+                {
+                    String[] split = strValue.split("\\s+");
+                    return new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logError(incorrectFormat(key, "<vector value: [float float float]>"), file);
+            }
+        }
+        return null;
+    }
+
     public static String readValues(String key, String defaultValue, TypeFile file)
     {
         if (file.hasConfigLine(key))

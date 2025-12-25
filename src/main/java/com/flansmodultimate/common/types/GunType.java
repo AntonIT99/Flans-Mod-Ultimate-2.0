@@ -598,7 +598,7 @@ public class GunType extends PaintableType implements IScope
     protected float zoomAugment = 1F;
 
     @Getter
-    protected final GunAnim anim = new GunAnim();
+    protected final GunAnimationConfig animationConfig = new GunAnimationConfig();
 
     @Override
     protected void read(TypeFile file)
@@ -868,6 +868,8 @@ public class GunType extends PaintableType implements IScope
             lockOnToVehicles = true;
             lockOnToMechas = true;
         }
+
+        animationConfig.read(file);
     }
 
     @Override
@@ -875,7 +877,6 @@ public class GunType extends PaintableType implements IScope
     protected void readClient(TypeFile file)
     {
         super.readClient(file);
-
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
         casingModelClassName = findModelClass(casingModelName, contentPack);
@@ -883,8 +884,6 @@ public class GunType extends PaintableType implements IScope
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = loadTexture(flashTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
-
-        anim.read(file);
     }
 
     public Optional<ShootableType> getDefaultAmmo()

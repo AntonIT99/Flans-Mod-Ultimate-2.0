@@ -59,108 +59,158 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected ModelRendererTurbo[] bulletCounterModel = new ModelRendererTurbo[0];
     protected ModelRendererTurbo[][] advBulletCounterModel = new ModelRendererTurbo[0][0];
     /** For Adv Bullet Counter. Reads in numbers from left hand side when false */
+    @Getter @Setter
     protected boolean countOnRightHandSide;
     /** Toggle the counters active. Saves render performance. */
+    @Getter @Setter
     protected boolean isBulletCounterActive;
+    @Getter @Setter
     protected boolean isAdvBulletCounterActive;
 
     /** The point about which the minigun barrel rotates. Rotation is along the line of the gun through this point */
+    @Getter @Setter
     protected Vector3f minigunBarrelOrigin = new Vector3f();
     protected Vector3f minigunBarrelSpinDirection = new Vector3f(1F, 0F, 0F);
     protected float minigunBarrelSpinSpeed = 1F;
 
     /** These designate the locations of 3D attachment models on the gun */
-    @Getter
+    @Getter @Setter
     protected Vector3f barrelAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f scopeAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f stockAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f gripAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f gadgetAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f slideAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f pumpAttachPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected Vector3f accessoryAttachPoint = new Vector3f();
 
     /** Muzzle flash models */
+    @Getter @Setter
     protected Vector3f defaultBarrelFlashPoint = null;
+    @Getter @Setter
     protected Vector3f muzzleFlashPoint = null;
+    @Getter @Setter
     protected boolean hasFlash;
 
     /** Arms rendering */
+    @Getter @Setter
     protected boolean hasArms;
     /** Changes the rotation point to be the hand for easier animation setup */
+    @Getter @Setter
     protected boolean easyArms;
+    @Getter @Setter
     protected Vector3f armScale = new Vector3f(0.8F,0.8F,0.8F);
+    @Getter @Setter
     protected Vector3f leftArmPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmScale = new Vector3f(1,1,1);
+    @Getter @Setter
     protected Vector3f rightArmPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f rightArmRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f rightArmScale = new Vector3f(1,1,1);
+    @Getter @Setter
     protected Vector3f rightArmReloadPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f rightArmReloadRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmReloadPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmReloadRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f rightArmChargePos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f rightArmChargeRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmChargePos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f leftArmChargeRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f stagedrightArmReloadPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f stagedrightArmReloadRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f stagedleftArmReloadPos = new Vector3f(0,0,0);
+    @Getter @Setter
     protected Vector3f stagedleftArmReloadRot = new Vector3f(0,0,0);
+    @Getter @Setter
     protected boolean rightHandAmmo;
+    @Getter @Setter
     protected boolean leftHandAmmo;
 
     /** Casing and muzzle flash parameters */
     //  Total distance to translate
+    @Getter @Setter
     protected Vector3f casingAnimDistance = new Vector3f(0, 0, 16);
     //  Total range in variance for random motion
+    @Getter @Setter
     protected Vector3f casingAnimSpread = new Vector3f(2, 4, 4);
     //  Number of ticks (I guess?) to complete movement
+    @Getter @Setter
     protected int casingAnimTime = 20;
     //  Rotation of the casing, 180 is the total rotation. If you do not understand rotation vectors, like me, just use the standard value here.
+    @Getter @Setter
     protected Vector3f casingRotateVector = new Vector3f(0.1F, 1F, 0.1F);
+    @Getter @Setter
     protected Vector3f casingAttachPoint = new Vector3f(0F, 0F, 0F);
     // Time before the casing is ejected from gun
-    @Getter
+    @Getter @Setter
     protected int casingDelay;
     // Scale the bullet casing separately from gun
+    @Getter @Setter
     protected float caseScale = 1F;
+    @Getter @Setter
     protected float flashScale = 1F;
 
     /** Recoil and slide based parameters */
+    @Getter @Setter
     protected float gunSlideDistance = 0.25F;
+    @Getter @Setter
     protected float altgunSlideDistance = 0.25F;
+    @Getter @Setter
     protected float RecoilSlideDistance = 0.125F;
+    @Getter @Setter
     protected float RotateSlideDistance = -3F;
+    @Getter @Setter
     protected float ShakeDistance;
+    @Getter @Setter
     /** Select an amount of recoil per shot, between 0 and 1 */
     protected float recoilAmount = 0.33F;
 
     /** Charge handle distance/delay/time */
+    @Getter @Setter
     protected float chargeHandleDistance;
+    @Getter @Setter
     protected int chargeDelay;
-    @Getter
+    @Getter @Setter
     protected int chargeDelayAfterReload;
-    @Getter
+    @Getter @Setter
     protected int chargeTime = 1;
 
     protected EnumAnimationType animationType = EnumAnimationType.NONE;
     protected EnumMeleeAnimation meleeAnimation = EnumMeleeAnimation.DEFAULT;
+    @Getter @Setter
     protected float tiltGunTime = 0.15F;
+    @Getter @Setter
     protected float unloadClipTime = 0.35F;
+    @Getter @Setter
     protected float loadClipTime = 0.35F;
     protected float untiltGunTime = 0.15F;
     /** If true, then the scope attachment will move with the top slide */
+    @Getter @Setter
     protected boolean scopeIsOnSlide;
     /** If true, then the scope attachment will move with the break action. Can be combined with the above */
+    @Getter @Setter
     protected boolean scopeIsOnBreakAction;
     /** For rifles and shotguns. Currently a generic reload animation regardless of how full the internal magazine already is */
     @Getter @Setter
@@ -175,52 +225,77 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Getter @Setter
     protected int hammerDelay;
     /** For shotgun pump handle */
+    @Getter @Setter
     protected float pumpHandleDistance = 4F / 16F;
     /** For end loaded projectiles */
+    @Getter @Setter
     protected float endLoadedAmmoDistance = 1F;
     /** For break action projectiles */
+    @Getter @Setter
     protected float breakActionAmmoDistance = 1F;
     /** If true, then the grip attachment will move with the shotgun pump */
+    @Getter @Setter
     protected boolean gripIsOnPump;
     /** If true, then the gadget attachment will move with the shotgun pump */
+    @Getter @Setter
     protected boolean gadgetIsOnPump;
     /** The rotation point for the barrel break */
+    @Getter @Setter
     protected Vector3f barrelBreakPoint = new Vector3f();
+    @Getter @Setter
     protected Vector3f altbarrelBreakPoint = new Vector3f();
     /** The amount the revolver barrel flips out by */
+    @Getter @Setter
     protected float revolverFlipAngle = 15F;
     /** The amount the revolver2 barrel flips out by */
+    @Getter @Setter
     protected float revolver2FlipAngle = 15F;
     /** The rotation point for the revolver flip */
+    @Getter @Setter
     protected Vector3f revolverFlipPoint = new Vector3f();
     /** The rotation point for the revolver2 flip */
+    @Getter @Setter
     protected Vector3f revolver2FlipPoint = new Vector3f();
     /** The angle the gun is broken by for break actions */
+    @Getter @Setter
     protected float breakAngle = 45F;
+    @Getter @Setter
     protected float altbreakAngle = 45F;
     /** If true, then the gun will perform a spinning reload animation */
+    @Getter @Setter
     protected boolean spinningCocking;
     /** The point, in model co-ordinates, about which the gun is spun */
+    @Getter @Setter
     protected Vector3f spinPoint = new Vector3f();
     /** The point where the hammer will pivot and spin from */
+    @Getter @Setter
     protected Vector3f hammerSpinPoint = new Vector3f();
+    @Getter @Setter
     protected Vector3f althammerSpinPoint = new Vector3f();
-    @Getter
+    @Getter @Setter
     protected float hammerAngle = 75F;
-    @Getter
+    @Getter @Setter
     protected float althammerAngle = 75F;
     /** Single action cocking check */
+    @Getter @Setter
     protected boolean isSingleAction;
     /** If true, lock the slide when the last bullet is fired */
+    @Getter @Setter
     protected boolean slideLockOnEmpty;
     /** If true, move the hands with the pump action */
+    @Getter @Setter
     protected boolean lefthandPump;
+    @Getter @Setter
     protected boolean righthandPump;
     /** If true, move the hands with the charge action */
+    @Getter @Setter
     protected boolean rightHandCharge;
+    @Getter @Setter
     protected boolean leftHandCharge;
     /** If true, move the hands with the bolt action */
+    @Getter @Setter
     protected boolean rightHandBolt;
+    @Getter @Setter
     protected boolean leftHandBolt;
     /** How far to rotate the bolt */
     protected float boltRotationAngle;
@@ -228,43 +303,67 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected float boltCycleDistance = 1F;
     /** Offsets the bolt rotation point to help align it properly */
     protected Vector3f boltRotationOffset = new Vector3f(0F, 0F, 0F);
+    @Getter @Setter
     protected float pumpModifier = 4F;
     /** Hand offset when gun is charging */
+    @Getter @Setter
     protected Vector3f chargeModifier = new Vector3f(8F, 4F, 4F);
     /**If true, gun will translate when equipped with a sight attachment */
+    @Getter @Setter
     protected float gunOffset;
+    @Getter @Setter
     protected float crouchZoom;
+    @Getter @Setter
     protected boolean fancyStance = true;
     /** deprecated, do not use, use sprintStanceTranslate */
+    @Getter @Setter
     protected Vector3f stanceTranslate = new Vector3f();
     /** deprecated, do not use, use sprintStanceRotate */
+    @Getter @Setter
     protected Vector3f stanceRotate = new Vector3f();
     protected Vector3f sprintStanceTranslate = new Vector3f();
     protected Vector3f sprintStanceRotate = new Vector3f();
 
     /** Custom reload Parameters. If Enum.CUSTOM is set, these parameters can build an animation within the gun model classes */
+    @Getter @Setter
     protected float rotateGunVertical;
+    @Getter @Setter
     protected float rotateGunHorizontal;
+    @Getter @Setter
     protected float tiltGun;
+    @Getter @Setter
     protected Vector3f translateGun = new Vector3f(0F, 0F, 0F);
     /** Ammo Model reload parameters */
+    @Getter @Setter
     protected float rotateClipVertical;
+    @Getter @Setter
     protected float stagedrotateClipVertical;
+    @Getter @Setter
     protected float rotateClipHorizontal;
+    @Getter @Setter
     protected float stagedrotateClipHorizontal;
+    @Getter @Setter
     protected float tiltClip;
+    @Getter @Setter
     protected float stagedtiltClip;
+    @Getter @Setter
     protected Vector3f translateClip = new Vector3f(0F, 0F, 0F);
+    @Getter @Setter
     protected Vector3f stagedtranslateClip = new Vector3f(0F, 0F, 0F);
+    @Getter @Setter
     protected boolean stagedReload;
 
     /** Disables moving gun back when ADS. */
+    @Getter @Setter
     protected boolean stillRenderGunWhenScopedOverlay;
     /** Multiplier for ADS effect (moving gun to middle, e.t.c.) */
+    @Getter @Setter
     protected float adsEffectMultiplier = 1;
     /** This offsets the render position for third person */
+    @Getter @Setter
     protected Vector3f thirdPersonOffset = new Vector3f();
     /** This offsets the render position for item frames */
+    @Getter @Setter
     protected Vector3f itemFrameOffset = new Vector3f();
     /** Allows you to move the rotation helper to determine the required offsets for moving parts */
     protected Vector3f rotationToolOffset = new Vector3f(0F, 0F, 0F);
@@ -275,7 +374,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void setType(GunType type)
     {
         this.type = type;
-        this.type.getAnim().write(this);
+        this.type.getAnimationConfig().writeToModel(this);
     }
 
     @Override
