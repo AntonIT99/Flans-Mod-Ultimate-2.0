@@ -41,14 +41,6 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
-    {
-        ModClient.updateCameraAngles(event);
-        //TODO: for driveables
-        //updatePlayerView();
-    }
-
-    @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
         if (event.phase != TickEvent.Phase.END)
@@ -56,11 +48,21 @@ public final class ClientEventHandler
 
         GunInputState.tick();
 
-        //TODO: complete commented code
+        //TODO: implement commented out code from 1.12.2
         //renderHooks.update();
         //RenderFlag.angle += 2F;
         ModClient.tick();
+    }
 
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event)
+    {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+
+        ModClient.renderTick();
+        //TODO: implement commented out code for driveables (1.12.2)
+        //updatePlayerView();
     }
 
     @SubscribeEvent

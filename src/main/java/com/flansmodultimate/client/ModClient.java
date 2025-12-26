@@ -112,13 +112,17 @@ public class ModClient
     /** The amount of compensation to apply to the recoil in order to bring it back to normal */
     private static float antiRecoilPitch;
     private static float antiRecoilYaw;
-    /** To update camera angles */
-    private static float targetPitchDelta;
-    private static float targetYawDelta;
-    private static float pitchDelta;
-    private static float yawDelta;
-    private static float prevPitchDelta;
-    private static float prevYawDelta;
+
+    // tick impulses computed by recoil logic (degrees)
+    private static float impulsePitch;
+    private static float impulseYaw;
+    // accumulator that will be drained across render frames (degrees)
+    private static float pendingPitch;
+    private static float pendingYaw;
+    // tuning: higher = snappier (less “floaty”), lower = smoother
+    private static final float RECOIL_SMOOTH_PER_SECOND = 35.0F;
+    // deadzone to kill micro jitter
+    private static final float DEADZONE = 0.0015f;
 
     @Getter @Setter
     private static int lastBulletReload;
@@ -492,23 +496,30 @@ public class ModClient
 
     private static void updateRecoil(LocalPlayer player)
     {
-        prevPitchDelta = pitchDelta;
-        prevYawDelta = yawDelta;
+        impulsePitch = 0.0F;
+        impulseYaw = 0.0F;
 
         if (isFancyRecoilEnabled(player))
-            applyFancyRecoil(player);
+        {
+            computeImpulseForFancyRecoil(player);
+        }
         else
-            applyLegacyRecoil(player);
+        {
+            computeImpulseForLegacyRecoil(player);
+        }
 
-        // now smooth the camera deltas toward the target
-        pitchDelta = smoothing(pitchDelta, targetPitchDelta);
-        yawDelta = smoothing(yawDelta, targetYawDelta);
+        // deadzone tiny noise
+        impulsePitch = deadzone(impulsePitch);
+        impulseYaw = deadzone(impulseYaw);
+
+        // accumulate; will be applied smoothly during render frames
+        pendingPitch += impulsePitch;
+        pendingYaw += impulseYaw;
     }
 
-    private static float smoothing(float current, float target)
+    private static float deadzone(float v)
     {
-        current = (Math.abs(current) < 0.0015F) ? 0.0f : current;
-        return current + (target - current) * 0.65F;
+        return (Math.abs(v) < DEADZONE) ? 0.0f : v;
     }
 
     private static boolean isFancyRecoilEnabled(LocalPlayer player)
@@ -519,7 +530,7 @@ public class ModClient
             && offhandGunItem.getConfigType().isUseFancyRecoil());
     }
 
-    private static void applyFancyRecoil(LocalPlayer player)
+    private static void computeImpulseForFancyRecoil(LocalPlayer player)
     {
         float recoilToAdd = playerRecoil.update(player.isCrouching(), currentScope != null, (float) player.getDeltaMovement().length());
 
@@ -537,36 +548,22 @@ public class ModClient
                 newPlayerPitch = -s.seatInfo.maxPitch;
             }
             s.playerLooking.setAngles(newPlayerYaw, newPlayerPitch, 0);*/
+            impulsePitch = 0.0F;
+            impulseYaw = 0.0F;
             return;
         }
 
         float oldPitch = player.getXRot();
         float newPitch = Mth.clamp(oldPitch + recoilToAdd, -90.0F, 90.0F);
-        targetPitchDelta = oldPitch - newPitch;
-        player.setXRot(newPitch);
-        player.xRotO = newPitch;
 
-        if (newPitch > -90.0F && newPitch < 90.0F)
-        {
-            targetYawDelta = playerRecoil.getHorizontal();
-            float oldYaw = player.getYRot();
-            float newYaw = oldYaw + playerRecoil.getHorizontal();
-            player.setYRot(newYaw);
-            player.yRotO = newYaw;
-            player.yHeadRot = newYaw;
-            player.yHeadRotO = newYaw;
-        }
-        else
-        {
-            targetYawDelta = 0F;
-        }
+        impulsePitch = newPitch - oldPitch;
+        impulseYaw = (newPitch > -90.0F && newPitch < 90.0F) ? playerRecoil.getHorizontal() : 0.0F;
     }
 
-    private static void applyLegacyRecoil(LocalPlayer player)
+    private static void computeImpulseForLegacyRecoil(LocalPlayer player)
     {
         dampenRecoilPitch(player);
 
-        // Apply recoil (subtract)
         float oldPitch = player.getXRot();
         float oldYaw = player.getYRot();
         float newPitch = Mth.clamp(oldPitch - playerRecoilPitch, -90.0F, 90.0F);
@@ -584,15 +581,8 @@ public class ModClient
 
         newYaw = newYaw + antiRecoilYaw * 0.2F;
 
-        targetPitchDelta = oldPitch - newPitch;
-        targetYawDelta = oldYaw - newYaw;
-
-        player.setXRot(newPitch);
-        player.xRotO = newPitch;
-        player.setYRot(newYaw);
-        player.yRotO = newYaw;
-        player.yHeadRot = newYaw;
-        player.yHeadRotO = newYaw;
+        impulsePitch = newPitch - oldPitch;
+        impulseYaw = Mth.wrapDegrees(newYaw - oldYaw);
 
         antiRecoilPitch *= 0.8F;
         antiRecoilYaw *= 0.8F;
@@ -690,19 +680,41 @@ public class ModClient
     @OnlyIn(Dist.CLIENT)
     public static void updateCameraAngles(ViewportEvent.ComputeCameraAngles event)
     {
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void renderTick()
+    {
         Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
+        LocalPlayer player = mc.player;
         if (player == null)
             return;
 
-        float pt = (float) event.getPartialTick();
-        boolean firstPerson = mc.options.getCameraType().isFirstPerson();
-        float rp = firstPerson ? pitchDelta * (1.0F - pt) : Mth.lerp(pt, prevPitchDelta, pitchDelta);
-        float ry = firstPerson ? yawDelta * (1.0F - pt) : Mth.lerp(pt, prevYawDelta, yawDelta);
+        // Frame delta in seconds (approx). getDeltaFrameTime() is in ticks.
+        float dtTicks = mc.getDeltaFrameTime();
+        float dtSeconds = dtTicks / 20.0F;
 
-        if (rp != 0.0F)
-            event.setPitch(Mth.clamp(event.getPitch() + rp, -90F, 90F));
-        if (ry != 0.0F)
-            event.setYaw(event.getYaw() + ry);
+        // frame-rate independent smoothing
+        float t = 1.0F - (float) Math.exp(-RECOIL_SMOOTH_PER_SECOND * dtSeconds);
+
+        float applyPitch = pendingPitch * t;
+        float applyYaw = pendingYaw * t;
+
+        pendingPitch -= applyPitch;
+        pendingYaw -= applyYaw;
+
+        // Apply smoothly
+        float newPitch = Mth.clamp(player.getXRot() + applyPitch, -90.0F, 90.0F);
+        player.setXRot(newPitch);
+
+        float newYaw = player.getYRot() + Mth.wrapDegrees(applyYaw);
+        player.setYRot(newYaw);
+
+        player.yHeadRot = newYaw;
+        player.yBodyRot = newYaw;
+        player.xRotO = newPitch;
+        player.yRotO = newYaw;
+        player.yHeadRotO = newYaw;
+        player.yBodyRotO = newYaw;
     }
 }
