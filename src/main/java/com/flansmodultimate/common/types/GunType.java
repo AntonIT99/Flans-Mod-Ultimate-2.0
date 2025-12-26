@@ -335,6 +335,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Pump Sound
      */
+    @Getter
     protected String actionSound;
     /**
      * The sound to play upon shooting on last round

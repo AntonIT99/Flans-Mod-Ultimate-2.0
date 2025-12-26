@@ -18,21 +18,17 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
     }
 
     @Override
-    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
-        // hasLight -> use full-bright light value
-        light = bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : light;
-
-
         poseStack.pushPose();
 
-        float yaw   = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
+        float yaw = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
         float pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
 
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
 
-        super.render(bullet, entityYaw, partialTicks, poseStack, buf, light);
+        super.render(bullet, entityYaw, partialTicks, poseStack, buffer, bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : packedLight);
 
         poseStack.popPose();
     }

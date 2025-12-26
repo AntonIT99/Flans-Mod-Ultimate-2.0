@@ -18,11 +18,8 @@ public class GrenadeRenderer extends FlanEntityRenderer<Grenade>
     }
 
     @Override
-    public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int light)
+    public void render(@NotNull Grenade grenade, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
-        // hasLight -> use full-bright light value
-        light = grenade.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : light;
-
         poseStack.pushPose();
 
         if (grenade.isStuck())
@@ -46,7 +43,7 @@ public class GrenadeRenderer extends FlanEntityRenderer<Grenade>
             poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         }
 
-        super.render(grenade, entityYaw, partialTicks, poseStack, buf, light);
+        super.render(grenade, entityYaw, partialTicks, poseStack, buffer, grenade.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : packedLight);
 
         poseStack.popPose();
     }
