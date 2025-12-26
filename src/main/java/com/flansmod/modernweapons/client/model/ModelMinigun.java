@@ -258,13 +258,16 @@ public class ModelMinigun extends ModelGun
     }
 
     @Override
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, boolean glowingParts)
     {
-        poseStack.pushPose();
-        poseStack.translate(spinnerOrigin.x, spinnerOrigin.y, spinnerOrigin.z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(anims.minigunBarrelRotation));
-        poseStack.translate(-spinnerOrigin.x, -spinnerOrigin.y, -spinnerOrigin.z);
-        render(spinnerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-        poseStack.popPose();
+        if (!glowingParts)
+        {
+            poseStack.pushPose();
+            poseStack.translate(spinnerOrigin.x, spinnerOrigin.y, spinnerOrigin.z);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(anims.minigunBarrelRotation));
+            poseStack.translate(-spinnerOrigin.x, -spinnerOrigin.y, -spinnerOrigin.z);
+            render(spinnerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, false);
+            poseStack.popPose();
+        }
     }
 }

@@ -389,6 +389,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void flipAll()
     {
         flip(gunModel);
+        flip(backpackModel);
         flip(defaultBarrelModel);
         flip(defaultScopeModel);
         flip(defaultStockModel);
@@ -431,6 +432,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void translateAll(float x, float y, float z)
     {
         translate(gunModel, x, y, z);
+        translate(backpackModel, x, y, z);
         translate(defaultBarrelModel, x, y, z);
         translate(defaultScopeModel, x, y, z);
         translate(defaultStockModel, x, y, z);
@@ -480,15 +482,15 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
         for (ModelRendererTurbo mod : models)
         {
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
     }
 
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims) {}
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, boolean glowingParts) {}
 
     @Deprecated
     public void renderCustom(float scale, GunAnimations anims)

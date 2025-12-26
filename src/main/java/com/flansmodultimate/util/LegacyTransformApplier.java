@@ -1,15 +1,24 @@
 package com.flansmodultimate.util;
 
+import com.flansmod.client.model.ModelBomb;
+import com.flansmod.client.model.ModelBullet;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.render.RenderTypes;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelBase;
+import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
+
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -17,7 +26,7 @@ import java.util.List;
 public final class LegacyTransformApplier
 {
     @OnlyIn(Dist.CLIENT)
-    public static void renderModel(IModelBase model, InfoType infoType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
         try
@@ -25,11 +34,37 @@ public final class LegacyTransformApplier
             applyForClass(poseStack, model.getClass().getName());
             if (model instanceof ModelBase modelBase)
                 modelBase.setScale(infoType.getModelScale());
-            model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+
+            if (model.getClass() == ModelBullet.class || model.getClass() == ModelBomb.class)
+            {
+                model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, packedOverlay, red, green, blue, alpha);
+            }
+            else
+            {
+                renderModelLayer(model, poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, packedOverlay, red, green, blue, alpha, false);
+                renderModelLayer(model, poseStack, buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(texture)), packedLight, packedOverlay, red, green, blue, alpha, true);
+            }
         }
         finally
         {
             poseStack.popPose();
+        }
+    }
+
+    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glowingParts)
+    {
+        float modelScale = model instanceof ModelBase modelBase ? modelBase.getScale() : 1F;
+
+        for (ModelRenderer modelRenderer : model.getBoxList())
+        {
+            if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo)
+            {
+                modelRendererTurbo.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
+            }
+            else if (!glowingParts)
+            {
+                modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+            }
         }
     }
 

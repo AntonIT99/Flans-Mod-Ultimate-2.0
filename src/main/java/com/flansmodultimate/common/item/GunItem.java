@@ -23,8 +23,6 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketShootInput;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
@@ -39,7 +37,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -110,19 +107,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean useCustomRendererInHand()
     {
-        return ModelCache.getOrLoadTypeModel(configType) != null;
+        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
     }
 
     @Override
     public boolean useCustomRendererOnGround()
     {
-        return ModelCache.getOrLoadTypeModel(configType) != null;
+        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
     }
 
     @Override
     public boolean useCustomRendererInFrame()
     {
-        return ModelCache.getOrLoadTypeModel(configType) != null;
+        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
     }
 
     @Override
@@ -134,16 +131,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        IModelBase model = ModelCache.getOrLoadTypeModel(configType);
-        if (model instanceof ModelGun modelGun)
-        {
-            VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(getPaintjob(stack).getTexture()));
-            int color = configType.getColour();
-            float red = (color >> 16 & 255) / 255F;
-            float green = (color >> 8 & 255) / 255F;
-            float blue = (color & 255) / 255F;
-            RenderGun.renderItem(modelGun, stack, itemDisplayContext, poseStack, buffer, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
-        }
+        if (ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun modelGun)
+            RenderGun.renderItem(modelGun, stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
     }
 
     public boolean useAimingAnimation()

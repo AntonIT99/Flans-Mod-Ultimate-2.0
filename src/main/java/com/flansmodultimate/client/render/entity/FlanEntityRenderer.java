@@ -5,12 +5,10 @@ import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.LegacyTransformApplier;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -26,17 +24,14 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
     }
 
     @Override
-    public void render(@NotNull T entity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buf, int packedLight)
+    public void render(@NotNull T entity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         if (!(entity instanceof IFlanEntity<?> flanEntity))
             return;
 
-        IModelBase model = ModelCache.getOrLoadTypeModel(flanEntity.getShortName());
+        IModelBase model = ModelCache.getOrLoadTypeModel(flanEntity.getConfigType());
         if (model != null)
-        {
-            VertexConsumer vertexConsumer = buf.getBuffer(RenderType.entityTranslucent(getTextureLocation(entity)));
-            LegacyTransformApplier.renderModel(model, flanEntity.getConfigType(), poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
-        }
+            LegacyTransformApplier.renderModel(model, flanEntity.getConfigType(), getTextureLocation(entity), poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
     }
 
     @Override

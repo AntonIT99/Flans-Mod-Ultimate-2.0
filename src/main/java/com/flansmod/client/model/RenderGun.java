@@ -3,7 +3,9 @@ package com.flansmod.client.model;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.RenderTypes;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.IScope;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,28 +18,37 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Objects;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RenderGun
 {
-    public static void renderItem(ModelGun model, ItemStack item, ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    public static void renderItem(ModelGun model, ItemStack stack, ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         poseStack.pushPose();
-        float modelScale = model.type != null ? model.type.getModelScale() : 1F;
         GunAnimations animations = ModClient.getGunAnimations(ctx);
         model.reloadRotate = 0F;
 
-        if (shouldRenderGun(model, ctx, item))
+        if (stack.getItem() instanceof GunItem gunItem && shouldRenderGun(model, ctx, stack))
         {
+            int color = gunItem.getConfigType().getColour();
+            float red = (color >> 16 & 255) / 255F;
+            float green = (color >> 8 & 255) / 255F;
+            float blue = (color & 255) / 255F;
+            float modelScale = gunItem.getConfigType().getModelScale();
+
             switch (ctx)
             {
                 case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
                 {
                     boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-                    applyFirstPersonAdjustments(model, item, poseStack, left, animations);
+                    applyFirstPersonAdjustments(model, stack, poseStack, left, animations);
                 }
                 case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
                 {
@@ -50,7 +61,10 @@ public final class RenderGun
                     // No custom item rendering
                 }
             }
-            renderGun(model, item, animations, poseStack, buffer, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+            renderMuzzleFlash(model, animations, stack, poseStack, buffer, modelScale);
+            ResourceLocation gunTexture = gunItem.getPaintjob(stack).getTexture();
+            renderGun(model, stack, animations, poseStack, buffer.getBuffer(RenderType.entityTranslucent(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, false);
+            renderGun(model, stack, animations, poseStack, buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(gunTexture)), LightTexture.FULL_BRIGHT, packedOverlay, red, green, blue, 1F, modelScale, true);
         }
         poseStack.popPose();
     }
@@ -61,7 +75,7 @@ public final class RenderGun
         return true;
     }
 
-    private static void applyFirstPersonAdjustments(ModelGun model, ItemStack item, PoseStack poseStack, boolean leftHand, GunAnimations animations)
+    private static void applyFirstPersonAdjustments(ModelGun model, ItemStack stack, PoseStack poseStack, boolean leftHand, GunAnimations animations)
     {
         float smoothing = Minecraft.getInstance().getFrameTime();
         float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
@@ -85,7 +99,7 @@ public final class RenderGun
             poseStack.translate(crouching ? model.crouchZoom : 0F, -0.03F * adsSwitch, 0F);
         }
 
-        IScope scope = model.type.getCurrentScope(item);
+        IScope scope = model.type.getCurrentScope(stack);
 
         /*if(animations.meleeAnimationProgress > 0 && animations.meleeAnimationProgress < gunType.meleePath.size())
         {
@@ -259,7 +273,7 @@ public final class RenderGun
     /**
      * Gun render method, seperated from transforms so that mecha renderer may also call this
      */
-    public static void renderGun(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public static void renderGun(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
         float smoothing = Minecraft.getInstance().getFrameTime();
 
@@ -267,36 +281,36 @@ public final class RenderGun
         poseStack.pushPose();
         {
             //Get all the attachments that we may need to render
-            AttachmentType scopeAttachment = model.type.getScope(item);
-            AttachmentType barrelAttachment = model.type.getBarrel(item);
-            AttachmentType stockAttachment = model.type.getStock(item);
-            AttachmentType gripAttachment = model.type.getGrip(item);
+            AttachmentType scopeAttachment = model.type.getScope(stack);
+            AttachmentType barrelAttachment = model.type.getBarrel(stack);
+            AttachmentType stockAttachment = model.type.getStock(stack);
+            AttachmentType gripAttachment = model.type.getGrip(stack);
 
-            ItemStack scopeItemStack = model.type.getScopeItemStack(item);
-            ItemStack barrelItemStack = model.type.getBarrelItemStack(item);
-            ItemStack stockItemStack = model.type.getStockItemStack(item);
-            ItemStack gripItemStack = model.type.getGripItemStack(item);
+            ItemStack scopeItemStack = model.type.getScopeItemStack(stack);
+            ItemStack barrelItemStack = model.type.getBarrelItemStack(stack);
+            ItemStack stockItemStack = model.type.getStockItemStack(stack);
+            ItemStack gripItemStack = model.type.getGripItemStack(stack);
 
-            renderMuzzleFlash(model, animations, barrelAttachment, item, poseStack, buffer, packedOverlay, red, green, blue, alpha, scale);
-            model.render(model.gunModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
-            model.renderCustom(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations);
+            model.render(model.gunModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.backpackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.renderCustom(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations, glowingParts);
             if (scopeAttachment == null && !model.scopeIsOnSlide && !model.scopeIsOnBreakAction)
-                model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             if (barrelAttachment == null)
-                model.render(model.defaultBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.defaultBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             if (stockAttachment == null)
-                model.render(model.defaultStockModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.defaultStockModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             if (gripAttachment == null && !model.gripIsOnPump)
-                model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
 
             //Render various shoot / reload animated parts
             //Render the slide
             poseStack.pushPose();
             {
                 poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * smoothing) * model.gunSlideDistance, 0F, 0F);
-                model.render(model.slideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.slideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
                 if (scopeAttachment == null && model.scopeIsOnSlide)
-                    model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                    model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
 
@@ -306,9 +320,9 @@ public final class RenderGun
                 poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
                 poseStack.mulPose(Axis.ZP.rotationDegrees(model.reloadRotate * -model.breakAngle));
                 poseStack.translate(-model.barrelBreakPoint.x, -model.barrelBreakPoint.y, -model.barrelBreakPoint.z);
-                model.render(model.breakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.breakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
                 if (scopeAttachment == null && model.scopeIsOnBreakAction)
-                    model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                    model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
 
@@ -316,9 +330,9 @@ public final class RenderGun
             poseStack.pushPose();
             {
                 poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
-                model.render(model.pumpModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.pumpModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
                 if (gripAttachment == null && model.gripIsOnPump)
-                    model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                    model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
 
@@ -329,7 +343,7 @@ public final class RenderGun
                 poseStack.translate(model.minigunBarrelOrigin.x, model.minigunBarrelOrigin.y, model.minigunBarrelOrigin.z);
                 poseStack.mulPose(Axis.XP.rotationDegrees(animations.minigunBarrelRotation));
                 poseStack.translate(-model.minigunBarrelOrigin.x, -model.minigunBarrelOrigin.y, -model.minigunBarrelOrigin.z);
-                model.render(model.minigunBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.minigunBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
                 poseStack.popPose();
             }
 
@@ -341,7 +355,7 @@ public final class RenderGun
                 poseStack.translate(model.revolverFlipPoint.x, model.revolverFlipPoint.y, model.revolverFlipPoint.z);
                 poseStack.mulPose(Axis.XP.rotationDegrees(model.reloadRotate * model.revolverFlipAngle));
                 poseStack.translate(-model.revolverFlipPoint.x, -model.revolverFlipPoint.y, -model.revolverFlipPoint.z);
-                model.render(model.revolverBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                model.render(model.revolverBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
 
@@ -485,41 +499,39 @@ public final class RenderGun
                 }
 
                 if (shouldRender)
-                    model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+                    model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
         }
         poseStack.popPose();
     }
 
-    private static void renderMuzzleFlash(ModelGun model, GunAnimations animations, AttachmentType barrelAttachment, ItemStack item, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    private static void renderMuzzleFlash(ModelGun model, GunAnimations animations, ItemStack item, PoseStack poseStack, MultiBufferSource buffer, float scale)
     {
+        AttachmentType barrelAttachment = model.type.getBarrel(item);
         boolean isFlashEnabled = barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash();
         ModelFlash flash = ModelCache.getOrLoadFlashModel(model.type);
 
-        if (isFlashEnabled && animations.muzzleFlashTime > 0 && flash != null && !model.type.getSecondaryFire(item))
+        if (flash != null && isFlashEnabled /*&& animations.muzzleFlashTime > 0*/ && !model.type.getSecondaryFire(item))
         {
             poseStack.pushPose();
+            poseStack.scale(model.flashScale, model.flashScale, model.flashScale);
+            Vector3f base = Objects.requireNonNullElse(model.muzzleFlashPoint, Vector3f.Zero).scale(1F);
+
+            if (barrelAttachment != null)
             {
-                poseStack.scale(model.flashScale, model.flashScale, model.flashScale);
-                Vector3f base = model.muzzleFlashPoint == null ? Vector3f.Zero : model.muzzleFlashPoint;
-                if (barrelAttachment != null)
-                {
-                    //TODO: implement attachment model
-                    //Vector3f barrelOffset = (barrelAttachment.model != null && barrelAttachment.model.attachmentFlashOffset != null) ? barrelAttachment.model.attachmentFlashOffset : Vector3f.Zero;
-                    //poseStack.translate(base.x + barrelOffset.x, base.y + barrelOffset.y, base.z + barrelOffset.z);
-                }
-                else
-                {
-                    Vector3f defaultOffset = model.defaultBarrelFlashPoint == null ? Vector3f.Zero : model.defaultBarrelFlashPoint;
-
-                    poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
-                }
-
-                //TODO: fix issue with texture of gun
-                VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(model.type.getFlashTexture()));
-                flash.renderFlash(animations.flashInt, poseStack, vertexConsumer, LightTexture.FULL_BRIGHT, packedOverlay, red, green, blue, alpha, scale);
+                //TODO: implement attachment model
+                //Vector3f barrelOffset = (barrelAttachment.model != null && barrelAttachment.model.attachmentFlashOffset != null) ? barrelAttachment.model.attachmentFlashOffset : Vector3f.Zero;
+                //poseStack.translate(base.x + barrelOffset.x, base.y + barrelOffset.y, base.z + barrelOffset.z);
             }
+            else
+            {
+                Vector3f defaultOffset = Objects.requireNonNullElse(model.defaultBarrelFlashPoint, Vector3f.Zero);
+                poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
+            }
+
+            VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(model.type.getFlashTexture()));
+            flash.renderFlash(animations.flashInt, poseStack, vertexConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, scale);
             poseStack.popPose();
         }
     }

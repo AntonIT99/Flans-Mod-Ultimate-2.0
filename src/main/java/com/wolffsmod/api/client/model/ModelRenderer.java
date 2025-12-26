@@ -145,7 +145,8 @@ public class ModelRenderer
     @OnlyIn(Dist.CLIENT)
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
-        if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty())) return;
+        if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty()))
+            return;
 
         poseStack.pushPose();
         poseStack.translate(offsetX, offsetY, offsetZ);
@@ -179,11 +180,11 @@ public class ModelRenderer
         }
     }
 
-    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         for (ModelPart.Cube cube : cubeList)
         {
-            cube.compile(pPose, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha);
+            cube.compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
         }
     }
 

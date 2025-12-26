@@ -9,7 +9,6 @@ import com.flansmodultimate.util.LegacyTransformApplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -23,7 +22,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -90,12 +88,11 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
         if (model == null)
             return;
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(configType.getTexture()));
         int color = configType.getColour();
         float red = (color >> 16 & 255) / 255F;
         float green = (color >> 8 & 255) / 255F;
         float blue = (color & 255) / 255F;
-        LegacyTransformApplier.renderModel(model, configType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, 1F);
+        LegacyTransformApplier.renderModel(model, configType, configType.getTexture(), poseStack, buffer, packedLight, packedOverlay, red, green, blue, 1F);
     }
 
     @Override

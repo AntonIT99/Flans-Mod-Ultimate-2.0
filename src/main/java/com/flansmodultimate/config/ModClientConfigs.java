@@ -11,19 +11,29 @@ public class ModClientConfigs
 {
     public static final ForgeConfigSpec config;
 
+    public static final ForgeConfigSpec.BooleanValue showPackNameInItemDescriptions;
+    public static final ForgeConfigSpec.BooleanValue loadAllModelsInCache;
     public static final ForgeConfigSpec.EnumValue<EnumMouseButton> shootButton;
     public static final ForgeConfigSpec.EnumValue<EnumMouseButton> shootButtonOffhand;
     public static final ForgeConfigSpec.EnumValue<EnumMouseButton> aimButton;
     public static final ForgeConfigSpec.EnumValue<EnumAimType> aimType;
-    public static final ForgeConfigSpec.BooleanValue showPackNameInItemDescriptions;
 
     public static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
     static {
-        builder.push("Client General Settings");
+        builder.push("General Settings");
         showPackNameInItemDescriptions = builder
                 .comment("Show content pack names in item descriptions")
                 .define("showPackNameInItemDescriptions", true);
+        loadAllModelsInCache = builder
+                .comment("""
+                    If true, loads and caches ALL models up-front during resource reload.
+                    ⚠ Warning:
+                    Do NOT enable this if you use many content packs / large amounts of content.
+                    This can be very RAM-hungry and may significantly increase client reload times.
+                    Recommended: leave this OFF and let models load on-demand.
+                    """)
+                .define("loadAllModelsInCache", false);
         builder.pop();
 
         builder.push("Input Settings");

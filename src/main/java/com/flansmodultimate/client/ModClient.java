@@ -98,6 +98,7 @@ public class ModClient
     /** The delay between switching slots */
     @Getter @Setter
     private static float switchTime;
+    private static boolean isShooting;
 
     // Recoil variables
     /** Fancy Recoil System */
@@ -112,9 +113,11 @@ public class ModClient
     private static float antiRecoilPitch;
     private static float antiRecoilYaw;
     /** To update camera angles */
+    private static float targetPitchDelta;
+    private static float targetYawDelta;
     private static float pitchDelta;
-    private static float prevPitchDelta;
     private static float yawDelta;
+    private static float prevPitchDelta;
     private static float prevYawDelta;
 
     @Getter @Setter
@@ -296,9 +299,14 @@ public class ModClient
         if (player == null || level  == null)
             return;
 
+        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+
         updateFlashlights(mc, level);
         InstantBulletRenderer.updateAllTrails();
         updateTimers();
+
+        isShooting = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
+
         updateRecoil(player);
         updateGunAnimations();
         updateScopeState(mc, player);
@@ -491,6 +499,16 @@ public class ModClient
             applyFancyRecoil(player);
         else
             applyLegacyRecoil(player);
+
+        // now smooth the camera deltas toward the target
+        pitchDelta = smoothing(pitchDelta, targetPitchDelta);
+        yawDelta = smoothing(yawDelta, targetYawDelta);
+    }
+
+    private static float smoothing(float current, float target)
+    {
+        current = (Math.abs(current) < 0.0015F) ? 0.0f : current;
+        return current + (target - current) * 0.65F;
     }
 
     private static boolean isFancyRecoilEnabled(LocalPlayer player)
@@ -522,16 +540,17 @@ public class ModClient
             return;
         }
 
-        float newPitch = Mth.clamp(player.getXRot() + recoilToAdd, -90.0F, 90.0F);
-        pitchDelta = player.getXRot() - newPitch;
-        player.setXRot(newPitch);
+        float oldPitch = player.getXRot();
+        float newPitch = Mth.clamp(oldPitch + recoilToAdd, -90.0F, 90.0F);
+        targetPitchDelta = oldPitch - newPitch;
         player.setXRot(newPitch);
         player.xRotO = newPitch;
 
         if (newPitch > -90.0F && newPitch < 90.0F)
         {
-            yawDelta = playerRecoil.getHorizontal();
-            float newYaw = Mth.wrapDegrees(player.getYRot() + yawDelta);
+            targetYawDelta = playerRecoil.getHorizontal();
+            float oldYaw = player.getYRot();
+            float newYaw = oldYaw + playerRecoil.getHorizontal();
             player.setYRot(newYaw);
             player.yRotO = newYaw;
             player.yHeadRot = newYaw;
@@ -539,7 +558,7 @@ public class ModClient
         }
         else
         {
-            yawDelta = 0;
+            targetYawDelta = 0F;
         }
     }
 
@@ -548,25 +567,25 @@ public class ModClient
         dampenRecoilPitch(player);
 
         // Apply recoil (subtract)
-        float newPitch = Mth.clamp(player.getXRot() - playerRecoilPitch, -90.0F, 90.0F);
-        float newYaw = player.getYRot() - playerRecoilYaw;
+        float oldPitch = player.getXRot();
+        float oldYaw = player.getYRot();
+        float newPitch = Mth.clamp(oldPitch - playerRecoilPitch, -90.0F, 90.0F);
+        float newYaw = oldYaw - playerRecoilYaw;
 
         antiRecoilPitch += playerRecoilPitch;
         antiRecoilYaw += playerRecoilYaw;
 
-        boolean firingGun = isPlayerFiringGun(player);
-
         // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
         if (BooleanUtils.isNotTrue(ModCommonConfigs.realisticRecoil.get())
-            && ((!firingGun) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
+            && ((!isShooting) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
         {
             newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
         }
 
-        newYaw = Mth.wrapDegrees(newYaw + antiRecoilYaw * 0.2F);
+        newYaw = newYaw + antiRecoilYaw * 0.2F;
 
-        pitchDelta = player.getXRot() - newPitch;
-        yawDelta = player.getYRot() - newYaw;
+        targetPitchDelta = oldPitch - newPitch;
+        targetYawDelta = oldYaw - newYaw;
 
         player.setXRot(newPitch);
         player.xRotO = newPitch;
@@ -606,12 +625,6 @@ public class ModClient
         }
 
         playerRecoilPitch *= recoilControl;
-    }
-
-    private static boolean isPlayerFiringGun(LocalPlayer player)
-    {
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
-        return data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
     }
 
     private static void updateGunAnimations()
@@ -677,16 +690,19 @@ public class ModClient
     @OnlyIn(Dist.CLIENT)
     public static void updateCameraAngles(ViewportEvent.ComputeCameraAngles event)
     {
-        Player player = Minecraft.getInstance().player;
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
         if (player == null)
             return;
 
         float pt = (float) event.getPartialTick();
-        float rp = pitchDelta * (1.0F - pt);
-        float ry = yawDelta * (1.0F - pt);
+        boolean firstPerson = mc.options.getCameraType().isFirstPerson();
+        float rp = firstPerson ? pitchDelta * (1.0F - pt) : Mth.lerp(pt, prevPitchDelta, pitchDelta);
+        float ry = firstPerson ? yawDelta * (1.0F - pt) : Mth.lerp(pt, prevYawDelta, yawDelta);
+
         if (rp != 0.0F)
             event.setPitch(Mth.clamp(event.getPitch() + rp, -90F, 90F));
         if (ry != 0.0F)
-            event.setYaw(Mth.wrapDegrees(event.getYaw() + ry));
+            event.setYaw(event.getYaw() + ry);
     }
 }

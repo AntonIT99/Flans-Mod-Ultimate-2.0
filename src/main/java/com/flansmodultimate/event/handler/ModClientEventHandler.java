@@ -59,12 +59,15 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 
 import java.nio.file.Files;
+import java.util.Comparator;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ModClientEventHandler
 {
+    private static boolean isSoundEngineInitialized;
+
     /** Paintjob registrations */
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
@@ -207,14 +210,23 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onSoundEngineLoad(SoundEngineLoadEvent event)
     {
+        //Only start checking for missing sounds if the sound engine has been initialized once
+        if (!isSoundEngineInitialized)
+        {
+            isSoundEngineInitialized = true;
+            return;
+        }
+
         SoundManager soundManager = event.getEngine().soundManager;
 
-        for (Map.Entry<ResourceLocation, TypeFile> soundOrigin : FlansMod.getSoundsOrigins().entrySet())
-        {
-            if (soundManager.getSoundEvent(soundOrigin.getKey()) == null)
-            {
-                FlansMod.log.warn("Missing sound: {} from file {}", soundOrigin.getKey(), soundOrigin.getValue());
-            }
-        }
+        FlansMod.getSoundsOrigins().entrySet().stream()
+            .sorted(Comparator.<Map.Entry<ResourceLocation, TypeFile>, String>comparing(e -> e.getValue().getContentPack().getName(), Comparator.naturalOrder())
+                .thenComparing(e -> e.getValue().getType(), Comparator.naturalOrder())
+                .thenComparing(e -> e.getValue().getName(), Comparator.naturalOrder())
+            )
+            .forEach(e -> {
+                if (soundManager.getSoundEvent(e.getKey()) == null)
+                    FlansMod.log.warn("Missing sound {}: {}", e.getKey(), e.getValue());
+            });
     }
 }

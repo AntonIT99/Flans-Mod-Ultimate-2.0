@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.client.model.DefaultArmor;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.config.ModCommonConfigs;
@@ -8,6 +9,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,8 +139,10 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
         else
         {
-            String defense = ModCommonConfigs.enableOldArmorRatioSystem.get() ? IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
-            String bulletDefense = ModCommonConfigs.enableOldArmorRatioSystem.get() ? IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
+            String defense = BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()) ?
+                    IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
+            String bulletDefense = BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()) ?
+                    IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
 
             tooltipComponents.add(IFlanItem.statLine("Defense", defense));
             if (configType.getBulletDefence() != configType.getDefence())
@@ -176,7 +180,10 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             @NotNull
             public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> defaultModel)
             {
-                return (HumanoidModel<?>) ModelCache.getOrLoadTypeModel(configType);
+                if (ModelCache.getOrLoadTypeModel(configType) instanceof HumanoidModel<?> humanoidModel)
+                    return humanoidModel;
+                else
+                    return new DefaultArmor(configType.getArmorItemType());
             }
         });
     }
@@ -190,7 +197,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         {
             ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
 
-            if (ModCommonConfigs.enableOldArmorRatioSystem.get())
+            if (BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()))
             {
                 // Copy everything EXCEPT vanilla armor/toughness (disables vanilla mitigation for this piece)
                 for (var entry : vanilla.entries())

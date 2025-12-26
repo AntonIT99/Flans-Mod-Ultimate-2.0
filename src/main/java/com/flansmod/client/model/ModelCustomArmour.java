@@ -42,6 +42,19 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     @Getter @Setter
     private ResourceLocation texture;
 
+    @Setter
+    private boolean scaleHead = true;
+    @Setter
+    private float babyYHeadOffset = 16F;
+    @Setter
+    private float babyZHeadOffset;
+    @Setter
+    private float babyHeadScale = 2F;
+    @Setter
+    private float babyBodyScale = 2F;
+    @Setter
+    private float bodyYOffset = 24F;
+
     public ModelCustomArmour()
     {
         super(initRoot());
@@ -69,12 +82,12 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        boolean scaleHead = true;
-        float babyYHeadOffset = 16.0F;
-        float babyZHeadOffset = 0.0F;
-        float babyHeadScale = 2.0F;
-        float babyBodyScale = 2.0F;
-        float bodyYOffset = 24.0F;
+        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, false);
+        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, true);
+    }
+
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glowingParts)
+    {
         float modelScale = type != null ? type.getModelScale() : 1F;
 
         if (young)
@@ -86,35 +99,35 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
                 poseStack.scale(f, f, f);
             }
             poseStack.translate(0.0F, babyYHeadOffset * 0.0625F, babyZHeadOffset * 0.0625F);
-            renderHeadModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+            renderHeadModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
             poseStack.popPose();
 
             poseStack.pushPose();
             float f1 = 1.0F / babyBodyScale;
             poseStack.scale(f1, f1, f1);
             poseStack.translate(0.0F, bodyYOffset * 0.0625F, 0.0F);
-            renderBodyModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+            renderBodyModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
             poseStack.popPose();
         }
         else
         {
-            renderHeadModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
-            renderBodyModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
+            renderHeadModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
+            renderBodyModels(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
         }
     }
 
-    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale)
+    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, boolean glowingParts)
     {
-        render(headModel, head, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+        render(headModel, head, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
     }
 
-    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale)
+    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, boolean glowingParts)
     {
-        render(bodyModel, body, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
-        render(leftArmModel, leftArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
-        render(rightArmModel, rightArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
-        render(leftLegModel, leftLeg, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
-        render(rightLegModel, rightLeg, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+        render(bodyModel, body, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
+        render(leftArmModel, leftArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
+        render(rightArmModel, rightArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
+        render(leftLegModel, leftLeg, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
+        render(rightLegModel, rightLeg, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, glowingParts);
         for (ModelRendererTurbo mod : skirtFrontModel)
         {
             mod.rotationPointX = (leftLeg.x + rightLeg.x) / 2F / modelScale;
@@ -137,7 +150,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, boolean glowingParts)
     {
         setBodyPart(models, bodyPart, scale);
         for (ModelRendererTurbo mod : models)
@@ -145,7 +158,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotateAngleX = bodyPart.xRot;
             mod.rotateAngleY = bodyPart.yRot;
             mod.rotateAngleZ = bodyPart.zRot;
-            mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, glowingParts);
         }
     }
 

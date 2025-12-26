@@ -2075,7 +2075,7 @@ public class ModelRendererTurbo extends ModelRenderer
     /**
      * Renders the shape
      *
-     * @param scale     The scale of the shape. Default is 1.
+     * @param scale The scale of the shape. Default is 1.
      */
     @Override
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
@@ -2109,6 +2109,14 @@ public class ModelRendererTurbo extends ModelRenderer
         RenderSystem.disableBlend();
     }
 
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean renderGlowing)
+    {
+        if (renderGlowing == glow)
+        {
+            render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+        }
+    }
+
     @Deprecated
     @Override
     public void render(float worldScale)
@@ -2124,7 +2132,7 @@ public class ModelRendererTurbo extends ModelRenderer
 
     /**
      * Translate and rotate the shape
-     * @param scale     The scale of the shape. Default is 1.
+     * @param scale The scale of the shape. Default is 1.
      */
     @Override
     public void translateAndRotate(PoseStack poseStack, float scale)
@@ -2144,13 +2152,13 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     @Override
-    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         for (TextureGroup usedGroup : textureGroup.values())
         {
             for (TexturedPolygon poly : usedGroup.poly)
             {
-                poly.draw(pPose, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha);
+                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
             }
         }
     }

@@ -4,13 +4,12 @@ import com.flansmod.client.model.ModelCustomArmour;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.Model;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -45,18 +44,17 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         ItemStack itemStack = pLivingEntity.getItemBySlot(pSlot);
         Item item = itemStack.getItem();
 
-        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot)
+        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
         {
-            ModelCustomArmour modelCustomArmour = (ModelCustomArmour) ModelCache.getOrLoadTypeModel(armorItem.getConfigType());
             ResourceLocation texture = armorItem.getConfigType().getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
             renderModel(poseStack, pBuffer, packedLight, modelCustomArmour, texture);
         }
     }
 
-    private void renderModel(PoseStack poseStack, MultiBufferSource pBuffer, int packedLight, Model pModel, ResourceLocation armorTexture)
+    private void renderModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ModelCustomArmour model, ResourceLocation texture)
     {
-        VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityTranslucent(armorTexture));
-        pModel.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F, false);
+        model.renderToBuffer(poseStack, buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(texture)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F, true);
     }
 }

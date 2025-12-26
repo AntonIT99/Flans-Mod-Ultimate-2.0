@@ -6,11 +6,13 @@ import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfigs;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,15 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
 {
-    //TODO: make this configurable
-    public static boolean loadAllModelsInCache = false;
-
     private static final Map<String, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
 
     public static void reload()
     {
         cache.clear();
-        if (loadAllModelsInCache)
+        if (BooleanUtils.isTrue(ModClientConfigs.loadAllModelsInCache.get()))
             loadAll();
     }
 
@@ -91,20 +90,9 @@ public final class ModelCache
     }
 
     @Nullable
-    public static IModelBase getOrLoadTypeModel(String shortname)
+    public static IModelBase getOrLoadDeployableGunModel(GunType gunType)
     {
-        InfoType type = InfoType.getInfoType(shortname);
-        if (type != null)
-        {
-            return getOrLoadTypeModel(type);
-        }
-        return null;
-    }
-
-    @Nullable
-    public static IModelBase getOrLoadDeployableGunModel(String shortname)
-    {
-        if (InfoType.getInfoType(shortname) instanceof GunType gunType && gunType.isDeployable())
+        if (gunType.isDeployable())
         {
             return getOrLoadModel(gunType.getDeployableModelClassName(), gunType, null);
         }
