@@ -1,7 +1,5 @@
 package com.flansmod.client.model;
 
-import org.lwjgl.opengl.GL11;
-
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
@@ -558,7 +556,7 @@ public final class RenderGun
 
             if (!model.type.getSecondaryFire(stack))
             {
-                GL11.glTranslatef(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * Minecraft.getInstance().getFrameTime()) * model.altgunSlideDistance, 0F, 0F);
+                poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * Minecraft.getInstance().getFrameTime()) * model.altgunSlideDistance, 0F, 0F);
                 model.render(model.altslideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
             }
             poseStack.popPose();
