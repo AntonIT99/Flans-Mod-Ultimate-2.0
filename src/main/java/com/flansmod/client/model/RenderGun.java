@@ -556,10 +556,11 @@ public final class RenderGun
 
             if (!model.type.getSecondaryFire(stack))
             {
+                poseStack.pushPose();
                 poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * Minecraft.getInstance().getFrameTime()) * model.altgunSlideDistance, 0F, 0F);
                 model.render(model.altslideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                poseStack.popPose();
             }
-            poseStack.popPose();
         }
     }
 
@@ -717,7 +718,7 @@ public final class RenderGun
         boolean isFlashEnabled = barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash();
         ModelFlash flash = ModelCache.getOrLoadFlashModel(model.type);
 
-        if (flash != null && isFlashEnabled /*&& animations.muzzleFlashTime > 0*/ && !model.type.getSecondaryFire(item))
+        if (flash != null && isFlashEnabled && animations.muzzleFlashTime > 0 && !model.type.getSecondaryFire(item))
         {
             poseStack.pushPose();
             poseStack.scale(model.flashScale, model.flashScale, model.flashScale);
@@ -733,7 +734,6 @@ public final class RenderGun
             {
                 Vector3f defaultOffset = Objects.requireNonNullElse(model.defaultBarrelFlashPoint, Vector3f.Zero);
                 poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
-                //poseStack.translate((2.125F + 1.125F) / 16F, (1.25F + 0.5625F) / 16F, 0.03125F / 16F); //1.125F 0.5625F 0.03125F
             }
 
             VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(model.type.getFlashTexture()));
