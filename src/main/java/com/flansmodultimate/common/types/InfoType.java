@@ -97,6 +97,8 @@ public abstract class InfoType
     protected ResourceLocation texture;
     @Nullable @OnlyIn(Dist.CLIENT)
     protected ResourceLocation overlay;
+    @Getter
+    protected boolean additiveBlending;
 
     public String getShortName()
     {
@@ -143,6 +145,7 @@ public abstract class InfoType
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);
+        additiveBlending = readValue("UseAdditiveBlending", additiveBlending, file);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
@@ -489,4 +492,6 @@ public abstract class InfoType
     {
         return infoTypes.get(id);
     }
+
+    //TODO: implement addLoot() from 1.12.2 (and also override in PaintableType)
 }

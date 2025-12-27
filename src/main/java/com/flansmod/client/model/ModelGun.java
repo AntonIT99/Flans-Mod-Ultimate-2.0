@@ -16,6 +16,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 {
     protected static final Vector3f invalid = new Vector3f(0F, Float.MAX_VALUE, 0F);
 
+    @Getter
     protected GunType type;
 
     /** Static models with no animation */

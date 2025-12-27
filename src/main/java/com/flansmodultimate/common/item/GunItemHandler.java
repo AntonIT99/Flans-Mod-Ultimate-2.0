@@ -243,7 +243,7 @@ public class GunItemHandler
 
             if (StringUtils.isNotBlank(item.configType.getShootSound()))
             {
-                PacketPlaySound.sendSoundPacket(player.getEyePosition(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), silenced);
+                PacketPlaySound.sendSoundPacket(player.position(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), silenced);
                 item.soundDelay = item.configType.getShootSoundLength();
             }
 

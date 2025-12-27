@@ -1,14 +1,16 @@
 package com.flansmod.client.model;
 
+import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.RenderTypes;
+import com.flansmodultimate.client.render.EmissiveRenderType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -21,13 +23,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -39,24 +41,14 @@ public final class RenderGun
         GunAnimations animations = ModClient.getGunAnimations(ctx);
         model.reloadRotate = 0F;
 
-        if (stack.getItem() instanceof GunItem gunItem && shouldRenderGun(model, ctx, stack))
+        if (shouldRenderGun(model, ctx, stack))
         {
-            int color = gunItem.getConfigType().getColour();
+            int color = model.type.getColour();
             float red = (color >> 16 & 255) / 255F;
             float green = (color >> 8 & 255) / 255F;
             float blue = (color & 255) / 255F;
-            float modelScale = gunItem.getConfigType().getModelScale();
-            ResourceLocation gunTexture = gunItem.getPaintjob(stack).getTexture();
-
-            int numRounds = 0;
-            ItemStack[] bulletStacks = new ItemStack[gunItem.getConfigType().getNumAmmoItemsInGun(stack)];
-            //TODO: extract this to a method
-            for (int i = 0; i < gunItem.getConfigType().getNumAmmoItemsInGun(stack); i++)
-            {
-                bulletStacks[i] = gunItem.getBulletItemStack(stack, i);
-                if (bulletStacks[i] != null && bulletStacks[i].getItem() instanceof ShootableItem && bulletStacks[i].getDamageValue() < bulletStacks[i].getMaxDamage())
-                   numRounds += bulletStacks[i].getMaxDamage() - bulletStacks[i].getDamageValue();
-            }
+            float modelScale = model.type.getModelScale();
+            ResourceLocation gunTexture = model.type.getPaintjob(stack).getTexture();
 
             switch (ctx)
             {
@@ -79,17 +71,14 @@ public final class RenderGun
 
             poseStack.pushPose();
             poseStack.scale(modelScale, modelScale, modelScale);
-            renderMuzzleFlash(model, stack, animations, poseStack, buffer);
-            renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(RenderType.entityTranslucent(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, false);
-            renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(gunTexture)), LightTexture.FULL_BRIGHT, packedOverlay, red, green, blue, 1F, 1F, true);
-
-            /*
-            if (!model.type.getSecondaryFire(stack) && gripAttachment != null && !model.type.getSecondaryFire(stack))
-                renderAttachmentAmmo(f, gripAttachment, model, gripAttachment.getPaintjob(gripItemStack.getItemDamage()), type.getPaintjob(stack.getItemDamage()));
-            */
-            //Render casing ejection
-            //renderCasingEjection(type, animations, model, f, item);
+            renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+            renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(RenderType.entityTranslucent(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, false);
+            renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(gunTexture, model.getType().isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, 1F, true);
+            renderAttachmentAmmo(model, stack, poseStack, buffer, packedLight, packedOverlay);
+            renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
             poseStack.popPose();
+            renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+            renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
         }
         poseStack.popPose();
     }
@@ -295,10 +284,7 @@ public final class RenderGun
 
     }
 
-    /**
-     * Gun render method, seperated from transforms so that mecha renderer may also call this
-     */
-    public static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
         float smoothing = Minecraft.getInstance().getFrameTime();
 
@@ -336,7 +322,7 @@ public final class RenderGun
         if (gadgetAttachment == null && !model.gadgetIsOnPump)
             model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
 
-        renderBulletCounterModels(model, stack, animations, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        renderBulletCounterModels(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         renderSlideModels(model, stack, animations, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         renderBreakAction(model, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         renderHammer(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
@@ -346,6 +332,7 @@ public final class RenderGun
         renderMinigunBarrels(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         renderRevolverBarrel(model, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
 
+        //TODO: renderAmmo(model, type, gripAttachment, item, empty, animations, getReloadRotate(model, animations), rtype, f, gripItemStack);
         //Render the clip
         poseStack.pushPose();
         {
@@ -489,54 +476,81 @@ public final class RenderGun
                 model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
         poseStack.popPose();
-        //renderAmmo(model, type, gripAttachment, item, empty, animations, getReloadRotate(model, animations), rtype, f, gripItemStack);
 
         renderStaticAmmo(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
 
         poseStack.popPose();
     }
 
-    private static void renderBulletCounterModels(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderBulletCounterModels(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
+        if (!glowingParts || (!model.isBulletCounterActive && !model.isAdvBulletCounterActive))
+            return;
+
+        final int numRounds = countRoundsInGun(stack);
+
         if (model.isBulletCounterActive && numRounds < model.bulletCounterModel.length)
         {
             poseStack.pushPose();
-            model.bulletCounterModel[numRounds].glow = true;
-            model.bulletCounterModel[numRounds].render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            ModelRendererTurbo part = model.bulletCounterModel[numRounds];
+            part.glow = true;
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            part.glow = false;
             poseStack.popPose();
         }
-
-        //TODO: simpifly logic?
 
         if (model.isAdvBulletCounterActive)
         {
             poseStack.pushPose();
-            //Divide the ammo count into array of ints
-            char[] count = String.valueOf(numRounds).toCharArray();
-            int[] digits = new int[count.length];
 
-            for (int i = 0; i < count.length ; i++)
+            // Number of digit positions available in the model
+            final int places = model.advBulletCounterModel.length;
+
+            // Render each digit position
+            for (int i = 0; i < places; i++)
             {
-                if (!model.countOnRightHandSide)
-                    digits[i] = count[i] - 48;
-                else
-                    digits[digits.length - 1 - i] = count[i] - 48;
+                // Pick which decimal place this slot shows
+                // If countOnRightHandSide == false: i=0 is most-significant (left)
+                // If true: i=0 is least-significant (right)
+                final int placeIndex = model.countOnRightHandSide ? i : (places - 1 - i);
+
+                // Extract digit at 10^placeIndex
+                int digit = numRounds;
+                for (int k = 0; k < placeIndex; k++)
+                    digit /= 10;
+                digit %= 10;
+
+                ModelRendererTurbo part = model.advBulletCounterModel[i][digit];
+                part.glow = true;
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                part.glow = false;
             }
 
-            //Loop though the array, and manage ammo count render.
-            for (int i = 0; i < digits.length ; i++)
-            {
-                for (int j = 0; j < model.advBulletCounterModel[i].length; j++)
-                {
-                    if (digits[i] == j)
-                    {
-                        model.advBulletCounterModel[i][j].glow = true;
-                        model.advBulletCounterModel[i][j].render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-                    }
-                }
-            }
             poseStack.popPose();
         }
+    }
+
+    private static int countRoundsInGun(ItemStack gunStack)
+    {
+        final GunItem gunItem = (GunItem) gunStack.getItem();
+        final GunType type = gunItem.getConfigType();
+        final int slots = type.getNumAmmoItemsInGun(gunStack);
+        int rounds = 0;
+
+        for (int i = 0; i < slots; i++)
+        {
+            final ItemStack bullet = gunItem.getBulletItemStack(gunStack, i);
+            if (bullet == null || !(bullet.getItem() instanceof ShootableItem))
+                continue;
+
+            final int max = bullet.getMaxDamage();
+            final int damage = bullet.getDamageValue();
+
+            if (damage < max)
+                rounds += (max - damage);
+        }
+
+        return rounds;
     }
 
     private static void renderSlideModels(ModelGun model, ItemStack stack, GunAnimations animations, AttachmentType slideAttachment, AttachmentType scopeAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
@@ -712,23 +726,23 @@ public final class RenderGun
         return reloadRotate;
     }
 
-    private static void renderMuzzleFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer)
+    private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
     {
-        AttachmentType barrelAttachment = model.type.getBarrel(item);
-        boolean isFlashEnabled = barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash();
         ModelFlash flash = ModelCache.getOrLoadFlashModel(model.type);
+        AttachmentType barrelAttachment = model.type.getBarrel(item);
+        boolean isFlashEnabled = flash != null && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash());
 
-        if (flash != null && isFlashEnabled && animations.muzzleFlashTime > 0 && !model.type.getSecondaryFire(item))
+        if (isFlashEnabled && animations.muzzleFlashTime > 0 && !model.type.getSecondaryFire(item))
         {
             poseStack.pushPose();
             poseStack.scale(model.flashScale, model.flashScale, model.flashScale);
+
             Vector3f base = Objects.requireNonNullElse(model.muzzleFlashPoint, Vector3f.Zero);
 
-            if (barrelAttachment != null)
+            if (barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment barrelModel)
             {
-                //TODO: implement attachment model
-                //Vector3f barrelOffset = (barrelAttachment.model != null && barrelAttachment.model.attachmentFlashOffset != null) ? barrelAttachment.model.attachmentFlashOffset : Vector3f.Zero;
-                //poseStack.translate(base.x + barrelOffset.x, base.y + barrelOffset.y, base.z + barrelOffset.z);
+                Vector3f muzzleFlashPoint = barrelModel.getMuzzleFlashPoint(base, model.barrelAttachPoint);
+                poseStack.translate(muzzleFlashPoint.x, muzzleFlashPoint.y, muzzleFlashPoint.z);
             }
             else
             {
@@ -736,9 +750,177 @@ public final class RenderGun
                 poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
             }
 
-            VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(model.type.getFlashTexture()));
-            flash.renderFlash(animations.flashInt, poseStack, vertexConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, 1F);
+            ResourceLocation flashTexture = model.type.getFlashTexture();
+            flash.renderFlash(animations.flashInt, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(flashTexture, false)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
             poseStack.popPose();
+        }
+    }
+
+    private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        AttachmentType gripAttachment = model.type.getGrip(stack);
+        ItemStack gripItemStack = model.type.getGripItemStack(stack);
+
+        if (!model.type.getSecondaryFire(stack) && gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
+        {
+            int color = gripAttachment.getColour();
+            float red = (color >> 16 & 255) / 255F;
+            float green = (color >> 8 & 255) / 255F;
+            float blue = (color & 255) / 255F;
+            float modelScale = gripAttachment.getModelScale();
+            ResourceLocation ammoTexture = gripAttachment.getPaintjob(gripItemStack).getTexture();
+            gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(RenderType.entityTranslucent(ammoTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, false);
+            gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(ammoTexture, gripAttachment.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, modelScale, true);
+        }
+    }
+
+    private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        ModelCasing casing = ModelCache.getOrLoadCasingModel(model.type);
+        if (casing != null)
+        {
+            float casingProg = (animations.lastCasingStage + (animations.casingStage - animations.lastCasingStage) * Minecraft.getInstance().getFrameTime()) / model.casingAnimTime;
+            if (casingProg >= 1)
+                casingProg = 0;
+            float moveX = model.casingAnimDistance.x + (animations.casingRandom.x * model.casingAnimSpread.x);
+            float moveY = model.casingAnimDistance.y + (animations.casingRandom.y * model.casingAnimSpread.y);
+            float moveZ = model.casingAnimDistance.z + (animations.casingRandom.z * model.casingAnimSpread.z);
+            poseStack.pushPose();
+            poseStack.scale(model.caseScale, model.caseScale, model.caseScale);
+            poseStack.translate(model.casingAttachPoint.x + (casingProg * moveX), model.casingAttachPoint.y + (casingProg * moveY), model.casingAttachPoint.z + (casingProg * moveZ));
+            poseStack.mulPose(Axis.of(new org.joml.Vector3f(model.casingRotateVector.x, model.casingRotateVector.y, model.casingRotateVector.z)).rotationDegrees(casingProg * 180));
+            ResourceLocation casingTexture = model.type.getCasingTexture();
+            casing.renderCasing(poseStack, buffer.getBuffer(RenderType.entityTranslucent(casingTexture)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, false);
+            casing.renderCasing(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(casingTexture, false)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, true);
+            poseStack.popPose();
+        }
+    }
+
+    private static void renderMuzzleFlash(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
+    {
+        AttachmentType barrelAttachment = model.type.getBarrel(stack);
+        boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.type.getFlashModelClassName()) && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash());
+
+        //TODO: flag to enable / disable (by default only on for 1.12.2 packs)
+        if (isMuzzleFlashEnabled && animations.muzzleFlashTime > 0 && !model.type.getSecondaryFire(stack))
+        {
+            ModelMuzzleFlash muzzleFlash = ModelCache.getOrLoadMuzzleFlashModel(model.type);
+            if (muzzleFlash != null)
+            {
+
+                Vector3f mfPoint = Objects.requireNonNullElse(model.muzzleFlashPoint, Objects.requireNonNullElse(model.barrelAttachPoint, Vector3f.Zero));
+                if (mfPoint.equals(ModelGun.invalid))
+                    mfPoint = model.barrelAttachPoint;
+
+                if (barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment barrelModel)
+                {
+                    mfPoint = barrelModel.getMuzzleFlashPoint(mfPoint, model.barrelAttachPoint);
+                }
+                else if (model.defaultBarrelFlashPoint != null)
+                {
+                    mfPoint = Vector3f.add(model.muzzleFlashPoint, model.defaultBarrelFlashPoint, null);
+                }
+
+                poseStack.pushPose();
+                poseStack.translate(mfPoint.x * model.type.getModelScale(), mfPoint.y * model.type.getModelScale(), mfPoint.z * model.type.getModelScale());
+                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(muzzleFlash.getTexture(), true)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
+                poseStack.popPose();
+            }
+        }
+    }
+
+    private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        float smoothing = Minecraft.getInstance().getFrameTime();
+
+        ItemStack scopeItemStack = model.type.getScopeItemStack(item);
+        ItemStack barrelItemStack = model.type.getBarrelItemStack(item);
+        ItemStack stockItemStack = model.type.getStockItemStack(item);
+        ItemStack gripItemStack = model.type.getGripItemStack(item);
+        ItemStack gadgetItemStack = model.type.getGadgetItemStack(item);
+        ItemStack slideItemStack = model.type.getSlideItemStack(item);
+        ItemStack pumpItemStack = model.type.getPumpItemStack(item);
+        ItemStack accessoryItemStack = model.type.getAccessoryItemStack(item);
+
+        List<AttachmentType> attachments = model.type.getCurrentAttachments(item);
+        // Get all the attachments that we may need to render
+        for (AttachmentType attachment : attachments)
+        {
+            poseStack.pushPose();
+
+            switch(attachment.getEnumAttachmentType())
+            {
+                case SIGHTS:
+                    preRenderAttachment(attachment, model.scopeAttachPoint, poseStack);
+                    if (model.scopeIsOnBreakAction)
+                    {
+                        poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(getReloadRotate(model, animations) * -model.breakAngle));
+                        poseStack.translate(-model.barrelBreakPoint.x, -model.barrelBreakPoint.y, -model.barrelBreakPoint.z);
+                    }
+                    if (model.scopeIsOnSlide)
+                        poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * smoothing) * model.gunSlideDistance, 0F, 0F);
+                    renderAttachment(attachment, scopeItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case GRIP:
+                    preRenderAttachment(attachment, model.gripAttachPoint, poseStack);
+                    if (model.gripIsOnPump)
+                        poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
+                    renderAttachment(attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case BARREL:
+                    preRenderAttachment(attachment, model.barrelAttachPoint, poseStack);
+                    renderAttachment(attachment, barrelItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case STOCK:
+                    preRenderAttachment(attachment, model.stockAttachPoint, poseStack);
+                    renderAttachment(attachment, stockItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case SLIDE:
+                    preRenderAttachment(attachment, model.slideAttachPoint, poseStack);
+                    poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * smoothing) * model.gunSlideDistance, 0F, 0F);
+                    renderAttachment(attachment, slideItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case GADGET:
+                    preRenderAttachment(attachment, model.gadgetAttachPoint, poseStack);
+                    if (model.gadgetIsOnPump)
+                        poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
+                    renderAttachment(attachment, gadgetItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case ACCESSORY:
+                    preRenderAttachment(attachment, model.accessoryAttachPoint, poseStack);
+                    renderAttachment(attachment, accessoryItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                case PUMP:
+                    preRenderAttachment(attachment, model.pumpAttachPoint, poseStack);
+                    poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
+                    renderAttachment(attachment, pumpItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    break;
+                default:
+                    break;
+            }
+            poseStack.popPose();
+        }
+    }
+
+    private static void preRenderAttachment(AttachmentType attachment, Vector3f attachPoint, PoseStack poseStack)
+    {
+        float modelScale = attachment.getModelScale();
+        poseStack.translate(attachPoint.x * modelScale, attachPoint.y * modelScale, attachPoint.z * modelScale);
+        poseStack.scale(modelScale, modelScale, modelScale);
+    }
+
+    private static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        if (ModelCache.getOrLoadTypeModel(attachment) instanceof ModelAttachment modelAttachment)
+        {
+            int color = attachment.getColour();
+            float red = (color >> 16 & 255) / 255F;
+            float green = (color >> 8 & 255) / 255F;
+            float blue = (color & 255) / 255F;
+            ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
+            modelAttachment.renderAttachment(poseStack, buffer.getBuffer(RenderType.entityTranslucent(attachmentTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, false);
+            modelAttachment.renderAttachment(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(attachmentTexture, attachment.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, 1F, true);
         }
     }
 }

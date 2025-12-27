@@ -61,14 +61,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 {
     public static final int RENDER_DISTANCE = 128;
 
-    protected static final String NBT_ATTACKER = "attacker_uuid";
-    protected static final String NBT_SHOOTER = "shooter_uuid";
-    protected static final String NBT_FIREABLE_GUN = "fireable_gun";
-    protected static final String NBT_FIREABLE_GUN_TYPE_NAME = "info_type";
-    protected static final String NBT_FIREABLE_GUN_SPREAD = "spread";
-    protected static final String NBT_FIREABLE_GUN_SPEED = "speed";
-    protected static final String NBT_FIREABLE_GUN_DAMAGE = "damage";
-    protected static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
+    public static final String NBT_ATTACKER = "attacker_uuid";
+    public static final String NBT_SHOOTER = "shooter_uuid";
+    public static final String NBT_FIREABLE_GUN = "fireable_gun";
+    public static final String NBT_FIREABLE_GUN_TYPE_NAME = "info_type";
+    public static final String NBT_FIREABLE_GUN_SPREAD = "spread";
+    public static final String NBT_FIREABLE_GUN_SPEED = "speed";
+    public static final String NBT_FIREABLE_GUN_DAMAGE = "damage";
+    public static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
 
     protected BulletType configType;
     protected FiredShot firedShot;

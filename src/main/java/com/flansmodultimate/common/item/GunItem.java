@@ -65,12 +65,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 {
     public static final int LOCK_ON_SOUND_RANGE = 10;
 
-    protected static final String NBT_AMMO = "ammo";
-    protected static final String NBT_SECONDARY_AMMO = "secondary_ammo";
-    protected static final String NBT_PREFERRED_AMMO = "preferred_ammo";
-    protected static final String NBT_PAINT = "paint";
-    protected static final String NBT_LEGENDARY_CRAFTER = "legendary_crafter";
-    protected static final String NBT_ENTITY_LOCK_ON = "lock_on";
+    public static final String NBT_AMMO = "ammo";
+    public static final String NBT_SECONDARY_AMMO = "secondary_ammo";
+    public static final String NBT_PREFERRED_AMMO = "preferred_ammo";
+    public static final String NBT_LEGENDARY_CRAFTER = "legendary_crafter";
+    public static final String NBT_ENTITY_LOCK_ON = "lock_on";
+    public static final String NBT_ATTACHMENTS = "attachments";
+    public static final String NBT_GENERIC = "generic_";
+    public static final String NBT_BARREL = "barrel";
+    public static final String NBT_SCOPE = "scope";
+    public static final String NBT_STOCK = "stock";
+    public static final String NBT_GRIP = "grip";
+    public static final String NBT_GADGET = "gadget";
+    public static final String NBT_SLIDE = "slide";
+    public static final String NBT_PUMP = "pump";
+    public static final String NBT_ACCESSORY = "accessory";
+    public static final String NBT_SECONDARY_FIRE = "secondary_fire";
+    public static final String NBT_GUN_MODE = "gun_mode";
 
     @Getter
     protected final GunType configType;
@@ -506,34 +517,21 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     private void ensureGunTags(ItemStack stack)
     {
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = stack.getOrCreateTag();
 
-        // Create tag if missing or empty
-        if (tag == null || tag.isEmpty())
-        {
-            CompoundTag newTag = new CompoundTag();
-            newTag.putString(NBT_PAINT, configType.getDefaultPaintjob().getIconName());
-
-            ListTag ammoList = new ListTag();
-            for (int j = 0; j < configType.getNumAmmoItemsInGun(stack); j++)
-                ammoList.add(new CompoundTag());
-
-            newTag.put(NBT_AMMO, ammoList);
-            stack.setTag(newTag);
-            tag = newTag;
-        }
-
-        // Repair missing keys
-        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST) || !tag.contains(NBT_PAINT, Tag.TAG_STRING))
+        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
         {
             ListTag ammoList = new ListTag();
             for (int j = 0; j < configType.getNumAmmoItemsInGun(stack); j++)
                 ammoList.add(new CompoundTag());
 
             tag.put(NBT_AMMO, ammoList);
-            tag.putString(NBT_PAINT, configType.getDefaultPaintjob().getIconName());
-            configType.checkForTags(stack);
         }
+
+        if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
+            tag.putInt(NBT_PAINTJOB_ID, configType.getDefaultPaintjob().getId());
+
+        configType.checkForTags(stack);
     }
 
     /**

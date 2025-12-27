@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
 {
-    public ModelRendererTurbo mfModel[];
+    protected ModelRendererTurbo mfModel[];
 
     public ModelDefaultMuzzleFlash()
     {
@@ -22,8 +22,11 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
         mfModel[2] = new ModelRendererTurbo(this, 0, 8, 16, 16);
 
         mfModel[0].addBox(0f, -2f, -2f, 0, 4, 4);
+        mfModel[0].glow = true;
         mfModel[1].addBox(0f, 0f, -2f, 4, 0, 4);
+        mfModel[1].glow = true;
         mfModel[2].addBox(0f, -2f, 0f, 4, 4, 0);
+        mfModel[2].glow = true;
     }
 
     @Override
@@ -38,6 +41,6 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
     @Override
     public ResourceLocation getTexture()
     {
-        return FlansMod.muzzleFlashTexture;
+        return FlansMod.defaultMuzzleFlashTexture;
     }
 }

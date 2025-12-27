@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanTypeModel<ArmorType>
 {
-    @Setter
+    @Getter @Setter
     protected ArmorType type;
 
     protected ModelRendererTurbo[] headModel = new ModelRendererTurbo[0];

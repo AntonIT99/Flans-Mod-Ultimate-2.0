@@ -24,7 +24,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
 {
-    private static final Map<String, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
+    public record ModelCacheKey(String modelClassName, @Nullable String typeShortName)
+    {
+        public ModelCacheKey
+        {
+            typeShortName = StringUtils.isBlank(typeShortName) ? null : typeShortName;
+        }
+    }
+
+    private static final Map<ModelCacheKey, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
 
     public static void reload()
     {
@@ -40,7 +48,7 @@ public final class ModelCache
             if (StringUtils.isNotBlank(type.getModelClassName()))
             {
                 IModelBase model = InfoType.loadModel(type.getModelClassName(), type, type.getDefaultModel());
-                cache.put(type.getModelClassName(), Optional.ofNullable(model));
+                cache.put(new ModelCacheKey(type.getModelClassName(), type.getShortName()), Optional.ofNullable(model));
             }
 
             if (type instanceof GunType gunType)
@@ -48,35 +56,34 @@ public final class ModelCache
                 if (StringUtils.isNotBlank(gunType.getDeployableModelClassName()))
                 {
                     IModelBase deployableModel = InfoType.loadModel(gunType.getDeployableModelClassName(), type, null);
-                    cache.put(gunType.getDeployableModelClassName(), Optional.ofNullable(deployableModel));
+                    cache.put(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), Optional.ofNullable(deployableModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getCasingModelClassName()))
                 {
                     IModelBase casingModel = InfoType.loadModel(gunType.getCasingModelClassName(), type, null);
-                    cache.put(gunType.getCasingModelClassName(), Optional.ofNullable(casingModel));
+                    cache.put(new ModelCacheKey(gunType.getCasingModelClassName(), null), Optional.ofNullable(casingModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getFlashModelClassName()))
                 {
                     IModelBase flashModel = InfoType.loadModel(gunType.getFlashModelClassName(), type, null);
-                    cache.put(gunType.getFlashModelClassName(), Optional.ofNullable(flashModel));
+                    cache.put(new ModelCacheKey(gunType.getFlashModelClassName(), null), Optional.ofNullable(flashModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
                 {
                     IModelBase muzzleFlashModel = InfoType.loadModel(gunType.getMuzzleFlashModelClassName(), type, new ModelDefaultMuzzleFlash());
-                    cache.put(gunType.getMuzzleFlashModelClassName(), Optional.ofNullable(muzzleFlashModel));
+                    cache.put(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), Optional.ofNullable(muzzleFlashModel));
                 }
             }
         }
     }
 
     @Nullable
-    public static IModelBase getOrLoadModel(String className, InfoType type, @Nullable IModelBase defaultModel)
+    public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
     {
-        if (StringUtils.isNotBlank(className))
-        {
-            return cache.computeIfAbsent(className, key -> Optional.ofNullable(InfoType.loadModel(key, type, defaultModel))).orElse(null);
-        }
-        return null;
+        if (StringUtils.isBlank(modelCacheKey.modelClassName()) && defaultModel != null)
+            modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
+
+        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(InfoType.loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
     }
 
     @Nullable
@@ -84,7 +91,7 @@ public final class ModelCache
     {
         if (StringUtils.isNotBlank(type.getModelClassName()))
         {
-            return cache.computeIfAbsent(type.getModelClassName(), key -> Optional.ofNullable(InfoType.loadModel(key, type, type.getDefaultModel()))).orElse(null);
+            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(InfoType.loadModel(key.modelClassName(), type, type.getDefaultModel()))).orElse(null);
         }
         return null;
     }
@@ -94,7 +101,7 @@ public final class ModelCache
     {
         if (gunType.isDeployable())
         {
-            return getOrLoadModel(gunType.getDeployableModelClassName(), gunType, null);
+            return getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null);
         }
         return null;
     }
@@ -102,7 +109,7 @@ public final class ModelCache
     @Nullable
     public static ModelCasing getOrLoadCasingModel(GunType gunType)
     {
-        if (getOrLoadModel(gunType.getCasingModelClassName(), gunType, null) instanceof ModelCasing modelCasing)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getCasingModelClassName(), null), gunType, null) instanceof ModelCasing modelCasing)
         {
             return modelCasing;
         }
@@ -112,7 +119,7 @@ public final class ModelCache
     @Nullable
     public static ModelFlash getOrLoadFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(gunType.getFlashModelClassName(), gunType, null) instanceof ModelFlash modelFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null), gunType, null) instanceof ModelFlash modelFlash)
         {
             return modelFlash;
         }
@@ -122,7 +129,7 @@ public final class ModelCache
     @Nullable
     public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(gunType.getFlashModelClassName(), gunType, new ModelDefaultMuzzleFlash()) instanceof ModelMuzzleFlash modelMuzzleFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), gunType, new ModelDefaultMuzzleFlash()) instanceof ModelMuzzleFlash modelMuzzleFlash)
         {
             return modelMuzzleFlash;
         }

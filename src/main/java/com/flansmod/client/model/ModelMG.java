@@ -7,13 +7,14 @@ import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.ModelBase;
+import lombok.Getter;
 import lombok.Setter;
 
 import net.minecraft.util.Mth;
 
 public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 {
-    @Setter
+    @Getter @Setter
     protected GunType type;
 
     protected ModelRendererTurbo[] bipodModel;
@@ -27,27 +28,27 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         return GunType.class;
     }
 
-    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
         for(ModelRendererTurbo bipodPart : bipodModel)
         {
-            bipodPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            bipodPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
             return;
 
         for(ModelRendererTurbo ammoBoxPart : ammoBoxModel)
         {
-            ammoBoxPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            ammoBoxPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
     }
 
-    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
     {
         for (ModelRendererTurbo gunPart : gunModel)
         {
             gunPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
-            gunPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            gunPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
 
         if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
@@ -56,7 +57,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         for (ModelRendererTurbo ammoPart : ammoModel)
         {
             ammoPart.rotateAngleX = -(mg.xRotO + (mg.getXRot() - mg.xRotO) * partialTick) / 180F * Mth.PI;
-            ammoPart.render(poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            ammoPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
         }
     }
 

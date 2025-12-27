@@ -37,7 +37,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
-    protected static final String NBT_TYPE_NAME = "type";
+    public static final String NBT_TYPE_NAME = "type";
 
     protected static final EntityDataAccessor<String> SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);

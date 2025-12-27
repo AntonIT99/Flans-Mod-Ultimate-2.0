@@ -25,8 +25,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 public class AttachmentType extends PaintableType implements IScope
 {
     /** The type of attachment. Each gun can have one barrel, one scope, one grip, one stock and some number of generics up to a limit set by the gun */
-    protected EnumAttachmentType attachmentType = EnumAttachmentType.GENERIC;
-    protected String attachmentTypeString = StringUtils.EMPTY;
+    @Getter
+    protected EnumAttachmentType enumAttachmentType = EnumAttachmentType.GENERIC;
 
     //Attachment Function add-ons
     /** This variable controls whether or not bullet sounds should be muffled */
@@ -127,7 +127,7 @@ public class AttachmentType extends PaintableType implements IScope
     {
         super.read(file);
 
-        attachmentTypeString = readValue("AttachmentType", attachmentTypeString, file);
+        enumAttachmentType = EnumAttachmentType.get(readValue("AttachmentType", StringUtils.EMPTY, file));
 
         silencer = readValue("Silencer", silencer, file);
         disableMuzzleFlash = readValue("DisableMuzzleFlash", disableMuzzleFlash, file);
@@ -187,8 +187,6 @@ public class AttachmentType extends PaintableType implements IScope
         overlayName = readResource("ZoomOverlay", overlayName, file);
 
         hasNightVision = readValue("HasNightVision", hasNightVision, file);
-
-        attachmentType = EnumAttachmentType.get(attachmentTypeString);
 
         if (modeOverrideString != null)
             modeOverride = EnumFireMode.getFireMode(modeOverrideString);

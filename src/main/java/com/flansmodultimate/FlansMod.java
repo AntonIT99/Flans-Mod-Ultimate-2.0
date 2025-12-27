@@ -77,7 +77,7 @@ public class FlansMod
 
     // Resource Locations
     public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
-    public static final ResourceLocation muzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/muzzleflash.png");
+    public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
 
     // Registries

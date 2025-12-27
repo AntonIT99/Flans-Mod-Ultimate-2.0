@@ -16,7 +16,7 @@ public enum EnumAttachmentType
     {
         for (EnumAttachmentType type : values())
         {
-            if (type.toString().equals(s))
+            if (type.toString().equalsIgnoreCase(s))
                 return type;
         }
         return GENERIC;

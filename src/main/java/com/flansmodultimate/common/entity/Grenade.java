@@ -63,9 +63,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 {
     public static final int RENDER_DISTANCE = 64;
 
-    protected static final String NBT_THROWER = "thrower_uuid";
-    protected static final String NBT_PITCH = "rotation_pitch";
-    protected static final String NBT_YAW = "rotation_yaw";
+    public static final String NBT_THROWER = "thrower_uuid";
+    public static final String NBT_PITCH = "rotation_pitch";
+    public static final String NBT_YAW = "rotation_yaw";
 
     protected GrenadeType configType;
     /** The entity that threw them */

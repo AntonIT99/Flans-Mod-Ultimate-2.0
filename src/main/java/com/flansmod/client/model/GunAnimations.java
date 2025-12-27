@@ -57,8 +57,6 @@ public class GunAnimations
     public float minigunBarrelRotation;
     public float minigunBarrelRotationSpeed;
 
-    //TODO: remove redundant variables
-    public int muzzleFlash;
     public int muzzleFlashTime;
     public int flashInt;
 
@@ -205,8 +203,6 @@ public class GunAnimations
 
         if (muzzleFlashTime > 0)
             muzzleFlashTime--;
-        if (muzzleFlash > 0)
-            muzzleFlash--;
 
         if(pumping)
         {
@@ -340,7 +336,6 @@ public class GunAnimations
         timeUntilCasing = casingDelay;
         hammerRotation = hammerAngle;
         althammerRotation = althammerAngle;
-        muzzleFlash = 2;
         muzzleFlashTime = 2;
         stanceTimer = 20;
 

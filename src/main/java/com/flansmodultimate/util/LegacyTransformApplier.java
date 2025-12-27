@@ -3,7 +3,7 @@ package com.flansmodultimate.util;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.client.render.RenderTypes;
+import com.flansmodultimate.client.render.EmissiveRenderType;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -42,7 +42,7 @@ public final class LegacyTransformApplier
             else
             {
                 renderModelLayer(model, poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, packedOverlay, red, green, blue, alpha, false);
-                renderModelLayer(model, poseStack, buffer.getBuffer(RenderTypes.emissiveGlowAdditiveDepthWrite(texture)), packedLight, packedOverlay, red, green, blue, alpha, true);
+                renderModelLayer(model, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(texture, infoType.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, alpha, true);
             }
         }
         finally

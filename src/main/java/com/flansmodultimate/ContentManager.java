@@ -936,10 +936,6 @@ public class ContentManager
         if (!Files.exists(sourcePath))
             return;
 
-        if (Files.exists(destPath))
-        {
-            FileUtils.deleteRecursively(destPath);
-        }
         try
         {
             Files.createDirectories(destPath);

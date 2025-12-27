@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.paintjob;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
 import lombok.Getter;
@@ -45,8 +44,7 @@ public class Paintjob
     @Getter @Setter
     private boolean addToTables;
 
-
-    public Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
+    private Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {
         this.type = type;
         this.id = id;
@@ -65,12 +63,7 @@ public class Paintjob
 
     public boolean isLegendary()
     {
-        for (Supplier<ItemStack> stack : dyesNeeded)
-        {
-            if (stack.get().getItem() == FlansMod.rainbowPaintcan.get())
-                return true;
-        }
-        return false;
+        return !type.getNonLegendaryPaintjobs().containsKey(id);
     }
 
     @Override

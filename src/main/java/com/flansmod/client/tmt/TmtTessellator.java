@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+@Deprecated
 @OnlyIn(Dist.CLIENT)
 public class TmtTessellator extends Tessellator
 {

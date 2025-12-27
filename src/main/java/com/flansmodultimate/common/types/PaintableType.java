@@ -1,14 +1,13 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.item.ItemStack;
@@ -25,10 +24,14 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PaintableType extends InfoType
 {
+    public static final String RAINBOW_DYE = "rainbow";
+
     //Paintjobs
     /** The list of all available paintjobs for this gun */
     @Getter
     protected Map<Integer, Paintjob> paintjobs = new HashMap<>();
+    @Getter
+    protected Map<Integer, Paintjob> nonLegendaryPaintjobs = new HashMap<>();
     /** The default paintjob for this gun. This is created automatically in the load process from existing info */
     @Getter
     protected Paintjob defaultPaintjob;
@@ -37,11 +40,6 @@ public abstract class PaintableType extends InfoType
     /** Assigns IDs to paintjobs */
     private int nextPaintjobId = 0;
 
-    public Paintjob getPaintjob(int id)
-    {
-        return paintjobs.getOrDefault(id, defaultPaintjob);
-    }
-
     @Override
     protected void read(TypeFile file)
     {
@@ -49,22 +47,38 @@ public abstract class PaintableType extends InfoType
 
         readValuesInLines("Paintjob", file, 2).ifPresent(lines -> lines.forEach(split -> {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 2) / 2);
+            boolean isLegendary = false;
             for (int i = 0; i < (split.length - 2) / 2; i++)
             {
-                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 2], split[i * 2 + 3], "Paintjob", split, file));
+                String dyeName = split[i * 2 + 2];
+                String dyeStackSize = split[i * 2 + 3];
+                if (dyeName.equalsIgnoreCase(RAINBOW_DYE))
+                    isLegendary = true;
+                dyeStacks.add(dyeNameToItemStack(dyeName, dyeStackSize, "Paintjob", split, file));
             }
             nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]), dyeStacks));
+            Paintjob paintjob = new Paintjob(this, nextPaintjobId, StringUtils.EMPTY, ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]), dyeStacks);
+            paintjobs.put(nextPaintjobId, paintjob);
+            if (!isLegendary)
+                nonLegendaryPaintjobs.put(nextPaintjobId, paintjob);
         }));
 
         readValuesInLines("AdvPaintJob", file, 3).ifPresent(lines -> lines.forEach(split -> {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 3) / 2);
+            boolean isLegendary = false;
             for (int i = 0; i < (split.length - 3) / 2; i++)
             {
-                dyeStacks.add(dyeNameToItemStack(split[i * 2 + 3], split[i * 2 + 4], "AdvPaintJob", split, file));
+                String dyeName = split[i * 2 + 3];
+                String dyeStackSize = split[i * 2 + 4];
+                if (dyeName.equalsIgnoreCase(RAINBOW_DYE))
+                    isLegendary = true;
+                dyeStacks.add(dyeNameToItemStack(dyeName, dyeStackSize, "AdvPaintJob", split, file));
             }
             nextPaintjobId++;
-            paintjobs.put(nextPaintjobId, new Paintjob(this, nextPaintjobId, split[0], ResourceUtils.sanitize(split[1]), ResourceUtils.sanitize(split[2]), dyeStacks));
+            Paintjob paintjob = new Paintjob(this, nextPaintjobId, split[0], ResourceUtils.sanitize(split[1]), ResourceUtils.sanitize(split[2]), dyeStacks);
+            paintjobs.put(nextPaintjobId, paintjob);
+            if (!isLegendary)
+                nonLegendaryPaintjobs.put(nextPaintjobId, paintjob);
         }));
 
         readValues("AddPaintableToTables", file, 2).ifPresent(values -> {
@@ -84,40 +98,47 @@ public abstract class PaintableType extends InfoType
             }
         });
 
-        //TODO: fix this (is legendary can not be invoked at this point)
-        // Add all custom paintjobs to dungeon loot. Equal chance for each
-        //InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonlegendarypaintjobs.size() - 1));
-
-        // For servers, do not wait for resource initialization to create the default paintjob
-        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER)
-        {
-            defaultPaintjob = new Paintjob(this, 0, StringUtils.EMPTY, icon, textureName, texture, Collections.emptyList());
-            paintjobs.put(0, defaultPaintjob);
-        }
-    }
-
-    protected void readClient(TypeFile file)
-    {
-        super.readClient(file);
-        defaultPaintjob = new Paintjob(this, 0, StringUtils.EMPTY, icon, textureName, texture, Collections.emptyList());
+        defaultPaintjob = new Paintjob(this, 0, StringUtils.EMPTY, icon, textureName, Collections.emptyList());
         paintjobs.put(0, defaultPaintjob);
+        nonLegendaryPaintjobs.put(0, defaultPaintjob);
+
+        // Add all custom paintjobs to dungeon loot. Equal chance for each.
+        InfoType.setTotalDungeonChance(InfoType.getTotalDungeonChance() + dungeonChance * (nonLegendaryPaintjobs.size() - 1));
     }
 
     private static Supplier<ItemStack> dyeNameToItemStack(String dyeName, String stackSize, String key, String[] values, TypeFile file)
     {
-        if (dyeName.equalsIgnoreCase("rainbow"))
-            return () -> new ItemStack(FlansMod.rainbowPaintcan.get(), Integer.parseInt(stackSize));
-        else
+        try
         {
-            try
-            {
+            if (dyeName.equalsIgnoreCase(RAINBOW_DYE))
+                return () -> new ItemStack(FlansMod.rainbowPaintcan.get(), Integer.parseInt(stackSize));
+            else
                 return () -> LegacyDyeMapper.toDyeStack(dyeName, Integer.parseInt(stackSize));
-            }
-            catch (Exception e)
-            {
-                logError(String.format("%s in '%s %s'", e.getMessage(), key, String.join(StringUtils.SPACE, values)), file);
-            }
+        }
+        catch (Exception e)
+        {
+            logError(String.format("%s in '%s %s'", e.getMessage(), key, String.join(StringUtils.SPACE, values)), file);
         }
         return () -> ItemStack.EMPTY;
+    }
+
+    public Paintjob getPaintjob(int id)
+    {
+        return paintjobs.getOrDefault(id, defaultPaintjob);
+    }
+
+    public void applyPaintjobToStack(ItemStack stack, Paintjob paintjob)
+    {
+        stack.getOrCreateTag().putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId());
+    }
+
+    public int getPaintjobId(ItemStack stack)
+    {
+        return stack.getOrCreateTag().getInt(IPaintableItem.NBT_PAINTJOB_ID);
+    }
+
+    public Paintjob getPaintjob(ItemStack stack)
+    {
+        return getPaintjob(getPaintjobId(stack));
     }
 }

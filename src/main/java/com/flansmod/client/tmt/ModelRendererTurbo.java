@@ -1,6 +1,5 @@
 package com.flansmod.client.tmt;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -10,7 +9,6 @@ import com.wolffsmod.api.client.model.TexturedQuad;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -39,7 +37,7 @@ public class ModelRendererTurbo extends ModelRenderer
     public static final int MR_TOP = 4;
     public static final int MR_BOTTOM = 5;
 
-    public boolean glow = false;
+    public boolean glow;
     public boolean flip;
     public boolean forcedRecompile;
     public boolean useLegacyCompiler;
@@ -2080,17 +2078,8 @@ public class ModelRendererTurbo extends ModelRenderer
     @Override
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
-        if (!isVisible()) return;
-
-        if (glow)
-        {
-            packedLight = LightTexture.FULL_BRIGHT;
-        }
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableDepthTest();
+        if (!isVisible())
+            return;
 
         poseStack.pushPose();
         poseStack.translate(offsetX, offsetY, offsetZ);
@@ -2104,9 +2093,6 @@ public class ModelRendererTurbo extends ModelRenderer
 
         poseStack.translate(-offsetX, -offsetY, -offsetZ);
         poseStack.popPose();
-
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
     }
 
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean renderGlowing)
@@ -2158,7 +2144,7 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for (TexturedPolygon poly : usedGroup.poly)
             {
-                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow);
             }
         }
     }
