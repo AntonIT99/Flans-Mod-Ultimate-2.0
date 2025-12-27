@@ -799,10 +799,9 @@ public final class RenderGun
     private static void renderMuzzleFlash(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
     {
         AttachmentType barrelAttachment = model.type.getBarrel(stack);
-        //TODO: flag to enable / disable (by default only on for 1.12.2 packs)
         boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.type.getFlashModelClassName())
                 && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash())
-                && model.getClass().getName().contains("com.flansmod.modernweapons.client.model");
+                && (StringUtils.isNotBlank(model.type.getMuzzleFlashModelClassName()) || model.getClass().getName().contains("com.flansmod.modernweapons.client.model"));
 
         if (isMuzzleFlashEnabled && animations.muzzleFlashTime > 0 && !model.type.getSecondaryFire(stack))
         {
