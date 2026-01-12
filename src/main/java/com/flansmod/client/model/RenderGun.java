@@ -5,7 +5,8 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.EmissiveRenderType;
+import com.flansmodultimate.client.render.CustomRenderType;
+import com.flansmodultimate.client.render.ERenderPass;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -22,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -72,8 +72,8 @@ public final class RenderGun
             poseStack.pushPose();
             poseStack.scale(modelScale, modelScale, modelScale);
             renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
-            renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(RenderType.entityTranslucent(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, false);
-            renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(gunTexture, model.getType().isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, 1F, true);
+            for (ERenderPass renderPass : ERenderPass.ORDER)
+                renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
             renderAttachmentAmmo(model, stack, poseStack, buffer, packedLight, packedOverlay);
             renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
             poseStack.popPose();
@@ -284,7 +284,7 @@ public final class RenderGun
 
     }
 
-    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         float smoothing = Minecraft.getInstance().getFrameTime();
 
@@ -306,31 +306,31 @@ public final class RenderGun
         ItemStack stockItemStack = model.type.getStockItemStack(stack);
         ItemStack gripItemStack = model.type.getGripItemStack(stack);
 
-        model.render(model.gunModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        model.render(model.backpackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        model.renderCustom(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations, glowingParts);
+        model.render(model.gunModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        model.render(model.backpackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        model.renderCustom(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations, renderPass);
 
         // Render the guns default parts if no attachment is installed
         if (scopeAttachment == null && !model.scopeIsOnSlide && !model.scopeIsOnBreakAction)
-            model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (barrelAttachment == null)
-            model.render(model.defaultBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (stockAttachment == null)
-            model.render(model.defaultStockModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultStockModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (gripAttachment == null && !model.gripIsOnPump)
-            model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (gadgetAttachment == null && !model.gadgetIsOnPump)
-            model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        renderBulletCounterModels(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderSlideModels(model, stack, animations, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderBreakAction(model, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderHammer(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderPumpAction(model, animations, pumpAttachment, gripAttachment, gadgetAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderBoltAction(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderChargeHandle(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderMinigunBarrels(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
-        renderRevolverBarrel(model, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        renderBulletCounterModels(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSlideModels(model, stack, animations, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderBreakAction(model, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderHammer(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPumpAction(model, animations, pumpAttachment, gripAttachment, gadgetAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderBoltAction(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderChargeHandle(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderMinigunBarrels(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderRevolverBarrel(model, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         //TODO: renderAmmo(model, type, gripAttachment, item, empty, animations, getReloadRotate(model, animations), rtype, f, gripItemStack);
         //Render the clip
@@ -473,18 +473,18 @@ public final class RenderGun
             }
 
             if (shouldRender)
-                model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         poseStack.popPose();
 
-        renderStaticAmmo(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        renderStaticAmmo(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         poseStack.popPose();
     }
 
-    private static void renderBulletCounterModels(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderBulletCounterModels(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
-        if (!glowingParts || (!model.isBulletCounterActive && !model.isAdvBulletCounterActive))
+        if (renderPass != ERenderPass.GLOW_ALPHA || (!model.isBulletCounterActive && !model.isAdvBulletCounterActive))
             return;
 
         final int numRounds = countRoundsInGun(stack);
@@ -494,7 +494,7 @@ public final class RenderGun
             poseStack.pushPose();
             ModelRendererTurbo part = model.bulletCounterModel[numRounds];
             part.glow = true;
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             part.glow = false;
             poseStack.popPose();
         }
@@ -522,7 +522,7 @@ public final class RenderGun
 
                 ModelRendererTurbo part = model.advBulletCounterModel[i][digit];
                 part.glow = true;
-                part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
                 part.glow = false;
             }
 
@@ -553,7 +553,7 @@ public final class RenderGun
         return rounds;
     }
 
-    private static void renderSlideModels(ModelGun model, ItemStack stack, GunAnimations animations, AttachmentType slideAttachment, AttachmentType scopeAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderSlideModels(ModelGun model, ItemStack stack, GunAnimations animations, AttachmentType slideAttachment, AttachmentType scopeAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         if (slideAttachment == null)
         {
@@ -563,68 +563,68 @@ public final class RenderGun
                 poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * Minecraft.getInstance().getFrameTime()) * model.gunSlideDistance, 0F, 0F);
                 poseStack.translate(-(1 - Math.abs(animations.lastCharged + (animations.charged - animations.lastCharged) * Minecraft.getInstance().getFrameTime())) * model.chargeHandleDistance, 0F, 0F);
             }
-            model.render(model.slideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.slideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (scopeAttachment == null && model.scopeIsOnSlide)
-                model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
 
             if (!model.type.getSecondaryFire(stack))
             {
                 poseStack.pushPose();
                 poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * Minecraft.getInstance().getFrameTime()) * model.altgunSlideDistance, 0F, 0F);
-                model.render(model.altslideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                model.render(model.altslideModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
                 poseStack.popPose();
             }
         }
     }
 
-    private static void renderBreakAction(ModelGun model, AttachmentType scopeAttachment, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderBreakAction(ModelGun model, AttachmentType scopeAttachment, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
         poseStack.mulPose(Axis.ZP.rotationDegrees(reloadRotate * -model.breakAngle));
         poseStack.translate(-model.barrelBreakPoint.x, -model.barrelBreakPoint.y, -model.barrelBreakPoint.z);
-        model.render(model.breakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.breakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (scopeAttachment == null && model.scopeIsOnBreakAction)
-            model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.defaultScopeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
         poseStack.pushPose();
         poseStack.translate(model.altbarrelBreakPoint.x, model.altbarrelBreakPoint.y, model.altbarrelBreakPoint.z);
         poseStack.mulPose(Axis.ZP.rotationDegrees(reloadRotate * -model.altbreakAngle));
         poseStack.translate(-model.altbarrelBreakPoint.x, -model.altbarrelBreakPoint.y, -model.altbarrelBreakPoint.z);
-        model.render(model.altbreakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.altbreakActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
-    private static void renderHammer(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderHammer(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(model.hammerSpinPoint.x, model.hammerSpinPoint.y, model.hammerSpinPoint.z);
         poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.hammerRotation));
         poseStack.translate(-model.hammerSpinPoint.x, -model.hammerSpinPoint.y, -model.hammerSpinPoint.z);
-        model.render(model.hammerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.hammerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
         poseStack.pushPose();
         poseStack.translate(model.althammerSpinPoint.x, model.althammerSpinPoint.y, model.althammerSpinPoint.z);
         poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.althammerRotation));
         poseStack.translate(-model.althammerSpinPoint.x, -model.althammerSpinPoint.y, -model.althammerSpinPoint.z);
-        model.render(model.althammerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.althammerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
-    private static void renderPumpAction(ModelGun model, GunAnimations animations, AttachmentType pumpAttachment, AttachmentType gripAttachment, AttachmentType gadgetAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderPumpAction(ModelGun model, GunAnimations animations, AttachmentType pumpAttachment, AttachmentType gripAttachment, AttachmentType gadgetAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         if (pumpAttachment == null)
         {
             poseStack.pushPose();
             poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.pumpHandleDistance, 0F, 0F);
-            model.render(model.pumpModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.pumpModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (gripAttachment == null && model.gripIsOnPump)
-                model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (gadgetAttachment == null && model.gadgetIsOnPump)
-                model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+                model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (ModClient.getShotState() != -1 && -(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.pumpHandleDistance != -0.0F)
             {
                 ModClient.setShotState(-1);
@@ -636,14 +636,14 @@ public final class RenderGun
         }
     }
 
-    private static void renderBoltAction(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderBoltAction(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.boltCycleDistance, 0F, 0F);
         poseStack.translate(model.boltRotationOffset.x, model.boltRotationOffset.y, model.boltRotationOffset.z);
         poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.boltRotationAngle));
         poseStack.translate(-model.boltRotationOffset.x, -model.boltRotationOffset.y, -model.boltRotationOffset.z);
-        model.render(model.boltActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.boltActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
         if (ModClient.getShotState() != -1 && -(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.boltCycleDistance != -0.0)
@@ -655,18 +655,18 @@ public final class RenderGun
         }
     }
 
-    private static void renderChargeHandle(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderChargeHandle(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         if (model.chargeHandleDistance != 0F)
         {
             poseStack.pushPose();
             poseStack.translate(-(1 - Math.abs(animations.lastCharged + (animations.charged - animations.lastCharged) * Minecraft.getInstance().getFrameTime())) * model.chargeHandleDistance, 0F, 0F);
-            model.render(model.chargeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.chargeModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
     }
 
-    private static void renderMinigunBarrels(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderMinigunBarrels(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         if (model.type.getMode() == EnumFireMode.MINIGUN)
         {
@@ -675,34 +675,34 @@ public final class RenderGun
             Vector3f axis = new Vector3f(model.minigunBarrelSpinDirection.x, model.minigunBarrelSpinDirection.y, model.minigunBarrelSpinDirection.z).normalise(null);
             poseStack.mulPose(Axis.of(new org.joml.Vector3f(axis.x, axis.y, axis.z)).rotationDegrees(animations.minigunBarrelRotation * model.minigunBarrelSpinSpeed));
             poseStack.translate(-model.minigunBarrelOrigin.x, -model.minigunBarrelOrigin.y, -model.minigunBarrelOrigin.z);
-            model.render(model.minigunBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.minigunBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
     }
 
-    private static void renderRevolverBarrel(ModelGun model, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderRevolverBarrel(ModelGun model, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(model.revolverFlipPoint.x, model.revolverFlipPoint.y, model.revolverFlipPoint.z);
         poseStack.mulPose(Axis.XP.rotationDegrees(reloadRotate * model.revolverFlipAngle));
         poseStack.translate(-model.revolverFlipPoint.x, -model.revolverFlipPoint.y, -model.revolverFlipPoint.z);
-        model.render(model.revolverBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.revolverBarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
         poseStack.pushPose();
         poseStack.translate(model.revolverFlipPoint.x, model.revolverFlipPoint.y, model.revolverFlipPoint.z);
         poseStack.mulPose(Axis.XP.rotationDegrees(-reloadRotate * model.revolverFlipAngle));
         poseStack.translate(-model.revolverFlipPoint.x, -model.revolverFlipPoint.y, -model.revolverFlipPoint.z);
-        model.render(model.revolver2BarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+        model.render(model.revolver2BarrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
-    private static void renderStaticAmmo(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean glowingParts)
+    private static void renderStaticAmmo(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         if (model.type.getSecondaryFire(stack))
         {
             poseStack.pushPose();
-            model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, glowingParts);
+            model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
     }
@@ -751,7 +751,7 @@ public final class RenderGun
             }
 
             ResourceLocation flashTexture = model.type.getFlashTexture();
-            flash.renderFlash(animations.flashInt, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(flashTexture, false)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
+            flash.renderFlash(animations.flashInt, poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(flashTexture)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
             poseStack.popPose();
         }
     }
@@ -769,8 +769,8 @@ public final class RenderGun
             float blue = (color & 255) / 255F;
             float modelScale = gripAttachment.getModelScale();
             ResourceLocation ammoTexture = gripAttachment.getPaintjob(gripItemStack).getTexture();
-            gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(RenderType.entityTranslucent(ammoTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, false);
-            gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(ammoTexture, gripAttachment.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, modelScale, true);
+            for (ERenderPass renderPass : ERenderPass.ORDER)
+                gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
         }
     }
 
@@ -790,8 +790,8 @@ public final class RenderGun
             poseStack.translate(model.casingAttachPoint.x + (casingProg * moveX), model.casingAttachPoint.y + (casingProg * moveY), model.casingAttachPoint.z + (casingProg * moveZ));
             poseStack.mulPose(Axis.of(new org.joml.Vector3f(model.casingRotateVector.x, model.casingRotateVector.y, model.casingRotateVector.z)).rotationDegrees(casingProg * 180));
             ResourceLocation casingTexture = model.type.getCasingTexture();
-            casing.renderCasing(poseStack, buffer.getBuffer(RenderType.entityTranslucent(casingTexture)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, false);
-            casing.renderCasing(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(casingTexture, false)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, true);
+            for (ERenderPass renderPass : ERenderPass.ORDER)
+                casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
             poseStack.popPose();
         }
     }
@@ -824,7 +824,7 @@ public final class RenderGun
 
                 poseStack.pushPose();
                 poseStack.translate(mfPoint.x * model.type.getModelScale(), mfPoint.y * model.type.getModelScale(), mfPoint.z * model.type.getModelScale());
-                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(muzzleFlash.getTexture(), true)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
+                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(muzzleFlash.getTexture())), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
                 poseStack.popPose();
             }
         }
@@ -920,8 +920,8 @@ public final class RenderGun
             float green = (color >> 8 & 255) / 255F;
             float blue = (color & 255) / 255F;
             ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
-            modelAttachment.renderAttachment(poseStack, buffer.getBuffer(RenderType.entityTranslucent(attachmentTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, false);
-            modelAttachment.renderAttachment(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(attachmentTexture, attachment.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, 1F, 1F, true);
+            for (ERenderPass renderPass : ERenderPass.ORDER)
+                modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType((attachmentTexture))), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }
     }
 }

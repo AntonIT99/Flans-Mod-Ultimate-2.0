@@ -249,6 +249,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 }
             }
 
+            if (configType.getSecondaryFunction() == EnumSecondaryFunction.MELEE)
+                tooltipComponents.add(IFlanItem.statLine("Melee Damage", IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
+
             if (configType.isShowRecoil())
             {
                 tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
@@ -274,12 +277,16 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.isShowReloadTime())
                 tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + "s"));
 
-            float bulletSpeed = configType.getBulletSpeed(stack);
-            tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + "m/s") : "∞"));
+            if (configType.isShowBulletSpeed()) {
+                float bulletSpeed = configType.getBulletSpeed(stack);
+                tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + "m/s") : "∞"));
+            }
 
-            tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
+            if (configType.isShowShootDelay())
+                tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
 
-            tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
+            if (configType.isShowMode())
+                tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
 
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));

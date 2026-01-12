@@ -3,7 +3,7 @@ package com.flansmodultimate.util;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.client.render.EmissiveRenderType;
+import com.flansmodultimate.client.render.ERenderPass;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -41,8 +41,8 @@ public final class LegacyTransformApplier
             }
             else
             {
-                renderModelLayer(model, poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, packedOverlay, red, green, blue, alpha, false);
-                renderModelLayer(model, poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(texture, infoType.isAdditiveBlending())), packedLight, packedOverlay, red, green, blue, alpha, true);
+                for (ERenderPass renderPass : ERenderPass.ORDER)
+                    renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
             }
         }
         finally
@@ -51,7 +51,7 @@ public final class LegacyTransformApplier
         }
     }
 
-    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glowingParts)
+    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, ERenderPass renderPass)
     {
         float modelScale = model instanceof ModelBase modelBase ? modelBase.getScale() : 1F;
 
@@ -59,9 +59,9 @@ public final class LegacyTransformApplier
         {
             if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo)
             {
-                modelRendererTurbo.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, glowingParts);
+                modelRendererTurbo.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, renderPass);
             }
-            else if (!glowingParts)
+            else if (renderPass == ERenderPass.DEFAULT)
             {
                 modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
             }

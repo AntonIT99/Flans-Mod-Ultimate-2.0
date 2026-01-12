@@ -124,50 +124,57 @@ public final class ClassLoaderUtils
 
     public static Class<?> loadAndModifyClass(IContentProvider contentProvider, String fileClassName, String actualClassName) throws IOException, NoClassDefFoundError, ClassFormatError
     {
-        Class<?> loadedClass = classLoader.findClass(actualClassName);
-        if (loadedClass != null)
-            return loadedClass;
-
-        String relativeClassPath = fileClassName.replace('.', '/') + ".class";
-
-        byte[] classData;
-
-        if (contentProvider.isDirectory())
-        {
-            classData = Files.readAllBytes(contentProvider.getPath().resolve(relativeClassPath));
-        }
-        else if (contentProvider.isArchive())
-        {
-            classData = readFileBytesFromArchive(contentProvider.getPath(), relativeClassPath);
-        }
-        else
-        {
-            throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
-        }
-
-        byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
-
-        //In case there is a dependency to a super class which has not been loaded yet
-        ClassReader cr = new ClassReader(newClassData);
-        String superClassName = cr.getSuperName().replace('/', '.');
         try
         {
-            Class.forName(superClassName);
+            return Class.forName(actualClassName, true, Thread.currentThread().getContextClassLoader());
         }
-        catch (Exception ex)
+        catch (ClassNotFoundException | LinkageError ignored)
         {
+            Class<?> loadedClass = classLoader.findClass(actualClassName);
+            if (loadedClass != null)
+                return loadedClass;
+
+            String relativeClassPath = fileClassName.replace('.', '/') + ".class";
+
+            byte[] classData;
+
+            if (contentProvider.isDirectory())
+            {
+                classData = Files.readAllBytes(contentProvider.getPath().resolve(relativeClassPath));
+            }
+            else if (contentProvider.isArchive())
+            {
+                classData = readFileBytesFromArchive(contentProvider.getPath(), relativeClassPath);
+            }
+            else
+            {
+                throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
+            }
+
+            byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
+
+            //In case there is a dependency to a super class which has not been loaded yet
+            ClassReader cr = new ClassReader(newClassData);
+            String superClassName = cr.getSuperName().replace('/', '.');
             try
             {
-                loadAndModifyClass(contentProvider, superClassName, superClassName);
+                Class.forName(superClassName);
             }
-            catch (Exception | NoClassDefFoundError | ClassFormatError e)
+            catch (Exception ex)
             {
-                FlansMod.log.error("Could not load super class {} for {}", superClassName, fileClassName);
-                LogUtils.logWithoutStacktrace(e);
+                try
+                {
+                    loadAndModifyClass(contentProvider, superClassName, superClassName);
+                }
+                catch (Exception | NoClassDefFoundError | ClassFormatError e)
+                {
+                    FlansMod.log.error("Could not load super class {} for {}", superClassName, fileClassName);
+                    LogUtils.logWithoutStacktrace(e);
+                }
             }
-        }
 
-        return classLoader.defineClass(actualClassName, newClassData);
+            return classLoader.defineClass(actualClassName, newClassData);
+        }
     }
 
     private static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)

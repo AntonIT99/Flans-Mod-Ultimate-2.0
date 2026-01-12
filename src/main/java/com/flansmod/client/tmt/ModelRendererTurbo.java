@@ -1,5 +1,6 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.client.render.ERenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -38,6 +39,8 @@ public class ModelRendererTurbo extends ModelRenderer
     public static final int MR_BOTTOM = 5;
 
     public boolean glow;
+    public boolean glowAdditive;
+    public boolean glowNoDepthWrite;
     public boolean flip;
     public boolean forcedRecompile;
     public boolean useLegacyCompiler;
@@ -2095,9 +2098,12 @@ public class ModelRendererTurbo extends ModelRenderer
         poseStack.popPose();
     }
 
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, boolean renderGlowing)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
-        if (renderGlowing == glow)
+        if ((renderPass == ERenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
+            || (renderPass == ERenderPass.GLOW_ALPHA && glow)
+            || (renderPass == ERenderPass.GLOW_ADDITIVE && glowAdditive)
+            || (renderPass == ERenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
         {
             render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
@@ -2144,7 +2150,7 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for (TexturedPolygon poly : usedGroup.poly)
             {
-                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow);
+                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow || glowAdditive || glowNoDepthWrite);
             }
         }
     }

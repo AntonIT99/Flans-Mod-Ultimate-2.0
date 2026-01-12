@@ -97,8 +97,6 @@ public abstract class InfoType
     protected ResourceLocation texture;
     @Nullable @OnlyIn(Dist.CLIENT)
     protected ResourceLocation overlay;
-    @Getter
-    protected boolean additiveBlending;
 
     public String getShortName()
     {
@@ -145,7 +143,6 @@ public abstract class InfoType
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);
-        additiveBlending = readValue("UseAdditiveBlending", additiveBlending, file);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
@@ -368,7 +365,7 @@ public abstract class InfoType
     @OnlyIn(Dist.CLIENT)
     public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
-        if (StringUtils.isNotBlank(overlayName))
+        if (StringUtils.isNotBlank(overlayName) && !overlayName.equalsIgnoreCase("none"))
         {
             var refsMap = ContentManager.getGuiTextureReferences().get(type.getContentPack());
 

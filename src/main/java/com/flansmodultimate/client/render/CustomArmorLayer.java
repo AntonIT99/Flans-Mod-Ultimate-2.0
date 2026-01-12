@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -53,7 +52,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
 
     private void renderModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ModelCustomArmour model, ResourceLocation texture)
     {
-        model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F, false);
-        model.renderToBuffer(poseStack, buffer.getBuffer(EmissiveRenderType.entityTranslucentGlow(texture, model.getType().isAdditiveBlending())), packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F, true);
+        for (ERenderPass renderPass : ERenderPass.ORDER)
+            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, renderPass);
     }
 }

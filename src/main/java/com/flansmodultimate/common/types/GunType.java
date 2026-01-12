@@ -252,6 +252,12 @@ public class GunType extends PaintableType implements IScope
     protected boolean showSpread = true;
     @Getter
     protected boolean showReloadTime = true;
+    @Getter
+    protected boolean showShootDelay = true;
+    @Getter
+    protected boolean showBulletSpeed = true;
+    @Getter
+    protected boolean showMode = true;
     /**
      * Whether Gun makes players to be UseAnim.BOW
      */
@@ -727,6 +733,9 @@ public class GunType extends PaintableType implements IScope
         showRecoil = readValue("ShowRecoil", showRecoil, file);
         showSpread = readValue("ShowAccuracy", showSpread, file);
         showReloadTime = readValue("ShowReloadTime", showReloadTime, file);
+        showShootDelay = readValue("ShowShootDelay", showShootDelay, file);
+        showBulletSpeed = readValue("ShowBulletSpeed", showBulletSpeed, file);
+        showMode = readValue("ShowMode", showMode, file);
 
         //Sounds
         distortSound = readValue("DistortSound", distortSound, file);
