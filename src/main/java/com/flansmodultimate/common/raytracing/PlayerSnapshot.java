@@ -5,7 +5,6 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -41,7 +40,7 @@ public class PlayerSnapshot
     {
         player = p;
         time = p.level().getGameTime();
-        pos = ModUtils.isThePlayer(p) ? new Vector3f(p.getX(), p.getY() - 1.6F, p.getZ()) : new Vector3f(p.position());
+        pos = new Vector3f(p.position());
         vel = new Vector3f(p.getDeltaMovement());
 
         RotatedAxes bodyAxes = new RotatedAxes(p.yBodyRot, 0F, 0F);

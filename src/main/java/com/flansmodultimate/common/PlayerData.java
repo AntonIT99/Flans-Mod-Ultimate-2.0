@@ -9,7 +9,6 @@ import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
@@ -312,10 +311,7 @@ public class PlayerData
             Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
             Vector3f.add(nextPos, nextPosInPlayerCoords, nextPosInPlayerCoords);
 
-            if(!ModUtils.isThePlayer(player))
-                nextPosInPlayerCoords.y += 1.6F;
-
-            lastMeleePositions[k] = new Vector3f(player.getX() + nextPosInPlayerCoords.x, player.getY() + nextPosInPlayerCoords.y, player.getZ() + nextPosInPlayerCoords.z);
+            lastMeleePositions[k] = new Vector3f(player.getX() + nextPosInPlayerCoords.x, player.getEyeY() + nextPosInPlayerCoords.y, player.getZ() + nextPosInPlayerCoords.z);
         }
     }
 

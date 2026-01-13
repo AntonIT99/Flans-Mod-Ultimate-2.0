@@ -582,6 +582,9 @@ public class GunItemHandler
         Vector3f nextPosInWorldCoords = new Vector3f(segment.end);
         Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : Vector3f.sub(nextPosInWorldCoords, data.getLastMeleePositions()[pointIdx], null);
 
+        if (level.isClientSide)
+            DebugHelper.spawnDebugVector(level, data.getLastMeleePositions()[pointIdx], dPos, 200, 1F, 0F, 0F);
+
         List<BulletHit> hits = collectHits(level, player, data, segment, pointIdx, dPos);
 
         if (!hits.isEmpty())
@@ -607,12 +610,7 @@ public class GunItemHandler
 
         Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextPosInGunCoords);
 
-        if (!ModUtils.isThePlayer(player))
-        {
-            nextPosInPlayerCoords.y += 1.6F;
-        }
-
-        return new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getY() + nextPosInPlayerCoords.y), (float) (player.getZ() + nextPosInPlayerCoords.z));
+        return new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y), (float) (player.getZ() + nextPosInPlayerCoords.z));
     }
 
     private List<BulletHit> collectHits(Level level, Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Vector3f dPos)

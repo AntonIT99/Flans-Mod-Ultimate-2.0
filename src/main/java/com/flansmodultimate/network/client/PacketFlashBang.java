@@ -2,7 +2,6 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,10 +34,7 @@ public class PacketFlashBang implements IClientPacket
     @Override
     public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
-        if (ModUtils.isThePlayer(player))
-        {
-            ModClient.setInFlash(true);
-            ModClient.setFlashTime(time);
-        }
+        ModClient.setInFlash(true);
+        ModClient.setFlashTime(time);
     }
 }

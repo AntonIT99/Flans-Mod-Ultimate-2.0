@@ -3,7 +3,6 @@ General:
 - GunItemEntity
 - Deployables
 - Attachment Table & Attachments
-- Custom Melee
 
 Entities:
 - AAGun - TODO

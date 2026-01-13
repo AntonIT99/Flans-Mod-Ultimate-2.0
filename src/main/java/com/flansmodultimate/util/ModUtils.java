@@ -8,18 +8,14 @@ import com.flansmodultimate.common.types.InfoType;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -48,26 +44,6 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModUtils
 {
-    /**
-     * Returns true iff the given player is the local client player.
-     * Always false on a dedicated server.
-     * Safe for common code: only accesses Minecraft client classes when running on CLIENT.
-     */
-    public static boolean isThePlayer(@Nullable Player player)
-    {
-        if (player == null)
-            return false;
-
-        // Avoid classloading client-only classes on server
-        if (FMLEnvironment.dist == Dist.CLIENT)
-        {
-            Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            LocalPlayer local = mc.player;
-            return local != null && local.getUUID().equals(player.getUUID());
-        }
-        return false;
-    }
-
     public static boolean isVehicleLike(Entity entity)
     {
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))

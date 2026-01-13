@@ -284,8 +284,6 @@ public final class RenderGun
         if (i <= 0 || i >= gunType.getMeleePath().size())
             return;
 
-        System.out.println(i);
-
         float t = Mth.clamp(smoothing, 0.0f, 1.0f);
 
         Vector3f p0 = gunType.getMeleePath().get(i);
