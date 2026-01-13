@@ -4,11 +4,14 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.config.ModClientConfigs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,9 +26,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -201,18 +204,18 @@ public final class ClientEventHandler
         if (mc.player == null)
             return;
 
-        KeyMapping attack = mc.options.keyAttack;
-        if (event.getKeyMapping() != attack)
+        if (!(mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem))
             return;
 
-        ItemStack main = mc.player.getMainHandItem();
-        ItemStack off  = mc.player.getOffhandItem();
-        boolean holdingGun = (main.getItem() instanceof GunItem) || (off.getItem() instanceof GunItem);
-        if (!holdingGun)
-            return;
+        EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
+        EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();
 
-        event.setCanceled(true);
-        event.setSwingHand(false);
+        if ((event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw() && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
+            || (event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw() && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE))
+        {
+            event.setCanceled(true);
+            event.setSwingHand(false);
+        }
     }
 
     @SubscribeEvent

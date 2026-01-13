@@ -4,7 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumSecondaryFunction;
+import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.BulletItem;
@@ -206,11 +206,15 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected float knockback;
     /**
-     * The secondary function of this gun. By default, the left mouse button triggers this
+     * The primary function of this gun.
      */
     @Getter
-    protected EnumSecondaryFunction secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
-    protected EnumSecondaryFunction secondaryFunctionWhenShoot = null;
+    protected EnumFunction primaryFunction = EnumFunction.SHOOT;
+    /**
+     * The secondary function of this gun.
+     */
+    @Getter
+    protected EnumFunction secondaryFunction = EnumFunction.ADS_ZOOM;
     /**
      * If true, then this gun can be dual wielded
      */
@@ -574,6 +578,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Gives knockback resistance to the player
      */
+    @Getter
     protected float knockbackModifier;
     /**
      * Default spread of the gun. Do not modify.
@@ -796,7 +801,7 @@ public class GunType extends PaintableType implements IScope
         maxZoom = readValue("MaxZoom", maxZoom, file);
         zoomAugment = readValue("ZoomAugment", zoomAugment, file);
         if (maxZoom > 1F && hasVariableZoom)
-            secondaryFunction = EnumSecondaryFunction.ZOOM;
+            secondaryFunction = EnumFunction.ZOOM;
 
         //Models & Textures
         deployable = readValue("Deployable", deployable, file);
@@ -841,20 +846,23 @@ public class GunType extends PaintableType implements IScope
             shieldDimensions = new Vector3f(values[4] / 16F, values[5] / 16F, values[6] / 16F);
         });
 
+        //Primary Function
+        if (readValue("UseCustomMeleeWhenShoot", false, file) || (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty()))
+            primaryFunction = EnumFunction.CUSTOM_MELEE;
+        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
+            primaryFunction = EnumFunction.MELEE;
+        primaryFunction = EnumFunction.get(readValue("PrimaryFunction", primaryFunction.toString(), file));
+
         //Secondary Function
-        if (readValue("UseCustomMeleeWhenShoot", false, file))
-            secondaryFunctionWhenShoot = EnumSecondaryFunction.CUSTOM_MELEE;
-        if (file.hasConfigLine("ZoomLevel") && zoomFactor > 1F)
-            secondaryFunction = EnumSecondaryFunction.ZOOM;
-        if (file.hasConfigLine("FOVZoomLevel") && fovFactor > 1F)
-            secondaryFunction = EnumSecondaryFunction.ADS_ZOOM;
-        if (maxZoom > 1F && hasVariableZoom)
-            secondaryFunction = EnumSecondaryFunction.ZOOM;
-        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && StringUtils.isBlank(overlayName))
-            secondaryFunction = EnumSecondaryFunction.MELEE;
-        if (readFieldWithOptionalValue("UseCustomMelee", false, file))
-            secondaryFunction = EnumSecondaryFunction.CUSTOM_MELEE;
-        secondaryFunction = EnumSecondaryFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
+        if ((file.hasConfigLine("ZoomLevel") && zoomFactor > 1F) || (maxZoom > 1F && hasVariableZoom))
+            secondaryFunction = EnumFunction.ZOOM;
+        else if (file.hasConfigLine("FOVZoomLevel") && fovFactor > 1F)
+            secondaryFunction = EnumFunction.ADS_ZOOM;
+        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && primaryFunction != EnumFunction.MELEE && StringUtils.isBlank(overlayName))
+            secondaryFunction = EnumFunction.MELEE;
+        if (readFieldWithOptionalValue("UseCustomMelee", false, file) && primaryFunction != EnumFunction.CUSTOM_MELEE)
+            secondaryFunction = EnumFunction.CUSTOM_MELEE;
+        secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
 
         defaultSpread = bulletSpread;
         recoilYaw /= 10F;

@@ -1,5 +1,9 @@
 General:
-- Sounds: Interface for sound handling? Is it a good idea to always use playLocalSound with custom packets?
+- Check for conflicts with Flan's Mod Reloaded
+- GunItemEntity
+- Deployables
+- Attachment Table & Attachments
+- Custom Melee
 
 Entities:
 - AAGun - TODO
@@ -43,4 +47,10 @@ Other Classes:
 
 TODO Content Packs:
 - Fix AK-47 of MW
-- Understand Penetration
+- Add Idle Sound to Lightsabers
+- Understand Penetration?
+
+New Feature Ideas:
+- Sword blocking (GunItem)
+- Blade Activation/Deactivation with right click (GunItem)
+- Dynamic activation of Aiming Pose

@@ -1,6 +1,7 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -46,7 +47,6 @@ import java.util.function.Supplier;
 @Mod(FlansMod.MOD_ID)
 public class FlansMod
 {
-    //TODO: check for conflicts with Flan's Mod Reloaded
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
 
@@ -96,13 +96,22 @@ public class FlansMod
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
             .clientTrackingRange(Bullet.RENDER_DISTANCE)
             .updateInterval(20)
+            .setShouldReceiveVelocityUpdates(true)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
     public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () ->
         EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
             .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
             .clientTrackingRange(Grenade.RENDER_DISTANCE)
             .updateInterval(100)
+            .setShouldReceiveVelocityUpdates(true)
             .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString()));
+    public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () ->
+        EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
+            .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
+            .clientTrackingRange(DeployedGun.RENDER_DISTANCE)
+            .updateInterval(5)
+            .setShouldReceiveVelocityUpdates(true)
+            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString()));
 
     // Particles
     public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));

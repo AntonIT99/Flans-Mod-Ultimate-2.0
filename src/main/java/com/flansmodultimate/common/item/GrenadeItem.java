@@ -6,7 +6,7 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.LegacyTransformApplier;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -42,6 +42,8 @@ import java.util.function.Consumer;
 
 public class GrenadeItem extends ShootableItem implements ICustomRendererItem<GrenadeType>
 {
+    public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
+
     @Getter
     protected final GrenadeType configType;
 
@@ -116,15 +118,13 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
     {
-        Multimap<Attribute, AttributeModifier> modifiers = super.getAttributeModifiers(slot, stack);
+        if (slot != EquipmentSlot.MAINHAND)
+            return super.getAttributeModifiers(slot, stack);
 
-        if (slot == EquipmentSlot.MAINHAND)
-        {
-            modifiers = ArrayListMultimap.create(modifiers);
-            modifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", configType.getMeleeDamage(), AttributeModifier.Operation.ADDITION));
-        }
-
-        return modifiers;
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
+        b.putAll(super.getAttributeModifiers(slot, stack));
+        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(), AttributeModifier.Operation.ADDITION));
+        return b.build();
     }
 
     @Override

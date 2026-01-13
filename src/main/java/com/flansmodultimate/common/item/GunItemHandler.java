@@ -12,6 +12,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
@@ -20,7 +21,7 @@ import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumSecondaryFunction;
+import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -55,7 +56,9 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -64,6 +67,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -93,17 +98,17 @@ public class GunItemHandler
      * Used to determine if, for example, a player is holding a two-handed gun but the other hand (the one without a gun) is holding something else
      * For example a player is holding two miniguns, a gun requiring both hands, so this method returns true
      *
-     * @param player The player who is handling the gun
+     * @param entity The LivingEntity who is handling the gun
      * @return if the player can handle the gun based on the contents of the main and off hand and the GunType
      */
-    public boolean gunCanBeHandled(Player player)
+    public boolean gunCanBeHandled(LivingEntity entity)
     {
         // We can always use a 1H gun
         if (item.configType.isOneHanded())
             return true;
 
-        ItemStack main = player.getMainHandItem();
-        ItemStack off = player.getOffhandItem();
+        ItemStack main = entity.getMainHandItem();
+        ItemStack off = entity.getOffhandItem();
         boolean dualWield = !main.isEmpty() && !off.isEmpty();
 
         if (dualWield)
@@ -120,22 +125,37 @@ public class GunItemHandler
     @OnlyIn(Dist.CLIENT)
     public void handleScope(ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        if (dualWield)
-            return;
-        if (item.configType.getSecondaryFunction() != EnumSecondaryFunction.ADS_ZOOM && item.configType.getSecondaryFunction() != EnumSecondaryFunction.ZOOM)
+        if (dualWield || (!item.configType.getSecondaryFunction().isZoom() && !item.configType.getPrimaryFunction().isZoom()))
             return;
 
         IScope scope = null;
         EnumAimType aimType = ModClientConfigs.aimType.get();
-        if (aimType == EnumAimType.HOLD)
+
+        if (item.configType.getSecondaryFunction().isZoom())
         {
-            scope = GunInputState.isAimPressed() ? item.configType.getCurrentScope(gunStack) : null;
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = GunInputState.isAimPressed() ? item.configType.getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (GunInputState.isAimPressed() && !GunInputState.isPrevAimPressed())
+                    scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
+            }
         }
-        else if (aimType == EnumAimType.TOGGLE)
+        else if (item.configType.getPrimaryFunction().isZoom())
         {
-            scope = ModClient.getCurrentScope();
-            if (GunInputState.isAimPressed() && !GunInputState.isPrevAimPressed())
-                scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = GunInputState.isShootPressed(hand) ? item.configType.getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (GunInputState.isShootPressed(hand) && !GunInputState.isPrevShootPressed(hand))
+                    scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
+            }
         }
 
         ModClient.updateScope(scope, gunStack, item);
@@ -205,6 +225,29 @@ public class GunItemHandler
                 return false;
         }
         return true;
+    }
+
+    public void doMelee(Level level, LivingEntity entity, InteractionHand hand, EnumFunction function)
+    {
+        if (item.configType.isDeployable() || (entity instanceof Player && !item.configType.isUsableByPlayers()) || !gunCanBeHandled(entity))
+            return;
+
+        if (!level.isClientSide && StringUtils.isNotBlank(item.configType.getMeleeSound()))
+            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), item.configType.getMeleeSoundRange(), level.dimension(), item.configType.getMeleeSound(), true);
+
+        if (function == EnumFunction.CUSTOM_MELEE)
+        {
+            if (entity instanceof Player player)
+            {
+                PlayerData data = PlayerData.getInstance(player);
+                data.doMelee(player, item.configType.getMeleeTime(), item.configType);
+            }
+            if (level.isClientSide)
+            {
+                GunAnimations anim = ModClient.getGunAnimations(entity, InteractionHand.MAIN_HAND);
+                anim.doMelee(item.configType.getMeleeTime());
+            }
+        }
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
@@ -754,5 +797,77 @@ public class GunItemHandler
                 return Math.abs((hit.z - start.z) / d.z);
             return 0.0;
         }
+    }
+
+    public boolean tryPlaceDeployable(Level level, Player player, ItemStack stack)
+    {
+        double length = 5.0D;
+        Vec3 eyePos = player.getEyePosition(1.0F);
+        Vec3 lookDir = player.getLookAngle();
+        Vec3 end = eyePos.add(lookDir.scale(length));
+
+        BlockHitResult hit = level.clip(new ClipContext(eyePos, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+
+        if (hit.getType() == HitResult.Type.BLOCK && hit.getDirection() == Direction.UP)
+        {
+            BlockPos pos = hit.getBlockPos();
+
+            // if the hit block is snow layer, treat as the block below
+            BlockState stateAtHit = level.getBlockState(pos);
+            if (stateAtHit.is(Blocks.SNOW) || stateAtHit.getBlock() instanceof SnowLayerBlock)
+            {
+                pos = pos.below();
+            }
+
+            int playerDir = Mth.floor((player.getYRot() * 4.0F) / 360.0F + 0.5D) & 3;
+            Direction facing = dirFromPlayerDir(playerDir);
+
+            // placement positions:
+            BlockPos base = pos;
+            BlockPos mgPos = pos.above();
+            BlockPos forwardAbove = mgPos.relative(facing);
+
+            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(facing)))
+            {
+                // check if an MG already exists at that block position
+                boolean exists = !level.getEntitiesOfClass(DeployedGun.class, new AABB(mgPos)).isEmpty();
+
+                if (!exists)
+                {
+                    DeployedGun mg = new DeployedGun(level, mgPos, playerDir, item.configType);
+                    level.addFreshEntity(mg);
+
+                    if (!player.getAbilities().instabuild)
+                        stack.shrink(1);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static Direction dirFromPlayerDir(int playerDir)
+    {
+        return switch (playerDir)
+        {
+            case 0 -> Direction.NORTH;
+            case 1 -> Direction.EAST;
+            case 2 -> Direction.SOUTH;
+            default -> Direction.WEST;
+        };
+    }
+
+    private static boolean isReplaceableOrAir(Level level, BlockPos pos)
+    {
+        BlockState st = level.getBlockState(pos);
+        return st.isAir() || st.is(Blocks.SNOW) || st.canBeReplaced();
+    }
+
+    private static boolean isSolidTop(Level level, BlockPos pos)
+    {
+        BlockState st = level.getBlockState(pos);
+        return st.isSolidRender(level, pos) && st.canOcclude();
     }
 }

@@ -38,13 +38,13 @@ public class ModClientConfigs
 
         builder.push("Input Settings");
         shootButton = builder
-                .comment("Primary shooting button")
+                .comment("Main Hand Gun shooting / primary function button")
                 .defineEnum("shootButton", EnumMouseButton.MOUSE_LEFT);
         shootButtonOffhand = builder
-                .comment("Offhand shooting button")
+                .comment("Offhand Gun shooting / primary function button")
                 .defineEnum("shootButtonOffhand", EnumMouseButton.MOUSE_RIGHT);
         aimButton = builder
-                .comment("Aiming button")
+                .comment("Aiming / secondary function button")
                 .defineEnum("aimButton", EnumMouseButton.MOUSE_RIGHT);
         aimType = builder
                 .comment("Aim behavior")

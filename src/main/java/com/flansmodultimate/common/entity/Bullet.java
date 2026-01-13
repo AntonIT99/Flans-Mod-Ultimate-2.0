@@ -605,7 +605,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected void performRaytraceAndApplyHits(Level level)
     {
         Vec3 origin = position();
-        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir > 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
+        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
 
         if (hits.isEmpty())
             return;

@@ -32,7 +32,6 @@ public final class GunInputState
         if (mc.player == null || mc.isPaused() || mc.screen != null)
             return;
 
-        // Read config every tick (fine) or cache & refresh on config reload if you prefer
         EnumMouseButton shootBtn = ModClientConfigs.shootButton.get();
         EnumMouseButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
         EnumMouseButton aimBtn = ModClientConfigs.aimButton.get();

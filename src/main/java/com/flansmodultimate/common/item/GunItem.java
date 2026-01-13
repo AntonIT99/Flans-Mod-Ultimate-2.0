@@ -10,7 +10,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
-import com.flansmodultimate.common.guns.EnumSecondaryFunction;
+import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.BulletType;
@@ -20,8 +20,10 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketShootInput;
+import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.util.ModUtils;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +50,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -82,6 +88,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_ACCESSORY = "accessory";
     public static final String NBT_SECONDARY_FIRE = "secondary_fire";
     public static final String NBT_GUN_MODE = "gun_mode";
+    public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
+    public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
+    public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
 
     @Getter
     protected final GunType configType;
@@ -214,7 +223,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             // Stats
             if (configType.isShowDamage())
             {
-                tooltipComponents.add(IFlanItem.statLine("Damage", StringUtils.EMPTY));
+                tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
+                    .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+
                 for (ShootableType shootableType : configType.getAmmoTypes())
                 {
                     if (shootableType.useKineticDamageSystem())
@@ -249,7 +263,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 }
             }
 
-            if (configType.getSecondaryFunction() == EnumSecondaryFunction.MELEE)
+            if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
                 tooltipComponents.add(IFlanItem.statLine("Melee Damage", IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
 
             if (configType.isShowRecoil())
@@ -261,11 +275,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
                 String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
 
-                Component recoilControl = Component.literal("Recoil Control: ").withStyle(ChatFormatting.BLUE)
-                        .append(Component.literal(sprintingControl).withStyle(ChatFormatting.RED))
-                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN));
-                tooltipComponents.add(recoilControl);
+                tooltipComponents.add(Component.literal("Recoil Control: ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.literal("  sprinting").withStyle(ChatFormatting.RED)
+                    .append(Component.literal(" crouching").withStyle(ChatFormatting.GREEN)));
+                tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
+                    .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
             }
 
             if (configType.isShowSpread())
@@ -300,14 +315,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     /**
-     * Called when the player left-clicks an entity with this item.
+     * Called when the player attacks an entity with this item.
      * Return true to cancel the hit (no damage), false to allow normal attack.
      */
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity target)
     {
-        // Stop damage when scoping etc.
-        return configType.getSecondaryFunction() != EnumSecondaryFunction.MELEE;
+        return configType.getPrimaryFunction() != EnumFunction.MELEE && configType.getSecondaryFunction() != EnumFunction.MELEE;
     }
 
     //TODO: implement custom entity
@@ -334,35 +348,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         // If your class extends ItemEntity, you can copy motion/owner as needed.
         return new EntityItemCustomRender(level, location.getX(), location.getY(), location.getZ(), stack);
     }*/
-
-    /**
-     * Called when this item is swung. Return true to cancel further swing logic/animation.
-     * Use client check for client-only animation/sounds.
-     */
-    @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
-    {
-        Level level = entity.level();
-
-        if (!level.isClientSide && StringUtils.isNotBlank(configType.getMeleeSound()))
-            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), configType.getMeleeSoundRange(), level.dimension(), configType.getMeleeSound(), true);
-
-        if (configType.getSecondaryFunction() == EnumSecondaryFunction.CUSTOM_MELEE)
-        {
-            if (level.isClientSide)
-            {
-                GunAnimations anim = ModClient.getGunAnimations(entity, InteractionHand.MAIN_HAND);
-                anim.doMelee(configType.getMeleeTime());
-            }
-            if (entity instanceof Player player)
-            {
-                PlayerData data = PlayerData.getInstance(player);
-                data.doMelee(player, configType.getMeleeTime(), configType);
-            }
-        }
-        // Keep vanilla hit if and only if we’re in MELEE mode; otherwise cancel to prevent damage
-        return configType.getSecondaryFunction() != EnumSecondaryFunction.MELEE;
-    }
 
     /**
      * Called when the player starts breaking a block with this item.
@@ -417,9 +402,29 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
-        //TODO: implement deployables
         ItemStack stack = player.getItemInHand(hand);
+
+        if (configType.isDeployable() && gunItemHandler.tryPlaceDeployable(level, player, stack))
+            return InteractionResultHolder.sidedSuccess(stack, false);
+
+        if (level.isClientSide && Minecraft.getInstance().player == player)
+            player.swing(hand, true);
+
         return InteractionResultHolder.pass(stack);
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
+    {
+        if (slot != EquipmentSlot.MAINHAND)
+            return super.getAttributeModifiers(slot, stack);
+
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
+        b.putAll(super.getAttributeModifiers(slot, stack));
+        b.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.ADDITION));
+        b.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADDITION));
+        return b.build();
     }
 
     /**
@@ -446,7 +451,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (level.isClientSide)
             onUpdateClient(level, player, data, stack, hand, dualWield);
         else
-            onUpdateServer(level, (ServerPlayer) player, data, stack, hand, dualWield);
+            onUpdateServer(level, (ServerPlayer) player, data, stack, hand);
 
         gunItemHandler.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
         gunItemHandler.checkForLockOn(level, player, data, hand);
@@ -473,44 +478,55 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         boolean shootKeyPressed = GunInputState.isShootPressed(hand);
         boolean prevShootKeyPressed = GunInputState.isPrevShootPressed(hand);
+        boolean secondaryFunctionKeyPressed = GunInputState.isAimPressed();
+        boolean prevSecondaryFunctionKeyPressed = GunInputState.isPrevAimPressed();
 
-        // Shooting input handling
         if (Minecraft.getInstance().screen != null)
         {
-            // Stop shooting when entering a GUI
-            if (prevShootKeyPressed)
-                PacketHandler.sendToServer(new PacketShootInput(false, true, hand));
+            // Stop actions when entering a GUI
+            if (prevShootKeyPressed || secondaryFunctionKeyPressed)
+                PacketHandler.sendToServer(new PacketGunInput(false, prevShootKeyPressed, false, hand));
         }
         else if (ModClient.getSwitchTime() <= 0)
         {
             // Don’t shoot certain entities under crosshair
-            if (gunItemHandler.shouldBlockFireAtCrosshair())
+            if (configType.getPrimaryFunction() == EnumFunction.SHOOT && gunItemHandler.shouldBlockFireAtCrosshair())
                 shootKeyPressed = false;
 
             data.setShootKeyPressed(hand, shootKeyPressed);
             data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
+            data.setSecondaryFunctionKeyPressed(secondaryFunctionKeyPressed);
 
-            if (shootKeyPressed != prevShootKeyPressed)
-                PacketHandler.sendToServer(new PacketShootInput(shootKeyPressed, prevShootKeyPressed, hand));
+            // send update to server when keys are pressed or released
+            if (shootKeyPressed != prevShootKeyPressed || secondaryFunctionKeyPressed != prevSecondaryFunctionKeyPressed)
+                PacketHandler.sendToServer(new PacketGunInput(shootKeyPressed, prevShootKeyPressed, secondaryFunctionKeyPressed, hand));
         }
     }
 
-    protected void onUpdateServer(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    protected void onUpdateServer(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
         ensureGunTags(gunStack);
 
-        EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
-        if (decision == EnumFireDecision.RELOAD)
-            gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
-        else if (decision == EnumFireDecision.SHOOT)
-            gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
-
-        // Stop shooting
-        if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
+        if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
         {
-            data.setShooting(hand, false);
-            PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
+            if (decision == EnumFireDecision.RELOAD)
+                gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
+            else if (decision == EnumFireDecision.SHOOT)
+                gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
+
+            // Stop shooting
+            if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
+            {
+                data.setShooting(hand, false);
+                PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+            }
         }
+        else if (configType.getPrimaryFunction().isMelee() && data.isShootKeyPressed(hand))
+            gunItemHandler.doMelee(level, player, hand, configType.getPrimaryFunction());
+
+        if (configType.getSecondaryFunction().isMelee() && data.isSecondaryFunctionKeyPressed())
+            gunItemHandler.doMelee(level, player, hand, configType.getSecondaryFunction());
 
         if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
         {

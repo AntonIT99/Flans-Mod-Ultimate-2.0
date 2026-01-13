@@ -39,6 +39,8 @@ public class PlayerData
     private boolean isPrevShootKeyPressedRight;
     private boolean isShootKeyPressedLeft;
     private boolean isPrevShootKeyPressedLeft;
+    @Getter @Setter
+    private boolean isSecondaryFunctionKeyPressed;
 
     /** Snapshots for bullet hit detection. Array size is set to number of snapshots required. When a new one is taken,
      * each snapshot is moved along one place and new one is added at the start, so that when the array fills up, the oldest one is lost */

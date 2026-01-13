@@ -25,6 +25,8 @@ public class ModCommonConfigs
     public static final ForgeConfigSpec.IntValue bonusRegenAmount;
     public static final ForgeConfigSpec.IntValue bonusRegenTickDelay;
     public static final ForgeConfigSpec.DoubleValue bonusRegenFoodLimit;
+    public static final ForgeConfigSpec.BooleanValue holdingGunsDisablesChests;
+    public static final ForgeConfigSpec.BooleanValue holdingGunsDisablesAll;
 
     // Damage Settings
     public static final ForgeConfigSpec.DoubleValue newDamageSystemReference;
@@ -87,6 +89,12 @@ public class ModCommonConfigs
         bonusRegenFoodLimit = builder
                 .comment("Amount of food required to activate this regen, vanilla is 18")
                 .defineInRange("bonusRegenFoodLimit", 18.0, 0.0, 20.0);
+        holdingGunsDisablesChests = builder
+                .comment("Stops right clicking from opening chests, furnaces, etc while holding a gun")
+                .define("holdingGunsDisablesChests", true);
+        holdingGunsDisablesAll = builder
+                .comment("Disable all block interactions while holding a gun")
+                .define("holdingGunsDisablesAll", false);
         builder.pop();
 
         builder.push("Damage Settings");

@@ -14,12 +14,12 @@ import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
-import com.flansmodultimate.network.server.PacketShootInput;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.network.NetworkDirection;
@@ -89,7 +89,7 @@ public final class PacketHandler {
         registerC2S(PacketGunSpread.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
-        registerC2S(PacketShootInput.class);
+        registerC2S(PacketGunInput.class);
 
         initAndRegister();
     }

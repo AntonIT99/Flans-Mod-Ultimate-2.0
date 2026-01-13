@@ -13,18 +13,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.BooleanUtils;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -233,5 +239,37 @@ public final class CommonEventHandler
             finalDamage = 0.0F;
 
         event.setAmount(finalDamage);
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
+    {
+        Player player = event.getEntity();
+        if (player == null)
+            return;
+
+        ItemStack held = event.getItemStack();
+        if (held.isEmpty() || !(held.getItem() instanceof GunItem))
+            return;
+
+        if (BooleanUtils.isTrue(ModCommonConfigs.holdingGunsDisablesAll.get()))
+        {
+            event.setCanceled(true);
+            event.setCancellationResult(net.minecraft.world.InteractionResult.FAIL);
+            return;
+        }
+
+        if (BooleanUtils.isTrue(ModCommonConfigs.holdingGunsDisablesChests.get()))
+        {
+            Level level = event.getLevel();
+            BlockPos pos = event.getPos();
+            BlockEntity be = level.getBlockEntity(pos);
+
+            if (be instanceof Container)
+            {
+                event.setCanceled(true);
+                event.setCancellationResult(net.minecraft.world.InteractionResult.FAIL);
+            }
+        }
     }
 }

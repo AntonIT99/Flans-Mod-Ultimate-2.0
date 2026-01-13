@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.ItemLike;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.UUID;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
 {
@@ -112,5 +114,13 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         // vs Plane: inherits from vsVehicle
         if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
             tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes())));
+    }
+
+    static UUID getOrCreateStackUUID(ItemStack stack, String key)
+    {
+        CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.hasUUID(key))
+            tag.putUUID(key, UUID.randomUUID());
+        return tag.getUUID(key);
     }
 }
