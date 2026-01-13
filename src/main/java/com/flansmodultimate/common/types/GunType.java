@@ -716,14 +716,14 @@ public class GunType extends PaintableType implements IScope
 
         // Melee
         meleeTime = readValue("MeleeTime", meleeTime, file);
-        readFloatValues("AddNode", file, 6).ifPresent(values -> {
+        readFloatValuesInLines("AddNode", file, 6).ifPresent(lines -> lines.forEach(values -> {
             meleePath.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F));
             meleePathAngles.add(new Vector3f(values[3], values[4], values[5]));
-        });
-        readFloatValues("MeleeDamagePoint", file, 3)
-                .ifPresent(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F)));
-        readFloatValues("MeleeDamageOffset", file, 3)
-                .ifPresent(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F)));
+        }));
+        readFloatValuesInLines("MeleeDamagePoint", file, 3)
+            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines("MeleeDamageOffset", file, 3)
+            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
 
         //Player modifiers
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
@@ -847,10 +847,10 @@ public class GunType extends PaintableType implements IScope
         });
 
         //Primary Function
-        if (readValue("UseCustomMeleeWhenShoot", false, file) || (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty()))
-            primaryFunction = EnumFunction.CUSTOM_MELEE;
         if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
             primaryFunction = EnumFunction.MELEE;
+        if (readValue("UseCustomMeleeWhenShoot", false, file) || (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty()))
+            primaryFunction = EnumFunction.CUSTOM_MELEE;
         primaryFunction = EnumFunction.get(readValue("PrimaryFunction", primaryFunction.toString(), file));
 
         //Secondary Function

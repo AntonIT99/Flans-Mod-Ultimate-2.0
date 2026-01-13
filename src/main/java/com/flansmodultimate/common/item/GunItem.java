@@ -427,6 +427,14 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return b.build();
     }
 
+    @Override
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
+    {
+        if (StringUtils.isNotBlank(configType.getMeleeSound()))
+            PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), true);
+        return false;
+    }
+
     /**
      * Generic update method. If we have an offhand weapon, it will also make calls for that.
      */
@@ -522,11 +530,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
             }
         }
-        else if (configType.getPrimaryFunction().isMelee() && data.isShootKeyPressed(hand))
-            gunItemHandler.doMelee(level, player, hand, configType.getPrimaryFunction());
+        else if (configType.getPrimaryFunction() == EnumFunction.CUSTOM_MELEE && data.isShootKeyPressed(hand))
+            gunItemHandler.doCustomMelee(level, player, data, hand);
 
-        if (configType.getSecondaryFunction().isMelee() && data.isSecondaryFunctionKeyPressed())
-            gunItemHandler.doMelee(level, player, hand, configType.getSecondaryFunction());
+        if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
+            gunItemHandler.doCustomMelee(level, player, data, hand);
 
         if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
         {

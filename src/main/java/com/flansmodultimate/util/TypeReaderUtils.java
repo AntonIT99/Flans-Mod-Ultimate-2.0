@@ -445,6 +445,89 @@ public class TypeReaderUtils
         }).toList());
     }
 
+    public static Optional<List<int[]>> readIntValuesInLines(String key, TypeFile file, int minNumExpectedValues)
+    {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+            int[] result = new int[values.length];
+
+            for (int i = 0; i < values.length; i++)
+            {
+                try
+                {
+                    result[i] = Integer.parseInt(values[i]);
+                }
+                catch (NumberFormatException e)
+                {
+                    logError(incorrectFormat(key, "<integer values>"), file);
+                    return null;
+                }
+            }
+            return result;
+        }).toList());
+    }
+
+    public static Optional<List<float[]>> readFloatValuesInLines(String key, TypeFile file, int minNumExpectedValues)
+    {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+            float[] result = new float[values.length];
+
+            for (int i = 0; i < values.length; i++)
+            {
+                try
+                {
+                    result[i] = Float.parseFloat(values[i]);
+                }
+                catch (NumberFormatException e)
+                {
+                    logError(incorrectFormat(key, "<float values>"), file);
+                    return null;
+                }
+            }
+            return result;
+        }).toList());
+    }
+
+    public static Optional<List<double[]>> readDoubleValuesInLines(String key, TypeFile file, int minNumExpectedValues)
+    {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+            double[] result = new double[values.length];
+
+            for (int i = 0; i < values.length; i++)
+            {
+                try
+                {
+                    result[i] = Float.parseFloat(values[i]);
+                }
+                catch (NumberFormatException e)
+                {
+                    logError(incorrectFormat(key, "<float values>"), file);
+                    return null;
+                }
+            }
+            return result;
+        }).toList());
+    }
+
+    public static Optional<List<boolean[]>> readBooleanValuesInLines(String key, TypeFile file, int minNumExpectedValues)
+    {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+            boolean[] result = new boolean[values.length];
+
+            for (int i = 0; i < values.length; i++)
+            {
+                values[i] = values[i].equals("1") ? Boolean.TRUE.toString() : values[i];
+                values[i] = values[i].equals("0") ? Boolean.FALSE.toString() : values[i];
+                if (!values[i].equalsIgnoreCase(Boolean.TRUE.toString()) && !values[i].equalsIgnoreCase(Boolean.FALSE.toString()))
+                {
+                    logError(incorrectFormatWrongType(key, "... " + values[i] + " ...", "a boolean"), file);
+                    return null;
+                }
+                result[i] = Boolean.parseBoolean(values[i]);
+            }
+            return result;
+        }).toList());
+    }
+
     @Nullable
     private static String lastNonNull(List<String> list)
     {

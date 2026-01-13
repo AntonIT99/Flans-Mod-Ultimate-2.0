@@ -1,9 +1,11 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmod.client.model.GunAnimations;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,17 +17,15 @@ import net.minecraft.world.entity.player.Player;
 import java.util.UUID;
 
 @NoArgsConstructor
-public class PacketGunShootClient implements IClientPacket
+public class PacketGunMeleeClient implements IClientPacket
 {
     private UUID playerUUID;
     private InteractionHand hand;
-    private boolean isShooting;
 
-    public PacketGunShootClient(UUID playerUUID, InteractionHand hand, boolean isShooting)
+    public PacketGunMeleeClient(UUID playerUUID, InteractionHand hand)
     {
         this.playerUUID = playerUUID;
         this.hand = hand;
-        this.isShooting = isShooting;
     }
 
     @Override
@@ -33,7 +33,6 @@ public class PacketGunShootClient implements IClientPacket
     {
         data.writeUtf(playerUUID.toString());
         data.writeEnum(hand);
-        data.writeBoolean(isShooting);
     }
 
     @Override
@@ -41,17 +40,18 @@ public class PacketGunShootClient implements IClientPacket
     {
         playerUUID = UUID.fromString(data.readUtf());
         hand = data.readEnum(InteractionHand.class);
-        isShooting = data.readBoolean();
     }
 
     @Override
     public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
     {
-        Player shootingPlayer = level.getPlayerByUUID(playerUUID);
-        if (shootingPlayer != null)
+        Player meleePlayer = level.getPlayerByUUID(playerUUID);
+        if (meleePlayer != null && meleePlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            PlayerData data = PlayerData.getInstance(shootingPlayer, LogicalSide.CLIENT);
-            data.setShooting(hand, isShooting);
+            PlayerData data = PlayerData.getInstance(player);
+            data.doMelee(player, gunItem.getConfigType().getMeleeTime(), gunItem.getConfigType());
+            GunAnimations anim = ModClient.getGunAnimations(meleePlayer, hand);
+            anim.doMelee(gunItem.getConfigType().getMeleeTime());
         }
     }
 }

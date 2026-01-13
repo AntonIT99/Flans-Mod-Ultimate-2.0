@@ -21,7 +21,6 @@ import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -42,6 +41,7 @@ import com.flansmodultimate.config.ModClientConfigs;
 import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -227,27 +227,16 @@ public class GunItemHandler
         return true;
     }
 
-    public void doMelee(Level level, LivingEntity entity, InteractionHand hand, EnumFunction function)
+    public void doCustomMelee(Level level, ServerPlayer player, PlayerData data, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || (entity instanceof Player && !item.configType.isUsableByPlayers()) || !gunCanBeHandled(entity))
+        if (item.configType.isDeployable() || !item.configType.isUsableByPlayers() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
             return;
 
-        if (!level.isClientSide && StringUtils.isNotBlank(item.configType.getMeleeSound()))
-            PacketPlaySound.sendSoundPacket(entity.getX(), entity.getY(), entity.getZ(), item.configType.getMeleeSoundRange(), level.dimension(), item.configType.getMeleeSound(), true);
+        if (StringUtils.isNotBlank(item.configType.getMeleeSound()))
+            PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), true);
 
-        if (function == EnumFunction.CUSTOM_MELEE)
-        {
-            if (entity instanceof Player player)
-            {
-                PlayerData data = PlayerData.getInstance(player);
-                data.doMelee(player, item.configType.getMeleeTime(), item.configType);
-            }
-            if (level.isClientSide)
-            {
-                GunAnimations anim = ModClient.getGunAnimations(entity, InteractionHand.MAIN_HAND);
-                anim.doMelee(item.configType.getMeleeTime());
-            }
-        }
+        data.doMelee(player, item.configType.getMeleeTime(), item.configType);
+        PacketHandler.sendToDimension(level.dimension(), new PacketGunMeleeClient(player.getUUID(), hand));
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)

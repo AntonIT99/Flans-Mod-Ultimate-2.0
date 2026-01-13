@@ -60,7 +60,7 @@ public final class RenderGun
                 case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
                 {
                     boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-                    applyThirdPersonAdjustments(model, poseStack, left);
+                    applyThirdPersonAdjustments(model, poseStack, left, animations);
                 }
                 case GROUND, FIXED -> poseStack.translate(model.itemFrameOffset.x, model.itemFrameOffset.y, model.itemFrameOffset.z);
                 default ->
@@ -115,17 +115,7 @@ public final class RenderGun
 
         IScope scope = model.type.getCurrentScope(stack);
 
-        /*if(animations.meleeAnimationProgress > 0 && animations.meleeAnimationProgress < gunType.meleePath.size())
-        {
-            Vector3f meleePos = gunType.meleePath.get(animations.meleeAnimationProgress);
-            Vector3f nextMeleePos = animations.meleeAnimationProgress + 1 < gunType.meleePath.size() ? gunType.meleePath.get(animations.meleeAnimationProgress + 1) : new Vector3f();
-            poseStack.translate(meleePos.x + (nextMeleePos.x - meleePos.x) * smoothing, meleePos.y + (nextMeleePos.y - meleePos.y) * smoothing, meleePos.z + (nextMeleePos.z - meleePos.z) * smoothing);
-            Vector3f meleeAngles = gunType.meleePathAngles.get(animations.meleeAnimationProgress);
-            Vector3f nextMeleeAngles = animations.meleeAnimationProgress + 1 < gunType.meleePathAngles.size() ? gunType.meleePathAngles.get(animations.meleeAnimationProgress + 1) : new Vector3f();
-            GlStateManager.rotate(meleeAngles.y + (nextMeleeAngles.y - meleeAngles.y) * smoothing, 0F, 1F, 0F);
-            GlStateManager.rotate(meleeAngles.z + (nextMeleeAngles.z - meleeAngles.z) * smoothing, 0F, 0F, 1F);
-            GlStateManager.rotate(meleeAngles.x + (nextMeleeAngles.x - meleeAngles.x) * smoothing, 1F, 0F, 0F);
-        }*/
+        applyMeleeMovement(poseStack, model.type, animations, smoothing);
 
         // Look at gun stuff
         float interp = animations.lookAtTimer + smoothing;
@@ -275,13 +265,48 @@ public final class RenderGun
         }*/
     }
 
-    private static void applyThirdPersonAdjustments(ModelGun model, PoseStack poseStack, boolean leftHand)
+    private static void applyThirdPersonAdjustments(ModelGun model, PoseStack poseStack, boolean leftHand, GunAnimations animations)
     {
+        float smoothing = Minecraft.getInstance().getFrameTime();
+
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
         poseStack.translate(-0.08F, -0.12F, 0F);
         poseStack.translate(model.thirdPersonOffset.x, model.thirdPersonOffset.y, model.thirdPersonOffset.z);
 
+        //TODO: config option to disable animations in 3rd Person
+        applyMeleeMovement(poseStack, model.type, animations, Minecraft.getInstance().getFrameTime());
+    }
+
+    public static void applyMeleeMovement(PoseStack poseStack, GunType gunType, GunAnimations animations, float smoothing)
+    {
+        int i = animations.meleeAnimationProgress;
+        if (i <= 0 || i >= gunType.getMeleePath().size())
+            return;
+
+        System.out.println(i);
+
+        float t = Mth.clamp(smoothing, 0.0f, 1.0f);
+
+        Vector3f p0 = gunType.getMeleePath().get(i);
+        Vector3f p1 = (i + 1 < gunType.getMeleePath().size()) ? gunType.getMeleePath().get(i + 1) : new Vector3f();
+
+        float x = Mth.lerp(t, p0.x, p1.x);
+        float y = Mth.lerp(t, p0.y, p1.y);
+        float z = Mth.lerp(t, p0.z, p1.z);
+
+        poseStack.translate(x, y, z);
+
+        Vector3f a0 = gunType.getMeleePathAngles().get(i);
+        Vector3f a1 = (i + 1 < gunType.getMeleePathAngles().size()) ? gunType.getMeleePathAngles().get(i + 1) : new Vector3f();
+
+        float yaw = Mth.lerp(t, a0.y, a1.y);
+        float roll = Mth.lerp(t, a0.z, a1.z);
+        float pitch = Mth.lerp(t, a0.x, a1.x);
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
+        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
     }
 
     private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
