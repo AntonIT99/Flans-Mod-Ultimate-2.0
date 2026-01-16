@@ -9,8 +9,10 @@
 
 package com.flansmod.client.model.mineworld; //Path where the model is located
 
+import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelE11 extends ModelGun //Same as Filename
 {
@@ -108,6 +110,17 @@ public class ModelE11 extends ModelGun //Same as Filename
 
         ammoModel[0].addBox(0F, 0F, 0F, 2, 1, 2, 0F); // Import ImportImportMagazine
         ammoModel[0].setRotationPoint(3F, -4.8F, -2.5F);
+
+        hasFlash = true;
+        muzzleFlashPoint = new Vector3f(12F /16F, 4F / 16F, 0F / 16F);
+
+        barrelAttachPoint = new Vector3f(-12F /16F, 3F /16F, 0F / 16F);
+        stockAttachPoint = new Vector3f(0F /16F, 0F /16F, 0F /16F);
+        scopeAttachPoint = new Vector3f(0F /16F, 5F /16F, 0F /16F);
+        gripAttachPoint = new Vector3f(10 /16F, 3F /16F, 0F /16F);
+
+        gunSlideDistance = 0F;
+        animationType = EnumAnimationType.RIFLE;
 
         translateAll(0F, 0F, 0F);
 

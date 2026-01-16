@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -29,13 +29,14 @@ public abstract class PaintableType extends InfoType
     //Paintjobs
     /** The list of all available paintjobs for this gun */
     @Getter
-    protected Map<Integer, Paintjob> paintjobs = new HashMap<>();
+    protected Map<Integer, Paintjob> paintjobs = new LinkedHashMap<>();
     @Getter
-    protected Map<Integer, Paintjob> nonLegendaryPaintjobs = new HashMap<>();
+    protected Map<Integer, Paintjob> nonLegendaryPaintjobs = new LinkedHashMap<>();
     /** The default paintjob for this gun. This is created automatically in the load process from existing info */
     @Getter
     protected Paintjob defaultPaintjob;
     /** Whether to add this paintjob to the paintjob table, gunmode table e.t.c. */
+    @Getter
     protected boolean addAnyPaintjobToTables = true;
     /** Assigns IDs to paintjobs */
     private int nextPaintjobId = 0;

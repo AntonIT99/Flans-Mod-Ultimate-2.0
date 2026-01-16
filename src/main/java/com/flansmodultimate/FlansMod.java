@@ -1,9 +1,11 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
@@ -13,6 +15,7 @@ import com.flansmodultimate.config.ModCommonConfigs;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -27,12 +30,22 @@ import org.spongepowered.asm.mixin.Mixins;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,39 +92,34 @@ public class FlansMod
     public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
     public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
+    public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
 
     // Registries
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
+    public static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
+
+    // Blocks
+    public static final RegistryObject<Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(3.0F, 6.0F)
+        .sound(SoundType.METAL)
+        .requiresCorrectToolForDrops()
+        .pushReaction(PushReaction.BLOCK))
+    );
 
     // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
 
-    // Entities
-    public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () ->
-        EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
-            .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(Bullet.RENDER_DISTANCE)
-            .updateInterval(20)
-            .setShouldReceiveVelocityUpdates(true)
-            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString()));
-    public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () ->
-        EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
-            .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(Grenade.RENDER_DISTANCE)
-            .updateInterval(100)
-            .setShouldReceiveVelocityUpdates(true)
-            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString()));
-    public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () ->
-        EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
-            .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
-            .clientTrackingRange(DeployedGun.RENDER_DISTANCE)
-            .updateInterval(5)
-            .setShouldReceiveVelocityUpdates(true)
-            .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString()));
+    // Menus
+    public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create(
+        (int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, ContainerLevelAccess.create(inv.player.level(), buf.readBlockPos())))
+    );
 
     // Particles
     public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
@@ -128,6 +136,29 @@ public class FlansMod
     public static final RegistryObject<SimpleParticleType> rocketExhaustParticle = particleRegistry.register("rocket_exhaust", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> smokeBurstParticle = particleRegistry.register("smoke_burst", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
+
+    // Entities
+    public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
+        .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(Bullet.RENDER_DISTANCE)
+        .updateInterval(20)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString())
+    );
+    public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
+        .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(Grenade.RENDER_DISTANCE)
+        .updateInterval(100)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
+    );
+    public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
+        .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(DeployedGun.RENDER_DISTANCE)
+        .updateInterval(5)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
+    );
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     private static final Map<ResourceLocation, RegistryObject<SoundEvent>> sounds = new HashMap<>();
@@ -146,11 +177,13 @@ public class FlansMod
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.config);
 
         // Init Registries
+        blockRegistry.register(modEventBus);
         itemRegistry.register(modEventBus);
         particleRegistry.register(modEventBus);
         soundEventRegistry.register(modEventBus);
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
+        menuRegistry.register(modEventBus);
 
         // Register Everything
         CategoryManager.loadAll();

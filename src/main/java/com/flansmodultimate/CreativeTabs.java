@@ -35,7 +35,7 @@ public final class CreativeTabs
 {
     public static void registerCreativeModeTabs(DeferredRegister<CreativeModeTab> creativeTabRegistry)
     {
-        registerCreativeTab(creativeTabRegistry, "flansmod", List.of(FlansMod.rainbowPaintcan));
+        registerCreativeTab(creativeTabRegistry, "flansmod", List.of(FlansMod.gunWorkbenchItem, FlansMod.rainbowPaintcan));
         registerCreativeTab(creativeTabRegistry, "armors", FlansMod.getItems(EnumType.ARMOR));
         registerCreativeTab(creativeTabRegistry, "attachments", FlansMod.getItems(EnumType.ATTACHMENT));
         registerCreativeTab(creativeTabRegistry, "guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET, EnumType.GRENADE)));

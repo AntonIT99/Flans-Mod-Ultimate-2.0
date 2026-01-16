@@ -562,7 +562,7 @@ public final class RenderGun
 
         for (int i = 0; i < slots; i++)
         {
-            final ItemStack bullet = gunItem.getBulletItemStack(gunStack, i);
+            final ItemStack bullet = gunItem.getAmmoItemStack(gunStack, i);
             if (bullet == null || !(bullet.getItem() instanceof ShootableItem))
                 continue;
 

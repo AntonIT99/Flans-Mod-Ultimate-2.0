@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfigs;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
@@ -278,6 +280,10 @@ public abstract class ShootableType extends InfoType
             return (float) (ModCommonConfigs.newDamageSystemReference.get() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
             return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
+    }
+
+    public float getDispersionForDisplay() {
+        return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
     }
 
     public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)

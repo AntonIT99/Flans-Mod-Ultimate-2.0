@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
+import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -45,6 +46,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -68,20 +70,25 @@ public final class ModClientEventHandler
 {
     private static boolean isSoundEngineInitialized;
 
-    /** Paintjob registrations */
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
-        for (RegistryObject<Item> item : FlansMod.getItems())
-        {
-            if (item.get() instanceof IPaintableItem<?>)
+        event.enqueueWork(() -> {
+            // Paintjob registrations
+            for (RegistryObject<Item> item : FlansMod.getItems())
             {
-                ItemProperties.register(item.get(), FlansMod.paintjob, (stack, level, entity, seed) -> {
-                    CompoundTag tag = stack.getTag();
-                    return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
-                });
+                if (item.get() instanceof IPaintableItem<?>)
+                {
+                    ItemProperties.register(item.get(), FlansMod.paintjob, (stack, level, entity, seed) -> {
+                        CompoundTag tag = stack.getTag();
+                        return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
+                    });
+                }
             }
-        }
+
+            // Menus registration
+            MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
+        });
     }
 
     @SubscribeEvent

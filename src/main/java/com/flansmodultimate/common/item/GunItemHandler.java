@@ -389,7 +389,7 @@ public class GunItemHandler
         int slots = configType.getNumAmmoItemsInGun(gunStack);
         for (int i = 0; i < slots; i++)
         {
-            ItemStack s = item.getBulletItemStack(gunStack, i);
+            ItemStack s = item.getAmmoItemStack(gunStack, i);
             if (s != null && !s.isEmpty() && s.getDamageValue() < s.getMaxDamage())
             {
                 return Optional.of(new AmmoSlot(i, s));

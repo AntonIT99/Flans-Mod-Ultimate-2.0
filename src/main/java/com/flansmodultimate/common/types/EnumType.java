@@ -19,7 +19,7 @@ import java.util.Optional;
 public enum EnumType
 {
     ARMOR("armor", "armorFiles", ContentManager.TEXTURES_ARMOR_FOLDER, ArmorType.class, CustomArmorItem.class, false),
-    ATTACHMENT("attachment", "attachments", ContentManager.TEXTURES_ARMOR_FOLDER, AttachmentType.class, AttachmentItem.class, false),
+    ATTACHMENT("attachment", "attachments", ContentManager.TEXTURES_SKINS_FOLDER, AttachmentType.class, AttachmentItem.class, false),
     BULLET("bullet", "bullets", ContentManager.TEXTURES_SKINS_FOLDER, BulletType.class, BulletItem.class, false),
     GRENADE("grenade", "grenades", ContentManager.TEXTURES_SKINS_FOLDER, GrenadeType.class, GrenadeItem.class, false),
     GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, false);

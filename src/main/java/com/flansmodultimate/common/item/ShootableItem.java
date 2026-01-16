@@ -1,12 +1,10 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.ShootableType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -60,7 +58,7 @@ public abstract class ShootableItem extends Item
             tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
 
         if (getConfigType().getBulletSpread() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * getConfigType().getBulletSpread()) + "°"));
+            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(getConfigType().getDispersionForDisplay()) + "°"));
 
         if (getConfigType().getExplosionRadius() > 0F)
         {

@@ -2,7 +2,11 @@ General:
 - Check for conflicts with Flan's Mod Reloaded
 - GunItemEntity
 - Deployables
-- Attachment Table & Attachments
+- Fix Attachment Positions
+- Fix Search Bar in Creative Tabs
+- Fix Creative Tabs Ordering
+- Fix Gun Mod Table Icon
+- Fix Paintjobs in Gun Mod Table
 
 Entities:
 - AAGun - TODO

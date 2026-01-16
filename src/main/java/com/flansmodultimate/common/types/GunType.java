@@ -7,6 +7,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.ModCommonConfigs;
@@ -23,6 +24,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
@@ -549,25 +551,36 @@ public class GunType extends PaintableType implements IScope
     /**
      * If this is true, then all attachments are allowed. Otherwise, the list is checked.
      */
+    @Getter
     protected boolean allowAllAttachments = true; // TODO: config option to force disable all attachments restrictions
     /**
      * The list of allowed attachments for this gun
      */
+    @Getter
     protected List<AttachmentType> allowedAttachments = new ArrayList<>();
     /**
      * Whether each attachment slot is available
      */
+    @Getter
     protected boolean allowBarrelAttachments;
+    @Getter
     protected boolean allowScopeAttachments;
+    @Getter
     protected boolean allowStockAttachments;
+    @Getter
     protected boolean allowGripAttachments;
+    @Getter
     protected boolean allowGadgetAttachments;
+    @Getter
     protected boolean allowSlideAttachments;
+    @Getter
     protected boolean allowPumpAttachments;
+    @Getter
     protected boolean allowAccessoryAttachments;
     /**
      * The number of generic attachment slots there are on this gun
      */
+    @Getter
     protected int numGenericAttachmentSlots;
 
     //Modifiers
@@ -1163,6 +1176,11 @@ public class GunType extends PaintableType implements IScope
             stackSpread *= sneakSpreadModifier;
 
         return stackSpread;
+    }
+
+    public float getDispersionForDisplay(ItemStack stack)
+    {
+        return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * getSpread(stack, false, false);
     }
 
     /**

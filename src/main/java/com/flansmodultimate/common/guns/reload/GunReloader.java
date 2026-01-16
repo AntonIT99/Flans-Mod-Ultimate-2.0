@@ -132,7 +132,7 @@ public record GunReloader(GunItem item)
         if (allowed == null || !allowed.contains(newShootable.getConfigType()))
             return;
 
-        ItemStack oldMag = gunItem.getBulletItemStack(pending.gunStack(), ammoIndex);
+        ItemStack oldMag = gunItem.getAmmoItemStack(pending.gunStack(), ammoIndex);
 
         // Drop-on-reload when old mag is empty (null-safe)
         if (!pending.creative()
@@ -180,7 +180,7 @@ public record GunReloader(GunItem item)
 
         for (int i = 0; i < ammoSlots; i++)
         {
-            ItemStack current = item.getBulletItemStack(gunStack, i);
+            ItemStack current = item.getAmmoItemStack(gunStack, i);
             if (!needsSwap(current, forceReload))
                 continue;
 
