@@ -11,7 +11,6 @@ import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFunction;
-import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
@@ -46,7 +45,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -284,7 +282,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.isShowSpread())
-                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * configType.getSpread(stack, false, false)) + "°"));
+                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
 
             if (configType.getSwitchDelay() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Switch Delay", IFlanItem.formatFloat(configType.getSwitchDelay())));
@@ -566,10 +564,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     /**
-     * Get the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
+     * Get the ammo item stack stored in the gun's NBT data (the loaded magazine / bullets).
      * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public ItemStack getBulletItemStack(ItemStack gun, int id) {
+    public ItemStack getAmmoItemStack(ItemStack gun, int id) {
         if (gun.isEmpty())
             return ItemStack.EMPTY;
 
@@ -635,7 +633,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public List<ItemStack> getBulletItemStackList(ItemStack gun)
     {
         return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
-            .mapToObj(i -> getBulletItemStack(gun, i))
+            .mapToObj(i -> getAmmoItemStack(gun, i))
             .filter(s -> s != null && s.getItem() instanceof ShootableItem)
             .toList();
     }
