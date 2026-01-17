@@ -52,20 +52,13 @@ public final class RenderGun
 
             switch (ctx)
             {
-                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
-                {
-                    boolean left = (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-                    applyFirstPersonAdjustments(model, stack, poseStack, left, animations);
-                }
-                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
-                {
-                    boolean left = (ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-                    applyThirdPersonAdjustments(model, poseStack, left, animations);
-                }
-                case GROUND, FIXED -> poseStack.translate(model.itemFrameOffset.x, model.itemFrameOffset.y, model.itemFrameOffset.z);
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> applyFirstPersonAdjustments(model, stack, poseStack, ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND, animations);
+                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> applyThirdPersonAdjustments(model, poseStack, ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND, animations);
+                case FIXED -> applyFixedEntityAdjustments(model, poseStack);
+                case GROUND -> poseStack.translate(model.itemFrameOffset.x, model.itemFrameOffset.y, model.itemFrameOffset.z);
                 default ->
                 {
-                    // No custom item rendering
+                    // No Adjustments
                 }
             }
 
@@ -87,6 +80,12 @@ public final class RenderGun
         if (itemDisplayContext.firstPerson())
             return !(ModClient.getZoomProgress() > 0.9F && model.type.getCurrentScope(item).hasZoomOverlay() && !model.stillRenderGunWhenScopedOverlay);
         return true;
+    }
+
+    private static void applyFixedEntityAdjustments(ModelGun model, PoseStack poseStack)
+    {
+        poseStack.translate(0.2F + model.itemFrameOffset.x, -0.2F + model.itemFrameOffset.y, model.itemFrameOffset.z);
+        poseStack.mulPose(Axis.YP.rotationDegrees(180F));
     }
 
     private static void applyFirstPersonAdjustments(ModelGun model, ItemStack stack, PoseStack poseStack, boolean leftHand, GunAnimations animations)

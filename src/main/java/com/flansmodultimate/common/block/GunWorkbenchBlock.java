@@ -25,6 +25,14 @@ public class GunWorkbenchBlock extends Block
     }
 
     @Override
+    @NotNull
+    public MenuProvider getMenuProvider(BlockState state, @NotNull Level level, @NotNull BlockPos pos)
+    {
+        return new SimpleMenuProvider((containerId, inv, player) -> new GunWorkbenchMenu(containerId, inv, ContainerLevelAccess.create(level, pos)), state.getBlock().getName());
+    }
+
+    @Override
+    @NotNull
     public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         if (level.isClientSide)
@@ -32,7 +40,7 @@ public class GunWorkbenchBlock extends Block
 
         if (player instanceof ServerPlayer sp)
         {
-            MenuProvider provider = new SimpleMenuProvider((containerId, inv, p) -> new GunWorkbenchMenu(containerId, inv, ContainerLevelAccess.create(level, pos)), state.getBlock().getName());
+            MenuProvider provider = getMenuProvider(state, level, pos);
             NetworkHooks.openScreen(sp, provider, pos);
         }
 

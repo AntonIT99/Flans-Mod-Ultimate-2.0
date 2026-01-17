@@ -59,6 +59,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -433,6 +434,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return false;
     }
 
+    @Override
+    public boolean doesSneakBypassUse(ItemStack stack, LevelReader level, BlockPos pos, Player player)
+    {
+        if (level instanceof Level lvl)
+        {
+            BlockState state = lvl.getBlockState(pos);
+            return state.getMenuProvider(lvl, pos) != null;
+        }
+        return false;
+    }
+
     /**
      * Generic update method. If we have an offhand weapon, it will also make calls for that.
      */
@@ -470,8 +482,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.isDeployable() || !configType.isUsableByPlayers() || !gunItemHandler.gunCanBeHandled(player))
             return;
 
+        // Force release actions when entering a GUI
+        if (Minecraft.getInstance().screen != null && (data.isShooting(hand) || data.isSecondaryFunctionKeyPressed()))
+        {
+            data.setShootKeyPressed(hand, false);
+            data.setSecondaryFunctionKeyPressed(false);
+            PacketHandler.sendToServer(new PacketGunInput(false, data.isPrevShootKeyPressed(hand), false, hand));
+        }
+
+        GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(hand);
+        GunInputState.ButtonState secondaryFunctionState = GunInputState.getSecondaryFunctionState();
+
         // Scope handling
-        gunItemHandler.handleScope(player, gunStack, hand, dualWield);
+        gunItemHandler.handleScope(player, gunStack, primaryFunctionState, secondaryFunctionState, dualWield);
 
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
         
@@ -482,30 +505,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (data.isShooting(hand))
             gunItemHandler.doPlayerShootClient(level, player, data, animations, gunStack, hand);
 
-        boolean shootKeyPressed = GunInputState.isShootPressed(hand);
-        boolean prevShootKeyPressed = GunInputState.isPrevShootPressed(hand);
-        boolean secondaryFunctionKeyPressed = GunInputState.isAimPressed();
-        boolean prevSecondaryFunctionKeyPressed = GunInputState.isPrevAimPressed();
-
-        if (Minecraft.getInstance().screen != null)
-        {
-            // Stop actions when entering a GUI
-            if (prevShootKeyPressed || secondaryFunctionKeyPressed)
-                PacketHandler.sendToServer(new PacketGunInput(false, prevShootKeyPressed, false, hand));
-        }
-        else if (ModClient.getSwitchTime() <= 0)
+        if (ModClient.getSwitchTime() <= 0)
         {
             // Don’t shoot certain entities under crosshair
             if (configType.getPrimaryFunction() == EnumFunction.SHOOT && gunItemHandler.shouldBlockFireAtCrosshair())
-                shootKeyPressed = false;
+                primaryFunctionState = new GunInputState.ButtonState(false, primaryFunctionState.isPrevPressed());
 
-            data.setShootKeyPressed(hand, shootKeyPressed);
-            data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
-            data.setSecondaryFunctionKeyPressed(secondaryFunctionKeyPressed);
+            data.setShootKeyPressed(hand, primaryFunctionState.isPressed());
+            data.setPrevShootKeyPressed(hand, primaryFunctionState.isPrevPressed());
+            data.setSecondaryFunctionKeyPressed(secondaryFunctionState.isPressed());
 
             // send update to server when keys are pressed or released
-            if (shootKeyPressed != prevShootKeyPressed || secondaryFunctionKeyPressed != prevSecondaryFunctionKeyPressed)
-                PacketHandler.sendToServer(new PacketGunInput(shootKeyPressed, prevShootKeyPressed, secondaryFunctionKeyPressed, hand));
+            if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
+                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), primaryFunctionState.isPrevPressed(), secondaryFunctionState.isPressed(), hand));
         }
     }
 

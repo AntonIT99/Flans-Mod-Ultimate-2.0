@@ -61,6 +61,11 @@ public class Paintjob
         this(type, id, displayName, iconName, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
     }
 
+    public boolean isDefault()
+    {
+        return id == 0;
+    }
+
     public boolean isLegendary()
     {
         return !type.getNonLegendaryPaintjobs().containsKey(id);

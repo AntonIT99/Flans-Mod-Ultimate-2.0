@@ -240,13 +240,15 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     {
         var pose = gg.pose();
         pose.pushPose();
-        pose.translate(leftPos + 90F, topPos + 55F, 200F);
+        pose.translate(leftPos + 90F, topPos + 45F, 100F);
 
-        pose.mulPose(Axis.XP.rotationDegrees(-20));
-        pose.mulPose(Axis.YP.rotationDegrees(-30));
+        pose.mulPose(Axis.XP.rotationDegrees(160));
+        pose.mulPose(Axis.YP.rotationDegrees(30));
         if (flipGunModel)
+        {
             pose.mulPose(Axis.YP.rotationDegrees(180));
-        pose.scale(50f, -50f, 50f);
+        }
+        pose.scale(-60F, 60F, 60F);
 
         Lighting.setupFor3DItems();
         Minecraft mc = Minecraft.getInstance();

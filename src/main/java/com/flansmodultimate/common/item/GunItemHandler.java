@@ -123,7 +123,7 @@ public class GunItemHandler
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void handleScope(Player player, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    public void handleScope(Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
         if (dualWield || (!item.configType.getSecondaryFunction().isZoom() && !item.configType.getPrimaryFunction().isZoom()) || player.isShiftKeyDown())
             return;
@@ -135,12 +135,12 @@ public class GunItemHandler
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = GunInputState.isAimPressed() ? item.configType.getCurrentScope(gunStack) : null;
+                scope = secondaryFunctionState.isPressed() ? item.configType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
-                if (GunInputState.isAimPressed() && !GunInputState.isPrevAimPressed())
+                if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
                     scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
             }
         }
@@ -148,12 +148,12 @@ public class GunItemHandler
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = GunInputState.isShootPressed(hand) ? item.configType.getCurrentScope(gunStack) : null;
+                scope = primaryFunctionState.isPressed() ? item.configType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
-                if (GunInputState.isShootPressed(hand) && !GunInputState.isPrevShootPressed(hand))
+                if (primaryFunctionState.isPressed() && !primaryFunctionState.isPrevPressed())
                     scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
             }
         }

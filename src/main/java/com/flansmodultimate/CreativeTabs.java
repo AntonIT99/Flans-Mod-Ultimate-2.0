@@ -7,7 +7,6 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
-import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.config.ModCommonConfigs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -77,22 +76,13 @@ public final class CreativeTabs
                         continue;
                 }
 
-                if (item instanceof IPaintableItem<?> paintableItem)
+                output.accept(item);
+
+                if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()) && item instanceof IPaintableItem<?> paintableItem)
                 {
-                    PaintableType type = paintableItem.getPaintableType();
-                    if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()))
-                    {
-                        for (Paintjob pj : type.getPaintjobs().values())
-                            output.accept(paintableItem.makePaintjobStack(pj), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                    }
-                    else
-                    {
-                        output.accept(paintableItem.makeDefaultPaintjobStack(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                    }
-                }
-                else
-                {
-                    output.accept(item);
+                    for (Paintjob pj : paintableItem.getPaintableType().getPaintjobs().values())
+                        if (!pj.isDefault())
+                            output.accept(paintableItem.makePaintjobStack(pj));
                 }
             }
         };

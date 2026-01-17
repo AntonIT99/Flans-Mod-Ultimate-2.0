@@ -15,33 +15,37 @@ import net.minecraft.world.InteractionHand;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GunInputState
 {
-    private static boolean shootPressed;
-    private static boolean prevShootPressed;
-    private static boolean offhandShootPressed;
-    private static boolean prevOffhandShootPressed;
+    public record ButtonState(boolean isPressed, boolean isPrevPressed) {}
+
+    private static ButtonState primaryFunctionState = new ButtonState(false, false);
+    private static ButtonState offhandPrimaryFunctionState = new ButtonState(false, false);
     @Getter
-    private static boolean prevAimPressed;
-    @Getter
-    private static boolean aimPressed;
+    private static ButtonState secondaryFunctionState = new ButtonState(false, false);
 
     @OnlyIn(Dist.CLIENT)
     public static void tick()
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.player == null || mc.isPaused() || mc.screen != null)
+        if (mc.player == null || mc.isPaused())
             return;
 
-        EnumMouseButton shootBtn = ModClientConfigs.shootButton.get();
-        EnumMouseButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
-        EnumMouseButton aimBtn = ModClientConfigs.aimButton.get();
+        if (Minecraft.getInstance().screen == null)
+        {
+            EnumMouseButton shootBtn = ModClientConfigs.shootButton.get();
+            EnumMouseButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
+            EnumMouseButton aimBtn = ModClientConfigs.aimButton.get();
 
-        prevShootPressed = shootPressed;
-        prevOffhandShootPressed = offhandShootPressed;
-        prevAimPressed = aimPressed;
-        shootPressed = isMousePressed(shootBtn);
-        offhandShootPressed = isMousePressed(shootOffBtn);
-        aimPressed = isMousePressed(aimBtn);
+            primaryFunctionState = new ButtonState(isMousePressed(shootBtn), primaryFunctionState.isPressed);
+            offhandPrimaryFunctionState = new ButtonState(isMousePressed(shootOffBtn), offhandPrimaryFunctionState.isPressed);
+            secondaryFunctionState = new ButtonState(isMousePressed(aimBtn), secondaryFunctionState.isPressed);
+        }
+        else
+        {
+            primaryFunctionState = new ButtonState(false, primaryFunctionState.isPressed);
+            offhandPrimaryFunctionState = new ButtonState(false, offhandPrimaryFunctionState.isPressed);
+            secondaryFunctionState = new ButtonState(false, secondaryFunctionState.isPressed);
+        }
     }
 
     private static boolean isMousePressed(EnumMouseButton btn)
@@ -50,13 +54,8 @@ public final class GunInputState
         return GLFW.glfwGetMouseButton(window, btn.toGlfw()) == GLFW.GLFW_PRESS;
     }
 
-    public static boolean isShootPressed(InteractionHand hand)
+    public static ButtonState getPrimaryFunctionState(InteractionHand hand)
     {
-        return (hand == InteractionHand.OFF_HAND) ? offhandShootPressed : shootPressed;
-    }
-
-    public static boolean isPrevShootPressed(InteractionHand hand)
-    {
-        return (hand == InteractionHand.OFF_HAND) ? prevOffhandShootPressed : prevShootPressed;
+        return (hand == InteractionHand.OFF_HAND) ? offhandPrimaryFunctionState : primaryFunctionState;
     }
 }
