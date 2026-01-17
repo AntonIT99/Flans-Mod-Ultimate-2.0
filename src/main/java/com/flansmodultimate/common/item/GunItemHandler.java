@@ -123,9 +123,9 @@ public class GunItemHandler
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void handleScope(ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    public void handleScope(Player player, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        if (dualWield || (!item.configType.getSecondaryFunction().isZoom() && !item.configType.getPrimaryFunction().isZoom()))
+        if (dualWield || (!item.configType.getSecondaryFunction().isZoom() && !item.configType.getPrimaryFunction().isZoom()) || player.isShiftKeyDown())
             return;
 
         IScope scope = null;

@@ -9,6 +9,7 @@ import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
+import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
@@ -21,6 +22,7 @@ import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
+import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.network.NetworkDirection;
@@ -78,6 +80,7 @@ public final class PacketHandler {
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketFlanExplosionParticles.class);
+        registerS2C(PacketFlashBang.class);
         registerS2C(PacketGunMeleeClient.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShootClient.class);
@@ -86,12 +89,13 @@ public final class PacketHandler {
         registerS2C(PacketPlaySound.class);
 
         // Client to Server Packets
+        registerC2S(PacketGunInput.class);
         registerC2S(PacketGunReload.class);
         registerC2S(PacketGunScopedState.class);
         registerC2S(PacketGunSpread.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
-        registerC2S(PacketGunInput.class);
+        registerC2S(PacketSelectPaintjob.class);
 
         initAndRegister();
     }

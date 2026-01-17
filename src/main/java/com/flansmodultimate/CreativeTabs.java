@@ -17,6 +17,7 @@ import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.BooleanUtils;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -25,7 +26,6 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
@@ -33,25 +33,15 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreativeTabs
 {
-    public static void registerCreativeModeTabs(DeferredRegister<CreativeModeTab> creativeTabRegistry)
+    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
-        registerCreativeTab(creativeTabRegistry, "flansmod", List.of(FlansMod.gunWorkbenchItem, FlansMod.rainbowPaintcan));
-        registerCreativeTab(creativeTabRegistry, "armors", FlansMod.getItems(EnumType.ARMOR));
-        registerCreativeTab(creativeTabRegistry, "attachments", FlansMod.getItems(EnumType.ATTACHMENT));
-        registerCreativeTab(creativeTabRegistry, "guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET, EnumType.GRENADE)));
-        registerCreativeTab(creativeTabRegistry, "driveables", FlansMod.getItems(EnumType.BULLET));
-    }
-
-    private static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab)
-    {
-        if (itemsForTab.isEmpty())
-            return;
-
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
             .icon(createIcon(tabName, itemsForTab))
             .withSearchBar()
-            .displayItems(displayItemsWithPaintjobsGenerator(tabName, itemsForTab))
+            .withTabsBefore(beforeTab)
+            .withTabsAfter(afterTab)
+            .displayItems(displayItemsWithPaintjobsGenerator(itemsForTab, onlyGunAmmo, onlyVehicleAmmo))
             .build());
     }
 
@@ -72,7 +62,7 @@ public final class CreativeTabs
         };
     }
 
-    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<RegistryObject<Item>> itemsForTab)
+    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo)
     {
         return (parameters, output) -> {
             for (RegistryObject<Item> ro : sortForCreativeTab(itemsForTab))
@@ -81,9 +71,9 @@ public final class CreativeTabs
 
                 if (item instanceof BulletItem bi)
                 {
-                    if (tabName.equals("guns") && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType()))
+                    if (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType()))
                         continue;
-                    if (tabName.equals("driveables") && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType()))
+                    if (onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType()))
                         continue;
                 }
 
@@ -93,11 +83,11 @@ public final class CreativeTabs
                     if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()))
                     {
                         for (Paintjob pj : type.getPaintjobs().values())
-                            output.accept(paintableItem.makePaintjobStack(pj));
+                            output.accept(paintableItem.makePaintjobStack(pj), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
                     else
                     {
-                        output.accept(paintableItem.makeDefaultPaintjobStack());
+                        output.accept(paintableItem.makeDefaultPaintjobStack(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
                 }
                 else

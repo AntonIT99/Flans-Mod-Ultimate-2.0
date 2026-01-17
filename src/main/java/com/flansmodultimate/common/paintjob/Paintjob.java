@@ -42,7 +42,7 @@ public class Paintjob
     @Getter @Setter
     private EnumPaintjobRarity rarity;
     @Getter @Setter
-    private boolean addToTables;
+    private boolean addToTables = true;
 
     private Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
     {

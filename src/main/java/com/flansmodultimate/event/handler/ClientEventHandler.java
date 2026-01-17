@@ -207,6 +207,9 @@ public final class ClientEventHandler
         if (!(mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem))
             return;
 
+        if (mc.player.isShiftKeyDown())
+            return;
+
         EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
         EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();
 

@@ -471,7 +471,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return;
 
         // Scope handling
-        gunItemHandler.handleScope(gunStack, hand, dualWield);
+        gunItemHandler.handleScope(player, gunStack, hand, dualWield);
 
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
         

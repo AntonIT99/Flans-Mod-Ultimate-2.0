@@ -31,7 +31,7 @@ public class PacketSelectPaintjob implements IServerPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
-        data.writeVarInt(paintjobId);
+        data.writeInt(paintjobId);
     }
 
     @Override

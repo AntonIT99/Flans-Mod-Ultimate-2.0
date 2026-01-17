@@ -203,7 +203,23 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     public void removed(@NotNull Player player)
     {
         super.removed(player);
-        access.execute((level, pos) -> this.clearContainer(player, this.gunInv));
+        access.execute((level, pos) -> {
+            busy = true;
+
+            // make sure gun NBT is up to date
+            ItemStack gun = gunInv.getItem(SLOT_GUN);
+            if (!gun.isEmpty() && gun.getItem() instanceof GunItem)
+                writeSlotsIntoGunNbt(gun);
+
+            // attachments must NOT be returned -> just delete them
+            for (int i = SLOT_SPECIFIC_START; i < SLOT_MENU_END; i++)
+                gunInv.setItem(i, ItemStack.EMPTY);
+
+            clearContainer(player, this.gunInv);
+            busy = false;
+
+            gunInv.setChanged();
+        });
     }
 
     private static boolean isGun(ItemStack stack)
@@ -234,7 +250,10 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
         ItemStack gunStack = inv.getItem(SLOT_GUN);
         if (gunStack.isEmpty() || !(gunStack.getItem() instanceof GunItem))
+        {
+            lastGunStack = ItemStack.EMPTY;
             return;
+        }
 
         // Detect gun change (replacement)
         boolean gunChanged = lastGunStack.isEmpty()
@@ -258,13 +277,13 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private void loadAttachmentsFromGunIntoSlots(ItemStack gunStack)
     {
-        var gunTag = gunStack.getOrCreateTag();
-        var attachments = gunTag.getCompound("attachments");
+        CompoundTag gunTag = gunStack.getOrCreateTag();
+        CompoundTag attachments = gunTag.getCompound(GunItem.NBT_ATTACHMENTS);
 
         // specific 1..8
         for (int i = 0; i < SPECIFIC_ATTACHMENT_SLOTS; i++)
         {
-            var attTag = attachments.getCompound(SPECIFIC_TAGS[i]);
+            CompoundTag attTag = attachments.getCompound(SPECIFIC_TAGS[i]);
             ItemStack att = attTag.isEmpty() ? ItemStack.EMPTY : ItemStack.of(attTag);
             gunInv.setItem(SLOT_SPECIFIC_START + i, att);
         }
@@ -272,7 +291,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         // generic 9..16
         for (int i = 0; i < GENERIC_ATTACHMENT_SLOTS; i++)
         {
-            var attTag = attachments.getCompound("generic_" + i);
+            CompoundTag attTag = attachments.getCompound(GunItem.NBT_GENERIC + i);
             ItemStack att = attTag.isEmpty() ? ItemStack.EMPTY : ItemStack.of(attTag);
             gunInv.setItem(SLOT_GENERIC_START + i, att);
         }
@@ -282,11 +301,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private void writeSlotsIntoGunNbt(ItemStack gunStack)
     {
-        var gunTagOld = gunStack.getOrCreateTag();
-
-        // 1.7.10 rebuilt the tag and preserved ammo/paint.
-        // In modern, it's usually safer to KEEP existing tag and only replace attachments.
-        var attachments = new net.minecraft.nbt.CompoundTag();
+        CompoundTag gunTag = gunStack.getOrCreateTag();
+        CompoundTag attachments = new CompoundTag();
 
         // specific
         for (int i = 0; i < SPECIFIC_ATTACHMENT_SLOTS; i++)
@@ -300,8 +316,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
             writeAttachmentTag(attachments, gunInv.getItem(SLOT_GENERIC_START + i), GunItem.NBT_GENERIC + i);
         }
 
-        gunTagOld.put("attachments", attachments);
-        gunStack.setTag(gunTagOld);
+        gunTag.put(GunItem.NBT_ATTACHMENTS, attachments);
+        gunStack.setTag(gunTag);
     }
 
     private static void writeAttachmentTag(CompoundTag attachments, ItemStack stack, String name)
@@ -321,8 +337,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         busy = true;
         for (int i = SLOT_SPECIFIC_START; i < SLOT_MENU_END; i++)
             gunInv.setItem(i, ItemStack.EMPTY);
-        busy = false;
 
         gunInv.setChanged();
+        busy = false;
     }
 }

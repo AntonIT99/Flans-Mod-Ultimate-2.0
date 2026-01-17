@@ -1,12 +1,11 @@
 General:
 - Check for conflicts with Flan's Mod Reloaded
 - GunItemEntity
-- Deployables
+- Deployable Guns
 - Fix Attachment Positions
-- Fix Search Bar in Creative Tabs
-- Fix Creative Tabs Ordering
-- Fix Gun Mod Table Icon
-- Fix Paintjobs in Gun Mod Table
+- Armor Boxes
+- Gun Boxes
+- Paintjob Box
 
 Entities:
 - AAGun - TODO
@@ -43,8 +42,6 @@ Types:
 - InfoType - Done
 
 Other Classes:
-- PlayerHitbox - Done
-- PlayerSnapshot - Done
 - PlayerHandler - TODO
 - GunAnimations - Almost Done (address TODOs)
 
@@ -52,7 +49,7 @@ TODO Content Packs:
 - Fix AK-47 of MW
 - Fix FlakParticle TaP Guns
 - Add Idle Sound to Lightsabers
-- Understand Penetration?
+- Set Penetration?
 
 New Feature Ideas:
 - Sword blocking (GunItem)
