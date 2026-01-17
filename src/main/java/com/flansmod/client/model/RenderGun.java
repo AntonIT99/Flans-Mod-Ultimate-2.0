@@ -874,7 +874,7 @@ public final class RenderGun
             switch(attachment.getEnumAttachmentType())
             {
                 case SIGHTS:
-                    preRenderAttachment(attachment, model.scopeAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.scopeAttachPoint, poseStack, model.type.getModelScale());
                     if (model.scopeIsOnBreakAction)
                     {
                         poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
@@ -886,36 +886,36 @@ public final class RenderGun
                     renderAttachment(attachment, scopeItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case GRIP:
-                    preRenderAttachment(attachment, model.gripAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.gripAttachPoint, poseStack, model.type.getModelScale());
                     if (model.gripIsOnPump)
                         poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
                     renderAttachment(attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case BARREL:
-                    preRenderAttachment(attachment, model.barrelAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.barrelAttachPoint, poseStack, model.type.getModelScale());
                     renderAttachment(attachment, barrelItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case STOCK:
-                    preRenderAttachment(attachment, model.stockAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.stockAttachPoint, poseStack, model.type.getModelScale());
                     renderAttachment(attachment, stockItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case SLIDE:
-                    preRenderAttachment(attachment, model.slideAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.slideAttachPoint, poseStack, model.type.getModelScale());
                     poseStack.translate(-(animations.lastGunSlide + (animations.gunSlide - animations.lastGunSlide) * smoothing) * model.gunSlideDistance, 0F, 0F);
                     renderAttachment(attachment, slideItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case GADGET:
-                    preRenderAttachment(attachment, model.gadgetAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.gadgetAttachPoint, poseStack, model.type.getModelScale());
                     if (model.gadgetIsOnPump)
                         poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
                     renderAttachment(attachment, gadgetItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case ACCESSORY:
-                    preRenderAttachment(attachment, model.accessoryAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.accessoryAttachPoint, poseStack, model.type.getModelScale());
                     renderAttachment(attachment, accessoryItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
                 case PUMP:
-                    preRenderAttachment(attachment, model.pumpAttachPoint, poseStack);
+                    preRenderAttachment(attachment, model.pumpAttachPoint, poseStack, model.type.getModelScale());
                     poseStack.translate(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * model.pumpHandleDistance, 0F, 0F);
                     renderAttachment(attachment, pumpItemStack, poseStack, buffer, packedLight, packedOverlay);
                     break;
@@ -926,10 +926,10 @@ public final class RenderGun
         }
     }
 
-    private static void preRenderAttachment(AttachmentType attachment, Vector3f attachPoint, PoseStack poseStack)
+    private static void preRenderAttachment(AttachmentType attachment, Vector3f attachPoint, PoseStack poseStack, float gunModelScale)
     {
         float modelScale = attachment.getModelScale();
-        poseStack.translate(attachPoint.x * modelScale, attachPoint.y * modelScale, attachPoint.z * modelScale);
+        poseStack.translate(attachPoint.x * gunModelScale, attachPoint.y * gunModelScale, attachPoint.z * gunModelScale);
         poseStack.scale(modelScale, modelScale, modelScale);
     }
 

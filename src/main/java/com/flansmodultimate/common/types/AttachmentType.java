@@ -173,6 +173,7 @@ public class AttachmentType extends PaintableType implements IScope
         recoilControlMultiplierSneaking = readValue("RecoilControlMultiplierSneaking", recoilControlMultiplierSneaking, file);
         recoilControlMultiplierSprinting = readValue("RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
         bulletSpeedMultiplier = readValue("BulletSpeedMultiplier", bulletSpeedMultiplier, file);
+        shootDelayMultiplier = readValue("ShootDelayMultiplier", shootDelayMultiplier, file);
         recoilControlMultiplierSprinting = readValue("RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
         moveSpeedMultiplier = readValue("MovementSpeedMultiplier", moveSpeedMultiplier, file);
         moveSpeedMultiplier = readValue("MoveSpeedModifier", moveSpeedMultiplier, file);

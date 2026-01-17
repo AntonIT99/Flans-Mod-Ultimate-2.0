@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelDefaultMuzzleFlash;
+import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
@@ -15,6 +16,7 @@ import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.TypeReaderUtils;
 import com.wolffsmod.api.client.model.IModelBase;
+import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -97,6 +99,8 @@ public abstract class InfoType
     protected ResourceLocation texture;
     @Nullable @OnlyIn(Dist.CLIENT)
     protected ResourceLocation overlay;
+    @Getter
+    protected boolean additiveBlending;
 
     public String getShortName()
     {
@@ -143,6 +147,7 @@ public abstract class InfoType
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);
+        additiveBlending = readValue("AdditiveBlending", additiveBlending, file);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
@@ -419,6 +424,18 @@ public abstract class InfoType
 
         if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
             ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
+
+        if (model != null && type.additiveBlending)
+        {
+            for (ModelRenderer modelRenderer : model.getBoxList())
+            {
+                if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo && modelRendererTurbo.glow)
+                {
+                    modelRendererTurbo.glowAdditive = true;
+                    modelRendererTurbo.glow = false;
+                }
+            }
+        }
 
         return model;
     }

@@ -45,6 +45,33 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
+     * Adds explosion damage stats avoiding redundant lines.
+     */
+    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseName)
+    {
+        final float EPS = 0.0001f;
+
+        // Always show base explosion damage if it's meaningful
+        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage())));
+
+        // vs Living: only show if explicitly configured AND different from base
+        if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving())));
+
+        // vs Player: inherits from vsLiving
+        if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer())));
+
+        // vs Vehicle: inherits from base
+        if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles())));
+
+        // vs Plane: inherits from vsVehicle
+        if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
+            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes())));
+    }
+
+    /**
      * Helper to render "BlueLabel: gray value"
      */
     static MutableComponent statLine(String label, String value)
@@ -62,6 +89,14 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         return Component.literal("  " + label + ": ")
                 .withStyle(ChatFormatting.DARK_AQUA)
                 .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    static MutableComponent modifierLine(String label, float value, boolean invertColor)
+    {
+        float deltaPercent = (value - 1F) * 100F;
+        ChatFormatting color = ((deltaPercent >= 0F && !invertColor) || (deltaPercent < 0F && invertColor)) ? ChatFormatting.GREEN : ChatFormatting.RED;
+        String sign = deltaPercent > 0F ? "+" : "";
+        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% " + label).withStyle(color);
     }
 
     DecimalFormat floatFormat = initFloatFormat();
@@ -87,33 +122,6 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static String formatDouble(double d)
     {
         return floatFormat.format(d);
-    }
-
-    /**
-     * Adds explosion damage stats avoiding redundant lines.
-     */
-    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseName)
-    {
-        final float EPS = 0.0001f;
-
-        // Always show base explosion damage if it's meaningful
-        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage())));
-
-        // vs Living: only show if explicitly configured AND different from base
-        if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving())));
-
-        // vs Player: inherits from vsLiving
-        if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer())));
-
-        // vs Vehicle: inherits from base
-        if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles())));
-
-        // vs Plane: inherits from vsVehicle
-        if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes())));
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)

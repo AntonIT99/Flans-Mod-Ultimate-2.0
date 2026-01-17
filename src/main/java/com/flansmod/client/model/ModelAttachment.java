@@ -53,18 +53,18 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
         return gunMuzzleFlashPoint;
     }
 
-    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass ERenderPass)
+    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         for (ModelRendererTurbo model : attachmentModel)
             if (model != null)
-                model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, ERenderPass);
+                model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderAttachmentAmmo(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass ERenderPass)
+    public void renderAttachmentAmmo(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
     {
         for (ModelRendererTurbo model : ammoModel)
             if (model != null)
-                model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, ERenderPass);
+                model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     public void flipAll()

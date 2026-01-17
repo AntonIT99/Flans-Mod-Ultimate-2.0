@@ -38,31 +38,31 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        if (configType.getShootDelayMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Rate of Fire x" + IFlanItem.formatFloat(100.0F / configType.getShootDelayMultiplier()) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getShootDelayMultiplier() != 1F && configType.getShootDelayMultiplier() != 0F)
+            tooltipComponents.add(IFlanItem.modifierLine("Fire Rate", 1F / configType.getShootDelayMultiplier(), false));
 
-        if (configType.getDamageMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Damage x" + IFlanItem.formatFloat(configType.getDamageMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getDamageMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Damage", configType.getDamageMultiplier(), false));
 
-        if (configType.getRecoilMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Recoil x" + IFlanItem.formatFloat(configType.getRecoilMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getRecoilMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Recoil", configType.getRecoilMultiplier(), true));
 
-        if (configType.getSpreadMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Bullet Spread x" + IFlanItem.formatFloat(configType.getSpreadMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getSpreadMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Bullet Spread", configType.getSpreadMultiplier(), true));
 
-        if (configType.getReloadTimeMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Reload Time x" + IFlanItem.formatFloat(configType.getReloadTimeMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getReloadTimeMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Reload Time", configType.getReloadTimeMultiplier(), true));
 
-        if (configType.getBulletSpeedMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Projectile Speed x" + IFlanItem.formatFloat(configType.getBulletSpeedMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+        if (configType.getBulletSpeedMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Bullet Speed", configType.getBulletSpeedMultiplier(), false));
+
+        if (configType.getMeleeDamageMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Melee Damage", configType.getMeleeDamageMultiplier(), false));
 
         if (configType.isSilencer())
-            tooltipComponents.add(Component.literal("Silenced").withStyle(ChatFormatting.BLUE));
-
-        if (configType.getMeleeDamageMultiplier() != 1.0f)
-            tooltipComponents.add(Component.literal("Melee Damage x" + IFlanItem.formatFloat(configType.getMeleeDamageMultiplier() * 100.0f) + "%").withStyle(ChatFormatting.BLUE));
+            tooltipComponents.add(Component.literal("Silenced").withStyle(ChatFormatting.DARK_GREEN));
 
         if(configType.isFlashlight())
-            tooltipComponents.add(Component.literal("Flashlight " + configType.getFlashlightStrength()).withStyle(ChatFormatting.BLUE));
+            tooltipComponents.add(Component.literal("Flashlight " + configType.getFlashlightStrength()).withStyle(ChatFormatting.DARK_GREEN));
     }
 }
