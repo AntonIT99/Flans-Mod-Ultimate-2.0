@@ -39,8 +39,8 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     public static final String NBT_TYPE_NAME = "type";
 
-    protected static final EntityDataAccessor<String> SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
-    protected static final EntityDataAccessor<Float> HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<String> DATA_SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
+    protected static final EntityDataAccessor<Float> DATA_HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
 
     protected String shortname = StringUtils.EMPTY;
     protected Vec3 velocity = new Vec3(0, 0, 0);
@@ -63,25 +63,24 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     public String getShortName()
     {
-        shortname = entityData.get(SHOOTABLE_TYPE);
         return shortname;
     }
 
     public void setShortName(String s)
     {
         shortname = s;
-        entityData.set(SHOOTABLE_TYPE, shortname);
+        entityData.set(DATA_SHOOTABLE_TYPE, shortname);
     }
 
     public float getHitboxSize()
     {
-        return entityData.get(HITBOX_SIZE);
+        return entityData.get(DATA_HITBOX_SIZE);
     }
 
     public void setHitboxSize(float hitboxSize)
     {
         hitboxSize = Math.max(0.01F, hitboxSize);
-        entityData.set(HITBOX_SIZE, hitboxSize);
+        entityData.set(DATA_HITBOX_SIZE, hitboxSize);
         if (!level().isClientSide)
             refreshDimensions();
     }
@@ -126,15 +125,15 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(SHOOTABLE_TYPE, StringUtils.EMPTY);
-        entityData.define(HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
+        entityData.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
+        entityData.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
     }
 
     @Override
     public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key)
     {
         super.onSyncedDataUpdated(key);
-        if (HITBOX_SIZE.equals(key))
+        if (DATA_HITBOX_SIZE.equals(key))
             refreshDimensions();
     }
 
@@ -158,7 +157,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     @Override
     public void readSpawnData(FriendlyByteBuf buf)
     {
-        shortname = buf.readUtf();
+        setShortName(buf.readUtf());
         setHitboxSize(buf.readFloat());
         double vx = buf.readDouble();
         double vy = buf.readDouble();

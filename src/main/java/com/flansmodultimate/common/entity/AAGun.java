@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<InfoType>
 {
-    protected static final EntityDataAccessor<String> AA_TYPE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.STRING);
+    protected static final EntityDataAccessor<String> DATA_AA_TYPE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.STRING);
 
     @Getter
     protected InfoType configType;
@@ -38,20 +38,19 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     public String getShortName()
     {
-        shortname = entityData.get(AA_TYPE);
         return shortname;
     }
 
     public void setShortName(String s)
     {
         shortname = s;
-        entityData.set(AA_TYPE, shortname);
+        entityData.set(DATA_AA_TYPE, shortname);
     }
 
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(AA_TYPE, StringUtils.EMPTY);
+        entityData.define(DATA_AA_TYPE, StringUtils.EMPTY);
     }
 
     @Override
@@ -63,7 +62,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     @Override
     public void readSpawnData(FriendlyByteBuf buf)
     {
-        shortname = buf.readUtf();
+        setShortName(buf.readUtf());
     }
 
     @Override

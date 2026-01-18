@@ -157,7 +157,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        return distSq < (RENDER_DISTANCE * RENDER_DISTANCE);
+        double r = RENDER_DISTANCE;
+        return distSq < r * r;
     }
 
     public void setArrowHeading(Vec3 direction, float spread, float speed, EnumSpreadPattern spreadPattern)

@@ -27,7 +27,7 @@ import java.util.List;
 
 public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<DriveableType>
 {
-    protected static final EntityDataAccessor<String> DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
+    protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
     @Getter
     protected DriveableType configType;
@@ -62,14 +62,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     public String getShortName()
     {
-        shortname = entityData.get(DRIVEABLE_TYPE);
         return shortname;
     }
 
     public void setShortName(String s)
     {
         shortname = s;
-        entityData.set(DRIVEABLE_TYPE, shortname);
+        entityData.set(DATA_DRIVEABLE_TYPE, shortname);
     }
 
     public void setEntityMarker(int tick)
@@ -81,7 +80,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(DRIVEABLE_TYPE, StringUtils.EMPTY);
+        entityData.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
     }
 
     @Override
@@ -93,7 +92,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     @Override
     public void readSpawnData(FriendlyByteBuf buf)
     {
-        shortname = buf.readUtf();
+        setShortName(buf.readUtf());
     }
 
     @Override

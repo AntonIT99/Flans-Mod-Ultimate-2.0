@@ -35,7 +35,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         {
             bipodPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
+        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
             return;
 
         for (ModelRendererTurbo ammoBoxPart : ammoBoxModel)
@@ -52,7 +52,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
             gunPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
-        if (mg.getReloadTimer() > 0 || mg.getAmmo().isEmpty())
+        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
             return;
 
         for (ModelRendererTurbo ammoPart : ammoModel)

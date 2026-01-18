@@ -22,6 +22,7 @@ import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
+import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.common.item.ICustomRendererItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -153,6 +154,7 @@ public final class ModClientEventHandler
     {
         event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
         event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
+        event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
     }
 
     @SubscribeEvent

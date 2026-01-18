@@ -5,6 +5,7 @@ import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
 import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmod.client.model.ModelFlash;
+import com.flansmod.client.model.ModelMG;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
@@ -109,11 +110,11 @@ public final class ModelCache
     }
 
     @Nullable
-    public static IModelBase getOrLoadDeployableGunModel(GunType gunType)
+    public static ModelMG getOrLoadDeployableGunModel(GunType gunType)
     {
-        if (gunType.isDeployable())
+        if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null) instanceof ModelMG modelMG)
         {
-            return getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null);
+            return modelMG;
         }
         return null;
     }

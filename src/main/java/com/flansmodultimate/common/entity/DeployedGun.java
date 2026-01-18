@@ -63,27 +63,27 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     public static final String NBT_BLOCK_Z = "block_z";
     public static final String NBT_DIRECTION = "direction";
 
-    protected static final EntityDataAccessor<String> GUN_TYPE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.STRING);
+    protected static final EntityDataAccessor<String> DATA_GUN_TYPE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.STRING);
+    protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
+    protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     @Getter
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
-    @Getter
     protected BlockPos blockPos;
-    protected int direction;
     @Getter
+    protected int gunDirection;
     protected ItemStack ammo = ItemStack.EMPTY;
-    @Getter
     protected int reloadTimer;
     protected int soundTimer;
     protected float shootTimer;
+    protected int ticksSinceUsed;
     @Getter
     protected Player gunner;
     @Getter @Setter
     protected boolean shootKeyPressed;
     @Getter @Setter
     protected boolean prevShootKeyPressed;
-    protected int ticksSinceUsed;
 
     public DeployedGun(EntityType<?> entityType, Level level)
     {
@@ -95,7 +95,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         super(FlansMod.deployedGunEntity.get(), level);
         shortname = gunType.getShortName();
         blockPos = pos;
-        direction = dir;
+        gunDirection = dir;
         configType = gunType;
         setPos(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         setYRot(0F);
@@ -104,14 +104,34 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public String getShortName()
     {
-        shortname = entityData.get(GUN_TYPE);
-        return shortname;
+        return entityData.get(DATA_GUN_TYPE);
     }
 
     public void setShortName(String s)
     {
         shortname = s;
-        entityData.set(GUN_TYPE, shortname);
+        entityData.set(DATA_GUN_TYPE, shortname);
+    }
+
+    public int getReloadTimer()
+    {
+        return entityData.get(DATA_RELOAD_TIMER);
+    }
+
+    public void setReloadTimer(int v)
+    {
+        reloadTimer = v;
+        entityData.set(DATA_RELOAD_TIMER, v);
+    }
+
+    public boolean hasAmmo()
+    {
+        return entityData.get(DATA_HAS_AMMO);
+    }
+
+    public void setHasAmmo(boolean v)
+    {
+        entityData.set(DATA_HAS_AMMO, v);
     }
 
     @Override
@@ -129,7 +149,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        return distSq < (RENDER_DISTANCE * RENDER_DISTANCE);
+        double r = RENDER_DISTANCE;
+        return distSq < r * r;
     }
 
     @Override
@@ -143,18 +164,20 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(GUN_TYPE, StringUtils.EMPTY);
+        entityData.define(DATA_GUN_TYPE, StringUtils.EMPTY);
+        entityData.define(DATA_HAS_AMMO, false);
+        entityData.define(DATA_RELOAD_TIMER, 0);
     }
 
     @Override
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
-        buf.writeInt(direction);
+        buf.writeInt(gunDirection);
         buf.writeInt(blockPos.getX());
         buf.writeInt(blockPos.getY());
         buf.writeInt(blockPos.getZ());
-        buf.writeItem(ammo);
+        buf.writeBoolean(!ammo.isEmpty());
     }
 
     @Override
@@ -162,7 +185,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     {
         try
         {
-            shortname = buf.readUtf();
+            setShortName(buf.readUtf());
             if (InfoType.getInfoType(shortname) instanceof GunType gType)
                 configType = gType;
             if (configType == null)
@@ -170,9 +193,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
                 FlansMod.log.warn("Unknown gun type {}, discarding.", shortname);
                 discard();
             }
-            direction = buf.readInt();
+            gunDirection = buf.readInt();
             blockPos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-            ammo = buf.readItem();
+            setHasAmmo(buf.readBoolean());
         }
         catch (Exception e)
         {
@@ -191,13 +214,14 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         else
             discard();
 
-        direction = tag.getInt(NBT_DIRECTION);
+        gunDirection = tag.getInt(NBT_DIRECTION);
         blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X), tag.getInt(NBT_BLOCK_Y), tag.getInt(NBT_BLOCK_Z));
 
         if (tag.contains(NBT_AMMO, Tag.TAG_COMPOUND))
             ammo = ItemStack.of(tag.getCompound(NBT_AMMO));
         else
             ammo = ItemStack.EMPTY;
+        setHasAmmo(!ammo.isEmpty());
     }
 
     @Override
@@ -210,7 +234,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         }
 
         tag.putString(NBT_TYPE_NAME, shortname);
-        tag.putInt(NBT_DIRECTION, direction);
+        tag.putInt(NBT_DIRECTION, gunDirection);
         tag.putInt(NBT_BLOCK_X, blockPos.getX());
         tag.putInt(NBT_BLOCK_Y, blockPos.getY());
         tag.putInt(NBT_BLOCK_Z, blockPos.getZ());
@@ -328,42 +352,16 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
         Level level = level();
 
-        // Ensure blockPos is initialized
         if (blockPos == null)
             blockPos = this.blockPosition();
+
+        if (gunner == null || !gunner.isAlive())
+            shootKeyPressed = false;
 
         if (level.isClientSide)
             clientTick();
         else
             serverTick(level);
-
-        updateAimAndGunnerPosition();
-
-        // Timers
-        if (shootTimer > 0)
-            shootTimer--;
-        if (reloadTimer > 0)
-            reloadTimer--;
-        if (soundTimer > 0)
-            soundTimer--;
-
-        // Ammo broken/empty
-        if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
-            ammo = ItemStack.EMPTY;
-
-        // Auto-reload if mounted and ammo empty
-        reloadGun(level);
-
-        if (gunner != null && gunner.isAlive())
-        {
-            boolean isAutomatic = configType.getFireMode(null).isAutomaticFire();
-            if ((isAutomatic && shootKeyPressed) || (!isAutomatic && shootKeyPressed && !prevShootKeyPressed))
-                fireGun();
-        }
-        else
-        {
-            shootKeyPressed = false;
-        }
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -416,6 +414,28 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         BlockPos supportPos = blockPos.below();
         if (level.isEmptyBlock(supportPos))
             discard();
+
+        // Timers
+        if (shootTimer > 0)
+            shootTimer--;
+        if (soundTimer > 0)
+            soundTimer--;
+        if (reloadTimer > 0)
+            setReloadTimer(reloadTimer - 1);
+
+        updateAimAndGunnerPosition();
+
+        // Ammo broken/empty
+        if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
+        {
+            ammo = ItemStack.EMPTY;
+            setHasAmmo(false);
+        }
+
+        // Auto-reload if mounted and ammo empty
+        reloadGun(level);
+
+        fireGun(level);
     }
 
     protected void updateAimAndGunnerPosition()
@@ -430,7 +450,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             ticksSinceUsed = 0;
 
             // Yaw relative to mount direction
-            float yaw = gunner.getYRot() - (direction * 90.0F);
+            float yaw = gunner.getYRot() - (gunDirection * 90.0F);
 
             // Wrap to [-180, 180]
             yaw = Mth.wrapDegrees(yaw);
@@ -451,7 +471,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             setXRot(pitch);
 
             // Keep user standing behind the gun
-            float angleDeg = direction * 90.0F + yaw;
+            float angleDeg = gunDirection * 90.0F + yaw;
             float angleRad = angleDeg * Mth.DEG_TO_RAD;
 
             double dX = (configType.getStandBackDist() * Math.sin(angleRad));
@@ -494,7 +514,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         for (int i = 0; i < inv.getContainerSize(); i++)
         {
             ItemStack stack = inv.getItem(i);
-            if (!(selectedStack.getItem() instanceof ShootableItem shootableItem) || !allowed.contains(shootableItem.getConfigType()))
+            if (!(stack.getItem() instanceof ShootableItem shootableItem) || !allowed.contains(shootableItem.getConfigType()))
                 continue;
 
             int score = getPreferredAmmoScore(i, stack, selected);
@@ -534,21 +554,20 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         return score;
     }
 
-    public void fireGun()
+    public void fireGun(Level level)
     {
-        // Check ammo / reloading / shoot delay
-        if (ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide)
             return;
 
-        // Fire (Server Side)
-        Level level = level();
+        if (gunner == null || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+            return;
 
-        boolean isAutomaticFire = !configType.getFireMode(null).isAutomaticFire();
-        float shootDelay = configType.getShootDelay(null);
-
-        while (shootTimer <= 0)
+        boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
+        if ((automaticFire && shootKeyPressed) || (!automaticFire && shootKeyPressed && !prevShootKeyPressed))
         {
-            if (!level.isClientSide)
+            float shootDelay = configType.getShootDelay(null);
+
+            while (shootTimer <= 0)
             {
                 ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
 
@@ -563,39 +582,41 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
                     if (StringUtils.isNotBlank(configType.getDistantShootSound()))
                         PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(), new PacketPlaySound(getX(), getY(), getZ(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false));
                 }
+
+                shootTimer += shootDelay;
+
+                if (!automaticFire)
+                    break;
             }
-
-            shootTimer += shootDelay;
-
-            if (isAutomaticFire)
-                break;
         }
     }
 
     public void reloadGun(Level level)
     {
-        if (gunner != null && gunner.isAlive() && ammo.isEmpty() && reloadTimer <= 0)
-        {
-            int slot = findAmmo(gunner); // you port this to modern inventory below
-            if (slot >= 0)
-            {
-                // Take the stack from inventory
-                ItemStack taken = gunner.getInventory().getItem(slot);
-                if (!taken.isEmpty())
-                {
-                    ammo = taken.copy();
-                    if (!gunner.getAbilities().instabuild)
-                        gunner.getInventory().setItem(slot, ItemStack.EMPTY);
-                    reloadTimer = configType.getReloadTime();
+        if (level.isClientSide)
+            return;
 
-                    if (!level.isClientSide)
-                    {
-                        String reloadSound = configType.getReloadSound(null);
-                        // Play reload sound
-                        if (StringUtils.isNotBlank(reloadSound))
-                            PacketPlaySound.sendSoundPacket(gunner, configType.getReloadSoundRange(), reloadSound, false, false);
-                    }
-                }
+        if (gunner == null || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+            return;
+
+        int slot = findAmmo(gunner); // you port this to modern inventory below
+        if (slot >= 0)
+        {
+            // Take the stack from inventory
+            ItemStack taken = gunner.getInventory().getItem(slot);
+            if (!taken.isEmpty())
+            {
+                if (!gunner.getAbilities().instabuild)
+                    gunner.getInventory().setItem(slot, ItemStack.EMPTY);
+
+                ammo = taken.copy();
+                setHasAmmo(true);
+                setReloadTimer(configType.getReloadTime());
+                String reloadSound = configType.getReloadSound(null);
+
+                // Play reload sound
+                if (StringUtils.isNotBlank(reloadSound))
+                    PacketPlaySound.sendSoundPacket(gunner, configType.getReloadSoundRange(), reloadSound, false, false);
             }
         }
     }
@@ -619,7 +640,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public Vec3 getShootingOrigin()
     {
-        return new Vec3(blockPos.getX() + 0.5, blockPos.getY() + configType.getPivotHeight(), blockPos.getY() + 0.5);
+        return new Vec3(blockPos.getX() + 0.5, blockPos.getY() + configType.getPivotHeight(), blockPos.getZ() + 0.5);
     }
 
     public Vec3 getShootingDirection()
@@ -634,6 +655,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public float getShootingYaw()
     {
-        return direction * 90.0F + getYRot();
+        return gunDirection * 90.0F + getYRot();
     }
 }

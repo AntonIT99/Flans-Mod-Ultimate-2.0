@@ -477,7 +477,7 @@ public class GunType extends PaintableType implements IScope
     protected String deployableModelName = StringUtils.EMPTY;
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
-    @OnlyIn(Dist.CLIENT)
+    @OnlyIn(Dist.CLIENT) @Getter
     protected ResourceLocation deployableTexture;
     /**
      * The deployable model's texture
