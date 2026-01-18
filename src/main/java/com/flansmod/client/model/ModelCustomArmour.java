@@ -2,7 +2,7 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
-import com.flansmodultimate.client.render.ERenderPass;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.ArmorType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -83,10 +83,10 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, ERenderPass.DEFAULT);
+        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, EnumRenderPass.DEFAULT);
     }
 
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, ERenderPass renderPass)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
     {
         float modelScale = type != null ? type.getModelScale() : 1F;
 
@@ -116,12 +116,12 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, ERenderPass renderPass)
+    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, EnumRenderPass renderPass)
     {
         render(headModel, head, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
     }
 
-    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, ERenderPass renderPass)
+    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale, EnumRenderPass renderPass)
     {
         render(bodyModel, body, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         render(leftArmModel, leftArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
@@ -150,7 +150,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, ERenderPass renderPass)
+    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, EnumRenderPass renderPass)
     {
         setBodyPart(models, bodyPart, scale);
         for (ModelRendererTurbo mod : models)

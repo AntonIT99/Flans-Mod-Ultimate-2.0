@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.guns;
+package com.flansmodultimate.common.guns.handler;
 
 /**
  * Functional interface to add effects when a bullet is fired. This is used to reduce the ammo, apply knockback, drop empty shells, etc.

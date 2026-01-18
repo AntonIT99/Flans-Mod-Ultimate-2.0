@@ -6,6 +6,7 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.network.client.PacketDeployableGunMount;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
@@ -77,6 +78,7 @@ public final class PacketHandler {
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
+        registerS2C(PacketDeployableGunMount.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketFlanExplosionParticles.class);
@@ -221,12 +223,12 @@ public final class PacketHandler {
     }
 
     /** server -> all in a donut (min..max radius) */
-    public static void sendToDonut(ResourceKey<Level> dim, Vec3 center, double minRange, double maxRange, IClientPacket msg)
+    public static void sendToDonut(ResourceKey<Level> dimension, Vec3 center, double minRange, double maxRange, IClientPacket msg)
     {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null)
             return;
-        ServerLevel level = server.getLevel(dim);
+        ServerLevel level = server.getLevel(dimension);
         if (level == null)
             return;
 

@@ -8,10 +8,12 @@ import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.raytracing.Raytracer;
@@ -77,30 +79,10 @@ public final class ShootingHelper
     private static final double ENTITY_HIT_PARTICLE_RANGE = 64.0;
     private static final double BLOCK_HIT_PARTICLE_RANGER = 64.0;
 
-    /** Call this when fire bullets from vehicles or other sources (Server side) */
-    public static void fireGun(Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 rayTraceOrigin, Vec3 shootingDirection, ShootingHandler handler)
+    /** Call this to fire bullets or grenades from a living entity holding a gun item (Server side) */
+    public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
     {
-        if (firedShot.getFireableGun().getBulletSpeed() == 0F)
-        {
-            // Raytrace without entity
-            for (int i = 0; i < numBullets; i++)
-                createShot(level, firedShot, rayTraceOrigin, shootingDirection);
-        }
-        else
-        {
-            // Spawn shootable entities
-            Bullet bullet = new Bullet(level, firedShot, rayTraceOrigin, shootingDirection);
-            for (int i = 0; i < numBullets; i++)
-                level.addFreshEntity(bullet);
-        }
-
-        handler.onShoot();
-    }
-
-    /** Call this to fire bullets or grenades from a living entity holding a gun (Server side) */
-    public static void fireGun(Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, ShootingHandler handler)
-    {
-        int numBullets = gunType.getNumBullets(shootableType);
+        int numBullets = gunType.getNumBullets(gunStack, shootableType);
 
         if (gunType.getBulletSpeed(gunStack, shootableStack) == 0F && shootableType instanceof BulletType bulletType)
         {
@@ -115,6 +97,49 @@ public final class ShootingHelper
             Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
             for (int i = 0; i < numBullets; i++)
                 level.addFreshEntity(shootable);
+        }
+
+        handler.onShoot();
+    }
+
+    /** Call this to fire bullets or grenades from a living entity controlling a deployed gun (Server side) */
+    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack, @NotNull ShootingHandler handler)
+    {
+        int numBullets = deployedGun.getConfigType().getNumBullets(null, shootableType);
+
+        if (deployedGun.getConfigType().getBulletSpeed() == 0F && shootableType instanceof BulletType bulletType)
+        {
+            // Raytrace without entity
+            FiredShot firedShot = new FiredShot(new FireableGun(deployedGun.getConfigType(), shootableStack), bulletType, deployedGun, shooter);
+            for (int i = 0; i < numBullets; i++)
+                createShot(level, firedShot, deployedGun.getShootingOrigin(), deployedGun.getShootingDirection());
+        }
+        else
+        {
+            // Spawn shootable entities
+            Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
+            for (int i = 0; i < numBullets; i++)
+                level.addFreshEntity(shootable);
+        }
+
+        handler.onShoot();
+    }
+
+    /** Call this to fire bullets from other sources (Server side) */
+    public static void fireGun(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection, @NotNull ShootingHandler handler)
+    {
+        if (firedShot.getFireableGun().getBulletSpeed() == 0F)
+        {
+            // Raytrace without entity
+            for (int i = 0; i < numBullets; i++)
+                createShot(level, firedShot, shootingOrigin, shootingDirection);
+        }
+        else
+        {
+            // Spawn shootable entities
+            Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
+            for (int i = 0; i < numBullets; i++)
+                level.addFreshEntity(bullet);
         }
 
         handler.onShoot();
@@ -184,7 +209,7 @@ public final class ShootingHelper
             lastHitHeadshot = playerHitData.lastHitHeadshot();
 
             if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.Type.PLAYER));
+                bullet.getPenetrationLosses().add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.PLAYER));
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
             showHitMarker = true;
@@ -218,7 +243,7 @@ public final class ShootingHelper
             penetratingPower -= 1F;
 
             if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.Type.ENTITY));
+                bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.EnumType.ENTITY));
 
             DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 1F, 0F);
             showHitMarker = true;
@@ -262,7 +287,7 @@ public final class ShootingHelper
                 ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
 
             if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(hardness, PenetrationLoss.Type.BLOCK));
+                bullet.getPenetrationLosses().add(new PenetrationLoss(hardness, PenetrationLoss.EnumType.BLOCK));
         }
 
         // Special handling: glass breaking
@@ -520,20 +545,20 @@ public final class ShootingHelper
         }
     }
 
-    private static void createShot(Level level, FiredShot shot, Vec3 rayTraceOrigin, Vec3 shootingDirection)
+    private static void createShot(Level level, FiredShot shot, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
 
         HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
-        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), rayTraceOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
-        Vec3 previousHitPos = rayTraceOrigin;
+        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
+        Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
 
         for (int i = 0; i < hits.size(); i++)
         {
             BulletHit hit = hits.get(i);
             Vec3 shotVector = shootingVector.scale(hit.getIntersectTime());
-            Vec3 hitPos = rayTraceOrigin.add(shotVector);
+            Vec3 hitPos = shootingOrigin.add(shotVector);
 
             if (hit instanceof BlockHit)
                 DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0F, 1F);
@@ -554,10 +579,10 @@ public final class ShootingHelper
 
         if (finalhit == null)
         {
-            finalhit = rayTraceOrigin.add(shootingDirection);
+            finalhit = shootingOrigin.add(shootingDirection);
         }
 
-        PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(rayTraceOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), rayTraceOrigin.x, rayTraceOrigin.y, rayTraceOrigin.z, 500F, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(shootingOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z, 500F, level.dimension());
     }
 
     public static Vec3 calculateShootingMotionVector(RandomSource random, Vec3 direction, float spread, float speed, EnumSpreadPattern pattern)

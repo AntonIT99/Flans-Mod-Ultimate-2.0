@@ -9,6 +9,11 @@ import java.util.Optional;
 @NoArgsConstructor
 public class TeamsManager
 {
+    public enum EnumWeaponDrop
+    {
+        NONE, DROPS, SMART_DROPS
+    }
+
     private boolean voting = false;
     @Getter
     private boolean explosionsBreakBlocks = true; //TODO: default value through config?
@@ -18,6 +23,7 @@ public class TeamsManager
     private boolean shellsEnabled = true;
     private boolean bulletsEnabled = true;
     private boolean forceAdventureMode = true;
+    @Getter
     private boolean canBreakGuns = true;
     @Getter
     private boolean canBreakGlass = true; //TODO: default value through config?
@@ -26,7 +32,15 @@ public class TeamsManager
     private boolean overrideHunger = true;
     private boolean survivalCanBreakVehicles = true;
     private boolean survivalCanPlaceVehicles = true;
-
+    @Getter
+    private EnumWeaponDrop weaponDrops = EnumWeaponDrop.DROPS;
+    /** Life in seconds of certain entity types. 0 is eternal */
+    @Getter
+    private int mgLife;
+    private int planeLife;
+    private int vehicleLife;
+    private int mechaLove;
+    private int aaLife;
     @Getter
     private int bulletSnapshotMin;
     @Getter

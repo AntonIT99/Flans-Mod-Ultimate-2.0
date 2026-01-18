@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.flansmodultimate.util.TypeReaderUtils.hasValueForConfigField;
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -187,6 +188,8 @@ public abstract class ShootableType extends InfoType
         // Physics
         bulletSpread = readValue("Accuracy", bulletSpread, file);
         bulletSpread = readValue("Spread", bulletSpread, file);
+        if (hasValueForConfigField("Dispersion", file))
+            bulletSpread = readValue("Dispersion", 0F, file) * Mth.DEG_TO_RAD / ShootingHelper.ANGULAR_SPREAD_FACTOR;
         fallSpeed = readValue("FallSpeed", fallSpeed, file);
         throwSpeed = readValue("ThrowSpeed", throwSpeed, file);
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);

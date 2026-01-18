@@ -49,11 +49,28 @@ public final class ShootableFactory
     {
         if (type instanceof BulletType bulletType)
         {
-            return new Bullet(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), shooter.getEyePosition(0.0F), shooter.getLookAngle());
+            return new Bullet(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), shooter.getEyePosition(0F), shooter.getLookAngle());
         }
         else if (type instanceof GrenadeType grenadeType)
         {
             return new Grenade(level, grenadeType, shooter);
+        }
+        throw new IllegalArgumentException("Unknown Shootable Type");
+    }
+
+    /**
+     * For spawning Shootable entities associated with a living entity shooting a deployable gun
+     */
+    @NotNull
+    public static Shootable createShootable(Level level, @NotNull ShootableType type, @NotNull DeployedGun deployedGun, @Nullable LivingEntity shooter, @NotNull ItemStack shootableStack)
+    {
+        if (type instanceof BulletType bulletType)
+        {
+            return new Bullet(level, new FiredShot(deployedGun.getConfigType(), bulletType, shootableStack, deployedGun, shooter), deployedGun.getShootingOrigin(), deployedGun.getShootingDirection());
+        }
+        else if (type instanceof GrenadeType grenadeType)
+        {
+            return new Grenade(level, grenadeType, deployedGun.getShootingOrigin(), deployedGun.getShootingPitch(), deployedGun.getShootingYaw(), shooter);
         }
         throw new IllegalArgumentException("Unknown Shootable Type");
     }

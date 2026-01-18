@@ -2,7 +2,7 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
-import com.flansmodultimate.client.render.ERenderPass;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -29,7 +29,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         return GunType.class;
     }
 
-    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
+    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo bipodPart : bipodModel)
         {
@@ -44,7 +44,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
+    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo gunPart : gunModel)
         {

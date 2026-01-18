@@ -53,6 +53,11 @@ public class PacketPlaySound implements IClientPacket
         this.instanceUUID = instanceUUID;
     }
 
+    public PacketPlaySound(double x, double y, double z, double range, @Nullable String s, boolean distort, boolean silenced)
+    {
+        this(x, y, z, range, s, distort, silenced, false, UUID.randomUUID());
+    }
+
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {

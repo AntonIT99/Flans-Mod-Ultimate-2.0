@@ -5,7 +5,7 @@ import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.client.render.ERenderPass;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -259,7 +259,7 @@ public class ModelMinigun extends ModelGun
     }
 
     @Override
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, ERenderPass renderPass)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(spinnerOrigin.x, spinnerOrigin.y, spinnerOrigin.z);

@@ -32,7 +32,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -104,7 +103,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     public Grenade(Level level, GrenadeType grenadeType, Vec3 position, Vec3 direction, @Nullable LivingEntity entity)
     {
-        this(level, grenadeType, position, getPitchFromDirection(direction), getYawFromDirection(direction), entity);
+        this(level, grenadeType, position, ModUtils.getPitchFromDirection(direction), ModUtils.getYawFromDirection(direction), entity);
     }
 
     /** For living entities throwing grenades. */
@@ -141,26 +140,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // If this can be remotely detonated, add it to the players detonate list
         if (grenadeType.isRemote() && thrower instanceof Player player)
             PlayerData.getInstance(player).getRemoteExplosives().add(this);
-    }
-
-    private static float getYawFromDirection(Vec3 dir)
-    {
-        Vec3 n = dir.normalize();
-        double x = n.x;
-        double z = n.z;
-        float yaw = (float) Math.toDegrees(Math.atan2(-x, z));
-        return Mth.wrapDegrees(yaw);
-    }
-
-    private static float getPitchFromDirection(Vec3 dir)
-    {
-        Vec3 n = dir.normalize();
-        double x = n.x;
-        double y = n.y;
-        double z = n.z;
-        double horiz = Math.sqrt(x * x + z * z);
-        float pitch = (float) Math.toDegrees(Math.atan2(-y, horiz));
-        return Mth.wrapDegrees(pitch);
     }
 
     @Override

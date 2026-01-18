@@ -92,7 +92,7 @@ public class Raytracer
         PlayerData data = PlayerData.getInstance(player);
         boolean shouldDoNormalHitDetect = false;
 
-        if (data.getTeam() == Team.SPECTATORS)
+        if (Team.SPECTATORS.equals(data.getTeam()))
             return;
 
         SnapshotSelection selection = SnapshotSelection.selectSnapshotForPing(data, pingOfShooter);

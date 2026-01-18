@@ -1,6 +1,6 @@
 package com.flansmod.client.tmt;
 
-import com.flansmodultimate.client.render.ERenderPass;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -2098,12 +2098,12 @@ public class ModelRendererTurbo extends ModelRenderer
         poseStack.popPose();
     }
 
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, ERenderPass renderPass)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        if ((renderPass == ERenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
-            || (renderPass == ERenderPass.GLOW_ALPHA && glow)
-            || (renderPass == ERenderPass.GLOW_ADDITIVE && glowAdditive)
-            || (renderPass == ERenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
+        if ((renderPass == EnumRenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
+            || (renderPass == EnumRenderPass.GLOW_ALPHA && glow)
+            || (renderPass == EnumRenderPass.GLOW_ADDITIVE && glowAdditive)
+            || (renderPass == EnumRenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
         {
             render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }

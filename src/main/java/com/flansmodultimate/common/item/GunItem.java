@@ -471,9 +471,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            onUpdateClient(level, player, data, stack, hand, dualWield);
+            clientTick(level, player, data, stack, hand, dualWield);
         else
-            onUpdateServer(level, (ServerPlayer) player, data, stack, hand);
+            serverTick(level, (ServerPlayer) player, data, stack, hand);
 
         gunItemHandler.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
         gunItemHandler.checkForLockOn(level, player, data, hand);
@@ -481,9 +481,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @OnlyIn(Dist.CLIENT)
-    protected void onUpdateClient(Level level, @NotNull Player player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    protected void clientTick(Level level, @NotNull Player player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        if (configType.isDeployable() || !configType.isUsableByPlayers() || !gunItemHandler.gunCanBeHandled(player))
+        if (player != Minecraft.getInstance().player || configType.isDeployable() || !configType.isUsableByPlayers() || !gunItemHandler.gunCanBeHandled(player))
             return;
 
         // Force release actions when entering a GUI
@@ -519,13 +519,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             data.setPrevShootKeyPressed(hand, primaryFunctionState.isPrevPressed());
             data.setSecondaryFunctionKeyPressed(secondaryFunctionState.isPressed());
 
-            // send update to server when keys are pressed or released
+            // Send update to server when keys are pressed or released
             if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
                 PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), primaryFunctionState.isPrevPressed(), secondaryFunctionState.isPressed(), hand));
         }
     }
 
-    protected void onUpdateServer(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
+    protected void serverTick(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
         ensureGunTags(gunStack);
 

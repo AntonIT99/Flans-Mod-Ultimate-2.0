@@ -48,6 +48,7 @@ public class PlayerData
 
     // Gun-related fields
     /** The MG this player is using */
+    @Getter @Setter
     private DeployedGun mountingGun;
     /** Tickers to stop shooting too fast */
     @Getter @Setter

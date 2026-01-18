@@ -28,7 +28,7 @@ public class FireableGun
     @Getter
     private final EnumSpreadPattern spreadPattern;
 
-    public FireableGun(GunType gunType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, boolean sneaking, boolean sprinting)
+    public FireableGun(GunType gunType, @Nullable ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, boolean sneaking, boolean sprinting)
     {
         this(gunType, gunType.getDamage(gunStack), gunType.getSpread(gunStack, sneaking, sprinting), gunType.getBulletSpeed(gunStack, shootableStack), gunType.getSpreadPattern(gunStack));
         //TODO: shields & gloves & EnchantmentModule
@@ -36,6 +36,11 @@ public class FireableGun
         {
             EnchantmentModule.modifyGun(fireableGun, player, otherHand);
         }*/
+    }
+
+    public FireableGun(GunType gunType, @NotNull ItemStack shootableStack)
+    {
+        this(gunType, null, shootableStack, null, false, false);
     }
 
     public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)

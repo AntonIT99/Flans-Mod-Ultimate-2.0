@@ -2,19 +2,19 @@ package com.flansmodultimate.util;
 
 public class TransformOp
 {
-    public enum Kind
+    public enum EnumKind
     {
         TRANSLATE,
         SCALE,
         ROTATE
     }
 
-    public final Kind kind;
+    public final EnumKind kind;
     public final float[] args;
     public final String methodName;   // where it was found
     public final String methodDesc;
 
-    public TransformOp(Kind kind, float[] args, String methodName, String methodDesc)
+    public TransformOp(EnumKind kind, float[] args, String methodName, String methodDesc)
     {
         this.kind = kind;
         this.args = args;

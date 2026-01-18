@@ -3,7 +3,7 @@ package com.flansmodultimate.util;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.client.render.ERenderPass;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -41,7 +41,7 @@ public final class LegacyTransformApplier
             }
             else
             {
-                for (ERenderPass renderPass : ERenderPass.ORDER)
+                for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
                     renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
             }
         }
@@ -51,7 +51,7 @@ public final class LegacyTransformApplier
         }
     }
 
-    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, ERenderPass renderPass)
+    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
     {
         float modelScale = model instanceof ModelBase modelBase ? modelBase.getScale() : 1F;
 
@@ -61,7 +61,7 @@ public final class LegacyTransformApplier
             {
                 modelRendererTurbo.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, renderPass);
             }
-            else if (renderPass == ERenderPass.DEFAULT)
+            else if (renderPass == EnumRenderPass.DEFAULT)
             {
                 modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
             }

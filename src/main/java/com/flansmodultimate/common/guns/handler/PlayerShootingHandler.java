@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.guns;
+package com.flansmodultimate.common.guns.handler;
 
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -57,7 +57,7 @@ public final class PlayerShootingHandler implements ShootingHandler
             return;
 
         // Drop item on shooting if bullet requires it
-        if (!player.isCreative())
+        if (!player.getAbilities().instabuild)
             ModUtils.dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
 
         // Drop item on shooting if gun requires it

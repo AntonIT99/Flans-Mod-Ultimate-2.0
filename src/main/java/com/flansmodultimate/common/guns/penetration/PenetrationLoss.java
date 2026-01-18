@@ -2,9 +2,9 @@ package com.flansmodultimate.common.guns.penetration;
 
 import com.flansmodultimate.common.types.BulletType;
 
-public record PenetrationLoss(float loss, Type type)
+public record PenetrationLoss(float loss, EnumType type)
 {
-    public enum Type
+    public enum EnumType
     {
         PLAYER, ENTITY, BLOCK, DECAY;
 

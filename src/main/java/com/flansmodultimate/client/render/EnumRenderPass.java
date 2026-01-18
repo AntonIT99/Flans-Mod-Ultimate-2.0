@@ -5,14 +5,14 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public enum ERenderPass
+public enum EnumRenderPass
 {
     DEFAULT,
     GLOW_ALPHA_NO_DEPTH_WRITE,
     GLOW_ALPHA,
     GLOW_ADDITIVE;
 
-    public static final List<ERenderPass> ORDER = List.of(GLOW_ALPHA_NO_DEPTH_WRITE, GLOW_ALPHA, GLOW_ADDITIVE, DEFAULT);
+    public static final List<EnumRenderPass> ORDER = List.of(GLOW_ALPHA_NO_DEPTH_WRITE, GLOW_ALPHA, GLOW_ADDITIVE, DEFAULT);
 
     public RenderType getRenderType(ResourceLocation texture)
     {

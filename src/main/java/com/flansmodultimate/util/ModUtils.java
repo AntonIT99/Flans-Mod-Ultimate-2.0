@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Locale;
@@ -133,17 +135,17 @@ public final class ModUtils
         return queryEntities(level, null, box, LivingEntity.class, null);
     }
 
-    public static Optional<ItemStack> getItemStack(InfoType infoType)
+    public static Optional<ItemStack> getItemStack(@Nullable InfoType infoType)
     {
         return getItemStack(infoType, 1);
     }
 
-    public static Optional<ItemStack> getItemStack(InfoType infoType, int amount)
+    public static Optional<ItemStack> getItemStack(@Nullable InfoType infoType, int amount)
     {
         return getItemStack(infoType, amount, 0);
     }
 
-    public static Optional<ItemStack> getItemStack(InfoType infoType, int amount, int damage)
+    public static Optional<ItemStack> getItemStack(@Nullable InfoType infoType, int amount, int damage)
     {
         Optional<Item> item = getItem(infoType);
         if (item.isPresent())
@@ -156,9 +158,9 @@ public final class ModUtils
         return Optional.empty();
     }
 
-    public static Optional<Item> getItem(InfoType infoType)
+    public static Optional<Item> getItem(@Nullable InfoType infoType)
     {
-        if (infoType.getType().isItemType())
+        if (infoType != null && infoType.getType().isItemType())
         {
             return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
         }
@@ -293,5 +295,33 @@ public final class ModUtils
         if (item != null)
             return item.getDescription().getString();
         return itemId;
+    }
+
+    public static float getYawFromDirection(Vec3 dir)
+    {
+        if (dir.lengthSqr() < 1e-12)
+            return 0.0F;
+
+        return Mth.wrapDegrees((float) (Mth.atan2(-dir.x, dir.z) * Mth.RAD_TO_DEG));
+    }
+
+    public static float getPitchFromDirection(Vec3 dir)
+    {
+        if (dir.lengthSqr() < 1e-12)
+            return 0.0F;
+
+        return (float) (Mth.atan2(-dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z)) * Mth.RAD_TO_DEG);
+    }
+
+    public static Vec3 getDirectionFromPitchAndYaw(float pitchDeg, float yawDeg)
+    {
+        float yawRad = yawDeg * Mth.DEG_TO_RAD;
+        float pitchRad = pitchDeg * Mth.DEG_TO_RAD;
+
+        double x = -Mth.sin(yawRad) * Mth.cos(pitchRad);
+        double y = -Mth.sin(pitchRad);
+        double z = Mth.cos(yawRad) * Mth.cos(pitchRad);
+
+        return new Vec3(x, y, z);
     }
 }

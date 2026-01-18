@@ -7,6 +7,11 @@ public enum EnumFireMode
     MINIGUN,
     BURST;
 
+    public boolean isAutomaticFire()
+    {
+        return this == FULLAUTO || this == MINIGUN;
+    }
+
     public static EnumFireMode getFireMode(String s)
     {
         for (EnumFireMode mode : EnumFireMode.values())

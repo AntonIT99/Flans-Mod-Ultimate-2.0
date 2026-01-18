@@ -21,9 +21,9 @@ import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.PlayerShootingHandler;
-import com.flansmodultimate.common.guns.ShootingHandler;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
+import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.EnumHitboxType;
 import com.flansmodultimate.common.raytracing.PlayerHitbox;
@@ -33,7 +33,6 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
-import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.common.types.ShootableType;
@@ -198,15 +197,18 @@ public class GunItemHandler
     {
         GunType type = item.configType;
         EnumFireMode mode = type.getFireMode(gunStack);
+
         boolean emptyAmmo = hasEmptyAmmo(gunStack);
         boolean shootPressed = data.isShootKeyPressed(hand);
         boolean shootEdgePressed = data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand);
-        boolean actionRequested = switch (mode)
-        {
-            case FULLAUTO, MINIGUN -> shootPressed;
-            case SEMIAUTO -> shootEdgePressed;
-            case BURST -> shootEdgePressed || data.getBurstRoundsRemaining(hand) > 0;
-        };
+
+        boolean actionRequested;
+        if (mode.isAutomaticFire())
+            actionRequested = shootPressed;
+        else if (mode == EnumFireMode.BURST)
+            actionRequested = shootEdgePressed || data.getBurstRoundsRemaining(hand) > 0;
+        else
+            actionRequested = shootEdgePressed;
 
         if (!actionRequested)
             return EnumFireDecision.NO_ACTION;
@@ -258,7 +260,10 @@ public class GunItemHandler
         data.setShooting(hand, true);
         PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
 
+        boolean automaticFire = item.configType.getFireMode(null).isAutomaticFire();
         float shootTime = data.getShootTime(hand);
+        float shootDelay = item.configType.getShootDelay(gunStack);
+
         while (shootTime <= 0F)
         {
             AmmoSlot ammoSlot = findLoadedAmmoInGun(item, gunStack, item.configType).orElse(null);
@@ -271,15 +276,20 @@ public class GunItemHandler
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
 
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(), handler);
-            boolean silenced = Optional.ofNullable(item.configType.getBarrel(gunStack)).map(AttachmentType::isSilencer).orElse(false);
 
             if (StringUtils.isNotBlank(item.configType.getShootSound()))
             {
-                PacketPlaySound.sendSoundPacket(player.position(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), silenced);
+                PacketPlaySound.sendSoundPacket(player.position(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), item.configType.isDistortSound(), item.configType.isSilencedSound(gunStack));
                 item.soundDelay = item.configType.getShootSoundLength();
             }
 
-            shootTime += item.configType.getShootDelay(gunStack);
+            if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
+                PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.getX(), player.getY(), player.getZ(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false));
+
+            shootTime += shootDelay;
+
+            if (!automaticFire)
+                break;
         }
         data.setShootTime(hand, shootTime);
     }
@@ -329,7 +339,7 @@ public class GunItemHandler
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.isCreative(), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), reloadSoundUUID))
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), reloadSoundUUID))
         {
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
@@ -651,7 +661,7 @@ public class GunItemHandler
     {
         PlayerData otherData = PlayerData.getInstance(otherPlayer);
 
-        if (!otherPlayer.isAlive() || otherData.getTeam() == Team.SPECTATORS)
+        if (!otherPlayer.isAlive() || Team.SPECTATORS.equals(otherData.getTeam()))
             return;
 
         PlayerSnapshot snapshot = selectSnapshot(attacker, otherData);

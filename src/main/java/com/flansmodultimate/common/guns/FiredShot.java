@@ -44,6 +44,11 @@ public class FiredShot
         this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter);
     }
 
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack shootableStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
+    {
+        this(new FireableGun(gunType, shootableStack), bulletType, shooter, attacker);
+    }
+
     /** General Constructor */
     public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)
     {

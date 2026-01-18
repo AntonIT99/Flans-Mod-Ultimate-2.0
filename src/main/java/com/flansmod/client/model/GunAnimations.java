@@ -91,12 +91,12 @@ public class GunAnimations
     public Vector3f sprintingStance;
     public int stanceTimer;
 
-    public LookAtState lookAt = LookAtState.NONE;
+    public EnumLookAtState lookAt = EnumLookAtState.NONE;
     public float lookAtTimer = 0;
 
     public static final int[] lookAtTimes = new int[]{1, 10, 20, 10, 20, 10};
 
-    public enum LookAtState
+    public enum EnumLookAtState
     {
         NONE,
         TILT1,
@@ -303,7 +303,7 @@ public class GunAnimations
                 lookAtTimer++;
                 if (lookAtTimer >= lookAtTimes[lookAt.ordinal()])
                 {
-                    lookAt = LookAtState.values()[(lookAt.ordinal() + 1) % LookAtState.values().length];
+                    lookAt = EnumLookAtState.values()[(lookAt.ordinal() + 1) % EnumLookAtState.values().length];
                     lookAtTimer = 0;
                 }
                 break;

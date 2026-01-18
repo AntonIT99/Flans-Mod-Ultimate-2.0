@@ -112,17 +112,17 @@ public class TransformClassVisitor extends ClassVisitor
             if (("glTranslatef".equals(name) || "translate".equals(name)) && "(FFF)V".equals(descriptor))
             {
                 float[] vals = popN(3);
-                classOps.add(new TransformOp(TransformOp.Kind.TRANSLATE, vals, methodName, methodDesc));
+                classOps.add(new TransformOp(TransformOp.EnumKind.TRANSLATE, vals, methodName, methodDesc));
             }
             else if (("glScalef".equals(name) || "scale".equals(name)) && "(FFF)V".equals(descriptor))
             {
                 float[] vals = popN(3);
-                classOps.add(new TransformOp(TransformOp.Kind.SCALE, vals, methodName, methodDesc));
+                classOps.add(new TransformOp(TransformOp.EnumKind.SCALE, vals, methodName, methodDesc));
             }
             else if (("glRotatef".equals(name) || "rotate".equals(name)) && "(FFFF)V".equals(descriptor))
             {
                 float[] vals = popN(4);
-                classOps.add(new TransformOp(TransformOp.Kind.ROTATE, vals, methodName, methodDesc));
+                classOps.add(new TransformOp(TransformOp.EnumKind.ROTATE, vals, methodName, methodDesc));
             }
             // if you later want more methods, just extend this `if`
         }

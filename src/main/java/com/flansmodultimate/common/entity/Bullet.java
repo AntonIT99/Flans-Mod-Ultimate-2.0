@@ -750,7 +750,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         penetratingPower *= (1 - configType.getPenetrationDecay());
 
         if (configType.getPenetrationDecay() > 0F)
-            penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.Type.DECAY));
+            penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.DECAY));
     }
 
     protected void applyHomingIfLocked(Level level)

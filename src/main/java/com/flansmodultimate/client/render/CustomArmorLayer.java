@@ -53,7 +53,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
 
     private void renderModel(ModelCustomArmour model, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay)
     {
-        for (ERenderPass renderPass : ERenderPass.ORDER)
+        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
             model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
     }
 }

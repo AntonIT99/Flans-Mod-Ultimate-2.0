@@ -19,6 +19,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -158,7 +159,6 @@ public class GunType extends PaintableType implements IScope
     /**
      * The number of bullet entities created by each shot
      */
-    @Getter
     protected int numBullets = 1;
     /**
      * Allows you to set how many bullet entities are fired per shot via the ammo used
@@ -379,6 +379,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether to distort the sound or not. Generally only set to false for looping sounds
      */
+    @Getter
     protected boolean distortSound = true;
     /**
      * The length of the idle sound for looping sounds (miniguns)
@@ -409,10 +410,12 @@ public class GunType extends PaintableType implements IScope
     /**
      * Sound to be played outside of normal range
      */
-    protected String distantShootSound = "";
+    @Getter
+    protected String distantShootSound = StringUtils.EMPTY;
     /**
      * Max range for the sound to be played
      */
+    @Getter
     protected int distantSoundRange = 100;
 
     //Looping sounds
@@ -483,10 +486,15 @@ public class GunType extends PaintableType implements IScope
     /**
      * Various deployable settings controlling the player view limits and standing position
      */
+    @Getter
     protected float standBackDist = 1.5F;
+    @Getter
     protected float topViewLimit = -60F;
+    @Getter
     protected float bottomViewLimit = 30F;
+    @Getter
     protected float sideViewLimit = 45F;
+    @Getter
     protected float pivotHeight = 0.375F;
 
     //Default Scope Settings. Overriden by scope attachments
@@ -634,6 +642,8 @@ public class GunType extends PaintableType implements IScope
         //Accuracy
         bulletSpread = readValue("Accuracy", bulletSpread, file);
         bulletSpread = readValue("Spread", bulletSpread, file);
+        if (hasValueForConfigField("Dispersion", file))
+            bulletSpread = readValue("Dispersion", 0F, file) * Mth.DEG_TO_RAD / ShootingHelper.ANGULAR_SPREAD_FACTOR;
         spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
         adsSpreadModifier = readValue("ADSSpreadModifier", adsSpreadModifier, file);
         adsSpreadModifierShotgun = readValue("ADSSpreadModifierShotgun", adsSpreadModifierShotgun, file);
@@ -1109,19 +1119,9 @@ public class GunType extends PaintableType implements IScope
         }
     }
 
-    public int getNumBullets(ShootableType type)
+    public String getReloadSound(@Nullable ItemStack stack)
     {
-        int bullets = -1;
-        if (allowNumBulletsByBulletType)
-            bullets = type.getNumBullets();
-        if (bullets <= 0)
-            bullets = numBullets;
-        return bullets;
-    }
-
-    public String getReloadSound(ItemStack stack)
-    {
-        if (getSecondaryFire(stack) && getGrip(stack) != null && StringUtils.isNotBlank(getGrip(stack).secondaryReloadSound))
+        if (stack != null && getSecondaryFire(stack) && getGrip(stack) != null && StringUtils.isNotBlank(getGrip(stack).secondaryReloadSound))
             return getGrip(stack).secondaryReloadSound;
         else if (StringUtils.isNotBlank(reloadSoundOnEmpty))
             return reloadSoundOnEmpty;
@@ -1144,15 +1144,18 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the damage of a specific gun, taking into account attachments
      */
-    public float getDamage(ItemStack stack)
+    public float getDamage(@Nullable ItemStack stack)
     {
         float stackDamage = damage;
 
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            stackDamage = getGrip(stack).secondaryDamage;
+        if (stack != null)
+        {
+            if (getGrip(stack) != null && getSecondaryFire(stack))
+                stackDamage = getGrip(stack).secondaryDamage;
 
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackDamage *= attachment.damageMultiplier;
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+                stackDamage *= attachment.damageMultiplier;
+        }
 
         return (float) (stackDamage * ModCommonConfigs.gunDamageModifier.get());
     }
@@ -1160,15 +1163,18 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the bullet spread of a specific gun, taking into account attachments
      */
-    public float getSpread(ItemStack stack, boolean sneaking, boolean sprinting)
+    public float getSpread(@Nullable ItemStack stack, boolean sneaking, boolean sprinting)
     {
         float stackSpread = bulletSpread;
 
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            stackSpread = getGrip(stack).secondarySpread;
+        if (stack != null)
+        {
+            if (getGrip(stack) != null && getSecondaryFire(stack))
+                stackSpread = getGrip(stack).secondarySpread;
 
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackSpread *= attachment.spreadMultiplier;
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+                stackSpread *= attachment.spreadMultiplier;
+        }
 
         if (sprinting)
             stackSpread *= sprintSpreadModifier;
@@ -1178,9 +1184,14 @@ public class GunType extends PaintableType implements IScope
         return stackSpread;
     }
 
+    public float getSpread(@Nullable ItemStack stack)
+    {
+        return getSpread(stack, false, false);
+    }
+
     public float getDispersionForDisplay(ItemStack stack)
     {
-        return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * getSpread(stack, false, false);
+        return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * getSpread(stack);
     }
 
     /**
@@ -1196,12 +1207,15 @@ public class GunType extends PaintableType implements IScope
         return stackSpread;
     }
 
-    public EnumSpreadPattern getSpreadPattern(ItemStack stack)
+    public EnumSpreadPattern getSpreadPattern(@Nullable ItemStack stack)
     {
-        for (AttachmentType attachment : getCurrentAttachments(stack))
+        if (stack != null)
         {
-            if (attachment.spreadPattern != null)
-                return attachment.spreadPattern;
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+            {
+                if (attachment.spreadPattern != null)
+                    return attachment.spreadPattern;
+            }
         }
         return spreadPattern;
     }
@@ -1293,7 +1307,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the bullet speed of a specific gun, taking into account attachments
      */
-    public float getBulletSpeed(ItemStack stack, ItemStack bulletStack)
+    public float getBulletSpeed(@Nullable ItemStack stack, ItemStack bulletStack)
     {
         float stackBulletSpeed;
 
@@ -1302,11 +1316,14 @@ public class GunType extends PaintableType implements IScope
         else
             stackBulletSpeed = bulletSpeed;
 
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            stackBulletSpeed = getGrip(stack).secondarySpeed;
+        if (stack != null)
+        {
+            if (getGrip(stack) != null && getSecondaryFire(stack))
+                stackBulletSpeed = getGrip(stack).secondarySpeed;
 
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackBulletSpeed *= attachment.bulletSpeedMultiplier;
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+                stackBulletSpeed *= attachment.bulletSpeedMultiplier;
+        }
 
         return stackBulletSpeed;
     }
@@ -1373,27 +1390,29 @@ public class GunType extends PaintableType implements IScope
         return stackShootDelay;
     }
 
-    public float getShootDelay()
-    {
-        if (roundsPerMin != 0F)
-            return 1200F / roundsPerMin;
-        else if (shootDelay != 0F)
-            return shootDelay;
-        else
-            return DEFAULT_SHOOT_DELAY;
-    }
-
     /**
      * Get the number of bullets fired per shot of a specific gun
      */
-    public int getNumBullets(ItemStack stack)
+    public int getNumBullets(@Nullable ItemStack stack, @Nullable ShootableType shootableType)
     {
-        int amount = numBullets;
+        int bullets = -1;
+        if (allowNumBulletsByBulletType && shootableType != null)
+            bullets = shootableType.getNumBullets();
+        if (bullets <= 0)
+            bullets = numBullets;
 
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            amount = getGrip(stack).secondaryNumBullets;
+        if (stack != null)
+        {
+            if (getGrip(stack) != null && getSecondaryFire(stack))
+                bullets = getGrip(stack).secondaryNumBullets;
+        }
 
-        return amount;
+        return bullets;
+    }
+
+    public int getNumBullets()
+    {
+        return getNumBullets(null, null);
     }
 
     /**
@@ -1481,33 +1500,37 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the firing mode of a specific gun, taking into account attachments and secondary fire mode
      */
-    public EnumFireMode getFireMode(ItemStack stack)
+    public EnumFireMode getFireMode(@Nullable ItemStack stack)
     {
-        // Check for secondary fire mode
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            return getGrip(stack).secondaryFireMode;
-
-        // Check for any mode overrides from attachments
-        for (AttachmentType attachment : getCurrentAttachments(stack))
+        if (stack != null)
         {
-            if (attachment.modeOverride != null)
-                return attachment.modeOverride;
-        }
+            // Check for secondary fire mode
+            if (getGrip(stack) != null && getSecondaryFire(stack))
+                return getGrip(stack).secondaryFireMode;
 
-        // Set the fire mode from the gun stack
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(GunItem.NBT_GUN_MODE))
-        {
-            EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
-            for (EnumFireMode allowed : submode)
+            // Check for any mode overrides from attachments
+            for (AttachmentType attachment : getCurrentAttachments(stack))
             {
-                if (allowed == stored)
-                    return stored;
+                if (attachment.modeOverride != null)
+                    return attachment.modeOverride;
             }
+
+            // Set the fire mode from the gun stack
+            CompoundTag tag = stack.getTag();
+            if (tag != null && tag.contains(GunItem.NBT_GUN_MODE))
+            {
+                EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
+                for (EnumFireMode allowed : submode)
+                {
+                    if (allowed == stored)
+                        return stored;
+                }
+            }
+
+            // Reset fire mode to default for the gun stack
+            setFireMode(stack, mode);
         }
 
-        // Reset fire mode to default for the gun stack
-        setFireMode(stack, mode);
         return mode;
     }
 
@@ -1519,5 +1542,10 @@ public class GunType extends PaintableType implements IScope
             stackRecoil.applyModifier(attachment.recoilMultiplier);
 
         return stackRecoil;
+    }
+
+    public boolean isSilencedSound(@Nullable ItemStack stack)
+    {
+        return Optional.ofNullable(stack).map(this::getBarrel).map(AttachmentType::isSilencer).orElse(false);
     }
 }
