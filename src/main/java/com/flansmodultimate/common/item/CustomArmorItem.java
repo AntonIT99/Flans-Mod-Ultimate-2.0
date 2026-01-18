@@ -111,7 +111,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (configType.getEnchantability() > 0F)
             tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(getEnchantmentValue())));
 
-        if (Math.abs(configType.getJumpModifier() - 1F) > 0.01F)
+        if (Math.abs(configType.getJumpModifier() - 1F) > 0F)
             tooltipComponents.add(IFlanItem.modifierLine("Jump Height", configType.getJumpModifier(), false));
 
         if (configType.isSmokeProtection())

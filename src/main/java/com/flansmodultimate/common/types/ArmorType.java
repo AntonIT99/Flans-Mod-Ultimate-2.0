@@ -107,7 +107,7 @@ public class ArmorType extends InfoType
         durability = readValue("Durability", durability, file);
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
         moveSpeedModifier = readValue("Slowness", moveSpeedModifier, file);
-        jumpModifier = Math.min(readValue("JumpModifier", jumpModifier, file), 1F);
+        jumpModifier = readValue("JumpModifier", jumpModifier, file);
         knockbackModifier = readValue("KnockbackReduction", knockbackModifier, file);
         knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
         nightVision = readValue("NightVision", nightVision, file);
