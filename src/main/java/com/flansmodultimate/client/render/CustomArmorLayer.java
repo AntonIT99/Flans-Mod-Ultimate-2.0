@@ -30,7 +30,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     @Override
     public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch)
     {
-        int overlay = LivingEntityRenderer.getOverlayCoords(entity, partialTicks);
+        int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0F);
         renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.HEAD, packedLight, overlay);
         renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.LEGS, packedLight, overlay);
         renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.FEET, packedLight, overlay);
