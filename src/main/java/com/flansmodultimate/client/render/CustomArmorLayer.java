@@ -10,9 +10,9 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,31 +28,32 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @Override
-    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource pBuffer, int packedLight, @NotNull T pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTicks, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch)
+    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch)
     {
-        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.HEAD, packedLight);
-        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.LEGS, packedLight);
-        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.FEET, packedLight);
-        renderArmorPiece(poseStack, pBuffer, pLivingEntity, EquipmentSlot.CHEST, packedLight);
+        int overlay = LivingEntityRenderer.getOverlayCoords(entity, partialTicks);
+        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.HEAD, packedLight, overlay);
+        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.LEGS, packedLight, overlay);
+        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.FEET, packedLight, overlay);
+        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.CHEST, packedLight, overlay);
     }
 
     @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int packedLight)
+    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource pBuffer, T entity, EquipmentSlot pSlot, int packedLight, int overlay)
     {
-        ItemStack itemStack = pLivingEntity.getItemBySlot(pSlot);
+        ItemStack itemStack = entity.getItemBySlot(pSlot);
         Item item = itemStack.getItem();
 
         if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
         {
             ResourceLocation texture = armorItem.getConfigType().getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
-            renderModel(poseStack, pBuffer, packedLight, modelCustomArmour, texture);
+            renderModel(modelCustomArmour, texture, poseStack, pBuffer, packedLight, overlay);
         }
     }
 
-    private void renderModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ModelCustomArmour model, ResourceLocation texture)
+    private void renderModel(ModelCustomArmour model, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay)
     {
         for (ERenderPass renderPass : ERenderPass.ORDER)
-            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, renderPass);
+            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
     }
 }
