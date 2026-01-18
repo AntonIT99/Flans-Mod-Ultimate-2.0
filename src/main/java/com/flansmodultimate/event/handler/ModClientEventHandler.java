@@ -58,6 +58,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 
 import java.nio.file.Files;
@@ -133,22 +134,16 @@ public final class ModClientEventHandler
 
         for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES.getValues())
         {
-            try
-            {
-                EntityRenderer<?> renderer = event.getRenderer((EntityType)entityType);
+            // Only proceed for living entities
+            if (!LivingEntity.class.isAssignableFrom(entityType.getBaseClass()))
+                continue;
 
-                if (renderer instanceof LivingEntityRenderer<?, ?> livingEntityRenderer && livingEntityRenderer.getModel() instanceof HumanoidModel)
-                {
-                    livingEntityRenderer.addLayer(new CustomArmorLayer<>((RenderLayerParent) livingEntityRenderer));
-                }
-            }
-            catch (ClassCastException e)
+            EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
+            EntityRenderer<? extends LivingEntity> renderer = event.getRenderer(livingType);
+
+            if (renderer instanceof LivingEntityRenderer<?, ?> livingRenderer && livingRenderer.getModel() instanceof HumanoidModel<?>)
             {
-                // Ignoring (Entity is not a LivingEntity)
-            }
-            catch (Exception e)
-            {
-                FlansMod.log.error("Could not add armor layer to {}", entityType.getDescriptionId(), e);
+                livingRenderer.addLayer(new CustomArmorLayer<>((RenderLayerParent) livingRenderer));
             }
         }
     }

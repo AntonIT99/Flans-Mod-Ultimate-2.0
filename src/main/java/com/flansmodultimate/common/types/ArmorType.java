@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.model.DefaultArmor;
+import com.flansmodultimate.client.model.ModelDefaultArmor;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -161,7 +161,7 @@ public class ArmorType extends InfoType
     @Nullable
     public IModelBase getDefaultModel()
     {
-        return new DefaultArmor(armorItemType);
+        return new ModelDefaultArmor(armorItemType);
     }
 
     public boolean hasDurability()

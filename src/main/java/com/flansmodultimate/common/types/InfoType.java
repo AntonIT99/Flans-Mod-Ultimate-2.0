@@ -223,6 +223,8 @@ public abstract class InfoType
     protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
+        if (StringUtils.isBlank(modelClassName) && getDefaultModel() != null)
+            modelClassName = getDefaultModel().getClass().getName();
         texture = loadTexture(textureName, this);
         overlay = loadOverlay(overlayName, this).orElse(null);
     }

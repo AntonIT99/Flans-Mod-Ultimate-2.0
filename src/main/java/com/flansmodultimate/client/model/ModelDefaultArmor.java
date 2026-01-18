@@ -5,9 +5,9 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 
 import net.minecraft.world.item.ArmorItem;
 
-public class DefaultArmor extends ModelCustomArmour
+public class ModelDefaultArmor extends ModelCustomArmour
 {
-    public DefaultArmor(ArmorItem.Type armorType, float expansion)
+    public ModelDefaultArmor(ArmorItem.Type armorType, float expansion)
     {
         int textureX = 64;
         int textureY = 32;
@@ -57,7 +57,7 @@ public class DefaultArmor extends ModelCustomArmour
         }
     }
 
-    public DefaultArmor(ArmorItem.Type armorType)
+    public ModelDefaultArmor(ArmorItem.Type armorType)
     {
         this(armorType, 1.0F);
     }

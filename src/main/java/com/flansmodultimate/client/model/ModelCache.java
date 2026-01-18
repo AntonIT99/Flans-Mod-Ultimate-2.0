@@ -9,6 +9,7 @@ import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfigs;
@@ -155,12 +156,14 @@ public final class ModelCache
         IModelBase model = null;
         if (StringUtils.isNotBlank(modelClassName))
         {
-            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
+            if (modelClassName.equalsIgnoreCase(ModelBullet.class.getName()))
                 model = new ModelBullet();
-            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
+            else if (modelClassName.equalsIgnoreCase(ModelBomb.class.getName()))
                 model = new ModelBomb();
-            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelDefaultMuzzleFlash"))
+            else if (modelClassName.equalsIgnoreCase(ModelDefaultMuzzleFlash.class.getName()))
                 model = new ModelDefaultMuzzleFlash();
+            else if (modelClassName.equalsIgnoreCase(ModelDefaultArmor.class.getName()) && type instanceof ArmorType armorType)
+                model = new ModelDefaultArmor(armorType.getArmorItemType());
             else
             {
                 DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);

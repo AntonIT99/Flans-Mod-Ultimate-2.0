@@ -1,7 +1,5 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.client.model.DefaultArmor;
-import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -9,14 +7,12 @@ import com.flansmodultimate.config.ModCommonConfigs;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -42,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 {
@@ -126,23 +121,6 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             tooltipComponents.add(Component.literal("+Fire Resistance").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isWaterBreathing())
             tooltipComponents.add(Component.literal("+Water Breathing").withStyle(ChatFormatting.DARK_GREEN));
-    }
-
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer)
-    {
-        consumer.accept(new IClientItemExtensions()
-        {
-            @Override
-            @NotNull
-            public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> defaultModel)
-            {
-                if (ModelCache.getOrLoadTypeModel(configType) instanceof HumanoidModel<?> humanoidModel)
-                    return humanoidModel;
-                else
-                    return new DefaultArmor(configType.getArmorItemType());
-            }
-        });
     }
 
     @Override
