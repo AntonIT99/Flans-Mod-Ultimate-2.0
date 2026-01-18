@@ -304,6 +304,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
+
+            float zoomFactor = Math.max(configType.getCurrentScope(stack).getZoomFactor(), configType.getCurrentScope(stack).getFovFactor());
+            if (zoomFactor != 1F)
+                tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
     }
 

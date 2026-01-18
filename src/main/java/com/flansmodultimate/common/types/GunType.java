@@ -1062,7 +1062,7 @@ public class GunType extends PaintableType implements IScope
     public AttachmentType getAttachment(ItemStack gun, String name)
     {
         checkForTags(gun);
-        CompoundTag tag = Objects.requireNonNull(gun.getTag()); // non-null because checkForTags used getOrCreateTag()
+        CompoundTag tag = Objects.requireNonNull(gun.getTag());
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag data = attachments.getCompound(name);
         return AttachmentType.getFromNBT(data);
@@ -1077,7 +1077,7 @@ public class GunType extends PaintableType implements IScope
         CompoundTag tag = Objects.requireNonNull(gun.getTag());
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag stackTag = attachments.getCompound(name);
-        return ItemStack.of(stackTag); // Empty tag -> ItemStack.EMPTY
+        return ItemStack.of(stackTag);
     }
 
     /**

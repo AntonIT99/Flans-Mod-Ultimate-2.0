@@ -2,7 +2,6 @@ General:
 - Check for conflicts with Flan's Mod Reloaded
 - GunItemEntity
 - Deployable Guns
-- Fix Attachment Positions
 - Armor Boxes
 - Gun Boxes
 - Paintjob Box
@@ -46,7 +45,7 @@ Other Classes:
 - GunAnimations - Almost Done (address TODOs)
 
 TODO Content Packs:
-- Fix AK-47 of MW
+- Fix Scope Attachment Points in WW2 Improved Pack
 - Fix FlakParticle TaP Guns
 - Add Idle Sound to Lightsabers
 - Set Penetration?

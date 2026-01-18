@@ -415,13 +415,13 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         flip(althammerModel);
         flip(bulletCounterModel);
 
-        for(ModelRendererTurbo[] mod : advBulletCounterModel)
+        for (ModelRendererTurbo[] mod : advBulletCounterModel)
             flip(mod);
     }
 
     protected void flip(ModelRendererTurbo[] model)
     {
-        for(ModelRendererTurbo part : model)
+        for (ModelRendererTurbo part : model)
         {
             part.doMirror(false, true, true);
             part.setRotationPoint(part.rotationPointX, -part.rotationPointY, -part.rotationPointZ);
@@ -457,19 +457,14 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         translate(hammerModel, x, y, z);
         translate(althammerModel, x, y, z);
         translate(bulletCounterModel, x, y, z);
-        translateAttachment(barrelAttachPoint, x, y, z);
-        translateAttachment(scopeAttachPoint, x, y, z);
-        translateAttachment(gripAttachPoint, x, y, z);
-        translateAttachment(stockAttachPoint, x, y, z);
-        translateAttachment(gadgetAttachPoint, x, y, z);
-        translateAttachment(slideAttachPoint, x, y, z);
-        translateAttachment(pumpAttachPoint, x, y, z);
-        translateAttachment(accessoryAttachPoint, x, y, z);
+
+        for (ModelRendererTurbo[] modelPart : advBulletCounterModel)
+            translate(modelPart, x, y, z);
     }
 
     protected void translate(ModelRendererTurbo[] model, float x, float y, float z)
     {
-        for(ModelRendererTurbo mod : model)
+        for (ModelRendererTurbo mod : model)
         {
             mod.rotationPointX += x;
             mod.rotationPointY += y;

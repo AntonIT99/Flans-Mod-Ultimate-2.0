@@ -71,6 +71,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected float reloadTimeMultiplier = 1F;
     /** Movement speed modifier */
+    @Getter
     protected float moveSpeedMultiplier = 1F;
     /** If set to anything other than null, then this attachment will override the weapon's default firing mode */
     protected EnumFireMode modeOverride = null;

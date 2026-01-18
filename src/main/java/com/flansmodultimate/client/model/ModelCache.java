@@ -1,13 +1,22 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmod.client.model.ModelBomb;
+import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
 import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelMuzzleFlash;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.ContentManager;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.util.ClassLoaderUtils;
+import com.flansmodultimate.util.DynamicReference;
+import com.flansmodultimate.util.LogUtils;
 import com.wolffsmod.api.client.model.IModelBase;
+import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,6 +25,8 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +58,7 @@ public final class ModelCache
         {
             if (StringUtils.isNotBlank(type.getModelClassName()))
             {
-                IModelBase model = InfoType.loadModel(type.getModelClassName(), type, type.getDefaultModel());
+                IModelBase model = loadModel(type.getModelClassName(), type, type.getDefaultModel());
                 cache.put(new ModelCacheKey(type.getModelClassName(), type.getShortName()), Optional.ofNullable(model));
             }
 
@@ -55,22 +66,22 @@ public final class ModelCache
             {
                 if (StringUtils.isNotBlank(gunType.getDeployableModelClassName()))
                 {
-                    IModelBase deployableModel = InfoType.loadModel(gunType.getDeployableModelClassName(), type, null);
+                    IModelBase deployableModel = loadModel(gunType.getDeployableModelClassName(), type, null);
                     cache.put(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), Optional.ofNullable(deployableModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getCasingModelClassName()))
                 {
-                    IModelBase casingModel = InfoType.loadModel(gunType.getCasingModelClassName(), type, null);
+                    IModelBase casingModel = loadModel(gunType.getCasingModelClassName(), type, null);
                     cache.put(new ModelCacheKey(gunType.getCasingModelClassName(), null), Optional.ofNullable(casingModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getFlashModelClassName()))
                 {
-                    IModelBase flashModel = InfoType.loadModel(gunType.getFlashModelClassName(), type, null);
+                    IModelBase flashModel = loadModel(gunType.getFlashModelClassName(), type, null);
                     cache.put(new ModelCacheKey(gunType.getFlashModelClassName(), null), Optional.ofNullable(flashModel));
                 }
                 if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
                 {
-                    IModelBase muzzleFlashModel = InfoType.loadModel(gunType.getMuzzleFlashModelClassName(), type, new ModelDefaultMuzzleFlash());
+                    IModelBase muzzleFlashModel = loadModel(gunType.getMuzzleFlashModelClassName(), type, new ModelDefaultMuzzleFlash());
                     cache.put(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), Optional.ofNullable(muzzleFlashModel));
                 }
             }
@@ -83,7 +94,7 @@ public final class ModelCache
         if (StringUtils.isBlank(modelCacheKey.modelClassName()) && defaultModel != null)
             modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
 
-        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(InfoType.loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
+        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
     }
 
     @Nullable
@@ -91,7 +102,7 @@ public final class ModelCache
     {
         if (StringUtils.isNotBlank(type.getModelClassName()))
         {
-            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(InfoType.loadModel(key.modelClassName(), type, type.getDefaultModel()))).orElse(null);
+            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, type.getDefaultModel()))).orElse(null);
         }
         return null;
     }
@@ -134,5 +145,62 @@ public final class ModelCache
             return modelMuzzleFlash;
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @OnlyIn(Dist.CLIENT)
+    @Nullable
+    public static IModelBase loadModel(String modelClassName, InfoType type, @Nullable IModelBase defaultModel)
+    {
+        IModelBase model = null;
+        if (StringUtils.isNotBlank(modelClassName))
+        {
+            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
+                model = new ModelBullet();
+            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
+                model = new ModelBomb();
+            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelDefaultMuzzleFlash"))
+                model = new ModelDefaultMuzzleFlash();
+            else
+            {
+                DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
+                if (actualClassName != null)
+                {
+                    try
+                    {
+                        model = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
+                    }
+                    catch (Exception | NoClassDefFoundError | ClassFormatError e)
+                    {
+                        FlansMod.log.error("Could not load model class {} for {}", modelClassName, type);
+                        if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
+                            FlansMod.log.error("File not found: {}", noSuchFileException.getFile());
+                        else
+                            LogUtils.logWithoutStacktrace(e);
+                    }
+                }
+            }
+
+        }
+
+        if (model == null)
+            model = defaultModel;
+
+        if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
+            ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
+
+        if (model != null && type.isAdditiveBlending())
+        {
+            for (ModelRenderer modelRenderer : model.getBoxList())
+            {
+                if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo && modelRendererTurbo.glow)
+                {
+                    modelRendererTurbo.glowAdditive = true;
+                    modelRendererTurbo.glow = false;
+                }
+            }
+        }
+
+        return model;
     }
 }

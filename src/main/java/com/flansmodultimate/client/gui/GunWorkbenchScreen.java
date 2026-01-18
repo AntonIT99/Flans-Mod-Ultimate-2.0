@@ -46,7 +46,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     private static final float DISP_MIN = 0.2F;
     private static final float DISP_MAX = 3F;
     private static final float RECOIL_MIN = 1F;
-    private static final float RECOIL_MAX = 8F;
+    private static final float RECOIL_MAX = 20F;
     private static final float REL_MIN = 1F;
     private static final float REL_MAX = 8F;
 

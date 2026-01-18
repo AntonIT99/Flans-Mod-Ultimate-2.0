@@ -38,6 +38,9 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
+        if (configType.isSilencer())
+            tooltipComponents.add(Component.literal("Silenced").withStyle(ChatFormatting.DARK_GREEN));
+
         if (configType.getShootDelayMultiplier() != 1F && configType.getShootDelayMultiplier() != 0F)
             tooltipComponents.add(IFlanItem.modifierLine("Fire Rate", 1F / configType.getShootDelayMultiplier(), false));
 
@@ -59,10 +62,17 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
         if (configType.getMeleeDamageMultiplier() != 1F)
             tooltipComponents.add(IFlanItem.modifierLine("Melee Damage", configType.getMeleeDamageMultiplier(), false));
 
-        if (configType.isSilencer())
-            tooltipComponents.add(Component.literal("Silenced").withStyle(ChatFormatting.DARK_GREEN));
+        if (configType.getMoveSpeedMultiplier() != 1F)
+            tooltipComponents.add(IFlanItem.modifierLine("Move Speed", configType.getMoveSpeedMultiplier(), false));
 
-        if(configType.isFlashlight())
-            tooltipComponents.add(Component.literal("Flashlight " + configType.getFlashlightStrength()).withStyle(ChatFormatting.DARK_GREEN));
+        if (configType.isFlashlight())
+        {
+            tooltipComponents.add(IFlanItem.statLine("Flashlight Strength", String.valueOf(configType.getFlashlightStrength())));
+            tooltipComponents.add(IFlanItem.statLine("Flashlight Range", String.valueOf(configType.getFlashlightRange())));
+        }
+
+        float zoomFactor = Math.max(configType.getZoomFactor(), configType.getFovFactor());
+        if (zoomFactor != 1F)
+            tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
     }
 }

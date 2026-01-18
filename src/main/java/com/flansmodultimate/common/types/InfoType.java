@@ -1,22 +1,14 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmod.client.model.ModelBomb;
-import com.flansmod.client.model.ModelBullet;
-import com.flansmod.client.model.ModelDefaultMuzzleFlash;
-import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.client.model.IFlanTypeModel;
-import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.TypeReaderUtils;
 import com.wolffsmod.api.client.model.IModelBase;
-import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +30,6 @@ import net.minecraft.world.level.block.Blocks;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -381,63 +372,6 @@ public abstract class InfoType
                 return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
         }
         return Optional.empty();
-    }
-
-    @SuppressWarnings("unchecked")
-    @OnlyIn(Dist.CLIENT)
-    @Nullable
-    public static IModelBase loadModel(String modelClassName, InfoType type, @Nullable IModelBase defaultModel)
-    {
-        IModelBase model = null;
-        if (StringUtils.isNotBlank(modelClassName))
-        {
-            if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBullet"))
-                model = new ModelBullet();
-            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelBomb"))
-                model = new ModelBomb();
-            else if (modelClassName.equalsIgnoreCase("com.flansmod.client.model.ModelDefaultMuzzleFlash"))
-                model = new ModelDefaultMuzzleFlash();
-            else
-            {
-                DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
-                if (actualClassName != null)
-                {
-                    try
-                    {
-                        model = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
-                    }
-                    catch (Exception | NoClassDefFoundError | ClassFormatError e)
-                    {
-                        FlansMod.log.error("Could not load model class {} for {}", modelClassName, type);
-                        if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
-                            FlansMod.log.error("File not found: {}", noSuchFileException.getFile());
-                        else
-                            LogUtils.logWithoutStacktrace(e);
-                    }
-                }
-            }
-
-        }
-
-        if (model == null)
-            model = defaultModel;
-
-        if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
-            ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
-
-        if (model != null && type.additiveBlending)
-        {
-            for (ModelRenderer modelRenderer : model.getBoxList())
-            {
-                if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo && modelRendererTurbo.glow)
-                {
-                    modelRendererTurbo.glowAdditive = true;
-                    modelRendererTurbo.glow = false;
-                }
-            }
-        }
-
-        return model;
     }
 
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
