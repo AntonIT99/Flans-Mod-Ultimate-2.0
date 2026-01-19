@@ -66,11 +66,11 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected static final EntityDataAccessor<String> DATA_GUN_TYPE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_GUN_DIRECTION = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
     protected BlockPos blockPos;
-    @Getter
     protected int gunDirection;
     protected ItemStack ammo = ItemStack.EMPTY;
     protected int reloadTimer;
@@ -92,9 +92,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     public DeployedGun(Level level, BlockPos pos, int dir, GunType gunType)
     {
         super(FlansMod.deployedGunEntity.get(), level);
-        shortname = gunType.getShortName();
+        setShortName(gunType.getShortName());
         blockPos = pos;
-        gunDirection = dir;
+        setGunDirection(dir);
         configType = gunType;
         setPos(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         setYRot(0F);
@@ -143,6 +143,17 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         entityData.set(DATA_HAS_AMMO, v);
     }
 
+    public int getGunDirection()
+    {
+        return entityData.get(DATA_GUN_DIRECTION);
+    }
+
+    public void setGunDirection(int d)
+    {
+        gunDirection = d;
+        entityData.set(DATA_GUN_DIRECTION, d);
+    }
+
     @Override
     public boolean isPickable()
     {
@@ -176,6 +187,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         entityData.define(DATA_GUN_TYPE, StringUtils.EMPTY);
         entityData.define(DATA_HAS_AMMO, false);
         entityData.define(DATA_RELOAD_TIMER, 0);
+        entityData.define(DATA_GUN_DIRECTION, 0);
     }
 
     @Override
@@ -223,7 +235,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         else
             discard();
 
-        gunDirection = tag.getInt(NBT_DIRECTION);
+        setGunDirection(tag.getInt(NBT_DIRECTION));
         blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X), tag.getInt(NBT_BLOCK_Y), tag.getInt(NBT_BLOCK_Z));
 
         if (tag.contains(NBT_AMMO, Tag.TAG_COMPOUND))
@@ -361,8 +373,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
         Level level = level();
 
-        //System.out.println(level.isClientSide + " " + getXRot());
-
         if (blockPos == null)
             blockPos = this.blockPosition();
 
@@ -467,7 +477,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             yaw = Mth.wrapDegrees(yaw);
 
             float pitch = gunner.getXRot();
-            System.out.println(pitch);
 
             // Clamp yaw and pitch to gun limits
             float sideLimit = configType.getSideViewLimit();

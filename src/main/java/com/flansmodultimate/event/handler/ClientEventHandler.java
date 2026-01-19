@@ -201,17 +201,30 @@ public final class ClientEventHandler
     public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event)
     {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.isShiftKeyDown() || !(mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem) || gunItem.getConfigType().isDeployable())
+        if (mc.player == null || mc.player.isShiftKeyDown())
             return;
 
-        EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
-        EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();
+        PlayerData data = PlayerData.getInstance(mc.player);
 
-        if ((event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw() && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
-            || (event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw() && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE))
+        // Explicitly allow Use item to mount / dismount deployable guns
+        if (data.getMountingGun() != null && !event.isUseItem())
         {
             event.setCanceled(true);
             event.setSwingHand(false);
+            return;
+        }
+
+        if (mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
+        {
+            EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
+            EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();
+
+            if ((event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw() && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
+                || (event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw() && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE))
+            {
+                event.setCanceled(true);
+                event.setSwingHand(false);
+            }
         }
     }
 
