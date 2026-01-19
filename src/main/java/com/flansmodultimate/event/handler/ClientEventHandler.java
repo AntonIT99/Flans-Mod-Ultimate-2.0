@@ -201,7 +201,7 @@ public final class ClientEventHandler
     public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event)
     {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.isShiftKeyDown() || !(mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem))
+        if (mc.player == null || mc.player.isShiftKeyDown() || !(mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem) || gunItem.getConfigType().isDeployable())
             return;
 
         EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();

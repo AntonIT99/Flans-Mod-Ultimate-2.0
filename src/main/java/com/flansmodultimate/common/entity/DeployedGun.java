@@ -67,7 +67,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
-    @Getter
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
     protected BlockPos blockPos;
@@ -100,6 +99,16 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         setPos(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         setYRot(0F);
         setXRot(-60F);
+    }
+
+    @Override
+    public GunType getConfigType()
+    {
+        if (configType == null && InfoType.getInfoType(getShortName()) instanceof GunType gType)
+        {
+            configType = gType;
+        }
+        return configType;
     }
 
     public String getShortName()
@@ -352,6 +361,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
         Level level = level();
 
+        //System.out.println(level.isClientSide + " " + getXRot());
+
         if (blockPos == null)
             blockPos = this.blockPosition();
 
@@ -456,16 +467,21 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             yaw = Mth.wrapDegrees(yaw);
 
             float pitch = gunner.getXRot();
+            System.out.println(pitch);
 
             // Clamp yaw and pitch to gun limits
             float sideLimit = configType.getSideViewLimit();
-            if (yaw > sideLimit) yaw = sideLimit;
-            if (yaw < -sideLimit) yaw = -sideLimit;
+            if (yaw > sideLimit)
+                yaw = sideLimit;
+            if (yaw < -sideLimit)
+                yaw = -sideLimit;
 
             float topLimit = configType.getTopViewLimit();
             float bottomLimit = configType.getBottomViewLimit();
-            if (pitch < topLimit) pitch = topLimit;
-            if (pitch > bottomLimit) pitch = bottomLimit;
+            if (pitch < topLimit)
+                pitch = topLimit;
+            if (pitch > bottomLimit)
+                pitch = bottomLimit;
 
             setYRot(yaw);
             setXRot(pitch);

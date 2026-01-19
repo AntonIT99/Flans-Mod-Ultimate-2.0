@@ -2,15 +2,16 @@ General:
 - Dedicated Server Testing
 - Check for conflicts with Flan's Mod Reloaded
 - GunItemEntity
-- Deployable Guns
 - Armor Boxes
 - Gun Boxes
 - Paintjob Box
+- Fix Deployable Gun Rendering
+- Shift to Dismount DeployableGun
 
 Entities:
 - AAGun - TODO
 - Bullet - Done
-- DeployableGun - TODO
+- DeployableGun - Done
 - Driveable - TODO
 - Grenade - Done
 - Mecha - TODO
@@ -23,7 +24,7 @@ Rendering:
 - CustomArmor - Done
 - Grenade - Done
 - Gun - WIP
-- MG - TODO
+- MG - Done
 
 Items:
 - AttachmentItem - Done

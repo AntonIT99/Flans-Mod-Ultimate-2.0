@@ -26,6 +26,7 @@ public class PacketDeployedGunInput implements IServerPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
+        data.writeInt(deployedGunId);
         data.writeBoolean(shootKeyPressed);
         data.writeBoolean(prevShootKeyPressed);
     }
@@ -33,6 +34,7 @@ public class PacketDeployedGunInput implements IServerPacket
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
+        deployedGunId = data.readInt();
         shootKeyPressed = data.readBoolean();
         prevShootKeyPressed = data.readBoolean();
     }

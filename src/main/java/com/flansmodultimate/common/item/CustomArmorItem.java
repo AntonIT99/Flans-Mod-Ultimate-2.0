@@ -44,7 +44,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     private static final int EFFECT_CHECK_PERIOD = 40; // every 2 seconds
     protected static final int EFFECT_DURATION = 600; // 30 seconds
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
-    protected static final Map<Integer, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
+    protected static final Map<UUID, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
 
     protected static final UUID[] speed_uuid = new UUID[] { UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID() };
     protected static final UUID[] kb_uuid = new UUID[] { UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID() };
@@ -217,13 +217,26 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
                     if (mobEffectInstance == null)
                         continue;
                     MobEffect eff = mobEffectInstance.getEffect();
-
-
                     MobEffectInstance normalized = new MobEffectInstance(eff, EFFECT_DURATION, mobEffectInstance.getAmplifier(), true, mobEffectInstance.isVisible(), mobEffectInstance.showIcon());
                     mergeBestOf(desiredExtra, normalized);
                 }
             }
         }
+
+        Set<MobEffect> desiredNow = new HashSet<>(desiredExtra.keySet());
+
+        if (nv > 0)
+            desiredNow.add(MobEffects.NIGHT_VISION);
+        if (invis > 0)
+            desiredNow.add(MobEffects.INVISIBILITY);
+        if (fire > 0)
+            desiredNow.add(MobEffects.FIRE_RESISTANCE);
+        if (water > 0)
+            desiredNow.add(MobEffects.WATER_BREATHING);
+        if (hunger > 0)
+            desiredNow.add(MobEffects.HUNGER);
+        if (regen > 0)
+            desiredNow.add(MobEffects.REGENERATION);
 
         ensureEffectLevel(entity, MobEffects.NIGHT_VISION, nv);
         ensureEffectLevel(entity, MobEffects.INVISIBILITY, invis);
@@ -231,7 +244,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         ensureEffectLevel(entity, MobEffects.WATER_BREATHING, water);
         ensureEffectLevel(entity, MobEffects.HUNGER, hunger);
         ensureEffectLevel(entity, MobEffects.REGENERATION, regen);
-        applyDesiredExtraEffects(entity, desiredExtra);
+
+        applyDesiredExtraEffects(entity, desiredExtra, desiredNow);
     }
 
     /**
@@ -264,7 +278,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         MobEffectInstance currentEffect = entity.getEffect(effect);
         if (currentEffect == null || currentEffect.getAmplifier() != amp || currentEffect.getDuration() < EFFECT_REFRESH_THRESHOLD)
-            entity.addEffect(new MobEffectInstance(effect, EFFECT_DURATION, amp, true, false));
+            entity.addEffect(new MobEffectInstance(effect, EFFECT_DURATION, amp, true, false, false));
 
         rememberAppliedEffect(entity, effect, true);
     }
@@ -272,9 +286,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     /**
      * Applies desired extra effects and removes extra effects we previously applied but are no longer desired.
      */
-    private static void applyDesiredExtraEffects(LivingEntity entity, Map<MobEffect, MobEffectInstance> desired)
+    private static void applyDesiredExtraEffects(LivingEntity entity, Map<MobEffect, MobEffectInstance> desiredExtra, Set<MobEffect> desiredNow)
     {
-        for (MobEffectInstance desiredInst : desired.values())
+        for (MobEffectInstance desiredInst : desiredExtra.values())
         {
             MobEffect eff = desiredInst.getEffect();
             MobEffectInstance cur = entity.getEffect(eff);
@@ -289,7 +303,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
 
         // Remove previously applied armor effects that are no longer desired
-        removeNoLongerDesiredArmorEffects(entity, desired.keySet());
+        removeNoLongerDesiredArmorEffects(entity, desiredNow);
     }
 
     /**
@@ -298,8 +312,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
      */
     private static void removeNoLongerDesiredArmorEffects(LivingEntity entity, Set<MobEffect> desiredNow)
     {
-        int id = entity.getId();
-        Set<MobEffect> last = LAST_ARMOR_EFFECTS.get(id);
+        UUID uuid = entity.getUUID();
+        Set<MobEffect> last = LAST_ARMOR_EFFECTS.get(uuid);
         if (last == null || last.isEmpty())
             return;
 
@@ -312,12 +326,12 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             MobEffectInstance cur = entity.getEffect(eff);
             if (cur != null && cur.isAmbient())
                 entity.removeEffect(eff);
-            // update cache
+
             last.remove(eff);
         }
 
         if (last.isEmpty())
-            LAST_ARMOR_EFFECTS.remove(id);
+            LAST_ARMOR_EFFECTS.remove(uuid);
     }
 
     /**
@@ -326,17 +340,17 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
      */
     private static void rememberAppliedEffect(LivingEntity entity, MobEffect effect, boolean applied)
     {
-        int id = entity.getId();
+        UUID uuid = entity.getUUID();
         if (applied) {
-            LAST_ARMOR_EFFECTS.computeIfAbsent(id, k -> new HashSet<>()).add(effect);
+            LAST_ARMOR_EFFECTS.computeIfAbsent(uuid, k -> new HashSet<>()).add(effect);
         }
         else
         {
-            Set<MobEffect> set = LAST_ARMOR_EFFECTS.get(id);
+            Set<MobEffect> set = LAST_ARMOR_EFFECTS.get(uuid);
             if (set != null)
             {
                 set.remove(effect);
-                if (set.isEmpty()) LAST_ARMOR_EFFECTS.remove(id);
+                if (set.isEmpty()) LAST_ARMOR_EFFECTS.remove(uuid);
             }
         }
     }

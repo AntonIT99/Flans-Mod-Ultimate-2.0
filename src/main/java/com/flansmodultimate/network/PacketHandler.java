@@ -17,6 +17,7 @@ import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
@@ -91,6 +92,7 @@ public final class PacketHandler {
         registerS2C(PacketPlaySound.class);
 
         // Client to Server Packets
+        registerC2S(PacketDeployedGunInput.class);
         registerC2S(PacketGunInput.class);
         registerC2S(PacketGunReload.class);
         registerC2S(PacketGunScopedState.class);

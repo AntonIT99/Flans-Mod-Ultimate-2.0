@@ -729,6 +729,8 @@ public class GunType extends PaintableType implements IScope
         usableByMechas = readValue("UsableByMechas", usableByMechas, file);
         standBackDist = readValue("StandBackDistance", standBackDist, file);
         topViewLimit = readValue("TopViewLimit", topViewLimit, file);
+        if (topViewLimit > 0F)
+            topViewLimit = -topViewLimit;
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
@@ -1363,30 +1365,32 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the fire rate of a specific gun
      */
-    public float getShootDelay(ItemStack stack)
+    public float getShootDelay(@Nullable ItemStack stack)
     {
-        float fireRate;
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            fireRate = getGrip(stack).secondaryShootDelay;
+        float stackShootDelay;
+
+        if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
+            stackShootDelay = getGrip(stack).secondaryShootDelay;
         else if (roundsPerMin != 0F)
-            fireRate = 1200F / roundsPerMin;
+            stackShootDelay = 1200F / roundsPerMin;
         else if (shootDelay != 0F)
-            fireRate = shootDelay;
+            stackShootDelay = shootDelay;
         else
-            fireRate = DEFAULT_SHOOT_DELAY;
+            stackShootDelay = DEFAULT_SHOOT_DELAY;
 
-
-        for (AttachmentType attachment : getCurrentAttachments(stack))
+        if (stack != null)
         {
-            if (attachment.modeOverride == EnumFireMode.BURST)
-                return Math.max(fireRate, 3F);
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+            {
+                stackShootDelay *= attachment.shootDelayMultiplier;
+            }
+            for (AttachmentType attachment : getCurrentAttachments(stack))
+            {
+                if (attachment.modeOverride == EnumFireMode.BURST)
+                    return Math.max(stackShootDelay, 3F);
+            }
         }
 
-        float stackShootDelay = fireRate;
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-        {
-            stackShootDelay *= attachment.shootDelayMultiplier;
-        }
         return stackShootDelay;
     }
 

@@ -171,6 +171,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
+        if (configType.isDeployable())
+            tooltipComponents.add(Component.literal("[Deployable]").withStyle(ChatFormatting.YELLOW));
+
         if (!Screen.hasShiftDown())
         {
             // Attachments
