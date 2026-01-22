@@ -1,12 +1,13 @@
 General:
-- Dedicated Server Testing
-- Check for conflicts with Flan's Mod Reloaded
-- GunItemEntity
-- Armor Boxes
-- Gun Boxes
 - Paintjob Box
 - Fix Deployable Gun Rendering
-- Shift to Dismount DeployableGun
+- Armor Boxes
+- Gun Boxes
+- ItemGlove & Enchantment Module
+
+Testing:
+- Dedicated Server Testing
+- Check for conflicts with Flan's Mod Reloaded
 
 Entities:
 - AAGun - TODO
@@ -19,12 +20,15 @@ Entities:
 - Vehicle - TODO
 
 Rendering:
-- Bomb - Done
+- AAGun - TODO
 - Bullet - Done
 - CustomArmor - Done
 - Grenade - Done
 - Gun - WIP
 - MG - Done
+- Mecha - TODO
+- Plane - TODO
+- Vehicle - TODO
 
 Items:
 - AttachmentItem - Done
@@ -45,11 +49,12 @@ Types:
 Other Classes:
 - PlayerHandler - TODO
 - GunAnimations - Almost Done (address TODOs)
+- TeamsManager
 
 TODO Content Packs:
+- Fix FlakParticle TaP Guns
 - Fix Scope Attachment Points in WW2 Improved Pack
 - Remove Minigun Mode in WW2 Improved Pack
-- Fix FlakParticle TaP Guns
 - Add Idle Sound to Lightsabers
 - Set Penetration?
 

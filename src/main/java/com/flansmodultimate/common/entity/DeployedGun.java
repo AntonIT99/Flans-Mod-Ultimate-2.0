@@ -48,6 +48,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -280,9 +281,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             {
                 if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.SMART_DROPS)
                 {
-                    //TODO: uncomment when EntityGunItem is implemented
-                    /*EntityGunItem gunEntity = new EntityGunItem(level, getX(), getY(), getZ(), ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY), Collections.singletonList(ammo));
-                    level.addFreshEntity(gunEntity);*/
+                    level.addFreshEntity(new GunItemEntity(level, getX(), getY(), getZ(), ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY), Collections.singletonList(ammo)));
                 }
                 else if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.DROPS)
                 {

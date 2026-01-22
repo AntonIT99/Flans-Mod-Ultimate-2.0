@@ -4,6 +4,7 @@ import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -161,6 +162,12 @@ public class FlansMod
         .updateInterval(5)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
+    );
+    public static final RegistryObject<EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
+        .sized(1F, 1F)
+        .clientTrackingRange(16)
+        .updateInterval(20)
+        .build("gun_item")
     );
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);

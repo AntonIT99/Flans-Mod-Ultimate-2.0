@@ -330,31 +330,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return configType.getPrimaryFunction() != EnumFunction.MELEE && configType.getSecondaryFunction() != EnumFunction.MELEE;
     }
 
-    //TODO: implement custom entity
-    /**
-     * Allows replacing the default ItemEntity with a custom entity when this stack
-     * exists in the world (dropped on ground).
-     * Return true to call {@link #createEntity} for the replacement.
-     *//*
-    @Override
-    public boolean hasCustomEntity(ItemStack stack)
-    {
-        return true;
-    }
-
-    *//**
-     * Creates a custom entity to replace the original dropped ItemEntity.
-     * The 'location' is the original entity about to be spawned/replaced (usually an ItemEntity).
-     *//*
-    @Override
-    @Nullable
-    public Entity createEntity(Level level, Entity location, ItemStack stack)
-    {
-        // Example: spawn at original entity's position; adjust to your custom entity’s ctor.
-        // If your class extends ItemEntity, you can copy motion/owner as needed.
-        return new EntityItemCustomRender(level, location.getX(), location.getY(), location.getZ(), stack);
-    }*/
-
     /**
      * Called when the player starts breaking a block with this item.
      * Return true to cancel further processing (and client-side breaking animation).

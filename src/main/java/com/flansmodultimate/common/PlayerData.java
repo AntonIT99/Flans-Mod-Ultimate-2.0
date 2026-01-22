@@ -56,6 +56,7 @@ public class PlayerData
     @Getter @Setter
     private float shootTimeLeft;
     /** Stops player shooting immediately after swapping weapons */
+    @Getter @Setter
     private int shootClickDelay; //TODO: implement shootClick
     /** True if this player is shooting */
     private boolean isShootingRight;
