@@ -58,7 +58,6 @@ public class ContentManager
     public static final String TEXTURES_GUI_FOLDER = "gui";
     public static final String TEXTURES_SKINS_FOLDER = "skins";
 
-    //TODO: Make flan folder path configurable
     @Getter
     private static Path flanFolder;
     private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve(ContentLoadingConfig.contentPacksRelativePath);

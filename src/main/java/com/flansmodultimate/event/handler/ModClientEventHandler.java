@@ -4,6 +4,7 @@ import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
+import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -90,6 +91,7 @@ public final class ModClientEventHandler
 
             // Menus registration
             MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
+            MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
         });
     }
 

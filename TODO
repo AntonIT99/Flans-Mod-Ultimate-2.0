@@ -1,9 +1,24 @@
 General:
 - Paintjob Box
 - Fix Deployable Gun Rendering
-- Armor Boxes
-- Gun Boxes
-- ItemGlove & Enchantment Module
+- Tools
+- Armor & Gun Boxes
+- Team Mod / Commands
+- Teams & classes
+- Recipes
+
+1.12.2 Features:
+- itemHolders
+- rewardBoxes
+- loadouts
+- gloves & Enchantment Module
+
+Driveable Features:
+- Parts
+- AA Guns
+- Vehicles
+- Planes
+- Mechas & Mecha Items
 
 Testing:
 - Dedicated Server Testing
@@ -35,7 +50,7 @@ Items:
 - BulletItem - Done
 - CustomArmorItem - Done
 - GrenadeItem - Done
-- GunItem - WIP
+- GunItem - Done
 
 Types:
 - ArmorType - Done

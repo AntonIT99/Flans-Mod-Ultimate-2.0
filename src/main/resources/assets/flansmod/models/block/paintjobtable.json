@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "flansmod:block/paintjobtabletop",
+    "bottom": "flansmod:block/boxbottom",
+    "side": "flansmod:block/boxside"
+  },
+  "display": {
+    "gui": {
+      "rotation": [ 30, 45, 0 ],
+      "translation": [ 0, 0, 0 ],
+      "scale": [ 0.625, 0.625, 0.625 ]
+    }
+  }
+}
