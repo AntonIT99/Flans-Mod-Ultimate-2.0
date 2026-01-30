@@ -48,7 +48,7 @@ public final class ContentLoadingConfig
         }
 
         contentPacksRelativePath = Objects.requireNonNullElse(props.getProperty("contentPacksRelativePath"), contentPacksRelativePath);
-        forceRegenContentPacksAssetsAndIds = parseBoolean(props.getProperty("forceRegenContentPacksAssetsAndIDs"), forceRegenContentPacksAssetsAndIds);
+        forceRegenContentPacksAssetsAndIds = parseBoolean(props.getProperty("forceRegenContentPacksAssetsAndIds"), forceRegenContentPacksAssetsAndIds);
         int lastContentLoadingSystemVersion = parseInt(props.getProperty("contentLoadingSystemVersion"), contentLoadingSystemVersion);
         useDefaultCategories = parseBoolean(props.getProperty("useDefaultCategories"), useDefaultCategories);
         save();

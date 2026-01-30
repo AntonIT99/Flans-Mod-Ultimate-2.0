@@ -8,7 +8,7 @@
   "key": {
     "C": { "item": "minecraft:cauldron" },
     "I": { "item": "minecraft:iron_ingot" },
-    "D": { "item": "minecraft:dyes" }
+    "D": { "item": "minecraft:white_dye" }
   },
   "result": { "item": "flansmod:paintjobtable" }
 }

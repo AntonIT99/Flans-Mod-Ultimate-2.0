@@ -2,6 +2,7 @@ package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.google.gson.annotations.SerializedName;
@@ -74,12 +75,14 @@ public final class ResourceUtils
                         .map(p -> new Override(FlansMod.paintjob.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIconName()))
                         .toList();
             }
-            return new ItemModel("item/generated", null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + config.getIcon()), overrides);
+            String parent = config instanceof GunType ? "minecraft:item/handheld" : "minecraft:item/generated";
+            return new ItemModel(parent, null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + config.getIcon()), overrides);
         }
 
-        public static ItemModel create(Paintjob paintjob)
+        public static ItemModel create(InfoType config, Paintjob paintjob)
         {
-            return new ItemModel("item/generated", null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + paintjob.getIconName()), null);
+            String parent = config instanceof GunType ? "minecraft:item/handheld" : "minecraft:item/generated";
+            return new ItemModel(parent, null, new ItemModel.Textures(FlansMod.FLANSMOD_ID + ":item/" + paintjob.getIconName()), null);
         }
     }
 }

@@ -1,12 +1,15 @@
 package com.flansmodultimate.client.model;
 
 import com.flansmodultimate.client.render.CustomBewlr;
+import com.flansmodultimate.common.item.ICustomRendererItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -21,6 +24,7 @@ public class BewlrRoutingModel implements BakedModel
 {
     private final BakedModel delegate;
     private final ItemOverrides wrappedOverrides;
+    private boolean hasCustomModel = true;
 
     public BewlrRoutingModel(BakedModel original)
     {
@@ -33,10 +37,15 @@ public class BewlrRoutingModel implements BakedModel
             @Override
             public BakedModel resolve(@NotNull BakedModel model, @NotNull ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed)
             {
+                boolean stackHasCustomModel = (stack.getItem() instanceof ICustomRendererItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
+
                 BakedModel resolved = base.resolve(model, stack, level, entity, seed);
                 if (resolved == null)
-                    return BewlrRoutingModel.this;
-                return (resolved instanceof BewlrRoutingModel) ? resolved : new BewlrRoutingModel(resolved);
+                    return BewlrRoutingModel.this.delegate;
+
+                BewlrRoutingModel routingModel = (resolved instanceof BewlrRoutingModel brm) ? brm : new BewlrRoutingModel(resolved);
+                routingModel.hasCustomModel = stackHasCustomModel;
+                return routingModel;
             }
         };
     }
@@ -68,7 +77,7 @@ public class BewlrRoutingModel implements BakedModel
     @Override
     public boolean isCustomRenderer()
     {
-        return !CustomBewlr.SKIP_BEWLR.get();
+        return hasCustomModel && !CustomBewlr.SKIP_BEWLR.get();
     }
 
     @Override
@@ -83,5 +92,22 @@ public class BewlrRoutingModel implements BakedModel
     public ItemOverrides getOverrides()
     {
         return wrappedOverrides;
+    }
+
+    @Override
+    @NotNull
+    public ItemTransforms getTransforms()
+    {
+        if (!hasCustomModel)
+            return delegate.getTransforms();
+        else
+            return ItemTransforms.NO_TRANSFORMS;
+    }
+
+    @Override
+    @NotNull
+    public List<RenderType> getRenderTypes(@NotNull ItemStack stack, boolean fabulous)
+    {
+        return delegate.getRenderTypes(stack, fabulous);
     }
 }

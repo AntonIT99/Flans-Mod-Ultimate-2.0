@@ -685,8 +685,8 @@ public class ContentManager
     private static List<InfoType> listItems(IContentProvider provider)
     {
         return configs.get(provider).stream()
-                .filter(config -> config.getType().isItemType())
-                .toList();
+            .filter(config -> config.getType().isItemType())
+            .toList();
     }
 
     private static void generateItemJson(InfoType config, Path outputFolder)
@@ -725,7 +725,7 @@ public class ContentManager
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {
                     outputFile = outputFolder.resolve(p.getIconName() + ".json");
-                    model = ResourceUtils.ItemModel.create(p);
+                    model = ResourceUtils.ItemModel.create(config, p);
                     jsonContent = gson.toJson(model);
                     try
                     {
