@@ -57,7 +57,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -816,22 +815,21 @@ public class GunItemHandler
                 pos = pos.below();
             }
 
-            int playerDir = Mth.floor((player.getYRot() * 4.0F) / 360.0F + 0.5D) & 3;
-            Direction facing = dirFromPlayerDir(playerDir);
+            Direction direction = player.getDirection();
 
             // placement positions:
             BlockPos base = pos;
             BlockPos mgPos = pos.above();
-            BlockPos forwardAbove = mgPos.relative(facing);
+            BlockPos forwardAbove = mgPos.relative(direction);
 
-            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(facing)))
+            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(direction)))
             {
                 // check if an MG already exists at that block position
                 boolean exists = !level.getEntitiesOfClass(DeployedGun.class, new AABB(mgPos)).isEmpty();
 
                 if (!exists)
                 {
-                    DeployedGun mg = new DeployedGun(level, mgPos, playerDir, item.configType);
+                    DeployedGun mg = new DeployedGun(level, mgPos, direction, item.configType);
                     level.addFreshEntity(mg);
 
                     if (!player.getAbilities().instabuild)
@@ -843,17 +841,6 @@ public class GunItemHandler
         }
 
         return false;
-    }
-
-    private static Direction dirFromPlayerDir(int playerDir)
-    {
-        return switch (playerDir)
-        {
-            case 0 -> Direction.NORTH;
-            case 1 -> Direction.EAST;
-            case 2 -> Direction.SOUTH;
-            default -> Direction.WEST;
-        };
     }
 
     private static boolean isReplaceableOrAir(Level level, BlockPos pos)

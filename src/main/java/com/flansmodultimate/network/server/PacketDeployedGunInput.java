@@ -42,7 +42,7 @@ public class PacketDeployedGunInput implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        if (level.getEntity(deployedGunId) instanceof DeployedGun deployedGun && deployedGun.getGunner() == player)
+        if (level.getEntity(deployedGunId) instanceof DeployedGun deployedGun && deployedGun.getFirstPassenger() == player)
         {
             deployedGun.setShootKeyPressed(shootKeyPressed);
             deployedGun.setPrevShootKeyPressed(prevShootKeyPressed);

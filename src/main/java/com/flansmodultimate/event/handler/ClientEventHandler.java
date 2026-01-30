@@ -9,9 +9,12 @@ import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketRequestDismount;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -201,20 +204,27 @@ public final class ClientEventHandler
     public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event)
     {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.isShiftKeyDown())
+        Player player = mc.player;
+        if (player == null || player.isShiftKeyDown())
             return;
 
-        PlayerData data = PlayerData.getInstance(mc.player);
-
-        // Explicitly allow Use item to mount / dismount deployable guns
-        if (data.getMountingGun() != null && !event.isUseItem())
+        // Block all interactions unless it is 'use item' to dismount deployable guns
+        if (player.getVehicle() instanceof DeployedGun)
         {
-            event.setCanceled(true);
-            event.setSwingHand(false);
+            if (event.isUseItem())
+            {
+                player.stopRiding();
+                PacketHandler.sendToServer(new PacketRequestDismount());
+            }
+            else
+            {
+                event.setCanceled(true);
+                event.setSwingHand(false);
+            }
             return;
         }
 
-        if (mc.player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
+        if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
             EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
             EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();

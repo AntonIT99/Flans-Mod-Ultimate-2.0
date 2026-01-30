@@ -44,9 +44,9 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderGun(DeployedGun mg, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderGun(DeployedGun mg, float pitchDeg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        float pitch = Mth.lerp(partialTick, mg.xRotO, mg.getXRot()) * Mth.DEG_TO_RAD;
+        float pitch = pitchDeg * Mth.DEG_TO_RAD;
 
         for (ModelRendererTurbo gunPart : gunModel)
         {

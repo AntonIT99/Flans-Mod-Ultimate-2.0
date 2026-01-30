@@ -11,9 +11,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModCommonConfigs;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDeployableGunMount;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.util.ModUtils;
@@ -28,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -40,6 +39,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -78,8 +78,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected int soundTimer;
     protected float shootTimer;
     protected int ticksSinceUsed;
-    @Getter
-    protected Player gunner;
     @Getter @Setter
     protected boolean shootKeyPressed;
     @Getter @Setter
@@ -90,12 +88,12 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         super(entityType, level);
     }
 
-    public DeployedGun(Level level, BlockPos pos, int dir, GunType gunType)
+    public DeployedGun(Level level, BlockPos pos, Direction direction, GunType gunType)
     {
         super(FlansMod.deployedGunEntity.get(), level);
         setShortName(gunType.getShortName());
         blockPos = pos;
-        setGunDirection(dir);
+        setGunDirection(direction.get2DDataValue());
         configType = gunType;
         setPos(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         setYRot(0F);
@@ -290,10 +288,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
                         spawnAtLocation(ammo.copy(), 0.5F);
                 }
             }
-
-            // Clear mounting link
-            if (gunner != null)
-                PlayerData.getInstance(gunner).setMountingGun(null);
         }
         catch (Exception e)
         {
@@ -307,9 +301,10 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     public boolean hurt(DamageSource source, float amount)
     {
         Entity entity = source.getEntity();
+        Entity gunner = getFirstPassenger();
 
         // If the gunner left-clicked the gun: ignore
-        if (entity == gunner)
+        if (gunner == entity)
             return true;
 
         // If someone else hits the gun while someone is mounted: forward damage to gunner
@@ -328,9 +323,10 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
         Level level = level();
+        Entity gunner = getFirstPassenger();
 
         // If someone else is mounted, ignore
-        if (gunner != null && gunner != player)
+        if (player != gunner && gunner != null)
             return InteractionResult.sidedSuccess(level.isClientSide);
 
         // Client: just return success so the hand animates; server does the logic
@@ -340,29 +336,132 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         PlayerData data = PlayerData.getInstance(player);
 
         // If this is the player currently using this MG, dismount
-        if (gunner == player)
+        if (player == gunner)
         {
-            mountGun(level, player, data,false);
+            player.stopRiding();
             return InteractionResult.CONSUME;
         }
 
-        // If this person is already mounting a gun, dismount it first
-        if (data.getMountingGun() != null && data.getMountingGun().isAlive())
+        // If this person is already mounting something else, dismount it first
+        if (player.getVehicle() != null)
         {
-            data.getMountingGun().mountGun(level, player, data,false);
+            player.stopRiding();
             return InteractionResult.CONSUME;
         }
 
-        // Spectators can't mount guns (adapt to your team system)
+        // Spectators can't mount guns
         if (FlansMod.teamsManager.getCurrentRound().isPresent() && Team.SPECTATORS.equals(data.getTeam()))
             return InteractionResult.CONSUME;
 
         // None of the above applied, so mount the gun
-        mountGun(level, player, data, true);
-        // Load ammo if empty
-        reloadGun(level);
+        player.startRiding(this, true);
+        // Auto-reload if ammo empty
+        reloadGun(level, player);
 
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction move)
+    {
+        if (!(passenger instanceof Player p) || configType == null || blockPos == null)
+            return;
+
+        float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
+        float localYaw = Mth.wrapDegrees(p.getYRot() - baseYaw);
+
+        // Clamp yaw
+        float side = configType.getSideViewLimit();
+        localYaw = Mth.clamp(localYaw, -side, side);
+
+        // Clamp pitch
+        float top = configType.getTopViewLimit();
+        float bottom = configType.getBottomViewLimit();
+        if (top > bottom)
+        {
+            float tmp = top;
+            top = bottom; bottom = tmp;
+        }
+        float pitch = Mth.clamp(p.getXRot(), top, bottom);
+
+        setYRot(baseYaw + localYaw);
+        setXRot(pitch);
+
+        double standBack = configType.getStandBackDist();
+        float yawRad = getYRot() * Mth.DEG_TO_RAD;
+
+        double offX = standBack * Math.sin(yawRad);
+        double offZ = -standBack * Math.cos(yawRad);
+
+        double x = getX() + offX;
+        double z = getZ() + offZ;
+
+        // Pitch -> Y offset
+        // Positive pitch (looking down) -> +Y (go up)
+        // Negative pitch (looking up) -> -Y (go down)
+        float maxAbsPitch = Math.max(Math.abs(top), Math.abs(bottom));
+        float pitchNorm = (maxAbsPitch > 0.0001F) ? (pitch / maxAbsPitch) : 0F;
+        double maxPitchYOffset = 0.5D;
+        double pitchYOffset = maxPitchYOffset * pitchNorm;
+        double baseY = blockPos.getY() + p.getMyRidingOffset() - 0.65D;
+        double y = baseY + pitchYOffset;
+
+        move.accept(passenger, x, y, z);
+
+        // Prevent sliding / falling weirdness while mounted
+        passenger.setDeltaMovement(Vec3.ZERO);
+        passenger.fallDistance = 0.0F;
+    }
+
+    @Override
+    protected void addPassenger(@NotNull Entity passenger)
+    {
+        super.addPassenger(passenger);
+
+        shootKeyPressed = false;
+        prevShootKeyPressed = false;
+    }
+
+    @Override
+    protected void removePassenger(@NotNull Entity passenger)
+    {
+        super.removePassenger(passenger);
+
+        shootKeyPressed = false;
+        prevShootKeyPressed = false;
+    }
+
+    @Override
+    @NotNull
+    public Vec3 getDismountLocationForPassenger(@NotNull LivingEntity passenger)
+    {
+        Level level = level();
+
+        if (blockPos != null)
+        {
+            // Put them behind the gun (tweak distance as you like)
+            float yawRad = getShootingYaw() * Mth.DEG_TO_RAD;
+
+            double dist = configType.getStandBackDist();
+            Vec3 preferred = new Vec3(blockPos.getX() + 0.5D, blockPos.getY() - 1D, blockPos.getZ() + 0.5D)
+                .add(dist * Math.sin(yawRad), 0.0D, -dist * Math.cos(yawRad));
+
+            // Make it safe: must not collide at that position.
+            if (isSafeDismount(level, passenger, preferred))
+                return preferred;
+        }
+
+        return super.getDismountLocationForPassenger(passenger);
+    }
+
+    private boolean isSafeDismount(Level level, LivingEntity passenger, Vec3 targetPos)
+    {
+        // Move passenger BB to targetPos
+        Vec3 delta = targetPos.subtract(passenger.position());
+        AABB movedBB = passenger.getBoundingBox().move(delta);
+
+        // No collision with blocks/entities
+        return level.noCollision(passenger, movedBB);
     }
 
     @Override
@@ -371,6 +470,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         super.tick();
 
         Level level = level();
+        Entity gunner = getFirstPassenger();
 
         if (blockPos == null)
             blockPos = this.blockPosition();
@@ -387,7 +487,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     @OnlyIn(Dist.CLIENT)
     protected void clientTick()
     {
-        if (gunner != Minecraft.getInstance().player)
+        if (getFirstPassenger() != Minecraft.getInstance().player)
             return;
 
         // Force release key when entering a GUI
@@ -443,8 +543,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         if (reloadTimer > 0)
             setReloadTimer(reloadTimer - 1);
 
-        updateAimAndGunnerPosition();
-
         // Ammo broken/empty
         if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
         {
@@ -452,73 +550,12 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             setHasAmmo(false);
         }
 
-        // Auto-reload if mounted and ammo empty
-        reloadGun(level);
-
-        fireGun(level);
-    }
-
-    protected void updateAimAndGunnerPosition()
-    {
-        // Save previous rotations (for interpolation)
-        yRotO = getYRot();
-        xRotO = getXRot();
-
-        // Aim / clamp / keep gunner positioned
-        if (gunner != null)
+        if (getFirstPassenger() instanceof LivingEntity living)
         {
-            ticksSinceUsed = 0;
-
-            // Yaw relative to mount direction
-            float yaw = gunner.getYRot() - (gunDirection * 90.0F);
-
-            // Wrap to [-180, 180]
-            yaw = Mth.wrapDegrees(yaw);
-
-            float pitch = gunner.getXRot();
-
-            // Clamp yaw and pitch to gun limits
-            float sideLimit = configType.getSideViewLimit();
-            if (yaw > sideLimit)
-                yaw = sideLimit;
-            if (yaw < -sideLimit)
-                yaw = -sideLimit;
-
-            float topLimit = configType.getTopViewLimit();
-            float bottomLimit = configType.getBottomViewLimit();
-            if (pitch < topLimit)
-                pitch = topLimit;
-            if (pitch > bottomLimit)
-                pitch = bottomLimit;
-
-            setYRot(yaw);
-            setXRot(pitch);
-
-            // Keep user standing behind the gun
-            float angleDeg = gunDirection * 90.0F + yaw;
-            float angleRad = angleDeg * Mth.DEG_TO_RAD;
-
-            double dX = (configType.getStandBackDist() * Math.sin(angleRad));
-            double dZ = -(configType.getStandBackDist() * Math.cos(angleRad));
-
-            double targetX = blockPos.getX() + 0.5D + dX;
-            double targetY = blockPos.getY() + gunner.getMyRidingOffset() - 0.5D;
-            double targetZ = blockPos.getZ() + 0.5D + dZ;
-
-            gunner.teleportTo(targetX, targetY, targetZ);
-        }
-        else
-        {
-            // Idle animation: pitch slowly decreases
-            setXRot(getXRot() - 1.0F);
-
-            // Clamp pitch when idle too
-            float topLimit = configType.getTopViewLimit();
-            float bottomLimit = configType.getBottomViewLimit();
-            float pitch = getXRot();
-            if (pitch < topLimit) pitch = topLimit;
-            if (pitch > bottomLimit) pitch = bottomLimit;
-            setXRot(pitch);
+            // Auto-reload if mounted by a player and ammo empty (takes ammo from inventory)
+            if (living instanceof Player player)
+                reloadGun(level, player);
+            fireGun(level, living);
         }
     }
 
@@ -578,12 +615,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         return score;
     }
 
-    public void fireGun(Level level)
+    public void fireGun(Level level, LivingEntity gunner)
     {
-        if (level.isClientSide)
-            return;
-
-        if (gunner == null || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
@@ -615,12 +649,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         }
     }
 
-    public void reloadGun(Level level)
+    public void reloadGun(Level level, Player gunner)
     {
-        if (level.isClientSide)
-            return;
-
-        if (gunner == null || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
             return;
 
         int slot = findAmmo(gunner); // you port this to modern inventory below
@@ -633,33 +664,24 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
                 if (!gunner.getAbilities().instabuild)
                     gunner.getInventory().setItem(slot, ItemStack.EMPTY);
 
-                ammo = taken.copy();
-                setHasAmmo(true);
-                setReloadTimer(configType.getReloadTime());
-                String reloadSound = configType.getReloadSound(null);
-
-                // Play reload sound
-                if (StringUtils.isNotBlank(reloadSound))
-                    PacketPlaySound.sendSoundPacket(gunner, configType.getReloadSoundRange(), reloadSound, false, false);
+                reloadGun(level, gunner, taken);
             }
         }
     }
 
-    public void mountGun(@NotNull Level level, @NotNull Player player, @NotNull PlayerData data, boolean mounting)
+    public void reloadGun(Level level, LivingEntity gunner, ItemStack newAmmo)
     {
-        if (mounting)
-        {
-            gunner = player;
-            data.setMountingGun(this);
-        }
-        else
-        {
-            data.setMountingGun(null);
-            gunner = null;
-        }
+        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+            return;
 
-        if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketDeployableGunMount(player, this, mounting), position(), ModCommonConfigs.driveableAndDeployableUpdateRange.get(), level.dimension());
+        ammo = newAmmo.copy();
+        setHasAmmo(true);
+        setReloadTimer(configType.getReloadTime());
+        String reloadSound = configType.getReloadSound(null);
+
+        // Play reload sound
+        if (StringUtils.isNotBlank(reloadSound))
+            PacketPlaySound.sendSoundPacket(gunner, configType.getReloadSoundRange(), reloadSound, false, false);
     }
 
     public Vec3 getShootingOrigin()
@@ -679,6 +701,6 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public float getShootingYaw()
     {
-        return gunDirection * 90.0F + getYRot();
+        return getYRot();
     }
 }

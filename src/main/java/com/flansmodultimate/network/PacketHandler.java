@@ -6,7 +6,6 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
-import com.flansmodultimate.network.client.PacketDeployableGunMount;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
@@ -24,6 +23,7 @@ import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
+import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -79,7 +79,6 @@ public final class PacketHandler {
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
-        registerS2C(PacketDeployableGunMount.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketFlanExplosionParticles.class);
@@ -99,6 +98,7 @@ public final class PacketHandler {
         registerC2S(PacketGunSpread.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
+        registerC2S(PacketRequestDismount.class);
         registerC2S(PacketSelectPaintjob.class);
 
         initAndRegister();

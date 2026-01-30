@@ -1,7 +1,6 @@
 package com.flansmodultimate.common;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
@@ -47,9 +46,6 @@ public class PlayerData
     private PlayerSnapshot[] snapshots;
 
     // Gun-related fields
-    /** The MG this player is using */
-    @Getter @Setter
-    private DeployedGun mountingGun;
     /** Tickers to stop shooting too fast */
     @Getter @Setter
     private float shootTimeRight;
@@ -283,7 +279,6 @@ public class PlayerData
 
     public void playerKilled()
     {
-        mountingGun = null;
         isShootingRight = isShootingLeft = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
