@@ -1,5 +1,6 @@
 General:
-- Paintjob Box
+- Check for content packs put by mistake in mods folder?
+- Render Attachment Item in 3D?
 - Fix Deployable Gun Rendering
 - Tools
 - Armor & Gun Boxes
@@ -67,6 +68,7 @@ Other Classes:
 - TeamsManager
 
 TODO Content Packs:
+- Fix AK47 Paintjobs
 - Fix FlakParticle TaP Guns
 - Fix Scope Attachment Points in WW2 Improved Pack
 - Remove Minigun Mode in WW2 Improved Pack

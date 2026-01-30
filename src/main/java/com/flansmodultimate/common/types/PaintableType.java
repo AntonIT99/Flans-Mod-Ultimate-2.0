@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,5 +142,18 @@ public abstract class PaintableType extends InfoType
     public Paintjob getPaintjob(ItemStack stack)
     {
         return getPaintjob(getPaintjobId(stack));
+    }
+
+    public List<Paintjob> getApplicablePaintjobs()
+    {
+        List<Paintjob> applicable = new ArrayList<>();
+        if (addAnyPaintjobToTables)
+        {
+            for (Paintjob pj : paintjobs.values())
+                if (pj.isAddToTables())
+                    applicable.add(pj);
+        }
+        applicable.sort(Comparator.comparingInt(Paintjob::getId));
+        return applicable;
     }
 }

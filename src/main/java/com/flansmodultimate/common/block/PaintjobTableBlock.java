@@ -45,11 +45,9 @@ public class PaintjobTableBlock extends BaseEntityBlock
 
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof PaintjobTableBlockEntity table && player instanceof ServerPlayer sp)
-        {
             NetworkHooks.openScreen(sp, table, pos);
-            return InteractionResult.CONSUME;
-        }
-        return InteractionResult.PASS;
+
+        return InteractionResult.CONSUME;
     }
 
     @Override

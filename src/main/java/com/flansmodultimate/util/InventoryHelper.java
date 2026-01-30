@@ -6,16 +6,46 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * Adds access to stack-combine + empty-slot insertion for arbitrary containers.
- * <p>
- * Notes:
- * - "splitIndex" is the boundary between "upper" and "lower" sections (e.g. 9 for player hotbar).
- * - All ranges are clamped to [0, containerSize] to avoid out-of-bounds for small containers.
- */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InventoryHelper
 {
+    public static int countInInventory(Container inv, ItemStack needle)
+    {
+        if (needle == null || needle.isEmpty())
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++)
+        {
+            ItemStack s = inv.getItem(i);
+            if (!s.isEmpty() && ItemStack.isSameItemSameTags(s, needle))
+                total += s.getCount();
+        }
+        return total;
+    }
+
+    public static void consumeFromInventory(Container inv, ItemStack want)
+    {
+        if (want == null || want.isEmpty())
+            return;
+
+        int remaining = want.getCount();
+        for (int i = 0; i < inv.getContainerSize() && remaining > 0; i++)
+        {
+            ItemStack have = inv.getItem(i);
+            if (have.isEmpty())
+                continue;
+
+            if (ItemStack.isSameItemSameTags(have, want))
+            {
+                int take = Math.min(remaining, have.getCount());
+                have.shrink(take);
+                remaining -= take;
+            }
+        }
+        inv.setChanged();
+    }
+
     /**
      * @param inv              target container
      * @param stack            stack to insert/merge (will be decremented/emptied)

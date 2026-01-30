@@ -1,17 +1,14 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import com.flansmodultimate.common.item.IPaintableItem;
-import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.PaintableType;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -24,7 +21,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class PaintjobTableMenu extends AbstractContainerMenu
 {
-    public final PaintjobTableBlockEntity table;
+    private static final double MAX_DISTANCE = 64.0;
+
     private final ContainerLevelAccess access;
 
     // indices
@@ -38,12 +36,11 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     {
         super(FlansMod.paintjobTableMenu.get(), id);
         this.access = access;
-        this.table = table;
 
         // TE slots via capability
         table.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            addSlot(new SlotItemHandler(handler, 0, 187, 139));
-            addSlot(new SlotItemHandler(handler, 1, 187, 193));
+            addSlot(new SlotItemHandler(handler, 0, 187, PaintjobTableScreen.TOP_H + 17));
+            addSlot(new SlotItemHandler(handler, 1, 187, PaintjobTableScreen.TOP_H + 71));
         });
 
         // Player inventory
@@ -51,13 +48,13 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         {
             for (int col = 0; col < 9; col++)
             {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, 184 + row * 18));
+                addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, PaintjobTableScreen.TOP_H + 62 + row * 18));
             }
         }
         // Hotbar
         for (int col = 0; col < 9; col++)
         {
-            addSlot(new Slot(playerInv, col, 8 + col * 18, 242));
+            addSlot(new Slot(playerInv, col, 8 + col * 18, PaintjobTableScreen.TOP_H + 120));
         }
     }
 
@@ -76,11 +73,12 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     {
         return access.evaluate((level, pos) -> {
             Block block = level.getBlockState(pos).getBlock();
-            return block == FlansMod.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0;
+            return block == FlansMod.paintjobTable.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
     }
 
     @Override
+    @NotNull
     public ItemStack quickMoveStack(@NotNull Player player, int index)
     {
         Slot slot = slots.get(index);
@@ -95,62 +93,29 @@ public class PaintjobTableMenu extends AbstractContainerMenu
             if (!moveItemStackTo(stackInSlot, PLAYER_INV_START, HOTBAR_END, true))
                 return ItemStack.EMPTY;
         }
-        else
+        // shift-click from player -> TE (try paintable slot then paintcans)
+        else if (!moveItemStackTo(stackInSlot, 0, 1, false) &&
+            !moveItemStackTo(stackInSlot, 1, 2, false))
         {
-            // shift-click from player -> TE (try paintable slot then paintcans)
-            if (!moveItemStackTo(stackInSlot, 0, 1, false) &&
-                !moveItemStackTo(stackInSlot, 1, 2, false))
-            {
-                return ItemStack.EMPTY;
-            }
+            return ItemStack.EMPTY;
         }
 
-        if (stackInSlot.isEmpty()) slot.set(ItemStack.EMPTY);
-        else slot.setChanged();
+        if (stackInSlot.isEmpty())
+            slot.set(ItemStack.EMPTY);
+        else
+            slot.setChanged();
 
         return copy;
     }
 
-    /** SERVER-SIDE paint selection entry point (called from packet handler). */
-    public void applyPaintjob(ServerPlayer player, int paintjobId)
+    public ItemStack getPaintableStack()
     {
-        ItemStack paintable = table.getPaintableStack();
-        if (paintable.isEmpty())
-            return;
-        if (!(paintable.getItem() instanceof IPaintableItem<?> p))
-            return;
-
-        PaintableType type = p.getPaintableType();
-        Paintjob pj = type.getPaintjob(paintjobId); // implement lookup however you do
-
-        if (pj == null) return;
-
-        if (!player.getAbilities().instabuild) {
-            if (!hasAllDyes(player.getInventory(), pj)) return;
-            consumeDyes(player.getInventory(), pj);
-        }
-
-        // IMPORTANT: In 1.20, item damage is durability. If your guns are damageable, don’t use damage for paint.
-        // Prefer NBT or a data component.
-        setPaintjobId(paintable, pj.getId());
-
-        table.setChanged();
+        return slots.get(0).getItem();
     }
 
-    private boolean hasAllDyes(Inventory inv, Paintjob pj)
+    public ItemStack getPaintCanStack()
     {
-        /* implement */
-        return true;
-    }
-
-    private void consumeDyes(Inventory inv, Paintjob pj)
-    {
-        /* implement */
-    }
-
-    private static void setPaintjobId(ItemStack stack, int id)
-    {
-        stack.getOrCreateTag().putInt("FlansPaintjob", id);
+        return slots.get(1).getItem();
     }
 }
 

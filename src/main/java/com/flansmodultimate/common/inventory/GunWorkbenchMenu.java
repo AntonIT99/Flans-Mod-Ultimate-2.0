@@ -23,6 +23,8 @@ import net.minecraft.world.level.block.Block;
  */
 public class GunWorkbenchMenu extends AbstractContainerMenu
 {
+    private static final double MAX_DISTANCE = 64.0;
+
     @Getter
     private final GunWorkbenchContainer gunInv;
     private final ContainerLevelAccess access;
@@ -195,7 +197,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     {
         return access.evaluate((level, pos) -> {
             Block block = level.getBlockState(pos).getBlock();
-            return block == FlansMod.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0;
+            return block == FlansMod.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
     }
 
@@ -229,7 +231,6 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private static boolean isAttachment(ItemStack stack)
     {
-        // Replace with your real attachment base class / tag checks
         return !stack.isEmpty() && stack.getItem() instanceof AttachmentItem;
     }
 

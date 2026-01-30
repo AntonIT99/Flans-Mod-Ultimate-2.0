@@ -34,7 +34,6 @@ public class Paintjob
     private final String iconName;
     @Getter
     private final String textureName;
-    @Getter
     private final List<Supplier<ItemStack>> dyesNeeded;
     @Getter @OnlyIn(Dist.CLIENT)
     private final ResourceLocation texture;
@@ -69,6 +68,11 @@ public class Paintjob
     public boolean isLegendary()
     {
         return !type.getNonLegendaryPaintjobs().containsKey(id);
+    }
+
+    public List<ItemStack> getDyesNeeded()
+    {
+        return dyesNeeded.stream().map(Supplier::get).toList();
     }
 
     @Override

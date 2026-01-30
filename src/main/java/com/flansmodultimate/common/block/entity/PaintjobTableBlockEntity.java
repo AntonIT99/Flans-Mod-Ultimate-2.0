@@ -30,8 +30,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvider
 {
     public static final String NBT_ITEMS = "items";
-    public static final int SLOT_PAINTABLE = 0;
-    public static final int SLOT_PAINTCANS = 1;
+
+    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
+    private final BlockState blockState;
 
     private final ItemStackHandler items = new ItemStackHandler(2)
     {
@@ -42,11 +43,10 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
         }
     };
 
-    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
-
     public PaintjobTableBlockEntity(BlockPos pos, BlockState state)
     {
         super(FlansMod.paintjobTableEntity.get(), pos, state);
+        blockState = state;
     }
 
     @Override
@@ -73,7 +73,8 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag) {
+    protected void saveAdditional(@NotNull CompoundTag tag)
+    {
         super.saveAdditional(tag);
         tag.put(NBT_ITEMS, items.serializeNBT());
     }
@@ -85,12 +86,11 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
         items.deserializeNBT(tag.getCompound(NBT_ITEMS));
     }
 
-    // MenuProvider
     @Override
     @NotNull
     public Component getDisplayName()
     {
-        return Component.translatable("container.<modid>.paintjob_table");
+        return blockState.getBlock().getName();
     }
 
     @Nullable
@@ -101,11 +101,6 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
             return new PaintjobTableMenu(id, inv, ContainerLevelAccess.create(level, worldPosition), this);
         else
             return null;
-    }
-
-    public ItemStack getPaintableStack()
-    {
-        return items.getStackInSlot(SLOT_PAINTABLE);
     }
 
     public void dropContents(Level level, BlockPos pos)

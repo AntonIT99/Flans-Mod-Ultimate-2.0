@@ -8,8 +8,10 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
+import com.flansmodultimate.util.InventoryHelper;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,10 +27,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu>
 {
@@ -184,7 +184,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
                 gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
         }
 
-        List<Paintjob> applicable = getApplicablePaintjobs(type);
+        List<Paintjob> applicable = type.getApplicablePaintjobs();
 
         renderGunPreview(gg, gunStack);
         renderPaintjobs(gg, gunStack, type, applicable);
@@ -238,9 +238,9 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
 
     private void renderGunPreview(GuiGraphics gg, ItemStack gunStack)
     {
-        var pose = gg.pose();
+        PoseStack pose = gg.pose();
         pose.pushPose();
-        pose.translate(leftPos + 90F, topPos + 45F, 100F);
+        pose.translate(leftPos + 90F, topPos + 50F, 100F);
 
         pose.mulPose(Axis.XP.rotationDegrees(160));
         pose.mulPose(Axis.YP.rotationDegrees(30));
@@ -268,7 +268,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
             for (int x = 0; x < 2; x++)
             {
                 int idx = 2 * y + x;
-                if (idx >= num) continue;
+                if (idx >= num)
+                    continue;
 
                 int slotX = 181 + SLOT_SIZE * x;
                 int slotY = 150 + SLOT_SIZE * y;
@@ -315,25 +316,12 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         }
     }
 
-    private static List<Paintjob> getApplicablePaintjobs(GunType type)
-    {
-        List<Paintjob> applicable = new ArrayList<>();
-        if (type.isAddAnyPaintjobToTables())
-        {
-            for (Paintjob pj : type.getPaintjobs().values())
-                if (pj.isAddToTables())
-                    applicable.add(pj);
-        }
-        applicable.sort(Comparator.comparingInt(Paintjob::getId));
-        return applicable;
-    }
-
     private void renderDyeRequirementsRow(GuiGraphics gg, Paintjob paintjob)
     {
         if (paintjob == null || minecraft == null || minecraft.player == null || minecraft.player.getAbilities().instabuild)
             return;
 
-        List<Supplier<ItemStack>> needed = paintjob.getDyesNeeded();
+        List<ItemStack> needed = paintjob.getDyesNeeded();
         if (needed.isEmpty())
             return;
 
@@ -345,10 +333,10 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         // Draw each required dye slot background + item + overlay
         for (int i = 0; i < needed.size(); i++)
         {
-            ItemStack want = needed.get(i).get();
+            ItemStack want = needed.get(i);
             if (want == null || want.isEmpty()) continue;
 
-            int haveCount = countInInventory(inv, want);
+            int haveCount = InventoryHelper.countInInventory(inv, want);
             boolean enough = haveCount >= want.getCount();
 
             int u = enough ? 358 : 340;
@@ -454,22 +442,5 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     {
         int span = BAR_W - BAR_MIN_PX;
         return BAR_MIN_PX + Math.round(clamp01(ratio) * span);
-    }
-
-    public static int countInInventory(Inventory inv, ItemStack wanted)
-    {
-        int total = 0;
-        for (int i = 0; i < inv.getContainerSize(); i++)
-        {
-            ItemStack have = inv.getItem(i);
-            if (sameItem(have, wanted))
-                total += have.getCount();
-        }
-        return total;
-    }
-
-    public static boolean sameItem(ItemStack a, ItemStack b)
-    {
-        return !a.isEmpty() && !b.isEmpty() && a.getItem() == b.getItem();
     }
 }

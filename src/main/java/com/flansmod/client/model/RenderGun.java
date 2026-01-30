@@ -934,7 +934,7 @@ public final class RenderGun
         poseStack.scale(modelScale, modelScale, modelScale);
     }
 
-    private static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (ModelCache.getOrLoadTypeModel(attachment) instanceof ModelAttachment modelAttachment)
         {

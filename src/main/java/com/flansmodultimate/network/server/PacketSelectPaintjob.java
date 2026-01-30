@@ -1,11 +1,14 @@
 package com.flansmodultimate.network.server;
 
-import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
+import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +19,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 @NoArgsConstructor
 public class PacketSelectPaintjob implements IServerPacket
@@ -43,23 +45,28 @@ public class PacketSelectPaintjob implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        // Player must have the menu open
-        if (!(player.containerMenu instanceof GunWorkbenchMenu menu))
-            return;
+        if (player.containerMenu instanceof GunWorkbenchMenu gunMenu)
+        {
+            handleGunWorkbench(player, gunMenu);
+        }
+        else if (player.containerMenu instanceof PaintjobTableMenu paintMenu)
+        {
+            handlePaintjobTable(player, paintMenu);
+        }
+    }
 
-        // Slot 0 is gun input
+    private void handleGunWorkbench(ServerPlayer player, GunWorkbenchMenu menu)
+    {
         ItemStack gunStack = menu.getGunStack();
         if (gunStack.isEmpty() || !(gunStack.getItem() instanceof GunItem gunItem))
             return;
 
         GunType gunType = gunItem.getConfigType();
 
-        // Validate paintjob exists + is applicable
         Paintjob pj = findApplicablePaintjob(gunType, paintjobId);
         if (pj == null)
             return;
 
-        // Validate/consume dyes (skip in creative)
         if (!player.getAbilities().instabuild)
         {
             if (!hasRequiredDyes(player.getInventory(), pj))
@@ -68,12 +75,10 @@ public class PacketSelectPaintjob implements IServerPacket
             consumeRequiredDyes(player.getInventory(), pj);
         }
 
-        // Apply NBT to the *actual gun stack in the menu*
-        gunType.applyPaintjobToStack(gunStack, gunType.getPaintjob(paintjobId));
-
-        // Tell the container system something changed
+        gunType.applyPaintjobToStack(gunStack, pj);
         menu.broadcastChanges();
     }
+
 
     private static Paintjob findApplicablePaintjob(GunType gunType, int id)
     {
@@ -90,17 +95,17 @@ public class PacketSelectPaintjob implements IServerPacket
 
     private static boolean hasRequiredDyes(Inventory inv, Paintjob paintjob)
     {
-        List<Supplier<ItemStack>> needed = paintjob.getDyesNeeded();
+        List<ItemStack> needed = paintjob.getDyesNeeded();
         if (needed.isEmpty())
             return true;
 
-        for (Supplier<ItemStack> want : needed)
+        for (ItemStack want : needed)
         {
-            if (want == null || want.get().isEmpty())
+            if (want == null || want.isEmpty())
                 continue;
 
-            int have = GunWorkbenchScreen.countInInventory(inv, want.get());
-            if (have < want.get().getCount())
+            int have = InventoryHelper.countInInventory(inv, want);
+            if (have < want.getCount())
                 return false;
         }
         return true;
@@ -108,30 +113,113 @@ public class PacketSelectPaintjob implements IServerPacket
 
     private static void consumeRequiredDyes(Inventory inv, Paintjob paintjob)
     {
-        List<Supplier<ItemStack>> needed = paintjob.getDyesNeeded();
-        if (needed.isEmpty())
+        List<ItemStack> needed = paintjob.getDyesNeeded();
+        if (needed == null || needed.isEmpty())
             return;
 
-        for (Supplier<ItemStack> want : needed)
+        for (ItemStack want : needed)
         {
-            if (want == null || want.get().isEmpty())
+            if (want == null || want.isEmpty())
                 continue;
 
-            int remaining = want.get().getCount();
-            for (int i = 0; i < inv.getContainerSize() && remaining > 0; i++)
-            {
-                ItemStack have = inv.getItem(i);
-                if (have.isEmpty())
-                    continue;
+            InventoryHelper.consumeFromInventory(inv, want);
+        }
+    }
 
-                if (GunWorkbenchScreen.sameItem(have, want.get()))
-                {
-                    int take = Math.min(remaining, have.getCount());
-                    have.shrink(take);
-                    remaining -= take;
-                }
+    private void handlePaintjobTable(ServerPlayer player, PaintjobTableMenu menu)
+    {
+        ItemStack paintableStack = menu.getPaintableStack();
+        if (paintableStack.isEmpty() || !(paintableStack.getItem() instanceof IPaintableItem<?> paintableItem))
+            return;
+
+        PaintableType type = paintableItem.getPaintableType();
+
+        Paintjob pj = findApplicablePaintjob(type, paintjobId);
+        if (pj == null)
+            return;
+
+        if (!player.getAbilities().instabuild)
+        {
+            Inventory inv = player.getInventory();
+            ItemStack canSlot = menu.getPaintCanStack(); // slot 1
+
+            if (!hasRequiredDyes(inv, canSlot, pj))
+                return;
+
+            consumeRequiredDyes(inv, canSlot, pj);
+        }
+
+        type.applyPaintjobToStack(paintableStack, pj);
+        menu.broadcastChanges();
+    }
+
+    private static Paintjob findApplicablePaintjob(PaintableType type, int id)
+    {
+        List<Paintjob> list = type.getApplicablePaintjobs();
+        for (Paintjob pj : list)
+        {
+            if (pj.getId() == id)
+                return pj;
+        }
+        return null;
+    }
+
+    private static boolean hasRequiredDyes(Inventory inv, ItemStack cansSlot, Paintjob paintjob)
+    {
+        List<ItemStack> needed = paintjob.getDyesNeeded();
+        if (needed == null || needed.isEmpty())
+            return true;
+
+        for (ItemStack want : needed)
+        {
+            if (want == null || want.isEmpty())
+                continue;
+
+            int required = want.getCount();
+
+            int fromCans = 0;
+            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameTags(cansSlot, want))
+                fromCans = cansSlot.getCount();
+
+            int fromInv = InventoryHelper.countInInventory(inv, want);
+
+            if (fromCans + fromInv < required)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static void consumeRequiredDyes(Inventory inv, ItemStack cansSlot, Paintjob paintjob)
+    {
+        List<ItemStack> needed = paintjob.getDyesNeeded();
+        if (needed == null || needed.isEmpty())
+            return;
+
+        for (ItemStack want : needed)
+        {
+            if (want == null || want.isEmpty())
+                continue;
+
+            int remaining = want.getCount();
+
+            // 1) Consume from slot 1 first (if it matches)
+            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameTags(cansSlot, want))
+            {
+                int take = Math.min(remaining, cansSlot.getCount());
+                cansSlot.shrink(take);
+                remaining -= take;
+            }
+
+            // 2) Consume remainder from player inventory
+            if (remaining > 0)
+            {
+                ItemStack remainder = want.copy();
+                remainder.setCount(remaining);
+                InventoryHelper.consumeFromInventory(inv, remainder);
             }
         }
+
         inv.setChanged();
     }
 }
