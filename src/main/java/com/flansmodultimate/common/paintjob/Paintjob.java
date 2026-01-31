@@ -5,7 +5,6 @@ import com.flansmodultimate.common.types.PaintableType;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +34,7 @@ public class Paintjob
     @Getter
     private final String textureName;
     private final List<Supplier<ItemStack>> dyesNeeded;
-    @Getter @OnlyIn(Dist.CLIENT)
+    @Getter
     private final ResourceLocation texture;
 
     @Getter @Setter

@@ -895,14 +895,13 @@ public class GunType extends PaintableType implements IScope
             lockOnToVehicles = true;
             lockOnToMechas = true;
         }
-
-        animationConfig.read(file);
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
+        animationConfig.read(file);
         super.readClient(file);
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
