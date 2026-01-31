@@ -1,15 +1,11 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.util.LegacyTransformApplier;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.LogicalSide;
@@ -21,7 +17,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -32,7 +27,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -40,7 +34,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GrenadeItem extends ShootableItem implements ICustomRendererItem<GrenadeType>
+public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<GrenadeType>
 {
     public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
 
@@ -56,7 +50,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     @Override
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
     {
-        ICustomRendererItem.super.initializeClient(consumer);
+        ICustomRendereredItem.super.initializeClient(consumer);
     }
 
     @Override
@@ -81,20 +75,6 @@ public class GrenadeItem extends ShootableItem implements ICustomRendererItem<Gr
     public boolean useCustomRendererInGui()
     {
         return false;
-    }
-
-    @Override
-    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
-    {
-        IModelBase model = ModelCache.getOrLoadTypeModel(configType);
-        if (model == null)
-            return;
-
-        int color = configType.getColour();
-        float red = (color >> 16 & 255) / 255F;
-        float green = (color >> 8 & 255) / 255F;
-        float blue = (color & 255) / 255F;
-        LegacyTransformApplier.renderModel(model, configType, configType.getTexture(), poseStack, buffer, packedLight, packedOverlay, red, green, blue, 1F);
     }
 
     @Override

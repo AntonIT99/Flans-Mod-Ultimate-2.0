@@ -1,10 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.RenderGun;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
@@ -16,28 +12,22 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -55,7 +45,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -66,7 +55,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendererItem<GunType>
+public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendereredItem<GunType>
 {
     public static final int LOCK_ON_SOUND_RANGE = 10;
 
@@ -120,7 +109,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
     {
-        ICustomRendererItem.super.initializeClient(consumer);
+        ICustomRendereredItem.super.initializeClient(consumer);
     }
 
     @Override
@@ -147,13 +136,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return false;
     }
 
-    @Override
-    public void renderItem(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
-    {
-        if (ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun modelGun)
-            RenderGun.renderItem(modelGun, stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-    }
-
     public boolean useAimingAnimation()
     {
         return true;
@@ -174,7 +156,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.isDeployable())
             tooltipComponents.add(Component.literal("[Deployable]").withStyle(ChatFormatting.YELLOW));
 
-        if (!Screen.hasShiftDown())
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             // Attachments
             if (configType.isShowAttachments())
@@ -204,8 +186,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             tooltipComponents.add(Component.empty());
 
-            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
-            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
             tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
         }
         else
@@ -389,7 +370,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return InteractionResultHolder.sidedSuccess(stack, false);
 
         if (level.isClientSide && Minecraft.getInstance().player == player)
-            player.swing(hand, true);
+            ClientHooks.INPUT.swingIfLocalPlayer(player, hand);
 
         return InteractionResultHolder.pass(stack);
     }
@@ -449,58 +430,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            clientTick(level, player, data, stack, hand, dualWield);
+            ClientHooks.GUN.tickGunClient(this, level, player, data, stack, hand, dualWield);
         else
             serverTick(level, (ServerPlayer) player, data, stack, hand);
 
         gunItemHandler.handleMinigunEffects(level, player, data, hand);
         gunItemHandler.checkForLockOn(level, player, data, hand);
         gunItemHandler.checkForMelee(level, player, data, stack);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    protected void clientTick(Level level, @NotNull Player player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
-    {
-        if (player != Minecraft.getInstance().player || configType.isDeployable() || !configType.isUsableByPlayers() || !gunItemHandler.gunCanBeHandled(player))
-            return;
-
-        // Force release actions when entering a GUI
-        if (Minecraft.getInstance().screen != null && (data.isShooting(hand) || data.isSecondaryFunctionKeyPressed()))
-        {
-            data.setShootKeyPressed(hand, false);
-            data.setSecondaryFunctionKeyPressed(false);
-            PacketHandler.sendToServer(new PacketGunInput(false, data.isPrevShootKeyPressed(hand), false, hand));
-        }
-
-        GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(hand);
-        GunInputState.ButtonState secondaryFunctionState = GunInputState.getSecondaryFunctionState();
-
-        // Scope handling
-        gunItemHandler.handleScope(player, gunStack, primaryFunctionState, secondaryFunctionState, dualWield);
-
-        GunAnimations animations = ModClient.getGunAnimations(player, hand);
-        
-        // Switch Delay
-        gunItemHandler.handleGunSwitchDelay(data, animations, hand);
-
-        // Client Shooting
-        if (data.isShooting(hand))
-            gunItemHandler.doPlayerShootClient(level, player, data, animations, gunStack, hand);
-
-        if (ModClient.getSwitchTime() <= 0)
-        {
-            // Don’t shoot certain entities under crosshair
-            if (configType.getPrimaryFunction() == EnumFunction.SHOOT && gunItemHandler.shouldBlockFireAtCrosshair())
-                primaryFunctionState = new GunInputState.ButtonState(false, primaryFunctionState.isPrevPressed());
-
-            data.setShootKeyPressed(hand, primaryFunctionState.isPressed());
-            data.setPrevShootKeyPressed(hand, primaryFunctionState.isPrevPressed());
-            data.setSecondaryFunctionKeyPressed(secondaryFunctionState.isPressed());
-
-            // Send update to server when keys are pressed or released
-            if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
-                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), primaryFunctionState.isPrevPressed(), secondaryFunctionState.isPressed(), hand));
-        }
     }
 
     protected void serverTick(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)

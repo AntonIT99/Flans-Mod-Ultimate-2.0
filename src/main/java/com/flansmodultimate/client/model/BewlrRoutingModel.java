@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmodultimate.client.render.CustomBewlr;
-import com.flansmodultimate.common.item.ICustomRendererItem;
+import com.flansmodultimate.client.render.item.CustomBewlr;
+import com.flansmodultimate.common.item.ICustomRendereredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +37,7 @@ public class BewlrRoutingModel implements BakedModel
             @Override
             public BakedModel resolve(@NotNull BakedModel model, @NotNull ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed)
             {
-                boolean stackHasCustomModel = (stack.getItem() instanceof ICustomRendererItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
+                boolean stackHasCustomModel = (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
 
                 BakedModel resolved = base.resolve(model, stack, level, entity, seed);
                 if (resolved == null)

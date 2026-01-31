@@ -25,7 +25,8 @@ import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
-import com.flansmodultimate.common.item.ICustomRendererItem;
+import com.flansmodultimate.client.render.item.CustomItemRenderers;
+import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.types.TypeFile;
@@ -77,6 +78,8 @@ public final class ModClientEventHandler
     public static void clientSetup(FMLClientSetupEvent event)
     {
         event.enqueueWork(() -> {
+            CustomItemRenderers.registerAll();
+
             // Paintjob registrations
             for (RegistryObject<Item> item : FlansMod.getItems())
             {
@@ -108,7 +111,7 @@ public final class ModClientEventHandler
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
         FlansMod.getItems().stream()
-            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendererItem<?>)
+            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
             .forEach(itemRegistryObject -> {
                 ResourceLocation id = itemRegistryObject.getId();
                 // Wrap ALL baked model variants belonging to this item

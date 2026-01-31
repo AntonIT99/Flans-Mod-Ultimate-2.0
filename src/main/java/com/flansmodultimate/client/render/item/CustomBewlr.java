@@ -1,6 +1,6 @@
-package com.flansmodultimate.client.render;
+package com.flansmodultimate.client.render.item;
 
-import com.flansmodultimate.common.item.ICustomRendererItem;
+import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -29,33 +28,31 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
         // Cancel the offsetting in ItemRenderer.render()
         poseStack.translate(0.5F, 0.5F, 0.5F);
 
-        Item item = stack.getItem();
-        if (item instanceof ICustomRendererItem<?> customRendererItem)
+        boolean useCustomRenderer = false;
+
+        if (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem)
         {
-            boolean useCustomRenderer;
-
-            switch (itemDisplayContext)
+            useCustomRenderer = switch (itemDisplayContext)
             {
-                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> useCustomRenderer = customRendererItem.useCustomRendererInHand();
-                case GROUND -> useCustomRenderer = customRendererItem.useCustomRendererOnGround();
-                case FIXED -> useCustomRenderer = customRendererItem.useCustomRendererInFrame();
-                case GUI -> useCustomRenderer = customRendererItem.useCustomRendererInGui();
-                default -> useCustomRenderer = false;
-            }
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> customRendererItem.useCustomRendererInHand();
+                case GROUND -> customRendererItem.useCustomRendererOnGround();
+                case FIXED -> customRendererItem.useCustomRendererInFrame();
+                case GUI -> customRendererItem.useCustomRendererInGui();
+                default -> false;
+            };
+        }
 
-            if (useCustomRenderer)
-            {
-                customRendererItem.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-            }
+        if (useCustomRenderer)
+        {
+            ICustomItemRenderer renderer = CustomItemRenderers.get(stack.getItem());
+            if (renderer != null)
+                renderer.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
             else
-            {
-                renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-            }
+                useCustomRenderer = false;
         }
-        else
-        {
+
+        if (!useCustomRenderer)
             renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-        }
 
         poseStack.popPose();
     }
