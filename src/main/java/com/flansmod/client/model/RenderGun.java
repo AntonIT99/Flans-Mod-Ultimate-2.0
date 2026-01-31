@@ -751,7 +751,7 @@ public final class RenderGun
             renderAnimArm(mc.thePlayer, model, type, animations);
         }*/
 
-        if (shouldRender && gripAttachment == null && model.type.getSecondaryFire(stack))
+        if (shouldRender && gripAttachment == null || !model.type.getSecondaryFire(stack))
         {
             model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
