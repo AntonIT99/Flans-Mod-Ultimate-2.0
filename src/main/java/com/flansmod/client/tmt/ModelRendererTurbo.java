@@ -3,12 +3,12 @@ package com.flansmod.client.tmt;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Quaternionf;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -2131,16 +2131,15 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         poseStack.translate(rotationPointX * 0.0625F * scale, rotationPointY * 0.0625F * scale, rotationPointZ * 0.0625F * scale);
 
-        if (rotateAngleX != 0.0F || rotateAngleY != 0.0F || rotateAngleZ != 0.0F)
-        {
-            Quaternionf rotation = new Quaternionf().rotationZYX(rotateAngleZ, rotateAngleY, rotateAngleX);
-            poseStack.mulPose(rotation);
-        }
+        if (rotateAngleY != 0F)
+            poseStack.mulPose(Axis.YP.rotation(rotateAngleY));
+        if (rotateAngleZ != 0F)
+            poseStack.mulPose(Axis.ZP.rotation(rotateAngleZ));
+        if (rotateAngleX != 0F)
+            poseStack.mulPose(Axis.XP.rotation(rotateAngleX));
 
-        if (scale != 1.0F)
-        {
+        if (scale != 1F)
             poseStack.scale(scale, scale, scale);
-        }
     }
 
     @Override
