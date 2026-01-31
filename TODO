@@ -1,12 +1,12 @@
 General:
 - Check for content packs put by mistake in mods folder?
 - Render Attachment Item in 3D?
-- Fix Deployable Gun Rendering
 - Tools
 - Armor & Gun Boxes
 - Team Mod / Commands
 - Teams & classes
 - Recipes
+- Use level.playSound() instead of sound packets when possible?
 
 1.12.2 Features:
 - itemHolders

@@ -331,6 +331,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Bullet insert reload sound
      */
+    @Getter
     protected String bulletInsert = FlansMod.SOUND_DEFAULT_SHELL_INSERT;
     /**
      * Pump Sound

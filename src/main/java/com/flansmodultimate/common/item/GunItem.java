@@ -453,7 +453,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
             serverTick(level, (ServerPlayer) player, data, stack, hand);
 
-        gunItemHandler.handleMinigunEffects(level, player, data, configType.getFireMode(stack), hand);
+        gunItemHandler.handleMinigunEffects(level, player, data, hand);
         gunItemHandler.checkForLockOn(level, player, data, hand);
         gunItemHandler.checkForMelee(level, player, data, stack);
     }

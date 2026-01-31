@@ -2,7 +2,6 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;
@@ -19,11 +18,11 @@ import com.mojang.math.Axis;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -53,7 +52,7 @@ public final class RenderGun
             switch (ctx)
             {
                 case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> applyFirstPersonAdjustments(model, stack, poseStack, ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND, animations);
-                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> applyThirdPersonAdjustments(model, poseStack, ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND, animations);
+                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> applyThirdPersonAdjustments(model, poseStack, animations);
                 case FIXED -> applyFixedEntityAdjustments(model, poseStack);
                 case GROUND -> poseStack.translate(model.itemFrameOffset.x, model.itemFrameOffset.y, model.itemFrameOffset.z);
                 default ->
@@ -62,12 +61,35 @@ public final class RenderGun
                 }
             }
 
+            final int numRounds = countRoundsInGun(stack);
+            if (model.slideLockOnEmpty)
+            {
+                if (numRounds == 0)
+                    animations.onGunEmpty(true);
+                else if (!animations.reloading)
+                    animations.onGunEmpty(false);
+            }
+
+            //TODO: Apply model recoil when shooting
+            //TODO: FMU Arms Rendering
+            /*if (rtype == ItemRenderType.EQUIPPED_FIRST_PERSON)
+            {
+                //Apply model recoil when shooting
+                handleGunRecoil(animations, model, getRecoilDistance(gripAttachment, type, item), getRecoilAngle(gripAttachment, type, item));
+                //Render arms
+                if (com.flansmod.common.FlansMod.armsEnable && model.hasArms)
+                {
+                    Minecraft mc = Minecraft.getMinecraft();
+                    renderFirstPersonArm(mc.thePlayer, model, animations);
+                }
+            }*/
+
             poseStack.pushPose();
             poseStack.scale(modelScale, modelScale, modelScale);
             renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                renderGunAndComponents(model, stack, animations, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
-            renderAttachmentAmmo(model, stack, poseStack, buffer, packedLight, packedOverlay);
+                renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
             renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
             poseStack.popPose();
             renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
@@ -83,12 +105,18 @@ public final class RenderGun
         return true;
     }
 
+    private static boolean shouldRenderAmmo(GunAnimations animations, EnumAnimationType anim, int numRounds)
+    {
+        return numRounds != 0 || animations.reloading || (anim != EnumAnimationType.END_LOADED && anim != EnumAnimationType.BACK_LOADED);
+    }
+
     private static void applyFixedEntityAdjustments(ModelGun model, PoseStack poseStack)
     {
         poseStack.translate(0.2F + model.itemFrameOffset.x, -0.2F + model.itemFrameOffset.y, model.itemFrameOffset.z);
         poseStack.mulPose(Axis.YP.rotationDegrees(180F));
     }
 
+    //TODO: continue implementing first person adjustments
     private static void applyFirstPersonAdjustments(ModelGun model, ItemStack stack, PoseStack poseStack, boolean leftHand, GunAnimations animations)
     {
         float smoothing = Minecraft.getInstance().getFrameTime();
@@ -174,7 +202,7 @@ public final class RenderGun
 
         //TODO: fix recoil
         //poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
-        poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
+        //poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
 
         /*if(spinningCocking)
         {
@@ -265,10 +293,8 @@ public final class RenderGun
         }*/
     }
 
-    private static void applyThirdPersonAdjustments(ModelGun model, PoseStack poseStack, boolean leftHand, GunAnimations animations)
+    private static void applyThirdPersonAdjustments(ModelGun model, PoseStack poseStack, GunAnimations animations)
     {
-        float smoothing = Minecraft.getInstance().getFrameTime();
-
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
         poseStack.translate(-0.08F, -0.12F, 0F);
@@ -307,11 +333,9 @@ public final class RenderGun
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
     }
 
-    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    /** Render the gun and default attachment models */
+    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        float smoothing = Minecraft.getInstance().getFrameTime();
-
-        //Render the gun and default attachment models
         poseStack.pushPose();
 
         //Get all the attachments that we may need to render
@@ -322,12 +346,6 @@ public final class RenderGun
         AttachmentType gadgetAttachment = model.type.getGadget(stack);
         AttachmentType slideAttachment = model.type.getSlide(stack);
         AttachmentType pumpAttachment = model.type.getPump(stack);
-        AttachmentType accessoryAttachment = model.type.getAccessory(stack);
-
-        ItemStack scopeItemStack = model.type.getScopeItemStack(stack);
-        ItemStack barrelItemStack = model.type.getBarrelItemStack(stack);
-        ItemStack stockItemStack = model.type.getStockItemStack(stack);
-        ItemStack gripItemStack = model.type.getGripItemStack(stack);
 
         model.render(model.gunModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         model.render(model.backpackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -345,7 +363,7 @@ public final class RenderGun
         if (gadgetAttachment == null && !model.gadgetIsOnPump)
             model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        renderBulletCounterModels(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderBulletCounterModels(model, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderSlideModels(model, stack, animations, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderBreakAction(model, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderHammer(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -354,163 +372,16 @@ public final class RenderGun
         renderChargeHandle(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderMinigunBarrels(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRevolverBarrel(model, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-
-        //TODO: renderAmmo(model, type, gripAttachment, item, empty, animations, getReloadRotate(model, animations), rtype, f, gripItemStack);
-        //Render the clip
-        poseStack.pushPose();
-        {
-            boolean shouldRender = true;
-            //Check to see if the ammo should be rendered first
-            /*switch(animationType)
-            {
-                case END_LOADED: case BACK_LOADED:
-                {
-                    if(empty)
-                        shouldRender = false;
-                    break;
-                }
-                default: break;
-            }*/
-            //If it should be rendered, do the transformations required
-            if (shouldRender && animations.reloading && Minecraft.getInstance().options.getCameraType().isFirstPerson())
-            {
-                //Calculate the amount of tilt required for the reloading animation
-                float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * smoothing;
-                float clipPosition = 0F;
-                if(effectiveReloadAnimationProgress > model.tiltGunTime && effectiveReloadAnimationProgress < model.tiltGunTime + model.unloadClipTime)
-                    clipPosition = (effectiveReloadAnimationProgress - model.tiltGunTime) / model.unloadClipTime;
-                if(effectiveReloadAnimationProgress >= model.tiltGunTime + model.unloadClipTime && effectiveReloadAnimationProgress < model.tiltGunTime + model.unloadClipTime + model.loadClipTime)
-                    clipPosition = 1F - (effectiveReloadAnimationProgress - (model.tiltGunTime + model.unloadClipTime)) / model.loadClipTime;
-
-                float loadOnlyClipPosition = Math.max(0F, Math.min(1F, 1F - ((effectiveReloadAnimationProgress - model.tiltGunTime) / (model.unloadClipTime + model.loadClipTime))));
-
-                //Rotate the gun dependent on the animation type
-                switch(model.animationType)
-                {
-                    case BREAK_ACTION ->
-                    {
-                        poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.reloadRotate * -model.breakAngle));
-                        poseStack.translate(-model.barrelBreakPoint.x, -model.barrelBreakPoint.y, -model.barrelBreakPoint.z);
-                        poseStack.translate(-1F * clipPosition, 0F, 0F);
-                    }
-                    case REVOLVER ->
-                    {
-                        poseStack.translate(model.revolverFlipPoint.x, model.revolverFlipPoint.y, model.revolverFlipPoint.z);
-                        poseStack.mulPose(Axis.XP.rotationDegrees(model.reloadRotate * model.revolverFlipAngle));
-                        poseStack.translate(-model.revolverFlipPoint.x, -model.revolverFlipPoint.y, -model.revolverFlipPoint.z);
-                        poseStack.translate(-1F * clipPosition, 0F, 0F);
-                    }
-                    case BOTTOM_CLIP ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(-180F * clipPosition));
-                        poseStack.mulPose(Axis.XP.rotationDegrees(60F * clipPosition));
-                        poseStack.translate(0.5F * clipPosition, 0F, 0F);
-                    }
-                    case PISTOL_CLIP ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(-90F * clipPosition * clipPosition));
-                        poseStack.translate(0F, -1F * clipPosition, 0F);
-                    }
-                    case ALT_PISTOL_CLIP ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(5F * clipPosition));
-                        poseStack.translate(0F, -3F * clipPosition, 0F);
-                    }
-                    case SIDE_CLIP ->
-                    {
-                        poseStack.mulPose(Axis.YP.rotationDegrees(180F * clipPosition));
-                        poseStack.mulPose(Axis.YP.rotationDegrees(60F * clipPosition));
-                        poseStack.translate(0.5F * clipPosition, 0F, 0F);
-                    }
-                    case BULLPUP ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(-150F * clipPosition));
-                        poseStack.mulPose(Axis.XP.rotationDegrees(60F * clipPosition));
-                        poseStack.translate(clipPosition, -0.5F * clipPosition, 0F);
-                    }
-                    case P90 ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(-15F * model.reloadRotate * model.reloadRotate));
-                        poseStack.translate(0F, 0.075F * model.reloadRotate, 0F);
-                        poseStack.translate(-2F * clipPosition, -0.3F * clipPosition, 0.5F * clipPosition);
-                    }
-                    case RIFLE ->
-                    {
-                        float thing = clipPosition * model.numBulletsInReloadAnimation;
-                        int bulletNum = Mth.floor(thing);
-                        float bulletProgress = thing - bulletNum;
-
-                        poseStack.mulPose(Axis.YP.rotationDegrees(bulletProgress * 15F));
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * 15F));
-                        poseStack.translate(bulletProgress * -1F, 0F, bulletProgress * 0.5F);
-                    }
-                    case RIFLE_TOP ->
-                    {
-                        float thing = clipPosition * model.numBulletsInReloadAnimation;
-                        int bulletNum = Mth.floor(thing);
-                        float bulletProgress = thing - bulletNum;
-
-                        poseStack.mulPose(Axis.YP.rotationDegrees(bulletProgress * 55F));
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * 95F));
-                        poseStack.translate(bulletProgress * -0.1F, bulletProgress, bulletProgress * 0.5F);
-                    }
-                    case SHOTGUN, STRIKER ->
-                    {
-                        float thing = clipPosition * model.numBulletsInReloadAnimation;
-                        int bulletNum = Mth.floor(thing);
-                        float bulletProgress = thing - bulletNum;
-
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * -30F));
-                        poseStack.translate(bulletProgress * -0.5F, bulletProgress * -1F, 0F);
-                    }
-                    case CUSTOM ->
-                    {
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.rotateClipVertical * clipPosition));
-                        poseStack.mulPose(Axis.YP.rotationDegrees(model.rotateClipHorizontal * clipPosition));
-                        poseStack.mulPose(Axis.XP.rotationDegrees(model.tiltClip * clipPosition));
-                        poseStack.translate(model.translateClip.x * clipPosition, model.translateClip.y * clipPosition, model.translateClip.z * clipPosition);
-                    }
-                    case END_LOADED ->
-                    {
-                        float dYaw = (loadOnlyClipPosition > 0.5F ? loadOnlyClipPosition * 2F - 1F : 0F);
-
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(-45F * dYaw));
-                        poseStack.translate(-model.endLoadedAmmoDistance * dYaw, -0.5F * dYaw, 0F);
-
-                        float xDisplacement = (loadOnlyClipPosition < 0.5F ? loadOnlyClipPosition * 2F : 1F);
-
-                        poseStack.translate(model.endLoadedAmmoDistance * xDisplacement, 0F, 0F);
-                    }
-                    case BACK_LOADED ->
-                    {
-                        float dYaw = (loadOnlyClipPosition > 0.5F ? loadOnlyClipPosition * 2F - 1F : 0F);
-
-                        poseStack.translate(model.endLoadedAmmoDistance * dYaw, -0.5F * dYaw, 0F);
-
-                        float xDisplacement = (loadOnlyClipPosition < 0.5F ? loadOnlyClipPosition * 2F : 1F);
-
-                        poseStack.translate(-model.endLoadedAmmoDistance * xDisplacement, 0F, 0F);
-                    }
-                }
-            }
-
-            if (shouldRender)
-                model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
-        poseStack.popPose();
-
+        renderAmmo(model, animations, stack, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderStaticAmmo(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         poseStack.popPose();
     }
 
-    private static void renderBulletCounterModels(ModelGun model, ItemStack stack, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderBulletCounterModels(ModelGun model, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (renderPass != EnumRenderPass.GLOW_ALPHA || (!model.isBulletCounterActive && !model.isAdvBulletCounterActive))
             return;
-
-        final int numRounds = countRoundsInGun(stack);
 
         if (model.isBulletCounterActive && numRounds < model.bulletCounterModel.length)
         {
@@ -648,13 +519,6 @@ public final class RenderGun
                 model.render(model.defaultGripModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (gadgetAttachment == null && model.gadgetIsOnPump)
                 model.render(model.defaultGadgetModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            if (ModClient.getShotState() != -1 && -(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.pumpHandleDistance != -0.0F)
-            {
-                ModClient.setShotState(-1);
-                //TODO: should this stay client only?
-                if (StringUtils.isNotBlank(model.type.getActionSound()))
-                    FlansMod.getSoundEvent(model.type.getActionSound()).ifPresent(soundEvent -> Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(soundEvent.get(), 1.0F)));
-            }
             poseStack.popPose();
         }
     }
@@ -668,14 +532,6 @@ public final class RenderGun
         poseStack.translate(-model.boltRotationOffset.x, -model.boltRotationOffset.y, -model.boltRotationOffset.z);
         model.render(model.boltActionModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
-
-        if (ModClient.getShotState() != -1 && -(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime())) * model.boltCycleDistance != -0.0)
-        {
-            ModClient.setShotState(-1);
-            //TODO: should this stay client only?
-            if (StringUtils.isNotBlank(model.type.getActionSound()))
-                FlansMod.getSoundEvent(model.type.getActionSound()).ifPresent(soundEvent -> Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(soundEvent.get(), 1.0F)));
-        }
     }
 
     private static void renderChargeHandle(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
@@ -724,14 +580,235 @@ public final class RenderGun
     {
         if (model.type.getSecondaryFire(stack))
         {
-            poseStack.pushPose();
             model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
     }
 
+    private static void renderAmmo(ModelGun model, GunAnimations animations, ItemStack stack, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        poseStack.pushPose();
+
+        AttachmentType gripAttachment = model.type.getGrip(stack);
+        ModelAttachment gripModel = gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment attachment ? attachment : null;
+        EnumAnimationType anim = model.animationType;
+
+        if (gripModel != null && model.type.getSecondaryFire(stack))
+            anim = gripModel.secondaryAnimType;
+
+        boolean shouldRender = shouldRenderAmmo(animations, anim, numRounds);
+
+        // If it should be rendered, do the transformations required
+        if (shouldRender && animations.reloading)
+        {
+            // Calculate the amount of tilt required for the reloading animation
+            float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * Minecraft.getInstance().getFrameTime();
+            float clipPosition = getClipPosition(model, stack, effectiveReloadAnimationProgress);
+            float loadOnlyClipPosition = Math.max(0F, Math.min(1F, 1F - ((effectiveReloadAnimationProgress - model.tiltGunTime) / (model.unloadClipTime + model.loadClipTime))));
+
+            // Rotate the gun dependent on the animation type
+            switch (model.animationType)
+            {
+                case BREAK_ACTION, CUSTOMBREAK_ACTION ->
+                {
+                    poseStack.translate(model.barrelBreakPoint.x, model.barrelBreakPoint.y, model.barrelBreakPoint.z);
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(model.reloadRotate * -model.breakAngle));
+                    poseStack.translate(-model.barrelBreakPoint.x, -model.barrelBreakPoint.y, -model.barrelBreakPoint.z);
+                    poseStack.translate(-model.breakActionAmmoDistance * clipPosition / model.type.getModelScale(), 0F, 0F);
+                }
+                case REVOLVER, CUSTOMREVOLVER ->
+                {
+                    poseStack.translate(model.revolverFlipPoint.x, model.revolverFlipPoint.y, model.revolverFlipPoint.z);
+                    poseStack.mulPose(Axis.XP.rotationDegrees(model.reloadRotate * model.revolverFlipAngle));
+                    poseStack.translate(-model.revolverFlipPoint.x, -model.revolverFlipPoint.y, -model.revolverFlipPoint.z);
+                    poseStack.translate(-1F * clipPosition / model.type.getModelScale(), 0F, 0F);
+                }
+                case REVOLVER2, CUSTOMREVOLVER2 ->
+                {
+                    poseStack.translate(model.revolver2FlipPoint.x, model.revolver2FlipPoint.y, model.revolver2FlipPoint.z);
+                    poseStack.mulPose(Axis.XP.rotationDegrees(model.reloadRotate * model.revolver2FlipAngle));
+                    poseStack.translate(-model.revolver2FlipPoint.x, -model.revolver2FlipPoint.y, -model.revolver2FlipPoint.z);
+                    poseStack.translate(-1F * clipPosition / model.type.getModelScale(), 0F, 0F);
+                }
+                case BOTTOM_CLIP, CUSTOMBOTTOM_CLIP ->
+                {
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(-180F * clipPosition));
+                    poseStack.mulPose(Axis.XP.rotationDegrees(60F * clipPosition));
+                    poseStack.translate(0.5F * clipPosition / model.type.getModelScale(), 0F, 0F);
+                }
+                case PISTOL_CLIP, CUSTOMPISTOL_CLIP ->
+                {
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(-90F * clipPosition * clipPosition));
+                    poseStack.translate(0F, -1F * clipPosition / model.type.getModelScale(), 0F);
+                }
+                case ALT_PISTOL_CLIP, CUSTOMALT_PISTOL_CLIP ->
+                {
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(5F * clipPosition));
+                    poseStack.translate(0F, -3F * clipPosition / model.type.getModelScale(), 0F);
+                }
+                case SIDE_CLIP, CUSTOMSIDE_CLIP ->
+                {
+                    poseStack.mulPose(Axis.YP.rotationDegrees(180F * clipPosition));
+                    poseStack.mulPose(Axis.YP.rotationDegrees(60F * clipPosition));
+                    poseStack.translate(0.5F * clipPosition / model.type.getModelScale(), 0F, 0F);
+                }
+                case BULLPUP, CUSTOMBULLPUP ->
+                {
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(-150F * clipPosition));
+                    poseStack.mulPose(Axis.XP.rotationDegrees(60F * clipPosition));
+                    poseStack.translate(clipPosition, -0.5F * clipPosition / model.type.getModelScale(), 0F);
+                }
+                case P90, CUSTOMP90 ->
+                {
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(-15F * model.reloadRotate * model.reloadRotate));
+                    poseStack.translate(0F, 0.075F * model.reloadRotate, 0F);
+                    poseStack.translate(-2F * clipPosition / model.type.getModelScale(), -0.3F * clipPosition / model.type.getModelScale(), 0.5F * clipPosition / model.type.getModelScale());
+                }
+                case RIFLE ->
+                {
+                    float ammoPosition = clipPosition * getNumBulletsInReload(model, animations);
+                    int bulletNum = Mth.floor(ammoPosition);
+                    float bulletProgress = ammoPosition - bulletNum;
+
+                    poseStack.mulPose(Axis.YP.rotationDegrees(bulletProgress * 15F));
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * 15F));
+                    poseStack.translate(bulletProgress * -1F / model.type.getModelScale(), 0F, bulletProgress * 0.5F / model.type.getModelScale());
+                }
+                case CUSTOMRIFLE ->
+                {
+                    float maxBullets = getNumBulletsInReload(model, animations);
+                    float ammoPosition = clipPosition * maxBullets;
+                    int bulletNum = Mth.floor(ammoPosition);
+                    float bulletProgress = ammoPosition - bulletNum;
+
+                    poseStack.mulPose(Axis.YP.rotationDegrees(bulletProgress * model.rotateClipVertical));
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * model.rotateClipHorizontal));
+                    poseStack.mulPose(Axis.XP.rotationDegrees(bulletProgress * model.tiltClip));
+                    poseStack.translate(bulletProgress * model.translateClip.x / model.type.getModelScale(), bulletProgress * model.translateClip.y / model.type.getModelScale(), bulletProgress * model.translateClip.z / model.type.getModelScale());
+                }
+                case RIFLE_TOP, CUSTOMRIFLE_TOP ->
+                {
+                    float ammoPosition = clipPosition * getNumBulletsInReload(model, animations);
+                    int bulletNum = Mth.floor(ammoPosition);
+                    float bulletProgress = ammoPosition - bulletNum;
+
+                    poseStack.mulPose(Axis.YP.rotationDegrees(bulletProgress * 55F));
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * 95F));
+                    poseStack.translate(bulletProgress * -0.1F / model.type.getModelScale(), bulletProgress / model.type.getModelScale(), bulletProgress * 0.5F / model.type.getModelScale());
+                }
+                case SHOTGUN, STRIKER, CUSTOMSHOTGUN, CUSTOMSTRIKER ->
+                {
+                    float maxBullets = getNumBulletsInReload(model, animations);
+                    float ammoPosition = clipPosition * maxBullets;
+                    int bulletNum = Mth.floor(ammoPosition);
+                    float bulletProgress = ammoPosition - bulletNum;
+
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(bulletProgress * -30F));
+                    poseStack.translate(bulletProgress * -0.5F * 1 / model.type.getModelScale(), bulletProgress * -1F * 1 / model.type.getModelScale(), 0F);
+                }
+                case CUSTOM ->
+                {
+                    // Staged reload allows you to change the animation route halfway through
+                    if (effectiveReloadAnimationProgress > 0.5 && model.stagedReload)
+                    {
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.stagedrotateClipVertical * clipPosition));
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.stagedrotateClipHorizontal * clipPosition));
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.stagedtiltClip * clipPosition));
+                        poseStack.translate(model.stagedtranslateClip.x * clipPosition / model.type.getModelScale(), model.stagedtranslateClip.y * clipPosition / model.type.getModelScale(), model.stagedtranslateClip.z * clipPosition / model.type.getModelScale());
+                    }
+                    else
+                    {
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(model.rotateClipVertical * clipPosition));
+                        poseStack.mulPose(Axis.YP.rotationDegrees(model.rotateClipHorizontal * clipPosition));
+                        poseStack.mulPose(Axis.XP.rotationDegrees(model.tiltClip * clipPosition));
+                        poseStack.translate(model.translateClip.x * clipPosition / model.type.getModelScale(), model.translateClip.y * clipPosition / model.type.getModelScale(), model.translateClip.z * clipPosition / model.type.getModelScale());
+                    }
+                }
+                case END_LOADED, CUSTOMEND_LOADED ->
+                {
+                    float dYaw = (loadOnlyClipPosition > 0.5F ? loadOnlyClipPosition * 2F - 1F : 0F);
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(-45F * dYaw));
+                    poseStack.translate(-getEndLoadedDistance(model, gripAttachment, stack) * dYaw, -0.5F * dYaw, 0F);
+
+                    float xDisplacement = (loadOnlyClipPosition < 0.5F ? loadOnlyClipPosition * 2F : 1F);
+                    poseStack.translate(getEndLoadedDistance(model, gripAttachment, stack) * xDisplacement, 0F, 0F);
+                }
+                case BACK_LOADED, CUSTOMBACK_LOADED ->
+                {
+                    float dYaw = (loadOnlyClipPosition > 0.5F ? loadOnlyClipPosition * 2F - 1F : 0F);
+                    poseStack.translate(getEndLoadedDistance(model, gripAttachment, stack) * dYaw, -0.5F * dYaw, 0F);
+
+                    float xDisplacement = (loadOnlyClipPosition < 0.5F ? loadOnlyClipPosition * 2F : 1F);
+                    poseStack.translate(-getEndLoadedDistance(model, gripAttachment, stack) * xDisplacement, 0F, 0F);
+                }
+            }
+        }
+
+        //TODO: FMU Arms Rendering
+        /*if (rtype == ItemRenderType.EQUIPPED_FIRST_PERSON && model.hasArms && com.flansmod.common.FlansMod.armsEnable)
+        {
+            Minecraft mc = Minecraft.getMinecraft();
+            renderAnimArm(mc.thePlayer, model, type, animations);
+        }*/
+
+        if (shouldRender && gripAttachment == null && model.type.getSecondaryFire(stack))
+        {
+            model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        }
+
+        // Renders fullammo model for 2nd half of reload animation
+        float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * Minecraft.getInstance().getFrameTime();
+        if (effectiveReloadAnimationProgress > 0.5)
+            model.render(model.fullammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        poseStack.popPose();
+    }
+
+    public static float getClipPosition(ModelGun model, ItemStack stack, float effectiveReloadAnimationProgress)
+    {
+        AttachmentType gripAttachment = model.type.getGrip(stack);
+        ModelAttachment gripModel = gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment attachment ? attachment : null;
+
+        float tiltGunTime = model.tiltGunTime;
+        float unloadClipTime = model.unloadClipTime;
+        float loadClipTime = model.loadClipTime;
+
+        if (gripModel != null && model.type.getSecondaryFire(stack))
+        {
+            tiltGunTime = gripModel.tiltGunTime;
+            unloadClipTime = gripModel.unloadClipTime;
+            loadClipTime = gripModel.loadClipTime;
+        }
+
+        float clipPosition = 0F;
+        if (effectiveReloadAnimationProgress > tiltGunTime && effectiveReloadAnimationProgress < tiltGunTime + unloadClipTime)
+            clipPosition = (effectiveReloadAnimationProgress - tiltGunTime) / unloadClipTime;
+        if (effectiveReloadAnimationProgress >= tiltGunTime + unloadClipTime && effectiveReloadAnimationProgress < tiltGunTime + unloadClipTime + loadClipTime)
+            clipPosition = 1F - (effectiveReloadAnimationProgress - (tiltGunTime + unloadClipTime)) / loadClipTime;
+        return clipPosition;
+    }
+
+    /** Get the end loaded distance, based on ammo type to reload */
+    public static float getEndLoadedDistance(ModelGun model, @Nullable AttachmentType grip, ItemStack gunStack)
+    {
+        if (grip != null && model.type.getSecondaryFire(gunStack) && ModelCache.getOrLoadTypeModel(grip) instanceof ModelAttachment gripModel)
+            return gripModel.endLoadedAmmoDistance;
+        else
+            return model.endLoadedAmmoDistance;
+    }
+
+    /** Get the number of bullets to reload in animation, based on ammo type to reload */
+    public static float getNumBulletsInReload(ModelGun model, GunAnimations animations)
+    {
+        // If this is a singles reload, we want to know the number of bullets already in the gun
+        if (animations.singlesReload)
+            return animations.reloadAmmoCount;
+        else
+            return model.numBulletsInReloadAnimation;
+    }
+
     //TODO: check reload rotate logic
-    private static float getReloadRotate(ModelGun model, GunAnimations animations)
+    public static float getReloadRotate(ModelGun model, GunAnimations animations)
     {
         float reloadRotate = 1F;
 
@@ -779,12 +856,12 @@ public final class RenderGun
         }
     }
 
-    private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         AttachmentType gripAttachment = model.type.getGrip(stack);
         ItemStack gripItemStack = model.type.getGripItemStack(stack);
 
-        if (!model.type.getSecondaryFire(stack) && gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
+        if (gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
         {
             int color = gripAttachment.getColour();
             float red = (color >> 16 & 255) / 255F;
@@ -792,8 +869,12 @@ public final class RenderGun
             float blue = (color & 255) / 255F;
             float modelScale = gripAttachment.getModelScale();
             ResourceLocation ammoTexture = gripAttachment.getPaintjob(gripItemStack).getTexture();
-            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
+
+            if (shouldRenderAmmo(animations, model.animationType, numRounds) || !model.type.getSecondaryFire(stack))
+            {
+                for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+                    gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
+            }
         }
     }
 

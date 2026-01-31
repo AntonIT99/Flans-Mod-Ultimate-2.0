@@ -165,12 +165,13 @@ public class GunItemHandler
         float animationLength = item.configType.getSwitchDelay();
         if (animationLength == 0)
         {
-            animations.switchAnimationLength = animations.switchAnimationProgress = 0;
+            animations.setSwitchAnimationLength(0F);
+            animations.setSwitchAnimationProgress(0F);
         }
         else
         {
-            animations.switchAnimationProgress = 1;
-            animations.switchAnimationLength = animationLength;
+            animations.setSwitchAnimationProgress(1);
+            animations.setSwitchAnimationLength(animationLength);
             ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
 
             //TODO: data should be also updated on Server
@@ -407,13 +408,13 @@ public class GunItemHandler
         return Optional.empty();
     }
 
-    public void handleMinigunEffects(Level level, Player player, PlayerData data, EnumFireMode mode, InteractionHand hand)
+    public void handleMinigunEffects(Level level, Player player, PlayerData data, InteractionHand hand)
     {
-        accelerateMinigun(level, player, data, mode, hand);
-        handleMinigunLoopingSounds(level, player, data, mode, hand);
+        accelerateMinigun(level, player, data, hand);
+        handleMinigunLoopingSounds(level, player, data, hand);
     }
 
-    private void accelerateMinigun(Level level, Player player, PlayerData data, EnumFireMode mode, InteractionHand hand)
+    private void accelerateMinigun(Level level, Player player, PlayerData data, InteractionHand hand)
     {
         if (data.isShootKeyPressed(hand) && data.getMinigunSpeed() < item.configType.getMinigunMaxSpeed())
         {
@@ -423,7 +424,7 @@ public class GunItemHandler
         }
     }
 
-    private void handleMinigunLoopingSounds(Level level, Player player, PlayerData data, EnumFireMode mode, InteractionHand hand)
+    private void handleMinigunLoopingSounds(Level level, Player player, PlayerData data, InteractionHand hand)
     {
         if (data.isReloading(hand) || !item.configType.isUseLoopingSounds() || data.getLoopedSoundDelay() > 0)
             return;

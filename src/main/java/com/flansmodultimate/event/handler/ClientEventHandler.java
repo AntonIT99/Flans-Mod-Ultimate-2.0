@@ -53,10 +53,6 @@ public final class ClientEventHandler
             return;
 
         GunInputState.tick();
-
-        //TODO: implement commented out code from 1.12.2
-        //renderHooks.update();
-        //RenderFlag.angle += 2F;
         ModClient.tick();
     }
 
@@ -67,8 +63,6 @@ public final class ClientEventHandler
             return;
 
         ModClient.renderTick();
-        //TODO: implement commented out code for driveables (1.12.2)
-        //updatePlayerView();
     }
 
     @SubscribeEvent
@@ -244,10 +238,11 @@ public final class ClientEventHandler
         DebugHelper.activeDebugEntities.clear(); // cleanup on world/connection change
     }
 
-    //TODO: check these methods (1.12.2)
-    //renderItemFrame()
-    //renderHeldItem()
-    //renderThirdPersonWeapons()
+    //TODO: Handle player hiding / name tag removal for teams (1.12.2)
     //renderPlayer()
-    //cameraSetup()
+    //TODO: implement this code from 1.12.2
+    //renderHooks.update();
+    //RenderFlag.angle += 2F;
+    //TODO: implement commented out code for driveables (1.12.2)
+    //updatePlayerView();
 }

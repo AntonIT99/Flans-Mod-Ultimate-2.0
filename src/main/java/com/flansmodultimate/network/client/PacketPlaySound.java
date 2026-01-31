@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.util.SoundHelper;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -40,22 +42,22 @@ public class PacketPlaySound implements IClientPacket
     private boolean cancellable;
     private UUID instanceUUID;
 
-    public PacketPlaySound(double x, double y, double z, double range, @Nullable String s, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)
+    public PacketPlaySound(double x, double y, double z, double range, @Nullable String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)
     {
         posX = (float) x;
         posY = (float) y;
         posZ = (float) z;
         this.range = (float) range;
-        sound = Objects.requireNonNullElse(s, StringUtils.EMPTY);
+        this.sound = Objects.requireNonNullElse(sound, StringUtils.EMPTY);
         this.distort = distort;
         this.silenced = silenced;
         this.cancellable = cancellable;
         this.instanceUUID = instanceUUID;
     }
 
-    public PacketPlaySound(double x, double y, double z, double range, @Nullable String s, boolean distort, boolean silenced)
+    public PacketPlaySound(double x, double y, double z, double range, @Nullable String sound, boolean distort, boolean silenced)
     {
-        this(x, y, z, range, s, distort, silenced, false, UUID.randomUUID());
+        this(x, y, z, range, sound, distort, silenced, false, UUID.randomUUID());
     }
 
     @Override
@@ -69,7 +71,7 @@ public class PacketPlaySound implements IClientPacket
         data.writeBoolean(distort);
         data.writeBoolean(silenced);
         data.writeBoolean(cancellable);
-        data.writeUtf(instanceUUID.toString());
+        data.writeUUID(instanceUUID);
     }
 
     @Override
@@ -83,7 +85,7 @@ public class PacketPlaySound implements IClientPacket
         distort = data.readBoolean();
         silenced = data.readBoolean();
         cancellable = data.readBoolean();
-        instanceUUID = UUID.fromString(data.readUtf());
+        instanceUUID = data.readUUID();
     }
 
     @Override
@@ -99,11 +101,12 @@ public class PacketPlaySound implements IClientPacket
             return;
         }
 
-        float volume = silenced ? range / 2F : range;
-        float pitchBase = distort ? (1.0F / (level.random.nextFloat() * 0.4F + 0.8F)) : 1.0F;
+        RandomSource r = RandomSource.create(instanceUUID.getMostSignificantBits() ^ instanceUUID.getLeastSignificantBits());
+        float volume = SoundHelper.getVolumeFromRange(range, silenced);
+        float pitchBase = distort ? (1.0F / (r.nextFloat() * 0.4F + 0.8F)) : 1.0F;
         float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 
-        SimpleSoundInstance soundInstance = new SimpleSoundInstance(event.getId(), SoundSource.MASTER, volume, pitch, level.random, false, 0, SoundInstance.Attenuation.LINEAR, posX, posY, posZ, false);
+        SimpleSoundInstance soundInstance = new SimpleSoundInstance(event.getId(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, posX, posY, posZ, false);
 
         if (cancellable)
             ModClient.getCancellableSounds().put(instanceUUID, soundInstance);

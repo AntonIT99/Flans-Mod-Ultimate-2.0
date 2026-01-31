@@ -1,10 +1,15 @@
 package com.flansmodultimate.client;
 
+import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.RenderGun;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Mecha;
@@ -20,6 +25,7 @@ import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.util.SoundHelper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +35,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.fml.LogicalSide;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -315,6 +322,9 @@ public class ModClient
         updateGunAnimations();
         updateScopeState(mc, player);
         updateZoom();
+        playGunItemSounds(player, InteractionHand.MAIN_HAND);
+        playGunItemSounds(player, InteractionHand.OFF_HAND);
+        SoundHelper.tickClient();
 
         if (changedCameraEntity && (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive()))
         {
@@ -656,6 +666,57 @@ public class ModClient
             zoomProgress = 1F - (1F - zoomProgress) * 0.66F;
     }
 
+    private static void playGunItemSounds(Player player, InteractionHand hand)
+    {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof GunItem gunItem) || !(ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun))
+            return;
+
+        GunType type = gunItem.getConfigType();
+        GunAnimations animations = getGunAnimations(player, hand);
+        AttachmentType pump = type.getPump(stack);
+
+        if (shotState != -1
+            && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F) || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
+        {
+            ModClient.setShotState(-1);
+            SoundHelper.playLocalAndBroadcast(type.getActionSound(), player.position(), FlansMod.SOUND_RANGE);
+        }
+
+        EnumAnimationType anim = modelGun.getAnimationType();
+        if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN || anim == EnumAnimationType.CUSTOMSTRIKER)
+        {
+            float clipPosition = RenderGun.getClipPosition(modelGun, stack, animations.getLastReloadAnimationProgress());
+            float maxBullets = RenderGun.getNumBulletsInReload(modelGun, animations);
+            float ammoPosition = clipPosition * maxBullets;
+            int bulletNum = Mth.floor(ammoPosition);
+            float bulletProgress = ammoPosition - bulletNum;
+
+            if ((anim == EnumAnimationType.CUSTOMRIFLE || maxBullets > 1) && type.getNumAmmoItemsInGun(stack) > 1 && StringUtils.isNotBlank(type.getBulletInsert()) && ModClient.getLastBulletReload() != -2)
+            {
+                if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
+                {
+                    int time = (int) (animations.getReloadAnimationTime() / maxBullets);
+                    SoundHelper.playDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE, time);
+                    ModClient.setLastBulletReload(-1);
+                }
+                else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
+                {
+                    ModClient.setLastBulletReload(bulletNum);
+                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE);
+                }
+
+                if ((ammoPosition < 0.03 && bulletProgress > 0))
+                {
+                    ModClient.setLastBulletReload(-2);
+                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE);
+                }
+            }
+        }
+
+
+    }
+
     @OnlyIn(Dist.CLIENT)
     public static void updateCameraZoom(ViewportEvent.ComputeFov event)
     {
@@ -675,11 +736,6 @@ public class ModClient
         {
             event.setFOV(event.getFOV() / Math.max(lastZoomLevel, lastFOVZoomLevel));
         }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public static void updateCameraAngles(ViewportEvent.ComputeCameraAngles event)
-    {
     }
 
     @OnlyIn(Dist.CLIENT)

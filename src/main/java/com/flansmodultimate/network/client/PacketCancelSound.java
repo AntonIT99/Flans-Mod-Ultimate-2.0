@@ -25,13 +25,13 @@ public class PacketCancelSound implements IClientPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
-        data.writeUtf(instanceUUID.toString());
+        data.writeUUID(instanceUUID);
     }
 
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
-        instanceUUID = UUID.fromString(data.readUtf());
+        instanceUUID = data.readUUID();
     }
 
     @Override

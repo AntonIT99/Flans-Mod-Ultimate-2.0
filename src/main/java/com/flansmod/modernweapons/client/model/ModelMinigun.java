@@ -263,7 +263,7 @@ public class ModelMinigun extends ModelGun
     {
         poseStack.pushPose();
         poseStack.translate(spinnerOrigin.x, spinnerOrigin.y, spinnerOrigin.z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(anims.minigunBarrelRotation));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(anims.getMinigunBarrelRotation()));
         poseStack.translate(-spinnerOrigin.x, -spinnerOrigin.y, -spinnerOrigin.z);
         render(spinnerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();

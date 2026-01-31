@@ -2,99 +2,99 @@ package com.flansmod.client.model;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import net.minecraft.util.RandomSource;
+
 import java.util.Random;
 
+@Getter
 @NoArgsConstructor
 public class GunAnimations
 {
     public static GunAnimations defaults = new GunAnimations();
     public static Random random = new Random();
 
-    //TODO: check recoil mess here
     /** (Purely aesthetic) gun animation variables */
-    public boolean isGunEmpty;
+    protected boolean isGunEmpty;
     /** Recoil */
-    public float gunRecoil;
-    public float lastGunRecoil;
-    public float recoilAmount = 0.33F;
-    public float recoil;
-    public float antiRecoil;
-    public float recoilAngle;
-    public Vector3f recoilOffset = new Vector3f();
-    public Vector3f recoilVelocity = new Vector3f();
+    protected float gunRecoil;
+    protected float lastGunRecoil;
+    protected float recoilAmount = 0.33F;
     /** Slide */
-    public float gunSlide;
-    public float lastGunSlide;
+    protected float gunSlide;
+    protected float lastGunSlide;
     /** Delayed Reload Animations */
-    public int timeUntilPump;
-    public int timeToPumpFor;
+    protected int timeUntilPump;
+    protected int timeToPumpFor;
     /** Delayed Reload Animations : -1, 1 = At rest, 0 = Mid Animation */
-    public float pumped = -1F;
-    public float lastPumped = -1F;
+    protected float pumped = -1F;
+    protected float lastPumped = -1F;
     /** Delayed Reload Animations : Doing the delayed animation */
-    public boolean pumping;
+    protected boolean pumping;
 
     /**
      * Charge handle variables
      */
-    public int timeUntilCharge;
-    public int timeToChargeFor;
-    public float charged = -1F;
-    public float lastCharged = -1F;
-    public boolean charging;
+    protected int timeUntilCharge;
+    protected int timeToChargeFor;
+    protected float charged = -1F;
+    protected float lastCharged = -1F;
+    protected boolean charging;
 
-    public boolean reloading;
-    public float reloadAnimationTime;
-    public float reloadAnimationProgress;
-    public float lastReloadAnimationProgress;
-    public int reloadAmmoCount = 1;
-    public boolean singlesReload;
+    protected boolean reloading;
+    protected float reloadAnimationTime;
+    protected float reloadAnimationProgress;
+    protected float lastReloadAnimationProgress;
+    protected int reloadAmmoCount = 1;
+    protected boolean singlesReload;
 
-    public float minigunBarrelRotation;
-    public float minigunBarrelRotationSpeed;
+    protected float minigunBarrelRotation;
+    protected float minigunBarrelRotationSpeed;
 
-    public int muzzleFlashTime;
-    public int flashInt;
+    protected int muzzleFlashTime;
+    protected int flashInt;
 
     /** Casing mechanics */
-    public int timeUntilCasing;
-    public int casingStage;
-    public int lastCasingStage;
+    protected int timeUntilCasing;
+    protected int casingStage;
+    protected int lastCasingStage;
 
     /** Hammer model mechanics. If in single action, the model will play a modified animation and delay hammer reset */
-    public float hammerRotation;
-    public float althammerRotation;
-    public int timeUntilPullback;
-    public float gunPullback = -1F;
-    public float lastGunPullback = -1F;
-    public boolean isFired;
+    protected float hammerRotation;
+    protected float althammerRotation;
+    protected int timeUntilPullback;
+    protected float gunPullback = -1F;
+    protected float lastGunPullback = -1F;
+    protected boolean isFired;
 
-    public Vector3f casingRandom = new Vector3f(0F, 0F, 0F);
+    protected Vector3f casingRandom = new Vector3f(0F, 0F, 0F);
 
     /** Melee animations */
-    public int meleeAnimationProgress;
-    public int meleeAnimationLength;
+    protected int meleeAnimationProgress;
+    protected int meleeAnimationLength;
 
     /**
      * Switch animations
      */
-    public float switchAnimationProgress;
-    public float switchAnimationLength;
+    @Setter
+    protected float switchAnimationProgress;
+    @Setter
+    protected float switchAnimationLength;
 
     /** Fancy stance / running animation stuff */
-    public float runningStanceAnimationProgress;
-    public float runningStanceAnimationLength = 4F;
-    public Vector3f sprintingStance;
-    public int stanceTimer;
+    protected float runningStanceAnimationProgress;
+    protected float runningStanceAnimationLength = 4F;
+    protected Vector3f sprintingStance;
+    protected int stanceTimer;
 
-    public EnumLookAtState lookAt = EnumLookAtState.NONE;
-    public float lookAtTimer = 0;
+    @Setter
+    protected EnumLookAtState lookAt = EnumLookAtState.NONE;
+    protected float lookAtTimer = 0;
 
-    public static final int[] lookAtTimes = new int[]{1, 10, 20, 10, 20, 10};
+    protected static final int[] lookAtTimes = new int[]{1, 10, 20, 10, 20, 10};
 
     public enum EnumLookAtState
     {
@@ -108,34 +108,28 @@ public class GunAnimations
 
     public void updateSprintStance(String shortName)
     {
-        long seed = getSeedFromString(shortName);
-        sprintingStance = new Vector3f(
-            randomSeededFloat(-15, -5, seed),
-            randomSeededFloat(0, 45, seed),
-            randomSeededFloat(-20, 10, seed)
-        );
+        long seed = seedFromString(shortName);
+        RandomSource r = RandomSource.create(seed);
+        sprintingStance = new Vector3f(nextRange(r, -15f, -5f), nextRange(r,   0f, 45f), nextRange(r, -20f, 10f));
     }
 
-    private static float randomSeededFloat(float min, float max, long seed)
+    private static float nextRange(RandomSource r, float min, float max)
     {
-        return random.nextFloat() * (max - min) + min;
+        return min + r.nextFloat() * (max - min);
     }
 
-    private static long getSeedFromString(String str)
+    /** FNV-1a 64-bit: stable, fast, good enough for seeds */
+    private static long seedFromString(String s)
     {
-        try
+        if (s == null)
+            return 0L;
+        long hash = 0xcbf29ce484222325L;
+        for (int i = 0; i < s.length(); i++)
         {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-            byte[] digest = messageDigest.digest(str.getBytes());
-            long seed = 0;
-            for (int i = 0; i < 8; i++)
-                seed = (seed << 8) | (digest[i] & 0xff);
-            return seed;
+            hash ^= s.charAt(i);
+            hash *= 0x100000001b3L;
         }
-        catch (NoSuchAlgorithmException e)
-        {
-            throw new RuntimeException("SHA-1 not supported", e);
-        }
+        return hash;
     }
 
     public void update()
@@ -228,27 +222,6 @@ public class GunAnimations
         lastGunRecoil = gunRecoil;
         if (gunRecoil > 0)
             gunRecoil *= 0.7F;
-
-        float scale = 0.5f;
-        float offsetScale = 0.005f;
-
-        if (recoil > 0)
-            recoil *= 0.5F;
-
-        recoilVelocity.x += (float) ((random.nextGaussian() - 0.5f) * recoil * offsetScale);
-        recoilVelocity.y += (float) ((random.nextGaussian() - 0.5f) * recoil * offsetScale);
-        recoilVelocity.z += (float) ((random.nextGaussian() - 0.25f) * recoil * offsetScale);
-        recoilVelocity.scale(0.5f);
-
-        Vector3f.add(recoilOffset, recoilVelocity, recoilOffset);
-
-        recoilOffset.scale(0.9f);
-
-        recoilAngle -= recoil * scale;
-        antiRecoil += recoil;
-
-        recoilAngle += antiRecoil * 0.2f * scale;
-        antiRecoil *= 0.8F;
 
         //Slide model
         lastGunSlide = gunSlide;

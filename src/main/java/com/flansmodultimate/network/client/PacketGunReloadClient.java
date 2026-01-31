@@ -38,7 +38,7 @@ public class PacketGunReloadClient implements IClientPacket
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
-        data.writeUtf(playerUUID.toString());
+        data.writeUUID(playerUUID);
         data.writeEnum(hand);
         data.writeFloat(reloadTime);
         data.writeInt(reloadCount);
@@ -48,7 +48,7 @@ public class PacketGunReloadClient implements IClientPacket
     @Override
     public void decodeInto(FriendlyByteBuf data)
     {
-        playerUUID = UUID.fromString(data.readUtf());
+        playerUUID = data.readUUID();
         hand = data.readEnum(InteractionHand.class);
         reloadTime = data.readFloat();
         reloadCount = data.readInt();

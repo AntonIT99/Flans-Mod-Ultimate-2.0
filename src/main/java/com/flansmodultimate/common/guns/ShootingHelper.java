@@ -461,7 +461,7 @@ public final class ShootingHelper
 
     private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
     {
-        PacketPlaySound.sendSoundPacket(position, FlansMod.SOUND_RANGE, level.dimension(), type.getDetonateSound(), true);
+        PacketPlaySound.sendSoundPacket(position, FlansMod.EXPLOSION_SOUND_RANGE, level.dimension(), type.getDetonateSound(), true);
     }
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)

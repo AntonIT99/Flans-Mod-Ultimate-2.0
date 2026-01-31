@@ -113,7 +113,7 @@ public final class KeyInputHandler
     private static void doLookAtGun()
     {
         Player player = Minecraft.getInstance().player;
-        ModClient.getGunAnimations(player, InteractionHand.MAIN_HAND).lookAt = GunAnimations.EnumLookAtState.TILT1;
-        ModClient.getGunAnimations(player, InteractionHand.OFF_HAND).lookAt = GunAnimations.EnumLookAtState.TILT1;
+        ModClient.getGunAnimations(player, InteractionHand.MAIN_HAND).setLookAt(GunAnimations.EnumLookAtState.TILT1);
+        ModClient.getGunAnimations(player, InteractionHand.OFF_HAND).setLookAt(GunAnimations.EnumLookAtState.TILT1);
     }
 }

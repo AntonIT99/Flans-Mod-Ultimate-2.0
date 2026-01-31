@@ -199,6 +199,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Getter @Setter
     protected int chargeTime = 1;
 
+    @Getter
     protected EnumAnimationType animationType = EnumAnimationType.NONE;
     protected EnumMeleeAnimation meleeAnimation = EnumMeleeAnimation.DEFAULT;
     @Getter @Setter
@@ -228,7 +229,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected int hammerDelay;
     /** For shotgun pump handle */
     @Getter @Setter
-    protected float pumpHandleDistance = 4F / 16F;
+    protected float pumpHandleDistance = 0.25F;
     /** For end loaded projectiles */
     @Getter @Setter
     protected float endLoadedAmmoDistance = 1F;
@@ -302,6 +303,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** How far to rotate the bolt */
     protected float boltRotationAngle;
     /** How far to translate the bolt */
+    @Getter
     protected float boltCycleDistance = 1F;
     /** Offsets the bolt rotation point to help align it properly */
     protected Vector3f boltRotationOffset = new Vector3f(0F, 0F, 0F);
