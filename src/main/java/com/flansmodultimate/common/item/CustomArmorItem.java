@@ -3,12 +3,11 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +63,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public int getEnchantmentValue()
     {
         if (!configType.isReadEnchantability())
-            return ModCommonConfigs.defaultArmorEnchantability.get();
+            return ModServerConfig.get().defaultArmorEnchantability;
         return material.getEnchantmentValue();
     }
 
@@ -72,16 +71,16 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public boolean isDamageable(ItemStack stack)
     {
         //0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config
-        int breakType = ModCommonConfigs.breakableArmor.get();
+        int breakType = ModServerConfig.get().breakableArmor;
         return (breakType == 2 && configType.hasDurability()) || breakType == 1;
     }
 
     @Override
     public int getMaxDamage(ItemStack stack)
     {
-        if (ModCommonConfigs.breakableArmor.get() == 1)
+        if (ModServerConfig.get().breakableArmor == 1)
         {
-            return ModCommonConfigs.defaultArmorDurability.get();
+            return ModServerConfig.get().defaultArmorDurability;
         }
         return super.getMaxDamage(stack);
     }
@@ -92,9 +91,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        String defense = BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()) ?
+        String defense = ModServerConfig.get().enableOldArmorRatioSystem ?
                 IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
-        String bulletDefense = BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()) ?
+        String bulletDefense = ModServerConfig.get().enableOldArmorRatioSystem ?
                 IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
 
         tooltipComponents.add(IFlanItem.statLine("Defense", defense));
@@ -132,7 +131,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         {
             ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
 
-            if (BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()))
+            if (ModServerConfig.get().enableOldArmorRatioSystem)
             {
                 // Copy everything EXCEPT vanilla armor/toughness (disables vanilla mitigation for this piece)
                 for (var entry : vanilla.entries())

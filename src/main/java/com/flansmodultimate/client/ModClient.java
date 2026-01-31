@@ -4,7 +4,6 @@ import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.RenderGun;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -20,7 +19,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
@@ -34,7 +33,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.fml.LogicalSide;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -293,9 +291,9 @@ public class ModClient
         float spread = gunItem.getConfigType().getSpread(gunStack, sneaking, sprinting);
 
         if (gunItem.getConfigType().getNumBullets() == 1)
-            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfigs.defaultADSSpreadMultiplier.get().floatValue() : gunItem.getConfigType().getAdsSpreadModifier();
+            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? (float) ModServerConfig.get().defaultADSSpreadMultiplier : gunItem.getConfigType().getAdsSpreadModifier();
         else
-            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? ModCommonConfigs.defaultADSSpreadMultiplierShotgun.get().floatValue() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
+            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? (float) ModServerConfig.get().defaultADSSpreadMultiplierShotgun : gunItem.getConfigType().getAdsSpreadModifierShotgun();
 
         PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
@@ -583,8 +581,8 @@ public class ModClient
         antiRecoilYaw += playerRecoilYaw;
 
         // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
-        if (BooleanUtils.isNotTrue(ModCommonConfigs.realisticRecoil.get())
-            && ((!isShooting) || BooleanUtils.isTrue(ModCommonConfigs.enableSightDownwardMovement.get())))
+        if (ModServerConfig.get().realisticRecoil
+            && ((!isShooting) || ModServerConfig.get().enableSightDownwardMovement))
         {
             newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
         }
@@ -680,7 +678,7 @@ public class ModClient
             && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F) || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playLocalAndBroadcast(type.getActionSound(), player.position(), FlansMod.SOUND_RANGE);
+            SoundHelper.playLocalAndBroadcast(type.getActionSound(), player.position(), ModServerConfig.get().soundRange);
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -697,19 +695,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE, time);
+                    SoundHelper.playDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange, time);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE);
+                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), FlansMod.SOUND_RANGE);
+                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
                 }
             }
         }

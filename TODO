@@ -1,12 +1,13 @@
 General:
-- Check for content packs put by mistake in mods folder?
-- Render Attachment Item in 3D?
 - Tools
 - Armor & Gun Boxes
 - Team Mod / Commands
 - Teams & classes
 - Recipes
+- Check for content packs put by mistake in mods folder?
+- Render Attachment Item in 3D?
 - Use level.playSound() instead of sound packets when possible?
+- Assets/Sounds Priority list?
 
 1.12.2 Features:
 - itemHolders
@@ -71,6 +72,7 @@ TODO Content Packs:
 - Fix AK47 Paintjobs
 - Fix FlakParticle TaP Guns
 - Fix Scope Attachment Points in WW2 Improved Pack
+- Fix Barrel Attachment and Muzzle Flash
 - Remove Minigun Mode in WW2 Improved Pack
 - Add Idle Sound to Lightsabers
 - Set Penetration?

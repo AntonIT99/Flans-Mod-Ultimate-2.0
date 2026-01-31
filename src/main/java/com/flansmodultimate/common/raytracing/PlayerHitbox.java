@@ -12,10 +12,9 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -197,29 +196,29 @@ public class PlayerHitbox
             totalPenetrationResistance = chestPenRes;
 
         float damageModifier = 1F;
-        if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+        if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && ModServerConfig.get().useNewPenetrationSystem)
             damageModifier = (float) Math.pow((penetratingPower / (BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance)), 2.5);
-        else if (BooleanUtils.isNotTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+        else if (ModServerConfig.get().useNewPenetrationSystem)
             damageModifier = bulletType.getPenetratingPower() < 0.1F ? (penetratingPower / bulletType.getPenetratingPower()) : 1F;
 
         lastHitPenAmount = Math.max(hitData.lastHitPenAmount(), damageModifier);
 
         if (type == EnumHitboxType.HEAD)
         {
-            damageModifier *= ModCommonConfigs.headshotDamageModifier.get();
+            damageModifier *= (float) ModServerConfig.get().headshotDamageModifier;
             lastHitHeadshot = true;
         }
         else if (type == EnumHitboxType.BODY)
         {
-            damageModifier *= ModCommonConfigs.chestshotDamageModifier.get();
+            damageModifier *= (float) ModServerConfig.get().chestshotDamageModifier;
         }
         else if (type == EnumHitboxType.LEGS)
         {
-            damageModifier *= ModCommonConfigs.legshotModifier.get();
+            damageModifier *= (float) ModServerConfig.get().legshotModifier;
         }
         else if (type == EnumHitboxType.LEFTARM || type == EnumHitboxType.RIGHTARM)
         {
-            damageModifier *= ModCommonConfigs.armshotDamageModifier.get();
+            damageModifier *= (float) ModServerConfig.get().armshotDamageModifier;
         }
 
         switch(type)
@@ -263,7 +262,7 @@ public class PlayerHitbox
 
                 player.setDeltaMovement(player.getDeltaMovement().subtract(deltaV));
 
-                if (BooleanUtils.isTrue(ModCommonConfigs.useNewPenetrationSystem.get()))
+                if (ModServerConfig.get().useNewPenetrationSystem)
                     penetratingPower -= totalPenetrationResistance;
                 else
                     penetratingPower--;

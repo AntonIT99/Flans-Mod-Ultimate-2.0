@@ -4,7 +4,7 @@ import com.flansmod.client.model.ModelBullet;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
@@ -289,6 +289,6 @@ public class BulletType extends ShootableType
 
     public float getBlockPenetrationModifier()
     {
-        return blockPenetrationModifier < 0F ? (float) ((double) ModCommonConfigs.blockPenetrationModifier.get()) : blockPenetrationModifier;
+        return blockPenetrationModifier < 0F ? (float) ModServerConfig.get().blockPenetrationModifier : blockPenetrationModifier;
     }
 }

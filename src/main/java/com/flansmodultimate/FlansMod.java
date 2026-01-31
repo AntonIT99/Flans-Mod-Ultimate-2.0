@@ -14,8 +14,8 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
-import com.flansmodultimate.config.ModClientConfigs;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModServerConfig;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
@@ -73,11 +73,6 @@ public class FlansMod
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
-
-    // Range for which sound packets are sent
-    public static final float SOUND_RANGE = 32F;
-    public static final float GUN_FIRE_SOUND_RANGE = 128F;
-    public static final float EXPLOSION_SOUND_RANGE = 128F;
 
     // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";
@@ -199,8 +194,8 @@ public class FlansMod
         IEventBus modEventBus = context.getModEventBus();
 
         // Init Configs
-        context.registerConfig(ModConfig.Type.COMMON, ModCommonConfigs.config);
-        context.registerConfig(ModConfig.Type.CLIENT, ModClientConfigs.config);
+        context.registerConfig(ModConfig.Type.SERVER, ModServerConfig.configSpec);
+        context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         // Init Registries
         blockRegistry.register(modEventBus);

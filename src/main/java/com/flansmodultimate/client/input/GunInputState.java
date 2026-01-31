@@ -2,7 +2,7 @@ package com.flansmodultimate.client.input;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.config.ModClientConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,9 +32,9 @@ public final class GunInputState
 
         if (Minecraft.getInstance().screen == null)
         {
-            EnumMouseButton shootBtn = ModClientConfigs.shootButton.get();
-            EnumMouseButton shootOffBtn = ModClientConfigs.shootButtonOffhand.get();
-            EnumMouseButton aimBtn = ModClientConfigs.aimButton.get();
+            EnumMouseButton shootBtn = ModClientConfig.get().shootButton;
+            EnumMouseButton shootOffBtn = ModClientConfig.get().shootButtonOffhand;
+            EnumMouseButton aimBtn = ModClientConfig.get().aimButton;
 
             primaryFunctionState = new ButtonState(isMousePressed(shootBtn), primaryFunctionState.isPressed);
             offhandPrimaryFunctionState = new ButtonState(isMousePressed(shootOffBtn), offhandPrimaryFunctionState.isPressed);

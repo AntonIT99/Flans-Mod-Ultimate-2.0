@@ -23,4 +23,9 @@ public record PenetrableBlock(double hardness, boolean breaksOnPenetration)
     {
         return penetrableBlocks.put(rl, penetrableBlock);
     }
+
+    public static void clear()
+    {
+        penetrableBlocks.clear();
+    }
 }

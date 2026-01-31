@@ -3,7 +3,6 @@ package com.flansmodultimate.common.item;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
@@ -36,8 +35,8 @@ import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModClientConfigs;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
@@ -49,7 +48,6 @@ import lombok.Getter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -127,7 +125,7 @@ public class GunItemHandler
             return;
 
         IScope scope = null;
-        EnumAimType aimType = ModClientConfigs.aimType.get();
+        EnumAimType aimType = ModClientConfig.get().aimType;
 
         if (item.configType.getSecondaryFunction().isZoom())
         {
@@ -339,7 +337,7 @@ public class GunItemHandler
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), BooleanUtils.isTrue(ModCommonConfigs.combineAmmoOnReload.get()), reloadSoundUUID))
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModServerConfig.get().combineAmmoOnReload, ModServerConfig.get().combineAmmoOnReload, reloadSoundUUID))
         {
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
@@ -433,17 +431,17 @@ public class GunItemHandler
         {
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.configType.getWarmupSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.configType.getLoopedSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getLoopedSound(), false);
         }
         else if (!data.isShootKeyPressed(hand))
         {
-            PacketPlaySound.sendSoundPacket(player, FlansMod.SOUND_RANGE, item.configType.getCooldownSound(), false);
+            PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getCooldownSound(), false);
         }
     }
 

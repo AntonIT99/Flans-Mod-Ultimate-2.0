@@ -12,7 +12,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import lombok.AccessLevel;
@@ -220,8 +220,8 @@ public final class ClientEventHandler
 
         if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
-            EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfigs.shootButtonOffhand.get() : ModClientConfigs.shootButton.get();
-            EnumMouseButton secondaryButton = ModClientConfigs.aimButton.get();
+            EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
+            EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
 
             if ((event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw() && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
                 || (event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw() && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE))

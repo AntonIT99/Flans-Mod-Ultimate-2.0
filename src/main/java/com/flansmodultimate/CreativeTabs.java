@@ -7,13 +7,12 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.apache.commons.lang3.BooleanUtils;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -78,7 +77,7 @@ public final class CreativeTabs
 
                 output.accept(item);
 
-                if (BooleanUtils.isTrue(ModCommonConfigs.addAllPaintjobsToCreative.get()) && item instanceof IPaintableItem<?> paintableItem)
+                if (ModServerConfig.get().addAllPaintjobsToCreative && item instanceof IPaintableItem<?> paintableItem)
                 {
                     for (Paintjob pj : paintableItem.getPaintableType().getPaintjobs().values())
                         if (!pj.isDefault())

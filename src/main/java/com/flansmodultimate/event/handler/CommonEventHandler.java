@@ -6,7 +6,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.config.ModCommonConfigs;
+import com.flansmodultimate.config.ModServerConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,6 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.commons.lang3.BooleanUtils;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -96,10 +95,10 @@ public final class CommonEventHandler
         if (!player.level().isClientSide)
         {
             int regenTimer = regenTimers.merge(player.getUUID(), 1, Integer::sum);
-            if (regenTimer >= ModCommonConfigs.bonusRegenTickDelay.get())
+            if (regenTimer >= ModServerConfig.get().bonusRegenTickDelay)
             {
-                if (player.getFoodData().getFoodLevel() >= ModCommonConfigs.bonusRegenFoodLimit.get())
-                    player.heal(ModCommonConfigs.bonusRegenAmount.get());
+                if (player.getFoodData().getFoodLevel() >= ModServerConfig.get().bonusRegenFoodLimit)
+                    player.heal(ModServerConfig.get().bonusRegenAmount);
                 regenTimers.put(player.getUUID(), 0);
             }
         }
@@ -145,7 +144,7 @@ public final class CommonEventHandler
 
         if (event.getEntity() instanceof Player || event.getEntity() instanceof Mob)
         {
-            if (BooleanUtils.isTrue(ModCommonConfigs.enableOldArmorRatioSystem.get()))
+            if (ModServerConfig.get().enableOldArmorRatioSystem)
                 CustomArmorItem.applyOldArmorRatioSystem(event, entity);
 
             if (FlanDamageSources.isShootableDamage(source))

@@ -14,6 +14,7 @@ import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
@@ -134,7 +135,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             angularVelocity = new Vec3(0, 0, 10);
 
         if (grenadeType.getThrowSound() != null)
-            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), FlansMod.SOUND_RANGE, level.dimension(), grenadeType.getThrowSound(), true);
+            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), ModServerConfig.get().soundRange, level.dimension(), grenadeType.getThrowSound(), true);
 
         thrower = entity;
         // If this can be remotely detonated, add it to the players detonate list

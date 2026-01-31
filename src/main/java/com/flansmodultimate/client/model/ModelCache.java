@@ -13,7 +13,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.LogUtils;
@@ -23,7 +23,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +49,7 @@ public final class ModelCache
     public static void reload()
     {
         cache.clear();
-        if (BooleanUtils.isTrue(ModClientConfigs.loadAllModelsInCache.get()))
+        if (ModClientConfig.get().loadAllModelsInCache)
             loadAll();
     }
 

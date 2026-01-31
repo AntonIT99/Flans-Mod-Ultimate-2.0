@@ -2,9 +2,8 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.config.ModClientConfigs;
+import com.flansmodultimate.config.ModClientConfig;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
@@ -31,7 +30,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
 
     default void appendContentPackNameAndItemDescription(@NotNull ItemStack stack, @NotNull List<Component> tooltipComponents)
     {
-        if (BooleanUtils.isTrue(ModClientConfigs.showPackNameInItemDescriptions.get()) && !getContentPack().isBlank())
+        if (ModClientConfig.get().showPackNameInItemDescriptions && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.DARK_GRAY));
 
         if (!Screen.hasShiftDown())
