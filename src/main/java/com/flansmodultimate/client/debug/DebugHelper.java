@@ -3,6 +3,7 @@ package com.flansmodultimate.client.debug;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.world.level.Level;
@@ -14,11 +15,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DebugHelper
 {
-    public static final List<DebugColor> activeDebugEntities = new CopyOnWriteArrayList<>();
+    @Getter
+    private static final List<DebugColor> activeDebugEntities = new CopyOnWriteArrayList<>();
 
     public static void spawnDebugVector(Level level, Vec3 start, Vec3 end, int lifeTime, float red, float green, float blue)
     {
-        if (!ModClient.isDebug() || !level.isClientSide)
+        if (!level.isClientSide)
+            return;
+        if (!ModClient.isDebug())
             return;
 
         activeDebugEntities.add(new DebugVector(start, end, lifeTime, red, green, blue));
@@ -41,7 +45,9 @@ public final class DebugHelper
 
     public static void spawnDebugDot(Level level, Vec3 position, int lifeTime, float red, float green, float blue)
     {
-        if (!ModClient.isDebug() || !level.isClientSide)
+        if (!level.isClientSide)
+            return;
+        if (!ModClient.isDebug())
             return;
 
         activeDebugEntities.add(new DebugDot(position, lifeTime, red, green, blue));

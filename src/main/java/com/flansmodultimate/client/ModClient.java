@@ -333,7 +333,7 @@ public class ModClient
         if (dx * dx + dy * dy > 0.001)
             MouseInputHandler.handleMouseMove(dx, dy);
 
-        DebugHelper.activeDebugEntities.forEach(DebugColor::tick);
+        DebugHelper.getActiveDebugEntities().forEach(DebugColor::tick);
     }
 
     /** Handle flashlight block light override */

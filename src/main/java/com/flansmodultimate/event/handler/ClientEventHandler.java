@@ -98,7 +98,7 @@ public final class ClientEventHandler
 
         if (ModClient.isDebug())
         {
-            for (DebugColor debugEntity : DebugHelper.activeDebugEntities)
+            for (DebugColor debugEntity : DebugHelper.getActiveDebugEntities())
             {
                 if (event.getFrustum().isVisible(debugEntity.getAABB()))
                     debugEntity.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera());
@@ -235,7 +235,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event)
     {
-        DebugHelper.activeDebugEntities.clear(); // cleanup on world/connection change
+        DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
     }
 
     //TODO: Handle player hiding / name tag removal for teams (1.12.2)

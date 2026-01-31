@@ -41,7 +41,7 @@ public abstract class DebugColor
     {
         lifeTime--;
         if (lifeTime <= 0 || !ModClient.isDebug())
-            DebugHelper.activeDebugEntities.remove(this);
+            DebugHelper.getActiveDebugEntities().remove(this);
     }
 
     public abstract AABB getAABB();
