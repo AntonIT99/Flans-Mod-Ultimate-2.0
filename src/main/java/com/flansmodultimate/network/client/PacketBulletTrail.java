@@ -8,10 +8,10 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 @NoArgsConstructor
 public class PacketBulletTrail implements IClientPacket
@@ -66,9 +66,9 @@ public class PacketBulletTrail implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        //TODO trails not visible when trail origin position and player camera position are to close. the can only be seen with an slight angle
+        //TODO trails not visible when trail origin position and player camera position are too close. the can only be seen with an slight angle
         ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + ".png");
         InstantBulletRenderer.addTrail(new InstantShotTrail(origin, hitPos, width, length, bulletSpeed, resLoc));
     }

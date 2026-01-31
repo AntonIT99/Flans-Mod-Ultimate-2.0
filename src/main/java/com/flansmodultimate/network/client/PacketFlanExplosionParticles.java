@@ -5,9 +5,8 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -48,7 +47,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         spawn(level, ParticleHelper.FM_FLARE, position, numSmoke, radius * 0.1F);
         spawn(level, ParticleHelper.FM_DEBRIS_1, position, numDebris, radius * 0.1F);

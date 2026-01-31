@@ -1,19 +1,18 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -109,7 +108,7 @@ public class PacketBlockHitEffect implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (explosionRadius > 30 || blockHitFXScale <= 0)
             return;
@@ -126,8 +125,8 @@ public class PacketBlockHitEffect implements IClientPacket
 
         level.addParticle(ParticleTypes.CLOUD, x, y, z, vx, vy, vz);
 
-        GraphicsStatus graphics = Minecraft.getInstance().options.graphicsMode().get();
-        double scalingFactor = (graphics == GraphicsStatus.FAST) ? 2.0 : 10.0;
+
+        double scalingFactor = ModClient.hasFancyGraphics() ? 10.0 : 2.0;
         int numBlockParticles = (int) Math.round(Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
         double velocityFactor = Math.sqrt(explosionRadius + 1.0) * blockHitFXScale * 0.5;
 

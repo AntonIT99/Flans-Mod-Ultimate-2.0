@@ -5,9 +5,9 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 @NoArgsConstructor
 public class PacketFlashBang implements IClientPacket
@@ -32,7 +32,7 @@ public class PacketFlashBang implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         ModClient.setInFlash(true);
         ModClient.setFlashTime(time);

@@ -1,14 +1,13 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.util.SoundHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
@@ -35,12 +34,8 @@ public class PacketCancelSound implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        if (ModClient.getCancellableSounds().containsKey(instanceUUID))
-        {
-            Minecraft.getInstance().getSoundManager().stop(ModClient.getCancellableSounds().get(instanceUUID));
-            ModClient.getCancellableSounds().remove(instanceUUID);
-        }
+        SoundHelper.cancelSound(instanceUUID);
     }
 }

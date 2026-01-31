@@ -5,9 +5,9 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 @NoArgsConstructor
@@ -49,7 +49,7 @@ public class PacketExplodeParticles implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         for (int i = 0; i < number; i++)
             ParticleHelper.spawnFromString(particleType, x, y, z, level.random.nextGaussian(), level.random.nextGaussian(), level.random.nextGaussian(), 1F);

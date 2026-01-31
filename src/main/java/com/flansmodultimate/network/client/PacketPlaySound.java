@@ -1,28 +1,17 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.util.SoundHelper;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -89,29 +78,9 @@ public class PacketPlaySound implements IClientPacket
     }
 
     @Override
-    public void handleClientSide(@NotNull LocalPlayer player, @NotNull ClientLevel level)
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        if (sound.isBlank())
-            return;
-
-        RegistryObject<SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
-        if (event == null || event.getId() == null)
-        {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
-            return;
-        }
-
-        RandomSource r = RandomSource.create(instanceUUID.getMostSignificantBits() ^ instanceUUID.getLeastSignificantBits());
-        float volume = SoundHelper.getVolumeFromRange(range, silenced);
-        float pitchBase = distort ? (1.0F / (r.nextFloat() * 0.4F + 0.8F)) : 1.0F;
-        float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
-
-        SimpleSoundInstance soundInstance = new SimpleSoundInstance(event.getId(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, posX, posY, posZ, false);
-
-        if (cancellable)
-            ModClient.getCancellableSounds().put(instanceUUID, soundInstance);
-
-        Minecraft.getInstance().getSoundManager().play(soundInstance);
+        SoundHelper.playSound(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID);
     }
 
     public static void sendSoundPacket(double x, double y, double z, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)

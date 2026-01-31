@@ -45,7 +45,6 @@ import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -69,7 +68,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -85,9 +83,6 @@ public class ModClient
             model.leftArm.yRot = 0.05F;
             model.leftArm.zRot = 0F;
         });
-
-    @Getter
-    private static final Map<UUID, SoundInstance> cancellableSounds = new HashMap<>();
 
     @Getter
     private static boolean isDebug;
@@ -339,8 +334,6 @@ public class ModClient
             MouseInputHandler.handleMouseMove(dx, dy);
 
         DebugHelper.activeDebugEntities.forEach(DebugColor::tick);
-
-        cancellableSounds.values().removeIf(soundInstance -> !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
     /** Handle flashlight block light override */
@@ -349,7 +342,7 @@ public class ModClient
         if (!shouldRunFlashlightUpdate(mc))
             return;
 
-        updateRefreshRate(mc);
+        updateRefreshRate();
         clearOldLightBlocks(level);
         handlePlayerFlashlights(level);
         handleDynamicEntityLights(level);
@@ -360,11 +353,15 @@ public class ModClient
         return mc.level != null && CommonEventHandler.getTicker() % lightOverrideRefreshRate == 0;
     }
 
-    private static void updateRefreshRate(Minecraft mc)
+    private static void updateRefreshRate()
     {
-        GraphicsStatus graphics = mc.options.graphicsMode().get();
-        boolean fancy = (graphics == GraphicsStatus.FANCY || graphics == GraphicsStatus.FABULOUS);
-        lightOverrideRefreshRate = fancy ? 10 : 20;
+        lightOverrideRefreshRate = hasFancyGraphics() ? 10 : 20;
+    }
+
+    public static boolean hasFancyGraphics()
+    {
+        GraphicsStatus graphics = Minecraft.getInstance().options.graphicsMode().get();
+        return graphics != GraphicsStatus.FAST;
     }
 
     private static void clearOldLightBlocks(ClientLevel level)
@@ -678,7 +675,7 @@ public class ModClient
             && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F) || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playLocalAndBroadcast(type.getActionSound(), player.position(), ModServerConfig.get().soundRange);
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModServerConfig.get().soundRange);
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -695,19 +692,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange, time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange, time);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModServerConfig.get().soundRange);
                 }
             }
         }

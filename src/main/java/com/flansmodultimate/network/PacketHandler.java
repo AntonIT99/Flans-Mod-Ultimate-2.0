@@ -27,6 +27,7 @@ import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -34,9 +35,6 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -174,12 +172,7 @@ public final class PacketHandler {
                     }
                     else if (msg instanceof IClientPacket clientPacket)
                     {
-                        // Client
-                        Minecraft mc = Minecraft.getInstance();
-                        ClientLevel level = mc.level;
-                        LocalPlayer player = mc.player;
-                        if (level != null && player != null)
-                            clientPacket.handleClientSide(player, level);
+                        DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT, () -> () -> ClientPacketDispatcher.dispatch(clientPacket));
                     }
                 });
                 ctx.setPacketHandled(true);
