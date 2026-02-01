@@ -2,7 +2,6 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -16,6 +15,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlashBang;
@@ -418,7 +418,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             double y = yo + dy * i;
             double z = zo + dz * i;
 
-            ParticleHelper.spawnFromString(configType.getTrailParticleType(), x, y, z, 1F);
+            ClientHooks.RENDER.spawnParticle(configType.getTrailParticleType(), x, y, z, 1F);
         }
     }
 

@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
@@ -31,6 +30,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     private static final int PLAYER_INV_END = PLAYER_INV_START + 27;
     private static final int HOTBAR_START = PLAYER_INV_END;
     private static final int HOTBAR_END = HOTBAR_START + 9;
+    private static final int GUI_TOP_H = 92;
 
     public PaintjobTableMenu(int id, Inventory playerInv, ContainerLevelAccess access, PaintjobTableBlockEntity table)
     {
@@ -39,8 +39,8 @@ public class PaintjobTableMenu extends AbstractContainerMenu
 
         // TE slots via capability
         table.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            addSlot(new SlotItemHandler(handler, 0, 187, PaintjobTableScreen.TOP_H + 17));
-            addSlot(new SlotItemHandler(handler, 1, 187, PaintjobTableScreen.TOP_H + 71));
+            addSlot(new SlotItemHandler(handler, 0, 187, GUI_TOP_H + 17));
+            addSlot(new SlotItemHandler(handler, 1, 187, GUI_TOP_H + 71));
         });
 
         // Player inventory
@@ -48,13 +48,13 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         {
             for (int col = 0; col < 9; col++)
             {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, PaintjobTableScreen.TOP_H + 62 + row * 18));
+                addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, GUI_TOP_H + 62 + row * 18));
             }
         }
         // Hotbar
         for (int col = 0; col < 9; col++)
         {
-            addSlot(new Slot(playerInv, col, 8 + col * 18, PaintjobTableScreen.TOP_H + 120));
+            addSlot(new Slot(playerInv, col, 8 + col * 18, GUI_TOP_H + 120));
         }
     }
 

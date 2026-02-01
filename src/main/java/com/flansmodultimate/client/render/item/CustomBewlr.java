@@ -4,7 +4,6 @@ import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,8 +13,6 @@ import net.minecraft.world.item.ItemStack;
 
 public class CustomBewlr extends BlockEntityWithoutLevelRenderer
 {
-    public static final ThreadLocal<Boolean> SKIP_BEWLR = ThreadLocal.withInitial(() -> false);
-
     public CustomBewlr(BlockEntityRenderDispatcher berd, EntityModelSet models)
     {
         super(berd, models);
@@ -52,24 +49,8 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
         }
 
         if (!useCustomRenderer)
-            renderFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
+            ICustomItemRenderer.renderItemFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
 
         poseStack.popPose();
-    }
-
-    private void renderFallback(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack pose, MultiBufferSource buffers, int light, int overlay)
-    {
-        var mc = Minecraft.getInstance();
-        var ir = mc.getItemRenderer();
-
-        SKIP_BEWLR.set(true);
-        try
-        {
-            ir.renderStatic(stack, itemDisplayContext, light, overlay, pose, buffers, null, 0);
-        }
-        finally
-        {
-            SKIP_BEWLR.set(false);
-        }
     }
 }

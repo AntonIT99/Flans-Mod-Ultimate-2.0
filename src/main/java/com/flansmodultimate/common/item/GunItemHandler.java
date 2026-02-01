@@ -1,13 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.input.EnumAimType;
-import com.flansmodultimate.client.input.GunInputState;
-import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
@@ -33,9 +26,7 @@ import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -46,11 +37,8 @@ import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -116,65 +104,6 @@ public class GunItemHandler
         }
 
         return true;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void handleScope(Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
-    {
-        if (dualWield || (!item.configType.getSecondaryFunction().isZoom() && !item.configType.getPrimaryFunction().isZoom()) || player.isShiftKeyDown())
-            return;
-
-        IScope scope = null;
-        EnumAimType aimType = ModClientConfig.get().aimType;
-
-        if (item.configType.getSecondaryFunction().isZoom())
-        {
-            if (aimType == EnumAimType.HOLD)
-            {
-                scope = secondaryFunctionState.isPressed() ? item.configType.getCurrentScope(gunStack) : null;
-            }
-            else if (aimType == EnumAimType.TOGGLE)
-            {
-                scope = ModClient.getCurrentScope();
-                if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
-            }
-        }
-        else if (item.configType.getPrimaryFunction().isZoom())
-        {
-            if (aimType == EnumAimType.HOLD)
-            {
-                scope = primaryFunctionState.isPressed() ? item.configType.getCurrentScope(gunStack) : null;
-            }
-            else if (aimType == EnumAimType.TOGGLE)
-            {
-                scope = ModClient.getCurrentScope();
-                if (primaryFunctionState.isPressed() && !primaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? item.configType.getCurrentScope(gunStack) : null;
-            }
-        }
-
-        ModClient.updateScope(scope, gunStack, item);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void handleGunSwitchDelay(@NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand)
-    {
-        float animationLength = item.configType.getSwitchDelay();
-        if (animationLength == 0)
-        {
-            animations.setSwitchAnimationLength(0F);
-            animations.setSwitchAnimationProgress(0F);
-        }
-        else
-        {
-            animations.setSwitchAnimationProgress(1);
-            animations.setSwitchAnimationLength(animationLength);
-            ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
-
-            //TODO: data should be also updated on Server
-            data.setShootTime(hand, Math.max(data.getShootTime(hand), animationLength));
-        }
     }
 
     public boolean shouldBlockFireAtCrosshair()
@@ -292,48 +221,6 @@ public class GunItemHandler
         data.setShootTime(hand, shootTime);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public void doPlayerShootClient(Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
-    {
-        //TODO: compare with clientSideShoot() (Client side)
-
-        int pumpDelay = 0;
-        int pumpTime = 1;
-        int hammerDelay = 0;
-        int casingDelay = 0;
-        float hammerAngle = 0;
-        float althammerAngle = 0;
-
-        if (ModelCache.getOrLoadTypeModel(item.configType) instanceof ModelGun modelGun)
-        {
-            pumpDelay = modelGun.getPumpDelay();
-            pumpTime = modelGun.getPumpTime();
-            hammerDelay = modelGun.getHammerDelay();
-            casingDelay = modelGun.getCasingDelay();
-            hammerAngle = modelGun.getHammerAngle();
-            althammerAngle = modelGun.getAlthammerAngle();
-        }
-
-        float shootTime = data.getShootTime(hand);
-        while (shootTime <= 0F)
-        {
-            animations.doShoot(pumpDelay, pumpTime, hammerDelay, hammerAngle, althammerAngle, casingDelay);
-
-            if (item.configType.isUseFancyRecoil())
-                ModClient.getPlayerRecoil().addRecoil(item.configType.getRecoil(gunStack));
-            else
-            {
-                ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + item.configType.getRecoilPitch(gunStack, player.isCrouching(), player.isSprinting()));
-                ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + item.configType.getRecoilYaw(gunStack, player.isCrouching(), player.isSprinting()));
-            }
-
-            shootTime += item.configType.getShootDelay(gunStack);
-        }
-        data.setShootTime(hand, shootTime);
-
-        DebugHelper.spawnDebugDot(level, player.getEyePosition(0.0F), 1000);
-    }
-
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
@@ -352,27 +239,6 @@ public class GunItemHandler
             if (StringUtils.isNotBlank(reloadSound))
                 PacketPlaySound.sendSoundPacket(player, item.configType.getReloadSoundRange(), reloadSound, false, false, true, reloadSoundUUID);
         }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void doPlayerReloadClient(PlayerData data, GunAnimations animations, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
-    {
-        data.doGunReload(hand, reloadTime);
-
-        int pumpDelay = 0;
-        int pumpTime = 1;
-        int chargeDelay = 0;
-        int chargeTime = 1;
-
-        if (ModelCache.getOrLoadTypeModel(item.configType) instanceof ModelGun modelGun)
-        {
-            pumpDelay = modelGun.getPumpDelayAfterReload();
-            pumpTime = modelGun.getPumpTime();
-            chargeDelay = modelGun.getChargeDelayAfterReload();
-            chargeTime = modelGun.getChargeTime();
-        }
-
-        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo);
     }
 
     public boolean canReload(Container inventory)
@@ -408,17 +274,16 @@ public class GunItemHandler
 
     public void handleMinigunEffects(Level level, Player player, PlayerData data, InteractionHand hand)
     {
-        accelerateMinigun(level, player, data, hand);
+        accelerateMinigun(player, data, hand);
         handleMinigunLoopingSounds(level, player, data, hand);
     }
 
-    private void accelerateMinigun(Level level, Player player, PlayerData data, InteractionHand hand)
+    private void accelerateMinigun(Player player, PlayerData data, InteractionHand hand)
     {
         if (data.isShootKeyPressed(hand) && data.getMinigunSpeed() < item.configType.getMinigunMaxSpeed())
         {
             data.setMinigunSpeed(data.getMinigunSpeed() + 2.0F);
-            if (level.isClientSide)
-                ModClient.getGunAnimations(player, hand).addMinigunBarrelRotationSpeed(2.0F);
+            ClientHooks.GUN.clientAccelerateMinigun(player, hand, 2.0F);
         }
     }
 
@@ -591,7 +456,7 @@ public class GunItemHandler
         Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : Vector3f.sub(nextPosInWorldCoords, data.getLastMeleePositions()[pointIdx], null);
 
         if (level.isClientSide)
-            DebugHelper.spawnDebugVector(level, data.getLastMeleePositions()[pointIdx], dPos, 200, 1F, 0F, 0F);
+            ClientHooks.RENDER.spawnDebugVector(data.getLastMeleePositions()[pointIdx].toVec3(), dPos.toVec3(), 200, 1F, 0F, 0F);
 
         List<BulletHit> hits = collectHits(level, player, data, segment, pointIdx, dPos);
 
@@ -732,7 +597,7 @@ public class GunItemHandler
         if (didHurt)
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
-        DebugHelper.spawnDebugDot(level, new Vector3f(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
+        ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
     }
 
     private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
@@ -744,7 +609,7 @@ public class GunItemHandler
         if (didHurt && target instanceof LivingEntity living)
             living.invulnerableTime = living.hurtDuration / 2;
 
-        DebugHelper.spawnDebugDot(level, new Vector3f(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
+        ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
     }
 
     private void advanceAndResetIfDone(PlayerData data)

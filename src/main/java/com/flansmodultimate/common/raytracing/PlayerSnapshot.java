@@ -5,8 +5,6 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.GunType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -145,14 +143,5 @@ public class PlayerSnapshot
         }
 
         return hits;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void renderSnapshot()
-    {
-        for (PlayerHitbox hitbox : hitboxes)
-        {
-            hitbox.renderHitbox(player.level(), pos);
-        }
     }
 }

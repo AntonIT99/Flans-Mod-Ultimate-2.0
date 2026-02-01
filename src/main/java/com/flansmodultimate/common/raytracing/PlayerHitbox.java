@@ -2,8 +2,6 @@ package com.flansmodultimate.common.raytracing;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -13,8 +11,6 @@ import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModServerConfig;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -24,7 +20,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -67,26 +62,6 @@ public class PlayerHitbox
         this.type = type;
         this.vel = velocity;
         this.rP = rotationPoint;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void renderHitbox(Level level, Vector3f pos)
-    {
-        if (!ModClient.isDebug() || type != EnumHitboxType.RIGHTARM)
-            return;
-
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                for(int k = 0; k < 3; k++)
-                {
-                    Vector3f point = new Vector3f(o.x + d.x * i / 2, o.y + d.y * j / 2, o.z + d.z * k / 2);
-                    point = axes.findLocalVectorGlobally(point);
-                    DebugHelper.spawnDebugDot(level, new Vector3f(pos.x + rP.x + point.x, pos.y + rP.y + point.y, pos.z + rP.z + point.z), 1, 0F, 1F, 0F);
-                }
-            }
-        }
     }
 
     public PlayerBulletHit raytrace(Vector3f origin, Vector3f motion)

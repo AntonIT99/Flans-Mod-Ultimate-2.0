@@ -1,12 +1,9 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -60,9 +57,7 @@ public class PacketGunReloadClient implements IClientPacket
         Player reloadingPlayer = level.getPlayerByUUID(playerUUID);
         if (reloadingPlayer != null && reloadingPlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            PlayerData data = PlayerData.getInstance(reloadingPlayer, LogicalSide.CLIENT);
-            GunAnimations animations = ModClient.getGunAnimations(player, hand);
-            gunItem.getGunItemHandler().doPlayerReloadClient(data, animations, hand, reloadTime, reloadCount, hasMultipleAmmo);
+            ClientHooks.GUN.clientReloadGunItem(gunItem, player, hand, reloadTime, reloadCount, hasMultipleAmmo);
         }
     }
 }

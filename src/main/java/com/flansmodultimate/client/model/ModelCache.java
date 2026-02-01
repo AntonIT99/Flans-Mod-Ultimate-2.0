@@ -57,45 +57,20 @@ public final class ModelCache
     {
         for (InfoType type : InfoType.getInfoTypes().values())
         {
-            if (StringUtils.isNotBlank(type.getModelClassName()))
-            {
-                IModelBase model = loadModel(type.getModelClassName(), type, type.getDefaultModel());
-                cache.put(new ModelCacheKey(type.getModelClassName(), type.getShortName()), Optional.ofNullable(model));
-            }
+            getOrLoadTypeModel(type);
 
             if (type instanceof GunType gunType)
             {
                 if (StringUtils.isNotBlank(gunType.getDeployableModelClassName()))
-                {
-                    IModelBase deployableModel = loadModel(gunType.getDeployableModelClassName(), type, null);
-                    cache.put(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), Optional.ofNullable(deployableModel));
-                }
+                    getOrLoadDeployableGunModel(gunType);
                 if (StringUtils.isNotBlank(gunType.getCasingModelClassName()))
-                {
-                    IModelBase casingModel = loadModel(gunType.getCasingModelClassName(), type, null);
-                    cache.put(new ModelCacheKey(gunType.getCasingModelClassName(), null), Optional.ofNullable(casingModel));
-                }
+                    getOrLoadCasingModel(gunType);
                 if (StringUtils.isNotBlank(gunType.getFlashModelClassName()))
-                {
-                    IModelBase flashModel = loadModel(gunType.getFlashModelClassName(), type, null);
-                    cache.put(new ModelCacheKey(gunType.getFlashModelClassName(), null), Optional.ofNullable(flashModel));
-                }
+                    getOrLoadFlashModel(gunType);
                 if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
-                {
-                    IModelBase muzzleFlashModel = loadModel(gunType.getMuzzleFlashModelClassName(), type, new ModelDefaultMuzzleFlash());
-                    cache.put(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), Optional.ofNullable(muzzleFlashModel));
-                }
+                    getOrLoadMuzzleFlashModel(gunType);
             }
         }
-    }
-
-    @Nullable
-    public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
-    {
-        if (StringUtils.isBlank(modelCacheKey.modelClassName()) && defaultModel != null)
-            modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
-
-        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
     }
 
     @Nullable
@@ -103,7 +78,17 @@ public final class ModelCache
     {
         if (StringUtils.isNotBlank(type.getModelClassName()))
         {
-            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, type.getDefaultModel()))).orElse(null);
+            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, null))).orElse(null);
+        }
+        return null;
+    }
+
+    @Nullable
+    public static IModelBase getOrLoadTypeModel(ArmorType type)
+    {
+        if (StringUtils.isNotBlank(type.getModelClassName()))
+        {
+            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, new ModelDefaultArmor(type.getArmorItemType())))).orElse(null);
         }
         return null;
     }
@@ -146,6 +131,15 @@ public final class ModelCache
             return modelMuzzleFlash;
         }
         return null;
+    }
+
+    @Nullable
+    public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
+    {
+        if (StringUtils.isBlank(modelCacheKey.modelClassName()) && defaultModel != null)
+            modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
+
+        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
     }
 
     @SuppressWarnings("unchecked")

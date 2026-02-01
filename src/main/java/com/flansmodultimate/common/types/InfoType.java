@@ -8,7 +8,6 @@ import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.TypeReaderUtils;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -221,8 +220,6 @@ public abstract class InfoType
     protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
-        if (StringUtils.isBlank(modelClassName) && getDefaultModel() != null)
-            modelClassName = getDefaultModel().getClass().getName();
         texture = loadTexture(textureName, this);
         overlay = loadOverlay(overlayName, this).orElse(null);
     }
@@ -230,12 +227,6 @@ public abstract class InfoType
     protected String getTexturePath(String textureName)
     {
         return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
-    }
-
-    @Nullable
-    public IModelBase getDefaultModel()
-    {
-        return null;
     }
 
     @OnlyIn(Dist.CLIENT)

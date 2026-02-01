@@ -1,18 +1,26 @@
 package com.flansmodultimate.hooks.client;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
+import net.minecraftforge.fml.LogicalSide;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -24,6 +32,72 @@ import net.minecraft.world.phys.HitResult;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
+    @Override
+    public void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    {
+        //TODO: compare with clientSideShoot() (Client side)
+
+        int pumpDelay = 0;
+        int pumpTime = 1;
+        int hammerDelay = 0;
+        int casingDelay = 0;
+        float hammerAngle = 0;
+        float althammerAngle = 0;
+
+        if (ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
+        {
+            pumpDelay = modelGun.getPumpDelay();
+            pumpTime = modelGun.getPumpTime();
+            hammerDelay = modelGun.getHammerDelay();
+            casingDelay = modelGun.getCasingDelay();
+            hammerAngle = modelGun.getHammerAngle();
+            althammerAngle = modelGun.getAlthammerAngle();
+        }
+
+        float shootTime = data.getShootTime(hand);
+        while (shootTime <= 0F)
+        {
+            animations.doShoot(pumpDelay, pumpTime, hammerDelay, hammerAngle, althammerAngle, casingDelay);
+
+            if (gunItem.getConfigType().isUseFancyRecoil())
+                ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
+            else
+            {
+                ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + gunItem.getConfigType().getRecoilPitch(gunStack, player.isCrouching(), player.isSprinting()));
+                ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + gunItem.getConfigType().getRecoilYaw(gunStack, player.isCrouching(), player.isSprinting()));
+            }
+
+            shootTime += gunItem.getConfigType().getShootDelay(gunStack);
+        }
+        data.setShootTime(hand, shootTime);
+
+        DebugHelper.spawnDebugDot(player.getEyePosition(0.0F), 1000, 1F, 1F, 1F);
+    }
+
+    @Override
+    public void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    {
+        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        GunAnimations animations = ModClient.getGunAnimations(player, hand);
+
+        data.doGunReload(hand, reloadTime);
+
+        int pumpDelay = 0;
+        int pumpTime = 1;
+        int chargeDelay = 0;
+        int chargeTime = 1;
+
+        if (ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
+        {
+            pumpDelay = modelGun.getPumpDelayAfterReload();
+            pumpTime = modelGun.getPumpTime();
+            chargeDelay = modelGun.getChargeDelayAfterReload();
+            chargeTime = modelGun.getChargeTime();
+        }
+
+        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo);
+    }
+
     @Override
     public void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
@@ -45,16 +119,16 @@ public class ClientGunHooksImpl implements IClientGunHooks
         GunInputState.ButtonState secondaryFunctionState = GunInputState.getSecondaryFunctionState();
 
         // Scope handling
-        gunItemHandler.handleScope(player, gunStack, primaryFunctionState, secondaryFunctionState, dualWield);
+        handleScope(gunItem, player, gunStack, primaryFunctionState, secondaryFunctionState, dualWield);
 
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
         // Switch Delay
-        gunItemHandler.handleGunSwitchDelay(data, animations, hand);
+        handleGunSwitchDelay(gunItem, data, animations, hand);
 
         // Client Shooting
         if (data.isShooting(hand))
-            gunItemHandler.doPlayerShootClient(level, player, data, animations, gunStack, hand);
+            clientShootGunItem(gunItem, level, player, data, animations, gunStack, hand);
 
         if (ModClient.getSwitchTime() <= 0)
         {
@@ -70,6 +144,68 @@ public class ClientGunHooksImpl implements IClientGunHooks
             if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
                 PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), primaryFunctionState.isPrevPressed(), secondaryFunctionState.isPressed(), hand));
         }
+    }
+
+    private static void handleScope(GunItem gunItem, Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
+    {
+        if (dualWield || (!gunItem.getConfigType().getSecondaryFunction().isZoom() && !gunItem.getConfigType().getPrimaryFunction().isZoom()) || player.isShiftKeyDown())
+            return;
+
+        IScope scope = null;
+        EnumAimType aimType = ModClientConfig.get().aimType;
+
+        if (gunItem.getConfigType().getSecondaryFunction().isZoom())
+        {
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = secondaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
+                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+            }
+        }
+        else if (gunItem.getConfigType().getPrimaryFunction().isZoom())
+        {
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = primaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (primaryFunctionState.isPressed() && !primaryFunctionState.isPrevPressed())
+                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+            }
+        }
+
+        ModClient.updateScope(scope, gunStack, gunItem);
+    }
+
+    private static void handleGunSwitchDelay(GunItem gunItem, @NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand)
+    {
+        float animationLength = gunItem.getConfigType().getSwitchDelay();
+        if (animationLength == 0)
+        {
+            animations.setSwitchAnimationLength(0F);
+            animations.setSwitchAnimationProgress(0F);
+        }
+        else
+        {
+            animations.setSwitchAnimationProgress(1);
+            animations.setSwitchAnimationLength(animationLength);
+            ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
+
+            //TODO: data should be also updated on Server
+            data.setShootTime(hand, Math.max(data.getShootTime(hand), animationLength));
+        }
+    }
+
+    public void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
+    {
+        ModClient.getGunAnimations(player, hand).addMinigunBarrelRotationSpeed(rotationSpeed);
     }
 
     @Override

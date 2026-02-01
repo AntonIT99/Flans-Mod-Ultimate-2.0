@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmodultimate.client.render.item.CustomBewlr;
+import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +77,7 @@ public class BewlrRoutingModel implements BakedModel
     @Override
     public boolean isCustomRenderer()
     {
-        return hasCustomModel && !CustomBewlr.SKIP_BEWLR.get();
+        return hasCustomModel && !CustomItemRenderers.SKIP_BEWLR.get();
     }
 
     @Override

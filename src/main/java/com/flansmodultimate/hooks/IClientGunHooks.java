@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks;
 
+import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GunItem;
@@ -13,7 +14,13 @@ import net.minecraft.world.phys.HitResult;
 
 public interface IClientGunHooks
 {
+    void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);
+
+    void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
+
     void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield);
+
+    void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed);
 
     void clientTickDeployedGun(DeployedGun deployedGun);
 

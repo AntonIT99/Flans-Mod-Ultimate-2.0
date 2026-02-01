@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks.server;
 
+import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GunItem;
@@ -15,7 +16,25 @@ import net.minecraft.world.phys.HitResult;
 public class ClientGunHooksNoop implements IClientGunHooks
 {
     @Override
+    public void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
     {
         /* no-op */
     }

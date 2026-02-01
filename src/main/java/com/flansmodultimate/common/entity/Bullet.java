@@ -2,8 +2,6 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -411,7 +409,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             handleDetonationConditions(level);
             handleSubmunitions(level);
 
-            DebugHelper.spawnDebugVector(level, position(), velocity, 1000);
+            ClientHooks.RENDER.spawnDebugVector(position(), velocity, 1000);
 
             performRaytraceAndApplyHits(level);
             applyDragAndGravity();
@@ -1080,7 +1078,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 double x = xo + dX * i + random.nextGaussian() * spread;
                 double y = yo + dY * i + random.nextGaussian() * spread;
                 double z = zo + dZ * i + random.nextGaussian() * spread;
-                ParticleHelper.spawnFromString(configType.getBoostPhaseParticle(), x, y, z, 0, 0, 0, 1F);
+                ClientHooks.RENDER.spawnParticle(configType.getBoostPhaseParticle(), x, y, z, 0, 0, 0, 1F);
             }
         }
         else if (!configType.isVls() || vlsDelay <= 0)
@@ -1090,7 +1088,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 double x = xo + dX * i + random.nextGaussian() * spread;
                 double y = yo + dY * i + random.nextGaussian() * spread;
                 double z = zo + dZ * i + random.nextGaussian() * spread;
-                ParticleHelper.spawnFromString(configType.getTrailParticleType(), x, y, z, 0, 0, 0, 1F);
+                ClientHooks.RENDER.spawnParticle(configType.getTrailParticleType(), x, y, z, 0, 0, 0, 1F);
             }
         }
     }

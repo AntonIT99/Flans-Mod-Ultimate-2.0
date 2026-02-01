@@ -1,11 +1,10 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,34 +25,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
-    public static final String RED_DUST = "reddust";
-
-    public static final String FM_AFTERBURN = "flansmod.afterburn";
-    public static final String FM_BIG_SMOKE = "flansmod.bigsmoke";
-    public static final String FM_DEBRIS_1 = "flansmod.debris1";
-    public static final String FM_FLARE = "flansmod.flare";
-    public static final String FM_FLASH = "flansmod.flash";
-    public static final String FM_FLAME = "flansmod.fmflame";
-    public static final String FM_TRACER = "flansmod.fmtracer";
-    public static final String FM_TRACER_GREEN = "flansmod.fmtracergreen";
-    public static final String FM_TRACER_RED = "flansmod.fmtracerred";
-    public static final String FM_MUZZLE_FLASH = "flansmod.muzzleflash";
-    public static final String FM_ROCKET_EXHAUST = "flansmod.rocketexhaust";
-    public static final String FM_SMOKE = "flansmod.smoke";
-    public static final String FM_SMOKE_BURST = "flansmod.smokeburst";
-    public static final String FM_SMOKER = "flansmod.smoker";
-
-    public static final String ICON_CRACK = "iconcrack";
-    public static final String BLOCK_CRACK = "blockcrack";
-    public static final String BLOCK_DUST = "blockdust";
-
-    @OnlyIn(Dist.CLIENT)
-    public static void spawnFromString(String s, double x, double y, double z, float scale)
-    {
-        spawnFromString(s, x, y, z, 0, 0, 0, scale);
-    }
-
-    @OnlyIn(Dist.CLIENT)
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         Optional<ParticleOptions> opt = toOptions(s);
@@ -85,9 +56,9 @@ public final class ParticleHelper
                 return switch (kind)
                 {
                     //TODO: implement custom particles with physics from 1.7.10
-                    case ICON_CRACK -> ModUtils.getItemStack(id).map(stack -> new ItemParticleOption(ParticleTypes.ITEM, stack));
-                    case BLOCK_CRACK -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.BLOCK, blockstate));
-                    case BLOCK_DUST -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.FALLING_DUST, blockstate));
+                    case FlanParticles.ICON_CRACK -> ModUtils.getItemStack(id).map(stack -> new ItemParticleOption(ParticleTypes.ITEM, stack));
+                    case FlanParticles.BLOCK_CRACK -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.BLOCK, blockstate));
+                    case FlanParticles.BLOCK_DUST -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.FALLING_DUST, blockstate));
                     default -> Optional.empty();
                 };
             }
@@ -96,21 +67,21 @@ public final class ParticleHelper
         // Direct name mappings
         return switch (s)
         {
-            case FM_AFTERBURN -> Optional.of(FlansMod.afterburnParticle.get());
-            case FM_BIG_SMOKE -> Optional.of(FlansMod.bigSmokeParticle.get());
-            case FM_DEBRIS_1 -> Optional.of(FlansMod.debris1Particle.get());
-            case FM_FLARE -> Optional.of(FlansMod.flareParticle.get());
-            case FM_FLASH -> Optional.of(FlansMod.flashParticle.get());
-            case FM_FLAME -> Optional.of(FlansMod.fmFlameParticle.get());
-            case FM_TRACER -> Optional.of(FlansMod.fmTracerParticle.get());
-            case FM_TRACER_GREEN -> Optional.of(FlansMod.fmTracerGreenParticle.get());
-            case FM_TRACER_RED -> Optional.of(FlansMod.fmTracerRedParticle.get());
-            case FM_MUZZLE_FLASH -> Optional.of(FlansMod.fmMuzzleFlashParticle.get());
-            case FM_ROCKET_EXHAUST -> Optional.of(FlansMod.rocketExhaustParticle.get());
-            case FM_SMOKE -> Optional.of(FlansMod.fmSmokeParticle.get());
-            case FM_SMOKE_BURST -> Optional.of(FlansMod.smokeBurstParticle.get());
-            case FM_SMOKER -> Optional.of(FlansMod.smokeGrenadeParticle.get());
-            case RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
+            case FlanParticles.FM_AFTERBURN -> Optional.of(FlansMod.afterburnParticle.get());
+            case FlanParticles.FM_BIG_SMOKE -> Optional.of(FlansMod.bigSmokeParticle.get());
+            case FlanParticles.FM_DEBRIS_1 -> Optional.of(FlansMod.debris1Particle.get());
+            case FlanParticles.FM_FLARE -> Optional.of(FlansMod.flareParticle.get());
+            case FlanParticles.FM_FLASH -> Optional.of(FlansMod.flashParticle.get());
+            case FlanParticles.FM_FLAME -> Optional.of(FlansMod.fmFlameParticle.get());
+            case FlanParticles.FM_TRACER -> Optional.of(FlansMod.fmTracerParticle.get());
+            case FlanParticles.FM_TRACER_GREEN -> Optional.of(FlansMod.fmTracerGreenParticle.get());
+            case FlanParticles.FM_TRACER_RED -> Optional.of(FlansMod.fmTracerRedParticle.get());
+            case FlanParticles.FM_MUZZLE_FLASH -> Optional.of(FlansMod.fmMuzzleFlashParticle.get());
+            case FlanParticles.FM_ROCKET_EXHAUST -> Optional.of(FlansMod.rocketExhaustParticle.get());
+            case FlanParticles.FM_SMOKE -> Optional.of(FlansMod.fmSmokeParticle.get());
+            case FlanParticles.FM_SMOKE_BURST -> Optional.of(FlansMod.smokeBurstParticle.get());
+            case FlanParticles.FM_SMOKER -> Optional.of(FlansMod.smokeGrenadeParticle.get());
+            case FlanParticles.RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
             case "hugeexplosion" -> Optional.of(ParticleTypes.EXPLOSION_EMITTER);
             case "largeexplode", "explode" -> Optional.of(ParticleTypes.EXPLOSION);
             case "fireworksspark" -> Optional.of(ParticleTypes.FIREWORK);

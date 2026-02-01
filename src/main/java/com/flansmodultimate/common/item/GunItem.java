@@ -1,7 +1,5 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmod.client.model.ModelGun;
-import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
@@ -114,19 +112,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean useCustomRendererInHand()
     {
-        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
+        return true;
     }
 
     @Override
     public boolean useCustomRendererOnGround()
     {
-        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
+        return true;
     }
 
     @Override
     public boolean useCustomRendererInFrame()
     {
-        return ModelCache.getOrLoadTypeModel(configType) instanceof ModelGun;
+        return true;
     }
 
     @Override

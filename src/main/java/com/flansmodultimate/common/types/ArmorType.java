@@ -1,12 +1,9 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.model.ModelDefaultArmor;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ArmorItem;
@@ -152,13 +149,6 @@ public class ArmorType extends InfoType
     protected String getTexturePath(String textureName)
     {
         return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
-    }
-
-    @Override
-    @Nullable
-    public IModelBase getDefaultModel()
-    {
-        return new ModelDefaultArmor(armorItemType);
     }
 
     public boolean hasDurability()

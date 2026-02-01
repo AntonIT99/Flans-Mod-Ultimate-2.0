@@ -1,16 +1,13 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmod.client.model.ModelBullet;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.util.ResourceUtils;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -278,13 +275,6 @@ public class BulletType extends ShootableType
             textureName = FlansMod.DEFAULT_BULLET_TEXTURE;
         if (trailTexture.isBlank())
             trailTexture = FlansMod.DEFAULT_BULLET_TRAIL_TEXTURE;
-    }
-
-    @Override
-    @Nullable
-    public IModelBase getDefaultModel()
-    {
-        return new ModelBullet();
     }
 
     public float getBlockPenetrationModifier()

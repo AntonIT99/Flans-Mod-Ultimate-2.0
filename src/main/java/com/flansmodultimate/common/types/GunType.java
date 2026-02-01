@@ -2,7 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.particle.ParticleHelper;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -542,7 +542,7 @@ public class GunType extends PaintableType implements IScope
      */
     protected String hitTextureName = StringUtils.EMPTY;
 
-    protected String muzzleFlashParticle = ParticleHelper.FM_MUZZLE_FLASH;
+    protected String muzzleFlashParticle = FlanParticles.FM_MUZZLE_FLASH;
     protected float muzzleFlashParticleSize = 1F;
     protected boolean useMuzzleFlashDefaults = true;
     protected boolean showMuzzleFlashParticles = true;

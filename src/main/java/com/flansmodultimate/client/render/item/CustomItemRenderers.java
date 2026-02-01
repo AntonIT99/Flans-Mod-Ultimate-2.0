@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CustomItemRenderers
 {
+    public static final ThreadLocal<Boolean> SKIP_BEWLR = ThreadLocal.withInitial(() -> false);
+
     private static final Map<Class<?>, ICustomItemRenderer> RENDERERS = new ConcurrentHashMap<>();
 
     public static void registerAll()
@@ -27,20 +29,29 @@ public final class CustomItemRenderers
         {
             if (stack.getItem() instanceof GunItem gunItem && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
                 RenderGun.renderItem(modelGun, stack, ctx, pose, buffer, light, overlay);
+            else
+            {
+                ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+            }
+
         });
         register(GrenadeItem.class, (stack, ctx, pose, buffer, light, overlay) ->
         {
             if (stack.getItem() instanceof GrenadeItem grenadeItem)
             {
                 IModelBase model = ModelCache.getOrLoadTypeModel(grenadeItem.getConfigType());
-                if (model == null)
-                    return;
-
-                int color = grenadeItem.getConfigType().getColour();
-                float red = (color >> 16 & 255) / 255F;
-                float green = (color >> 8 & 255) / 255F;
-                float blue = (color & 255) / 255F;
-                LegacyTransformApplier.renderModel(model, grenadeItem.getConfigType(), grenadeItem.getConfigType().getTexture(), pose, buffer, light, overlay, red, green, blue, 1F);
+                if (model != null)
+                {
+                    int color = grenadeItem.getConfigType().getColour();
+                    float red = (color >> 16 & 255) / 255F;
+                    float green = (color >> 8 & 255) / 255F;
+                    float blue = (color & 255) / 255F;
+                    LegacyTransformApplier.renderModel(model, grenadeItem.getConfigType(), grenadeItem.getConfigType().getTexture(), pose, buffer, light, overlay, red, green, blue, 1F);
+                }
+                else
+                {
+                    ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+                }
             }
         });
     }

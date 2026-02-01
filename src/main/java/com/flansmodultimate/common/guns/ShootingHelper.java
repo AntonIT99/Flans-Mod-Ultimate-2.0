@@ -3,9 +3,8 @@ package com.flansmodultimate.common.guns;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.common.FlanExplosion;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -27,6 +26,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
@@ -193,7 +193,7 @@ public final class ShootingHelper
             if (bulletType.isCanSpotEntityDriveable())
                 driveableHit.getDriveable().setEntityMarker(200);
 
-            DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 0F, 1F);
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 0F, 0F, 1F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
@@ -210,7 +210,7 @@ public final class ShootingHelper
             if (bullet != null)
                 bullet.getPenetrationLosses().add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.PLAYER));
 
-            DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 0F, 0F);
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0F, 0F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof EntityHit entityHit && entityHit.getEntity() != null)
@@ -229,7 +229,7 @@ public final class ShootingHelper
 
                 if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
                 {
-                    PacketHandler.sendToAllAround(new PacketParticle(ParticleHelper.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = living.hurtDuration / 2;
@@ -244,14 +244,14 @@ public final class ShootingHelper
             if (bullet != null)
                 bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.EnumType.ENTITY));
 
-            DebugHelper.spawnDebugDot(level, hit, 1000, 1F, 1F, 0F);
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 1F, 0F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
             penetratingPower = handleBlockHit(level, bh.getHitResult(), shootingMotion, shot, penetratingPower, bullet);
 
-            DebugHelper.spawnDebugDot(level, hit, 1000, 0F, 1F, 0F);
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 0F, 1F, 0F);
         }
 
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
@@ -560,10 +560,10 @@ public final class ShootingHelper
             Vec3 hitPos = shootingOrigin.add(shotVector);
 
             if (hit instanceof BlockHit)
-                DebugHelper.spawnDebugDot(level, hitPos, 1000, 1F, 0F, 1F);
+                ClientHooks.RENDER.spawnDebugDot(hitPos, 1000, 1F, 0F, 1F);
             else
-                DebugHelper.spawnDebugDot(level, hitPos, 1000);
-            DebugHelper.spawnDebugVector(level, previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
+                ClientHooks.RENDER.spawnDebugDot(hitPos, 1000);
+            ClientHooks.RENDER.spawnDebugVector(previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
             hitData = onHit(level, shot, hit, hitPos, shotVector, hitData, null);
