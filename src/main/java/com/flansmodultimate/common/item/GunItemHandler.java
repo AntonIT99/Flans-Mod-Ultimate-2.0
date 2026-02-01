@@ -38,6 +38,7 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModServerConfig;
 import com.flansmodultimate.event.GunFiredEvent;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
@@ -51,7 +52,6 @@ import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -179,7 +179,7 @@ public class GunItemHandler
 
     public boolean shouldBlockFireAtCrosshair()
     {
-        HitResult hr = Minecraft.getInstance().hitResult;
+        HitResult hr = ClientHooks.GUN.getClientHitResult();
         if (!(hr instanceof EntityHitResult ehr))
             return false;
 

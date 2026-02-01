@@ -17,6 +17,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
@@ -24,14 +25,10 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -126,7 +123,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     /** UUID of the entity which shot that bullet (directly) */
     protected UUID shooterUUID;
 
-    @OnlyIn(Dist.CLIENT)
     protected boolean playedFlybySound;
 
     public Bullet(EntityType<?> entityType, Level level)
@@ -427,7 +423,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             updatePositionAndOrientation();
 
             if (level.isClientSide)
-                clientTick((ClientLevel) level);
+                clientTick(level);
         }
         catch (Exception ex)
         {
@@ -690,6 +686,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         };
     }
 
+    @Override
     protected void applyDragAndGravity()
     {
         if (configType.isTorpedo())
@@ -973,8 +970,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         if (owner != null && configType.isManualGuidance() && vlsDelay <= 0 && lockedOnTo == null)
         {
-            // CLIENT: send updated guidance to the server when player moves / looks ---
-            if (level.isClientSide && owner == Minecraft.getInstance().player)
+            // CLIENT: send updated guidance to the server when player moves / looks
+            if (level.isClientSide && ClientHooks.PLAYER.isLocalPlayer(owner))
             {
                 Vec3 tempPos = owner.position();
                 Vec3 look = owner.getLookAngle();
@@ -1045,8 +1042,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         discard();
     }
 
-    @OnlyIn(Dist.CLIENT)
-    protected void clientTick(ClientLevel level)
+    protected void clientTick(Level level)
     {
         playFlybyIfClose(level);
         spawnWaterBubbles(level);
@@ -1054,8 +1050,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         clearFire();
     }
 
-    @OnlyIn(Dist.CLIENT)
-    protected void spawnWaterBubbles(ClientLevel level)
+    protected void spawnWaterBubbles(Level level)
     {
         if (!isInWater())
             return;
@@ -1067,7 +1062,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected void spawnParticles()
     {
         if (!configType.isTrailParticles() || ticksInAir <= 1)
@@ -1101,15 +1095,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    protected void playFlybyIfClose(ClientLevel level)
+    protected void playFlybyIfClose(Level level)
     {
-        Minecraft mc = Minecraft.getInstance();
-        if (playedFlybySound || mc.player == null)
+        if (playedFlybySound)
             return;
-        if (distanceToSqr(mc.player) >= 25.0) // within 5 blocks
+        if (ClientHooks.PLAYER.isLocalPlayer(firedShot.getAttacker().orElse(null)))
             return;
-        if (mc.player == firedShot.getAttacker().orElse(null))
+        if (!ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, 25.0)) // Must be within 5 blocks
             return;
 
         playedFlybySound = true;

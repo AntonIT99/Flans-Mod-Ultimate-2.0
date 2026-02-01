@@ -1,8 +1,8 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.client.SoundHelper;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.util.SoundHelper;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

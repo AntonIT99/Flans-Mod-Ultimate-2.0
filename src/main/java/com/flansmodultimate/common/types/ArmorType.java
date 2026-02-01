@@ -5,8 +5,6 @@ import com.flansmodultimate.client.model.ModelDefaultArmor;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -150,7 +148,6 @@ public class ArmorType extends InfoType
             bulletDefence = defence;
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     protected String getTexturePath(String textureName)
     {

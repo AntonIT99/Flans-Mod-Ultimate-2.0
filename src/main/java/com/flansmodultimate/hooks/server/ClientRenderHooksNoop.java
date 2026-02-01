@@ -8,5 +8,8 @@ import java.util.function.Consumer;
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
-    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer) { /* no-op */ }
+    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer)
+    {
+        /* no-op */
+    }
 }

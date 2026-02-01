@@ -1,12 +1,10 @@
-package com.flansmodultimate.util;
+package com.flansmodultimate.client;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestPlaySound;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +46,6 @@ public final class SoundHelper
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void tickClient()
     {
         if (pendingSounds.isEmpty())
@@ -66,7 +63,6 @@ public final class SoundHelper
         cancellableSounds.values().removeIf(soundInstance -> !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void playSoundLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range)
     {
         if (StringUtils.isBlank(sound))
@@ -86,13 +82,11 @@ public final class SoundHelper
         });
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void playSoundDelayedLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range, int delayTicks)
     {
         pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)
     {
         if (StringUtils.isBlank(sound))
@@ -113,7 +107,6 @@ public final class SoundHelper
         });
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void cancelSound(UUID instanceUUID)
     {
         if (cancellableSounds.containsKey(instanceUUID))

@@ -4,6 +4,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
@@ -14,9 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -83,10 +81,9 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        if (!Screen.hasShiftDown())
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
-            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
-            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
             tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
         }
         else

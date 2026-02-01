@@ -19,7 +19,6 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -86,9 +85,9 @@ public abstract class InfoType
      */
     protected int dungeonChance = 1;
 
-    @Getter @OnlyIn(Dist.CLIENT)
+    @Getter
     protected ResourceLocation texture;
-    @Nullable @OnlyIn(Dist.CLIENT)
+    @Nullable
     protected ResourceLocation overlay;
     @Getter
     protected boolean additiveBlending;
@@ -101,7 +100,6 @@ public abstract class InfoType
             return originalShortName;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public Optional<ResourceLocation> getOverlay()
     {
         return Optional.ofNullable(overlay);
@@ -229,7 +227,6 @@ public abstract class InfoType
         overlay = loadOverlay(overlayName, this).orElse(null);
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected String getTexturePath(String textureName)
     {
         return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
@@ -341,7 +338,7 @@ public abstract class InfoType
     @OnlyIn(Dist.CLIENT)
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
-        ResourceLocation texture = TextureManager.INTENTIONAL_MISSING_TEXTURE;
+        ResourceLocation texture = ResourceLocation.parse("");
         if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;

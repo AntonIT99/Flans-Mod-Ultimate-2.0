@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.hooks.ClientHooks;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -9,9 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -38,10 +36,9 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        if (!Screen.hasShiftDown())
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
-            KeyMapping shiftKey = Minecraft.getInstance().options.keyShift;
-            Component keyName = shiftKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
             tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
         }
         else

@@ -3,11 +3,11 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.hooks.ClientHooks;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -33,7 +33,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         if (ModClientConfig.get().showPackNameInItemDescriptions && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.DARK_GRAY));
 
-        if (!Screen.hasShiftDown())
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             for (String line : getConfigType().getDescription().split("_"))
             {

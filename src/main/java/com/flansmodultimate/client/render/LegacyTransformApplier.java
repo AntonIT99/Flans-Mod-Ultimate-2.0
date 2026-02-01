@@ -1,10 +1,11 @@
-package com.flansmodultimate.util;
+package com.flansmodultimate.client.render;
 
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.ClassLoaderUtils;
+import com.flansmodultimate.util.TransformOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -12,8 +13,6 @@ import com.wolffsmod.api.client.model.ModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,7 +24,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LegacyTransformApplier
 {
-    @OnlyIn(Dist.CLIENT)
     public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();

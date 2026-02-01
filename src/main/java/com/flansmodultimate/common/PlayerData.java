@@ -10,8 +10,6 @@ import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
@@ -107,7 +105,6 @@ public class PlayerData
     /** e.e */
     private boolean playerMovedByAutobalancer;
     /** Save the player's skin here, to replace after having done a swap for a certain class override */
-    @OnlyIn(Dist.CLIENT)
     private ResourceLocation skin;
 
     private PlayerData(UUID id)

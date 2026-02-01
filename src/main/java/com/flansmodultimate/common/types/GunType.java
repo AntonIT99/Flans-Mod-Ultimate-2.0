@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -473,7 +472,7 @@ public class GunType extends PaintableType implements IScope
     protected String deployableModelName = StringUtils.EMPTY;
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
-    @OnlyIn(Dist.CLIENT) @Getter
+    @Getter
     protected ResourceLocation deployableTexture;
     /**
      * The deployable model's texture
@@ -517,7 +516,7 @@ public class GunType extends PaintableType implements IScope
     protected String casingModelName = StringUtils.EMPTY;
     @Getter
     protected String casingModelClassName = StringUtils.EMPTY;
-    @Getter @OnlyIn(Dist.CLIENT)
+    @Getter
     protected ResourceLocation casingTexture;
     /**
      * For adding a muzzle flash model to render
@@ -525,7 +524,7 @@ public class GunType extends PaintableType implements IScope
     protected String flashModelName = StringUtils.EMPTY;
     @Getter
     protected String flashModelClassName = StringUtils.EMPTY;
-    @Getter @OnlyIn(Dist.CLIENT)
+    @Getter
     protected ResourceLocation flashTexture;
     protected String muzzleFlashModelName = StringUtils.EMPTY;
     @Getter
@@ -954,7 +953,7 @@ public class GunType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+        return Optional.ofNullable(overlay).orElse(ResourceLocation.parse(""));
     }
 
     public List<ShootableType> getAmmoTypes()

@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
@@ -11,20 +10,17 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -479,36 +475,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             shootKeyPressed = false;
 
         if (level.isClientSide)
-            clientTick();
+            ClientHooks.GUN.clientTickDeployedGun(this);
         else
             serverTick(level);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    protected void clientTick()
-    {
-        if (getFirstPassenger() != Minecraft.getInstance().player)
-            return;
-
-        // Force release key when entering a GUI
-        if (Minecraft.getInstance().screen != null)
-        {
-            if (shootKeyPressed)
-            {
-                shootKeyPressed = false;
-                PacketHandler.sendToServer(new PacketDeployedGunInput(this, false, prevShootKeyPressed));
-            }
-        }
-        else
-        {
-            GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(InteractionHand.MAIN_HAND);
-            shootKeyPressed = primaryFunctionState.isPressed();
-            prevShootKeyPressed = primaryFunctionState.isPrevPressed();
-
-            // Send update to server when key is pressed or released
-            if (shootKeyPressed != prevShootKeyPressed)
-                PacketHandler.sendToServer(new PacketDeployedGunInput(this, shootKeyPressed, prevShootKeyPressed));
-        }
     }
 
     protected void serverTick(Level level)

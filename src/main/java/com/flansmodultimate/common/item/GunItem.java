@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -369,8 +368,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.isDeployable() && gunItemHandler.tryPlaceDeployable(level, player, stack))
             return InteractionResultHolder.sidedSuccess(stack, false);
 
-        if (level.isClientSide && Minecraft.getInstance().player == player)
-            ClientHooks.INPUT.swingIfLocalPlayer(player, hand);
+        ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
 
         return InteractionResultHolder.pass(stack);
     }
@@ -430,7 +428,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            ClientHooks.GUN.tickGunClient(this, level, player, data, stack, hand, dualWield);
+            ClientHooks.GUN.clientTickGunItem(this, level, player, data, stack, hand, dualWield);
         else
             serverTick(level, (ServerPlayer) player, data, stack, hand);
 

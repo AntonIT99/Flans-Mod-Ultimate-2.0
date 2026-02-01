@@ -24,7 +24,6 @@ import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
-import com.flansmodultimate.util.SoundHelper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
