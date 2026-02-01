@@ -27,6 +27,7 @@ import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
@@ -172,7 +173,7 @@ public final class PacketHandler {
                     }
                     else if (msg instanceof IClientPacket clientPacket)
                     {
-                        DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT, () -> () -> ClientPacketDispatcher.dispatch(clientPacket));
+                        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketDispatcher.dispatch(clientPacket));
                     }
                 });
                 ctx.setPacketHandled(true);

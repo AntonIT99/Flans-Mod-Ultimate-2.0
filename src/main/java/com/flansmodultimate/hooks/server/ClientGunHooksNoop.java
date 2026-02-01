@@ -16,31 +16,43 @@ import net.minecraft.world.phys.HitResult;
 public class ClientGunHooksNoop implements IClientGunHooks
 {
     @Override
-    public void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         /* no-op */
     }
 
     @Override
-    public void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
     {
         /* no-op */
     }
 
     @Override
-    public void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
     {
         /* no-op */
     }
 
     @Override
-    public void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
+    public void cancelReloadGunItem(Player player, InteractionHand hand)
     {
         /* no-op */
     }
 
     @Override
-    public void clientTickDeployedGun(DeployedGun deployedGun)
+    public void tickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void accelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void tickDeployedGun(DeployedGun deployedGun)
     {
         /* no-op */
     }

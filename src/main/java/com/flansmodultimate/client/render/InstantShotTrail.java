@@ -12,15 +12,16 @@ import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 public class InstantShotTrail
 {
-    private final Vector3f origin;
-    private final Vector3f hitPos;
+    private final Vec3 origin;
+    private final Vec3 hitPos;
     private final float width;
     private final float length;
     private final float bulletSpeed; // blocks per tick
-    private final float distanceToTarget;
+    private final double distanceToTarget;
     private int ticksExisted;
     private final ResourceLocation texture;
 
@@ -32,18 +33,18 @@ public class InstantShotTrail
      * @param bulletSpeed  blocks per tick (client-simulated travel)
      * @param trailTexture texture RL (e.g., "modid:textures/misc/trail.png")
      */
-    public InstantShotTrail(Vector3f origin, Vector3f hitPos, float width, float length, float bulletSpeed, ResourceLocation trailTexture)
+    public InstantShotTrail(Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed, ResourceLocation trailTexture)
     {
-        this.origin = new Vector3f(origin);
-        this.hitPos = new Vector3f(hitPos);
+        this.origin = origin;
+        this.hitPos = hitPos;
         this.width = width;
         this.length = length;
         this.bulletSpeed = bulletSpeed;
         this.ticksExisted = 0;
         this.texture = trailTexture;
 
-        Vector3f dPos = Vector3f.sub(hitPos, origin, null);
-        float dist = dPos.length();
+        Vec3 dPos = hitPos.subtract(origin);
+        double dist = dPos.length();
         if (Math.abs(dist) > 300.0f)
             dist = 300.0f;
         this.distanceToTarget = dist;
@@ -70,7 +71,7 @@ public class InstantShotTrail
         float parametric = (ticksExisted + partialTicks) * bulletSpeed;
 
         // Direction from origin to hit
-        Vector3f dir = Vector3f.sub(hitPos, origin, null);
+        Vector3f dir = new Vector3f(hitPos.subtract(origin));
         if (dir.lengthSquared() == 0)
             return;
         dir.normalise();
@@ -84,7 +85,7 @@ public class InstantShotTrail
         // Build trail frame:
         // tangent is perpendicular to both (dir) and (toCamera)
         Vector3f toCam = new Vector3f((float) player.getX() - hitPos.x, (float) player.getEyeY() - hitPos.y, (float) player.getZ() - hitPos.z);
-        Vector3f tangent = Vector3f.cross(dir, toCam, null);
+        Vector3f tangent = Vector3f.cross(new Vector3f(dir), toCam, null);
         tangent.normalise().scale(-width * 0.5f);
 
         Matrix4f pose = poseStack.last().pose();

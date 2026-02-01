@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,6 +25,6 @@ public class PacketAllowDebug implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        ModClient.setDebug(true);
+        ClientHooks.RENDER.setDebugMode(true);
     }
 }

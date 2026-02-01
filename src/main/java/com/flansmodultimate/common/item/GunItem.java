@@ -426,7 +426,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         PlayerData data = PlayerData.getInstance(player);
 
         if (level.isClientSide)
-            ClientHooks.GUN.clientTickGunItem(this, level, player, data, stack, hand, dualWield);
+            ClientHooks.GUN.tickGunItem(this, level, player, data, stack, hand, dualWield);
         else
             serverTick(level, (ServerPlayer) player, data, stack, hand);
 

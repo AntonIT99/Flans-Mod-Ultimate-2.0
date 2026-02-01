@@ -1,11 +1,8 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -38,12 +35,6 @@ public class PacketCancelGunReloadClient implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
-        data.setShootTimeRight(0);
-        data.setShootTimeLeft(0);
-        data.setReloading(hand, false);
-
-        GunAnimations animations = ModClient.getGunAnimations(player, hand);
-        animations.cancelReload();
+        ClientHooks.GUN.cancelReloadGunItem(player, hand);
     }
 }

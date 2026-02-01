@@ -4,6 +4,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.common.types.GunAnimationConfig;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -11,6 +12,8 @@ import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Optional;
 
 @NoArgsConstructor
 public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
@@ -378,7 +381,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void setType(GunType type)
     {
         this.type = type;
-        this.type.getAnimationConfig().writeToModel(this);
+        writeToModel(this.type.getAnimationConfig());
     }
 
     @Override
@@ -495,5 +498,149 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     public void renderCustom(float scale, GunAnimations anims)
     {
         // Do not call this method since it usually contain calls to the old GlStateManager API
+    }
+
+    private void writeToModel(GunAnimationConfig config)
+    {
+        setMinigunBarrelOrigin(Optional.ofNullable(config.getMinigunBarrelOrigin()).orElse(getMinigunBarrelOrigin()));
+        setBarrelAttachPoint(Optional.ofNullable(config.getBarrelAttachPoint()).orElse(getBarrelAttachPoint()));
+        setScopeAttachPoint(Optional.ofNullable(config.getScopeAttachPoint()).orElse(getScopeAttachPoint()));
+        setStockAttachPoint(Optional.ofNullable(config.getStockAttachPoint()).orElse(getStockAttachPoint()));
+        setGripAttachPoint(Optional.ofNullable(config.getGripAttachPoint()).orElse(getGripAttachPoint()));
+        setGadgetAttachPoint(Optional.ofNullable(config.getGadgetAttachPoint()).orElse(getGadgetAttachPoint()));
+        setSlideAttachPoint(Optional.ofNullable(config.getSlideAttachPoint()).orElse(getSlideAttachPoint()));
+        setPumpAttachPoint(Optional.ofNullable(config.getPumpAttachPoint()).orElse(getPumpAttachPoint()));
+        setAccessoryAttachPoint(Optional.ofNullable(config.getAccessoryAttachPoint()).orElse(getAccessoryAttachPoint()));
+
+        setDefaultBarrelFlashPoint(Optional.ofNullable(config.getDefaultBarrelFlashPoint()).orElse(getDefaultBarrelFlashPoint()));
+        setMuzzleFlashPoint(Optional.ofNullable(config.getMuzzleFlashPoint()).orElse(getMuzzleFlashPoint()));
+
+        setHasFlash(Optional.ofNullable(config.getHasFlash()).orElse(isHasFlash()));
+        setHasArms(Optional.ofNullable(config.getHasArms()).orElse(isHasArms()));
+        setEasyArms(Optional.ofNullable(config.getEasyArms()).orElse(isEasyArms()));
+        setArmScale(Optional.ofNullable(config.getArmScale()).orElse(getArmScale()));
+
+        setLeftArmPos(Optional.ofNullable(config.getLeftArmPos()).orElse(getLeftArmPos()));
+        setLeftArmRot(Optional.ofNullable(config.getLeftArmRot()).orElse(getLeftArmRot()));
+        setLeftArmScale(Optional.ofNullable(config.getLeftArmScale()).orElse(getLeftArmScale()));
+        setRightArmPos(Optional.ofNullable(config.getRightArmPos()).orElse(getRightArmPos()));
+        setRightArmRot(Optional.ofNullable(config.getRightArmRot()).orElse(getRightArmRot()));
+        setRightArmScale(Optional.ofNullable(config.getRightArmScale()).orElse(getRightArmScale()));
+        setRightArmReloadPos(Optional.ofNullable(config.getRightArmReloadPos()).orElse(getRightArmReloadPos()));
+        setRightArmReloadRot(Optional.ofNullable(config.getRightArmReloadRot()).orElse(getRightArmReloadRot()));
+        setLeftArmReloadPos(Optional.ofNullable(config.getLeftArmReloadPos()).orElse(getLeftArmReloadPos()));
+        setLeftArmReloadRot(Optional.ofNullable(config.getLeftArmReloadRot()).orElse(getLeftArmReloadRot()));
+        setRightArmChargePos(Optional.ofNullable(config.getRightArmChargePos()).orElse(getRightArmChargePos()));
+        setRightArmChargeRot(Optional.ofNullable(config.getRightArmChargeRot()).orElse(getRightArmChargeRot()));
+        setLeftArmChargePos(Optional.ofNullable(config.getLeftArmChargePos()).orElse(getLeftArmChargePos()));
+        setLeftArmChargeRot(Optional.ofNullable(config.getLeftArmChargeRot()).orElse(getLeftArmChargeRot()));
+
+        setStagedrightArmReloadPos(Optional.ofNullable(config.getStagedrightArmReloadPos()).orElse(getStagedrightArmReloadPos()));
+        setStagedrightArmReloadRot(Optional.ofNullable(config.getStagedrightArmReloadRot()).orElse(getStagedrightArmReloadRot()));
+        setStagedleftArmReloadPos(Optional.ofNullable(config.getStagedleftArmReloadPos()).orElse(getStagedleftArmReloadPos()));
+        setStagedleftArmReloadRot(Optional.ofNullable(config.getStagedleftArmReloadRot()).orElse(getStagedleftArmReloadRot()));
+
+        setRightHandAmmo(Optional.ofNullable(config.getRightHandAmmo()).orElse(isRightHandAmmo()));
+        setLeftHandAmmo(Optional.ofNullable(config.getLeftHandAmmo()).orElse(isLeftHandAmmo()));
+
+        setGunSlideDistance(Optional.ofNullable(config.getGunSlideDistance()).orElse(getGunSlideDistance()));
+        setAltgunSlideDistance(Optional.ofNullable(config.getAltgunSlideDistance()).orElse(getAltgunSlideDistance()));
+        setRecoilSlideDistance(Optional.ofNullable(config.getRecoilSlideDistance()).orElse(getRecoilSlideDistance()));
+        setRotateSlideDistance(Optional.ofNullable(config.getRotateSlideDistance()).orElse(getRotateSlideDistance()));
+        setShakeDistance(Optional.ofNullable(config.getShakeDistance()).orElse(getShakeDistance()));
+        setRecoilAmount(Optional.ofNullable(config.getRecoilAmount()).orElse(getRecoilAmount()));
+
+        setCasingAnimDistance(Optional.ofNullable(config.getCasingAnimDistance()).orElse(getCasingAnimDistance()));
+        setCasingAnimSpread(Optional.ofNullable(config.getCasingAnimSpread()).orElse(getCasingAnimSpread()));
+        setCasingAnimTime(Optional.ofNullable(config.getCasingAnimTime()).orElse(getCasingAnimTime()));
+        setCasingRotateVector(Optional.ofNullable(config.getCasingRotateVector()).orElse(getCasingRotateVector()));
+        setCasingAttachPoint(Optional.ofNullable(config.getCasingAttachPoint()).orElse(getCasingAttachPoint()));
+        setCasingDelay(Optional.ofNullable(config.getCasingDelay()).orElse(getCasingDelay()));
+        setCaseScale(Optional.ofNullable(config.getCaseScale()).orElse(getCaseScale()));
+        setFlashScale(Optional.ofNullable(config.getFlashScale()).orElse(getFlashScale()));
+
+        setChargeHandleDistance(Optional.ofNullable(config.getChargeHandleDistance()).orElse(getChargeHandleDistance()));
+        setChargeDelay(Optional.ofNullable(config.getChargeDelay()).orElse(getChargeDelay()));
+        setChargeDelayAfterReload(Optional.ofNullable(config.getChargeDelayAfterReload()).orElse(getChargeDelayAfterReload()));
+        setChargeTime(Optional.ofNullable(config.getChargeTime()).orElse(getChargeTime()));
+        setCountOnRightHandSide(Optional.ofNullable(config.getCountOnRightHandSide()).orElse(isCountOnRightHandSide()));
+        setBulletCounterActive(Optional.ofNullable(config.getIsBulletCounterActive()).orElse(isBulletCounterActive()));
+        setAdvBulletCounterActive(Optional.ofNullable(config.getIsAdvBulletCounterActive()).orElse(isAdvBulletCounterActive()));
+
+        setTiltGunTime(Optional.ofNullable(config.getTiltGunTime()).orElse(getTiltGunTime()));
+        setUnloadClipTime(Optional.ofNullable(config.getUnloadClipTime()).orElse(getUnloadClipTime()));
+        setLoadClipTime(Optional.ofNullable(config.getLoadClipTime()).orElse(getLoadClipTime()));
+
+        setScopeIsOnSlide(Optional.ofNullable(config.getScopeIsOnSlide()).orElse(isScopeIsOnSlide()));
+        setScopeIsOnBreakAction(Optional.ofNullable(config.getScopeIsOnBreakAction()).orElse(isScopeIsOnBreakAction()));
+
+        setNumBulletsInReloadAnimation(Optional.ofNullable(config.getNumBulletsInReloadAnimation()).orElse(getNumBulletsInReloadAnimation()));
+        setPumpDelay(Optional.ofNullable(config.getPumpDelay()).orElse(getPumpDelay()));
+        setPumpDelayAfterReload(Optional.ofNullable(config.getPumpDelayAfterReload()).orElse(getPumpDelayAfterReload()));
+        setPumpTime(Optional.ofNullable(config.getPumpTime()).orElse(getPumpTime()));
+        setHammerDelay(Optional.ofNullable(config.getHammerDelay()).orElse(getHammerDelay()));
+
+        setPumpHandleDistance(Optional.ofNullable(config.getPumpHandleDistance()).orElse(getPumpHandleDistance()));
+        setEndLoadedAmmoDistance(Optional.ofNullable(config.getEndLoadedAmmoDistance()).orElse(getEndLoadedAmmoDistance()));
+        setBreakActionAmmoDistance(Optional.ofNullable(config.getBreakActionAmmoDistance()).orElse(getBreakActionAmmoDistance()));
+
+        setGripIsOnPump(Optional.ofNullable(config.getGripIsOnPump()).orElse(isGripIsOnPump()));
+        setGadgetIsOnPump(Optional.ofNullable(config.getGadgetIsOnPump()).orElse(isGadgetIsOnPump()));
+
+        setBarrelBreakPoint(Optional.ofNullable(config.getBarrelBreakPoint()).orElse(getBarrelBreakPoint()));
+        setAltbarrelBreakPoint(Optional.ofNullable(config.getAltbarrelBreakPoint()).orElse(getAltbarrelBreakPoint()));
+
+        setRevolverFlipAngle(Optional.ofNullable(config.getRevolverFlipAngle()).orElse(getRevolverFlipAngle()));
+        setRevolver2FlipAngle(Optional.ofNullable(config.getRevolver2FlipAngle()).orElse(getRevolver2FlipAngle()));
+
+        setRevolverFlipPoint(Optional.ofNullable(config.getRevolverFlipPoint()).orElse(getRevolverFlipPoint()));
+        setRevolver2FlipPoint(Optional.ofNullable(config.getRevolver2FlipPoint()).orElse(getRevolver2FlipPoint()));
+
+        setBreakAngle(Optional.ofNullable(config.getBreakAngle()).orElse(getBreakAngle()));
+        setAltbreakAngle(Optional.ofNullable(config.getAltbreakAngle()).orElse(getAltbreakAngle()));
+
+        setSpinningCocking(Optional.ofNullable(config.getSpinningCocking()).orElse(isSpinningCocking()));
+
+        setSpinPoint(Optional.ofNullable(config.getSpinPoint()).orElse(getSpinPoint()));
+        setHammerSpinPoint(Optional.ofNullable(config.getHammerSpinPoint()).orElse(getHammerSpinPoint()));
+        setAlthammerSpinPoint(Optional.ofNullable(config.getAlthammerSpinPoint()).orElse(getAlthammerSpinPoint()));
+        setHammerAngle(Optional.ofNullable(config.getHammerAngle()).orElse(getHammerAngle()));
+        setAlthammerAngle(Optional.ofNullable(config.getAlthammerAngle()).orElse(getAlthammerAngle()));
+
+        setSingleAction(Optional.ofNullable(config.getIsSingleAction()).orElse(isSingleAction()));
+        setSlideLockOnEmpty(Optional.ofNullable(config.getSlideLockOnEmpty()).orElse(isSlideLockOnEmpty()));
+        setLefthandPump(Optional.ofNullable(config.getLefthandPump()).orElse(isLefthandPump()));
+        setRighthandPump(Optional.ofNullable(config.getRighthandPump()).orElse(isRighthandPump()));
+        setLeftHandCharge(Optional.ofNullable(config.getLeftHandCharge()).orElse(isLeftHandCharge()));
+        setRightHandCharge(Optional.ofNullable(config.getRightHandCharge()).orElse(isRightHandCharge()));
+        setLeftHandBolt(Optional.ofNullable(config.getLeftHandBolt()).orElse(isLeftHandBolt()));
+        setRightHandBolt(Optional.ofNullable(config.getRightHandBolt()).orElse(isRightHandBolt()));
+
+        setPumpModifier(Optional.ofNullable(config.getPumpModifier()).orElse(getPumpModifier()));
+        setChargeModifier(Optional.ofNullable(config.getChargeModifier()).orElse(getChargeModifier()));
+        setGunOffset(Optional.ofNullable(config.getGunOffset()).orElse(getGunOffset()));
+        setCrouchZoom(Optional.ofNullable(config.getCrouchZoom()).orElse(getCrouchZoom()));
+        setFancyStance(Optional.ofNullable(config.getFancyStance()).orElse(isFancyStance()));
+        setStanceTranslate(Optional.ofNullable(config.getStanceTranslate()).orElse(getStanceTranslate()));
+        setStanceRotate(Optional.ofNullable(config.getStanceRotate()).orElse(getStanceRotate()));
+
+        setRotateGunVertical(Optional.ofNullable(config.getRotateGunVertical()).orElse(getRotateGunVertical()));
+        setRotateGunHorizontal(Optional.ofNullable(config.getRotateGunHorizontal()).orElse(getRotateGunHorizontal()));
+        setTiltGun(Optional.ofNullable(config.getTiltGun()).orElse(getTiltGun()));
+        setTranslateGun(Optional.ofNullable(config.getTranslateGun()).orElse(getTranslateGun()));
+        setRotateClipVertical(Optional.ofNullable(config.getRotateClipVertical()).orElse(getRotateClipVertical()));
+        setStagedrotateClipVertical(Optional.ofNullable(config.getStagedrotateClipVertical()).orElse(getStagedrotateClipVertical()));
+        setRotateClipVertical(Optional.ofNullable(config.getRotateClipVertical()).orElse(getRotateClipVertical()));
+        setStagedrotateClipVertical(Optional.ofNullable(config.getStagedrotateClipVertical()).orElse(getStagedrotateClipVertical()));
+        setTiltClip(Optional.ofNullable(config.getTiltClip()).orElse(getTiltClip()));
+        setStagedtiltClip(Optional.ofNullable(config.getStagedtiltClip()).orElse(getStagedtiltClip()));
+        setTranslateClip(Optional.ofNullable(config.getTranslateClip()).orElse(getTranslateClip()));
+        setStagedtranslateClip(Optional.ofNullable(config.getStagedtranslateClip()).orElse(getStagedtranslateClip()));
+        setStagedReload(Optional.ofNullable(config.getStagedReload()).orElse(isStagedReload()));
+
+        setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
+        setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));
+        setStillRenderGunWhenScopedOverlay(Optional.ofNullable(config.getStillRenderGunWhenScopedOverlay()).orElse(isStillRenderGunWhenScopedOverlay()));
+        setAdsEffectMultiplier(Optional.ofNullable(config.getAdsEffectMultiplier()).orElse(getAdsEffectMultiplier()));
     }
 }

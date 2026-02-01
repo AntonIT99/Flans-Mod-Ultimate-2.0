@@ -57,7 +57,7 @@ public class PacketGunReloadClient implements IClientPacket
         Player reloadingPlayer = level.getPlayerByUUID(playerUUID);
         if (reloadingPlayer != null && reloadingPlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            ClientHooks.GUN.clientReloadGunItem(gunItem, player, hand, reloadTime, reloadCount, hasMultipleAmmo);
+            ClientHooks.GUN.reloadGunItem(gunItem, reloadingPlayer, hand, reloadTime, reloadCount, hasMultipleAmmo);
         }
     }
 }

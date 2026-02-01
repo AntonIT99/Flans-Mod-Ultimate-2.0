@@ -1,9 +1,7 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -47,10 +45,7 @@ public class PacketGunMeleeClient implements IClientPacket
         Player meleePlayer = level.getPlayerByUUID(playerUUID);
         if (meleePlayer != null && meleePlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            PlayerData data = PlayerData.getInstance(player);
-            data.doMelee(player, gunItem.getConfigType().getMeleeTime(), gunItem.getConfigType());
-            GunAnimations anim = ModClient.getGunAnimations(meleePlayer, hand);
-            anim.doMelee(gunItem.getConfigType().getMeleeTime());
+            ClientHooks.GUN.meleeGunItem(gunItem, meleePlayer, hand);
         }
     }
 }

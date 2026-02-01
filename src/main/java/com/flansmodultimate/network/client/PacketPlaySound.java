@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.SoundHelper;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
 import lombok.NoArgsConstructor;
@@ -80,7 +80,7 @@ public class PacketPlaySound implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        SoundHelper.playSound(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID);
+        ClientHooks.SOUND.playSound(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID);
     }
 
     public static void sendSoundPacket(double x, double y, double z, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)

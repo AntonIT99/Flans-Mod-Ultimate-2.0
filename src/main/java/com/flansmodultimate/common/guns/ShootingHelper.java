@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanExplosion;
@@ -581,7 +580,7 @@ public final class ShootingHelper
             finalhit = shootingOrigin.add(shootingDirection);
         }
 
-        PacketHandler.sendToAllAround(new PacketBulletTrail(new Vector3f(shootingOrigin), new Vector3f(finalhit), 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z, 500F, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBulletTrail(shootingOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z, 500F, level.dimension());
     }
 
     public static Vec3 calculateShootingMotionVector(RandomSource random, Vec3 direction, float spread, float speed, EnumSpreadPattern pattern)

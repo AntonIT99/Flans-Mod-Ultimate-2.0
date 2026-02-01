@@ -33,7 +33,16 @@ import net.minecraft.world.phys.HitResult;
 public class ClientGunHooksImpl implements IClientGunHooks
 {
     @Override
-    public void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
+    {
+        PlayerData data = PlayerData.getInstance(player);
+        data.doMelee(player, gunItem.getConfigType().getMeleeTime(), gunItem.getConfigType());
+        GunAnimations anim = ModClient.getGunAnimations(player, hand);
+        anim.doMelee(gunItem.getConfigType().getMeleeTime());
+    }
+
+    @Override
+    public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
     {
         //TODO: compare with clientSideShoot() (Client side)
 
@@ -75,7 +84,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
     {
         PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
@@ -99,7 +108,17 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
+    public void cancelReloadGunItem(Player player, InteractionHand hand)
+    {
+        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        data.setShootTimeRight(0);
+        data.setShootTimeLeft(0);
+        data.setReloading(hand, false);
+        ModClient.getGunAnimations(player, hand).cancelReload();
+    }
+
+    @Override
+    public void tickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
         if (player != Minecraft.getInstance().player || gunItem.getConfigType().isDeployable() || !gunItem.getConfigType().isUsableByPlayers() || !gunItem.getGunItemHandler().gunCanBeHandled(player))
             return;
@@ -128,7 +147,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
         // Client Shooting
         if (data.isShooting(hand))
-            clientShootGunItem(gunItem, level, player, data, animations, gunStack, hand);
+            shootGunItem(gunItem, level, player, data, animations, gunStack, hand);
 
         if (ModClient.getSwitchTime() <= 0)
         {
@@ -203,13 +222,13 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    public void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
+    public void accelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)
     {
         ModClient.getGunAnimations(player, hand).addMinigunBarrelRotationSpeed(rotationSpeed);
     }
 
     @Override
-    public void clientTickDeployedGun(DeployedGun deployedGun)
+    public void tickDeployedGun(DeployedGun deployedGun)
     {
         if (deployedGun.getFirstPassenger() != Minecraft.getInstance().player)
             return;

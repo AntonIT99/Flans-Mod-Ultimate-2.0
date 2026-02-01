@@ -103,7 +103,7 @@ public class ModClient
     // Recoil variables
     /** Fancy Recoil System */
     @Getter
-    private static GunRecoil playerRecoil = new GunRecoil();
+    private static final GunRecoil playerRecoil = new GunRecoil();
     /** The recoil applied to the player view by shooting */
     @Getter @Setter
     private static float playerRecoilPitch;

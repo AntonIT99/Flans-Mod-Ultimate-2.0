@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -126,7 +126,7 @@ public class PacketBlockHitEffect implements IClientPacket
         level.addParticle(ParticleTypes.CLOUD, x, y, z, vx, vy, vz);
 
 
-        double scalingFactor = ModClient.hasFancyGraphics() ? 10.0 : 2.0;
+        double scalingFactor = ClientHooks.RENDER.hasFancyGraphics() ? 10.0 : 2.0;
         int numBlockParticles = (int) Math.round(Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
         double velocityFactor = Math.sqrt(explosionRadius + 1.0) * blockHitFXScale * 0.5;
 

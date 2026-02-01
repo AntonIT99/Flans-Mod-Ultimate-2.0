@@ -14,15 +14,19 @@ import net.minecraft.world.phys.HitResult;
 
 public interface IClientGunHooks
 {
-    void clientShootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);
+    void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand);
 
-    void clientReloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
+    void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);
 
-    void clientTickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield);
+    void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
 
-    void clientAccelerateMinigun(Player player, InteractionHand hand, float rotationSpeed);
+    void cancelReloadGunItem(Player player, InteractionHand hand);
 
-    void clientTickDeployedGun(DeployedGun deployedGun);
+    void tickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield);
+
+    void accelerateMinigun(Player player, InteractionHand hand, float rotationSpeed);
+
+    void tickDeployedGun(DeployedGun deployedGun);
 
     @Nullable
     HitResult getClientHitResult();

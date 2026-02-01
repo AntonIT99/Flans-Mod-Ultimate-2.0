@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -42,9 +42,6 @@ public class PacketHitMarker implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        ModClient.setHitMarkerTime(20);
-        ModClient.setHitMarkerPenAmount(penAmount);
-        ModClient.setHitMarkerHeadshot(headshot);
-        ModClient.setHitMarkerExplosion(explosionHit);
+        ClientHooks.RENDER.updateHitMarker(20, penAmount, headshot, explosionHit);
     }
 }

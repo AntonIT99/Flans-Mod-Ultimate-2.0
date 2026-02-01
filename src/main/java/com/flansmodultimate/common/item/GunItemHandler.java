@@ -283,7 +283,7 @@ public class GunItemHandler
         if (data.isShootKeyPressed(hand) && data.getMinigunSpeed() < item.configType.getMinigunMaxSpeed())
         {
             data.setMinigunSpeed(data.getMinigunSpeed() + 2.0F);
-            ClientHooks.GUN.clientAccelerateMinigun(player, hand, 2.0F);
+            ClientHooks.GUN.accelerateMinigun(player, hand, 2.0F);
         }
     }
 

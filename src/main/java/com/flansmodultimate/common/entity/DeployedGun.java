@@ -475,7 +475,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             shootKeyPressed = false;
 
         if (level.isClientSide)
-            ClientHooks.GUN.clientTickDeployedGun(this);
+            ClientHooks.GUN.tickDeployedGun(this);
         else
             serverTick(level);
     }

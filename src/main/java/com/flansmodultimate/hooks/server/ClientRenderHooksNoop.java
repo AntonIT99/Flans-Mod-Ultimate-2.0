@@ -28,6 +28,18 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public boolean isDebugMode()
+    {
+        return false;
+    }
+
+    @Override
+    public void setDebugMode(boolean value)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void spawnDebugVector(Vec3 start, Vec3 end, int lifeTime, float red, float green, float blue)
     {
         /* no-op */
@@ -47,6 +59,30 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
 
     @Override
     public void spawnDebugDot(Vec3 position, int lifeTime)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public boolean hasFancyGraphics()
+    {
+        return false;
+    }
+
+    @Override
+    public void spawnTrail(String trailTexture, Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void updateHitMarker(int time, float penAmount, boolean headshot, boolean explosionHit)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void updateFlash(boolean value, int time)
     {
         /* no-op */
     }

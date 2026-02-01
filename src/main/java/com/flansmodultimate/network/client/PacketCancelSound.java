@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.client.SoundHelper;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +36,6 @@ public class PacketCancelSound implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        SoundHelper.cancelSound(instanceUUID);
+        ClientHooks.SOUND.cancelSound(instanceUUID);
     }
 }
