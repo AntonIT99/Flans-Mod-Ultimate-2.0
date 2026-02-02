@@ -578,7 +578,7 @@ public class ModClient
         antiRecoilYaw += playerRecoilYaw;
 
         // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
-        if (ModCommonConfig.get().realisticRecoil
+        if (!ModCommonConfig.get().realisticRecoil
             && ((!isShooting) || ModCommonConfig.get().enableSightDownwardMovement))
         {
             newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
