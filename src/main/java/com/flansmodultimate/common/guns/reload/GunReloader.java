@@ -4,7 +4,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunReloadEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
@@ -91,7 +91,7 @@ public record GunReloader(GunItem item)
 
     private static boolean cancelReloadIfSwitched(ServerPlayer player, PendingReload pendingReload)
     {
-        if (ModServerConfig.get().cancelReloadOnWeaponSwitch)
+        if (ModCommonConfig.get().cancelReloadOnWeaponSwitch)
             return false;
 
         return !ItemStack.matches(player.getItemInHand(pendingReload.hand()), pendingReload.gunStack());

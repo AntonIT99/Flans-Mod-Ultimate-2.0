@@ -2,7 +2,8 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.network.PacketHandler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,12 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void onConfigLoading(ModConfigEvent.Loading event)
     {
-        if (event.getConfig().getSpec() == ModServerConfig.configSpec)
-            ModServerConfig.bake();
+        if (event.getConfig().getSpec() == ModCommonConfig.configSpec)
+        {
+            ModCommonConfig.bake();
+            ModCommonConfigSync.resyncAllClientsIfServer();
+        }
+
         if (event.getConfig().getSpec() == ModClientConfig.configSpec)
             ModClientConfig.bake();
     }
@@ -33,8 +38,12 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void onConfigReloading(ModConfigEvent.Reloading event)
     {
-        if (event.getConfig().getSpec() == ModServerConfig.configSpec)
-            ModServerConfig.bake();
+        if (event.getConfig().getSpec() == ModCommonConfig.configSpec)
+        {
+            ModCommonConfig.bake();
+            ModCommonConfigSync.resyncAllClientsIfServer();
+        }
+
         if (event.getConfig().getSpec() == ModClientConfig.configSpec)
             ModClientConfig.bake();
     }

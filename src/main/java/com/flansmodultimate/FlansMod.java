@@ -15,7 +15,7 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
@@ -194,7 +194,7 @@ public class FlansMod
         IEventBus modEventBus = context.getModEventBus();
 
         // Init Configs
-        context.registerConfig(ModConfig.Type.SERVER, ModServerConfig.configSpec);
+        context.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         // Init Registries

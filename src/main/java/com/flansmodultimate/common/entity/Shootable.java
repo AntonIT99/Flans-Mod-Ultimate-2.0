@@ -4,7 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
@@ -194,9 +194,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected boolean shouldDespawn()
     {
         int despawnTime = getConfigType().getDespawnTime();
-        if (ModServerConfig.get().shootableDefaultRespawnTime > 0)
+        if (ModCommonConfig.get().shootableDefaultRespawnTime > 0)
         {
-            despawnTime = Math.min(despawnTime, ModServerConfig.get().shootableDefaultRespawnTime);
+            despawnTime = Math.min(despawnTime, ModCommonConfig.get().shootableDefaultRespawnTime);
         }
         return despawnTime > 0 && tickCount > despawnTime;
     }
@@ -229,7 +229,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
             // Living proximity
             if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
             {
-                if (ModServerConfig.get().shootableProximityTriggerFriendlyFire)
+                if (ModCommonConfig.get().shootableProximityTriggerFriendlyFire)
                 {
                     // Check to prevent friendly fire
                     Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();

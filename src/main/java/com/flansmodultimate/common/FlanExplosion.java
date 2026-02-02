@@ -5,7 +5,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketHitMarker;
@@ -235,12 +235,12 @@ public class FlanExplosion extends Explosion
 
                 if (e instanceof Wheel wheel)
                 {
-                    explosionDamage *= (float) ModServerConfig.get().vehicleWheelSeatExplosionModifier;
+                    explosionDamage *= (float) ModCommonConfig.get().vehicleWheelSeatExplosionModifier;
                     explosionDamage *= this.damage.getDamageAgainstEntity(wheel.getDriveable());
                 }
                 else if (e instanceof Seat seat)
                 {
-                    explosionDamage *= (float) ModServerConfig.get().vehicleWheelSeatExplosionModifier;
+                    explosionDamage *= (float) ModCommonConfig.get().vehicleWheelSeatExplosionModifier;
                     explosionDamage *= this.damage.getDamageAgainstEntity(seat.getDriveable());
                 }
 

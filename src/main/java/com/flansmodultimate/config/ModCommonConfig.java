@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ModServerConfig
+public class ModCommonConfig
 {
     public static final ForgeConfigSpec configSpec;
 
@@ -98,7 +98,8 @@ public class ModServerConfig
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-    private static final AtomicReference<ModServerConfig> instance = new AtomicReference<>();
+    private static final AtomicReference<ModCommonConfig> instance = new AtomicReference<>();
+    private static final AtomicReference<ModCommonConfig> serverOverride = new AtomicReference<>();
 
     static
     {
@@ -221,13 +222,13 @@ public class ModServerConfig
             .comment("Per-block penetration data.",
                 "Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>",
                 "Example: minecraft:stone; 3.0; false")
-            .defineList("blocks", Collections.emptyList(), o -> o instanceof String);
+            .defineList("blocks", Collections.emptyList(), String.class::isInstance);
         builder.pop();
 
         configSpec = builder.build();
     }
 
-    private ModServerConfig()
+    private ModCommonConfig()
     {
         addAllPaintjobsToCreative = ADD_ALL_PAINTJOBS_TO_CREATIVE.get();
 
@@ -271,16 +272,75 @@ public class ModServerConfig
         penetrableBlocksLines = List.copyOf(PENETRABLE_BLOCKS_RAW.get());
     }
 
-    public static ModServerConfig get()
+    private ModCommonConfig(CommonConfigSnapshot s)
     {
-        return instance.get();
+        addAllPaintjobsToCreative = s.addAllPaintjobsToCreative();
+
+        realisticRecoil = s.realisticRecoil();
+        enableSightDownwardMovement = s.enableSightDownwardMovement();
+        bonusRegenAmount = s.bonusRegenAmount();
+        bonusRegenTickDelay = s.bonusRegenTickDelay();
+        bonusRegenFoodLimit = s.bonusRegenFoodLimit();
+
+        newDamageSystemReference = s.newDamageSystemReference();
+        headshotDamageModifier = s.headshotDamageModifier();
+        chestshotDamageModifier = s.chestshotDamageModifier();
+        armshotDamageModifier = s.armshotDamageModifier();
+        legshotModifier = s.legshotModifier();
+        vehicleWheelSeatExplosionModifier = s.vehicleWheelSeatExplosionModifier();
+
+        breakableArmor = s.breakableArmor();
+        defaultArmorDurability = s.defaultArmorDurability();
+        defaultArmorEnchantability = s.defaultArmorEnchantability();
+        enableOldArmorRatioSystem = s.enableOldArmorRatioSystem();
+
+        gunDamageModifier = s.gunDamageModifier();
+        gunRecoilModifier = s.gunRecoilModifier();
+        defaultADSSpreadMultiplier = s.defaultADSSpreadMultiplier();
+        defaultADSSpreadMultiplierShotgun = s.defaultADSSpreadMultiplierShotgun();
+        cancelReloadOnWeaponSwitch = s.cancelReloadOnWeaponSwitch();
+        combineAmmoOnReload = s.combineAmmoOnReload();
+        ammoToUpperInventoryOnReload = s.ammoToUpperInventoryOnReload();
+
+        shootableDefaultRespawnTime = s.shootableDefaultRespawnTime();
+        shootableProximityTriggerFriendlyFire = s.shootableProximityTriggerFriendlyFire();
+
+        soundRange = s.soundRange();
+        gunFireSoundRange = s.gunFireSoundRange();
+        explosionSoundRange = s.explosionSoundRange();
+
+        useNewPenetrationSystem = s.useNewPenetrationSystem();
+        enableBlockPenetration = s.enableBlockPenetration();
+        blockPenetrationModifier = s.blockPenetrationModifier();
+
+        penetrableBlocksLines = List.copyOf(s.penetrableBlocksLines());
+    }
+
+    public static ModCommonConfig get()
+    {
+        ModCommonConfig override = serverOverride.get();
+        return override != null ? override : instance.get();
+    }
+
+    public static void applyServerSnapshot(CommonConfigSnapshot snap)
+    {
+        ModCommonConfig cfg = new ModCommonConfig(snap);
+        serverOverride.set(cfg);
+        rebuildPenetrableBlocks(cfg.penetrableBlocksLines);
+    }
+
+    public static void clearServerOverride()
+    {
+        serverOverride.set(null);
+        ModCommonConfig baked = instance.get();
+        if (baked != null)
+            rebuildPenetrableBlocks(baked.penetrableBlocksLines);
     }
 
     public static void bake()
     {
-        ModServerConfig next = new ModServerConfig();
+        ModCommonConfig next = new ModCommonConfig();
         instance.set(next);
-
         rebuildPenetrableBlocks(next.penetrableBlocksLines);
     }
 

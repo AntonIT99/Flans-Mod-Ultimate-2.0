@@ -24,7 +24,7 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
@@ -270,7 +270,7 @@ public final class ShootingHelper
         BlockState state = level.getBlockState(pos);
 
         // Block penetration (may consume power and let the bullet continue)
-        if (ModServerConfig.get().enableBlockPenetration)
+        if (ModCommonConfig.get().enableBlockPenetration)
         {
             float hardness = getBlockPenetrationDecrease(level, state, pos, shot.getBulletType());
             penetratingPower -= hardness;
@@ -387,7 +387,7 @@ public final class ShootingHelper
 
         if (shootable != null && type.getMass() > 0F)
         {
-            return (float) (ModServerConfig.get().newDamageSystemReference * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemReference * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
         }
         else
         {
@@ -459,7 +459,7 @@ public final class ShootingHelper
 
     private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
     {
-        PacketPlaySound.sendSoundPacket(position, ModServerConfig.get().explosionSoundRange, level.dimension(), type.getDetonateSound(), true);
+        PacketPlaySound.sendSoundPacket(position, ModCommonConfig.get().explosionSoundRange, level.dimension(), type.getDetonateSound(), true);
     }
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)

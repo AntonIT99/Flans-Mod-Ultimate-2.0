@@ -10,7 +10,7 @@ import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -913,27 +913,27 @@ public class GunType extends PaintableType implements IScope
 
     public float getIdleSoundRange()
     {
-        return idleSoundRange > 0 ? idleSoundRange : ModServerConfig.get().soundRange;
+        return idleSoundRange > 0 ? idleSoundRange : ModCommonConfig.get().soundRange;
     }
 
     public float getMeleeSoundRange()
     {
-        return meleeSoundRange > 0 ? meleeSoundRange : ModServerConfig.get().soundRange;
+        return meleeSoundRange > 0 ? meleeSoundRange : ModCommonConfig.get().soundRange;
     }
 
     public float getReloadSoundRange()
     {
-        return reloadSoundRange > 0 ? reloadSoundRange : ModServerConfig.get().soundRange;
+        return reloadSoundRange > 0 ? reloadSoundRange : ModCommonConfig.get().soundRange;
     }
 
     public float getGunSoundRange()
     {
-        return gunSoundRange > 0 ? gunSoundRange : ModServerConfig.get().gunFireSoundRange;
+        return gunSoundRange > 0 ? gunSoundRange : ModCommonConfig.get().gunFireSoundRange;
     }
 
     public float getDistantSoundRange()
     {
-        return distantSoundRange > 0 ? distantSoundRange : ModServerConfig.get().gunFireSoundRange * 1.5F;
+        return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange * 1.5F;
     }
 
     public Optional<ShootableType> getDefaultAmmo()
@@ -1178,7 +1178,7 @@ public class GunType extends PaintableType implements IScope
                 stackDamage *= attachment.damageMultiplier;
         }
 
-        return (float) (stackDamage * ModServerConfig.get().gunDamageModifier);
+        return (float) (stackDamage * ModCommonConfig.get().gunDamageModifier);
     }
 
     /**
@@ -1273,7 +1273,7 @@ public class GunType extends PaintableType implements IScope
             stackRecoil *= recoilSprintingMultiplier;
         }
 
-        return (float) (stackRecoil * ModServerConfig.get().gunRecoilModifier);
+        return (float) (stackRecoil * ModCommonConfig.get().gunRecoilModifier);
     }
 
     /**
@@ -1302,7 +1302,7 @@ public class GunType extends PaintableType implements IScope
             stackRecoilYaw *= recoilSprintingMultiplierYaw;
         }
 
-        return (float) (stackRecoilYaw * ModServerConfig.get().gunRecoilModifier);
+        return (float) (stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier);
     }
 
     public float getDisplayVerticalRecoil(ItemStack stack)
@@ -1312,7 +1312,7 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
 
-        return (float) (stackRecoil * ModServerConfig.get().gunRecoilModifier);
+        return (float) (stackRecoil * ModCommonConfig.get().gunRecoilModifier);
     }
 
     public float getDisplayHorizontalRecoil(ItemStack stack)
@@ -1322,7 +1322,7 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
 
-        return (float) (stackRecoilYaw * ModServerConfig.get().gunRecoilModifier);
+        return (float) (stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier);
     }
 
     /**

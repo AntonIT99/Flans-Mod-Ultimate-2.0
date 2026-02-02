@@ -27,7 +27,7 @@ import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
@@ -224,7 +224,7 @@ public class GunItemHandler
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModServerConfig.get().combineAmmoOnReload, ModServerConfig.get().combineAmmoOnReload, reloadSoundUUID))
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload, ModCommonConfig.get().combineAmmoOnReload, reloadSoundUUID))
         {
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
@@ -296,17 +296,17 @@ public class GunItemHandler
         {
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getWarmupSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange, item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getLoopedSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange, item.configType.getLoopedSound(), false);
         }
         else if (!data.isShootKeyPressed(hand))
         {
-            PacketPlaySound.sendSoundPacket(player, ModServerConfig.get().soundRange, item.configType.getCooldownSound(), false);
+            PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange, item.configType.getCooldownSound(), false);
         }
     }
 

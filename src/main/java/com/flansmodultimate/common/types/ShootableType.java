@@ -2,7 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.config.ModServerConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -280,7 +280,7 @@ public abstract class ShootableType extends InfoType
     public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (useKineticDamageSystem())
-            return (float) (ModServerConfig.get().newDamageSystemReference * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemReference * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
             return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }

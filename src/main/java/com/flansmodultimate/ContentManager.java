@@ -60,7 +60,7 @@ public class ContentManager
 
     @Getter
     private static Path flanFolder;
-    private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve(ContentLoadingConfig.contentPacksRelativePath);
+    private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve(ContentLoadingConfig.getContentPacksRelativePath());
     private static final Path fallbackFlanPath = FMLPaths.GAMEDIR.get().resolve("Flan");
 
     // Mappings which allow to use aliases for duplicate short names and texture names (also contain unmodified references)
@@ -564,7 +564,7 @@ public class ContentManager
         if (FMLEnvironment.dist != Dist.CLIENT)
             return false;
 
-        if (ContentLoadingConfig.forceRegenContentPacksAssetsAndIds)
+        if (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds())
             return true;
 
         if (provider.isJarFile() // JAR File means it's the first time we've loaded the pack

@@ -2,6 +2,7 @@ package com.flansmodultimate.config;
 
 import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -16,10 +17,12 @@ import java.util.Properties;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContentLoadingConfig
 {
-    public static String contentPacksRelativePath = "flan";
-    public static boolean forceRegenContentPacksAssetsAndIds = false;
-    public static final int contentLoadingSystemVersion = 1;
-    public static boolean useDefaultCategories = true;
+    @Getter
+    static String contentPacksRelativePath = "flan";
+    @Getter
+    static boolean forceRegenContentPacksAssetsAndIds = false;
+    static final int contentLoadingSystemVersion = 1;
+    static boolean useDefaultCategories = true;
 
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.properties";
 
