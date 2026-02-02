@@ -14,8 +14,7 @@ import java.util.Random;
 @NoArgsConstructor
 public class GunAnimations
 {
-    public static GunAnimations defaults = new GunAnimations();
-    public static Random random = new Random();
+    public static final Random random = new Random();
 
     /** (Purely aesthetic) gun animation variables */
     protected boolean isGunEmpty;
@@ -35,9 +34,7 @@ public class GunAnimations
     /** Delayed Reload Animations : Doing the delayed animation */
     protected boolean pumping;
 
-    /**
-     * Charge handle variables
-     */
+    /** Charge handle variables */
     protected int timeUntilCharge;
     protected int timeToChargeFor;
     protected float charged = -1F;
@@ -76,9 +73,7 @@ public class GunAnimations
     protected int meleeAnimationProgress;
     protected int meleeAnimationLength;
 
-    /**
-     * Switch animations
-     */
+    /** Switch animations */
     @Setter
     protected float switchAnimationProgress;
     @Setter
