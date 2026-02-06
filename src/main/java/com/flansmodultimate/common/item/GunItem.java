@@ -204,12 +204,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.isShowDamage())
             {
                 tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
-                tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
-                    .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
 
-                for (ShootableType shootableType : configType.getAmmoTypes())
+                List<ShootableType> ammoTypes = configType.getAmmoTypes();
+                if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
+                {
+                    tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
+                        .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+                }
+
+                for (ShootableType shootableType : ammoTypes)
                 {
                     if (shootableType.useKineticDamageSystem())
                     {
