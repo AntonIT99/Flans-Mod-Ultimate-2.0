@@ -126,16 +126,13 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float fireRadius;
     /** The radius of explosion upon detonation */
-    @Getter
     protected float explosionRadius;
     /** Power of explosion. Multiplier, 1 = vanilla behaviour */
-    @Getter
     protected float explosionPower = 1F;
     /** Whether the explosion can destroy blocks */
     @Getter
     protected boolean explosionBreaksBlocks = true;
     /** Explosion damage vs various classes of entities */
-    @Getter
     protected final DamageStats explosionDamage = new DamageStats();
     /** The name of the item to drop upon detonating */
     @Getter
@@ -250,35 +247,25 @@ public abstract class ShootableType extends InfoType
         explosionBreaksBlocks = readValue("ExplosionsBreakBlocks", explosionBreaksBlocks, file);
 
         explosiveMass = readValue("ExplosiveMass", explosiveMass, file);
-        if (useTNTEquivalentDamageSystem())
-        {
-            explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveMass));
-            explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveMass));
-            explosionDamage.setDamage(ModCommonConfig.get().newDamageSystemExplosiveReference() * Mth.sqrt(explosiveMass));
-        }
-        else
-        {
-            explosionRadius = readValue("ExplosionRadius", explosionRadius, file);
-            explosionRadius = readValue("Explosion", explosionRadius, file);
-            explosionPower = readValue("ExplosionPower", explosionPower, file);
-            explosionDamage.setDamage(readValue("ExplosionDamage", explosionDamage.getDamage(), file));
-            explosionDamage.setDamage(readValue("ExplosionDamageVsEntity", explosionDamage.getDamage(), file));
-            explosionDamage.setReadDamage(file.hasConfigLine("ExplosionDamage") || file.hasConfigLine("ExplosionDamageVsEntity"));
-            explosionDamage.setDamageVsLiving(readValue("ExplosionDamageVsLiving", explosionDamage.getDamageVsLiving(), file));
-            explosionDamage.setReadDamageVsLiving(file.hasConfigLine("ExplosionDamageVsLiving"));
-            explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayer", explosionDamage.getDamageVsPlayer(), file));
-            explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayers", explosionDamage.getDamageVsPlayer(), file));
-            explosionDamage.setReadDamageVsPlayer(file.hasConfigLine("ExplosionDamageVsPlayer") || file.hasConfigLine("ExplosionDamageVsPlayers"));
-            explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicle", explosionDamage.getDamageVsVehicles(), file));
-            explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicles", explosionDamage.getDamageVsVehicles(), file));
-            explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivable", explosionDamage.getDamageVsVehicles(), file));
-            explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivables", explosionDamage.getDamageVsVehicles(), file));
-            explosionDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles") || file.hasConfigLine("ExplosionDamageVsDrivable") || file.hasConfigLine("ExplosionDamageVsDrivables"));
-            explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlane", explosionDamage.getDamageVsPlanes(), file));
-            explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlanes", explosionDamage.getDamageVsPlanes(), file));
-            explosionDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
-        }
-
+        explosionRadius = readValue("ExplosionRadius", explosionRadius, file);
+        explosionRadius = readValue("Explosion", explosionRadius, file);
+        explosionPower = readValue("ExplosionPower", explosionPower, file);
+        explosionDamage.setDamage(readValue("ExplosionDamage", explosionDamage.getDamage(), file));
+        explosionDamage.setDamage(readValue("ExplosionDamageVsEntity", explosionDamage.getDamage(), file));
+        explosionDamage.setReadDamage(file.hasConfigLine("ExplosionDamage") || file.hasConfigLine("ExplosionDamageVsEntity"));
+        explosionDamage.setDamageVsLiving(readValue("ExplosionDamageVsLiving", explosionDamage.getDamageVsLiving(), file));
+        explosionDamage.setReadDamageVsLiving(file.hasConfigLine("ExplosionDamageVsLiving"));
+        explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayer", explosionDamage.getDamageVsPlayer(), file));
+        explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayers", explosionDamage.getDamageVsPlayer(), file));
+        explosionDamage.setReadDamageVsPlayer(file.hasConfigLine("ExplosionDamageVsPlayer") || file.hasConfigLine("ExplosionDamageVsPlayers"));
+        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicle", explosionDamage.getDamageVsVehicles(), file));
+        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicles", explosionDamage.getDamageVsVehicles(), file));
+        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivable", explosionDamage.getDamageVsVehicles(), file));
+        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivables", explosionDamage.getDamageVsVehicles(), file));
+        explosionDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles") || file.hasConfigLine("ExplosionDamageVsDrivable") || file.hasConfigLine("ExplosionDamageVsDrivables"));
+        explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlane", explosionDamage.getDamageVsPlanes(), file));
+        explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlanes", explosionDamage.getDamageVsPlanes(), file));
+        explosionDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readValue("DetonateSound", detonateSound, file);
@@ -294,6 +281,36 @@ public abstract class ShootableType extends InfoType
 
         damage.calculate();
         explosionDamage.calculate();
+    }
+
+    public DamageStats getExplosionDamage()
+    {
+        if (useTNTEquivalentDamageSystem())
+        {
+            DamageStats newExplosionDamage = new DamageStats();
+            newExplosionDamage.setDamage(ModCommonConfig.get().newDamageSystemExplosiveReference() * Mth.sqrt(explosiveMass));
+            newExplosionDamage.calculate();
+            return newExplosionDamage;
+        }
+        return explosionDamage;
+    }
+
+    public float getExplosionRadius()
+    {
+        if (useTNTEquivalentDamageSystem())
+        {
+            return (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveMass));
+        }
+        return explosionRadius;
+    }
+
+    public float getExplosionPower()
+    {
+        if (useTNTEquivalentDamageSystem())
+        {
+            return (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveMass));
+        }
+        return explosionPower;
     }
 
     public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)

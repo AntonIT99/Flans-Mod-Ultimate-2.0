@@ -74,10 +74,11 @@ public class PartType extends InfoType
         rfDrawRate = readValue("RFDrawRate", rfDrawRate, file);
 
         // Engine compatibility
-        readValuesInLines("WorksWith", file).ifPresentOrElse(lines -> lines.forEach(split -> {
+        //TODO: Uncomment when Driveables are added
+        /*readValuesInLines("WorksWith", file).ifPresentOrElse(lines -> lines.forEach(split -> {
             for (String rawType : split)
                 EnumType.getType(rawType).ifPresentOrElse(type -> worksWith.add(type), () -> logError("type not found for part WorksWith", file));
-        }), () -> worksWith = new ArrayList<>());
+        }), () -> worksWith = new ArrayList<>());*/
 
         // Fuel cans
         fuel = readValue("Fuel", fuel, file);

@@ -63,10 +63,10 @@ public abstract class ShootableItem extends Item
         if (getConfigType().getExplosionRadius() > 0F)
         {
             IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
-            tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius())));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius(), 1)));
         }
 
         if (getConfigType().getExplosionPower() > 1F || getConfigType().getExplosionPower() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower())));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
     }
 }

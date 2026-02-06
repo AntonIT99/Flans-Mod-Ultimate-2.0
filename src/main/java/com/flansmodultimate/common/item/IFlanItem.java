@@ -14,9 +14,13 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
@@ -55,19 +59,19 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
 
         // vs Living: only show if explicitly configured AND different from base
         if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving())));
+            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving(), 1)));
 
         // vs Player: inherits from vsLiving
         if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer())));
+            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer(), 1)));
 
         // vs Vehicle: inherits from base
         if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles())));
+            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles(), 1)));
 
         // vs Plane: inherits from vsVehicle
         if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes())));
+            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes(), 1)));
     }
 
     /**
@@ -76,8 +80,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static MutableComponent statLine(String label, String value)
     {
         return Component.literal(label + ": ")
-                .withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+            .withStyle(ChatFormatting.BLUE)
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     /**
@@ -86,8 +90,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static MutableComponent indentedStatLine(String label, String value)
     {
         return Component.literal("  " + label + ": ")
-                .withStyle(ChatFormatting.DARK_AQUA)
-                .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+            .withStyle(ChatFormatting.DARK_AQUA)
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     static MutableComponent modifierLine(String label, float value, boolean invertColor)
@@ -98,29 +102,59 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% " + label).withStyle(color);
     }
 
-    DecimalFormat floatFormat = initFloatFormat();
+    ThreadLocal<Map<Integer, DecimalFormat>> UP_TO_CACHE = ThreadLocal.withInitial(HashMap::new);
 
-    private static DecimalFormat initFloatFormat()
+    private static DecimalFormat decimalFormatUpTo(int decimals)
     {
-        DecimalFormat df = new DecimalFormat("0.##", DecimalFormatSymbols.getInstance(java.util.Locale.ROOT));
-        df.setRoundingMode(java.math.RoundingMode.HALF_UP);
+        if (decimals < 0)
+            throw new IllegalArgumentException("decimals < 0");
+
+        DecimalFormat df = new DecimalFormat();
+        df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+        df.setGroupingUsed(false);
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        df.setMinimumFractionDigits(0);
+        df.setMaximumFractionDigits(decimals);
         return df;
     }
 
     /**
-     * Format floats nicely (no trailing .0 if not needed)
+     * Format floats nicely (no trailing zeros, up to `decimals`).
      */
+    static String formatFloat(float f, int decimals)
+    {
+        if (decimals < 0)
+            throw new IllegalArgumentException("decimals < 0");
+
+        DecimalFormat fmt = UP_TO_CACHE.get()
+            .computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
+
+        return fmt.format(f);
+    }
+
     static String formatFloat(float f)
     {
-        return floatFormat.format(f);
+        return formatFloat(f, 2);
     }
 
     /**
      * Format doubles nicely (no trailing .0 if not needed)
      */
+    static String formatDouble(double d, int decimals)
+    {
+        if (decimals < 0)
+            throw new IllegalArgumentException("decimals < 0");
+
+        DecimalFormat fmt = UP_TO_CACHE.get()
+            .computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
+
+        return fmt.format(d);
+    }
+
     static String formatDouble(double d)
     {
-        return floatFormat.format(d);
+        return formatDouble(d, 2);
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)
