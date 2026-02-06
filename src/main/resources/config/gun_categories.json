@@ -3,7 +3,7 @@
         "properties": {
             "MuzzleVelocity": "860.0",
             "RoundsPerMin": "400.0",
-            "Dispersion": 0.09
+            "Dispersion": 0.26
         },
         "items": [
             "bar"
@@ -14,7 +14,7 @@
         "properties": {
             "MuzzleVelocity": "745.0",
             "RoundsPerMin": "500.0",
-            "Dispersion": 0.10
+            "Dispersion": 0.30
         },
         "items": [
             "bren"
@@ -25,7 +25,7 @@
         "properties": {
             "MuzzleVelocity": "850.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.10
+            "Dispersion": 0.33
         },
         "items": [
             "browning",
@@ -37,7 +37,7 @@
         "properties": {
             "MuzzleVelocity": "890.0",
             "RoundsPerMin": "500.0",
-            "Dispersion": 0.10
+            "Dispersion": 0.35
         },
         "items": [
             "50cal"
@@ -48,7 +48,7 @@
         "properties": {
             "MuzzleVelocity": "840.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.11
+            "Dispersion": 0.34
         },
         "items": [
             "dp28"
@@ -70,7 +70,7 @@
         "properties": {
             "MuzzleVelocity": "745.0",
             "RoundsPerMin": "240.0",
-            "Dispersion": 0.08
+            "Dispersion": 0.20
         },
         "items": [
             "g43"
@@ -81,7 +81,7 @@
         "properties": {
             "MuzzleVelocity": "760.0",
             "RoundsPerMin": "45.0",
-            "Dispersion": 0.07
+            "Dispersion": 0.15
         },
         "items": [
             "kar98k",
@@ -93,7 +93,7 @@
         "properties": {
             "MuzzleVelocity": "745.0",
             "RoundsPerMin": "60.0",
-            "Dispersion": 0.06
+            "Dispersion": 0.14
         },
         "items": [
             "leeenfield",
@@ -105,7 +105,7 @@
         "properties": {
             "MuzzleVelocity": "370.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.20
+            "Dispersion": 0.65
         },
         "items": [
             "luger"
@@ -116,7 +116,7 @@
         "properties": {
             "MuzzleVelocity": "425.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.20
+            "Dispersion": 0.65
         },
         "items": [
             "c96"
@@ -127,7 +127,7 @@
         "properties": {
             "MuzzleVelocity": "605.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.08
+            "Dispersion": 0.22
         },
         "items": [
             "m1carbine"
@@ -138,7 +138,7 @@
         "properties": {
             "MuzzleVelocity": "850.0",
             "RoundsPerMin": "240.0",
-            "Dispersion": 0.06
+            "Dispersion": 0.18
         },
         "items": [
             "m1garand"
@@ -149,7 +149,7 @@
         "properties": {
             "MuzzleVelocity": "250.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.23
+            "Dispersion": 0.72
         },
         "items": [
             "colt"
@@ -160,7 +160,7 @@
         "properties": {
             "MuzzleVelocity": "275.0",
             "RoundsPerMin": "450.0",
-            "Dispersion": 0.16
+            "Dispersion": 0.52
         },
         "items": [
             "m3a1"
@@ -171,7 +171,7 @@
         "properties": {
             "MuzzleVelocity": "850.0",
             "RoundsPerMin": "740.0",
-            "Dispersion": 0.06
+            "Dispersion": 0.30
         },
         "items": [
             "mg151"
@@ -182,7 +182,7 @@
         "properties": {
             "MuzzleVelocity": "765.0",
             "RoundsPerMin": "850.0",
-            "Dispersion": 0.11
+            "Dispersion": 0.36
         },
         "items": [
             "mg34"
@@ -193,7 +193,7 @@
         "properties": {
             "MuzzleVelocity": "740.0",
             "RoundsPerMin": "1200.0",
-            "Dispersion": 0.12
+            "Dispersion": 0.38
         },
         "items": [
             "mg42",
@@ -205,7 +205,7 @@
         "properties": {
             "MuzzleVelocity": "865.0",
             "RoundsPerMin": "45.0",
-            "Dispersion": 0.06
+            "Dispersion": 0.15
         },
         "items": [
             "nagant",
@@ -217,7 +217,7 @@
         "properties": {
             "MuzzleVelocity": "410.0",
             "RoundsPerMin": "600.0",
-            "Dispersion": 0.12
+            "Dispersion": 0.36
         },
         "items": [
             "mp-34"
@@ -228,7 +228,7 @@
         "properties": {
             "MuzzleVelocity": "400.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.13
+            "Dispersion": 0.38
         },
         "items": [
             "mp40"
@@ -239,7 +239,7 @@
         "properties": {
             "MuzzleVelocity": "490.0",
             "RoundsPerMin": "1000.0",
-            "Dispersion": 0.16
+            "Dispersion": 0.50
         },
         "items": [
             "ppsh"
@@ -250,7 +250,7 @@
         "properties": {
             "MuzzleVelocity": "850.0",
             "RoundsPerMin": "45.0",
-            "Dispersion": 0.04
+            "Dispersion": 0.13
         },
         "items": [
             "springfield",
@@ -262,7 +262,7 @@
         "properties": {
             "MuzzleVelocity": "365.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.15
+            "Dispersion": 0.45
         },
         "items": [
             "sten"
@@ -273,7 +273,7 @@
         "properties": {
             "MuzzleVelocity": "685.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.09
+            "Dispersion": 0.24
         },
         "items": [
             "mp44"
@@ -295,7 +295,7 @@
         "properties": {
             "MuzzleVelocity": "420.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.22
+            "Dispersion": 0.70
         },
         "items": [
             "tt33"
@@ -306,7 +306,7 @@
         "properties": {
             "MuzzleVelocity": "290.0",
             "RoundsPerMin": "300.0",
-            "Dispersion": 0.25
+            "Dispersion": 0.80
         },
         "items": [
             "type14"
@@ -317,7 +317,7 @@
         "properties": {
             "MuzzleVelocity": "760.0",
             "RoundsPerMin": "45.0",
-            "Dispersion": 0.05
+            "Dispersion": 0.14
         },
         "items": [
             "type38",
@@ -329,7 +329,7 @@
         "properties": {
             "MuzzleVelocity": "715.0",
             "RoundsPerMin": "550.0",
-            "Dispersion": 0.10
+            "Dispersion": 0.30
         },
         "items": [
             "type99"
@@ -340,7 +340,7 @@
         "properties": {
             "MuzzleVelocity": "335.0",
             "RoundsPerMin": "450.0",
-            "Dispersion": 0.16
+            "Dispersion": 0.45
         },
         "items": [
             "type100"
@@ -351,7 +351,7 @@
         "properties": {
             "MuzzleVelocity": "760.0",
             "RoundsPerMin": "1100.0",
-            "Dispersion": 0.11
+            "Dispersion": 0.36
         },
         "items": [
             "vickersk",
@@ -363,7 +363,7 @@
         "properties": {
             "MuzzleVelocity": "190.0",
             "RoundsPerMin": "120.0",
-            "Dispersion": 0.25
+            "Dispersion": 0.85
         },
         "items": [
             "webley"
@@ -374,7 +374,7 @@
         "properties": {
             "MuzzleVelocity": "400.0",
             "RoundsPerMin": "90.0",
-            "Dispersion": 0.80
+            "Dispersion": 0.95
         },
         "items": [
             "trenchgun"
