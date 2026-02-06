@@ -107,6 +107,15 @@ public final class DamageStats
             damageVsPlanes = damageVsVehicles;
     }
 
+    public void scale(float scale)
+    {
+        damage *= scale;
+        damageVsLiving *= scale;
+        damageVsPlayer *= scale;
+        damageVsVehicles *= scale;
+        damageVsPlanes *= scale;
+    }
+
     public float getDamageAgainstEntity(@Nullable Entity entity)
     {
         if (entity instanceof Player)

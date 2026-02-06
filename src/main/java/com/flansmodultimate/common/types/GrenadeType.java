@@ -156,7 +156,7 @@ public class GrenadeType extends ShootableType
         dropItemOnThrow = readValue("DropItemOnThrow", dropItemOnThrow, file);
         canThrow = readValue("CanThrow", canThrow, file);
         penetratesBlocks = readValue("PenetratesBlocks", penetratesBlocks, file);
-        bounceSound = readValue("BounceSound", bounceSound, file);
+        bounceSound = readSound("BounceSound", bounceSound, file);
 
         //Sticky settings
         sticky = readValue("Sticky", sticky, file);

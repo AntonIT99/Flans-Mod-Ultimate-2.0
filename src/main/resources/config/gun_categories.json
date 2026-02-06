@@ -44,6 +44,17 @@
         ]
     },
 
+    "Colt Python": {
+        "properties": {
+            "MuzzleVelocity": "440.0",
+            "RoundsPerMin": "180.0",
+            "Dispersion": 0.75
+        },
+        "items": [
+            "coltpython"
+        ]
+    },
+
     "DP28": {
         "properties": {
             "MuzzleVelocity": "840.0",
@@ -66,6 +77,17 @@
         ]
     },
 
+    "Gewehr 41 (W)": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "220.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "g41"
+        ]
+    },
+
     "Gewehr 43": {
         "properties": {
             "MuzzleVelocity": "745.0",
@@ -74,6 +96,28 @@
         },
         "items": [
             "g43"
+        ]
+    },
+
+    "Glock 17": {
+        "properties": {
+            "MuzzleVelocity": "375.0",
+            "RoundsPerMin": "360.0",
+            "Dispersion": 0.70
+        },
+        "items": [
+            "glock17"
+        ]
+    },
+
+    "HK MP5K": {
+        "properties": {
+            "MuzzleVelocity": "375.0",
+            "RoundsPerMin": "900.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "mp5k"
         ]
     },
 
@@ -185,7 +229,8 @@
             "Dispersion": 0.36
         },
         "items": [
-            "mg34"
+            "mg34",
+            "maschinengewehr34"
         ]
     },
 
@@ -197,7 +242,8 @@
         },
         "items": [
             "mg42",
-            "mg42hand"
+            "mg42hand",
+            "maschinengewehr42"
         ]
     },
 
@@ -235,14 +281,14 @@
         ]
     },
 
-    "PPSh-41": {
+    "Panzerbüchse 39": {
         "properties": {
-            "MuzzleVelocity": "490.0",
-            "RoundsPerMin": "1000.0",
-            "Dispersion": 0.50
+            "MuzzleVelocity": "1210.0",
+            "RoundsPerMin": "25.0",
+            "Dispersion": 0.16
         },
         "items": [
-            "ppsh"
+            "panzerbuechse39"
         ]
     },
 
@@ -378,6 +424,17 @@
         },
         "items": [
             "trenchgun"
+        ]
+    },
+
+    "Winchester Model 70": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.10
+        },
+        "items": [
+            "winchestermodel70"
         ]
     }
 }

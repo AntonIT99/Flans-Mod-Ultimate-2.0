@@ -55,7 +55,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         final float EPS = 0.0001f;
 
         // Always show base explosion damage if it's meaningful
-        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage())));
+        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage(), 1)));
 
         // vs Living: only show if explicitly configured AND different from base
         if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)

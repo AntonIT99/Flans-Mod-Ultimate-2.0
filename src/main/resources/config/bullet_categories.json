@@ -1,4 +1,15 @@
 {
+    "5.56x45mm NATO": {
+        "properties": {
+            "Mass": "4.0",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "m4carbineammo"
+        ]
+    },
+
     "6.5x50mm Arisaka": {
         "properties": {
             "Mass": "9.0",
@@ -55,7 +66,8 @@
             "springfieldammo",
             "barammo",
             "browningammo",
-            "m1garandammo"
+            "m1garandammo",
+            "3006bullet"
         ]
     },
 
@@ -118,7 +130,21 @@
             "mg42ammo50",
             "mg42ammo250",
             "kar98kammo",
-            "g43ammo"
+            "g43ammo",
+            "g41ammo",
+            "maschninengewehrAmmo50",
+            "maschninengewehrAmmo250"
+        ]
+    },
+
+    "7.92x94mm P318": {
+        "properties": {
+            "Mass": "14.58",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "panzerbuechse39ammo"
         ]
     },
 
@@ -144,7 +170,19 @@
             "lugerAmmo",
             "mp34ammo",
             "mp40ammo",
-            "stenammo"
+            "stenammo",
+            "mp5kAmmo"
+        ]
+    },
+
+    "9x33mmR .357 Magnum": {
+        "properties": {
+            "Mass": "10.2",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "357magnum"
         ]
     },
 

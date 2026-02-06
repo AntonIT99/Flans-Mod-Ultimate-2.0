@@ -280,6 +280,7 @@ public abstract class ShootableType extends InfoType
         explodeParticleType = readValue("ExplodeParticles", explodeParticleType, file);
 
         damage.calculate();
+        explosionDamage.scale(8F * explosionRadius + 1F);
         explosionDamage.calculate();
     }
 

@@ -54,11 +54,8 @@ public abstract class ShootableItem extends Item
         else
             IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
 
-        if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
-
-        if (getConfigType().getBulletSpread() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(getConfigType().getDispersionForDisplay()) + "°"));
+        if (getConfigType().useTNTEquivalentDamageSystem())
+            tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + "kg"));
 
         if (getConfigType().getExplosionRadius() > 0F)
         {
@@ -68,5 +65,11 @@ public abstract class ShootableItem extends Item
 
         if (getConfigType().getExplosionPower() > 1F || getConfigType().getExplosionPower() < 1F)
             tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
+
+        if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
+            tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+
+        if (getConfigType().getBulletSpread() > 0F)
+            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(getConfigType().getDispersionForDisplay()) + "°"));
     }
 }
