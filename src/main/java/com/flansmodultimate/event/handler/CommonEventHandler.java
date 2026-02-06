@@ -6,7 +6,6 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
@@ -98,10 +97,10 @@ public final class CommonEventHandler
         if (!player.level().isClientSide)
         {
             int regenTimer = regenTimers.merge(player.getUUID(), 1, Integer::sum);
-            if (regenTimer >= ModCommonConfig.get().bonusRegenTickDelay)
+            if (regenTimer >= ModCommonConfig.get().bonusRegenTickDelay())
             {
-                if (player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit)
-                    player.heal(ModCommonConfig.get().bonusRegenAmount);
+                if (player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit())
+                    player.heal(ModCommonConfig.get().bonusRegenAmount());
                 regenTimers.put(player.getUUID(), 0);
             }
         }
@@ -112,8 +111,7 @@ public final class CommonEventHandler
     {
         if (e.getEntity() instanceof ServerPlayer sp)
         {
-            CommonConfigSnapshot snap = CommonConfigSnapshot.from(ModCommonConfig.get());
-            PacketHandler.sendTo(new PacketSyncCommonConfig(snap), sp);
+            PacketHandler.sendTo(new PacketSyncCommonConfig(ModCommonConfig.get()), sp);
         }
     }
 
@@ -158,7 +156,7 @@ public final class CommonEventHandler
 
         if (event.getEntity() instanceof Player || event.getEntity() instanceof Mob)
         {
-            if (ModCommonConfig.get().enableOldArmorRatioSystem)
+            if (ModCommonConfig.get().enableOldArmorRatioSystem())
                 CustomArmorItem.applyOldArmorRatioSystem(event, entity);
 
             if (FlanDamageSources.isShootableDamage(source))

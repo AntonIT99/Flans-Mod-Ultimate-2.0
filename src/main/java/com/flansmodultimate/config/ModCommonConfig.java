@@ -2,6 +2,8 @@ package com.flansmodultimate.config;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import net.minecraft.resources.ResourceLocation;
@@ -10,61 +12,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ModCommonConfig
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ModCommonConfig
 {
     public static final ForgeConfigSpec configSpec;
 
-    public final boolean addAllPaintjobsToCreative;
-
-    public final boolean realisticRecoil;
-    public final boolean enableSightDownwardMovement;
-    public final int bonusRegenAmount;
-    public final int bonusRegenTickDelay;
-    public final double bonusRegenFoodLimit;
-
-    public final double newDamageSystemReference;
-    public final double headshotDamageModifier;
-    public final double chestshotDamageModifier;
-    public final double armshotDamageModifier;
-    public final double legshotModifier;
-    public final double vehicleWheelSeatExplosionModifier;
-
-    public final int breakableArmor;
-    public final int defaultArmorDurability;
-    public final int defaultArmorEnchantability;
-    public final boolean enableOldArmorRatioSystem;
-
-    public final double gunDamageModifier;
-    public final double gunRecoilModifier;
-    public final double defaultADSSpreadMultiplier;
-    public final double defaultADSSpreadMultiplierShotgun;
-    public final boolean cancelReloadOnWeaponSwitch;
-    public final boolean combineAmmoOnReload;
-    public final boolean ammoToUpperInventoryOnReload;
-
-    public final int shootableDefaultRespawnTime;
-    public final boolean shootableProximityTriggerFriendlyFire;
-
-    // Range for which sound packets are sent
-    public final float soundRange;
-    public final float gunFireSoundRange;
-    public final float explosionSoundRange;
-
-    public final boolean useNewPenetrationSystem;
-    public final boolean enableBlockPenetration;
-    public final double blockPenetrationModifier;
-
-    public final List<String> penetrableBlocksLines;
-
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
 
-    private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
+    private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
     private static final ForgeConfigSpec.DoubleValue BONUS_REGEN_FOOD_LIMIT;
 
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue HEADSHOT_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue CHESTSHOT_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue ARMSHOT_DAMAGE_MODIFIER;
@@ -83,7 +42,13 @@ public class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue CANCEL_RELOAD_ON_WEAPON_SWITCH;
     private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
     private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
 
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
     private static final ForgeConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final ForgeConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
 
@@ -98,8 +63,8 @@ public class ModCommonConfig
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-    private static final AtomicReference<ModCommonConfig> instance = new AtomicReference<>();
-    private static final AtomicReference<ModCommonConfig> serverOverride = new AtomicReference<>();
+    private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
+    private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
 
     static
     {
@@ -110,6 +75,9 @@ public class ModCommonConfig
         builder.pop();
 
         builder.push("Gameplay Settings");
+        EXPLOSIONS_BREAK_BLOCKS = builder
+            .comment("Whether explosions can break blocks")
+            .define("explosionBreakBlocks", true);
         BONUS_REGEN_AMOUNT = builder
             .comment("Allows you to increase health regen, best used alongside increased max health")
             .defineInRange("bonusRegenAmount", 0, 0, 1000);
@@ -122,9 +90,6 @@ public class ModCommonConfig
         builder.pop();
 
         builder.push("Damage Settings");
-        NEW_DAMAGE_SYSTEM_REFERENCE = builder
-            .comment("Reference for the new damage system using kinetic energy (when 'Mass' is set).")
-            .defineInRange("newDamageSystemReference", 5.0, 0.0, 1000.0);
         HEADSHOT_DAMAGE_MODIFIER = builder
             .comment("All headshot damage will be modified by this amount")
             .defineInRange("headshotDamageModifier", 2.0, 0.0, 1000.0);
@@ -188,6 +153,18 @@ public class ModCommonConfig
         builder.pop();
 
         builder.push("Shootable Settings");
+        NEW_DAMAGE_SYSTEM_REFERENCE = builder
+            .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to a the damage of a 9g bullet at 333 m/s")
+            .defineInRange("newDamageSystemReference", 5.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE = builder
+            .comment("Explosion damage reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the damage of 1kg TNT")
+            .defineInRange("newDamageSystemExplosiveReference", 80.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE = builder
+            .comment("Explosion power reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the power of 1kg TNT")
+            .defineInRange("newDamageSystemExplosivePowerReference", 1.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE = builder
+            .comment("Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT")
+            .defineInRange("newDamageSystemExplosiveRadiusReference", 10.0, 0.0, 1000.0);
         SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder
             .comment("Whether proximity triggers can get triggered by allies and cause friendly fire")
             .define("shootableProximityTriggerFriendlyFire", false);
@@ -196,15 +173,15 @@ public class ModCommonConfig
             .defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         builder.pop();
 
-        builder.push("Networking Settings");
+        builder.push("Sound Settings");
         SOUND_RANGE = builder
-            .comment("Range in blocks for general sound packets.")
+            .comment("Range in blocks for general sound packets (also determines volume).")
             .defineInRange("soundRange", 32.0, 1.0, 4096.0);
         GUN_FIRE_SOUND_RANGE = builder
-            .comment("Range in blocks for gun fire sound packets.")
+            .comment("Range in blocks for gun fire sound packets (also determines volume).")
             .defineInRange("gunFireSoundRange", 96.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder
-            .comment("Range in blocks for explosion sound packets.")
+            .comment("Range in blocks for explosion sound packets (also determines volume).")
             .defineInRange("explosionSoundRange", 128.0, 1.0, 4096.0);
         builder.pop();
 
@@ -228,120 +205,84 @@ public class ModCommonConfig
         configSpec = builder.build();
     }
 
-    private ModCommonConfig()
+    private static CommonConfigSnapshot readConfig()
     {
-        addAllPaintjobsToCreative = ADD_ALL_PAINTJOBS_TO_CREATIVE.get();
+        return new CommonConfigSnapshot
+        (
+            CommonConfigSnapshot.CURRENT_VERSION,
 
-        realisticRecoil = REALISTIC_RECOIL.get();
-        enableSightDownwardMovement = ENABLE_SIGHT_DOWNWARD_MOVEMENT.get();
-        bonusRegenAmount = BONUS_REGEN_AMOUNT.get();
-        bonusRegenTickDelay = BONUS_REGEN_TICK_DELAY.get();
-        bonusRegenFoodLimit = BONUS_REGEN_FOOD_LIMIT.get();
+            ADD_ALL_PAINTJOBS_TO_CREATIVE.get(),
 
-        newDamageSystemReference = NEW_DAMAGE_SYSTEM_REFERENCE.get();
-        headshotDamageModifier = HEADSHOT_DAMAGE_MODIFIER.get();
-        chestshotDamageModifier = CHESTSHOT_DAMAGE_MODIFIER.get();
-        armshotDamageModifier = ARMSHOT_DAMAGE_MODIFIER.get();
-        legshotModifier = LEGSHOT_MODIFIER.get();
-        vehicleWheelSeatExplosionModifier = VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get();
+            EXPLOSIONS_BREAK_BLOCKS.get(),
+            BONUS_REGEN_AMOUNT.get(),
+            BONUS_REGEN_TICK_DELAY.get(),
+            BONUS_REGEN_FOOD_LIMIT.get(),
 
-        breakableArmor = BREAKABLE_ARMOR.get();
-        defaultArmorDurability = DEFAULT_ARMOR_DURABILITY.get();
-        defaultArmorEnchantability = DEFAULT_ARMOR_ENCHANTABILITY.get();
-        enableOldArmorRatioSystem = ENABLE_OLD_ARMOR_RATIO_SYSTEM.get();
+            HEADSHOT_DAMAGE_MODIFIER.get(),
+            CHESTSHOT_DAMAGE_MODIFIER.get(),
+            ARMSHOT_DAMAGE_MODIFIER.get(),
+            LEGSHOT_MODIFIER.get(),
+            VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get(),
 
-        gunDamageModifier = GUN_DAMAGE_MODIFIER.get();
-        gunRecoilModifier = GUN_RECOIL_MODIFIER.get();
-        defaultADSSpreadMultiplier = DEFAULT_ADS_SPREAD_MULTIPLIER.get();
-        defaultADSSpreadMultiplierShotgun = DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get();
-        cancelReloadOnWeaponSwitch = CANCEL_RELOAD_ON_WEAPON_SWITCH.get();
-        combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
-        ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();
+            BREAKABLE_ARMOR.get(),
+            DEFAULT_ARMOR_DURABILITY.get(),
+            DEFAULT_ARMOR_ENCHANTABILITY.get(),
+            ENABLE_OLD_ARMOR_RATIO_SYSTEM.get(),
 
-        shootableDefaultRespawnTime = SHOOTABLE_DEFAULT_RESPAWN_TIME.get();
-        shootableProximityTriggerFriendlyFire = SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get();
+            GUN_DAMAGE_MODIFIER.get(),
+            GUN_RECOIL_MODIFIER.get(),
+            DEFAULT_ADS_SPREAD_MULTIPLIER.get(),
+            DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get(),
+            CANCEL_RELOAD_ON_WEAPON_SWITCH.get(),
+            COMBINE_AMMO_ON_RELOAD.get(),
+            AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(),
+            REALISTIC_RECOIL.get(),
+            ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
 
-        soundRange = (float) SOUND_RANGE.get().doubleValue();
-        gunFireSoundRange = (float) GUN_FIRE_SOUND_RANGE.get().doubleValue();
-        explosionSoundRange = (float) EXPLOSION_SOUND_RANGE.get().doubleValue();
+            NEW_DAMAGE_SYSTEM_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
+            SHOOTABLE_DEFAULT_RESPAWN_TIME.get(),
+            SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get(),
 
-        useNewPenetrationSystem = USE_NEW_PENETRATION_SYSTEM.get();
-        enableBlockPenetration = ENABLE_BLOCK_PENETRATION.get();
-        blockPenetrationModifier = BLOCK_PENETRATION_MODIFIER.get();
+            SOUND_RANGE.get().floatValue(),
+            GUN_FIRE_SOUND_RANGE.get().floatValue(),
+            EXPLOSION_SOUND_RANGE.get().floatValue(),
 
-        penetrableBlocksLines = List.copyOf(PENETRABLE_BLOCKS_RAW.get());
+            USE_NEW_PENETRATION_SYSTEM.get(),
+            ENABLE_BLOCK_PENETRATION.get(),
+            BLOCK_PENETRATION_MODIFIER.get(),
+
+            List.copyOf(PENETRABLE_BLOCKS_RAW.get())
+        );
     }
 
-    private ModCommonConfig(CommonConfigSnapshot s)
+    public static CommonConfigSnapshot get()
     {
-        addAllPaintjobsToCreative = s.addAllPaintjobsToCreative();
-
-        realisticRecoil = s.realisticRecoil();
-        enableSightDownwardMovement = s.enableSightDownwardMovement();
-        bonusRegenAmount = s.bonusRegenAmount();
-        bonusRegenTickDelay = s.bonusRegenTickDelay();
-        bonusRegenFoodLimit = s.bonusRegenFoodLimit();
-
-        newDamageSystemReference = s.newDamageSystemReference();
-        headshotDamageModifier = s.headshotDamageModifier();
-        chestshotDamageModifier = s.chestshotDamageModifier();
-        armshotDamageModifier = s.armshotDamageModifier();
-        legshotModifier = s.legshotModifier();
-        vehicleWheelSeatExplosionModifier = s.vehicleWheelSeatExplosionModifier();
-
-        breakableArmor = s.breakableArmor();
-        defaultArmorDurability = s.defaultArmorDurability();
-        defaultArmorEnchantability = s.defaultArmorEnchantability();
-        enableOldArmorRatioSystem = s.enableOldArmorRatioSystem();
-
-        gunDamageModifier = s.gunDamageModifier();
-        gunRecoilModifier = s.gunRecoilModifier();
-        defaultADSSpreadMultiplier = s.defaultADSSpreadMultiplier();
-        defaultADSSpreadMultiplierShotgun = s.defaultADSSpreadMultiplierShotgun();
-        cancelReloadOnWeaponSwitch = s.cancelReloadOnWeaponSwitch();
-        combineAmmoOnReload = s.combineAmmoOnReload();
-        ammoToUpperInventoryOnReload = s.ammoToUpperInventoryOnReload();
-
-        shootableDefaultRespawnTime = s.shootableDefaultRespawnTime();
-        shootableProximityTriggerFriendlyFire = s.shootableProximityTriggerFriendlyFire();
-
-        soundRange = s.soundRange();
-        gunFireSoundRange = s.gunFireSoundRange();
-        explosionSoundRange = s.explosionSoundRange();
-
-        useNewPenetrationSystem = s.useNewPenetrationSystem();
-        enableBlockPenetration = s.enableBlockPenetration();
-        blockPenetrationModifier = s.blockPenetrationModifier();
-
-        penetrableBlocksLines = List.copyOf(s.penetrableBlocksLines());
-    }
-
-    public static ModCommonConfig get()
-    {
-        ModCommonConfig override = serverOverride.get();
+        CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
     }
 
-    public static void applyServerSnapshot(CommonConfigSnapshot snap)
+    public static void applyServerSnapshot(CommonConfigSnapshot config)
     {
-        ModCommonConfig cfg = new ModCommonConfig(snap);
-        serverOverride.set(cfg);
-        rebuildPenetrableBlocks(cfg.penetrableBlocksLines);
+        serverOverride.set(config);
+        rebuildPenetrableBlocks(config.penetrableBlocksLines());
     }
 
     public static void clearServerOverride()
     {
         serverOverride.set(null);
-        ModCommonConfig baked = instance.get();
-        if (baked != null)
-            rebuildPenetrableBlocks(baked.penetrableBlocksLines);
+        CommonConfigSnapshot config = instance.get();
+        if (config != null)
+            rebuildPenetrableBlocks(config.penetrableBlocksLines());
     }
 
     public static void bake()
     {
-        ModCommonConfig next = new ModCommonConfig();
-        instance.set(next);
-        rebuildPenetrableBlocks(next.penetrableBlocksLines);
+        CommonConfigSnapshot config = readConfig();
+        instance.set(config);
+        rebuildPenetrableBlocks(config.penetrableBlocksLines());
     }
 
     private static void rebuildPenetrableBlocks(List<String> lines)

@@ -7,7 +7,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ModClientConfig
+public final class ModClientConfig
 {
     public static final ForgeConfigSpec configSpec;
 

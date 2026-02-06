@@ -63,7 +63,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public int getEnchantmentValue()
     {
         if (!configType.isReadEnchantability())
-            return ModCommonConfig.get().defaultArmorEnchantability;
+            return ModCommonConfig.get().defaultArmorEnchantability();
         return material.getEnchantmentValue();
     }
 
@@ -71,16 +71,16 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public boolean isDamageable(ItemStack stack)
     {
         //0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config
-        int breakType = ModCommonConfig.get().breakableArmor;
+        int breakType = ModCommonConfig.get().breakableArmor();
         return (breakType == 2 && configType.hasDurability()) || breakType == 1;
     }
 
     @Override
     public int getMaxDamage(ItemStack stack)
     {
-        if (ModCommonConfig.get().breakableArmor == 1)
+        if (ModCommonConfig.get().breakableArmor() == 1)
         {
-            return ModCommonConfig.get().defaultArmorDurability;
+            return ModCommonConfig.get().defaultArmorDurability();
         }
         return super.getMaxDamage(stack);
     }
@@ -91,9 +91,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        String defense = ModCommonConfig.get().enableOldArmorRatioSystem ?
+        String defense = ModCommonConfig.get().enableOldArmorRatioSystem() ?
                 IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
-        String bulletDefense = ModCommonConfig.get().enableOldArmorRatioSystem ?
+        String bulletDefense = ModCommonConfig.get().enableOldArmorRatioSystem() ?
                 IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
 
         tooltipComponents.add(IFlanItem.statLine("Defense", defense));
@@ -131,7 +131,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         {
             ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
 
-            if (ModCommonConfig.get().enableOldArmorRatioSystem)
+            if (ModCommonConfig.get().enableOldArmorRatioSystem())
             {
                 // Copy everything EXCEPT vanilla armor/toughness (disables vanilla mitigation for this piece)
                 for (var entry : vanilla.entries())

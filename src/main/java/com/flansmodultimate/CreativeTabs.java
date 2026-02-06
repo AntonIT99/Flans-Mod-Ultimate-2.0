@@ -77,7 +77,7 @@ public final class CreativeTabs
 
                 output.accept(item);
 
-                if (ModCommonConfig.get().addAllPaintjobsToCreative && item instanceof IPaintableItem<?> paintableItem)
+                if (ModCommonConfig.get().addAllPaintjobsToCreative() && item instanceof IPaintableItem<?> paintableItem)
                 {
                     for (Paintjob pj : paintableItem.getPaintableType().getPaintjobs().values())
                         if (!pj.isDefault())

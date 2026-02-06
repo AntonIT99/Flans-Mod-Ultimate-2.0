@@ -194,9 +194,9 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected boolean shouldDespawn()
     {
         int despawnTime = getConfigType().getDespawnTime();
-        if (ModCommonConfig.get().shootableDefaultRespawnTime > 0)
+        if (ModCommonConfig.get().shootableDefaultRespawnTime() > 0)
         {
-            despawnTime = Math.min(despawnTime, ModCommonConfig.get().shootableDefaultRespawnTime);
+            despawnTime = Math.min(despawnTime, ModCommonConfig.get().shootableDefaultRespawnTime());
         }
         return despawnTime > 0 && tickCount > despawnTime;
     }
@@ -229,7 +229,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
             // Living proximity
             if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
             {
-                if (ModCommonConfig.get().shootableProximityTriggerFriendlyFire)
+                if (ModCommonConfig.get().shootableProximityTriggerFriendlyFire())
                 {
                     // Check to prevent friendly fire
                     Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();

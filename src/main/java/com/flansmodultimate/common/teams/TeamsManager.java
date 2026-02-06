@@ -16,7 +16,7 @@ public class TeamsManager
 
     private boolean voting = false;
     @Getter
-    private boolean explosionsBreakBlocks = true; //TODO: default value through config?
+    private boolean explosionsBreakBlocks = true;
     private boolean roundsGenerator;
     private boolean driveablesBreakBlocks = true;
     private boolean bombsEnabled = true;

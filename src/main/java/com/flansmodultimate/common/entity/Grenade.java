@@ -135,7 +135,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             angularVelocity = new Vec3(0, 0, 10);
 
         if (grenadeType.getThrowSound() != null)
-            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), ModCommonConfig.get().soundRange, level.dimension(), grenadeType.getThrowSound(), true);
+            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), ModCommonConfig.get().soundRange(), level.dimension(), grenadeType.getThrowSound(), true);
 
         thrower = entity;
         // If this can be remotely detonated, add it to the players detonate list

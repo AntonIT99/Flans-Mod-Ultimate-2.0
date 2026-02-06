@@ -91,7 +91,7 @@ public record GunReloader(GunItem item)
 
     private static boolean cancelReloadIfSwitched(ServerPlayer player, PendingReload pendingReload)
     {
-        if (ModCommonConfig.get().cancelReloadOnWeaponSwitch)
+        if (ModCommonConfig.get().cancelReloadOnWeaponSwitch())
             return false;
 
         return !ItemStack.matches(player.getItemInHand(pendingReload.hand()), pendingReload.gunStack());
@@ -102,9 +102,12 @@ public record GunReloader(GunItem item)
         if (level.getGameTime() < pendingReload.applyAtGameTime())
             return;
 
-        GunItem gunItem = (GunItem) player.getItemInHand(pendingReload.hand()).getItem();
-        applyPlans(level, player, player.getInventory(), pendingReload, gunItem);
-        data.clearPendingReload();
+
+        if (player.getItemInHand(pendingReload.hand()).getItem() instanceof GunItem gunItem)
+        {
+            applyPlans(level, player, player.getInventory(), pendingReload, gunItem);
+            data.clearPendingReload();
+        }
     }
 
     private static void applyPlans(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, GunItem gunItem)

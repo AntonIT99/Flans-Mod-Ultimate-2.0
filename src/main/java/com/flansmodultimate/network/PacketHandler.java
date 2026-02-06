@@ -8,6 +8,7 @@ import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
@@ -81,6 +82,7 @@ public final class PacketHandler {
         registerS2C(PacketCancelSound.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
+        registerS2C(PacketFlanExplosionBlockParticles.class);
         registerS2C(PacketFlanExplosionParticles.class);
         registerS2C(PacketFlashBang.class);
         registerS2C(PacketGunMeleeClient.class);

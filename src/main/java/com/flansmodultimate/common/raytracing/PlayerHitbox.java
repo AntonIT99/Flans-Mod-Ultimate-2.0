@@ -171,29 +171,29 @@ public class PlayerHitbox
             totalPenetrationResistance = chestPenRes;
 
         float damageModifier = 1F;
-        if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && ModCommonConfig.get().useNewPenetrationSystem)
+        if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && ModCommonConfig.get().useNewPenetrationSystem())
             damageModifier = (float) Math.pow((penetratingPower / (BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance)), 2.5);
-        else if (ModCommonConfig.get().useNewPenetrationSystem)
+        else if (ModCommonConfig.get().useNewPenetrationSystem())
             damageModifier = bulletType.getPenetratingPower() < 0.1F ? (penetratingPower / bulletType.getPenetratingPower()) : 1F;
 
         lastHitPenAmount = Math.max(hitData.lastHitPenAmount(), damageModifier);
 
         if (type == EnumHitboxType.HEAD)
         {
-            damageModifier *= (float) ModCommonConfig.get().headshotDamageModifier;
+            damageModifier *= (float) ModCommonConfig.get().headshotDamageModifier();
             lastHitHeadshot = true;
         }
         else if (type == EnumHitboxType.BODY)
         {
-            damageModifier *= (float) ModCommonConfig.get().chestshotDamageModifier;
+            damageModifier *= (float) ModCommonConfig.get().chestshotDamageModifier();
         }
         else if (type == EnumHitboxType.LEGS)
         {
-            damageModifier *= (float) ModCommonConfig.get().legshotModifier;
+            damageModifier *= (float) ModCommonConfig.get().legshotModifier();
         }
         else if (type == EnumHitboxType.LEFTARM || type == EnumHitboxType.RIGHTARM)
         {
-            damageModifier *= (float) ModCommonConfig.get().armshotDamageModifier;
+            damageModifier *= (float) ModCommonConfig.get().armshotDamageModifier();
         }
 
         switch(type)
@@ -237,7 +237,7 @@ public class PlayerHitbox
 
                 player.setDeltaMovement(player.getDeltaMovement().subtract(deltaV));
 
-                if (ModCommonConfig.get().useNewPenetrationSystem)
+                if (ModCommonConfig.get().useNewPenetrationSystem())
                     penetratingPower -= totalPenetrationResistance;
                 else
                     penetratingPower--;

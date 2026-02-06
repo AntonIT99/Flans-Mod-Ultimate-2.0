@@ -286,9 +286,9 @@ public class ModClient
         float spread = gunItem.getConfigType().getSpread(gunStack, sneaking, sprinting);
 
         if (gunItem.getConfigType().getNumBullets() == 1)
-            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplier : gunItem.getConfigType().getAdsSpreadModifier();
+            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();
         else
-            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplierShotgun : gunItem.getConfigType().getAdsSpreadModifierShotgun();
+            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
 
         PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
@@ -578,8 +578,8 @@ public class ModClient
         antiRecoilYaw += playerRecoilYaw;
 
         // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
-        if (!ModCommonConfig.get().realisticRecoil
-            && ((!isShooting) || ModCommonConfig.get().enableSightDownwardMovement))
+        if (!ModCommonConfig.get().realisticRecoil()
+            && ((!isShooting) || ModCommonConfig.get().enableSightDownwardMovement()))
         {
             newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
         }
@@ -675,7 +675,7 @@ public class ModClient
             && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F) || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().soundRange);
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().soundRange());
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -692,19 +692,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange, time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange(), time);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange);
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange);
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
                 }
             }
         }

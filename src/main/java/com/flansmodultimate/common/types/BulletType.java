@@ -279,6 +279,6 @@ public class BulletType extends ShootableType
 
     public float getBlockPenetrationModifier()
     {
-        return blockPenetrationModifier < 0F ? (float) ModCommonConfig.get().blockPenetrationModifier : blockPenetrationModifier;
+        return blockPenetrationModifier < 0F ? (float) ModCommonConfig.get().blockPenetrationModifier() : blockPenetrationModifier;
     }
 }

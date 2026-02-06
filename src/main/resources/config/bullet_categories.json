@@ -181,5 +181,17 @@
         "items": [
             "50calammo"
         ]
+    },
+
+    "15x96mm Mauser": {
+        "properties": {
+            "Mass": "72.0",
+            "ExplosiveMass": "0.0035",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "mg151ammo"
+        ]
     }
 }

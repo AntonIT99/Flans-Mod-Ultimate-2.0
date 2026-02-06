@@ -1,5 +1,6 @@
 package com.flansmodultimate.config;
 
+import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,11 +21,7 @@ public final class ModCommonConfigSync
         if (server == null)
             return;
 
-        CommonConfigSnapshot snap = CommonConfigSnapshot.from(ModCommonConfig.get());
-        PacketSyncCommonConfig pkt  = new PacketSyncCommonConfig(snap);
-
-        for (var sp : server.getPlayerList().getPlayers())
-            com.flansmodultimate.network.PacketHandler.sendTo(pkt, sp);
+        PacketHandler.sendToAll(new PacketSyncCommonConfig(ModCommonConfig.get()));
     }
 }
 
