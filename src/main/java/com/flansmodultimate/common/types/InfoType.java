@@ -237,18 +237,18 @@ public abstract class InfoType
         {
             String[] modelNameSplit = modelName.split("\\.");
             Path classFile;
-            FileSystem fs = FileUtils.createFileSystem(contentPack);
+            Optional<FileSystem> fs = Optional.ofNullable(FileUtils.createFileSystem(contentPack));
 
             if (modelNameSplit.length > 1)
             {
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelNameSplit[0] + ".Model" + modelNameSplit[1];
-                classFile = contentPack.getModelPath(modelClassName, fs);
+                classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
 
                 // Handle 1.12.2 package format
                 if (!Files.exists(classFile))
                 {
                     modelClassName = "com." + FlansMod.FLANSMOD_ID + "." + modelNameSplit[0] + ".client.model.Model" + modelNameSplit[1];
-                    Path redirectFile = (fs != null) ? fs.getPath("redirect.info") : contentPack.getPath().resolve("redirect.info");
+                    Path redirectFile = fs.map(fileSystem -> fileSystem.getPath("redirect.info")).orElseGet(() -> contentPack.getPath().resolve("redirect.info"));
 
                     if (Files.exists(redirectFile))
                     {
@@ -265,13 +265,13 @@ public abstract class InfoType
                             FlansMod.log.error("Could not open {}", redirectFile, e);
                         }
                     }
-                    classFile = contentPack.getModelPath(modelClassName, fs);
+                    classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
                 }
             }
             else
             {
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + modelName;
-                classFile = contentPack.getModelPath(modelClassName, fs);
+                classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
             }
 
             if (!modelClassAlreadyRegisteredForContentPack(modelClassName, contentPack))
@@ -296,7 +296,7 @@ public abstract class InfoType
                 DynamicReference.storeOrUpdate(modelClassName, actualClassName, ContentManager.getModelReferences().get(contentPack));
             }
 
-            FileUtils.closeFileSystem(fs, contentPack);
+            FileUtils.closeFileSystem(fs.orElse(null), contentPack);
         }
         return modelClassName;
     }

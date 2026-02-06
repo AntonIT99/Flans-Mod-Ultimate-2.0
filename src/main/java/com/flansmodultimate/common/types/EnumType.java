@@ -7,6 +7,8 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.item.PartItem;
+import com.flansmodultimate.common.item.ToolItem;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +24,9 @@ public enum EnumType
     ATTACHMENT("attachment", "attachments", ContentManager.TEXTURES_SKINS_FOLDER, AttachmentType.class, AttachmentItem.class, false),
     BULLET("bullet", "bullets", ContentManager.TEXTURES_SKINS_FOLDER, BulletType.class, BulletItem.class, false),
     GRENADE("grenade", "grenades", ContentManager.TEXTURES_SKINS_FOLDER, GrenadeType.class, GrenadeItem.class, false),
-    GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, false);
+    GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, false),
+    PARTS("part", "parts", ContentManager.TEXTURES_SKINS_FOLDER, PartType.class, PartItem.class, false),
+    TOOLS("tool", "tools", ContentManager.TEXTURES_SKINS_FOLDER, ToolType.class, ToolItem.class, false);
 
     private final String displayName;
     private final String configFolderName;

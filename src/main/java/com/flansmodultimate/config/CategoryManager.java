@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
@@ -132,6 +133,7 @@ public final class CategoryManager
                 category.setName(e.getKey());
                 for (String item : category.getItems())
                 {
+                    item = item.toLowerCase(Locale.ROOT);
                     itemCategories.putIfAbsent(item, new ArrayList<>());
                     itemCategories.get(item).add(category);
                 }

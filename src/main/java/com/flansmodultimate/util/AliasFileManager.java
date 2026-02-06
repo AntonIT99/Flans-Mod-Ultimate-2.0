@@ -5,6 +5,7 @@ import com.flansmodultimate.IContentProvider;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.nio.file.FileSystem;
@@ -18,6 +19,7 @@ public class AliasFileManager implements AutoCloseable
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final Type type = new TypeToken<Map<String, String>>() {}.getType();
 
+    @Nullable
     private FileSystem fs;
     private final String fileName;
     private final IContentProvider provider;
@@ -30,8 +32,9 @@ public class AliasFileManager implements AutoCloseable
 
     public Optional<Map<String, String>> readFile()
     {
-        fs = FileUtils.createFileSystem(provider);
-        Path file = (fs != null) ? fs.getPath("/" + fileName) : provider.getPath().resolve(fileName);
+        Optional<FileSystem> fileSystem = Optional.ofNullable(FileUtils.createFileSystem(provider));
+        Path file = fileSystem.map(fileSys -> fileSys.getPath("/" + fileName)).orElseGet(() -> provider.getPath().resolve(fileName));
+        this.fs = fileSystem.orElse(null);
 
         if (!Files.exists(file))
         {

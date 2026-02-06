@@ -127,7 +127,7 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter @Setter
     protected float bulletSpread;
-    protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CUBE;
+    protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
     protected float sneakSpreadModifier = 0.63F;
     protected float sprintSpreadModifier = 1.75F;
     /**

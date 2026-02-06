@@ -228,7 +228,13 @@ public class FlansMod
             ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_bullets"))
         };
 
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", List.of(FlansMod.gunWorkbenchItem, FlansMod.rainbowPaintcan, FlansMod.paintjobTableItem), false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
+        List<RegistryObject<Item>> generalItemList = new ArrayList<>();
+        generalItemList.add(FlansMod.gunWorkbenchItem);
+        generalItemList.add(FlansMod.paintjobTableItem);
+        generalItemList.add(FlansMod.rainbowPaintcan);
+        generalItemList.addAll(FlansMod.getItems(EnumType.TOOLS));
+
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET, EnumType.GRENADE)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);

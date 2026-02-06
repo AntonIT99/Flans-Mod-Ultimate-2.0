@@ -45,6 +45,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -604,67 +605,40 @@ public final class ShootingHelper
         {
             case CIRCLE ->
             {
-                double theta = random.nextDouble() * Math.PI * 2.0;
-                double radius = random.nextDouble() * angularSpread;
-                double xComponent = radius * Math.sin(theta);
-                double yComponent = radius * Math.cos(theta);
+                double x = Mth.clamp(random.nextGaussian(), -3.0, 3.0) * angularSpread;
+                double y = Mth.clamp(random.nextGaussian(), -3.0, 3.0) * angularSpread;
 
-                Vec3 offset = xAxis.scale(xComponent).add(yAxis.scale(yComponent));
-
+                Vec3 offset = xAxis.scale(x).add(yAxis.scale(y));
                 perturbedDir = direction.add(offset);
             }
             case CUBE ->
             {
-                double ox = random.nextGaussian() * angularSpread;
-                double oy = random.nextGaussian() * angularSpread;
-                double oz = random.nextGaussian() * angularSpread;
+                double x = random.nextGaussian() * angularSpread;
+                double y = random.nextGaussian() * angularSpread;
 
-                perturbedDir = direction.add(ox, oy, oz);
+                Vec3 offset = xAxis.scale(x).add(yAxis.scale(y));
+                perturbedDir = direction.add(offset);
             }
             case HORIZONTAL ->
             {
-                double xComponent = angularSpread * (random.nextDouble() * 2.0D - 1.0D);
+                double x = (random.nextDouble() - random.nextDouble()) * angularSpread;
 
-                Vec3 offset = xAxis.scale(xComponent);
-
+                Vec3 offset = xAxis.scale(x);
                 perturbedDir = direction.add(offset);
             }
             case VERTICAL ->
             {
-                double yComponent = angularSpread * (random.nextDouble() * 2.0D - 1.0D);
+                double y = (random.nextDouble() - random.nextDouble()) * angularSpread;
 
-                Vec3 offset = yAxis.scale(yComponent);
-
+                Vec3 offset = yAxis.scale(y);
                 perturbedDir = direction.add(offset);
             }
             case TRIANGLE ->
             {
-                // Random square, then fold the corners
-                double xComponent = random.nextDouble() * 2.0D - 1.0D;
-                double yComponent = random.nextDouble() * 2.0D - 1.0D;
+                double x = (random.nextDouble() - random.nextDouble()) * angularSpread;
+                double y = (random.nextDouble() - random.nextDouble()) * angularSpread;
 
-                if (xComponent > 0.0D)
-                {
-                    if (yComponent > 1.0D - xComponent * 2.0D)
-                    {
-                        yComponent = -yComponent;
-                        xComponent = 1.0D - xComponent;
-                    }
-                }
-                else
-                {
-                    if (yComponent > xComponent * 2.0D + 1.0D)
-                    {
-                        yComponent = -yComponent;
-                        xComponent = -1.0D - xComponent;
-                    }
-                }
-
-                xComponent *= angularSpread;
-                yComponent *= angularSpread;
-
-                Vec3 offset = xAxis.scale(xComponent).add(yAxis.scale(yComponent));
-
+                Vec3 offset = xAxis.scale(x).add(yAxis.scale(y));
                 perturbedDir = direction.add(offset);
             }
         }

@@ -1,14 +1,182 @@
 {
+    "6.5x50mm Arisaka": {
+        "properties": {
+            "Mass": "9.0",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "type38ammo"
+        ]
+    },
+
+    "7.62x25mm Tokarev": {
+        "properties": {
+            "Mass": "5.5",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "ppshammo",
+            "tt33ammo"
+        ]
+    },
+
+    "7.62x33mm .30 Carbine": {
+        "properties": {
+            "Mass": "7.1",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "m1carbineammo"
+        ]
+    },
+
+    "7.62x54mmR 57-N-323S": {
+        "properties": {
+            "Mass": "9.6",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "dp28ammo",
+            "nagantammo"
+        ]
+    },
+
+    "7.62x63mm .30-06 Springfield M2": {
+        "properties": {
+            "Mass": "9.7",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "springfieldammo"
+        ]
+    },
+
+    "7.63x25mm Mauser": {
+        "properties": {
+            "Mass": "5.6",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "c96ammo"
+        ]
+    },
+
+    "7.7x56mmR .303 British Mk VII": {
+        "properties": {
+            "Mass": "11.3",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "brenammo30",
+            "brenammo100",
+            "vickerskammo100",
+            "leeenfieldammo"
+        ]
+    },
+
+    "7.7x58mmR Arisaka": {
+        "properties": {
+            "Mass": "11.3",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "type99ammo"
+        ]
+    },
+
+    "7.92x33mm Kurz": {
+        "properties": {
+            "Mass": "8.1",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "mp44ammo"
+        ]
+    },
+
+    "7.92x57mm Mauser s.S.-Patrone": {
+        "properties": {
+            "Mass": "12.8",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "fg42ammo",
+            "mg34ammo",
+            "mg42ammo50",
+            "mg42ammo250",
+            "kar98kammo",
+            "g43ammo"
+        ]
+    },
+
+    "8x22mm Nambu": {
+        "properties": {
+            "Mass": "6.6",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "type14ammo",
+            "type100ammo"
+        ]
+    },
+
     "9x19mm Parabellum": {
         "properties": {
             "Mass": "8.0",
-            "FallSpeed": "1.0"
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
         },
         "items": [
             "lugerAmmo",
             "mp34ammo",
             "mp40ammo",
             "stenammo"
+        ]
+    },
+
+    "11.43x23mm .45 ACP": {
+        "properties": {
+            "Mass": "14.9",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "thompsonammo",
+            "m3A1ammo",
+            "coltammo"
+        ]
+    },
+
+    "11.6x19mmR .455 Webley": {
+        "properties": {
+            "Mass": "17.2",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "webleyammo"
+        ]
+    },
+
+    "12.7x99mm .50 BMG": {
+        "properties": {
+            "Mass": "42.0",
+            "FallSpeed": "1.0",
+            "FlakParticles": 0
+        },
+        "items": [
+            "50calammo"
         ]
     }
 }

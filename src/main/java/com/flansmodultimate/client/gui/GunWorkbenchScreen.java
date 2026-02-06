@@ -43,8 +43,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     private static final int BAR_MIN_PX = 2;
     private static final float DMG_MIN = 1F;
     private static final float DMG_MAX = 25F;
-    private static final float DISP_MIN = 0.2F;
-    private static final float DISP_MAX = 3F;
+    private static final float DISP_MIN = 0.01F;
+    private static final float DISP_MAX = 1F;
     private static final float RECOIL_MIN = 1F;
     private static final float RECOIL_MAX = 20F;
     private static final float REL_MIN = 1F;

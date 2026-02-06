@@ -1,4 +1,5 @@
 General:
+- Remove Crosshair (configurable)
 - Change Fire Mode
 - Tools
 - Armor & Gun Boxes
@@ -53,7 +54,9 @@ Items:
 - BulletItem - Done
 - CustomArmorItem - Done
 - GrenadeItem - Done
-- GunItem - Done
+- GunItem - WIP
+- PartItem - WIP
+- ToolItem - WIP
 
 Types:
 - ArmorType - Done
@@ -61,8 +64,10 @@ Types:
 - BulletType - Done
 - DriveableType - TODO
 - GrenadeType - Done
-- GunType - WIP
-- InfoType - Done
+- GunType - Done
+- InfoType - WIP
+- PartType - Done
+- ToolType - Done
 
 Other Classes:
 - PlayerHandler - TODO
