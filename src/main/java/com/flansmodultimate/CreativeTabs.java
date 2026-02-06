@@ -91,21 +91,12 @@ public final class CreativeTabs
     {
         List<RegistryObject<Item>> sorted = new ArrayList<>(itemsForTab);
         Comparator<RegistryObject<Item>> cmp = Comparator
-            // 1) content pack name (case-insensitive), Flan items first
-            .comparing(
-                    (RegistryObject<Item> ro) -> getPackName(ro.get()),
-                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
-            )
-            // 2) content pack type (EnumType)
-            .thenComparing(
-                    ro -> getPackType(ro.get()),
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            )
+            // 1) content pack name (case-insensitive)
+            .comparing((RegistryObject<Item> ro) -> getPackName(ro.get()), Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
+            // 2) item type (EnumType)
+            .thenComparing(ro -> getPackType(ro.get()), Comparator.nullsFirst(Comparator.naturalOrder()))
             // 3) registry name (alphabetical)
-            .thenComparing(
-                    ro -> getRegistryName(ro.get()),
-                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
-            );
+            .thenComparing(ro -> getRegistryName(ro.get()), Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         sorted.sort(cmp);
         return sorted;
     }

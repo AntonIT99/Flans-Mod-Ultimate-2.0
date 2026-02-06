@@ -232,6 +232,7 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
+        generalItemList.addAll(FlansMod.getItems(EnumType.PARTS));
         generalItemList.addAll(FlansMod.getItems(EnumType.TOOLS));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
