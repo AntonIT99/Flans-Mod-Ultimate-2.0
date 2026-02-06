@@ -52,7 +52,10 @@
             "FlakParticles": 0
         },
         "items": [
-            "springfieldammo"
+            "springfieldammo",
+            "barammo",
+            "browningammo",
+            "m1garandammo"
         ]
     },
 
