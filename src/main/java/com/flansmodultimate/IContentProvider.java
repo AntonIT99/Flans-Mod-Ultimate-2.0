@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
+import static java.util.UUID.randomUUID;
+
 public interface IContentProvider
 {
     String getName();
@@ -16,13 +18,28 @@ public interface IContentProvider
 
     void update(String name, Path path);
 
+    default Path getTempRoot()
+    {
+        if (!isArchive())
+            throw new IllegalArgumentException("Content Pack is not an Archive");
+
+        Path archive = getPath().toAbsolutePath().normalize();
+        Path minecraftDir = archive.getParent().getParent();
+        return minecraftDir.resolve(".flantemp");
+    }
+
     default Path getExtractedPath()
     {
-        if (isArchive())
-        {
-            return getPath().getParent().resolve(FilenameUtils.getBaseName(getName()));
-        }
-        throw new IllegalArgumentException("Content Pack is not an Archive");
+        if (!isArchive())
+            throw new IllegalArgumentException("Content Pack is not an Archive");
+
+        String packBase = FilenameUtils.getBaseName(getName());
+        return getTempRoot().resolve(packBase + "__" + getRunId());
+    }
+
+    default String getRunId()
+    {
+        return randomUUID().toString();
     }
 
     default Path getAssetsPath()

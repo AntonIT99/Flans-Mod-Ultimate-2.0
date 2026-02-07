@@ -12,16 +12,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -72,7 +79,7 @@ public class FileUtils
         // Case-only rename? Use a temp hop.
         if (srcName.equalsIgnoreCase(dstName) && !srcName.equals(dstName))
         {
-            Path tmp = src.resolveSibling(srcName + "." + java.util.UUID.randomUUID() + ".tmp");
+            Path tmp = src.resolveSibling(srcName + "." + UUID.randomUUID() + ".tmp");
             Files.move(src, tmp, StandardCopyOption.REPLACE_EXISTING);
             Files.move(tmp, dst, StandardCopyOption.REPLACE_EXISTING);
         }
@@ -232,12 +239,23 @@ public class FileUtils
 
     public static void extractArchive(Path archivePath, Path outputDir)
     {
+        Path extractingMarker = outputDir.resolve("EXTRACTING");
+        Path readyMarker = outputDir.resolve("READY");
+
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(archivePath)))
         {
+            Files.createDirectories(outputDir);
+            Files.deleteIfExists(readyMarker);
+            Files.writeString(extractingMarker, "extracting " + Instant.now(), StandardCharsets.UTF_8);
+
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null)
             {
-                Path outPath = outputDir.resolve(entry.getName());
+                Path outPath = outputDir.resolve(entry.getName()).normalize();
+
+                // Zip Slip protection
+                if (!outPath.startsWith(outputDir))
+                    throw new IOException("Blocked zip entry (zip slip): " + entry.getName());
 
                 if (entry.isDirectory())
                 {
@@ -252,6 +270,10 @@ public class FileUtils
                     }
                 }
             }
+
+            // mark success
+            Files.deleteIfExists(extractingMarker);
+            Files.writeString(readyMarker, "ready " + Instant.now(), StandardCharsets.UTF_8);
         }
         catch (IOException e)
         {
@@ -261,13 +283,20 @@ public class FileUtils
 
     public static void repackArchive(IContentProvider provider)
     {
+        Path target = provider.isJarFile()
+            ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ".zip")
+            : provider.getPath();
+
+        Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
+        Path bak = target.resolveSibling(target.getFileName() + ".bak");
+
         try
         {
-            Files.deleteIfExists(provider.getPath());
-            Path archivePath = provider.isJarFile() ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ".zip") : provider.getPath();
-            Files.deleteIfExists(archivePath);
+            // Ensure tmp from previous crash doesn't mess us up
+            Files.deleteIfExists(tmp);
 
-            URI uri = URI.create("jar:" + archivePath.toUri());
+            // 1) Write new archive to tmp (NOT to target)
+            URI uri = URI.create("jar:" + tmp.toUri());
             try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true")))
             {
                 try (Stream<Path> stream = Files.walk(provider.getExtractedPath()))
@@ -276,8 +305,11 @@ public class FileUtils
                     {
                         try
                         {
-                            Path relativePath = provider.getExtractedPath().relativize(source);
-                            Path zipEntry = zipFs.getPath("/").resolve(relativePath.toString());
+                            Path rel = provider.getExtractedPath().relativize(source);
+                            if (rel.toString().isEmpty())
+                                return;
+
+                            Path zipEntry = zipFs.getPath("/").resolve(rel.toString());
 
                             if (Files.isDirectory(source))
                             {
@@ -291,20 +323,72 @@ public class FileUtils
                         }
                         catch (IOException e)
                         {
-                            FlansMod.log.error("Error repacking archive {}", provider.getExtractedPath(), e);
+                            // Re-throw so we fail the repack and do NOT replace the original archive
+                            throw new RuntimeException(e);
                         }
                     });
                 }
             }
+            catch (RuntimeException re)
+            {
+                // unwrap and rethrow as IOException for consistent error handling
+                Throwable cause = re.getCause();
+                if (cause instanceof IOException ioe)
+                    throw ioe;
+                throw re;
+            }
 
+            // 2) Swap: target -> bak, tmp -> target (atomic when supported)
+            atomicReplace(tmp, target, bak);
+
+            // 3) If we created a .zip from a .jar, update provider
             if (provider.isJarFile())
-                provider.update(FilenameUtils.getBaseName(provider.getName()) + ".zip", archivePath);
+                provider.update(FilenameUtils.getBaseName(provider.getName()) + ".zip", target);
 
+            // 4) Cleanup extracted dir (only after successful commit)
             deleteRecursively(provider.getExtractedPath());
+
+            // 5) remove backup after success
+            Files.deleteIfExists(bak);
         }
         catch (IOException e)
         {
             FlansMod.log.error("Error repacking archive {}", provider.getExtractedPath(), e);
+            // Best-effort cleanup of tmp (leave bak intact for recovery)
+            try
+            {
+                Files.deleteIfExists(tmp);
+            }
+            catch (IOException ignored)
+            {
+                // Ignored
+            }
+        }
+    }
+
+    private static void atomicReplace(Path tmp, Path target, Path backup) throws IOException
+    {
+        // Move target to backup (best effort)
+        if (Files.exists(target))
+        {
+            try
+            {
+                Files.move(target, backup, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            }
+            catch (AtomicMoveNotSupportedException e)
+            {
+                Files.move(target, backup, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
+        // Move tmp into place
+        try
+        {
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+        catch (AtomicMoveNotSupportedException e)
+        {
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -330,6 +414,107 @@ public class FileUtils
         catch (IOException e)
         {
             FlansMod.log.error("Failed to delete {}", dir, e);
+        }
+    }
+
+    public static void cleanupFlanTempOnStartup(Iterable<IContentProvider> providers)
+    {
+        // tune these to taste
+        Duration extractingMaxAge = Duration.ofMinutes(15);
+        Duration readyMaxAge = Duration.ofHours(24);
+
+        Set<Path> roots = new HashSet<>();
+        for (IContentProvider p : providers)
+        {
+            if (p != null && p.isArchive())
+            {
+                try
+                {
+                    roots.add(p.getTempRoot());
+                }
+                catch (Exception ignored)
+                {
+                    // Ignored
+                }
+            }
+        }
+
+        for (Path root : roots)
+        {
+            cleanupTempRoot(root, extractingMaxAge, readyMaxAge);
+        }
+    }
+
+    private static void cleanupTempRoot(Path tempRoot, Duration extractingMaxAge, Duration readyMaxAge)
+    {
+        if (tempRoot == null || Files.notExists(tempRoot))
+            return;
+
+        try (Stream<Path> entries = Files.list(tempRoot))
+        {
+            Instant now = Instant.now();
+
+            entries.filter(Files::isDirectory).forEach(dir ->
+            {
+                Path extracting = dir.resolve("EXTRACTING");
+                Path ready = dir.resolve("READY");
+
+                try
+                {
+                    if (Files.exists(extracting))
+                    {
+                        java.time.Instant t = Files.getLastModifiedTime(extracting).toInstant();
+                        if (t.plus(extractingMaxAge).isBefore(now))
+                        {
+                            FlansMod.log.warn("Cleaning stale temp extraction dir {}", dir);
+                            deleteRecursively(dir);
+                        }
+                        return;
+                    }
+
+                    if (Files.exists(ready))
+                    {
+                        Instant t = Files.getLastModifiedTime(ready).toInstant();
+                        if (t.plus(readyMaxAge).isBefore(now))
+                        {
+                            deleteRecursively(dir);
+                        }
+                    }
+                    else
+                    {
+                        // No marker? Treat as suspicious; delete if old enough (use dir mtime)
+                        Instant t = Files.getLastModifiedTime(dir).toInstant();
+                        if (t.plus(readyMaxAge).isBefore(now))
+                        {
+                            deleteRecursively(dir);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    FlansMod.log.debug("Temp cleanup skipped for {}: {}", dir, e.toString());
+                }
+            });
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.debug("Failed to list temp root {}: {}", tempRoot, e.toString());
+        }
+    }
+
+    public static void prepareFreshExtractionDir(Path outputDir)
+    {
+        try
+        {
+            if (Files.exists(outputDir))
+            {
+                deleteRecursively(outputDir);
+            }
+            Files.createDirectories(outputDir);
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Failed to prepare extraction dir {}", outputDir, e);
         }
     }
 

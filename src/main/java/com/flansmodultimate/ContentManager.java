@@ -129,6 +129,8 @@ public class ContentManager
 
     public static void readContentPacks()
     {
+        FileUtils.cleanupFlanTempOnStartup(contentPacks);
+
         for (IContentProvider provider : contentPacks)
         {
             long startTime = System.currentTimeMillis();
@@ -166,6 +168,7 @@ public class ContentManager
 
             if (shouldUnpackArchive(provider, preLoadAssets))
             {
+                FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
                 FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
                 archiveExtracted = true;
             }

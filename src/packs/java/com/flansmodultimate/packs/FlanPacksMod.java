@@ -1,10 +1,8 @@
 package com.flansmodultimate.packs;
 
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -26,8 +24,8 @@ import java.util.jar.JarFile;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-@Mod(PacksMod.MOD_ID)
-public class PacksMod
+@Mod(FlanPacksMod.MOD_ID)
+public class FlanPacksMod
 {
     public static final String MOD_ID = "flansmodultimate_packs";
     public static final Logger log = LogUtils.getLogger();
@@ -35,13 +33,7 @@ public class PacksMod
     private static final String FLAN_DIR_NAME = "flan";
     private static final String MARKER_PREFIX = ".extracted_" + MOD_ID + "_";
 
-    public PacksMod(FMLJavaModLoadingContext context)
-    {
-        IEventBus modEventBus = context.getModEventBus();
-        modEventBus.addListener(this::onConstruct);
-    }
-
-    private void onConstruct(final FMLConstructModEvent event)
+    public FlanPacksMod(FMLJavaModLoadingContext context)
     {
         if (!FMLEnvironment.production)
             return;
@@ -87,6 +79,24 @@ public class PacksMod
         }
 
         Files.writeString(markerPath, "extracted=" + version + "\n", StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    private void ensureDirectoryExists(@Nullable Path path) throws IOException
+    {
+        if (path != null)
+            Files.createDirectories(path);
+    }
+
+    private static Optional<String> getModVersion()
+    {
+        return ModList.get()
+            .getModContainerById(MOD_ID)
+            .map(c -> c.getModInfo().getVersion().toString());
+    }
+
+    private static String makeFilenameSafe(String s)
+    {
+        return s.replaceAll("[^A-Za-z0-9._-]", "_");
     }
 
     private boolean shouldProcessEntry(JarEntry entry)
@@ -170,23 +180,5 @@ public class PacksMod
             }
         }
         return crc.getValue();
-    }
-
-    private void ensureDirectoryExists(@Nullable Path path) throws IOException
-    {
-        if (path != null)
-            Files.createDirectories(path);
-    }
-
-    private static Optional<String> getModVersion()
-    {
-        return ModList.get()
-            .getModContainerById(MOD_ID)
-            .map(c -> c.getModInfo().getVersion().toString());
-    }
-
-    private static String makeFilenameSafe(String s)
-    {
-        return s.replaceAll("[^A-Za-z0-9._-]", "_");
     }
 }
