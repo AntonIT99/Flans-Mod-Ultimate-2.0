@@ -132,6 +132,6 @@ public final class SoundHelper
 
     public static float getVolumeFromRange(float range, boolean silenced)
     {
-        return silenced ? range / 32F : range / 16F;
+        return silenced ? range / 8F : range / 4F;
     }
 }
