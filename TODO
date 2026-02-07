@@ -1,5 +1,4 @@
 General:
-- Remove Crosshair (configurable)
 - Change Fire Mode
 - Tools
 - Armor & Gun Boxes
@@ -8,6 +7,8 @@ General:
 - Recipes
 - Check for content packs put by mistake in mods folder?
 - Render Attachment Item in 3D?
+
+Sounds:
 - Use level.playSound() instead of sound packets when possible?
 - Assets/Sounds Priority list?
 
