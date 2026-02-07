@@ -112,9 +112,8 @@ public class PacksMod
         if (Files.exists(outputPath))
         {
             long entrySize = entry.getSize();
-            long entryCrc = entry.getCrc();
+            long entryCrc  = entry.getCrc();
 
-            // Only do comparison if jar provides both size and crc
             if (entrySize >= 0 && entryCrc >= 0)
             {
                 long fileSize = Files.size(outputPath);
@@ -124,10 +123,27 @@ public class PacksMod
                     long fileCrc = crc32OfFile(outputPath);
 
                     if (fileCrc == entryCrc)
+                    {
                         shouldExtract = false;
+                        log.debug("Up-to-date, skipping extract: {} -> {}", entry.getName(), outputPath);
+                    }
+                    else
+                        log.debug("CRC differs, will extract: {} -> {}", entry.getName(), outputPath);
+                }
+                else
+                {
+                    log.debug("Size differs (disk={} jar={}), will extract: {} -> {}",
+                        fileSize, entrySize, entry.getName(), outputPath);
                 }
             }
+            else
+            {
+                log.debug("Jar entry has unknown size/crc (size={}, crc={}), will extract: {} -> {}",
+                    entrySize, entryCrc, entry.getName(), outputPath);
+            }
         }
+        else
+            log.debug("Missing on disk, will extract: {} -> {}", entry.getName(), outputPath);
 
         if (shouldExtract)
         {
@@ -135,6 +151,9 @@ public class PacksMod
             {
                 Files.copy(freshInput, outputPath, StandardCopyOption.REPLACE_EXISTING);
             }
+
+            long written = Files.size(outputPath);
+            log.info("Extracted: {} -> {} ({} bytes)", entry.getName(), outputPath, written);
         }
     }
 
