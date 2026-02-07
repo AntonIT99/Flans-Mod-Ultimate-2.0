@@ -54,21 +54,18 @@ description='''Unofficial continuation of Flan's Mod to load content packs desig
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT, or SERVER
     side="BOTH"
-# Here's another dependency
 [[dependencies.flansmodultimate]]
     modId="minecraft"
     mandatory=true
-    # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.flansmodultimate]]
     modId="flansmodultimate_packs"
     mandatory=false
-    # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange=""
-    ordering="BEFORE"
-    side="SERVER"
+    versionRange="[1.0,)"
+    ordering="AFTER"
+    side="BOTH"
 
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
