@@ -180,20 +180,20 @@ public class PlayerHitbox
 
         if (type == EnumHitboxType.HEAD)
         {
-            damageModifier *= (float) ModCommonConfig.get().headshotDamageModifier();
+            damageModifier *= ModCommonConfig.get().headshotDamageModifier();
             lastHitHeadshot = true;
         }
         else if (type == EnumHitboxType.BODY)
         {
-            damageModifier *= (float) ModCommonConfig.get().chestshotDamageModifier();
+            damageModifier *= ModCommonConfig.get().chestshotDamageModifier();
         }
         else if (type == EnumHitboxType.LEGS)
         {
-            damageModifier *= (float) ModCommonConfig.get().legshotModifier();
+            damageModifier *= ModCommonConfig.get().legshotModifier();
         }
         else if (type == EnumHitboxType.LEFTARM || type == EnumHitboxType.RIGHTARM)
         {
-            damageModifier *= (float) ModCommonConfig.get().armshotDamageModifier();
+            damageModifier *= ModCommonConfig.get().armshotDamageModifier();
         }
 
         switch(type)

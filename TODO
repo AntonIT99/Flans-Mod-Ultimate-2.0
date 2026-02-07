@@ -1,6 +1,5 @@
 General:
 - Remove Crosshair (configurable)
-- Dispersion global modifier
 - Change Fire Mode
 - Tools
 - Armor & Gun Boxes
@@ -11,7 +10,6 @@ General:
 - Render Attachment Item in 3D?
 - Use level.playSound() instead of sound packets when possible?
 - Assets/Sounds Priority list?
-- Make some new creative tabs
 
 Features:
 - Feature: APHEMixRatio, APMass, HEMass

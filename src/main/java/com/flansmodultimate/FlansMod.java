@@ -232,14 +232,15 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
-        generalItemList.addAll(FlansMod.getItems(EnumType.PARTS));
-        generalItemList.addAll(FlansMod.getItems(EnumType.TOOLS));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET, EnumType.GRENADE)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_grenades", FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumType.TOOLS), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumType.PARTS), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
     }
 
     private static void registerSounds()

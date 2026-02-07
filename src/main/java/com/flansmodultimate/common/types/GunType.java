@@ -125,8 +125,9 @@ public class GunType extends PaintableType implements IScope
     /**
      * The amount that bullets spread out when fired from this gun
      */
-    @Getter @Setter
+    @Setter
     protected float bulletSpread;
+    protected boolean readDispersion;
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
     protected float sneakSpreadModifier = 0.63F;
     protected float sprintSpreadModifier = 1.75F;
@@ -638,7 +639,10 @@ public class GunType extends PaintableType implements IScope
         bulletSpread = readValue("Accuracy", bulletSpread, file);
         bulletSpread = readValue("Spread", bulletSpread, file);
         if (hasValueForConfigField("Dispersion", file))
+        {
             bulletSpread = readValue("Dispersion", 0F, file) * Mth.DEG_TO_RAD / ShootingHelper.ANGULAR_SPREAD_FACTOR;
+            readDispersion = true;
+        }
         spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
         adsSpreadModifier = readValue("ADSSpreadModifier", adsSpreadModifier, file);
         adsSpreadModifierShotgun = readValue("ADSSpreadModifierShotgun", adsSpreadModifierShotgun, file);
@@ -1178,7 +1182,7 @@ public class GunType extends PaintableType implements IScope
                 stackDamage *= attachment.damageMultiplier;
         }
 
-        return (float) (stackDamage * ModCommonConfig.get().gunDamageModifier());
+        return stackDamage * ModCommonConfig.get().gunDamageModifier();
     }
 
     /**
@@ -1202,7 +1206,7 @@ public class GunType extends PaintableType implements IScope
         else if (sneaking)
             stackSpread *= sneakSpreadModifier;
 
-        return stackSpread;
+        return stackSpread * (readDispersion ? ModCommonConfig.get().gunDispersionModifier() : ModCommonConfig.get().gunAccuracySpreadModifier());
     }
 
     public float getSpread(@Nullable ItemStack stack)
@@ -1273,7 +1277,7 @@ public class GunType extends PaintableType implements IScope
             stackRecoil *= recoilSprintingMultiplier;
         }
 
-        return (float) (stackRecoil * ModCommonConfig.get().gunRecoilModifier());
+        return stackRecoil * ModCommonConfig.get().gunRecoilModifier();
     }
 
     /**
@@ -1302,7 +1306,7 @@ public class GunType extends PaintableType implements IScope
             stackRecoilYaw *= recoilSprintingMultiplierYaw;
         }
 
-        return (float) (stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier());
+        return stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier();
     }
 
     public float getDisplayVerticalRecoil(ItemStack stack)
@@ -1312,7 +1316,7 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
 
-        return (float) (stackRecoil * ModCommonConfig.get().gunRecoilModifier());
+        return stackRecoil * ModCommonConfig.get().gunRecoilModifier();
     }
 
     public float getDisplayHorizontalRecoil(ItemStack stack)
@@ -1322,7 +1326,7 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
 
-        return (float) (stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier());
+        return stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier();
     }
 
     /**

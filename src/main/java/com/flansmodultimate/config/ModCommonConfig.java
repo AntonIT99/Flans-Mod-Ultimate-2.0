@@ -22,7 +22,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
-    private static final ForgeConfigSpec.DoubleValue BONUS_REGEN_FOOD_LIMIT;
+    private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
 
     private static final ForgeConfigSpec.DoubleValue HEADSHOT_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue CHESTSHOT_DAMAGE_MODIFIER;
@@ -37,6 +37,8 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue GUN_RECOIL_MODIFIER;
+    private static final ForgeConfigSpec.DoubleValue GUN_DISPERSION_MODIFIER;
+    private static final ForgeConfigSpec.DoubleValue GUN_ACCURACY_SPREAD_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER;
     private static final ForgeConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN;
     private static final ForgeConfigSpec.BooleanValue CANCEL_RELOAD_ON_WEAPON_SWITCH;
@@ -86,7 +88,7 @@ public final class ModCommonConfig
             .defineInRange("bonusRegenTickDelay", 80, 0, 1000);
         BONUS_REGEN_FOOD_LIMIT = builder
             .comment("Amount of food required to activate this regen, vanilla is 18")
-            .defineInRange("bonusRegenFoodLimit", 18.0, 0.0, 20.0);
+            .defineInRange("bonusRegenFoodLimit", 18, 0, 20);
         builder.pop();
 
         builder.push("Damage Settings");
@@ -129,6 +131,12 @@ public final class ModCommonConfig
         GUN_RECOIL_MODIFIER = builder
             .comment("All gun recoil will be modified by this amount")
             .defineInRange("gunRecoilModifier", 1.0, 0.0, 100.0);
+        GUN_DISPERSION_MODIFIER = builder
+            .comment("All gun dispersion will be modified by this amount (only applies to 'Dispersion')")
+            .defineInRange("gunDispersionModifier", 1.0, 0.0, 100.0);
+        GUN_ACCURACY_SPREAD_MODIFIER = builder
+            .comment("All gun accuracy / spread will be modified by this amount (applies to 'Accuracy' and 'Spread')")
+            .defineInRange("gunAccuracySpreadModifier", 1.0, 0.0, 100.0);
         DEFAULT_ADS_SPREAD_MULTIPLIER = builder
             .comment("Modifier for spread when the player is aiming.")
             .defineInRange("defaultADSSpreadMultiplier", 0.2, 0.0, 10.0);
@@ -218,21 +226,23 @@ public final class ModCommonConfig
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
 
-            HEADSHOT_DAMAGE_MODIFIER.get(),
-            CHESTSHOT_DAMAGE_MODIFIER.get(),
-            ARMSHOT_DAMAGE_MODIFIER.get(),
-            LEGSHOT_MODIFIER.get(),
-            VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get(),
+            HEADSHOT_DAMAGE_MODIFIER.get().floatValue(),
+            CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(),
+            ARMSHOT_DAMAGE_MODIFIER.get().floatValue(),
+            LEGSHOT_MODIFIER.get().floatValue(),
+            VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(),
 
             BREAKABLE_ARMOR.get(),
             DEFAULT_ARMOR_DURABILITY.get(),
             DEFAULT_ARMOR_ENCHANTABILITY.get(),
             ENABLE_OLD_ARMOR_RATIO_SYSTEM.get(),
 
-            GUN_DAMAGE_MODIFIER.get(),
-            GUN_RECOIL_MODIFIER.get(),
-            DEFAULT_ADS_SPREAD_MULTIPLIER.get(),
-            DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get(),
+            GUN_DAMAGE_MODIFIER.get().floatValue(),
+            GUN_RECOIL_MODIFIER.get().floatValue(),
+            GUN_DISPERSION_MODIFIER.get().floatValue(),
+            GUN_ACCURACY_SPREAD_MODIFIER.get().floatValue(),
+            DEFAULT_ADS_SPREAD_MULTIPLIER.get().floatValue(),
+            DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get().floatValue(),
             CANCEL_RELOAD_ON_WEAPON_SWITCH.get(),
             COMBINE_AMMO_ON_RELOAD.get(),
             AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(),

@@ -13,23 +13,25 @@ public record CommonConfigSnapshot(
     boolean explosionsBreakBlocks,
     int bonusRegenAmount,
     int bonusRegenTickDelay,
-    double bonusRegenFoodLimit,
+    int bonusRegenFoodLimit,
 
-    double headshotDamageModifier,
-    double chestshotDamageModifier,
-    double armshotDamageModifier,
-    double legshotModifier,
-    double vehicleWheelSeatExplosionModifier,
+    float headshotDamageModifier,
+    float chestshotDamageModifier,
+    float armshotDamageModifier,
+    float legshotModifier,
+    float vehicleWheelSeatExplosionModifier,
 
     int breakableArmor,
     int defaultArmorDurability,
     int defaultArmorEnchantability,
     boolean enableOldArmorRatioSystem,
 
-    double gunDamageModifier,
-    double gunRecoilModifier,
-    double defaultADSSpreadMultiplier,
-    double defaultADSSpreadMultiplierShotgun,
+    float gunDamageModifier,
+    float gunRecoilModifier,
+    float gunDispersionModifier,
+    float gunAccuracySpreadModifier,
+    float defaultADSSpreadMultiplier,
+    float defaultADSSpreadMultiplierShotgun,
     boolean cancelReloadOnWeaponSwitch,
     boolean combineAmmoOnReload,
     boolean ammoToUpperInventoryOnReload,
@@ -65,23 +67,25 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
-        buf.writeDouble(s.bonusRegenFoodLimit);
+        buf.writeVarInt(s.bonusRegenFoodLimit);
 
-        buf.writeDouble(s.headshotDamageModifier);
-        buf.writeDouble(s.chestshotDamageModifier);
-        buf.writeDouble(s.armshotDamageModifier);
-        buf.writeDouble(s.legshotModifier);
-        buf.writeDouble(s.vehicleWheelSeatExplosionModifier);
+        buf.writeFloat(s.headshotDamageModifier);
+        buf.writeFloat(s.chestshotDamageModifier);
+        buf.writeFloat(s.armshotDamageModifier);
+        buf.writeFloat(s.legshotModifier);
+        buf.writeFloat(s.vehicleWheelSeatExplosionModifier);
 
         buf.writeVarInt(s.breakableArmor);
         buf.writeVarInt(s.defaultArmorDurability);
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.enableOldArmorRatioSystem);
 
-        buf.writeDouble(s.gunDamageModifier);
-        buf.writeDouble(s.gunRecoilModifier);
-        buf.writeDouble(s.defaultADSSpreadMultiplier);
-        buf.writeDouble(s.defaultADSSpreadMultiplierShotgun);
+        buf.writeFloat(s.gunDamageModifier);
+        buf.writeFloat(s.gunRecoilModifier);
+        buf.writeFloat(s.gunDispersionModifier);
+        buf.writeFloat(s.gunAccuracySpreadModifier);
+        buf.writeFloat(s.defaultADSSpreadMultiplier);
+        buf.writeFloat(s.defaultADSSpreadMultiplierShotgun);
         buf.writeBoolean(s.cancelReloadOnWeaponSwitch);
         buf.writeBoolean(s.combineAmmoOnReload);
         buf.writeBoolean(s.ammoToUpperInventoryOnReload);
@@ -118,23 +122,25 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readVarInt(),
             buf.readVarInt(),
-            buf.readDouble(),
+            buf.readVarInt(),
 
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
 
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readBoolean(),
 
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

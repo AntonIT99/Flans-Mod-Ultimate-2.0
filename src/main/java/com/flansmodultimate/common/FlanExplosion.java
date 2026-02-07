@@ -354,12 +354,12 @@ public class FlanExplosion extends Explosion
             if (e instanceof Wheel wheel)
             {
                 proxy = wheel.getDriveable();
-                extra *= (float) ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
+                extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
             }
             else if (e instanceof Seat seat)
             {
                 proxy = seat.getDriveable();
-                extra *= (float) ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
+                extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
             }
 
             float mult = damage.getDamageAgainstEntity(proxy);

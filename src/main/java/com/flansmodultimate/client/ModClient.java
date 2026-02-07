@@ -286,9 +286,9 @@ public class ModClient
         float spread = gunItem.getConfigType().getSpread(gunStack, sneaking, sprinting);
 
         if (gunItem.getConfigType().getNumBullets() == 1)
-            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();
+            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();
         else
-            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? (float) ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
+            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
 
         PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
