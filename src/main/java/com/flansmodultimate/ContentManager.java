@@ -202,6 +202,8 @@ public class ContentManager
             String loadingTimeMs = String.format("%,d", endTime - startTime);
             FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), loadingTimeMs);
         }
+
+        FileUtils.deleteDirectoryIfEmpty(flanFolder.getParent().resolve(".flantemp"));
     }
 
     private static void loadFlanFolder()

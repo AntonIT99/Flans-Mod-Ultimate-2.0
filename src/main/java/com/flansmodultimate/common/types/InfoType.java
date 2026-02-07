@@ -247,6 +247,9 @@ public abstract class InfoType
                 // Handle 1.12.2 package format
                 if (!Files.exists(classFile))
                 {
+                    if (modelNameSplit[0].equals("jamespostmodernweapons"))
+                        modelNameSplit[0] = "modernweapons";
+
                     modelClassName = "com." + FlansMod.FLANSMOD_ID + "." + modelNameSplit[0] + ".client.model.Model" + modelNameSplit[1];
                     Path redirectFile = fs.map(fileSystem -> fileSystem.getPath("redirect.info")).orElseGet(() -> contentPack.getPath().resolve("redirect.info"));
 

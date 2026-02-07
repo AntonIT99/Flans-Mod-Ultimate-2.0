@@ -419,6 +419,31 @@ public class FileUtils
         }
     }
 
+    public static void deleteDirectoryIfEmpty(@Nullable Path dir)
+    {
+        if (dir == null)
+            return;
+
+        try {
+            if (!Files.exists(dir) || !Files.isDirectory(dir))
+                return;
+
+            try (Stream<Path> s = Files.list(dir))
+            {
+                if (s.findAny().isPresent())
+                {
+                    return; // not empty
+                }
+            }
+
+            Files.delete(dir);
+        }
+        catch (IOException ignored)
+        {
+            // Ignored
+        }
+    }
+
     public static void cleanupFlanTempOnStartup(Iterable<IContentProvider> providers)
     {
         // tune these to taste
