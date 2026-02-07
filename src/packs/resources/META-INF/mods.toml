@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="flansmodultimate_packs"
-version="1.0"
+version="1.0-beta"
 displayName="Content Packs for Flan's Mod Ultimate 2"
 authors="Wolff"
 displayTest = "NONE"

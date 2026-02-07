@@ -265,7 +265,7 @@ def copyFlanPacks = tasks.register('copyFlanPacks') {
 def packsJar = tasks.register('packsJar', Jar) {
     dependsOn tasks.named('copyFlanPacks')
 
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Packs")
+    archiveBaseName.set("[$minecraft_version] [$mod_name_packs]")
     archiveVersion.set(packs_version)
 
     from sourceSets.packs.output
