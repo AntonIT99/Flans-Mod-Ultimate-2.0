@@ -7,6 +7,7 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +45,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected String shortname = StringUtils.EMPTY;
     protected Vec3 velocity = new Vec3(0, 0, 0);
     /** Stop repeat detonations */
+    @Getter
     protected boolean detonated;
 
     protected Shootable(EntityType<?> entityType, Level level)

@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.ToolType;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -86,19 +88,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
 
         // Remote detonator
         if (configType.isRemote())
-        {
-            if (!level.isClientSide)
-            {
-                //TODO: implement
-                /*boolean didDetonate = RemoteExplosiveHooks.tryDetonateOne(player);
-                if (didDetonate)
-                {
-                    consumeUse(stack, player);
-                    return InteractionResultHolder.consume(stack);
-                }*/
-            }
-            return InteractionResultHolder.pass(stack);
-        }
+            return doDetonateRemoteExplosives(level, player, stack);
 
         Vec3 start = player.getEyePosition();
         Vec3 dir = player.getViewVector(1.0f);
@@ -149,6 +139,33 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         }
 
         return InteractionResultHolder.pass(stack);
+    }
+
+    protected InteractionResultHolder<ItemStack> doDetonateRemoteExplosives(Level level, Player player, ItemStack stack)
+    {
+        if (level.isClientSide)
+            return InteractionResultHolder.pass(stack);
+
+        PlayerData data = PlayerData.getInstance(player);
+        if (data.getRemoteExplosives().isEmpty())
+            return InteractionResultHolder.pass(stack);
+
+        for (Grenade explosive : data.getRemoteExplosives())
+        {
+            explosive.detonate(level);
+            if (explosive.isDetonated())
+                data.getRemoteExplosives().remove(explosive);
+        }
+
+        if (!player.getAbilities().instabuild && configType.getToolLife() > 0)
+            stack.setDamageValue(stack.getDamageValue() + 1);
+
+        if (configType.getToolLife() > 0 && configType.isDestroyOnEmpty() && stack.getDamageValue() == stack.getMaxDamage())
+        {
+            stack.shrink(1);
+            return InteractionResultHolder.consume(stack);
+        }
+        return InteractionResultHolder.success(stack);
     }
 
     private boolean hasFiniteUses()
