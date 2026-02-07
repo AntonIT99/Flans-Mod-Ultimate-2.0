@@ -238,6 +238,9 @@ public class PlayerData
         if (loopedSoundDelay > 0)
             loopedSoundDelay--;
 
+        isPrevShootKeyPressedLeft = isShootKeyPressedLeft;
+        isPrevShootKeyPressedRight = isShootKeyPressedRight;
+
         if (!player.level().isClientSide)
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
 
