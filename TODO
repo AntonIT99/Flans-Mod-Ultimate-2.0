@@ -1,7 +1,6 @@
 General:
 - Remove Crosshair (configurable)
 - Dispersion global modifier
-- Fragmentation Damage?
 - Change Fire Mode
 - Tools
 - Armor & Gun Boxes
@@ -12,6 +11,12 @@ General:
 - Render Attachment Item in 3D?
 - Use level.playSound() instead of sound packets when possible?
 - Assets/Sounds Priority list?
+- Make some new creative tabs
+
+Features:
+- Feature: APHEMixRatio, APMass, HEMass
+- Feature: set Bullet Speed in the ammo -> override gun bullet speed
+- Fragmentation Damage
 
 Bug Fixes:
 - Reload Sound positioned even for local player
@@ -88,7 +93,7 @@ TODO Content Packs:
 - Add Idle Sound to Lightsabers
 - Set Penetration?
 
-New Feature Ideas:
+Feature Ideas:
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
 - Dynamic activation of Aiming Pose

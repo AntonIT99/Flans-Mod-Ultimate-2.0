@@ -37,14 +37,12 @@ public class BewlrRoutingModel implements BakedModel
             @Override
             public BakedModel resolve(@NotNull BakedModel model, @NotNull ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed)
             {
-                boolean stackHasCustomModel = (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
-
                 BakedModel resolved = base.resolve(model, stack, level, entity, seed);
                 if (resolved == null)
                     return BewlrRoutingModel.this.delegate;
 
                 BewlrRoutingModel routingModel = (resolved instanceof BewlrRoutingModel brm) ? brm : new BewlrRoutingModel(resolved);
-                routingModel.hasCustomModel = stackHasCustomModel;
+                routingModel.hasCustomModel = (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
                 return routingModel;
             }
         };
