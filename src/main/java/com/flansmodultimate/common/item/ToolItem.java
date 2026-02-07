@@ -168,17 +168,17 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         return InteractionResultHolder.success(stack);
     }
 
-    private boolean hasFiniteUses()
+    protected boolean hasFiniteUses()
     {
         return configType.getToolLife() > 0;
     }
 
-    private boolean isDepleted(ItemStack stack)
+    protected boolean isDepleted(ItemStack stack)
     {
         return hasFiniteUses() && stack.getDamageValue() >= configType.getToolLife();
     }
 
-    private void consumeUse(ItemStack stack, Player player)
+    protected void consumeUse(ItemStack stack, Player player)
     {
         if (!hasFiniteUses())
             return;
@@ -191,7 +191,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             stack.shrink(1);
     }
 
-    private LivingEntity pickLivingTarget(Level level, Player user, Vec3 start, Vec3 end)
+    protected LivingEntity pickLivingTarget(Level level, Player user, Vec3 start, Vec3 end)
     {
         LivingEntity chosen = user;
         Vec3 delta = end.subtract(start);

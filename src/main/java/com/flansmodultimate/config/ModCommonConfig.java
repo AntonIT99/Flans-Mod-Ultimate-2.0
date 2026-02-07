@@ -19,6 +19,7 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
 
+    private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
@@ -77,6 +78,9 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Gameplay Settings");
+        DISABLE_CROSSHAIR_FOR_GUNS = builder
+            .comment("Disables crosshair for guns except melee weapons")
+            .define("disableCrosshairForGuns", true);
         EXPLOSIONS_BREAK_BLOCKS = builder
             .comment("Whether explosions can break blocks")
             .define("explosionBreakBlocks", true);
@@ -221,6 +225,7 @@ public final class ModCommonConfig
 
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(),
 
+            DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),

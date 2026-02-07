@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -72,9 +73,19 @@ public final class ModUtils
         return path.contains("plane");
     }
 
-    public static boolean hasGunItemInHand(LivingEntity living)
+    public static boolean hasGunItemInHands(LivingEntity living)
     {
         return living.getMainHandItem().getItem() instanceof GunItem || living.getOffhandItem().getItem() instanceof GunItem;
+    }
+
+    public static List<GunItem> getGunItemsInHands(LivingEntity living)
+    {
+        List<GunItem> list = new ArrayList<>();
+        if (living.getMainHandItem().getItem() instanceof GunItem gunItem)
+            list.add(gunItem);
+        if (living.getOffhandItem().getItem() instanceof GunItem gunItem)
+            list.add(gunItem);
+        return list;
     }
 
     //TODO: add exceptions for other entities of this mod that should not be hit by bullets

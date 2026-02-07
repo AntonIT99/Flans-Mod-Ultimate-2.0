@@ -10,6 +10,7 @@ public record CommonConfigSnapshot(
 
     boolean addAllPaintjobsToCreative,
 
+    boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
     int bonusRegenAmount,
     int bonusRegenTickDelay,
@@ -64,6 +65,7 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.addAllPaintjobsToCreative);
 
+        buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
@@ -119,6 +121,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readVarInt(),
             buf.readVarInt(),

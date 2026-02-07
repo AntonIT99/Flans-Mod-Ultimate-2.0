@@ -17,8 +17,10 @@ import com.flansmodultimate.common.raytracing.EnumHitboxType;
 import com.flansmodultimate.common.raytracing.PlayerHitbox;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestDismount;
+import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -116,9 +118,13 @@ public final class ClientEventHandler
     public static void onPreRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
     {
         Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null)
+            return;
 
-        // Remove crosshairs if looking down the sights of a gun
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type() && ModClient.getCurrentScope() != null)
+        // Remove crosshairs for config option or if looking down the sights of a gun
+        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
+            && (ModClient.getCurrentScope() != null || (ModCommonConfig.get().disableCrosshairForGuns() && ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee()))))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();
@@ -229,7 +235,7 @@ public final class ClientEventHandler
     {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null || player.isShiftKeyDown())
+        if (player == null || (player.isShiftKeyDown() && event.isUseItem()))
             return;
 
         // Block all interactions unless it is 'use item' to dismount deployable guns
