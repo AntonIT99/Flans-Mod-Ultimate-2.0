@@ -26,7 +26,7 @@ description='''Unofficial continuation of Flan's Mod to load content packs desig
 [[dependencies.flansmodultimate]]
     modId="flansmodultimate_packs"
     mandatory=false
-    versionRange="[1,)"
+    versionRange=""
     ordering="AFTER"
     side="BOTH"
 
