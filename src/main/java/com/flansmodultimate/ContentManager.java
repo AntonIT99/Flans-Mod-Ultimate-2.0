@@ -168,30 +168,29 @@ public class ContentManager
 
             if (shouldUnpackArchive(provider, preLoadAssets))
             {
+                FlansMod.log.info("Reprocessing {}...", provider.getName());
                 FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
-                FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
-                archiveExtracted = true;
+                archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
             }
 
             if (archiveExtracted || !provider.isArchive())
             {
                 createMcMeta(provider);
                 writeToAliasMappingFile(ID_ALIAS_FILE, provider,DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
-            }
 
-            // preLoadAssets -> archive extracted
-            if (preLoadAssets)
-            {
-                writeToAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(armorTextureReferences.get(provider)));
-                writeToAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(guiTextureReferences.get(provider)));
-                writeToAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(skinsTextureReferences.get(provider)));
-                createItemJsonFiles(provider);
-                createLocalization(provider);
-                copyItemIcons(provider);
-                copyTextures(provider, TEXTURES_ARMOR_FOLDER, armorTextureReferences.get(provider));
-                copyTextures(provider, TEXTURES_GUI_FOLDER, guiTextureReferences.get(provider));
-                copyTextures(provider, TEXTURES_SKINS_FOLDER, skinsTextureReferences.get(provider));
-                createSounds(provider);
+                if (preLoadAssets)
+                {
+                    writeToAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(armorTextureReferences.get(provider)));
+                    writeToAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(guiTextureReferences.get(provider)));
+                    writeToAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(skinsTextureReferences.get(provider)));
+                    createItemJsonFiles(provider);
+                    createLocalization(provider);
+                    copyItemIcons(provider);
+                    copyTextures(provider, TEXTURES_ARMOR_FOLDER, armorTextureReferences.get(provider));
+                    copyTextures(provider, TEXTURES_GUI_FOLDER, guiTextureReferences.get(provider));
+                    copyTextures(provider, TEXTURES_SKINS_FOLDER, skinsTextureReferences.get(provider));
+                    createSounds(provider);
+                }
             }
 
             if (archiveExtracted)

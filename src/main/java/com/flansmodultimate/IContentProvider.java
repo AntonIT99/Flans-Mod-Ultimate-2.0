@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import static java.util.UUID.randomUUID;
-
 public interface IContentProvider
 {
     String getName();
@@ -17,6 +15,8 @@ public interface IContentProvider
     Path getPath();
 
     void update(String name, Path path);
+
+    String getRunId();
 
     default Path getTempRoot()
     {
@@ -35,11 +35,6 @@ public interface IContentProvider
 
         String packBase = FilenameUtils.getBaseName(getName());
         return getTempRoot().resolve(packBase + "__" + getRunId());
-    }
-
-    default String getRunId()
-    {
-        return randomUUID().toString();
     }
 
     default Path getAssetsPath()

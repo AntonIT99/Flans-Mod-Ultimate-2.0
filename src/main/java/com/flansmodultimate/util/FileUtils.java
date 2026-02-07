@@ -237,7 +237,7 @@ public class FileUtils
         throw new IllegalArgumentException("Content Pack must be either a directory or a ZIP/JAR-archive");
     }
 
-    public static void extractArchive(Path archivePath, Path outputDir)
+    public static boolean extractArchive(Path archivePath, Path outputDir)
     {
         Path extractingMarker = outputDir.resolve("EXTRACTING");
         Path readyMarker = outputDir.resolve("READY");
@@ -274,10 +274,12 @@ public class FileUtils
             // mark success
             Files.deleteIfExists(extractingMarker);
             Files.writeString(readyMarker, "ready " + Instant.now(), StandardCharsets.UTF_8);
+            return true;
         }
         catch (IOException e)
         {
             FlansMod.log.error("Failed to extract archive for content pack {}", archivePath, e);
+            return false;
         }
     }
 

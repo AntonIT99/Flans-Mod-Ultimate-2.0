@@ -21,9 +21,11 @@ import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -54,6 +56,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -63,6 +67,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 
 @Mod(FlansMod.MOD_ID)
@@ -70,6 +76,7 @@ public class FlansMod
 {
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
+    public static final String PACKS_ID = "flansmodultimate_packs";
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
@@ -207,6 +214,8 @@ public class FlansMod
         entityRegistry.register(modEventBus);
         menuRegistry.register(modEventBus);
 
+        waitForPacksExtractionIfPresent();
+
         // Register Everything
         CategoryManager.loadAll();
         ContentManager.findContentInFlanFolder();
@@ -215,6 +224,36 @@ public class FlansMod
         registerCreativeModeTabs();
 
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    private static void waitForPacksExtractionIfPresent()
+    {
+        if (!ModList.get().isLoaded(PACKS_ID))
+            return;
+
+        log.info("Flan's Mod Ultimate Packs Extractor found. Waiting for extraction...");
+
+        String version = ModList.get().getModContainerById(PACKS_ID)
+            .map(c -> c.getModInfo().getVersion().toString())
+            .orElse("unknown");
+
+        String safeVersion = version.replaceAll("[^A-Za-z0-9._-]", "_");
+        Path flanDir = FMLPaths.GAMEDIR.get().resolve("flan");
+        Path marker = flanDir.resolve(".extracted_" + PACKS_ID + "_" + safeVersion + ".marker");
+
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(120); // 2 min max
+        while (!Files.exists(marker))
+        {
+            if (System.nanoTime() > deadlineNanos)
+            {
+                log.error("Timed out waiting for packs extraction marker: {}", marker);
+                return;
+            }
+            // Light sleep to avoid burning CPU
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(25));
+        }
+
+        log.info("Packs extraction marker found: {}", marker.getFileName());
     }
 
     private static void registerCreativeModeTabs()

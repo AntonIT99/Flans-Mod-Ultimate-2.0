@@ -3,12 +3,14 @@ package com.flansmodultimate;
 import lombok.Getter;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 @Getter
 public class ContentPack implements IContentProvider
 {
     private String name;
     private Path path;
+    private final UUID runId = UUID.randomUUID();
 
     public ContentPack(String name, Path path)
     {
@@ -21,6 +23,12 @@ public class ContentPack implements IContentProvider
     {
         this.name = name;
         this.path = path.toAbsolutePath().normalize();
+    }
+
+    @Override
+    public String getRunId()
+    {
+        return runId.toString();
     }
 
     @Override
