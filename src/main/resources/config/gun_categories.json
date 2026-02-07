@@ -1,0 +1,1334 @@
+{
+    "AA-12": {
+        "properties": {
+            "MuzzleVelocity": "350.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 2.00
+        },
+        "items": [
+            "aa12"
+        ]
+    },
+
+    "AAC Honey Badger": {
+        "properties": {
+            "MuzzleVelocity": "670.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "honeybadger"
+        ]
+    },
+
+    "ACR": {
+        "properties": {
+            "MuzzleVelocity": "880.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "acr"
+        ]
+    },
+
+    "ADAR 2-15": {
+        "properties": {
+            "MuzzleVelocity": "905.0",
+            "RoundsPerMin": "420.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "acr"
+        ]
+    },
+
+    "AK-47": {
+        "properties": {
+            "MuzzleVelocity": "715.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.24
+        },
+        "items": [
+            "ak47"
+        ]
+    },
+
+    "AK-74": {
+        "properties": {
+            "MuzzleVelocity": "900.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "ak74"
+        ]
+    },
+
+    "AN-94": {
+        "properties": {
+            "MuzzleVelocity": "900.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "an94"
+        ]
+    },
+
+    "Benelli M4": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 1.60
+        },
+        "items": [
+            "m1014"
+        ]
+    },
+
+    "Beretta M9": {
+        "properties": {
+            "MuzzleVelocity": "380.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.60
+        },
+        "items": [
+            "m9"
+        ]
+    },
+
+    "Berezin UB": {
+        "properties": {
+            "MuzzleVelocity": "815.0",
+            "RoundsPerMin": "1000.0",
+            "Dispersion": 0.25
+        },
+        "items": [
+            "44_berezinubmg"
+        ]
+    },
+
+    "Bren": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "500.0",
+            "Dispersion": 0.30
+        },
+        "items": [
+            "bren",
+            "44_bren"
+        ]
+    },
+
+    "Colt Python": {
+        "properties": {
+            "MuzzleVelocity": "440.0",
+            "RoundsPerMin": "180.0",
+            "Dispersion": 0.75
+        },
+        "items": [
+            "coltpython"
+        ]
+    },
+
+    "Denel NTW-20": {
+        "properties": {
+            "MuzzleVelocity": "720.0",
+            "RoundsPerMin": "20.0",
+            "Dispersion": 0.14
+        },
+        "items": [
+            "ntw20"
+        ]
+    },
+
+    "Desert Eagle": {
+        "properties": {
+            "MuzzleVelocity": "470.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.72
+        },
+        "items": [
+            "desertEagle"
+        ]
+    },
+
+    "DP28": {
+        "properties": {
+            "MuzzleVelocity": "840.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "dp28",
+            "44_dp28"
+        ]
+    },
+
+    "Dragunov SVD": {
+        "properties": {
+            "MuzzleVelocity": "830.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.16
+        },
+        "items": [
+            "dragunov"
+        ]
+    },
+
+    "DT28": {
+        "properties": {
+            "MuzzleVelocity": "840.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.33
+        },
+        "items": [
+            "44_dt28"
+        ]
+    },
+
+    "Executioner Shotgun": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "90.0",
+            "Dispersion": 2.10
+        },
+        "items": [
+            "executioner"
+        ]
+    },
+
+    "FAMAS": {
+        "properties": {
+            "MuzzleVelocity": "960.0",
+            "RoundsPerMin": "1000.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "famas"
+        ]
+    },
+
+    "FG42 I": {
+        "properties": {
+            "MuzzleVelocity": "740.0",
+            "RoundsPerMin": "900.0",
+            "Dispersion": 0.09
+        },
+        "items": [
+            "fg42",
+            "44_fg42"
+        ]
+    },
+
+    "FMG-9": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.38
+        },
+        "items": [
+            "fmg"
+        ]
+    },
+
+    "FN P90": {
+        "properties": {
+            "MuzzleVelocity": "715.0",
+            "RoundsPerMin": "900.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "p90"
+        ]
+    },
+
+    "FN SCAR": {
+        "properties": {
+            "MuzzleVelocity": "870.0",
+            "RoundsPerMin": "625.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "fnscar"
+        ]
+    },
+
+    "Galil": {
+        "properties": {
+            "MuzzleVelocity": "970.0",
+            "RoundsPerMin": "650.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "galil"
+        ]
+    },
+
+    "GAU-19": {
+        "properties": {
+            "MuzzleVelocity": "887.0",
+            "RoundsPerMin": "2000.0",
+            "Dispersion": 0.40
+        },
+        "items": [
+            "gau19"
+        ]
+    },
+
+    "Gewehr 41 (W)": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "220.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "g41"
+        ]
+    },
+
+    "Gewehr 43": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "240.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "g43",
+            "44_g43"
+        ]
+    },
+
+    "Glock 17": {
+        "properties": {
+            "MuzzleVelocity": "375.0",
+            "RoundsPerMin": "400.0",
+            "Dispersion": 0.70
+        },
+        "items": [
+            "glock17",
+            "glock"
+        ]
+    },
+
+    "HCAR": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "450.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "hcar"
+        ]
+    },
+
+    "HK 416": {
+        "properties": {
+            "MuzzleVelocity": "880.0",
+            "RoundsPerMin": "850.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "hk416"
+        ]
+    },
+
+    "HK G3": {
+        "properties": {
+            "MuzzleVelocity": "800.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "g3"
+        ]
+    },
+
+    "HK G36C": {
+        "properties": {
+            "MuzzleVelocity": "730.0",
+            "RoundsPerMin": "750.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "g36"
+        ]
+    },
+
+    "HK MP5": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "800.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "mp5"
+        ]
+    },
+
+    "HK MP5K": {
+        "properties": {
+            "MuzzleVelocity": "375.0",
+            "RoundsPerMin": "900.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "mp5k"
+        ]
+    },
+
+    "HK MP7": {
+        "properties": {
+            "MuzzleVelocity": "735.0",
+            "RoundsPerMin": "950.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "mp7"
+        ]
+    },
+
+    "HK USP .45": {
+        "properties": {
+            "MuzzleVelocity": "260.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.65
+        },
+        "items": [
+            "usp"
+        ]
+    },
+
+    "Kar98k": {
+        "properties": {
+            "MuzzleVelocity": "760.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.15
+        },
+        "items": [
+            "kar98k",
+            "kar98ksniper",
+            "44_kar98k"
+        ]
+    },
+
+    "KCA Smart carbine": {
+        "properties": {
+            "MuzzleVelocity": "900.0",
+            "RoundsPerMin": "750.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "kcasmartcarbine"
+        ]
+    },
+
+    "KCA Smart pistol": {
+        "properties": {
+            "MuzzleVelocity": "380.0",
+            "RoundsPerMin": "450.0",
+            "Dispersion": 0.62
+        },
+        "items": [
+            "kcasmartpistol"
+        ]
+    },
+
+    "KRISS Vector": {
+        "properties": {
+            "MuzzleVelocity": "290.0",
+            "RoundsPerMin": "1200.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "krissvector"
+        ]
+    },
+
+    "L86 LSW": {
+        "properties": {
+            "MuzzleVelocity": "910.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "l86"
+        ]
+    },
+
+    "L96A1": {
+        "properties": {
+            "MuzzleVelocity": "840.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.12
+        },
+        "items": [
+            "l96"
+        ]
+    },
+
+    "LeeEnfield No.1 Mk.III": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "60.0",
+            "Dispersion": 0.14
+        },
+        "items": [
+            "44_leeenfield3"
+        ]
+    },
+
+    "Lee Enfield No.4": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "60.0",
+            "Dispersion": 0.14
+        },
+        "items": [
+            "leeenfield",
+            "leeenfieldsniper",
+            "44_leeenfield4"
+        ]
+    },
+
+    "Luger P08": {
+        "properties": {
+            "MuzzleVelocity": "370.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.65
+        },
+        "items": [
+            "luger",
+            "44_luger"
+        ]
+    },
+
+    "Mauser C96": {
+        "properties": {
+            "MuzzleVelocity": "425.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.65
+        },
+        "items": [
+            "c96"
+        ]
+    },
+
+    "Mauser M712": {
+        "properties": {
+            "MuzzleVelocity": "425.0",
+            "RoundsPerMin": "950.0",
+            "Dispersion": 0.65
+        },
+        "items": [
+            "44_c96"
+        ]
+    },
+
+    "M1 Bazooka": {
+        "properties": {
+            "MuzzleVelocity": "80.0",
+            "RoundsPerMin": "10.0",
+            "Dispersion": 2.10
+        },
+        "items": [
+            "bazooka",
+            "44_bazooka"
+        ]
+    },
+
+    "M1 Garand": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "240.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "m1garand",
+            "44_m1garand"
+        ]
+    },
+
+    "M1A1 Carbine": {
+        "properties": {
+            "MuzzleVelocity": "605.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "m1carbine",
+            "44_m1carbine"
+        ]
+    },
+
+    "M1A1 Thompson ": {
+        "properties": {
+            "MuzzleVelocity": "285.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.40
+        },
+        "items": [
+            "thompson",
+            "44_Thompsonm1a1"
+        ]
+    },
+
+    "M134 Minigun": {
+        "properties": {
+            "MuzzleVelocity": "853.0",
+            "RoundsPerMin": "4000.0",
+            "Dispersion": 0.45
+        },
+        "items": [
+            "minigun"
+        ]
+    },
+
+    "M14": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "m14"
+        ]
+    },
+
+    "M16A4": {
+        "properties": {
+            "MuzzleVelocity": "945.0",
+            "RoundsPerMin": "800.0",
+            "Dispersion": 0.16
+        },
+        "items": [
+            "m16a4"
+        ]
+    },
+
+    "M1903 Springfield": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.13
+        },
+        "items": [
+            "springfield",
+            "springfieldsniper",
+            "44_m1903springfield"
+        ]
+    },
+
+    "M1911 Colt": {
+        "properties": {
+            "MuzzleVelocity": "250.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.72
+        },
+        "items": [
+            "colt",
+            "m1911",
+            "44_colt"
+        ]
+    },
+
+    "M1918A2 BAR": {
+        "properties": {
+            "MuzzleVelocity": "860.0",
+            "RoundsPerMin": "400.0",
+            "Dispersion": 0.26
+        },
+        "items": [
+            "bar",
+            "44_bar"
+        ]
+    },
+
+    "M1919A4 Browning .30Cal": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.33
+        },
+        "items": [
+            "browning",
+            "browninghand",
+            "44_30cal"
+        ]
+    },
+
+    "M1919A6 Browning .30 Cal": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.32
+        },
+        "items": [
+            "44_m1919a630cal"
+        ]
+    },
+
+    "M2 Browning .50Cal": {
+        "properties": {
+            "MuzzleVelocity": "890.0",
+            "RoundsPerMin": "500.0",
+            "Dispersion": 0.35
+        },
+        "items": [
+            "50cal",
+            "44_50cal"
+        ]
+    },
+
+    "M21": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.14
+        },
+        "items": [
+            "m21"
+        ]
+    },
+
+    "M249 SAW": {
+        "properties": {
+            "MuzzleVelocity": "915.0",
+            "RoundsPerMin": "850.0",
+            "Dispersion": 0.34
+        },
+        "items": [
+            "m249"
+        ]
+    },
+
+    "M3A1 Grease Gun": {
+        "properties": {
+            "MuzzleVelocity": "275.0",
+            "RoundsPerMin": "450.0",
+            "Dispersion": 0.52
+        },
+        "items": [
+            "m3a1",
+            "44_greasegun"
+        ]
+    },
+
+    "M40A3": {
+        "properties": {
+            "MuzzleVelocity": "790.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.12
+        },
+        "items": [
+            "m40a3"
+        ]
+    },
+
+    "M60E4": {
+        "properties": {
+            "MuzzleVelocity": "855.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "m60"
+        ]
+    },
+
+    "Makarov": {
+        "properties": {
+            "MuzzleVelocity": "315.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.68
+        },
+        "items": [
+            "makarov"
+        ]
+    },
+
+    "MG-131": {
+        "properties": {
+            "MuzzleVelocity": "750.0",
+            "RoundsPerMin": "900.0",
+            "Dispersion": 0.23
+        },
+        "items": [
+            "44_mg131"
+        ]
+    },
+
+    "MG-15": {
+        "properties": {
+            "MuzzleVelocity": "755.0",
+            "RoundsPerMin": "1000.0",
+            "Dispersion": 0.26
+        },
+        "items": [
+            "44_mg15"
+        ]
+    },
+
+    "MG 151/15": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "740.0",
+            "Dispersion": 0.30
+        },
+        "items": [
+            "mg151"
+        ]
+    },
+
+    "MG 17": {
+        "properties": {
+            "MuzzleVelocity": "895.0",
+            "RoundsPerMin": "1200.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "44_mg17"
+        ]
+    },
+
+    "MG 26(t)": {
+        "properties": {
+            "MuzzleVelocity": "765.0",
+            "RoundsPerMin": "500.0",
+            "Dispersion": 0.30
+        },
+        "items": [
+            "44_mg26t"
+        ]
+    },
+
+    "MG 34": {
+        "properties": {
+            "MuzzleVelocity": "765.0",
+            "RoundsPerMin": "850.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "mg34",
+            "maschinengewehr34",
+            "44_mg34"
+        ]
+    },
+
+    "MG 42": {
+        "properties": {
+            "MuzzleVelocity": "740.0",
+            "RoundsPerMin": "1200.0",
+            "Dispersion": 0.38
+        },
+        "items": [
+            "mg42",
+            "mg42hand",
+            "maschinengewehr42",
+            "44_mg42"
+        ]
+    },
+
+    "Mini Uzi": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "950.0",
+            "Dispersion": 0.40
+        },
+        "items": [
+            "uzi"
+        ]
+    },
+
+    "Mosin-Nagant": {
+        "properties": {
+            "MuzzleVelocity": "865.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.15
+        },
+        "items": [
+            "nagant",
+            "nagantsniper",
+            "44_mosinnagant"
+        ]
+    },
+
+    "MP 34": {
+        "properties": {
+            "MuzzleVelocity": "410.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "mp-34"
+        ]
+    },
+
+    "MP 40": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.38
+        },
+        "items": [
+            "mp40",
+            "44_mp40"
+        ]
+    },
+
+    "MTAR-21": {
+        "properties": {
+            "MuzzleVelocity": "910.0",
+            "RoundsPerMin": "750.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "mtar"
+        ]
+    },
+
+    "Panzerbüchse 39": {
+        "properties": {
+            "MuzzleVelocity": "1210.0",
+            "RoundsPerMin": "25.0",
+            "Dispersion": 0.16
+        },
+        "items": [
+            "panzerbuechse39"
+        ]
+    },
+
+    "Panzerfaust 60": {
+        "properties": {
+            "MuzzleVelocity": "45.0",
+            "RoundsPerMin": "10.0",
+            "Dispersion": 2.30
+        },
+        "items": [
+            "panzerfaust",
+            "44_panzerfaust"
+        ]
+    },
+
+    "PIAT": {
+        "properties": {
+            "MuzzleVelocity": "80.0",
+            "RoundsPerMin": "8.0",
+            "Dispersion": 2.40
+        },
+        "items": [
+            "piat",
+            "44_piat"
+        ]
+    },
+
+    "PP-19 Bizon": {
+        "properties": {
+            "MuzzleVelocity": "315.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.42
+        },
+        "items": [
+            "bizon"
+        ]
+    },
+
+    "PPS-43": {
+        "properties": {
+            "MuzzleVelocity": "500.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.45
+        },
+        "items": [
+            "44_pps43"
+        ]
+    },
+
+    "PPSh-41": {
+        "properties": {
+            "MuzzleVelocity": "490.0",
+            "RoundsPerMin": "1000.0",
+            "Dispersion": 0.55
+        },
+        "items": [
+            "ppsh",
+            "44_ppsh41"
+        ]
+    },
+
+    "Remington 700": {
+        "properties": {
+            "MuzzleVelocity": "790.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.12
+        },
+        "items": [
+            "r700"
+        ]
+    },
+
+    "Remington 870": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "90.0",
+            "Dispersion": 1.90
+        },
+        "items": [
+            "r870"
+        ]
+    },
+
+    "Remington Model 10 TrenchGun": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "90.0",
+            "Dispersion": 1.20
+        },
+        "items": [
+            "44_model10trenchgun"
+        ]
+    },
+
+    "RPD": {
+        "properties": {
+            "MuzzleVelocity": "735.0",
+            "RoundsPerMin": "650.0",
+            "Dispersion": 0.32
+        },
+        "items": [
+            "rpd"
+        ]
+    },
+
+    "RPK": {
+        "properties": {
+            "MuzzleVelocity": "745.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.30
+        },
+        "items": [
+            "rpk"
+        ]
+    },
+
+    "RPzB 54 Panzerschreck": {
+        "properties": {
+            "MuzzleVelocity": "110.0",
+            "RoundsPerMin": "10.0",
+            "Dispersion": 2.00
+        },
+        "items": [
+            "panzerschreck",
+            "44_panzerschreck"
+        ]
+    },
+
+    "ShAK-12": {
+        "properties": {
+            "MuzzleVelocity": "300.0",
+            "RoundsPerMin": "650.0",
+            "Dispersion": 0.26
+        },
+        "items": [
+            "ash12"
+        ]
+    },
+
+    "SIG P226": {
+        "properties": {
+            "MuzzleVelocity": "360.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.60
+        },
+        "items": [
+            "sigp226"
+        ]
+    },
+
+    "SIG P232 ": {
+        "properties": {
+            "MuzzleVelocity": "290.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.70
+        },
+        "items": [
+            "sigp232"
+        ]
+    },
+
+    "SIG SG 550": {
+        "properties": {
+            "MuzzleVelocity": "910.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.16
+        },
+        "items": [
+            "sg550"
+        ]
+    },
+
+    "SKS": {
+        "properties": {
+            "MuzzleVelocity": "735.0",
+            "RoundsPerMin": "240.0",
+            "Dispersion": 0.20
+        },
+        "items": [
+            "44_sks"
+        ]
+    },
+
+    "SPAS-12": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 1.70
+        },
+        "items": [
+            "spas"
+        ]
+    },
+
+    "Sten Mk.2": {
+        "properties": {
+            "MuzzleVelocity": "365.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.45
+        },
+        "items": [
+            "sten",
+            "44_sten"
+        ]
+    },
+
+    "Sterling L2A3 Mk.4": {
+        "properties": {
+            "MuzzleVelocity": "390.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.42
+        },
+        "items": [
+            "44_sterling"
+        ]
+    },
+
+    "Steyr AUG": {
+        "properties": {
+            "MuzzleVelocity": "970.0",
+            "RoundsPerMin": "700.0",
+            "Dispersion": 0.18
+        },
+        "items": [
+            "aug"
+        ]
+    },
+
+    "StG 44": {
+        "properties": {
+            "MuzzleVelocity": "685.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.24
+        },
+        "items": [
+            "mp44",
+            "44_stg44"
+        ]
+    },
+
+    "SVT40": {
+        "properties": {
+            "MuzzleVelocity": "830.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.22
+        },
+        "items": [
+            "44_svt40"
+        ]
+    },
+
+    "TT-33": {
+        "properties": {
+            "MuzzleVelocity": "420.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.70
+        },
+        "items": [
+            "tt33",
+            "44_tt33"
+        ]
+    },
+
+    "Type 14 Nambu": {
+        "properties": {
+            "MuzzleVelocity": "290.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.80
+        },
+        "items": [
+            "type14",
+            "44_type14nambu"
+        ]
+    },
+
+    "Type 2 Model A": {
+        "properties": {
+            "MuzzleVelocity": "335.0",
+            "RoundsPerMin": "600.0",
+            "Dispersion": 0.52
+        },
+        "items": [
+            "44_type2smg"
+        ]
+    },
+
+    "Type 38 Arisaka": {
+        "properties": {
+            "MuzzleVelocity": "760.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.14
+        },
+        "items": [
+            "type38",
+            "type38sniper",
+            "44_type38"
+        ]
+    },
+
+    "Type 92": {
+        "properties": {
+            "MuzzleVelocity": "780.0",
+            "RoundsPerMin": "475.0",
+            "Dispersion": 0.35
+        },
+        "items": [
+            "44_type92"
+        ]
+    },
+
+    "Type 99": {
+        "properties": {
+            "MuzzleVelocity": "715.0",
+            "RoundsPerMin": "550.0",
+            "Dispersion": 0.30
+        },
+        "items": [
+            "type99",
+            "44_type99"
+        ]
+    },
+
+    "Type 99 Arisaka": {
+        "properties": {
+            "MuzzleVelocity": "755.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.15
+        },
+        "items": [
+            "44_type99rifle"
+        ]
+    },
+
+    "Type 100": {
+        "properties": {
+            "MuzzleVelocity": "335.0",
+            "RoundsPerMin": "450.0",
+            "Dispersion": 0.45
+        },
+        "items": [
+            "type100",
+            "44_type100"
+        ]
+    },
+
+    "Vickers K": {
+        "properties": {
+            "MuzzleVelocity": "760.0",
+            "RoundsPerMin": "1100.0",
+            "Dispersion": 0.36
+        },
+        "items": [
+            "vickersk",
+            "vickerskgo"
+        ]
+    },
+
+    "vz.61 Skorpion": {
+        "properties": {
+            "MuzzleVelocity": "320.0",
+            "RoundsPerMin": "850.0",
+            "Dispersion": 0.48
+        },
+        "items": [
+            "skorpion"
+        ]
+    },
+
+    "Walther PPk": {
+        "properties": {
+            "MuzzleVelocity": "320.0",
+            "RoundsPerMin": "300.0",
+            "Dispersion": 0.75
+        },
+        "items": [
+            "44_ppk"
+        ]
+    },
+
+    "Webley Mk VI": {
+        "properties": {
+            "MuzzleVelocity": "190.0",
+            "RoundsPerMin": "120.0",
+            "Dispersion": 0.85
+        },
+        "items": [
+            "webley",
+            "44_webley"
+        ]
+    },
+
+    "Winchester Model 1200": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "90.0",
+            "Dispersion": 1.90
+        },
+        "items": [
+            "w1200"
+        ]
+    },
+
+    "Winchester Model 1887": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "60.0",
+            "Dispersion": 2.00
+        },
+        "items": [
+            "m1887"
+        ]
+    },
+
+    "Winchester Model 1897 Trench Gun": {
+        "properties": {
+            "MuzzleVelocity": "400.0",
+            "RoundsPerMin": "90.0",
+            "Dispersion": 1.95
+        },
+        "items": [
+            "trenchgun"
+        ]
+    },
+
+    "Winchester Model 70": {
+        "properties": {
+            "MuzzleVelocity": "850.0",
+            "RoundsPerMin": "45.0",
+            "Dispersion": 0.10
+        },
+        "items": [
+            "winchestermodel70",
+            "44_winchestermodel70"
+        ]
+    }
+}

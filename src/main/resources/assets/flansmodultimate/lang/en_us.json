@@ -1,0 +1,22 @@
+{
+  "creativetab.flansmodultimate.creative_tab_flansmod": "FMU: General",
+  "creativetab.flansmodultimate.creative_tab_armors": "FMU: Armors",
+  "creativetab.flansmodultimate.creative_tab_attachments": "FMU: Attachments",
+  "creativetab.flansmodultimate.creative_tab_guns": "FMU: Guns",
+  "creativetab.flansmodultimate.creative_tab_grenades": "FMU: Grenades",
+  "creativetab.flansmodultimate.creative_tab_tools": "FMU: Tools",
+  "creativetab.flansmodultimate.creative_tab_vehicles": "FMU: Vehicles",
+  "creativetab.flansmodultimate.creative_tab_parts": "FMU: Parts",
+  "key.categories.flansmodultimate": "Flan's Mod Ultimate Controls",
+  "key.flansmodultimate.reload": "Reload",
+  "key.flansmodultimate.lookAtGun": "Look at gun",
+  "key.flansmodultimate.debug": "Debug Mode",
+  "death.attack.melee": "%1$s was slain",
+  "death.attack.melee.player": "%1$s was slain by %2$s",
+  "death.attack.shootable": "%1$s was shot",
+  "death.attack.shootable.player": "%1$s was shot by %2$s",
+  "death.attack.headshot": "%1$s was headshot",
+  "death.attack.headshot.player": "%1$s was headshot by %2$s",
+  "death.attack.explosion": "%1$s was blown up",
+  "death.attack.explosion.player": "%1$s was blown up by %2$s"
+}

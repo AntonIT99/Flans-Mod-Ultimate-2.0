@@ -1,17 +1,16 @@
 package com.flansmod.client.tmt;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.client.model.IModelBase;
-import com.wolffsmod.client.model.ModelRenderer;
-import com.wolffsmod.client.model.TexturedQuad;
-import org.joml.Quaternionf;
+import com.mojang.math.Axis;
+import com.wolffsmod.api.client.model.IModelBase;
+import com.wolffsmod.api.client.model.ModelBase;
+import com.wolffsmod.api.client.model.ModelRenderer;
+import com.wolffsmod.api.client.model.TexturedQuad;
+import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -39,7 +38,9 @@ public class ModelRendererTurbo extends ModelRenderer
     public static final int MR_TOP = 4;
     public static final int MR_BOTTOM = 5;
 
-    public boolean glow = false;
+    public boolean glow;
+    public boolean glowAdditive;
+    public boolean glowNoDepthWrite;
     public boolean flip;
     public boolean forcedRecompile;
     public boolean useLegacyCompiler;
@@ -110,6 +111,26 @@ public class ModelRendererTurbo extends ModelRenderer
         textureOffsetY = textureY;
         textureWidth = textureU;
         textureHeight = textureV;
+    }
+
+    public ModelRendererTurbo(ModelBase modelbase)
+    {
+        this((IModelBase) modelbase);
+    }
+
+    public ModelRendererTurbo(ModelBase modelbase, String s)
+    {
+        this((IModelBase) modelbase, s);
+    }
+
+    public ModelRendererTurbo(ModelBase modelbase, int textureX, int textureY)
+    {
+        this((IModelBase) modelbase, textureX, textureY);
+    }
+
+    public ModelRendererTurbo(ModelBase modelbase, int textureX, int textureY, int textureU, int textureV)
+    {
+        this((IModelBase) modelbase, textureX, textureY, textureU, textureV);
     }
 
     /**
@@ -539,6 +560,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 v7[0] -= m * bottomScale;
                 v7[2] += bottomScale;
                 break;
+            default:
+                break;
         }
 
         addRectShape(v, v1, v2, v3, v4, v5, v6, v7, w, h, d);
@@ -653,6 +676,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 v6[2] += bScale4;
                 v7[0] -= m * bScale1;
                 v7[2] += bScale4;
+                break;
+            default:
                 break;
         }
 
@@ -803,24 +828,9 @@ public class ModelRendererTurbo extends ModelRenderer
                 v7[0] -= m * bScale1;
                 v7[2] += bScale4;
                 break;
+            default:
+                break;
         }
-
-        float[] qValues = new float[]{
-                Math.abs((v[0] - v1[0]) / (v3[0] - v2[0])),
-                Math.abs((v[0] - v1[0]) / (v4[0] - v5[0])),
-                Math.abs((v4[0] - v5[0]) / (v7[0] - v6[0])),
-                Math.abs((v3[0] - v2[0]) / (v7[0] - v6[0])),
-
-                Math.abs((v[1] - v3[1]) / (v1[1] - v2[1])),
-                Math.abs((v4[1] - v7[1]) / (v5[1] - v6[1])),
-                Math.abs((v[1] - v3[1]) / (v4[1] - v7[1])),
-                Math.abs((v1[1] - v2[1]) / (v5[1] - v6[1])),
-
-                Math.abs((v[2] - v4[2]) / (v1[2] - v5[2])),
-                Math.abs((v[2] - v4[2]) / (v3[2] - v7[2])),
-                Math.abs((v1[2] - v5[2]) / (v2[2] - v6[2])),
-                Math.abs((v3[2] - v7[2]) / (v2[2] - v6[2]))
-        };
 
         addRectShape(v, v1, v2, v3, v4, v5, v6, v7, w, h, d);
     }
@@ -837,9 +847,9 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addBox(float x, float y, float z, float w, float h, float d)
     {
-        int rw = (int) Math.ceil(w);
-        int rh = (int) Math.ceil(h);
-        int rd = (int) Math.ceil(d);
+        int rw = Mth.ceil(w);
+        int rh = Mth.ceil(h);
+        int rd = Mth.ceil(d);
         w -= rw;
         h -= rh;
         d -= rd;
@@ -1024,19 +1034,19 @@ public class ModelRendererTurbo extends ModelRenderer
         switch(direction)
         {
             case MR_LEFT:
-                rotY = PI / 2;
+                rotY = Mth.PI / 2;
                 break;
             case MR_RIGHT:
-                rotY = -PI / 2;
+                rotY = -Mth.PI / 2;
                 break;
             case MR_TOP:
-                rotX = PI / 2;
+                rotX = Mth.PI / 2;
                 break;
             case MR_BOTTOM:
-                rotX = -PI / 2;
+                rotX = -Mth.PI / 2;
                 break;
             case MR_FRONT:
-                rotY = PI;
+                rotY = Mth.PI;
                 break;
             case MR_BACK:
                 break;
@@ -1297,9 +1307,9 @@ public class ModelRendererTurbo extends ModelRenderer
         float y1 = y - expansion;
         float z1 = z - expansion;
 
-        int wDir = 0;
-        int hDir = 0;
-        int dDir = 0;
+        int wDir;
+        int hDir;
+        int dDir;
 
         float wScale = 1F + (expansion / (w * pixelScale));
         float hScale = 1F + (expansion / (h * pixelScale));
@@ -1438,10 +1448,10 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int i = 0; i < segs; i++)
             {
-                float yWidth = (float) Math.cos(-PI / 2 + (PI / rings) * j);
-                float yHeight = (float) Math.sin(-PI / 2 + (PI / rings) * j);
-                float xSize = (float) (Math.sin((PI / segs) * i * 2F + PI) * yWidth);
-                float zSize = (float) (-Math.cos((PI / segs) * i * 2F + PI) * yWidth);
+                float yWidth = Mth.cos(-Mth.PI / 2 + (Mth.PI / rings) * j);
+                float yHeight = Mth.sin(-Mth.PI / 2 + (Mth.PI / rings) * j);
+                float xSize = Mth.sin((Mth.PI / segs) * i * 2F + Mth.PI) * yWidth;
+                float zSize = -Mth.cos((Mth.PI / segs) * i * 2F + Mth.PI) * yWidth;
                 int curVert = 1 + i + segs * (j - 1);
                 tempVerts[curVert] = new PositionTextureVertex(x + xSize * r, y + yHeight * r, z + zSize * r, 0, 0);
                 if(i > 0)
@@ -1553,7 +1563,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addCone(float x, float y, float z, float radius, float length, int segments, float baseScale, int baseDirection)
     {
-        addCone(x, y, z, radius, length, segments, baseScale, baseDirection, (int)Math.floor(radius * 2F), (int)Math.floor(radius * 2F));
+        addCone(x, y, z, radius, length, segments, baseScale, baseDirection, Mth.floor(radius * 2F), Mth.floor(radius * 2F));
     }
 
     /**
@@ -1638,7 +1648,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addCylinder(float x, float y, float z, float radius, float length, int segments, float baseScale, float topScale, int baseDirection)
     {
-        addCylinder(x, y, z, radius, length, segments, baseScale, topScale, baseDirection, (int)Math.floor(radius * 2F), (int)Math.floor(radius * 2F), (int)Math.floor(length));
+        addCylinder(x, y, z, radius, length, segments, baseScale, topScale, baseDirection, Mth.floor(radius * 2F), Mth.floor(radius * 2F), Mth.floor(length));
     }
 
     /**
@@ -1707,8 +1717,8 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             for(int index = 0; index < segments; index++)
             {
-                float xSize = (float) ((mirror ^ dirMirror ? -1 : 1) * Math.sin((PI / segments) * index * 2F + PI) * radius * sCur);
-                float zSize = (float) (-Math.cos((PI / segments) * index * 2F + PI) * radius * sCur);
+                float xSize = (mirror ^ dirMirror ? -1 : 1) * Mth.sin((Mth.PI / segments) * index * 2F + Mth.PI) * radius * sCur;
+                float zSize = -Mth.cos((Mth.PI / segments) * index * 2F + Mth.PI) * radius * sCur;
 
                 float xPlace = xCur + (!dirSide ? xSize : 0);
                 float yPlace = yCur + (!dirTop ? zSize : 0);
@@ -1737,10 +1747,10 @@ public class ModelRendererTurbo extends ModelRenderer
         for(int index = 0; index < segments; index++)
         {
             int index2 = (index + 1) % segments;
-            float uSize = (float) (Math.sin((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset));
-            float vSize = (float) (Math.cos((PI / segments) * index * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset));
-            float uSize1 = (float) (Math.sin((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * uCircle - 2F * uOffset));
-            float vSize1 = (float) (Math.cos((PI / segments) * index2 * 2F + (!dirTop ? 0 : PI)) * (0.5F * vCircle - 2F * vOffset));
+            float uSize = Mth.sin((Mth.PI / segments) * index * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize = Mth.cos((Mth.PI / segments) * index * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * vCircle - 2F * vOffset);
+            float uSize1 = Mth.sin((Mth.PI / segments) * index2 * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * uCircle - 2F * uOffset);
+            float vSize1 = Mth.cos((Mth.PI / segments) * index2 * 2F + (!dirTop ? 0 : Mth.PI)) * (0.5F * vCircle - 2F * vOffset);
             vert = new PositionTextureVertex[3];
 
             vert[0] = tempVerts[0].setTexturePosition(uStart + 0.5F * uCircle, vStart + 0.5F * vCircle);
@@ -1922,8 +1932,8 @@ public class ModelRendererTurbo extends ModelRenderer
         for(int idx = 0; idx < verts.length; idx++)
         {
             vertices[vertices.length - verts.length + idx] = verts[idx];
-            if(copyGroup && verts[idx] instanceof PositionTransformVertex)
-                ((PositionTransformVertex)verts[idx]).addGroup(currentGroup);
+            if(copyGroup && verts[idx] instanceof PositionTransformVertex positionTransformVertex)
+                positionTransformVertex.addGroup(currentGroup);
         }
 
         for(int idx = 0; idx < poly.length; idx++)
@@ -1975,8 +1985,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void setGroup(String groupName, Bone bone, double weight)
     {
-        if(!transformGroup.containsKey(groupName))
-            transformGroup.put(groupName, new TransformGroupBone(bone, weight));
+        transformGroup.computeIfAbsent(groupName, key -> new TransformGroupBone(bone, weight));
         currentGroup = transformGroup.get(groupName);
     }
 
@@ -2063,98 +2072,84 @@ public class ModelRendererTurbo extends ModelRenderer
         defaultTexture = s;
     }
 
-    /**
-     * Renders the shape.
-     *
-     * @param scale the scale of the shape. Default is 1.
-     */
-    @Override
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
-    {
-        render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale, false);
-    }
-
 
     /**
      * Renders the shape
      *
-     * @param scale     The scale of the shape. Default is 1.
-     * @param rotateOrderZYX Whether to use the rotate order ZYX instead of YZX
+     * @param scale The scale of the shape. Default is 1.
      */
-    public void render(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, boolean rotateOrderZYX)
+    @Override
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
-        if (!isVisible()) return;
+        if (!isVisible())
+            return;
 
-        ResourceLocation texture = baseModel.getTexture();
-
-        if (glow)
-        {
-            pPackedLight = LightTexture.FULL_BRIGHT;
-        }
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableDepthTest();
-
-        RenderType renderType = RenderType.entityTranslucent(texture);
-        pVertexConsumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
-
-        pPoseStack.pushPose();
-        pPoseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(pPoseStack, scale, rotateOrderZYX);
-        compile(pPoseStack.last(), pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+        poseStack.pushPose();
+        poseStack.translate(offsetX, offsetY, offsetZ);
+        translateAndRotate(poseStack, scale);
+        compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
         {
-            childModel.render(pPoseStack, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
+            childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
-        pPoseStack.translate(-offsetX, -offsetY, -offsetZ);
-        pPoseStack.popPose();
+        poseStack.translate(-offsetX, -offsetY, -offsetZ);
+        poseStack.popPose();
+    }
 
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        if ((renderPass == EnumRenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
+            || (renderPass == EnumRenderPass.GLOW_ALPHA && glow)
+            || (renderPass == EnumRenderPass.GLOW_ADDITIVE && glowAdditive)
+            || (renderPass == EnumRenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
+        {
+            render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+        }
+    }
+
+    @Deprecated
+    @Override
+    public void render(float worldScale)
+    {
+        render(worldScale, false);
+    }
+
+    @Deprecated
+    public void render(float worldScale, boolean oldRotateOrder)
+    {
+        // do nothing, only keep this method overload for compatibility when loading legacy classes
     }
 
     /**
      * Translate and rotate the shape
-     *
-     * @param scale     The scale of the shape. Default is 1.
-     * @param rotateOrderZYX Whether to use the rotate order ZYX instead of YZX
+     * @param scale The scale of the shape. Default is 1.
      */
-    public void translateAndRotate(PoseStack poseStack, float scale, boolean rotateOrderZYX)
+    @Override
+    public void translateAndRotate(PoseStack poseStack, float scale)
     {
         poseStack.translate(rotationPointX * 0.0625F * scale, rotationPointY * 0.0625F * scale, rotationPointZ * 0.0625F * scale);
 
-        if (rotateAngleX != 0.0F || rotateAngleY != 0.0F || rotateAngleZ != 0.0F)
-        {
-            Quaternionf rotation;
-            if (rotateOrderZYX)
-            {
-                rotation = new Quaternionf().rotationZYX(rotateAngleZ, rotateAngleY, rotateAngleX);
-            }
-            else
-            {
-                rotation = new Quaternionf().rotationY(rotateAngleY).rotateZ(rotateAngleZ).rotateX(rotateAngleX);
-            }
-            poseStack.mulPose(rotation);
-        }
+        if (rotateAngleY != 0F)
+            poseStack.mulPose(Axis.YP.rotation(rotateAngleY));
+        if (rotateAngleZ != 0F)
+            poseStack.mulPose(Axis.ZP.rotation(rotateAngleZ));
+        if (rotateAngleX != 0F)
+            poseStack.mulPose(Axis.XP.rotation(rotateAngleX));
 
-        if (scale != 1.0F)
-        {
+        if (scale != 1F)
             poseStack.scale(scale, scale, scale);
-        }
     }
 
     @Override
-    protected void compile(PoseStack.Pose pPose, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
+    protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         for (TextureGroup usedGroup : textureGroup.values())
         {
             for (TexturedPolygon poly : usedGroup.poly)
             {
-                poly.draw(pPose, pVertexConsumer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);
+                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow || glowAdditive || glowNoDepthWrite);
             }
         }
     }

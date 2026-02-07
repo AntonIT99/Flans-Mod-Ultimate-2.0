@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryUtil;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.wolffsmod.client.model.Tessellator;
+import com.wolffsmod.api.client.model.Tessellator;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+@Deprecated
 @OnlyIn(Dist.CLIENT)
 public class TmtTessellator extends Tessellator
 {

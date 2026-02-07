@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "III",
+    "DDD"
+  ],
+  "key": {
+    "C": { "item": "minecraft:cauldron" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "D": { "item": "minecraft:white_dye" }
+  },
+  "result": { "item": "flansmod:paintjobtable" }
+}

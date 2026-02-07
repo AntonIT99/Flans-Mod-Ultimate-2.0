@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "III"
+  ],
+  "key": {
+    "C": { "item": "minecraft:cauldron" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": {
+    "item": "flansmod:gunworkbench",
+    "count": 1
+  }
+}

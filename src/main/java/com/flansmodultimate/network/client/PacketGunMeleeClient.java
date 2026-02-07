@@ -1,0 +1,51 @@
+package com.flansmodultimate.network.client;
+
+import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.IClientPacket;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+
+import java.util.UUID;
+
+@NoArgsConstructor
+public class PacketGunMeleeClient implements IClientPacket
+{
+    private UUID playerUUID;
+    private InteractionHand hand;
+
+    public PacketGunMeleeClient(UUID playerUUID, InteractionHand hand)
+    {
+        this.playerUUID = playerUUID;
+        this.hand = hand;
+    }
+
+    @Override
+    public void encodeInto(FriendlyByteBuf data)
+    {
+        data.writeUUID(playerUUID);
+        data.writeEnum(hand);
+    }
+
+    @Override
+    public void decodeInto(FriendlyByteBuf data)
+    {
+        playerUUID = data.readUUID();
+        hand = data.readEnum(InteractionHand.class);
+    }
+
+    @Override
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
+    {
+        Player meleePlayer = level.getPlayerByUUID(playerUUID);
+        if (meleePlayer != null && meleePlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
+        {
+            ClientHooks.GUN.meleeGunItem(gunItem, meleePlayer, hand);
+        }
+    }
+}

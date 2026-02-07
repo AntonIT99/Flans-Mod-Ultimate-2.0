@@ -1,0 +1,98 @@
+General:
+- Change Fire Mode
+- Tools
+- Armor & Gun Boxes
+- Team Mod / Commands
+- Teams & classes
+- Recipes
+- Check for content packs put by mistake in mods folder?
+- Render Attachment Item in 3D?
+
+Sounds:
+- Use level.playSound() instead of sound packets when possible?
+- Assets/Sounds Priority list?
+
+Features:
+- Feature: APHEMixRatio, APMass, HEMass
+- Feature: set Bullet Speed in the ammo -> override gun bullet speed
+- Fragmentation Damage
+
+Bug Fixes:
+- Reload Sound positioned even for local player
+
+1.12.2 Features:
+- itemHolders
+- rewardBoxes
+- loadouts
+- gloves & Enchantment Module
+
+Driveable Features:
+- Parts
+- AA Guns
+- Vehicles
+- Planes
+- Mechas & Mecha Items
+
+Testing:
+- Dedicated Server Testing
+- Check for conflicts with Flan's Mod Reloaded
+
+Entities:
+- AAGun - TODO
+- Bullet - Done
+- DeployableGun - Done
+- Driveable - TODO
+- Grenade - Done
+- Mecha - TODO
+- Plane - TODO
+- Vehicle - TODO
+
+Rendering:
+- AAGun - TODO
+- Bullet - Done
+- CustomArmor - Done
+- Grenade - Done
+- Gun - WIP
+- MG - Done
+- Mecha - TODO
+- Plane - TODO
+- Vehicle - TODO
+
+Items:
+- AttachmentItem - Done
+- BulletItem - Done
+- CustomArmorItem - Done
+- GrenadeItem - Done
+- GunItem - WIP
+- PartItem - WIP
+- ToolItem - WIP
+
+Types:
+- ArmorType - Done
+- AttachmentType - Done
+- BulletType - Done
+- DriveableType - TODO
+- GrenadeType - Done
+- GunType - Done
+- InfoType - WIP
+- PartType - Done
+- ToolType - Done
+
+Other Classes:
+- PlayerHandler - TODO
+- GunAnimations - Done
+- TeamsManager
+
+TODO Content Packs:
+- Fix AK47 Paintjobs
+- Fix FlakParticle TaP Guns
+- Fix Scope Attachment Points in WW2 Improved Pack
+- Fix Barrel Attachment and Muzzle Flash
+- Remove Minigun Mode in WW2 Improved Pack
+- Add Idle Sound to Lightsabers
+- Set Penetration?
+
+Feature Ideas:
+- Sword blocking (GunItem)
+- Blade Activation/Deactivation with right click (GunItem)
+- Dynamic activation of Aiming Pose

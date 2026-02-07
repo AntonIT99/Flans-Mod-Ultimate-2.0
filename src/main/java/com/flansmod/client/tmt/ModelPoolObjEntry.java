@@ -1,11 +1,11 @@
 package com.flansmod.client.tmt;
 
+import net.minecraft.world.phys.Vec3;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-
-import net.minecraft.world.phys.Vec3;
 
 public class ModelPoolObjEntry extends ModelPoolEntry
 {

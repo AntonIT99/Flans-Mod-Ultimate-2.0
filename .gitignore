@@ -20,7 +20,8 @@ build
 # other
 eclipse
 run
-!/run/flan/
 
 # Files from Forge MDK
 forge*changelog.txt
+
+src/packs/resources/flan

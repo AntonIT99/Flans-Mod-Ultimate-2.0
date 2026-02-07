@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "III",
+    "III"
+  ],
+  "key": {
+    "B": { "item": "minecraft:bowl" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": {
+    "item": "flansmod:gunworkbench",
+    "count": 1
+  }
+}
