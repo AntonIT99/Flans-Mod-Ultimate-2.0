@@ -87,7 +87,7 @@ public final class SoundHelper
         pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
     }
 
-    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)
+    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, boolean positioned)
     {
         if (StringUtils.isBlank(sound))
             return;
@@ -98,7 +98,7 @@ public final class SoundHelper
             float pitchBase = distort ? (1.0F / (r.nextFloat() * 0.4F + 0.8F)) : 1.0F;
             float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 
-            SimpleSoundInstance soundInstance = new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, pos.x, pos.y, pos.z, false);
+            SimpleSoundInstance soundInstance = new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, positioned ? SoundInstance.Attenuation.LINEAR : SoundInstance.Attenuation.NONE, pos.x, pos.y, pos.z, positioned);
 
             if (cancellable)
                 cancellableSounds.put(instanceUUID, soundInstance);
@@ -132,6 +132,6 @@ public final class SoundHelper
 
     public static float getVolumeFromRange(float range, boolean silenced)
     {
-        return silenced ? range / 8F : range / 4F;
+        return silenced ? range / 32F : range / 16F;
     }
 }

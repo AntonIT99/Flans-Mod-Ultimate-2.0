@@ -91,7 +91,7 @@ public record GunReloader(GunItem item)
 
     private static boolean cancelReloadIfSwitched(ServerPlayer player, PendingReload pendingReload)
     {
-        if (ModCommonConfig.get().cancelReloadOnWeaponSwitch())
+        if (!ModCommonConfig.get().cancelReloadOnWeaponSwitch())
             return false;
 
         return !ItemStack.matches(player.getItemInHand(pendingReload.hand()), pendingReload.gunStack());

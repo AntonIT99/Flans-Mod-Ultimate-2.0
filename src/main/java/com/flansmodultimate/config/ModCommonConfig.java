@@ -188,13 +188,13 @@ public final class ModCommonConfig
         builder.push("Sound Settings");
         SOUND_RANGE = builder
             .comment("Range in blocks for general sound packets (also determines volume).")
-            .defineInRange("soundRange", 32.0, 1.0, 4096.0);
+            .defineInRange("soundRange", 48.0, 1.0, 4096.0);
         GUN_FIRE_SOUND_RANGE = builder
             .comment("Range in blocks for gun fire sound packets (also determines volume).")
-            .defineInRange("gunFireSoundRange", 96.0, 1.0, 4096.0);
+            .defineInRange("gunFireSoundRange", 128.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder
             .comment("Range in blocks for explosion sound packets (also determines volume).")
-            .defineInRange("explosionSoundRange", 128.0, 1.0, 4096.0);
+            .defineInRange("explosionSoundRange", 256.0, 1.0, 4096.0);
         builder.pop();
 
         builder.push("Penetration System Settings");

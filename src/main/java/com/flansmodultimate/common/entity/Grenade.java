@@ -135,7 +135,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             angularVelocity = new Vec3(0, 0, 10);
 
         if (grenadeType.getThrowSound() != null)
-            PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), ModCommonConfig.get().soundRange(), level.dimension(), grenadeType.getThrowSound(), true);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), grenadeType.getThrowSound(), true);
 
         thrower = entity;
         // If this can be remotely detonated, add it to the players detonate list
@@ -709,7 +709,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                 .ifPresent(entity -> {
                     if (configType.isAllowStickSound())
                     {
-                        PacketPlaySound.sendSoundPacket(getX(), getY(), getZ(), configType.getStickSoundRange(), level.dimension(), configType.getStickSound(), true);
+                        PacketPlaySound.sendSoundPacket(this, configType.getStickSoundRange(), configType.getStickSound(), true);
                     }
                     stickedEntity = entity;
                 });
@@ -792,7 +792,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         PacketHandler.sendToAllAround(new PacketFlak(position(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), position(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
 
         if (configType.isFlashSoundEnable())
-            PacketPlaySound.sendSoundPacket(position(), configType.getFlashSoundRange(), level.dimension(), configType.getFlashSound(), true);
+            PacketPlaySound.sendSoundPacket(this, configType.getFlashSoundRange(), configType.getFlashSound(), true);
 
         PacketHandler.sendToAllAround(new PacketFlashBang(configType.getFlashTime()), position(), configType.getFlashRange(), level.dimension());
 

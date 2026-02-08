@@ -160,7 +160,7 @@ public final class ShootingHelper
         if (bulletHit instanceof DriveableHit driveableHit)
         {
             if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
-                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             AtomicBoolean isFriendly = new AtomicBoolean(false);
             driveableHit.getDriveable().setLastAtkEntity(owner);
@@ -199,7 +199,7 @@ public final class ShootingHelper
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
             if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
-                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             float prevPenetratingPower = penetratingPower;
             HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet);
@@ -218,7 +218,7 @@ public final class ShootingHelper
             Entity entity = entityHit.getEntity();
 
             if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
-                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true);
+                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             if (owner instanceof Player)
                 lastHitPenAmount = 1F;
@@ -322,7 +322,7 @@ public final class ShootingHelper
         if (hitToUse == null)
             return;
 
-        PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true);
+        PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
     }
 
     private static Optional<String> resolveImpactSound(BlockState state, Block block, BulletType type)
@@ -460,7 +460,7 @@ public final class ShootingHelper
 
     private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
     {
-        PacketPlaySound.sendSoundPacket(position, ModCommonConfig.get().explosionSoundRange(), level.dimension(), type.getDetonateSound(), true);
+        PacketPlaySound.sendSoundPacket(position, ModCommonConfig.get().explosionSoundRange(), level.dimension(), type.getDetonateSound(), true, null);
     }
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)

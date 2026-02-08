@@ -206,12 +206,12 @@ public class GunItemHandler
 
             if (StringUtils.isNotBlank(item.configType.getShootSound()))
             {
-                PacketPlaySound.sendSoundPacket(player.position(), item.configType.getGunSoundRange(), level.dimension(), item.configType.getShootSound(), item.configType.isDistortSound(), item.configType.isSilencedSound(gunStack));
+                PacketPlaySound.sendSoundPacket(player, item.configType.getGunSoundRange(), item.configType.getShootSound(), item.configType.isDistortSound(), item.configType.isSilencedSound(gunStack));
                 item.soundDelay = item.configType.getShootSoundLength();
             }
 
             if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
-                PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.getX(), player.getY(), player.getZ(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false));
+                PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
 
             shootTime += shootDelay;
 

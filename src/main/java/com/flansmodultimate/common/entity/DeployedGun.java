@@ -607,7 +607,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
                     }
 
                     if (StringUtils.isNotBlank(configType.getDistantShootSound()))
-                        PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(), new PacketPlaySound(getX(), getY(), getZ(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false));
+                        PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(), new PacketPlaySound(position(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false, null));
                 }
 
                 shootTimer += shootDelay;

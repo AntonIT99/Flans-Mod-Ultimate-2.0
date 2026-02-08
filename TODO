@@ -1,4 +1,5 @@
 General:
+- Config Option to prevent glass breaking
 - Change Fire Mode
 - Tools
 - Armor & Gun Boxes
@@ -9,16 +10,12 @@ General:
 - Render Attachment Item in 3D?
 
 Sounds:
-- Use level.playSound() instead of sound packets when possible?
 - Assets/Sounds Priority list?
 
 Features:
 - Feature: APHEMixRatio, APMass, HEMass
 - Feature: set Bullet Speed in the ammo -> override gun bullet speed
 - Fragmentation Damage
-
-Bug Fixes:
-- Reload Sound positioned even for local player
 
 1.12.2 Features:
 - itemHolders
