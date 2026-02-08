@@ -1,0 +1,11 @@
+{
+    "Stielhandgranate 24": {
+        "properties": {
+            "ExplosiveMass": "0.165",
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "stielhandgranate"
+        ]
+    }
+}

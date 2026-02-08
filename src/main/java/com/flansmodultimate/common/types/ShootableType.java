@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -34,6 +35,38 @@ public abstract class ShootableType extends InfoType
     public static final float LAVA_DEFAULT_DRAG = 0.6F;
 
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
+
+    public enum EnumFragType
+    {
+        DEFAULT(0.0f, 0.0f, 0.0f),
+        /** Thin casing / offensive or concussion style (e.g., Stielhandgranate 24). */
+        LOW_FRAG(22.0f, 6.0f, 0.9f),
+        /** Typical fragmentation grenade (e.g., Mills bomb, Mk 2, many “standard” frags). */
+        STD_FRAG(35.0f, 10.0f, 2.2f),
+        /** Defensive / prefragmented / scored casing (large danger radius). */
+        HIGH_FRAG(65.0f, 14.0f, 4.5f),
+        /** Shrapnel-packed / IED-style (nails, ball bearings, pipe bomb). */
+        IED_SHRAPNEL(90.0f, 18.0f, 7.0f),
+        /** Artillery / mortar / HE rocket type casing fragments. */
+        HE_SHELL(50.0f, 13.0f, 3.8f),
+        /** General-purpose aerial bomb fragments (blast dominates, fragments still dangerous). */
+        GP_BOMB(40.0f, 13.0f, 2.6f),
+        /** Thick-case / penetrator / “earthquake” style (less long-range frag emphasis). */
+        THICK_CASE(28.0f, 10.0f, 1.4f),
+        /** Airburst / proximity-fused anti-personnel (optimized fragment distribution). */
+        AIRBURST_AP(80.0f, 13.0f, 5.5f);
+
+        public final float kFragRadius;
+        public final float kFragDamage;
+        public final float fragIntensity;
+
+        EnumFragType(float kFragRadius, float kFragDamage, float fragIntensity)
+        {
+            this.kFragRadius = kFragRadius;
+            this.kFragDamage = kFragDamage;
+            this.fragIntensity = fragIntensity;
+        }
+    }
 
     /** Controls whether it has full luminescence */
     @Getter
@@ -125,15 +158,26 @@ public abstract class ShootableType extends InfoType
     /** The radius in which to spread fire */
     @Getter
     protected float fireRadius;
-    /** The radius of explosion upon detonation */
+    /** The explosion radius upon detonation */
     protected float explosionRadius;
+    /** The explosion blast radius upon detonation */
+    protected float blastRadius;
+    /** The explosion frag radius upon detonation */
+    @Getter
+    protected float fragRadius;
     /** Power of explosion. Multiplier, 1 = vanilla behaviour */
     protected float explosionPower = 1F;
     /** Whether the explosion can destroy blocks */
     @Getter
     protected boolean explosionBreaksBlocks = true;
-    /** Explosion damage vs various classes of entities */
-    protected final DamageStats explosionDamage = new DamageStats();
+    /** Explosion blast damage vs various classes of entities */
+    protected DamageStats explosionBlastDamage = new DamageStats();
+    /** Explosion frag damage vs various classes of entities */
+    @Getter
+    protected DamageStats explosionFragDamage = new DamageStats();
+    @Getter
+    protected float fragIntensity;
+    protected EnumFragType fragType = EnumFragType.DEFAULT;
     /** The name of the item to drop upon detonating */
     @Getter
     protected String dropItemOnDetonate;
@@ -250,22 +294,60 @@ public abstract class ShootableType extends InfoType
         explosionRadius = readValue("ExplosionRadius", explosionRadius, file);
         explosionRadius = readValue("Explosion", explosionRadius, file);
         explosionPower = readValue("ExplosionPower", explosionPower, file);
-        explosionDamage.setDamage(readValue("ExplosionDamage", explosionDamage.getDamage(), file));
-        explosionDamage.setDamage(readValue("ExplosionDamageVsEntity", explosionDamage.getDamage(), file));
-        explosionDamage.setReadDamage(file.hasConfigLine("ExplosionDamage") || file.hasConfigLine("ExplosionDamageVsEntity"));
-        explosionDamage.setDamageVsLiving(readValue("ExplosionDamageVsLiving", explosionDamage.getDamageVsLiving(), file));
-        explosionDamage.setReadDamageVsLiving(file.hasConfigLine("ExplosionDamageVsLiving"));
-        explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayer", explosionDamage.getDamageVsPlayer(), file));
-        explosionDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayers", explosionDamage.getDamageVsPlayer(), file));
-        explosionDamage.setReadDamageVsPlayer(file.hasConfigLine("ExplosionDamageVsPlayer") || file.hasConfigLine("ExplosionDamageVsPlayers"));
-        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicle", explosionDamage.getDamageVsVehicles(), file));
-        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicles", explosionDamage.getDamageVsVehicles(), file));
-        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivable", explosionDamage.getDamageVsVehicles(), file));
-        explosionDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivables", explosionDamage.getDamageVsVehicles(), file));
-        explosionDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles") || file.hasConfigLine("ExplosionDamageVsDrivable") || file.hasConfigLine("ExplosionDamageVsDrivables"));
-        explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlane", explosionDamage.getDamageVsPlanes(), file));
-        explosionDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlanes", explosionDamage.getDamageVsPlanes(), file));
-        explosionDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
+        explosionBlastDamage.setDamage(readValue("BlastDamage", explosionBlastDamage.getDamage(), file));
+        explosionBlastDamage.setDamage(readValue("ExplosionDamage", explosionBlastDamage.getDamage(), file));
+        explosionBlastDamage.setDamage(readValue("ExplosionDamageVsEntity", explosionBlastDamage.getDamage(), file));
+        explosionBlastDamage.setReadDamage(file.hasConfigLine("ExplosionDamage") || file.hasConfigLine("ExplosionDamageVsEntity"));
+        explosionBlastDamage.setDamageVsLiving(readValue("ExplosionDamageVsLiving", explosionBlastDamage.getDamageVsLiving(), file));
+        explosionBlastDamage.setReadDamageVsLiving(file.hasConfigLine("ExplosionDamageVsLiving"));
+        explosionBlastDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayer", explosionBlastDamage.getDamageVsPlayer(), file));
+        explosionBlastDamage.setDamageVsPlayer(readValue("ExplosionDamageVsPlayers", explosionBlastDamage.getDamageVsPlayer(), file));
+        explosionBlastDamage.setReadDamageVsPlayer(file.hasConfigLine("ExplosionDamageVsPlayer") || file.hasConfigLine("ExplosionDamageVsPlayers"));
+        explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicle", explosionBlastDamage.getDamageVsVehicles(), file));
+        explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicles", explosionBlastDamage.getDamageVsVehicles(), file));
+        explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivable", explosionBlastDamage.getDamageVsVehicles(), file));
+        explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDrivables", explosionBlastDamage.getDamageVsVehicles(), file));
+        explosionBlastDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles") || file.hasConfigLine("ExplosionDamageVsDrivable") || file.hasConfigLine("ExplosionDamageVsDrivables"));
+        explosionBlastDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlane", explosionBlastDamage.getDamageVsPlanes(), file));
+        explosionBlastDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlanes", explosionBlastDamage.getDamageVsPlanes(), file));
+        explosionBlastDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
+
+        blastRadius = readValue("BlastRadius", blastRadius, file);
+        fragRadius = readValue("BlastRadius", fragRadius, file);
+        fragIntensity = readValue("FragIntensity", fragIntensity, file);
+        explosionFragDamage.setDamage(readValue("FragDamage", explosionFragDamage.getDamage(), file));
+        explosionFragDamage.setDamage(readValue("FragDamageVsEntity", explosionFragDamage.getDamage(), file));
+        explosionFragDamage.setReadDamage(file.hasConfigLine("FragDamage") || file.hasConfigLine("FragDamageVsEntity"));
+        explosionFragDamage.setDamageVsLiving(readValue("FragDamageVsLiving", explosionFragDamage.getDamageVsLiving(), file));
+        explosionFragDamage.setReadDamageVsLiving(file.hasConfigLine("FragDamageVsLiving"));
+        explosionFragDamage.setDamageVsPlayer(readValue("FragDamageVsPlayer", explosionFragDamage.getDamageVsPlayer(), file));
+        explosionFragDamage.setDamageVsPlayer(readValue("FragDamageVsPlayers", explosionFragDamage.getDamageVsPlayer(), file));
+        explosionFragDamage.setReadDamageVsPlayer(file.hasConfigLine("FragDamageVsPlayer") || file.hasConfigLine("FragDamageVsPlayers"));
+        explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsVehicle", explosionFragDamage.getDamageVsVehicles(), file));
+        explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsVehicles", explosionFragDamage.getDamageVsVehicles(), file));
+        explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDrivable", explosionFragDamage.getDamageVsVehicles(), file));
+        explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDrivables", explosionFragDamage.getDamageVsVehicles(), file));
+        explosionFragDamage.setReadDamageVsVehicles(file.hasConfigLine("FragDamageVsVehicle") || file.hasConfigLine("FragDamageVsVehicles") || file.hasConfigLine("FragDamageVsDrivable") || file.hasConfigLine("FragDamageVsDrivables"));
+        explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlane", explosionFragDamage.getDamageVsPlanes(), file));
+        explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlanes", explosionFragDamage.getDamageVsPlanes(), file));
+        explosionFragDamage.setReadDamageVsPlanes(file.hasConfigLine("FragDamageVsPlane") || file.hasConfigLine("FragDamageVsPlanes"));
+
+        fragType = readValue("FragType", fragType, EnumFragType.class, file);
+        if (fragType != EnumFragType.DEFAULT)
+        {
+            if (useTNTEquivalentDamageSystem())
+            {
+                explosionFragDamage = new DamageStats();
+                explosionFragDamage.setDamage((float) (fragType.kFragDamage * Math.cbrt(explosiveMass)));
+                fragRadius = (float) (fragType.kFragRadius * Math.cbrt(explosiveMass));
+            }
+            fragIntensity = fragType.fragIntensity;
+        }
+
+        damage.calculate();
+        explosionFragDamage.calculate();
+        explosionBlastDamage.scale(8F * explosionRadius + 1F);
+        explosionBlastDamage.calculate();
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readValue("DetonateSound", detonateSound, file);
@@ -278,22 +360,18 @@ public abstract class ShootableType extends InfoType
         trailParticleType = readValue("TrailParticleType", trailParticleType, file);
         explodeParticles = readValue("NumExplodeParticles", explodeParticles, file);
         explodeParticleType = readValue("ExplodeParticles", explodeParticleType, file);
-
-        damage.calculate();
-        explosionDamage.scale(8F * explosionRadius + 1F);
-        explosionDamage.calculate();
     }
 
-    public DamageStats getExplosionDamage()
+    public DamageStats getExplosionBlastDamage()
     {
         if (useTNTEquivalentDamageSystem())
         {
             DamageStats newExplosionDamage = new DamageStats();
-            newExplosionDamage.setDamage(ModCommonConfig.get().newDamageSystemExplosiveReference() * Mth.sqrt(explosiveMass));
+            newExplosionDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveMass)));
             newExplosionDamage.calculate();
             return newExplosionDamage;
         }
-        return explosionDamage;
+        return explosionBlastDamage;
     }
 
     public float getExplosionRadius()
@@ -301,6 +379,15 @@ public abstract class ShootableType extends InfoType
         if (useTNTEquivalentDamageSystem())
         {
             return (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveMass));
+        }
+        return explosionRadius;
+    }
+
+    public float getBlastRadius()
+    {
+        if (useTNTEquivalentDamageSystem())
+        {
+            return ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * getExplosionRadius();
         }
         return explosionRadius;
     }
@@ -314,10 +401,15 @@ public abstract class ShootableType extends InfoType
         return explosionPower;
     }
 
+    public FlanExplosion.Stats getExplosionStats()
+    {
+        return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
+    }
+
     public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemReference() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
             return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }

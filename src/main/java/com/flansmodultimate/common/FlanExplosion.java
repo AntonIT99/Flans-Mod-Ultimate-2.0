@@ -44,6 +44,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,22 +53,19 @@ import java.util.Set;
 public class FlanExplosion extends Explosion
 {
     protected static final double EXPLOSION_PARTICLE_RANGE = 256;
-    protected static final float HALF_DAMAGE_RADIUS_FRACTION = 0.7F;
     protected static final float KNOCKBACK_MULTIPLAYER = 1F;
     
     // Config
     protected final boolean causesFire;
     protected final boolean breaksBlocks;
     protected final boolean canDamageSelf;
-    protected final DamageStats damage;
 
     // Core Context
     protected final Level level;
     protected final Vec3 center;
-    protected final float radius;
-    protected final float power;
     protected final int smokeCount;
     protected final int debrisCount;
+    protected final Stats stats;
     
     @Nullable
     protected final LivingEntity causingEntity;
@@ -77,33 +75,49 @@ public class FlanExplosion extends Explosion
     protected final List<BlockPos> affectedBlockPositions;
     protected final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
-    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
+    /**
+     * Stats of the Explosion
+     * @param explosionRadius radius of main explosion visuals (particles) and block breaking
+     * @param explosionPower power of breaking blocks within explosion radius
+     * @param blastRadius radius of overpressure hurting entities (blast)
+     * @param fragRadius radius of fragmentation damage
+     * @param fragIntensity intensity of fragmentation
+     * @param blastDamage max damage dealt to entities within blast radius
+     * @param fragDamage max damage dealt to entities within frag radius
+     */
+    public record Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage, float fragRadius, float fragIntensity, DamageStats fragDamage)
     {
-        this(level, explosive, causingEntity, x, y, z, type.getExplosionRadius(), type.getExplosionPower(), type.getFireRadius() > 0,
-            type.isExplosionBreaksBlocks() && ModCommonConfig.get().explosionsBreakBlocks() && FlansMod.teamsManager.isExplosionsBreakBlocks(),
-            type.getExplosionDamage(), type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+        public Stats
+        {
+            // Ensure blastRadius >= explosionRadius
+            if (blastRadius < explosionRadius)
+                blastRadius = explosionRadius;
+        }
     }
 
-    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, float explosionRadius, float explosionPower,
-                         boolean causesFire, boolean breaksBlocks, DamageStats damage, int smokeCount, int debrisCount, boolean canDamageSelf)
+    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
-        super(level, explosive, x, y, z, explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
+        this(level, explosive, causingEntity, x, y, z, type.getExplosionStats(), type.getFireRadius() > 0,
+            type.isExplosionBreaksBlocks() && ModCommonConfig.get().explosionsBreakBlocks() && FlansMod.teamsManager.isExplosionsBreakBlocks(),
+            type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
+    }
+
+    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, Stats stats, boolean causesFire, boolean breaksBlocks, int smokeCount, int debrisCount, boolean canDamageSelf)
+    {
+        super(level, explosive, x, y, z, stats.explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
         this.level = level;
         this.explosive = explosive;
         this.causingEntity = causingEntity;
 
         center = new Vec3(x, y, z);
-        radius = explosionRadius;
-        power = explosionPower;
+        this.stats = stats;
 
         this.causesFire = causesFire;
         this.breaksBlocks = breaksBlocks;
-
-        this.canDamageSelf = canDamageSelf;
-        this.damage = damage;
         this.smokeCount = smokeCount;
         this.debrisCount = debrisCount;
+        this.canDamageSelf = canDamageSelf;
 
         affectedBlockPositions = Lists.newArrayList();
         damageCalculator = (explosive == null) ? new ExplosionDamageCalculator() : new EntityBasedExplosionDamageCalculator(explosive);
@@ -145,7 +159,7 @@ public class FlanExplosion extends Explosion
 
         if (spawnParticles)
         {
-            if (radius >= 2.0F && interactsWithBlocks())
+            if (stats.explosionRadius >= 2.0F)
                 sl.sendParticles(ParticleTypes.EXPLOSION_EMITTER, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
             else
                 sl.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
@@ -183,10 +197,11 @@ public class FlanExplosion extends Explosion
             }
         }
 
-        if (spawnParticles && interactsWithBlocks() && !getToBlow().isEmpty())
-            PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, radius, getToBlow()), center, Math.max(EXPLOSION_PARTICLE_RANGE, radius), level.dimension());
-
-        PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount, radius), center, Math.max(EXPLOSION_PARTICLE_RANGE, radius), level.dimension());
+        if (spawnParticles)
+        {
+            PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, affectedBlockPositions), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount, stats.blastRadius), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
+        }
     }
 
     @Override
@@ -206,17 +221,17 @@ public class FlanExplosion extends Explosion
     @NotNull
     public List<BlockPos> getToBlow()
     {
+        if (!breaksBlocks)
+            return Collections.emptyList();
         return affectedBlockPositions;
     }
 
     protected void doBreakBlocks()
     {
         affectedBlockPositions.clear();
-        if (!breaksBlocks)
-            return;
 
         // Prevent extreme CPU load when radius gets big
-        int samples = Mth.clamp(Mth.ceil(radius * 2.0F), 16, 48);
+        int samples = Mth.clamp(Mth.ceil(stats.explosionRadius * 2.0F), 16, 48);
 
         Set<BlockPos> toBlow = new HashSet<>();
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
@@ -226,7 +241,7 @@ public class FlanExplosion extends Explosion
 
         // A "ray energy" budget. Since you set power ∝ cbrt(W) and radius ∝ cbrt(W),
         // power * radius ∝ W^(2/3), which is already strongly scaling.
-        float rayStartBudget = power * radius * (0.85F + level.random.nextFloat() * 0.3F);
+        float rayStartBudget = stats.explosionPower * stats.explosionRadius * (0.85F + level.random.nextFloat() * 0.3F);
 
         for (int j = 0; j < samples; ++j)
         {
@@ -255,7 +270,7 @@ public class FlanExplosion extends Explosion
                     double pz = center.z;
 
                     // march until out of energy or out of radius
-                    for (float traveled = 0.0F; budget > 0.0F && traveled < radius; traveled += step)
+                    for (float traveled = 0.0F; budget > 0.0F && traveled < stats.explosionRadius; traveled += step)
                     {
                         int bx = Mth.floor(px);
                         int by = Mth.floor(py);
@@ -297,8 +312,32 @@ public class FlanExplosion extends Explosion
     {
         hitPlayers.clear();
 
-        // Query range: use radius directly (and a bit extra for knockback/edge effects)
-        float queryRadius = radius + 2.0F;
+        List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !e.ignoreExplosion());
+        ForgeEventFactory.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
+
+        for (Entity e : entities)
+        {
+            double distance = e.getEyePosition().distanceTo(center);
+
+            // occlusion
+            double seen = Explosion.getSeenPercent(center, e);
+            // blast falloff
+            double blastFalloff = getBlastFalloff(distance, stats.blastRadius());
+            // blast damage
+            double blastDamage = distance <= stats.blastRadius() ? getBlastDamage(e, seen, blastFalloff) : 0.0;
+            // frag damage
+            double fragDamage = distance <= stats.fragRadius() ? getFragDamage(e, seen, distance, stats.fragRadius(), stats.fragIntensity()) : 0.0;
+            // final damage
+            float explosionDamage = (float) (blastDamage + fragDamage);
+
+            applyDamage(e, explosionDamage);
+            applyKnockback(e, seen, blastFalloff);
+        }
+    }
+
+    protected AABB getHurtEntitiesAabb()
+    {
+        float queryRadius = Math.max(stats.blastRadius, stats.fragRadius) + 2.0F;
 
         int minX = Mth.floor(center.x - queryRadius - 1.0D);
         int maxX = Mth.floor(center.x + queryRadius + 1.0D);
@@ -307,85 +346,138 @@ public class FlanExplosion extends Explosion
         int minZ = Mth.floor(center.z - queryRadius - 1.0D);
         int maxZ = Mth.floor(center.z + queryRadius + 1.0D);
 
-        AABB aabb = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
 
-        List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, aabb, e -> !e.ignoreExplosion());
+    protected double getBlastDamage(Entity e, double seen, double falloff)
+    {
+        return getBlastMaxDamage(e) * seen * Math.pow(falloff, 0.5);
+    }
 
-        ForgeEventFactory.onExplosionDetonate(level, this, entities, radius);
+    protected static double getBlastFalloff(double distanceToEntity, double radius)
+    {
+        // normalized distance based on radius
+        double normalizedDistance = distanceToEntity / Math.max(0.001, radius);
 
-        for (Entity e : entities)
+        // blast-like falloff based on radius
+        double falloff = 1.0 / (1.0 + Math.pow(normalizedDistance * ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio(), 3.0));
+
+        // soft cutoff so it’s ~0 at the edge of radius
+        double edge = 1.0 - normalizedDistance;
+        edge = Math.max(edge, 0.0);
+        double cutoff = edge * edge; // edge^2 feels good; edge^3 is harsher
+        falloff *= cutoff;
+
+        return falloff;
+    }
+
+    protected double getBlastMaxDamage(Entity e)
+    {
+        Entity proxy = e;
+        float extra = 1.0F;
+        if (e instanceof Wheel wheel)
         {
-            // distance from explosion center to entity (blocks)
-            double dx = e.getX() - center.x;
-            double dy = e.getEyeY() - center.y;
-            double dz = e.getZ() - center.z;
-            double r = Math.sqrt(dx*dx + dy*dy + dz*dz);
-            if (r < 1.0e-6)
-                return;
-
-            // normalized direction (for knockback)
-            double invR = 1.0 / r;
-            double ndx = dx * invR;
-            double ndy = dy * invR;
-            double ndz = dz * invR;
-
-            // normalized distance based on radius
-            double u = r / Math.max(0.001, radius);
-            if (u >= 1.5)
-                return;
-
-            // blast-like falloff based on radius
-            double falloff = 1.0 / (1.0 + Math.pow(u / HALF_DAMAGE_RADIUS_FRACTION, 3.0));
-
-            // soft cutoff so it’s ~0 at the edge of radius
-            double edge = 1.0 - u;
-            edge = Math.max(edge, 0.0);
-            double cutoff = edge * edge; // edge^2 feels good; edge^3 is harsher
-            falloff *= cutoff;
-
-            // occlusion
-            double seen = Explosion.getSeenPercent(center, e);
-            if (seen <= 0.0)
-                return;
-
-            Entity proxy = e;
-            float extra = 1.0F;
-
-            if (e instanceof Wheel wheel)
-            {
-                proxy = wheel.getDriveable();
-                extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
-            }
-            else if (e instanceof Seat seat)
-            {
-                proxy = seat.getDriveable();
-                extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
-            }
-
-            float mult = damage.getDamageAgainstEntity(proxy);
-
-            // Final damage
-            float explosionDamage = (float) (damage.getDamage() * falloff * seen) * mult * extra;
-
-            if (explosionDamage > 0.1F)
-            {
-                DamageSource src = FlanDamageSources.createDamageSource(level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
-                boolean hurt = e.hurt(src, explosionDamage);
-                if (hurt && causingEntity instanceof ServerPlayer sp)
-                    PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), sp);
-            }
-
-            // Knockback: also scaled-distance based
-            double kb = falloff * seen * KNOCKBACK_MULTIPLAYER;
-
-            if (e instanceof LivingEntity living)
-                kb = ProtectionEnchantment.getExplosionKnockbackAfterDampener(living, kb);
-
-            e.setDeltaMovement(e.getDeltaMovement().add(ndx * kb, ndy * kb, ndz * kb));
-            e.hurtMarked = true;
-
-            if (e instanceof Player pl && !pl.isSpectator() && !(pl.getAbilities().flying && pl.getAbilities().instabuild))
-                hitPlayers.put(pl, new Vec3(ndx * kb, ndy * kb, ndz * kb));
+            proxy = wheel.getDriveable();
+            extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
         }
+        else if (e instanceof Seat seat)
+        {
+            proxy = seat.getDriveable();
+            extra *= ModCommonConfig.get().vehicleWheelSeatExplosionModifier();
+        }
+        return stats.blastDamage.getDamageAgainstEntity(proxy) * extra;
+    }
+
+    protected double getFragDamage(Entity e, double seen, double distanceToEntity, double radius, double fragIntensity)
+    {
+        return getFragMaxDamage(e) * getFragHitChance(seen, distanceToEntity, radius, fragIntensity);
+    }
+
+    protected double getFragMaxDamage(Entity e)
+    {
+        Entity proxy = e;
+        if (e instanceof Wheel wheel)
+            proxy = wheel.getDriveable();
+        else if (e instanceof Seat seat)
+            proxy = seat.getDriveable();
+        return stats.fragDamage.getDamageAgainstEntity(proxy);
+    }
+
+    /**
+     * Computes the probability that an entity is hit by at least one meaningful fragment.
+     *  fragIntensity = category knob (e.g. 0.8, 2.0, 4.0)
+     */
+    protected static double getFragHitChance(double seen, double distanceToEntity, double radius, double fragIntensity)
+    {
+        if (radius <= 0.0 || fragIntensity <= 0.0)
+            return 0.0;
+        if (distanceToEntity >= radius)
+            return 0.0;
+
+        // Normalize distance to [0, 1]
+        double x = distanceToEntity / Math.max(0.001, radius);
+        x = Math.max(0.0, Math.min(1.0, x));
+
+        // How strongly cover reduces fragments (higher = more cover effectiveness)
+        double lambda = getLambda(fragIntensity, seen, x);
+
+        // Numerical safety: if lambda is huge, exp(-lambda) underflows to 0 anyway
+        double pHit = 1.0 - Math.exp(-lambda);
+
+        // Clamp to [0, 1]
+        return Math.max(0.0, Math.min(1.0, pHit));
+    }
+
+    private static double getLambda(double fragIntensity, double seen, double x)
+    {
+        // Edge taper exponent (higher = sharper drop near the edge)
+        final double beta = 1.5; // 1.0–2.5 typically
+        // Prevents blow-up near x=0; also controls "point-blank always hits"
+        final double eps = 0.02; // 0.01–0.05 typically
+
+        // Occlusion factor: fragments are very sensitive to cover (2.0–4.0 typically)
+        double occ = Math.pow(seen, 3.0);
+
+        // Fragment areal density approximation:
+        //  - 1/(x^2 + eps) gives the ~1/d^2 thinning
+        //  - (1-x)^beta ensures near-edge goes to 0
+        double density = Math.pow(1.0 - x, beta) / (x * x + eps);
+
+        // Expected hits (lambda) then Poisson probability of >= 1 hit
+        return fragIntensity * density * occ;
+    }
+
+    protected void applyDamage(Entity e, float damage)
+    {
+        if (damage < 0.1F)
+            return;
+
+        DamageSource src = FlanDamageSources.createDamageSource(level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
+        boolean hurt = e.hurt(src, damage);
+        if (hurt && causingEntity instanceof ServerPlayer sp)
+            PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), sp);
+    }
+
+    protected void applyKnockback(Entity e, double seen, double falloff)
+    {
+        if (seen < 0.001 || falloff < 0.001)
+            return;
+
+        // normalized direction (for knockback)
+        Vec3 direction = e.getEyePosition().subtract(center).normalize();
+
+        // Knockback: also scaled-distance based
+        double kb = falloff * seen * KNOCKBACK_MULTIPLAYER;
+        if (e instanceof LivingEntity living)
+            kb = ProtectionEnchantment.getExplosionKnockbackAfterDampener(living, kb);
+
+        // Knockback vector
+        Vec3 kbVec = direction.scale(kb);
+
+        e.setDeltaMovement(e.getDeltaMovement().add(kbVec));
+        e.hurtMarked = true;
+
+        if (e instanceof Player pl && !pl.isSpectator() && !(pl.getAbilities().flying && pl.getAbilities().instabuild))
+            hitPlayers.put(pl, kbVec);
     }
 }

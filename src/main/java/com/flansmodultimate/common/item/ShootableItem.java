@@ -59,12 +59,23 @@ public abstract class ShootableItem extends Item
 
         if (getConfigType().getExplosionRadius() > 0F)
         {
-            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionDamage(), "Explosion Damage");
             tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius(), 1)));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
+            tooltipComponents.add(IFlanItem.statLine("Explosion Blast Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius(), 1)));
+            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionBlastDamage(), "Explosion Blast Damage");
+
+            if (getConfigType().getFragRadius() > 0F)
+            {
+                tooltipComponents.add(IFlanItem.statLine("Explosion Frag Radius", IFlanItem.formatFloat(getConfigType().getFragRadius(), 1)));
+                IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionFragDamage(), "Explosion Frag Damage");
+                tooltipComponents.add(IFlanItem.statLine("Explosion Frag Intensity", IFlanItem.formatFloat(getConfigType().getFragIntensity(), 1)));
+            }
         }
 
-        if (getConfigType().getExplosionPower() > 1F || getConfigType().getExplosionPower() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
+        if (getConfigType().getFireRadius() > 0F)
+        {
+            tooltipComponents.add(IFlanItem.statLine("Fire Radius", IFlanItem.formatFloat(getConfigType().getFireRadius(), 1)));
+        }
 
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
             tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));

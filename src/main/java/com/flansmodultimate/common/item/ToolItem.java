@@ -150,12 +150,10 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         if (data.getRemoteExplosives().isEmpty())
             return InteractionResultHolder.pass(stack);
 
-        for (Grenade explosive : data.getRemoteExplosives())
-        {
-            explosive.detonate(level);
-            if (explosive.isDetonated())
-                data.getRemoteExplosives().remove(explosive);
-        }
+        List<Grenade> remotes = data.getRemoteExplosives();
+        for (Grenade g : remotes)
+            g.detonate(level);
+        remotes.removeIf(Grenade::isDetonated);
 
         if (!player.getAbilities().instabuild && configType.getToolLife() > 0)
             stack.setDamageValue(stack.getDamageValue() + 1);

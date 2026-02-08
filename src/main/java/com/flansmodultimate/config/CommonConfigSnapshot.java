@@ -39,10 +39,11 @@ public record CommonConfigSnapshot(
     boolean realisticRecoil,
     boolean enableSightDownwardMovement,
 
-    float newDamageSystemReference,
-    float newDamageSystemExplosiveReference,
+    float newDamageSystemDamageReference,
+    float newDamageSystemExplosiveDamageReference,
     float newDamageSystemExplosivePowerReference,
     float newDamageSystemExplosiveRadiusReference,
+    float newDamageSystemBlastToExplosionRadiusRatio,
     int shootableDefaultRespawnTime,
     boolean shootableProximityTriggerFriendlyFire,
 
@@ -94,10 +95,11 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.realisticRecoil);
         buf.writeBoolean(s.enableSightDownwardMovement);
 
-        buf.writeFloat(s.newDamageSystemReference);
-        buf.writeFloat(s.newDamageSystemExplosiveReference);
+        buf.writeFloat(s.newDamageSystemDamageReference);
+        buf.writeFloat(s.newDamageSystemExplosiveDamageReference);
         buf.writeFloat(s.newDamageSystemExplosivePowerReference);
         buf.writeFloat(s.newDamageSystemExplosiveRadiusReference);
+        buf.writeFloat(s.newDamageSystemBlastToExplosionRadiusRatio);
         buf.writeVarInt(s.shootableDefaultRespawnTime);
         buf.writeBoolean(s.shootableProximityTriggerFriendlyFire);
 
@@ -150,6 +152,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
 
+            buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),

@@ -157,7 +157,7 @@ public class ModClient
     @Getter @Setter
     private static float hitMarkerPenAmount = 1F;
     @Getter @Setter
-    private static boolean hitMarkerExplosion;
+    private static boolean hitMarkerExplosion; //TODO: Fix Hit marker for explosion
 
     //TODO: implement
     @Getter @Setter

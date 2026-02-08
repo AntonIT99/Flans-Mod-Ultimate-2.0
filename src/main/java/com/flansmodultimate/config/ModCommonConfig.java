@@ -48,10 +48,11 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
 
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO;
     private static final ForgeConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final ForgeConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
 
@@ -165,18 +166,21 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Shootable Settings");
-        NEW_DAMAGE_SYSTEM_REFERENCE = builder
+        NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder
             .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to a the damage of a 9g bullet at 333 m/s")
-            .defineInRange("newDamageSystemReference", 5.0, 0.0, 1000.0);
-        NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE = builder
+            .defineInRange("newDamageSystemDamageReference", 5.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE = builder
             .comment("Explosion damage reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the damage of 1kg TNT")
-            .defineInRange("newDamageSystemExplosiveReference", 80.0, 0.0, 1000.0);
+            .defineInRange("newDamageSystemExplosiveDamageReference", 80.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE = builder
             .comment("Explosion power reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the power of 1kg TNT")
-            .defineInRange("newDamageSystemExplosivePowerReference", 1.0, 0.0, 1000.0);
+            .defineInRange("newDamageSystemExplosivePowerReference", 4.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE = builder
             .comment("Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT")
             .defineInRange("newDamageSystemExplosiveRadiusReference", 10.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO = builder
+            .comment("Ratio of the blast radius (damage area) relative to the explosion radius (block breaking and particles area)")
+            .defineInRange("newDamageSystemBlastToExplosionRadiusRatio", 2.5, 0.0, 10.0);
         SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder
             .comment("Whether proximity triggers can get triggered by allies and cause friendly fire")
             .define("shootableProximityTriggerFriendlyFire", false);
@@ -254,10 +258,11 @@ public final class ModCommonConfig
             REALISTIC_RECOIL.get(),
             ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
 
-            NEW_DAMAGE_SYSTEM_REFERENCE.get().floatValue(),
-            NEW_DAMAGE_SYSTEM_EXPLOSIVE_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO.get().floatValue(),
             SHOOTABLE_DEFAULT_RESPAWN_TIME.get(),
             SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get(),
 

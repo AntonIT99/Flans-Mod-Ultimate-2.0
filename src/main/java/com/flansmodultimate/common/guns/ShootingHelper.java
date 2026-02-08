@@ -388,7 +388,7 @@ public final class ShootingHelper
 
         if (shootable != null && type.getMass() > 0F)
         {
-            return (float) (ModCommonConfig.get().newDamageSystemReference() * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
         }
         else
         {
