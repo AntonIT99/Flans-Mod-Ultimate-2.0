@@ -241,7 +241,7 @@ public class FlanExplosion extends Explosion
 
         // A "ray energy" budget. Since you set power ∝ cbrt(W) and radius ∝ cbrt(W),
         // power * radius ∝ W^(2/3), which is already strongly scaling.
-        float rayStartBudget = stats.explosionPower * stats.explosionRadius * (0.85F + level.random.nextFloat() * 0.3F);
+        float rayStartBudget = stats.explosionPower * (0.7F + level.random.nextFloat() * 0.6F);
 
         for (int j = 0; j < samples; ++j)
         {
