@@ -167,7 +167,7 @@ public final class ModCommonConfig
 
         builder.push("Shootable Settings");
         NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder
-            .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to a the damage of a 9g bullet at 333 m/s")
+            .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to the damage of a 9g bullet at 333 m/s")
             .defineInRange("newDamageSystemDamageReference", 5.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE = builder
             .comment("Explosion damage reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the damage of 1kg TNT")
