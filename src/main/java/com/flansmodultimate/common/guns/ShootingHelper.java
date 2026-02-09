@@ -296,7 +296,7 @@ public final class ShootingHelper
         playImpactSound(level, pos, state, shot.getBulletType());
 
         //Particles
-        spawnBlockHitParticles(level, hitResult, shootingMotion, shot.getBulletType(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE);
+        spawnBlockHitParticles(level, hitResult, shootingMotion, shot.getBulletType(), bullet);
 
         // Bounce / ricochet or stop
         if (bullet != null)
@@ -359,7 +359,7 @@ public final class ShootingHelper
         return Optional.empty();
     }
 
-    private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 shootingMotion, BulletType type, float bbWidth)
+    private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 shootingMotion, BulletType type, @Nullable Bullet bullet)
     {
         if (level.isClientSide)
             return;
@@ -372,7 +372,7 @@ public final class ShootingHelper
 
         Vec3 hitVec = hitResult.getLocation();
         Direction direction = hitResult.getDirection();
-        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionRadius(), type.getBlockHitFXScale(), bbWidth), hitVec, BLOCK_HIT_PARTICLE_RANGER, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, BLOCK_HIT_PARTICLE_RANGER, level.dimension());
     }
 
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
@@ -473,7 +473,7 @@ public final class ShootingHelper
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)
     {
-        if (type.getExplosionRadius() <= 0.1F)
+        if (type.getExplosionStats(explosive).explosionRadius() <= 0.1F)
             return;
 
         new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);

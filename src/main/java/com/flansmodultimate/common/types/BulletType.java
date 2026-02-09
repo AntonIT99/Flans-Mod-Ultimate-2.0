@@ -36,7 +36,6 @@ public class BulletType extends ShootableType
     @Getter
     protected final List<RoundEntry> period = new ArrayList<>();
     protected int periodLength;
-    @Getter
     protected float bulletSpeed;
     @Getter
     protected float speedMultiplier = 1F;
@@ -318,6 +317,15 @@ public class BulletType extends ShootableType
     public boolean useNewExplosionSystem()
     {
         return explosiveMass > 0F || hasDifferentRounds();
+    }
+
+    public float getBulletSpeed()
+    {
+        if (hasDifferentRounds())
+        {
+            return statsForShot(0).bulletSpeed;
+        }
+        return bulletSpeed;
     }
 
     @Override

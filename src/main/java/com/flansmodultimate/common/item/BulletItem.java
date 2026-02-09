@@ -52,17 +52,14 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
                     tooltipComponents.add(Component.literal("  " + round.name() + " (" + round.count() + ")").withStyle(ChatFormatting.DARK_AQUA)));
             }
 
-            if (configType.getBulletSpeed() > 0F)
+            if (configType.hasDifferentRounds())
             {
-                if (configType.hasDifferentRounds())
-                {
-                    tooltipComponents.add(Component.literal("Muzzle Velocity:").withStyle(ChatFormatting.BLUE));
-                    configType.getPeriod().forEach(round ->
-                        tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + "m/s").withStyle(ChatFormatting.GRAY)));
-                }
-                else
-                    tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + "m/s"));
+                tooltipComponents.add(Component.literal("Muzzle Velocity:").withStyle(ChatFormatting.BLUE));
+                configType.getPeriod().forEach(round ->
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + "m/s").withStyle(ChatFormatting.GRAY)));
             }
+            else if (configType.getBulletSpeed() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + "m/s"));
 
             tooltipComponents.add(IFlanItem.statLine("Penetration", IFlanItem.formatFloat(configType.getPenetratingPower())));
 
