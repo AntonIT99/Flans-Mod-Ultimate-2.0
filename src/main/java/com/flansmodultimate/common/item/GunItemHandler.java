@@ -158,7 +158,9 @@ public class GunItemHandler
 
     public void doCustomMelee(Level level, ServerPlayer player, PlayerData data, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || !item.configType.isUsableByPlayers() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
+        if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
+            return;
+        if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
 
         if (StringUtils.isNotBlank(item.configType.getMeleeSound()))
@@ -172,7 +174,9 @@ public class GunItemHandler
     {
         //TODO: compare with tryToShoot() and shoot() (Server side)
 
-        if (item.configType.isDeployable() || !item.configType.isUsableByPlayers() || !gunCanBeHandled(player))
+        if (item.configType.isDeployable() || !gunCanBeHandled(player))
+            return;
+        if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);

@@ -22,8 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.flansmodultimate.util.TypeReaderUtils.hasValueForConfigField;
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ShootableType extends InfoType
@@ -35,6 +34,9 @@ public abstract class ShootableType extends InfoType
     public static final float LAVA_DEFAULT_DRAG = 0.6F;
 
     private static final Map<IContentProvider, Map<String, ShootableType>> registeredAmmoList = new HashMap<>();
+
+    @Getter
+    private static final Map<String, List<ShootableType>> additionalAmmoMapping = new HashMap<>();
 
     public enum EnumFragType
     {
@@ -214,6 +216,8 @@ public abstract class ShootableType extends InfoType
     protected void read(TypeFile file)
     {
         super.read(file);
+
+        readLines("AddAmmoFor", file).ifPresent(lines -> lines.forEach(type -> additionalAmmoMapping.computeIfAbsent(type, key -> new ArrayList<>()).add(this)));
 
         //Item Stuff
         maxStackSize = readValue("StackSize", maxStackSize, file);
@@ -401,6 +405,7 @@ public abstract class ShootableType extends InfoType
         return explosionPower;
     }
 
+    @SuppressWarnings("java:S1172")
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
         return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
@@ -418,7 +423,7 @@ public abstract class ShootableType extends InfoType
         return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
     }
 
-    public static List<ShootableType> getAmmoTypes(Set<String> shortnames, IContentProvider contentPack)
+    public static List<ShootableType> findAmmoTypes(Set<String> shortnames, IContentProvider contentPack)
     {
         ArrayList<ShootableType> list = new ArrayList<>();
         for (String shortname : shortnames)
@@ -437,8 +442,8 @@ public abstract class ShootableType extends InfoType
         return list;
     }
 
-    public static Optional<ShootableType> getAmmoType(String shortname, IContentProvider contentPack)
+    public static Optional<ShootableType> findAmmoType(String shortname, IContentProvider contentPack)
     {
-        return getAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
+        return findAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
     }
 }

@@ -3,6 +3,8 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
@@ -13,9 +15,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -44,6 +49,16 @@ public final class CommonEventHandler
     @Getter
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
+
+    @SubscribeEvent
+    public void onWorldLoad(LevelEvent.Load event)
+    {
+        if (event.getLevel().isClientSide())
+            return;
+
+        FlansMod.teamsManager.setExplosionsBreakBlocks(ModCommonConfig.get().explosionsBreakBlocks());
+        FlansMod.teamsManager.setCanBreakGlass(ModCommonConfig.get().shootablesCanBreakGlass());
+    }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
@@ -146,6 +161,14 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
+    public static void onLivingAttack(LivingAttackEvent event)
+    {
+        LivingEntity entity = event.getEntity();
+        if (entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat)
+            event.setCanceled(true);
+    }
+
+    @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event)
     {
         LivingEntity entity = event.getEntity();
@@ -154,7 +177,7 @@ public final class CommonEventHandler
         if (entity.level().isClientSide)
             return;
 
-        if (event.getEntity() instanceof Player || event.getEntity() instanceof Mob)
+        if (entity instanceof Player || entity instanceof Mob)
         {
             if (ModCommonConfig.get().enableOldArmorRatioSystem())
                 CustomArmorItem.applyOldArmorRatioSystem(event, entity);
@@ -167,5 +190,13 @@ public final class CommonEventHandler
                 CustomArmorItem.applyArmorBulletDefense(event, entity);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event)
+    {
+        LivingEntity entity = event.getEntity();
+        if (entity instanceof Player player)
+            PlayerData.getInstance(player).playerKilled();
     }
 }

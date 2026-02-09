@@ -938,7 +938,7 @@ public class GunType extends PaintableType implements IScope
     public Optional<ShootableType> getDefaultAmmo()
     {
         if (!ammo.isEmpty()) {
-            return ShootableType.getAmmoType(ammo.iterator().next(), contentPack);
+            return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
         }
         return Optional.empty();
     }
@@ -957,7 +957,12 @@ public class GunType extends PaintableType implements IScope
 
     public List<ShootableType> getAmmoTypes()
     {
-        return ShootableType.getAmmoTypes(ammo, contentPack);
+        List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
+        List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
+        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size());
+        ammoTypes.addAll(ammoInGunType);
+        ammoTypes.addAll(ammoFromAdditionalMapping);
+        return ammoTypes;
     }
 
     /**

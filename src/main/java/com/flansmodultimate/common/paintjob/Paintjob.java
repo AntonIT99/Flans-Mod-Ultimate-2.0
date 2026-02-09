@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -69,6 +70,7 @@ public class Paintjob
         return !type.getNonLegendaryPaintjobs().containsKey(id);
     }
 
+    @Unmodifiable
     public List<ItemStack> getDyesNeeded()
     {
         return dyesNeeded.stream().map(Supplier::get).toList();

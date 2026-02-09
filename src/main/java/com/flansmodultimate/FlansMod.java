@@ -30,6 +30,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixins;
 
@@ -317,6 +318,7 @@ public class FlansMod
             soundsOrigins.put(rl, typeFile);
     }
 
+    @Unmodifiable
     public static List<RegistryObject<Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
@@ -327,6 +329,7 @@ public class FlansMod
         return items.get(type);
     }
 
+    @Unmodifiable
     public static List<RegistryObject<Item>> getItems(Set<EnumType> types)
     {
         return types.stream().map(items::get).flatMap(List::stream).toList();

@@ -290,7 +290,7 @@ public final class ShootingHelper
         }
 
         // Special handling: glass breaking
-        handleGlassBreak(level, pos, state, shot);
+        handleGlassBreak(level, pos, state, shot.getAttacker().orElse(null), shot.getBulletType());
 
         // Impact sound
         playImpactSound(level, pos, state, shot.getBulletType());
@@ -305,12 +305,12 @@ public final class ShootingHelper
         return penetratingPower;
     }
 
-    private static void handleGlassBreak(Level level, BlockPos pos, BlockState state, FiredShot shot)
+    public static void handleGlassBreak(Level level, BlockPos pos, BlockState state, Entity causingEntity, ShootableType type)
     {
-        if (level.isClientSide || !shot.getBulletType().isBreaksGlass() || !ModUtils.isGlass(state) || !FlansMod.teamsManager.isCanBreakGlass())
+        if (level.isClientSide || !ModUtils.isGlass(state) || !type.isBreaksGlass() || !FlansMod.teamsManager.isCanBreakGlass())
             return;
 
-        ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
+        ModUtils.destroyBlock((ServerLevel) level, pos, causingEntity, false);
     }
 
     private static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)

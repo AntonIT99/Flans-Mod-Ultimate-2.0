@@ -15,6 +15,7 @@ import com.flansmodultimate.common.item.GunItemHandler;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
@@ -120,7 +121,9 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void tickGunItem(GunItem gunItem, Level level, Player player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean dualWield)
     {
-        if (player != Minecraft.getInstance().player || gunItem.getConfigType().isDeployable() || !gunItem.getConfigType().isUsableByPlayers() || !gunItem.getGunItemHandler().gunCanBeHandled(player))
+        if (player != Minecraft.getInstance().player || gunItem.getConfigType().isDeployable() || !gunItem.getGunItemHandler().gunCanBeHandled(player))
+            return;
+        if ((!gunItem.getConfigType().isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
 
         GunType configType = gunItem.getConfigType();

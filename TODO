@@ -1,17 +1,11 @@
 General:
-- Config Option: all guns usable by players
-- Config Option to prevent glass breaking
 - Change Fire Mode
-- Tools
 - Armor & Gun Boxes
+- PlayerStats
 - Team Mod / Commands
 - Teams & classes
 - Recipes
 - Check for content packs put by mistake in mods folder?
-- Render Attachment Item in 3D?
-
-Sounds:
-- Assets/Sounds Priority list?
 
 1.12.2 Features:
 - itemHolders
@@ -25,6 +19,12 @@ Driveable Features:
 - Vehicles
 - Planes
 - Mechas & Mecha Items
+
+New Render Features:
+- Render Attachment Item in 3D?
+
+New Sound Features:
+- Assets/Sounds Priority list?
 
 Testing:
 - Dedicated Server Testing
@@ -70,11 +70,6 @@ Types:
 - InfoType - WIP
 - PartType - Done
 - ToolType - Done
-
-Other Classes:
-- PlayerHandler - TODO
-- GunAnimations - Done
-- TeamsManager
 
 TODO Content Packs:
 - Fix AK47 Paintjobs

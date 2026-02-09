@@ -23,6 +23,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -561,6 +562,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         tag.put(nbt, list);
     }
 
+    @Unmodifiable
     public List<ItemStack> getBulletItemStackList(ItemStack gun)
     {
         return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))

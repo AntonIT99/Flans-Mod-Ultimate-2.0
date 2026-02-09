@@ -542,10 +542,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
 
         // Break glass
-        if (configType.isBreaksGlass() && ModUtils.isGlass(state) && FlansMod.teamsManager.isCanBreakGlass() && !level.isClientSide)
-        {
-            ModUtils.destroyBlock((ServerLevel) level, blockPos, thrower, false);
-        }
+        ShootingHelper.handleGlassBreak(level, blockPos, state, thrower, configType);
 
         // Bounce / stick if not penetrating blocks
         if (!configType.isPenetratesBlocks())

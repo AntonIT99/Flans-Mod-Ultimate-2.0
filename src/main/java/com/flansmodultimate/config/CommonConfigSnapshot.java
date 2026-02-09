@@ -27,6 +27,7 @@ public record CommonConfigSnapshot(
     int defaultArmorEnchantability,
     boolean enableOldArmorRatioSystem,
 
+    boolean gunsAlwaysUsableByPlayersInCreativeMode,
     float gunDamageModifier,
     float gunRecoilModifier,
     float gunDispersionModifier,
@@ -39,6 +40,7 @@ public record CommonConfigSnapshot(
     boolean realisticRecoil,
     boolean enableSightDownwardMovement,
 
+    boolean shootablesCanBreakGlass,
     float newDamageSystemDamageReference,
     float newDamageSystemExplosiveDamageReference,
     float newDamageSystemExplosivePowerReference,
@@ -83,6 +85,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.enableOldArmorRatioSystem);
 
+        buf.writeBoolean(s.gunsAlwaysUsableByPlayersInCreativeMode);
         buf.writeFloat(s.gunDamageModifier);
         buf.writeFloat(s.gunRecoilModifier);
         buf.writeFloat(s.gunDispersionModifier);
@@ -95,6 +98,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.realisticRecoil);
         buf.writeBoolean(s.enableSightDownwardMovement);
 
+        buf.writeBoolean(s.shootablesCanBreakGlass);
         buf.writeFloat(s.newDamageSystemDamageReference);
         buf.writeFloat(s.newDamageSystemExplosiveDamageReference);
         buf.writeFloat(s.newDamageSystemExplosivePowerReference);
@@ -140,6 +144,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readBoolean(),
 
+            buf.readBoolean(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
@@ -152,6 +157,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
 
+            buf.readBoolean(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),

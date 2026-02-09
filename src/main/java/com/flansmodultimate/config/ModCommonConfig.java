@@ -36,6 +36,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_ENCHANTABILITY;
     private static final ForgeConfigSpec.BooleanValue ENABLE_OLD_ARMOR_RATIO_SYSTEM;
 
+    private static final ForgeConfigSpec.BooleanValue GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
     private static final ForgeConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue GUN_RECOIL_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue GUN_DISPERSION_MODIFIER;
@@ -48,6 +49,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
 
+    private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
@@ -76,9 +78,6 @@ public final class ModCommonConfig
         ADD_ALL_PAINTJOBS_TO_CREATIVE = builder
             .comment("Whether all paintjobs should appear in creative")
             .define("addAllPaintjobsToCreative", true);
-        builder.pop();
-
-        builder.push("Gameplay Settings");
         DISABLE_CROSSHAIR_FOR_GUNS = builder
             .comment("Disables crosshair for guns except melee weapons")
             .define("disableCrosshairForGuns", true);
@@ -130,6 +129,9 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Gun Settings");
+        GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE = builder
+            .comment("Guns will be always usable by players in creative mode, regardless of the parameter 'UsableByPlayers' in gun configs")
+            .define("gunsAlwaysUsableByPlayersInCreativeMode", true);
         GUN_DAMAGE_MODIFIER = builder
             .comment("All gun damage will be modified by this amount")
             .defineInRange("gunDamageModifier", 1.0, 0.0, 100.0);
@@ -166,6 +168,9 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Shootable Settings");
+        SHOOTABLES_CAN_BREAK_GLASS = builder
+            .comment("Whether guns and grenades can break glass")
+            .define("shootablesCanBreakGlass", true);
         NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder
             .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to the damage of a 9g bullet at 333 m/s")
             .defineInRange("newDamageSystemDamageReference", 5.0, 0.0, 1000.0);
@@ -246,6 +251,7 @@ public final class ModCommonConfig
             DEFAULT_ARMOR_ENCHANTABILITY.get(),
             ENABLE_OLD_ARMOR_RATIO_SYSTEM.get(),
 
+            GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(),
             GUN_DAMAGE_MODIFIER.get().floatValue(),
             GUN_RECOIL_MODIFIER.get().floatValue(),
             GUN_DISPERSION_MODIFIER.get().floatValue(),
@@ -258,6 +264,7 @@ public final class ModCommonConfig
             REALISTIC_RECOIL.get(),
             ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
 
+            SHOOTABLES_CAN_BREAK_GLASS.get(),
             NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(),

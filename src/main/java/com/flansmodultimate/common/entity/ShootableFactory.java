@@ -82,7 +82,7 @@ public final class ShootableFactory
     public static Optional<Shootable> createSubmunition(Level level, @NotNull FiredShot firedShot, Vec3 origin, Vec3 direction)
     {
         BulletType bulletType = firedShot.getBulletType();
-        ShootableType submunitionType = ShootableType.getAmmoType(bulletType.getSubmunition(), bulletType.getContentPack()).orElse(null);
+        ShootableType submunitionType = ShootableType.findAmmoType(bulletType.getSubmunition(), bulletType.getContentPack()).orElse(null);
 
         if (submunitionType instanceof BulletType subBulletType)
         {

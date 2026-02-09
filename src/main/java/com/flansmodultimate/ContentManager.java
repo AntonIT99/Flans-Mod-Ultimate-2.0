@@ -25,6 +25,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -684,8 +685,7 @@ public class ContentManager
         return target;
     }
 
-
-
+    @Unmodifiable
     private static List<InfoType> listItems(IContentProvider provider)
     {
         return configs.get(provider).stream()

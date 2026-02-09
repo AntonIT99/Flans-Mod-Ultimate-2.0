@@ -2,6 +2,7 @@ package com.flansmodultimate.common.teams;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -14,19 +15,21 @@ public class TeamsManager
         NONE, DROPS, SMART_DROPS
     }
 
-    private boolean voting = false;
-    @Getter
+
+    @Getter @Setter
     private boolean explosionsBreakBlocks = true;
+    @Getter @Setter
+    private boolean canBreakGlass = true;
+    @Getter
+    private boolean canBreakGuns = true;
+
+    private boolean voting = false;
     private boolean roundsGenerator;
     private boolean driveablesBreakBlocks = true;
     private boolean bombsEnabled = true;
     private boolean shellsEnabled = true;
     private boolean bulletsEnabled = true;
     private boolean forceAdventureMode = true;
-    @Getter
-    private boolean canBreakGuns = true;
-    @Getter
-    private boolean canBreakGlass = true; //TODO: default value through config?
     private boolean armourDrops = true;
     private boolean vehiclesNeedFuel = true;
     private boolean overrideHunger = true;

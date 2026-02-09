@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.TypeFile;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -411,6 +412,7 @@ public class TypeReaderUtils
         });
     }
 
+    @Unmodifiable
     public static List<String> readValuesToList(String key, TypeFile file)
     {
         return Arrays.stream(readValues(key, file)).toList();
