@@ -394,6 +394,18 @@ public class FileUtils
         }
     }
 
+    public static void safeMove(Path src, Path dest) throws IOException
+    {
+        try
+        {
+            Files.move(src, dest, StandardCopyOption.ATOMIC_MOVE);
+        }
+        catch (AtomicMoveNotSupportedException e)
+        {
+            Files.move(src, dest);
+        }
+    }
+
     public static void deleteRecursively(Path dir)
     {
         if (Files.notExists(dir)) return;

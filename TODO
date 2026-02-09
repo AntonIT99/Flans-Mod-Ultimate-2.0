@@ -5,7 +5,7 @@ General:
 - Team Mod / Commands
 - Teams & classes
 - Recipes
-- Check for content packs put by mistake in mods folder?
+- Refactor the Armor config to separate use of old logic vs new minecraft armor system
 
 1.12.2 Features:
 - itemHolders

@@ -39,6 +39,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -51,6 +52,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentManager
@@ -105,6 +108,104 @@ public class ContentManager
         textures.put(TEXTURES_ARMOR_FOLDER, new HashMap<>());
         textures.put(TEXTURES_GUI_FOLDER, new HashMap<>());
         textures.put(TEXTURES_SKINS_FOLDER, new HashMap<>());
+    }
+
+    /**
+     * Scan the Forge mods folder for misplaced Flan content packs and move them to flanFolder.
+     * - If destination already exists: do NOT move, log a warning.
+     * - Any IOExceptions are handled internally (won't crash startup).
+     */
+    public static void searchForContentPacksInModsFolder()
+    {
+        final Path modsFolder = FMLPaths.MODSDIR.get();
+
+        if (flanFolder == null)
+            return;
+
+        try
+        {
+            if (!Files.isDirectory(modsFolder))
+                return;
+
+            Files.createDirectories(flanFolder);
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsFolder, entry -> {
+                if (!Files.isRegularFile(entry))
+                    return false;
+                String name = entry.getFileName().toString().toLowerCase(Locale.ROOT);
+                return name.endsWith(".jar") || name.endsWith(".zip");
+            }))
+            {
+                for (Path candidate : stream)
+                {
+                    boolean isPack;
+                    try
+                    {
+                        isPack = looksLikeContentPack(candidate);
+                    }
+                    catch (IOException e)
+                    {
+                        // Corrupt/unreadable archive -> ignore
+                        continue;
+                    }
+
+                    if (!isPack)
+                        continue;
+
+                    Path dest = flanFolder.resolve(candidate.getFileName());
+
+                    if (Files.exists(dest))
+                    {
+                        FlansMod.log.warn("Found Flan content pack '{}' in mods folder, but '{}' already exists in '{}'. Not moving to avoid overwriting.", candidate.getFileName(), dest.getFileName(), flanFolder.toAbsolutePath());
+                        continue;
+                    }
+
+                    try
+                    {
+                        FileUtils.safeMove(candidate, dest);
+                        FlansMod.log.info("Moved misplaced Flan content pack '{}' to '{}'.", candidate.getFileName(), flanFolder.toAbsolutePath());
+                    }
+                    catch (IOException e)
+                    {
+                        FlansMod.log.warn("Failed to move '{}' to '{}': {}", candidate.getFileName(), dest, e.toString());
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.warn("Error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.warn("Unexpected error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+        }
+    }
+
+    /**
+     * Identification rules:
+     *  - Must contain at least one entry under assets/flansmod/
+     *  - Must NOT contain META-INF/mods.toml
+     */
+    private static boolean looksLikeContentPack(Path jarOrZip) throws IOException
+    {
+        try (ZipFile zip = new ZipFile(jarOrZip.toFile()))
+        {
+            // Fast exact lookup: if mods.toml exists -> it's a Forge mod -> not a pack
+            if (zip.getEntry("META-INF/mods.toml") != null)
+                return false;
+
+            // Prefix scan with early exit
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements())
+            {
+                ZipEntry e = entries.nextElement();
+                String name = e.getName();
+                if (name.startsWith("assets/flansmod/"))
+                    return true;
+            }
+            return false;
+        }
     }
 
     public static void findContentInFlanFolder()

@@ -219,6 +219,7 @@ public class FlansMod
 
         // Register Everything
         CategoryManager.loadAll();
+        ContentManager.searchForContentPacksInModsFolder();
         ContentManager.findContentInFlanFolder();
         ContentManager.readContentPacks();
         registerSounds();
