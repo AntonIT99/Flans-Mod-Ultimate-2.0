@@ -56,6 +56,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 {
     public static final int RENDER_DISTANCE = 128;
 
+    public static final String NBT_SHOT = "shot";
     public static final String NBT_ATTACKER = "attacker_uuid";
     public static final String NBT_SHOOTER = "shooter_uuid";
     public static final String NBT_FIREABLE_GUN = "fireable_gun";
@@ -66,6 +67,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     public static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
 
     protected BulletType configType;
+    @Getter
     protected FiredShot firedShot;
     /** Kill bullets after 30 seconds */
     protected int bulletLife = 600;
@@ -260,6 +262,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     public void writeSpawnData(FriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
+        buf.writeInt(firedShot.getShot());
         buf.writeInt(firedShot.getCausingEntity().map(Entity::getId).orElse(0));
         buf.writeInt(firedShot.getAttacker().map(Entity::getId).orElse(0));
         buf.writeInt(Optional.ofNullable(lockedOnTo).map(Entity::getId).orElse(0));
@@ -274,6 +277,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         try
         {
             super.readSpawnData(buf);
+            int shot = buf.readInt();
             int shooterId = buf.readInt();
             int attackerId = buf.readInt();
             int lockedOnToId = buf.readInt();
@@ -302,7 +306,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             if (lockedOnToId != 0)
                 lockedOnTo = level.getEntity(lockedOnToId);
 
-            firedShot = new FiredShot(null, configType, shooter, attacker);
+            firedShot = new FiredShot(null, configType, shooter, attacker, shot);
             penetratingPower = configType.getPenetratingPower();
         }
         catch (Exception e)
@@ -329,7 +333,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
             gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
             tag.put(NBT_FIREABLE_GUN, gunTag);
-
+            tag.putInt(NBT_SHOT, firedShot.getShot());
             firedShot.getAttacker().ifPresent(livingEntity -> tag.putUUID(NBT_ATTACKER, livingEntity.getUUID()));
             firedShot.getCausingEntity().ifPresent(entity -> tag.putUUID(NBT_SHOOTER, entity.getUUID()));
         }
@@ -369,7 +373,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 checkForUUIDs = true;
             }
 
-            firedShot = new FiredShot(fireableGun, configType, null, null);
+
+            firedShot = new FiredShot(fireableGun, configType, null, null, tag.contains(NBT_SHOT) ? tag.getInt(NBT_SHOT) : 0);
         }
         else
         {

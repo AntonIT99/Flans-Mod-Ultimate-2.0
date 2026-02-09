@@ -48,7 +48,7 @@ public class TypeFile
 
     public void addCategoryConfigMap(Category category)
     {
-        category.getProperties().forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).add(value));
+        category.getProperties().forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).addAll(value));
     }
 
     public String toString()

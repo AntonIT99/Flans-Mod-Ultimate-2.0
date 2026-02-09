@@ -202,16 +202,6 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String explodeParticleType = "largesmoke";
 
-    public boolean useKineticDamageSystem()
-    {
-        return mass > 0F;
-    }
-
-    public boolean useTNTEquivalentDamageSystem()
-    {
-        return explosiveMass > 0F;
-    }
-
     @Override
     public void onItemRegistration(String registeredItemId)
     {
@@ -335,7 +325,7 @@ public abstract class ShootableType extends InfoType
         fragType = readValue("FragType", fragType, EnumFragType.class, file);
         if (fragType != EnumFragType.DEFAULT)
         {
-            if (useTNTEquivalentDamageSystem())
+            if (explosiveMass > 0F)
             {
                 explosionFragDamage = new DamageStats();
                 explosionFragDamage.setDamage((float) (fragType.kFragDamage * Math.cbrt(explosiveMass)));
@@ -362,12 +352,22 @@ public abstract class ShootableType extends InfoType
         explodeParticleType = readValue("ExplodeParticles", explodeParticleType, file);
     }
 
+    public boolean useKineticDamageSystem()
+    {
+        return mass > 0F;
+    }
+
+    public boolean useNewExplosionSystem()
+    {
+        return explosiveMass > 0F;
+    }
+
     public DamageStats getExplosionBlastDamage()
     {
-        if (useTNTEquivalentDamageSystem())
+        if (useNewExplosionSystem())
         {
             DamageStats newExplosionDamage = new DamageStats();
-            newExplosionDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveMass)));
+            newExplosionDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(getExplosiveMass())));
             newExplosionDamage.calculate();
             return newExplosionDamage;
         }
@@ -376,16 +376,16 @@ public abstract class ShootableType extends InfoType
 
     public float getExplosionRadius()
     {
-        if (useTNTEquivalentDamageSystem())
+        if (useNewExplosionSystem())
         {
-            return (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveMass));
+            return (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(getExplosiveMass()));
         }
         return explosionRadius;
     }
 
     public float getBlastRadius()
     {
-        if (useTNTEquivalentDamageSystem())
+        if (useNewExplosionSystem())
         {
             return ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * getExplosionRadius();
         }
@@ -394,14 +394,14 @@ public abstract class ShootableType extends InfoType
 
     public float getExplosionPower()
     {
-        if (useTNTEquivalentDamageSystem())
+        if (useNewExplosionSystem())
         {
-            return (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveMass));
+            return (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(getExplosiveMass()));
         }
         return explosionPower;
     }
 
-    public FlanExplosion.Stats getExplosionStats()
+    public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
         return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
     }
@@ -409,7 +409,7 @@ public abstract class ShootableType extends InfoType
     public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(mass) * gunType.getBulletSpeed(gunStack) * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(getMass()) * gunType.getBulletSpeed(gunStack) * 20.0);
         else
             return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }

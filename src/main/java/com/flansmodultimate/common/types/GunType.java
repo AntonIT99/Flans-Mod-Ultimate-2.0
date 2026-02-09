@@ -152,11 +152,6 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected float bulletSpeed = 5F;
     /**
-     * The muzzle velocity in m/s. Replaces BulletSpeed. Set to -1F to ignore.
-     */
-    @Getter
-    protected float muzzleVelocity = -1F;
-    /**
      * The number of bullet entities created by each shot
      */
     protected int numBullets = 1;
@@ -695,7 +690,7 @@ public class GunType extends PaintableType implements IScope
         allowSpreadByBullet = readValue("AllowSpreadByBullet", allowSpreadByBullet, file);
         allowNumBulletsByBulletType = readValue("AllowNumBulletsByBulletType", allowNumBulletsByBulletType, file);
         bulletSpeed = readValue("BulletSpeed", StringUtils.EMPTY, file).equalsIgnoreCase("instant") ? 0F : readValue("BulletSpeed", bulletSpeed, file);
-        muzzleVelocity = readValue("MuzzleVelocity", muzzleVelocity, file);
+        float muzzleVelocity = readValue("MuzzleVelocity", 0F, file);
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
@@ -1337,9 +1332,21 @@ public class GunType extends PaintableType implements IScope
         float stackBulletSpeed;
 
         if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
-            stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().speedMultiplier;
+        {
+            float bulletSpeedOfBulletItem = bulletItem.getConfigType().bulletSpeed;
+
+            if (bulletItem.getConfigType().hasDifferentRounds())
+                bulletSpeedOfBulletItem = bulletItem.getConfigType().statsForShot(bulletStack.getDamageValue()).bulletSpeed();
+
+            if (bulletSpeedOfBulletItem > 0F)
+                stackBulletSpeed = bulletSpeedOfBulletItem;
+            else
+                stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().speedMultiplier;
+        }
         else
+        {
             stackBulletSpeed = bulletSpeed;
+        }
 
         if (stack != null)
         {

@@ -17,7 +17,7 @@ public class Category
 {
     private EnumType type;
     private String name;
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, List<String>> properties = new HashMap<>();
     private List<String> items = new ArrayList<>();
 
     public Category(EnumType type, String name)

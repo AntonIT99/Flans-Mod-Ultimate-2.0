@@ -25,6 +25,9 @@ import java.util.Optional;
  */
 public class FiredShot
 {
+    /** counter of fired shots from the magazine */
+    @Getter
+    private int shot;
     /** The weapon used to fire the shot */
     @Getter
     private final FireableGun fireableGun;
@@ -41,21 +44,22 @@ public class FiredShot
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter);
+        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter, shootableStack.getDamageValue());
     }
 
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack shootableStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
     {
-        this(new FireableGun(gunType, shootableStack), bulletType, shooter, attacker);
+        this(new FireableGun(gunType, shootableStack), bulletType, shooter, attacker, shootableStack.getDamageValue());
     }
 
     /** General Constructor */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker)
+    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot)
     {
         this.fireableGun = fireableGun;
         this.bulletType = bulletType;
         this.attacker = attacker;
         this.shooter = shooter;
+        this.shot = shot;
     }
 
     public float getSpread()

@@ -109,7 +109,7 @@ public final class ShootingHelper
         if (deployedGun.getConfigType().getBulletSpeed() == 0F && shootableType instanceof BulletType bulletType)
         {
             // Raytrace without entity
-            FiredShot firedShot = new FiredShot(new FireableGun(deployedGun.getConfigType(), shootableStack), bulletType, deployedGun, shooter);
+            FiredShot firedShot = new FiredShot(new FireableGun(deployedGun.getConfigType(), shootableStack), bulletType, deployedGun, shooter, shootableStack.getDamageValue());
             for (int i = 0; i < numBullets; i++)
                 createShot(level, firedShot, deployedGun.getShootingOrigin(), deployedGun.getShootingDirection());
         }
@@ -378,17 +378,25 @@ public final class ShootingHelper
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
     {
         ShootableType type = null;
-        if (firedShot != null)
-            type = firedShot.getBulletType();
+        float projectileMass = 0F;
+
         if (shootable != null)
             type = shootable.getConfigType();
+        if (firedShot != null)
+        {
+            type = firedShot.getBulletType();
+            if (firedShot.getBulletType().hasDifferentRounds())
+                projectileMass = firedShot.getBulletType().statsForShot(firedShot.getShot()).mass();
+            else
+                projectileMass = type.getMass();
+        }
 
         if (type == null)
             return 0F;
 
-        if (shootable != null && type.getMass() > 0F)
+        if (shootable != null && projectileMass > 0F)
         {
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * shootable.getDeltaMovement().length() * 20.0);
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(projectileMass) * shootable.getDeltaMovement().length() * 20.0);
         }
         else
         {
@@ -481,14 +489,14 @@ public final class ShootingHelper
             return;
 
         float fireRadius = type.getFireRadius();
-        for (float i = -fireRadius; i < fireRadius; i++)
+        for (float i = -fireRadius; i < fireRadius; i += 1F)
         {
-            for (float k = -fireRadius; k < fireRadius; k++)
+            for (float k = -fireRadius; k < fireRadius; k += 1F)
             {
 
                 if (volumetric)
                 {
-                    for (float j = -fireRadius; j < fireRadius; j++)
+                    for (float j = -fireRadius; j < fireRadius; j += 1F)
                     {
                         if (i * i + j * j + k * k > fireRadius * fireRadius)
                             continue;

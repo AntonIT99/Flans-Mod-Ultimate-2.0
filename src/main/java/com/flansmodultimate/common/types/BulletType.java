@@ -1,16 +1,20 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +27,17 @@ public class BulletType extends ShootableType
     //TODO: make these constants configurable
     public static final double LOCK_ON_RANGE = 128.0;
     public static final int FLAK_PARTICLES_RANGE = 256;
-
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
+    public record RoundStats(float mass, float explosiveMass, float bulletSpeed) {}
+
+    public record RoundEntry(String name, int count, RoundStats stats) {}
+
+    @Getter
+    protected final List<RoundEntry> period = new ArrayList<>();
+    protected int periodLength;
+    @Getter
+    protected float bulletSpeed;
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -170,6 +182,12 @@ public class BulletType extends ShootableType
     {
         super.read(file);
 
+        bulletSpeed = readValue("BulletSpeed", bulletSpeed, file);
+        float muzzleVelocity = readValue("MuzzleVelocity", 0F, file);
+        if (muzzleVelocity > 0F)
+            bulletSpeed = muzzleVelocity / 20F;
+        speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
+
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
         setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
@@ -256,7 +274,6 @@ public class BulletType extends ShootableType
         manualGuidance = readValue("ManualGuidance", manualGuidance, file);
         laserGuidance = readValue("LaserGuidance", laserGuidance, file);
         maxRange = readValue("MaxRange", maxRange, file);
-        speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
 
         blockHitFXScale = readValue("BlockHitFXScale", blockHitFXScale, file);
         readBlockHitFXScale = file.hasConfigLine("BlockHitFXScale");
@@ -275,6 +292,88 @@ public class BulletType extends ShootableType
             textureName = FlansMod.DEFAULT_BULLET_TEXTURE;
         if (trailTexture.isBlank())
             trailTexture = FlansMod.DEFAULT_BULLET_TRAIL_TEXTURE;
+
+        if (roundsPerItem > 1)
+        {
+            // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
+            readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> {
+                if (round.length > 4)
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F)));
+                else if (round.length > 3)
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), 0F)));
+                else if (round.length > 2)
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), 0F, 0F)));
+            }));
+            periodLength = period.stream().mapToInt(RoundEntry::count).sum();
+        }
+    }
+
+    @Override
+    public boolean useKineticDamageSystem()
+    {
+        return mass > 0F || hasDifferentRounds();
+    }
+
+    @Override
+    public boolean useNewExplosionSystem()
+    {
+        return explosiveMass > 0F || hasDifferentRounds();
+    }
+
+    @Override
+    public float getMass()
+    {
+        if (hasDifferentRounds())
+        {
+            return statsForShot(0).mass;
+        }
+        return super.getMass();
+    }
+
+    @Override
+    public float getExplosiveMass()
+    {
+        if (hasDifferentRounds())
+        {
+            return statsForShot(0).explosiveMass;
+        }
+        return super.getExplosiveMass();
+    }
+
+    @Override
+    public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
+    {
+        if (explosiveEntity instanceof Bullet bullet && bullet.getConfigType().hasDifferentRounds())
+        {
+            RoundStats roundStats = statsForShot(bullet.getFiredShot().getShot());
+            float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(roundStats.explosiveMass));
+            float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(roundStats.explosiveMass));
+            float explosionBlastRadius = ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * explosionRadius;
+            DamageStats explosionBlastDamage = new DamageStats();
+            explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(roundStats.explosiveMass)));
+            explosionBlastDamage.calculate();
+            return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius, explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage);
+        }
+        return super.getExplosionStats(explosiveEntity);
+    }
+
+    public boolean hasDifferentRounds()
+    {
+        return roundsPerItem > 1 && !period.isEmpty();
+    }
+
+    public RoundStats statsForShot(int shotsFired)
+    {
+        int k = Math.floorMod(shotsFired, periodLength);
+        for (RoundEntry r : period)
+        {
+            if (k < r.count())
+                return r.stats();
+            k -= r.count();
+        }
+
+        // unreachable if periodLen computed correctly
+        return period.get(period.size() - 1).stats();
     }
 
     public float getBlockPenetrationModifier()

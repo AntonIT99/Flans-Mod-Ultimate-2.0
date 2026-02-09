@@ -1,4 +1,5 @@
 General:
+- Config Option: all guns usable by players
 - Config Option to prevent glass breaking
 - Change Fire Mode
 - Tools
@@ -11,11 +12,6 @@ General:
 
 Sounds:
 - Assets/Sounds Priority list?
-
-Features:
-- Feature: APHEMixRatio, APMass, HEMass
-- Feature: set Bullet Speed in the ammo -> override gun bullet speed
-- Fragmentation Damage
 
 1.12.2 Features:
 - itemHolders

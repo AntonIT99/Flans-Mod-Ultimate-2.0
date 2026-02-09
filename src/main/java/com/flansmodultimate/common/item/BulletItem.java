@@ -45,13 +45,26 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         {
             super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
 
-            if (StringUtils.isNotBlank(originGunbox))
-                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
+            if (configType.hasDifferentRounds())
+            {
+                tooltipComponents.add(Component.literal("Rounds Mix: ").withStyle(ChatFormatting.BLUE));
+                configType.getPeriod().forEach(round ->
+                    tooltipComponents.add(Component.literal("  " + round.name() + " (" + round.count() + ")").withStyle(ChatFormatting.DARK_AQUA)));
+            }
+
+            if (configType.getBulletSpeed() > 0F)
+            {
+                if (configType.hasDifferentRounds())
+                {
+                    tooltipComponents.add(Component.literal("Muzzle Velocity:").withStyle(ChatFormatting.BLUE));
+                    configType.getPeriod().forEach(round ->
+                        tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + "m/s").withStyle(ChatFormatting.GRAY)));
+                }
+                else
+                    tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + "m/s"));
+            }
 
             tooltipComponents.add(IFlanItem.statLine("Penetration", IFlanItem.formatFloat(configType.getPenetratingPower())));
-
-            if (configType.getNumBullets() != 1)
-                tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(configType.getNumBullets())));
 
             if (hasLockOn())
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "LockOn"));
@@ -66,6 +79,9 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             {
                 tooltipComponents.add(IFlanItem.statLine("Turning Force", IFlanItem.formatFloat(configType.getLockOnForce() * 10F) + "G"));
             }
+
+            if (StringUtils.isNotBlank(originGunbox))
+                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
         }
     }
 

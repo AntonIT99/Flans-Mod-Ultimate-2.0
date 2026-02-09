@@ -28,11 +28,11 @@ public final class ShootableFactory
      * @param attacker: the living entity causing the shot (if any, can be the same as shootingEntity)
      */
     @NotNull
-    public static Shootable createShootable(Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType type, Vec3 origin, Vec3 direction, @Nullable Entity shootingEntity, @Nullable LivingEntity attacker)
+    public static Shootable createShootable(Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType type, Vec3 origin, Vec3 direction, @Nullable Entity shootingEntity, @Nullable LivingEntity attacker, int shot)
     {
         if (type instanceof BulletType bulletType)
         {
-            return new Bullet(level, new FiredShot(fireableGun, bulletType, shootingEntity, attacker), origin, direction);
+            return new Bullet(level, new FiredShot(fireableGun, bulletType, shootingEntity, attacker, shot), origin, direction);
         }
         else if (type instanceof GrenadeType grenadeType)
         {
@@ -88,7 +88,7 @@ public final class ShootableFactory
         {
             FireableGun fireableGun = firedShot.getFireableGun();
             FireableGun newFireableGun = new FireableGun(fireableGun.getType(), fireableGun.getDamage(), subBulletType.getSubmunitionSpread(), fireableGun.getBulletSpeed(), fireableGun.getSpreadPattern());
-            FiredShot newFiredShot = new FiredShot(newFireableGun, subBulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null));
+            FiredShot newFiredShot = new FiredShot(newFireableGun, subBulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null), 0);
             return Optional.of(new Bullet(level, newFiredShot, origin, direction));
         }
         else if (submunitionType instanceof GrenadeType grenadeType)

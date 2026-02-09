@@ -1,8 +1,8 @@
 {
     "4.6x30mm HK": {
         "properties": {
-            "Mass": "2.0",
-            "FallSpeed": "1.0",
+            "Mass": 2.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -12,8 +12,8 @@
 
     "5.56x45mm NATO": {
         "properties": {
-            "Mass": "4.0",
-            "FallSpeed": "1.0",
+            "Mass": 4.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -24,8 +24,8 @@
 
     "5.7x28mm FN": {
         "properties": {
-            "Mass": "2.0",
-            "FallSpeed": "1.0",
+            "Mass": 2.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -35,8 +35,8 @@
 
     "6.5x50mmSR Arisaka": {
         "properties": {
-            "Mass": "9.0",
-            "FallSpeed": "1.0",
+            "Mass": 9.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -47,8 +47,8 @@
 
     "7.62x25mm Tokarev": {
         "properties": {
-            "Mass": "5.5",
-            "FallSpeed": "1.0",
+            "Mass": 5.5,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -62,8 +62,8 @@
 
     "7.62x33mm .30 Carbine": {
         "properties": {
-            "Mass": "7.1",
-            "FallSpeed": "1.0",
+            "Mass": 7.1,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -74,8 +74,8 @@
 
     "7.62x35mm .300 AAC Blackout": {
         "properties": {
-            "Mass": "8.1",
-            "FallSpeed": "1.0",
+            "Mass": 8.1,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -85,8 +85,8 @@
 
     "7.62x54mmR 57-N-323S": {
         "properties": {
-            "Mass": "9.6",
-            "FallSpeed": "1.0",
+            "Mass": 9.6,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -102,8 +102,8 @@
 
     "7.62x51mm NATO M80": {
         "properties": {
-            "Mass": "9.5",
-            "FallSpeed": "1.0",
+            "Mass": 9.5,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -116,8 +116,8 @@
 
     "7.62x63mm .30-06 Springfield M2": {
         "properties": {
-            "Mass": "9.7",
-            "FallSpeed": "1.0",
+            "Mass": 9.7,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -135,8 +135,8 @@
 
     "7.63x25mm Mauser": {
         "properties": {
-            "Mass": "5.6",
-            "FallSpeed": "1.0",
+            "Mass": 5.6,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -147,8 +147,8 @@
 
     "7.65x17mm Browning .32 ACP": {
         "properties": {
-            "Mass": "4.6",
-            "FallSpeed": "1.0",
+            "Mass": 4.6,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -159,8 +159,8 @@
 
     "7.7x56mmR .303 British Mk VII": {
         "properties": {
-            "Mass": "11.3",
-            "FallSpeed": "1.0",
+            "Mass": 11.3,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -175,8 +175,8 @@
 
     "7.7x58mm Arisaka Type 92": {
         "properties": {
-            "Mass": "13.2",
-            "FallSpeed": "1.0",
+            "Mass": 13.2,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -186,8 +186,8 @@
 
     "7.7x58mm Arisaka Type 99": {
         "properties": {
-            "Mass": "11.8",
-            "FallSpeed": "1.0",
+            "Mass": 11.8,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -199,8 +199,8 @@
 
     "7.92x33mm Kurz": {
         "properties": {
-            "Mass": "8.1",
-            "FallSpeed": "1.0",
+            "Mass": 8.1,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -211,8 +211,8 @@
 
     "7.92x57mm Mauser s.S.-Patrone": {
         "properties": {
-            "Mass": "12.8",
-            "FallSpeed": "1.0",
+            "Mass": 12.8,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -236,8 +236,8 @@
 
     "7.92x94mm P318": {
         "properties": {
-            "Mass": "14.58",
-            "FallSpeed": "1.0",
+            "Mass": 14.58,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -247,8 +247,8 @@
 
     "8x22mm Nambu": {
         "properties": {
-            "Mass": "6.6",
-            "FallSpeed": "1.0",
+            "Mass": 6.6,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -262,8 +262,8 @@
 
     "9x18mm Makarov": {
         "properties": {
-            "Mass": "6.0",
-            "FallSpeed": "1.0",
+            "Mass": 6.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -273,8 +273,8 @@
 
     "9x19mm Parabellum": {
         "properties": {
-            "Mass": "8.0",
-            "FallSpeed": "1.0",
+            "Mass": 8.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -295,8 +295,8 @@
 
     "9x33mmR .357 Magnum": {
         "properties": {
-            "Mass": "10.2",
-            "FallSpeed": "1.0",
+            "Mass": 10.2,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -306,8 +306,8 @@
 
     "11.43x23mm .45 ACP": {
         "properties": {
-            "Mass": "14.9",
-            "FallSpeed": "1.0",
+            "Mass": 14.9,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -325,8 +325,8 @@
 
     "11.6x19mmR .455 Webley": {
         "properties": {
-            "Mass": "17.2",
-            "FallSpeed": "1.0",
+            "Mass": 17.2,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -337,8 +337,8 @@
 
     "12.7x99mm .50 BMG": {
         "properties": {
-            "Mass": "42.0",
-            "FallSpeed": "1.0",
+            "Mass": 42.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -348,8 +348,8 @@
 
     "12.7x108mm": {
         "properties": {
-            "Mass": "48.0",
-            "FallSpeed": "1.0",
+            "Mass": 48.0,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -359,9 +359,9 @@
 
     "13x63mmB": {
         "properties": {
-            "Mass": "38.0",
-            "ExplosiveMass": "0.003",
-            "FallSpeed": "1.0",
+            "Mass": 38.0,
+            "ExplosiveMass": 0.003,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -371,9 +371,11 @@
 
     "15x96mm Mauser": {
         "properties": {
-            "Mass": "72.0",
-            "ExplosiveMass": "0.0035",
-            "FallSpeed": "1.0",
+            "AddRound": [
+                "Pzgr.L'Spur 1 72.0 0.0 850.0",
+                "Sprgr. 1 57.0 0.0046 960.0"
+            ],
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [
@@ -383,9 +385,9 @@
 
     "20x124mm": {
         "properties": {
-            "Mass": "160.0",
-            "ExplosiveMass": "0.0035",
-            "FallSpeed": "1.0",
+            "Mass": 160.0,
+            "ExplosiveMass": 0.0035,
+            "FallSpeed": 1.0,
             "FlakParticles": 0
         },
         "items": [

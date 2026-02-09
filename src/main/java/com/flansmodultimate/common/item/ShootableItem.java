@@ -1,9 +1,11 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -48,14 +50,34 @@ public abstract class ShootableItem extends Item
     {
         if (getConfigType().getRoundsPerItem() != 0)
             tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(getConfigType().getRoundsPerItem())));
+        if (getConfigType().getNumBullets() != 1)
+            tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(getConfigType().getNumBullets())));
 
         if (getConfigType().useKineticDamageSystem())
-            tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + "g"));
+        {
+            if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
+            {
+                tooltipComponents.add(Component.literal("Mass:").withStyle(ChatFormatting.BLUE));
+                bulletType.getPeriod().forEach(round ->
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().mass()) + "g").withStyle(ChatFormatting.GRAY)));
+            }
+            else
+                tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + "g"));
+        }
         else
             IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
 
-        if (getConfigType().useTNTEquivalentDamageSystem())
-            tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + "kg"));
+        if (getConfigType().useNewExplosionSystem())
+        {
+            if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
+            {
+                tooltipComponents.add(Component.literal("Explosive Mass (TNT):").withStyle(ChatFormatting.BLUE));
+                bulletType.getPeriod().forEach(round ->
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().explosiveMass(), 3) + "kg").withStyle(ChatFormatting.GRAY)));
+            }
+            else
+                tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + "kg"));
+        }
 
         if (getConfigType().getExplosionRadius() > 0F)
         {

@@ -5,6 +5,7 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ResourceUtils;
+import com.flansmodultimate.util.StringOrNumberListMapAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -33,7 +34,10 @@ public final class CategoryManager
 {
     private static final Map<EnumType, List<Category>> categories = new EnumMap<>(EnumType.class);
     private static final Map<String, List<Category>> itemCategories = new HashMap<>();
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson gson = new GsonBuilder()
+        .registerTypeAdapter(StringOrNumberListMapAdapter.targetType(), new StringOrNumberListMapAdapter())
+        .setPrettyPrinting()
+        .create();
 
     public static void applyCategoriesToFile(TypeFile file)
     {

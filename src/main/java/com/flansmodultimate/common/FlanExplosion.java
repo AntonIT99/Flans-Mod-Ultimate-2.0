@@ -97,7 +97,7 @@ public class FlanExplosion extends Explosion
 
     public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, ShootableType type, double x, double y, double z, boolean canDamageSelf)
     {
-        this(level, explosive, causingEntity, x, y, z, type.getExplosionStats(), type.getFireRadius() > 0,
+        this(level, explosive, causingEntity, x, y, z, type.getExplosionStats(explosive), type.getFireRadius() > 0,
             type.isExplosionBreaksBlocks() && ModCommonConfig.get().explosionsBreakBlocks() && FlansMod.teamsManager.isExplosionsBreakBlocks(),
             type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
