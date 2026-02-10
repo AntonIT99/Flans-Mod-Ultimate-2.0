@@ -59,8 +59,6 @@ public class PacketGunScopedState implements IServerPacket
                     CommonEventHandler.getNightVisionPlayers().remove(player.getUUID());
                 }
             }
-
-            gunItem.setScoped(isScoped);
         }
     }
 }

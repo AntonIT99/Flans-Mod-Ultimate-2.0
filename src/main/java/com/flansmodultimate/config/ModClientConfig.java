@@ -13,17 +13,29 @@ public final class ModClientConfig
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean loadAllModelsInCache;
+
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
     public final EnumMouseButton aimButton;
     public final EnumAimType aimType;
 
+    public final boolean enableArms;
+    public final boolean enableGunAnimationsInThirdPerson;
+    public final boolean enableWeaponSprintStance;
+    public final boolean enableRandomSprintStance;
+
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
+
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_ARMS;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -60,6 +72,21 @@ public final class ModClientConfig
                 .defineEnum("aimType", EnumAimType.TOGGLE);
         builder.pop();
 
+        builder.push("Gun Rendering Settings");
+        ENABLE_ARMS = builder
+            .comment("Enable arms rendering")
+            .define("enableArms", true);
+        ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON = builder
+            .comment("This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
+            .define("enableGunAnimationsInThirdPerson", true);
+        ENABLE_WEAPON_SPRINT_STANCE = builder
+            .comment("This will move weapons to a lowered position when sprinting")
+            .define("enableWeaponSprintStance", true);
+        ENABLE_RANDOM_SPRINT_STANCE = builder
+            .comment("This will randomly generate unique positions for each weapon using the weapon name as a seed")
+            .define("enableRandomSprintStance", false);
+        builder.pop();
+
         configSpec = builder.build();
     }
 
@@ -67,10 +94,16 @@ public final class ModClientConfig
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
+
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
         aimButton = AIM_BUTTON.get();
         aimType = AIM_TYPE.get();
+
+        enableArms = ENABLE_ARMS.get();
+        enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
+        enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
+        enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
     }
 
     public static ModClientConfig get()

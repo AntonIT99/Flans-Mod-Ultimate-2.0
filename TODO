@@ -1,4 +1,5 @@
 General:
+- Fix not being able to aim when shift pressed
 - Change Fire Mode
 - Armor & Gun Boxes
 - PlayerStats
@@ -45,7 +46,7 @@ Rendering:
 - Bullet - Done
 - CustomArmor - Done
 - Grenade - Done
-- Gun - WIP
+- Gun - Done
 - MG - Done
 - Mecha - TODO
 - Plane - TODO

@@ -18,7 +18,6 @@ import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -84,8 +83,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Getter
     protected final GunItemHandler gunItemHandler;
     protected String originGunbox;
-    @Setter
-    protected boolean isScoped;
     protected int soundDelay;
     @Getter
     protected int lockOnSoundDelay;

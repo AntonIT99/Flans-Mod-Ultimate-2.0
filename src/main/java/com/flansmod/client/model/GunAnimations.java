@@ -2,6 +2,7 @@ package com.flansmod.client.model;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -87,7 +88,7 @@ public class GunAnimations
 
     @Setter
     protected EnumLookAtState lookAt = EnumLookAtState.NONE;
-    protected float lookAtTimer = 0;
+    protected int lookAtTimer = 0;
 
     protected static final int[] lookAtTimes = new int[]{1, 10, 20, 10, 20, 10};
 
@@ -101,9 +102,9 @@ public class GunAnimations
         UNTILT
     }
 
-    public void updateSprintStance(String shortName)
+    public void updateSprintStance(GunType type)
     {
-        long seed = seedFromString(shortName);
+        long seed = seedFromString(type.getShortName());
         RandomSource r = RandomSource.create(seed);
         sprintingStance = new Vector3f(nextRange(r, -15f, -5f), nextRange(r,   0f, 45f), nextRange(r, -20f, 10f));
     }
@@ -249,14 +250,14 @@ public class GunAnimations
 
         if (switchAnimationProgress > 0)
         {
-            switchAnimationProgress++;
+            switchAnimationProgress += 1F;
             //If we are done, reset
             if (switchAnimationProgress == switchAnimationLength)
                 switchAnimationLength = 0;
         }
 
         if (runningStanceAnimationProgress > 0 && runningStanceAnimationProgress < runningStanceAnimationLength)
-            runningStanceAnimationProgress++;
+            runningStanceAnimationProgress += 1F;
 
         if (stanceTimer > 0)
             stanceTimer--;

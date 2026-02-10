@@ -260,7 +260,6 @@ public class ModClient
             //Send ads spread packet to server
             sendADSSpreadToServer(gunStack, gunItem, player.isCrouching(), player.isSprinting());
 
-            gunItem.setScoped(true);
             PacketHandler.sendToServer(new PacketGunScopedState(true));
         }
         else
@@ -275,7 +274,6 @@ public class ModClient
             //Send default spread packet to server
             PacketHandler.sendToServer(new PacketGunSpread(gunStack, gunItem.getConfigType().getDefaultSpread(gunStack)));
 
-            gunItem.setScoped(false);
             PacketHandler.sendToServer(new PacketGunScopedState(false));
         }
         scopeTime = 10;

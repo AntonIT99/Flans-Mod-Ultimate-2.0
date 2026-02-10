@@ -11,7 +11,8 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.config.ModClientConfig;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -21,8 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -51,13 +58,13 @@ public final class RenderGun
 
             switch (ctx)
             {
-                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> applyFirstPersonAdjustments(model, stack, poseStack, ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND, animations);
-                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> applyThirdPersonAdjustments(model, poseStack, animations);
+                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> applyFirstPersonAdjustments(model, animations, stack, poseStack, ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+                case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> applyThirdPersonAdjustments(model, animations, stack, poseStack, ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
                 case FIXED -> applyFixedEntityAdjustments(model, poseStack);
                 case GROUND -> poseStack.translate(model.itemFrameOffset.x, model.itemFrameOffset.y, model.itemFrameOffset.z);
                 default ->
                 {
-                    // No Adjustments
+                    // no-op
                 }
             }
 
@@ -70,28 +77,31 @@ public final class RenderGun
                     animations.onGunEmpty(false);
             }
 
-            //TODO: Apply model recoil when shooting
-            //TODO: FMU Arms Rendering
-            /*if (rtype == ItemRenderType.EQUIPPED_FIRST_PERSON)
-            {
-                //Apply model recoil when shooting
-                handleGunRecoil(animations, model, getRecoilDistance(gripAttachment, type, item), getRecoilAngle(gripAttachment, type, item));
-                //Render arms
-                if (com.flansmod.common.FlansMod.armsEnable && model.hasArms)
-                {
-                    Minecraft mc = Minecraft.getMinecraft();
-                    renderFirstPersonArm(mc.thePlayer, model, animations);
-                }
-            }*/
+
 
             poseStack.pushPose();
+            if (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            {
+                handleGunRecoil(model, animations, stack, poseStack);
+
+                if (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+                    renderFirstPersonArm(model, animations, poseStack, buffer, packedLight);
+
+                //This allows you to offset your gun with a sight attached to properly align the aiming reticle
+                AttachmentType scopeAttachment = model.type.getScope(stack);
+                if (model.gunOffset != 0 && ModClient.getZoomProgress() >= 0.5F && scopeAttachment != null && ModelCache.getOrLoadTypeModel(scopeAttachment) instanceof ModelAttachment scopeModel)
+                    poseStack.translate(0F, -scopeModel.renderOffset + model.gunOffset / 16F, 0F);
+            }
             poseStack.scale(modelScale, modelScale, modelScale);
             renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
                 renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            if (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+                renderAnimArm(model, animations, poseStack, buffer, packedLight);
             renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
             renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
             poseStack.popPose();
+
             renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
             renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
         }
@@ -116,12 +126,26 @@ public final class RenderGun
         poseStack.mulPose(Axis.YP.rotationDegrees(180F));
     }
 
-    //TODO: continue implementing first person adjustments
-    private static void applyFirstPersonAdjustments(ModelGun model, ItemStack stack, PoseStack poseStack, boolean leftHand, GunAnimations animations)
+    private static void applyThirdPersonAdjustments(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack, boolean leftHand)
     {
-        float smoothing = Minecraft.getInstance().getFrameTime();
-        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * smoothing;
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
+
+        poseStack.translate(-0.08F, -0.12F, 0F);
+        poseStack.translate(model.thirdPersonOffset.x, model.thirdPersonOffset.y, model.thirdPersonOffset.z);
+
+        if (ModClientConfig.get().enableGunAnimationsInThirdPerson)
+        {
+            renderMeleeMovement(model.type, animations, poseStack);
+            renderSpinningCocking(model, animations, poseStack);
+            renderReloadMovement(model, animations, stack, leftHand, poseStack);
+        }
+    }
+
+    private static void applyFirstPersonAdjustments(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack, boolean leftHand)
+    {
+        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * Minecraft.getInstance().getFrameTime();
         boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching() && !animations.reloading;
+        boolean sprinting = ModClient.getZoomProgress() + 0.1F < 0.2F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isSprinting() && !animations.reloading && model.fancyStance;
 
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
@@ -141,12 +165,109 @@ public final class RenderGun
             poseStack.translate(crouching ? model.crouchZoom : 0F, -0.03F * adsSwitch, 0F);
         }
 
-        IScope scope = model.type.getCurrentScope(stack);
+        renderWeaponSwitchMovement(animations, poseStack);
+        renderSprintingMovement(model, animations, sprinting, poseStack);
+        renderMeleeMovement(model.type, animations, poseStack);
+        renderLookAtGunMovement(animations, poseStack);
+        renderSpinningCocking(model, animations, poseStack);
+        renderReloadMovement(model, animations, stack, leftHand, poseStack);
+    }
 
-        applyMeleeMovement(poseStack, model.type, animations, smoothing);
+    private static void renderWeaponSwitchMovement(GunAnimations animations, PoseStack poseStack)
+    {
+        if (animations.switchAnimationProgress <= 0F || animations.switchAnimationLength <= 0F)
+            return;
 
-        // Look at gun stuff
-        float interp = animations.lookAtTimer + smoothing;
+        Vector3f pos1 = new Vector3f(0, -0.4f, 0);
+        Vector3f pos2 = new Vector3f(0, 0, 0);
+        Vector3f startAngles = new Vector3f(90, 30, -40);
+        Vector3f endAngles = new Vector3f(0, 0, 0);
+        float interp = (animations.switchAnimationProgress + Minecraft.getInstance().getFrameTime()) / animations.switchAnimationLength;
+
+        poseStack.translate(pos2.x + (pos2.x - pos1.x) * interp, pos1.y + (pos2.y - pos1.y) * interp, pos1.z + (pos2.z - pos1.z) * interp);
+        poseStack.mulPose(Axis.YP.rotationDegrees(startAngles.y + (endAngles.y - startAngles.y) * interp));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(startAngles.z + (endAngles.z - startAngles.z) * interp));
+    }
+
+    private static void renderSprintingMovement(ModelGun model, GunAnimations animations, boolean sprinting, PoseStack poseStack)
+    {
+        if (sprinting && animations.stanceTimer == 0 && ModClientConfig.get().enableWeaponSprintStance)
+        {
+            if (animations.runningStanceAnimationProgress == 0F)
+                animations.runningStanceAnimationProgress = 1F;
+
+            Vector3f defaultTranslate = new Vector3f(0, 0F, -0.2);
+            Vector3f defaultRotation = new Vector3f(-15F, 45F, -10F);
+
+            Vector3f configuredTranslate = model.sprintStanceTranslate;
+            Vector3f configuredRotation = model.sprintStanceRotate;
+
+            float progress = (animations.runningStanceAnimationProgress + Minecraft.getInstance().getFrameTime()) / animations.runningStanceAnimationLength;
+            if (animations.runningStanceAnimationProgress == animations.runningStanceAnimationLength)
+                progress = 1;
+
+            if (ModClientConfig.get().enableRandomSprintStance)
+            {
+                animations.updateSprintStance(model.type);
+                defaultRotation = animations.sprintingStance;
+            }
+
+            if (!Objects.equals(model.sprintStanceTranslate, new Vector3f(0F, 0F, 0F)))
+                poseStack.translate(configuredTranslate.x * progress, configuredTranslate.y * progress, configuredTranslate.z * progress);
+            else
+                poseStack.translate(defaultTranslate.x * progress, defaultTranslate.y * progress, defaultTranslate.z * progress);
+
+            if (!Objects.equals(model.sprintStanceRotate, new Vector3f(0F, 0F, 0F)))
+            {
+                poseStack.mulPose(Axis.XP.rotationDegrees(configuredRotation.x * progress));
+                poseStack.mulPose(Axis.YP.rotationDegrees(configuredRotation.y * progress));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(configuredRotation.z * progress));
+            }
+            else
+            {
+                poseStack.mulPose(Axis.XP.rotationDegrees(defaultRotation.x * progress));
+                poseStack.mulPose(Axis.YP.rotationDegrees(defaultRotation.y * progress));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(defaultRotation.z * progress));
+            }
+        }
+        else
+        {
+            animations.runningStanceAnimationProgress = 0F;
+        }
+    }
+
+    private static void renderMeleeMovement(GunType gunType, GunAnimations animations, PoseStack poseStack)
+    {
+        int progress = animations.meleeAnimationProgress;
+        if (progress <= 0 || progress >= gunType.getMeleePath().size())
+            return;
+
+        float t = Mth.clamp(Minecraft.getInstance().getFrameTime(), 0.0f, 1.0f);
+
+        Vector3f p0 = gunType.getMeleePath().get(progress);
+        Vector3f p1 = (progress + 1 < gunType.getMeleePath().size()) ? gunType.getMeleePath().get(progress + 1) : new Vector3f();
+
+        float x = Mth.lerp(t, p0.x, p1.x);
+        float y = Mth.lerp(t, p0.y, p1.y);
+        float z = Mth.lerp(t, p0.z, p1.z);
+
+        poseStack.translate(x, y, z);
+
+        Vector3f a0 = gunType.getMeleePathAngles().get(progress);
+        Vector3f a1 = (progress + 1 < gunType.getMeleePathAngles().size()) ? gunType.getMeleePathAngles().get(progress + 1) : new Vector3f();
+
+        float yaw = Mth.lerp(t, a0.y, a1.y);
+        float roll = Mth.lerp(t, a0.z, a1.z);
+        float pitch = Mth.lerp(t, a0.x, a1.x);
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
+        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
+    }
+
+    private static void renderLookAtGunMovement(GunAnimations animations, PoseStack poseStack)
+    {
+        float interp = animations.lookAtTimer + Minecraft.getInstance().getFrameTime();
         interp /= GunAnimations.lookAtTimes[animations.lookAt.ordinal()];
 
         final Vector3f idlePos = new Vector3f(0.0f, 0.0f, 0.0f);
@@ -196,141 +317,153 @@ public final class RenderGun
 
         poseStack.mulPose(Axis.YP.rotationDegrees(startAngles.y + (endAngles.y - startAngles.y) * interp));
         poseStack.mulPose(Axis.ZP.rotationDegrees(startAngles.z + (endAngles.z - startAngles.z) * interp));
-        poseStack.translate(startPos.x + (endPos.x - startPos.x) * interp,
-                startPos.y + (endPos.y - startPos.y) * interp,
-                startPos.z + (endPos.z - startPos.z) * interp);
-
-        //TODO: fix recoil
-        //poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.recoilAngle * (float)Math.sqrt(type.getRecoil()) * 1.5f));
-        //poseStack.translate(animations.recoilOffset.x, animations.recoilOffset.y, animations.recoilOffset.z);
-
-        /*if(spinningCocking)
-        {
-            poseStack.translate(spinPoint.x, spinPoint.y, spinPoint.z);
-            float pumped = (animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing);
-            GlStateManager.rotate(pumped * 180F + 180F, 0F, 0F, 1F);
-            poseStack.translate(-spinPoint.x, -spinPoint.y, -spinPoint.z);
-        }*/
-
-        /*if(animations.reloading)
-        {
-            //Calculate the amount of tilt required for the reloading animation
-            float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * smoothing;
-            reloadRotate = 1F;
-            if(effectiveReloadAnimationProgress < tiltGunTime)
-                reloadRotate = effectiveReloadAnimationProgress / tiltGunTime;
-            if(effectiveReloadAnimationProgress > tiltGunTime + unloadClipTime + loadClipTime)
-                reloadRotate = 1F - (effectiveReloadAnimationProgress - (tiltGunTime + unloadClipTime + loadClipTime)) / untiltGunTime;
-
-            //Rotate the gun dependent on the animation type
-            switch(animationType)
-            {
-                case BOTTOM_CLIP: case PISTOL_CLIP: case SHOTGUN: case END_LOADED:
-                {
-                    GlStateManager.rotate(60F * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(30F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.25F * reloadRotate, 0F, 0F);
-                    break;
-                }
-                case BACK_LOADED:
-                {
-                    GlStateManager.rotate(-75F * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.5F * reloadRotate, 0F, 0F);
-                    break;
-                }
-                case BULLPUP:
-                {
-                    GlStateManager.rotate(70F * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(10F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.5F * reloadRotate, -0.2F * reloadRotate, 0F);
-                    break;
-                }
-                case RIFLE:
-                {
-                    GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(-30F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.5F * reloadRotate, 0F, -0.5F * reloadRotate);
-                    break;
-                }
-                case RIFLE_TOP: case REVOLVER:
-                {
-                    GlStateManager.rotate(30F * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(10F * reloadRotate, 0F, 1F, 0F);
-                    GlStateManager.rotate(-10F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.1F * reloadRotate, -0.2F * reloadRotate, -0.1F * reloadRotate);
-                    break;
-                }
-                case ALT_PISTOL_CLIP:
-                {
-                    GlStateManager.rotate(60F * reloadRotate * flip, 0F, 1F, 0F);
-                    poseStack.translate(0.15F * reloadRotate, 0.25F * reloadRotate, 0F);
-                    break;
-                }
-                case STRIKER:
-                {
-                    GlStateManager.rotate(-35F * reloadRotate * flip, 1F, 0F, 0F);
-                    poseStack.translate(0.2F * reloadRotate, 0F, -0.1F * reloadRotate);
-                    break;
-                }
-                case GENERIC:
-                {
-                    //Gun reloads partly or completely off-screen.
-                    GlStateManager.rotate(45F * reloadRotate, 0F, 0F, 1F);
-                    poseStack.translate(-0.2F * reloadRotate, -0.5F * reloadRotate, 0F);
-                    break;
-                }
-                case CUSTOM:
-                {
-                    GlStateManager.rotate(rotateGunVertical * reloadRotate, 0F, 0F, 1F);
-                    GlStateManager.rotate(rotateGunHorizontal * reloadRotate, 0F, 1F, 0F);
-                    GlStateManager.rotate(tiltGun * reloadRotate, 1F, 0F, 0F);
-                    poseStack.translate(translateGun.x * reloadRotate, translateGun.y * reloadRotate, translateGun.z * reloadRotate);
-                    break;
-                }
-                default: break;
-            }
-        }*/
+        poseStack.translate(startPos.x + (endPos.x - startPos.x) * interp, startPos.y + (endPos.y - startPos.y) * interp, startPos.z + (endPos.z - startPos.z) * interp);
     }
 
-    private static void applyThirdPersonAdjustments(ModelGun model, PoseStack poseStack, GunAnimations animations)
+    private static void renderSpinningCocking(ModelGun model, GunAnimations animations, PoseStack poseStack)
     {
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-
-        poseStack.translate(-0.08F, -0.12F, 0F);
-        poseStack.translate(model.thirdPersonOffset.x, model.thirdPersonOffset.y, model.thirdPersonOffset.z);
-
-        //TODO: config option to disable animations in 3rd Person
-        applyMeleeMovement(poseStack, model.type, animations, Minecraft.getInstance().getFrameTime());
-    }
-
-    public static void applyMeleeMovement(PoseStack poseStack, GunType gunType, GunAnimations animations, float smoothing)
-    {
-        int i = animations.meleeAnimationProgress;
-        if (i <= 0 || i >= gunType.getMeleePath().size())
+        if(!model.spinningCocking)
             return;
 
-        float t = Mth.clamp(smoothing, 0.0f, 1.0f);
+        poseStack.translate(model.spinPoint.x, model.spinPoint.y, model.spinPoint.z);
+        float pumped = (animations.lastPumped + (animations.pumped - animations.lastPumped) * Minecraft.getInstance().getFrameTime());
+        poseStack.mulPose(Axis.ZP.rotationDegrees(pumped * 180F + 180F));
+        poseStack.translate(-model.spinPoint.x, -model.spinPoint.y, -model.spinPoint.z);
+    }
 
-        Vector3f p0 = gunType.getMeleePath().get(i);
-        Vector3f p1 = (i + 1 < gunType.getMeleePath().size()) ? gunType.getMeleePath().get(i + 1) : new Vector3f();
+    private static void renderReloadMovement(ModelGun model, GunAnimations animations, ItemStack stack, boolean leftHand, PoseStack poseStack)
+    {
+        if (!animations.reloading)
+            return;
 
-        float x = Mth.lerp(t, p0.x, p1.x);
-        float y = Mth.lerp(t, p0.y, p1.y);
-        float z = Mth.lerp(t, p0.z, p1.z);
+        int flip = leftHand ? -1 : 1;
 
-        poseStack.translate(x, y, z);
+        EnumAnimationType anim = model.animationType;
+        AttachmentType gripAttachment = model.type.getGrip(stack);
+        ModelAttachment gripModel = gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment attachment ? attachment : null;
 
-        Vector3f a0 = gunType.getMeleePathAngles().get(i);
-        Vector3f a1 = (i + 1 < gunType.getMeleePathAngles().size()) ? gunType.getMeleePathAngles().get(i + 1) : new Vector3f();
+        if (gripModel != null && model.type.getSecondaryFire(stack))
+            anim = gripModel.secondaryAnimType;
 
-        float yaw = Mth.lerp(t, a0.y, a1.y);
-        float roll = Mth.lerp(t, a0.z, a1.z);
-        float pitch = Mth.lerp(t, a0.x, a1.x);
+        // Calculate the amount of tilt required for the reloading animation
+        float reloadRotate = getReloadRotate(model, animations);
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
-        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
+        // Rotate/translate the GUN dependent on the animation type
+        switch (anim)
+        {
+            case BOTTOM_CLIP, PISTOL_CLIP, SHOTGUN, END_LOADED ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(60F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(30F * reloadRotate * flip));
+                poseStack.translate(0.25F * reloadRotate, 0F, 0F);
+            }
+            case CUSTOMBOTTOM_CLIP, CUSTOMPISTOL_CLIP, CUSTOMSHOTGUN, CUSTOMEND_LOADED, CUSTOMBACK_LOADED, CUSTOMBULLPUP, CUSTOMRIFLE, CUSTOMRIFLE_TOP, CUSTOMREVOLVER, CUSTOMREVOLVER2, CUSTOMALT_PISTOL_CLIP, CUSTOMSTRIKER, CUSTOMGENERIC, CUSTOM ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(model.rotateGunVertical * reloadRotate));
+                poseStack.mulPose(Axis.YP.rotationDegrees(model.rotateGunHorizontal * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(model.tiltGun * reloadRotate));
+                poseStack.translate(model.translateGun.x * reloadRotate, model.translateGun.y * reloadRotate, model.translateGun.z * reloadRotate);
+            }
+            case BACK_LOADED ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(-75F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-30F * reloadRotate * flip));
+                poseStack.translate(0.5F * reloadRotate, 0F, 0F);
+            }
+            case BULLPUP ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(70F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(10F * reloadRotate * flip));
+                poseStack.translate(0.5F * reloadRotate, -0.2F * reloadRotate, 0F);
+            }
+            case RIFLE ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(30F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-30F * reloadRotate * flip));
+                poseStack.translate(0.5F * reloadRotate, 0F, -0.5F * reloadRotate);
+            }
+            case RIFLE_TOP, REVOLVER ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(30F * reloadRotate));
+                poseStack.mulPose(Axis.YP.rotationDegrees(10F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-10F * reloadRotate * flip));
+                poseStack.translate(0.1F * reloadRotate, -0.2F * reloadRotate, -0.1F * reloadRotate);
+            }
+            case REVOLVER2 ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(20F * reloadRotate));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-10F * reloadRotate * flip));
+            }
+            case ALT_PISTOL_CLIP ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(60F * reloadRotate * flip));
+                poseStack.translate(0.15F * reloadRotate, 0.25F * reloadRotate, 0F);
+            }
+            case STRIKER ->
+            {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(-35F * reloadRotate * flip));
+                poseStack.translate(0.2F * reloadRotate, 0F, -0.1F * reloadRotate);
+            }
+            case GENERIC ->
+            {
+                // Gun reloads partly or completely off-screen.
+                poseStack.mulPose(Axis.ZP.rotationDegrees(45F * reloadRotate));
+                poseStack.translate(-0.2F * reloadRotate, -0.5F * reloadRotate, 0F);
+            }
+            default ->
+            {
+                // no-op
+            }
+        }
+    }
+
+    private static void handleGunRecoil(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack)
+    {
+        float recoilDistance = getRecoilDistance(model, stack);
+        float recoilAngle = getRecoilAngle(model, stack);
+        float min = -1.5f;
+        float max = 1.5f;
+        float randomNum = GunAnimations.random.nextFloat();
+        float result = min + (randomNum * (max - min));
+        float smoothing = Minecraft.getInstance().getFrameTime();
+
+        poseStack.translate(-(animations.lastGunRecoil + (animations.gunRecoil - animations.lastGunRecoil) * smoothing) * recoilDistance, 0F, 0F);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(-(animations.lastGunRecoil + (animations.gunRecoil - animations.lastGunRecoil) * smoothing) * recoilAngle));
+        poseStack.mulPose(Axis.YP.rotationDegrees(((-animations.lastGunRecoil + (animations.gunRecoil - animations.lastGunRecoil) * smoothing) * result * smoothing * model.ShakeDistance)));
+        poseStack.mulPose(Axis.XP.rotationDegrees(((-animations.lastGunRecoil + (animations.gunRecoil - animations.lastGunRecoil) * smoothing) * result * smoothing * model.ShakeDistance)));
+
+        // Do not move gun when there's a pump in the reload
+        if (model.animationType == EnumAnimationType.SHOTGUN && !animations.reloading)
+        {
+            poseStack.mulPose(Axis.YP.rotationDegrees(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * -5F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(animations.lastPumped + (animations.pumped - animations.lastPumped) * smoothing)) * 5F));
+        }
+
+        if (model.isSingleAction)
+        {
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-(1 - Math.abs(animations.lastGunPullback + (animations.gunPullback - animations.lastGunPullback) * smoothing)) * -5F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(animations.lastGunPullback + (animations.gunPullback - animations.lastGunPullback) * smoothing)) * 2.5F));
+        }
+    }
+
+    /** Get the recoil distance, based on ammo type to reload */
+    private static float getRecoilDistance(ModelGun model, ItemStack gunStack)
+    {
+        AttachmentType grip = model.type.getGrip(gunStack);
+        if (grip != null && model.type.getSecondaryFire(gunStack) && ModelCache.getOrLoadTypeModel(grip) instanceof ModelAttachment gripModel)
+            return gripModel.recoilDistance;
+        else
+            return model.RecoilSlideDistance;
+    }
+
+    /** Get the recoil angle, based on ammo type to reload */
+    private static float getRecoilAngle(ModelGun model, ItemStack gunStack)
+    {
+        AttachmentType grip = model.type.getGrip(gunStack);
+        if (grip != null && model.type.getSecondaryFire(gunStack) && ModelCache.getOrLoadTypeModel(grip) instanceof ModelAttachment gripModel)
+            return gripModel.recoilAngle;
+        else
+            return model.RotateSlideDistance;
     }
 
     /** Render the gun and default attachment models */
@@ -741,20 +874,15 @@ public final class RenderGun
                     float xDisplacement = (loadOnlyClipPosition < 0.5F ? loadOnlyClipPosition * 2F : 1F);
                     poseStack.translate(-getEndLoadedDistance(model, gripAttachment, stack) * xDisplacement, 0F, 0F);
                 }
+                default ->
+                {
+                    // no-op
+                }
             }
         }
 
-        //TODO: FMU Arms Rendering
-        /*if (rtype == ItemRenderType.EQUIPPED_FIRST_PERSON && model.hasArms && com.flansmod.common.FlansMod.armsEnable)
-        {
-            Minecraft mc = Minecraft.getMinecraft();
-            renderAnimArm(mc.thePlayer, model, type, animations);
-        }*/
-
         if (shouldRender && gripAttachment == null || !model.type.getSecondaryFire(stack))
-        {
             model.render(model.ammoModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
 
         // Renders fullammo model for 2nd half of reload animation
         float effectiveReloadAnimationProgress = animations.lastReloadAnimationProgress + (animations.reloadAnimationProgress - animations.lastReloadAnimationProgress) * Minecraft.getInstance().getFrameTime();
@@ -807,7 +935,6 @@ public final class RenderGun
             return model.numBulletsInReloadAnimation;
     }
 
-    //TODO: check reload rotate logic
     public static float getReloadRotate(ModelGun model, GunAnimations animations)
     {
         float reloadRotate = 1F;
@@ -1027,5 +1154,167 @@ public final class RenderGun
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
                 modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType((attachmentTexture))), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }
+    }
+
+    private static void renderFirstPersonArm(ModelGun model, GunAnimations anim, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        if (!ModClientConfig.get().enableArms || !model.hasArms)
+            return;
+
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null)
+            return;
+
+        float smoothing = mc.getFrameTime();
+        PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
+        PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
+
+        ResourceLocation skin = player.getSkinTextureLocation();
+        RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
+        VertexConsumer vc = buffer.getBuffer(rt);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+
+        playerModel.attackTime = 0.0F;
+        playerModel.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+
+        poseStack.pushPose();
+        if (!anim.reloading && model.righthandPump)
+            renderArmPump(model, anim, smoothing, model.rightArmRot, model.rightArmPos, poseStack);
+        else if (anim.charged < 0.9 && model.leftHandAmmo && model.rightHandCharge && anim.charged != -1.0F)
+            renderArmCharge(model, anim, smoothing, model.rightArmChargeRot, model.rightArmChargePos, poseStack);
+        else if (anim.pumped < 0.9 && model.rightHandBolt && model.leftHandAmmo)
+            renderArmBolt(model, anim, smoothing, model.rightArmChargeRot, model.rightArmChargePos, poseStack);
+        else if (!anim.reloading)
+            renderArmDefault(model, model.rightArmRot, model.rightArmPos, poseStack);
+        else
+            renderArmDefault(model, model.rightArmReloadRot, model.rightArmReloadPos, poseStack);
+        poseStack.scale(model.rightArmScale.x, model.rightArmScale.y, model.rightArmScale.z);
+        if (!model.rightHandAmmo)
+            playerModel.rightArm.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+
+        poseStack.pushPose();
+        if (!anim.reloading && model.lefthandPump)
+            renderArmPump(model, anim, smoothing, model.leftArmRot, model.leftArmPos, poseStack);
+        else if (anim.charged < 0.9 && model.rightHandCharge && model.leftHandAmmo && anim.charged != -1.0F)
+            renderArmCharge(model, anim, smoothing, model.leftArmChargeRot, model.leftArmChargePos, poseStack);
+        else if (anim.pumped < 0.9 && model.rightHandBolt && model.leftHandAmmo)
+            renderArmBolt(model, anim, smoothing, model.leftArmChargeRot, model.leftArmChargePos, poseStack);
+        else if (!anim.reloading)
+            renderArmDefault(model, model.leftArmRot, model.leftArmPos, poseStack);
+        else
+            renderArmDefault(model, model.leftArmReloadRot, model.leftArmReloadPos, poseStack);
+        poseStack.scale(model.leftArmScale.x, model.leftArmScale.y, model.leftArmScale.z);
+        if (!model.leftHandAmmo)
+            playerModel.leftArm.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+    }
+
+    private static void renderAnimArm(ModelGun model, GunAnimations anim, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        if (!ModClientConfig.get().enableArms || !model.hasArms)
+            return;
+
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null)
+            return;
+
+        float smoothing = mc.getFrameTime();
+        PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
+        PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
+
+        ResourceLocation skin = player.getSkinTextureLocation();
+        RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
+        VertexConsumer vc = buffer.getBuffer(rt);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+
+        playerModel.attackTime = 0.0F;
+        playerModel.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+
+        poseStack.pushPose();
+        poseStack.scale(1F / model.type.getModelScale(), 1F / model.type.getModelScale(), 1F / model.type.getModelScale());
+
+        poseStack.pushPose();
+        float effectiveReloadAnimationProgress = anim.lastReloadAnimationProgress + (anim.reloadAnimationProgress - anim.lastReloadAnimationProgress) * smoothing;
+        if (anim.charged < 0.9 && model.rightHandCharge && model.rightHandAmmo && anim.charged != -1.0F)
+            renderArmPump(model, anim, smoothing, model.rightArmRot, model.rightArmPos, poseStack);
+        else if (anim.pumped < 0.9 && model.rightHandBolt && model.rightHandAmmo)
+            renderArmBolt(model, anim, smoothing, model.rightArmChargeRot, model.rightArmChargePos, poseStack);
+        else if (!anim.reloading)
+            renderArmDefault(model, model.rightArmRot, model.rightArmPos, poseStack);
+        else
+            renderArmDefault(model, model.rightArmReloadRot, model.rightArmReloadPos, poseStack);
+        poseStack.scale(model.rightArmScale.x, model.rightArmScale.y, model.rightArmScale.z);
+        if (model.rightHandAmmo)
+            playerModel.rightArm.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+
+        poseStack.pushPose();
+        if (anim.charged < 0.9 && model.leftHandCharge && model.leftHandAmmo && anim.charged != -1.0F)
+            renderArmCharge(model, anim, smoothing, model.leftArmChargeRot, model.leftArmChargePos, poseStack);
+        else if (!anim.reloading && model.lefthandPump)
+            renderArmPump(model, anim, smoothing, model.leftArmRot, model.leftArmPos, poseStack);
+        else if (!anim.reloading)
+            renderArmDefault(model, model.leftArmRot, model.leftArmPos, poseStack);
+        else if (effectiveReloadAnimationProgress < 0.5 && model.stagedleftArmReloadPos.x != 0)
+            renderArmDefault(model, model.leftArmReloadRot, model.leftArmReloadPos, poseStack);
+        else if (effectiveReloadAnimationProgress > 0.5 && model.stagedleftArmReloadPos.x != 0)
+            renderArmDefault(model, model.stagedleftArmReloadRot, model.stagedleftArmReloadPos, poseStack);
+        else
+            renderArmDefault(model, model.leftArmReloadRot, model.leftArmReloadPos, poseStack);
+        poseStack.scale(model.leftArmScale.x, model.leftArmScale.y, model.leftArmScale.z);
+        if (model.leftHandAmmo)
+            playerModel.leftArm.render(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+
+        poseStack.popPose();
+    }
+
+    // right hand pump action animation
+    private static void renderArmPump(ModelGun model, GunAnimations anim, float smoothing, Vector3f rotationPoint, Vector3f armPosition, PoseStack poseStack)
+    {
+        poseStack.translate(-(armPosition.x - Math.abs(anim.lastPumped + (anim.pumped - anim.lastPumped) * smoothing) / model.pumpModifier), armPosition.y, armPosition.z);
+        handleRotate(rotationPoint, model, poseStack);
+    }
+
+    // This moves the right hand if leftHandAmmo & handCharge are true (For left hand reload with right hand charge)
+    private static void renderArmCharge(ModelGun model, GunAnimations anim, float smoothing, Vector3f rotationPoint, Vector3f armPosition, PoseStack poseStack)
+    {
+        handleRotate(rotationPoint, model, poseStack);
+        poseStack.translate(
+            -(armPosition.x - Math.abs(anim.lastCharged + (anim.charged - anim.lastCharged) * smoothing) / model.chargeModifier.x),
+            -(armPosition.y - Math.abs(anim.lastCharged + (anim.charged - anim.lastCharged) * smoothing) / model.chargeModifier.y),
+            -(armPosition.z - Math.abs(anim.lastCharged + (anim.charged - anim.lastCharged) * smoothing) / model.chargeModifier.z)
+        );
+    }
+
+    // This moves the right hand if leftHandAmmo & handBolt are true (For left hand reload with right hand bolt action)
+    private static void renderArmBolt(ModelGun model, GunAnimations anim, float smoothing, Vector3f rotationPoint, Vector3f armPosition, PoseStack poseStack)
+    {
+        handleRotate(rotationPoint, model, poseStack);
+        poseStack.translate(
+            armPosition.x + Math.abs(anim.lastPumped + (anim.pumped - anim.lastPumped) * smoothing) / model.chargeModifier.x,
+            armPosition.y + Math.abs(anim.lastPumped + (anim.pumped - anim.lastPumped) * smoothing) / model.chargeModifier.y,
+            -(armPosition.z - Math.abs(anim.lastCharged + (anim.charged - anim.lastCharged) * smoothing) / model.chargeModifier.z)
+        );
+    }
+
+    private static void renderArmDefault(ModelGun model, Vector3f rotationPoint, Vector3f armPosition, PoseStack poseStack)
+    {
+        handleRotate(rotationPoint, model, poseStack);
+        poseStack.translate(armPosition.x, armPosition.y, armPosition.z);
+    }
+
+    private static void handleRotate(Vector3f rotationPoint, ModelGun model, PoseStack poseStack)
+    {
+        if (model.easyArms)
+            poseStack.translate(0.4F * model.armScale.getX(), 0.75F * model.armScale.getY(), -0F * model.armScale.getZ());
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotationPoint.y));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationPoint.z));
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotationPoint.x));
+        if (model.easyArms)
+            poseStack.translate(-0.4F * model.armScale.getX(), -0.75F * model.armScale.getY(), 0F * model.armScale.getZ());
     }
 }
