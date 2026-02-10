@@ -170,7 +170,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static void handleScope(GunItem gunItem, Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
-        if (dualWield || (!gunItem.getConfigType().getSecondaryFunction().isZoom() && !gunItem.getConfigType().getPrimaryFunction().isZoom()) || player.isShiftKeyDown())
+        if (dualWield || (!gunItem.getConfigType().getSecondaryFunction().isZoom() && !gunItem.getConfigType().getPrimaryFunction().isZoom()))
             return;
 
         IScope scope = null;

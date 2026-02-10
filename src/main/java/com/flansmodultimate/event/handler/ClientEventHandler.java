@@ -235,7 +235,7 @@ public final class ClientEventHandler
     {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null || (player.isShiftKeyDown() && event.isUseItem()))
+        if (player == null)
             return;
 
         // Block all interactions unless it is 'use item' to dismount deployable guns
