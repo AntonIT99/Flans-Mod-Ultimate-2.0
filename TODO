@@ -1,11 +1,10 @@
 General:
-- Fix not being able to aim when shift pressed
+- Fix Frag Radius
+- Config option to disable block drops for explosions
+- Recipes
 - Change Fire Mode
 - Armor & Gun Boxes
-- PlayerStats
-- Team Mod / Commands
-- Teams & classes
-- Recipes
+- Team Mod: Commands, Teams, Classes, Stats
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
 
 1.12.2 Features:

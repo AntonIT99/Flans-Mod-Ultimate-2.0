@@ -18,7 +18,9 @@
         },
         "items": [
             "m4carbineammo",
-            "sg550ammo"
+            "sg550ammo",
+            "5.56x45mm60rounds",
+            "5.56x45mm100rounds"
         ]
     },
 
@@ -110,7 +112,14 @@
             "g3Ammo",
             "m14Ammo",
             "m21Ammo",
-            "l96Ammo"
+            "l96Ammo",
+            "7.62x51mm10rounds",
+            "7.62x51mm20rounds",
+            "7.62x51mm30rounds",
+            "7.62x51mm100rounds",
+            "7.62x51mm200rounds",
+            "7.62x51mm750rounds",
+            "7.62x51mm2600rounds"
         ]
     },
 
@@ -129,7 +138,10 @@
             "44_barammo",
             "44_m1903springfieldammo",
             "44_m1garandammo",
-            "44_winchestermodel70ammo"
+            "44_winchestermodel70ammo",
+            "browning30calammo",
+            "browning30calammo1000",
+            "browning30calammotracer"
         ]
     },
 
@@ -169,7 +181,9 @@
             "vickerskammo100",
             "leeenfieldammo",
             "44_brenammo",
-            "44_leeenfieldammo"
+            "44_leeenfieldammo",
+            "brenm5ammo50",
+            "brenm5ammo200"
         ]
     },
 
@@ -205,7 +219,8 @@
         },
         "items": [
             "mp44ammo",
-            "44_stg44ammo"
+            "44_stg44ammo",
+            "stg44ammo"
         ]
     },
 
@@ -230,7 +245,11 @@
             "44_kar98kammo",
             "44_mg26tammo",
             "44_mg34ammo",
-            "44_mg42ammo"
+            "44_mg42ammo",
+            "7.92x57mm5rounds",
+            "7.92x57mm10rounds",
+            "7.92x57mm100rounds",
+            "7.92x57mm200rounds"
         ]
     },
 
@@ -343,7 +362,10 @@
             "PenetrationAt100m": 20
         },
         "items": [
-            "50calammo"
+            "50calammo",
+            "browning50calammo",
+            "browning50calammo500",
+            "browning50calammotracer"
         ]
     },
 
