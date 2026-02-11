@@ -339,7 +339,8 @@
         "properties": {
             "Mass": 42.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "FlakParticles": 0,
+            "PenetrationAt100m": 20
         },
         "items": [
             "50calammo"
@@ -350,7 +351,8 @@
         "properties": {
             "Mass": 48.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "FlakParticles": 0,
+            "PenetrationAt100m": 22
         },
         "items": [
             "44_berezinubmgammo"
@@ -359,8 +361,10 @@
 
     "13x63mmB": {
         "properties": {
-            "Mass": 38.0,
-            "ExplosiveMass": 0.003,
+            "AddRound": [
+                "Pzgr.L'Spur 1 38 0 750 30",
+                "Sprgr. 1 34 0.003 710 0"
+            ],
             "FallSpeed": 1.0,
             "FlakParticles": 0
         },
@@ -372,8 +376,8 @@
     "15x96mm Mauser": {
         "properties": {
             "AddRound": [
-                "Pzgr.L'Spur 1 72.0 0.0 850.0",
-                "Sprgr. 1 57.0 0.0046 960.0"
+                "Pzgr.L'Spur 1 72 0 850 30",
+                "Sprgr. 1 57 0.0046 960 0"
             ],
             "FallSpeed": 1.0,
             "FlakParticles": 0
@@ -385,8 +389,10 @@
 
     "20x124mm": {
         "properties": {
-            "Mass": 160.0,
-            "ExplosiveMass": 0.0035,
+            "AddRound": [
+                "AP 1 162 0 800 45",
+                "HE 2 135 0.016 835 0"
+            ],
             "FallSpeed": 1.0,
             "FlakParticles": 0
         },

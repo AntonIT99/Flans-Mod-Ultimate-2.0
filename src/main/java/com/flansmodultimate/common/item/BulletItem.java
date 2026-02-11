@@ -61,7 +61,18 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             else if (configType.getBulletSpeed() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + "m/s"));
 
-            tooltipComponents.add(IFlanItem.statLine("Penetration", IFlanItem.formatFloat(configType.getPenetratingPower())));
+            if (configType.hasDifferentRounds() && configType.getPeriod().stream().anyMatch(round -> round.stats().penetrationAt100m() > 0F))
+            {
+                tooltipComponents.add(Component.literal("Penetration At 100m:").withStyle(ChatFormatting.BLUE));
+                configType.getPeriod().forEach(round -> {
+                    if (round.stats().penetrationAt100m() > 0)
+                        tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().penetrationAt100m()) + "mm").withStyle(ChatFormatting.GRAY));
+                });
+            }
+            else if (configType.getBulletSpeed() > 0F)
+                tooltipComponents.add(IFlanItem.statLine("Penetration At 100m", IFlanItem.formatFloat(configType.getPenetrationAt100m()) + "mm"));
+
+            tooltipComponents.add(IFlanItem.statLine("Penetrating Power", IFlanItem.formatFloat(configType.getPenetratingPower())));
 
             if (hasLockOn())
                 tooltipComponents.add(IFlanItem.statLine("Guidance", "LockOn"));

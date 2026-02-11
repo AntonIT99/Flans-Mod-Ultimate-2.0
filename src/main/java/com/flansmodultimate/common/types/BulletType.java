@@ -29,14 +29,18 @@ public class BulletType extends ShootableType
     public static final int FLAK_PARTICLES_RANGE = 256;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
-    public record RoundStats(float mass, float explosiveMass, float bulletSpeed) {}
+    public record RoundStats(float mass, float explosiveMass, float bulletSpeed, float penetrationAt100m) {}
 
     public record RoundEntry(String name, int count, RoundStats stats) {}
 
     @Getter
     protected final List<RoundEntry> period = new ArrayList<>();
     protected int periodLength;
+    /** Override the bullet speed of the gun if > 0 */
     protected float bulletSpeed;
+    /** Penetration @ 0° Angle of Attack (mm) at 100m */
+    @Getter
+    protected float penetrationAt100m; //TODO: implement a usage
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -186,6 +190,7 @@ public class BulletType extends ShootableType
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
         speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
+        penetrationAt100m = readValue("PenetrationAt100m", penetrationAt100m, file);
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
@@ -296,12 +301,14 @@ public class BulletType extends ShootableType
         {
             // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
             readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> {
-                if (round.length > 4)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F)));
+                if (round.length > 5)
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, Float.parseFloat(round[5]))));
+                else if (round.length > 4)
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, 0F)));
                 else if (round.length > 3)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), 0F)));
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), 0F, 0F)));
                 else if (round.length > 2)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), 0F, 0F)));
+                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), 0F, 0F, 0F)));
             }));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }

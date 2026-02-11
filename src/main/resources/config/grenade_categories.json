@@ -1,11 +1,114 @@
 {
+    "Geballte Ladung 3kg": {
+        "properties": {
+            "ExplosiveMass": "3.0",
+            "FragType": "DEFAULT",
+            "Fuse": 100
+        },
+        "items": [
+            "geballteladung3kg"
+        ]
+    },
+
+    "Mills Bomb": {
+        "properties": {
+            "ExplosiveMass": "0.075",
+            "FragType": "STD_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "millsbomb"
+        ]
+    },
+
+    "Mk 2 Pineapple Grenade": {
+        "properties": {
+            "ExplosiveMass": "0.085",
+            "FragType": "STD_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "mk2frag",
+            "44_mk2frag"
+        ]
+    },
+
+    "RGD-33 Grenade": {
+        "properties": {
+            "ExplosiveMass": "0.085",
+            "FragType": "STD_FRAG",
+            "Fuse": 70
+        },
+        "items": [
+            "rgd33"
+        ]
+    },
+
+    "S-Mine 35": {
+        "properties": {
+            "ExplosiveMass": "0.182",
+            "FragType": "AIRBURST_AP"
+        },
+        "items": [
+            "smine35",
+            "44_smine"
+        ]
+    },
+
+    "Satchel": {
+        "properties": {
+            "ExplosiveMass": "3.0",
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_satchelcharge"
+        ]
+    },
+
     "Stielhandgranate 24": {
         "properties": {
             "ExplosiveMass": "0.165",
-            "FragType": "LOW_FRAG"
+            "FragType": "LOW_FRAG",
+            "Fuse": 80
         },
         "items": [
-            "stielhandgranate"
+            "stielhandgranate",
+            "stielhandgranate24",
+            "44_stielhandgranate"
+        ]
+    },
+
+    "Stielhandgranate 43": {
+        "properties": {
+            "ExplosiveMass": "0.165",
+            "FragType": "HIGH_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "stielhandgranate43"
+        ]
+    },
+
+    "Stielhandgranate Geballte Ladung": {
+        "properties": {
+            "ExplosiveMass": "1.2",
+            "FragType": "LOW_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "geballteladung",
+            "44_stielhandgranateATBundle"
+        ]
+    },
+
+    "Type 97 Grenade": {
+        "properties": {
+            "ExplosiveMass": "0.065",
+            "FragType": "STD_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "type97"
         ]
     }
 }
