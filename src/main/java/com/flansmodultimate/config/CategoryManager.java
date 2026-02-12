@@ -49,29 +49,15 @@ public final class CategoryManager
             file.addCategoryConfigMap(category);
     }
 
-    public static void loadAll() {
+    public static void loadAll()
+    {
         Path configDir = FMLPaths.CONFIGDIR.get().resolve(FlansMod.MOD_ID);
         Path defaultConfigDir = configDir.resolve("default");
 
-        try
-        {
-            Files.createDirectories(configDir);
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Failed to create directory at {}", configDir.toAbsolutePath(), e);
+        if (!FileUtils.tryCreateDirectories(configDir))
             return;
-        }
-
-        try
-        {
-            Files.createDirectories(defaultConfigDir);
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Failed to create directory at {}", defaultConfigDir.toAbsolutePath(), e);
+        if (!FileUtils.tryCreateDirectories(defaultConfigDir))
             return;
-        }
 
         loadCategories(configDir, defaultConfigDir);
     }
@@ -82,7 +68,7 @@ public final class CategoryManager
 
         for (EnumType type : EnumType.values())
         {
-            String fileName = type.getDisplayName() + "_categories.json";
+            String fileName = type.getIdentifier() + "_categories.json";
             Path defaultFile = defaultConfigDir.resolve(fileName);
             Path userFile = configDir.resolve(fileName);
 
@@ -91,8 +77,7 @@ public final class CategoryManager
                 if (in != null)
                 {
                     byte[] data = in.readAllBytes();
-                    boolean shouldCopy = !Files.exists(defaultFile) || FileUtils.differentBytes(data, Files.readAllBytes(defaultFile));
-
+                    boolean shouldCopy = FileUtils.isDifferentFileContent(defaultFile, data, true);
                     if (shouldCopy)
                         Files.write(defaultFile, data);
                 }
@@ -103,11 +88,13 @@ public final class CategoryManager
             }
 
             categories.putIfAbsent(type, new ArrayList<>());
-            if (ContentLoadingConfig.useDefaultCategories)
+            if (ContentLoadingConfig.isUseDefaultCategories())
                 categories.get(type).addAll(loadForType(type, defaultFile));
             categories.get(type).addAll(loadForType(type, userFile));
 
-            FlansMod.log.info("Loaded {} categories for {} type", categories.get(type).size(), type.getDisplayName());
+            int numCategoriesForType = categories.get(type).size();
+            if (numCategoriesForType > 0)
+                FlansMod.log.info("Loaded {} categories for {} type", numCategoriesForType, type.getIdentifier());
         }
 
         FlansMod.log.info("Finished loading categories");

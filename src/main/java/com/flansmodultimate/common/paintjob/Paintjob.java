@@ -31,7 +31,7 @@ public class Paintjob
     @Getter
     private final String displayName;
     @Getter
-    private final String iconName;
+    private final String icon;
     @Getter
     private final String textureName;
     private final List<Supplier<ItemStack>> dyesNeeded;
@@ -48,7 +48,7 @@ public class Paintjob
         this.type = type;
         this.id = id;
         this.displayName = displayName;
-        this.iconName = iconName;
+        this.icon = iconName;
         this.dyesNeeded = dyesNeeded;
         this.rarity = EnumPaintjobRarity.UNKNOWN;
         this.texture = texture;

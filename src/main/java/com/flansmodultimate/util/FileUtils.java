@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -70,14 +71,16 @@ public class FileUtils
         return !current.equals(target);
     }
 
-    /** Safe move that handles case-only renames on case-insensitive filesystems. */
-    public static void movePossiblyCaseOnly(Path src, Path dst) throws IOException
+    /** Move that handles case-only renames on case-insensitive filesystems. */
+    public static void moveWithCaseOnlyHopIfNeeded(Path src, Path dst) throws IOException
     {
         String srcName = src.getFileName().toString();
         String dstName = dst.getFileName().toString();
 
-        // Case-only rename? Use a temp hop.
-        if (srcName.equalsIgnoreCase(dstName) && !srcName.equals(dstName))
+        boolean sameDir = src.getParent() != null && src.getParent().equals(dst.getParent());
+        boolean caseOnly = sameDir && srcName.equalsIgnoreCase(dstName) && !srcName.equals(dstName);
+
+        if (caseOnly)
         {
             Path tmp = src.resolveSibling(srcName + "." + UUID.randomUUID() + ".tmp");
             Files.move(src, tmp, StandardCopyOption.REPLACE_EXISTING);
@@ -87,6 +90,19 @@ public class FileUtils
         {
             Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    /** Rename file to lowercase (and replace spaces with underscores). */
+    public static Path renameToLowercase(Path file) throws IOException
+    {
+        String name = file.getFileName().toString();
+        String lower = ResourceUtils.sanitize(name);
+        if (name.equals(lower))
+            return file;
+
+        Path target = file.resolveSibling(lower);
+        moveWithCaseOnlyHopIfNeeded(file, target);
+        return target;
     }
 
     public static boolean isOgg(Path p)
@@ -130,14 +146,46 @@ public class FileUtils
         return s;
     }
 
-    public static boolean filesHaveDifferentBytes(Path file1, Path file2)
+    /**
+     * If desired exists and has the same content as src -> return null (skip).
+     * If desired exists and differs -> return ensureUnique(desired).
+     * If desired doesn't exist -> return desired.
+     */
+    public static Path skipIfSameElseEnsureUnique(Path src, Path desired)
+    {
+        if (!Files.exists(desired))
+            return desired;
+
+        // desired exists: if content is the same, do nothing
+        if (!isDifferentFileContent(src, desired, false))
+            return null;
+
+        // desired exists but different content -> pick a unique name
+        return ensureUnique(desired);
+    }
+
+    public static boolean isDifferentFileContent(Path file1, Path file2, boolean assumeDifferentWhenMissing)
     {
         if (!Files.exists(file1) || !Files.exists(file2))
-            return false;
+            return assumeDifferentWhenMissing;
+
+        boolean bothImages = isImageFile(file1) && isImageFile(file2);
 
         try
         {
-            return differentBytes(Files.readAllBytes(file1), Files.readAllBytes(file2));
+            // For non-images, size mismatch => different (fast fail)
+            if (!bothImages && Files.size(file1) != Files.size(file2))
+                return true;
+
+            // Fast path: identical bytes => same content
+            if (Files.mismatch(file1, file2) == -1)
+                return false;
+
+            // Bytes differ: if both are images, treat as same if pixel-identical
+            if (bothImages)
+                return !isSameImage(file1, file2);
+
+            return true;
         }
         catch (IOException e)
         {
@@ -146,17 +194,58 @@ public class FileUtils
         }
     }
 
-    public static boolean differentBytes(byte[] bytes1, byte[] bytes2)
+    public static boolean isDifferentFileContent(Path file, byte[] data, boolean assumeDifferentWhenMissing)
     {
-        return !Arrays.equals(bytes1, bytes2);
+        if (!Files.exists(file))
+            return assumeDifferentWhenMissing;
+
+        try (InputStream in = Files.newInputStream(file))
+        {
+            int off = 0;
+            byte[] buf = new byte[8192];
+
+            while (true)
+            {
+                int r = in.read(buf);
+                if (r < 0)
+                    break;
+
+                // file has more data than expected
+                if (off + r > data.length)
+                    return true;
+
+                for (int i = 0; i < r; i++)
+                {
+                    if (buf[i] != data[off + i])
+                        return true;
+                }
+                off += r;
+            }
+
+            // file ended early (or exactly)
+            return off != data.length;
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not compare file {} with in-memory data", file, e);
+            return true; // safest: treat as different so we refresh it
+        }
+    }
+
+    public static boolean isImageFile(Path p)
+    {
+        String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
+        return n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg")
+            || n.endsWith(".gif") || n.endsWith(".bmp") || n.endsWith(".webp");
     }
 
     public static boolean isSameImage(Path file1, Path file2)
     {
-        BufferedImage img1 = null;
-        BufferedImage img2 = null;
+        BufferedImage img1;
+        BufferedImage img2;
 
-        try (InputStream in1 = Files.newInputStream(file1); InputStream in2 = Files.newInputStream(file2))
+        try (InputStream in1 = Files.newInputStream(file1);
+             InputStream in2 = Files.newInputStream(file2))
         {
             img1 = ImageIO.read(in1);
             img2 = ImageIO.read(in2);
@@ -164,30 +253,41 @@ public class FileUtils
         catch (IOException e)
         {
             FlansMod.log.error("Could not compare images {} and {}", file1, file2, e);
+            return false;
         }
 
         if (img1 == null || img2 == null)
+            return false;
+
+        int w = img1.getWidth();
+        int h = img1.getHeight();
+        if (w != img2.getWidth() || h != img2.getHeight())
+            return false;
+
+        // Fast path: same underlying raster data type/format *might* still differ in RGB conversion, so we compare normalized ARGB pixels via bulk getRGB.
+        int[] a = img1.getRGB(0, 0, w, h, null, 0, w);
+        int[] b = img2.getRGB(0, 0, w, h, null, 0, w);
+        return Arrays.equals(a, b);
+    }
+
+    public static boolean tryCreateDirectories(Path path)
+    {
+        if (path == null)
         {
+            FlansMod.log.error("Could not create directory: path is null");
             return false;
         }
 
-        if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
+        try
         {
+            Files.createDirectories(path);
+            return true;
+        }
+        catch (IOException | SecurityException e)
+        {
+            FlansMod.log.error("Could not create directory {}", path.toAbsolutePath(), e);
             return false;
         }
-
-        for (int y = 0; y < img1.getHeight(); y++)
-        {
-            for (int x = 0; x < img1.getWidth(); x++)
-            {
-                if (img1.getRGB(x, y) != img2.getRGB(x, y))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     @Nullable
@@ -299,37 +399,34 @@ public class FileUtils
 
             // 1) Write new archive to tmp (NOT to target)
             URI uri = URI.create("jar:" + tmp.toUri());
-            try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true")))
+            try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true")); Stream<Path> stream = Files.walk(provider.getExtractedPath()))
             {
-                try (Stream<Path> stream = Files.walk(provider.getExtractedPath()))
+                stream.forEach(source ->
                 {
-                    stream.forEach(source ->
+                    try
                     {
-                        try
-                        {
-                            Path rel = provider.getExtractedPath().relativize(source);
-                            if (rel.toString().isEmpty())
-                                return;
+                        Path rel = provider.getExtractedPath().relativize(source);
+                        if (rel.toString().isEmpty())
+                            return;
 
-                            Path zipEntry = zipFs.getPath("/").resolve(rel.toString());
+                        Path zipEntry = zipFs.getPath("/").resolve(rel.toString());
 
-                            if (Files.isDirectory(source))
-                            {
-                                Files.createDirectories(zipEntry);
-                            }
-                            else
-                            {
-                                Files.createDirectories(zipEntry.getParent());
-                                Files.copy(source, zipEntry, StandardCopyOption.REPLACE_EXISTING);
-                            }
-                        }
-                        catch (IOException e)
+                        if (Files.isDirectory(source))
                         {
-                            // Re-throw so we fail the repack and do NOT replace the original archive
-                            throw new RuntimeException(e);
+                            Files.createDirectories(zipEntry);
                         }
-                    });
-                }
+                        else
+                        {
+                            Files.createDirectories(zipEntry.getParent());
+                            Files.copy(source, zipEntry, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        // Re-throw so we fail the repack and do NOT replace the original archive
+                        throw new RuntimeException(e);
+                    }
+                });
             }
             catch (RuntimeException re)
             {

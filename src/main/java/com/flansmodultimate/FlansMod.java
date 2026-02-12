@@ -8,6 +8,8 @@ import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.inventory.ArmorBoxMenu;
+import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -142,7 +144,13 @@ public class FlansMod
     public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create(
         (int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, ContainerLevelAccess.create(inv.player.level(), buf.readBlockPos())))
     );
-    public static final RegistryObject<MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table", () -> IForgeMenuType.create(PaintjobTableMenu::fromNetwork));
+    public static final RegistryObject<MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> IForgeMenuType.create(PaintjobTableMenu::fromNetwork));
+    public static final RegistryObject<MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> IForgeMenuType.create(
+        (int windowId, Inventory inv, FriendlyByteBuf buf) -> new ArmorBoxMenu(windowId))
+    );
+    public static final RegistryObject<MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create(
+        (int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunBoxMenu(windowId))
+    );
 
     // Particles
     public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
@@ -273,6 +281,7 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
+        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
@@ -305,6 +314,11 @@ public class FlansMod
     public static void registerItem(String itemName, EnumType type, Supplier<? extends Item> initItem)
     {
         items.get(type).add(itemRegistry.register(itemName, initItem));
+    }
+
+    public static void registerBlock(String blockName, Supplier<? extends Block> initItem)
+    {
+        blockRegistry.register(blockName, initItem);
     }
 
     public static void registerSound(String soundName, @Nullable TypeFile typeFile)

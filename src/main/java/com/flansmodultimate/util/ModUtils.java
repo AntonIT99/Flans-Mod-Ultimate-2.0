@@ -171,7 +171,7 @@ public final class ModUtils
 
     public static Optional<Item> getItem(@Nullable InfoType infoType)
     {
-        if (infoType != null && infoType.getType().isItemType())
+        if (infoType != null && infoType.getType().isHasItem())
         {
             return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
         }

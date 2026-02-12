@@ -1,7 +1,9 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
@@ -49,7 +51,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -122,12 +123,13 @@ public class ContentManager
         if (flanFolder == null)
             return;
 
+        if (!FileUtils.tryCreateDirectories(flanFolder))
+            return;
+
         try
         {
             if (!Files.isDirectory(modsFolder))
                 return;
-
-            Files.createDirectories(flanFolder);
 
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsFolder, entry -> {
                 if (!Files.isRegularFile(entry))
@@ -285,9 +287,10 @@ public class ContentManager
                     writeToAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(armorTextureReferences.get(provider)));
                     writeToAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(guiTextureReferences.get(provider)));
                     writeToAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(skinsTextureReferences.get(provider)));
-                    createItemJsonFiles(provider);
+                    createItemAndBlockJsonFiles(provider);
                     createLocalization(provider);
                     copyItemIcons(provider);
+                    copyBlockTextures(provider);
                     copyTextures(provider, TEXTURES_ARMOR_FOLDER, armorTextureReferences.get(provider));
                     copyTextures(provider, TEXTURES_GUI_FOLDER, guiTextureReferences.get(provider));
                     copyTextures(provider, TEXTURES_SKINS_FOLDER, skinsTextureReferences.get(provider));
@@ -316,15 +319,9 @@ public class ContentManager
         }
         else
         {
-            try
-            {
-                Files.createDirectories(defaultFlanPath);
-            }
-            catch (Exception e)
-            {
-                FlansMod.log.error("Failed to create the flan directory at {}", defaultFlanPath, e);
+            if (!FileUtils.tryCreateDirectories(defaultFlanPath))
                 return;
-            }
+
             flanFolder = defaultFlanPath;
         }
     }
@@ -474,21 +471,23 @@ public class ContentManager
             try
             {
                 CategoryManager.applyCategoriesToFile(typeFile);
-                InfoType config = typeFile.getType().getTypeClass().getConstructor().newInstance();
+                EnumType type = typeFile.getType();
+                InfoType config = type.getTypeClass().getConstructor().newInstance();
                 config.load(typeFile);
                 String shortName = config.getOriginalShortName();
 
                 if (!shortName.isBlank())
                 {
-                    if (typeFile.getType().isItemType())
+                    if (type.isHasItem())
                     {
                         shortName = findNewValidShortName(shortName, contentPack, typeFile);
                         if (!shortName.isBlank())
                         {
                             registerItem(shortName, config, typeFile);
+                            if (type.isHasBlock())
+                                registerBlock(shortName, config);
                             config.onItemRegistration(shortName);
                             configs.get(contentPack).add(config);
-
                         }
                     }
                     else
@@ -561,6 +560,11 @@ public class ContentManager
         FlansMod.registerItem(shortName, config.getType(), () -> ItemFactory.createItem(config));
     }
 
+    private static void registerBlock(String shortName, InfoType config)
+    {
+        FlansMod.registerBlock(shortName, () -> BlockFactory.createBlock(config));
+    }
+
     private static void findDuplicateTextures(IContentProvider provider)
     {
         FileSystem fs = FileUtils.createFileSystem(provider);
@@ -600,11 +604,11 @@ public class ContentManager
         {
             TextureFile otherFile = textures.get(folderName).get(fileName);
             FileSystem fs = FileUtils.createFileSystem(otherFile.contentPack());
+
             Path otherPath = otherFile.contentPack().getAssetsPath(fs).resolve(folderName).resolve(otherFile.name());
-            if (FileUtils.filesHaveDifferentBytes(texturePath, otherPath) && !FileUtils.isSameImage(texturePath, otherPath))
-            {
+            if (FileUtils.isDifferentFileContent(texturePath, otherPath, false))
                 aliasName = findValidTextureName(fileName, folderName, provider, otherFile.contentPack(), aliasMapping);
-            }
+
             FileUtils.closeFileSystem(fs, otherFile.contentPack());
         }
 
@@ -682,8 +686,11 @@ public class ContentManager
 
         FileSystem fs = FileUtils.createFileSystem(provider);
 
-        boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve("models").resolve("item"))
+        boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve("blockstates"))
+            || !Files.exists(provider.getAssetsPath(fs).resolve("models").resolve("item"))
+            || !Files.exists(provider.getAssetsPath(fs).resolve("models").resolve("block"))
             || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("item")) && Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("items")))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("block")) && Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("blocks")))
             || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_ARMOR_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_ARMOR_FOLDER)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_GUI_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_GUI_FOLDER)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_SKINS_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_SKINS_FOLDER)))
@@ -699,28 +706,37 @@ public class ContentManager
         return provider.isArchive() && (preLoadAssets || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
     }
 
-    private static void createItemJsonFiles(IContentProvider provider)
+    private static void createItemAndBlockJsonFiles(IContentProvider provider)
     {
+        Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
         Path jsonModelsFolderPath = provider.getAssetsPath().resolve("models");
         Path jsonItemModelsFolderPath = jsonModelsFolderPath.resolve("item");
-        Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
+        Path jsonBlockModelsFolderPath = jsonModelsFolderPath.resolve("block");
 
         convertExistingJsonFiles(jsonBlockstatesFolderPath);
         convertExistingJsonFiles(jsonModelsFolderPath);
 
-        try
+        boolean blockstatesExist = FileUtils.tryCreateDirectories(jsonBlockstatesFolderPath);
+        boolean blockModelsExist = FileUtils.tryCreateDirectories(jsonBlockModelsFolderPath);
+        boolean itemModelsExist = FileUtils.tryCreateDirectories(jsonItemModelsFolderPath);
+
+        if (itemModelsExist)
         {
-            Files.createDirectories(jsonItemModelsFolderPath);
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create {}", jsonItemModelsFolderPath, e);
-            return;
+            for (InfoType config : listItems(provider))
+            {
+                generateItemModelJson(config, jsonItemModelsFolderPath);
+            }
         }
 
-        for (InfoType config : listItems(provider))
+        if (blockstatesExist || blockModelsExist)
         {
-            generateItemJson(config, jsonItemModelsFolderPath);
+            for (InfoType config : listBlocks(provider))
+            {
+                if (blockstatesExist)
+                    generateBlockstateJson(config, jsonItemModelsFolderPath);
+                if (blockModelsExist && config instanceof BlockType blockConfig)
+                    generateBlockModelJson(blockConfig, jsonItemModelsFolderPath);
+            }
         }
     }
 
@@ -745,7 +761,7 @@ public class ContentManager
         try
         {
             // 1) Rename the file itself to lowercase (safe even on case-insensitive FS)
-            jsonFile = renameToLowercase(jsonFile);
+            jsonFile = FileUtils.renameToLowercase(jsonFile);
 
             // 2) Lowercase the content (OK for blockstates/models only)
             String content = Files.readString(jsonFile, StandardCharsets.UTF_8);
@@ -763,40 +779,25 @@ public class ContentManager
         }
     }
 
-    /** Rename file to lowercase (and replace spaces with underscores). */
-    private static Path renameToLowercase(Path file) throws IOException
-    {
-        String name = file.getFileName().toString();
-        String lower = ResourceUtils.sanitize(name);
-        if (name.equals(lower)) return file;
-
-        Path target = file.resolveSibling(lower);
-
-        // If only the case differs, do a two-step move for Windows/macOS
-        if (name.equalsIgnoreCase(lower))
-        {
-            Path tmp = file.resolveSibling(name + "." + UUID.randomUUID() + ".tmp");
-            Files.move(file, tmp, StandardCopyOption.REPLACE_EXISTING);
-            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
-        }
-        else
-        {
-            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
-        }
-        return target;
-    }
-
     @Unmodifiable
     private static List<InfoType> listItems(IContentProvider provider)
     {
         return configs.get(provider).stream()
-            .filter(config -> config.getType().isItemType())
+            .filter(config -> config.getType().isHasItem())
             .toList();
     }
 
-    private static void generateItemJson(InfoType config, Path outputFolder)
+    @Unmodifiable
+    private static List<InfoType> listBlocks(IContentProvider provider)
     {
-        ResourceUtils.ItemModel model = ResourceUtils.ItemModel.create(config);
+        return configs.get(provider).stream()
+            .filter(config -> config.getType().isHasBlock())
+            .toList();
+    }
+
+    private static void generateItemModelJson(InfoType config, Path outputFolder)
+    {
+        ResourceUtils.ModelJson model = ResourceUtils.ModelJson.createItemModel(config);
         String jsonContent = gson.toJson(model);
         String shortName = config.getShortName();
 
@@ -829,8 +830,8 @@ public class ContentManager
             {
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {
-                    outputFile = outputFolder.resolve(p.getIconName() + ".json");
-                    model = ResourceUtils.ItemModel.create(config, p);
+                    outputFile = outputFolder.resolve(p.getIcon() + ".json");
+                    model = ResourceUtils.ModelJson.createItemModel(config, p);
                     jsonContent = gson.toJson(model);
                     try
                     {
@@ -845,10 +846,77 @@ public class ContentManager
         }
     }
 
+    private static void generateBlockModelJson(BlockType config, Path outputFolder)
+    {
+        ResourceUtils.ModelJson model = ResourceUtils.ModelJson.createBlockModel(config);
+        String jsonContent = gson.toJson(model);
+        String shortName = config.getShortName();
+
+        if (!shortName.equals(config.getOriginalShortName()))
+        {
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
+            try
+            {
+                Files.deleteIfExists(oldFile);
+            }
+            catch (IOException e)
+            {
+                FlansMod.log.error("Could not delete {}", oldFile, e);
+            }
+        }
+
+        Path outputFile = outputFolder.resolve(shortName + ".json");
+        try
+        {
+            Files.write(outputFile, jsonContent.getBytes());
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not create {}", outputFile, e);
+        }
+    }
+
+    private static void generateBlockstateJson(InfoType config, Path outputFolder)
+    {
+        ResourceUtils.BlockStateJson model = ResourceUtils.BlockStateJson.create(config);
+        String jsonContent = gson.toJson(model);
+        String shortName = config.getShortName();
+
+        if (!shortName.equals(config.getOriginalShortName()))
+        {
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
+            try
+            {
+                Files.deleteIfExists(oldFile);
+            }
+            catch (IOException e)
+            {
+                FlansMod.log.error("Could not delete {}", oldFile, e);
+            }
+        }
+
+        Path outputFile = outputFolder.resolve(shortName + ".json");
+        try
+        {
+            Files.write(outputFile, jsonContent.getBytes());
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not create {}", outputFile, e);
+        }
+    }
+
     private static void copyItemIcons(IContentProvider provider)
     {
         Path sourcePath = provider.getAssetsPath().resolve("textures").resolve("items");
         Path destPath = provider.getAssetsPath().resolve("textures").resolve("item");
+        copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
+    }
+
+    private static void copyBlockTextures(IContentProvider provider)
+    {
+        Path sourcePath = provider.getAssetsPath().resolve("textures").resolve("blocks");
+        Path destPath = provider.getAssetsPath().resolve("textures").resolve("block");
         copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
     }
 
@@ -916,15 +984,8 @@ public class ContentManager
     {
         Path langDir = provider.getAssetsPath().resolve("lang");
 
-        try
-        {
-            Files.createDirectories(langDir);
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create directory for localization {}", langDir, e);
+        if (!FileUtils.tryCreateDirectories(langDir))
             return;
-        }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(langDir, "*.lang"))
         {
@@ -947,14 +1008,14 @@ public class ContentManager
             String shortName = config.getShortName();
             if (!shortName.equals(config.getOriginalShortName()))
             {
-                String keyToAdd = generateTranslationKey(shortName, config.getType().isBlockType());
-                String keyToRemove = generateTranslationKey(config.getOriginalShortName(), config.getType().isBlockType());
+                String keyToAdd = generateTranslationKey(shortName, config.getType().isHasBlock());
+                String keyToRemove = generateTranslationKey(config.getOriginalShortName(), config.getType().isHasBlock());
                 translations.putIfAbsent(keyToAdd, config.getName());
                 translations.remove(keyToRemove);
             }
             else
             {
-                translations.putIfAbsent(generateTranslationKey(shortName, config.getType().isBlockType()), config.getName());
+                translations.putIfAbsent(generateTranslationKey(shortName, config.getType().isHasBlock()), config.getName());
             }
         }
 
@@ -1039,16 +1100,8 @@ public class ContentManager
     {
         if (!Files.exists(sourcePath))
             return;
-
-        try
-        {
-            Files.createDirectories(destPath);
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create {}", destPath, e);
+        if (!FileUtils.tryCreateDirectories(destPath))
             return;
-        }
 
         try (Stream<Path> paths = Files.walk(sourcePath, 1))
         {
@@ -1058,18 +1111,19 @@ public class ContentManager
                     // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
                     Path rel = sourcePath.relativize(src);
                     String sanitizedRel = FileUtils.sanitizePngRelPath(rel);
-
                     Path dst = destPath.resolve(sanitizedRel).normalize();
-                    try
+                    if (FileUtils.tryCreateDirectories(dst.getParent()))
                     {
-                        Files.createDirectories(dst.getParent());
-                        // Avoid collisions after sanitizing (e.g., "A.png" & "a.png" → "a.png")
-                        Path unique = FileUtils.ensureUnique(dst);
-                        Files.copy(src, unique, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                    catch (IOException e)
-                    {
-                        FlansMod.log.error("Could not create {}", dst, e);
+                        try
+                        {
+                            Path target = FileUtils.skipIfSameElseEnsureUnique(src, dst);
+                            if (target != null)
+                                Files.copy(src, target, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        catch (IOException e)
+                        {
+                            FlansMod.log.error("Could not copy {} to {}", src, dst, e);
+                        }
                     }
                 });
         }
@@ -1112,8 +1166,9 @@ public class ContentManager
             try
             {
                 Path target = soundsDir.resolve(ResourceUtils.sanitize(src.getFileName().toString())).normalize();
-                Path finalTarget = FileUtils.ensureUnique(target);
-                FileUtils.movePossiblyCaseOnly(src, finalTarget);
+                Path finalTarget = FileUtils.skipIfSameElseEnsureUnique(src, target);
+                if (finalTarget != null)
+                    FileUtils.moveWithCaseOnlyHopIfNeeded(src, finalTarget);
             }
             catch (IOException e)
             {

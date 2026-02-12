@@ -93,7 +93,7 @@ public abstract class InfoType
 
     public String getShortName()
     {
-        if (type.isItemType())
+        if (type.isHasItem())
             return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
         else
             return originalShortName;
@@ -286,7 +286,7 @@ public abstract class InfoType
                     FileSystem otherFs = FileUtils.createFileSystem(otherContentPack);
                     Path otherClassFile = otherContentPack.getModelPath(modelClassName, otherFs);
 
-                    if (FileUtils.filesHaveDifferentBytes(classFile, otherClassFile))
+                    if (FileUtils.isDifferentFileContent(classFile, otherClassFile, false))
                     {
                         actualClassName = findNewValidClassName(modelClassName);
                         FlansMod.log.info("Duplicate model class name {} renamed at runtime to {} in [{}] to avoid a conflict with [{}].", modelClassName, actualClassName, contentPack.getName(), otherContentPack.getName());

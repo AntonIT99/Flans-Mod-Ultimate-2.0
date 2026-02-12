@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.item;
+package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
@@ -7,23 +7,23 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ItemFactory
+public final class BlockFactory
 {
     @Nullable
-    public static Item createItem(InfoType config)
+    public static Block createBlock(InfoType config)
     {
         try
         {
             Class<? extends InfoType> typeClass = config.getType().getTypeClass();
-            Class<? extends IFlanItem<?>> itemClass = config.getType().getItemClass();
-            return itemClass.getConstructor(typeClass).newInstance(typeClass.cast(config)).asItem();
+            Class<? extends IFlanBlock<?>> blockClass = config.getType().getBlockClass();
+            return blockClass.getConstructor(typeClass).newInstance(typeClass.cast(config)).asBlock();
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Failed to instantiate Item for {}", config);
+            FlansMod.log.error("Failed to instantiate Block for {}", config);
             LogUtils.logWithoutStacktrace(e);
             return null;
         }
