@@ -198,13 +198,16 @@ public class FlansMod
     );
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+    @Getter
+    private static final Map<EnumType, Map<String, RegistryObject<Block>>> blocks = new EnumMap<>(EnumType.class);
     private static final Map<ResourceLocation, RegistryObject<SoundEvent>> sounds = new HashMap<>();
     @Getter
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
     public FlansMod(FMLJavaModLoadingContext context)
     {
-        Arrays.stream(EnumType.values()).forEach(type -> items.put(type, new ArrayList<>()));
+        Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
+        Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));
         Mixins.addConfiguration(MOD_ID + ".mixins.json");
 
         IEventBus modEventBus = context.getModEventBus();
@@ -316,9 +319,9 @@ public class FlansMod
         items.get(type).add(itemRegistry.register(itemName, initItem));
     }
 
-    public static void registerBlock(String blockName, Supplier<? extends Block> initItem)
+    public static void registerBlock(String blockName, EnumType type, Supplier<? extends Block> initItem)
     {
-        blockRegistry.register(blockName, initItem);
+        blocks.get(type).put(blockName, blockRegistry.register(blockName, initItem));
     }
 
     public static void registerSound(String soundName, @Nullable TypeFile typeFile)

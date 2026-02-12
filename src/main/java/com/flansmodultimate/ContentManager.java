@@ -562,7 +562,7 @@ public class ContentManager
 
     private static void registerBlock(String shortName, InfoType config)
     {
-        FlansMod.registerBlock(shortName, () -> BlockFactory.createBlock(config));
+        FlansMod.registerBlock(shortName, config.getType(), () -> BlockFactory.createBlock(config));
     }
 
     private static void findDuplicateTextures(IContentProvider provider)
@@ -733,9 +733,9 @@ public class ContentManager
             for (InfoType config : listBlocks(provider))
             {
                 if (blockstatesExist)
-                    generateBlockstateJson(config, jsonItemModelsFolderPath);
+                    generateBlockstateJson(config, jsonBlockstatesFolderPath);
                 if (blockModelsExist && config instanceof BlockType blockConfig)
-                    generateBlockModelJson(blockConfig, jsonItemModelsFolderPath);
+                    generateBlockModelJson(blockConfig, jsonBlockModelsFolderPath);
             }
         }
     }
