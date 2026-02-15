@@ -141,7 +141,7 @@ public final class ModClientEventHandler
         for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES.getValues())
         {
             // Only proceed for living entities
-            if (!LivingEntity.class.isAssignableFrom(entityType.getBaseClass()))
+            if (!entityType.getBaseClass().isAssignableFrom(LivingEntity.class))
                 continue;
 
             EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;

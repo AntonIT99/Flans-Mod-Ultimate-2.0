@@ -72,6 +72,27 @@ public class FiredShot
         if (spread <= 0F)
             spread = fireableGun.getSpread();
 
+        if (shooter != null) {
+            double vx = shooter.getDeltaMovement().x;
+            double vz = shooter.getDeltaMovement().z;
+
+            boolean isMoving = vx * vx + vz * vz > 0.0004;
+
+            if (shooter.isSprinting()) {
+                spread *= 5.0F;
+            } else if (isMoving) {
+                spread *= 1.8F;
+            }
+
+            if (!shooter.onGround()) {
+                spread *= 1.5F;
+            }
+
+            if (shooter.isCrouching()) {
+                spread *= 0.8F;
+            }
+        }
+
         return spread;
     }
 

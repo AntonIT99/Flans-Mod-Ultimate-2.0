@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -351,11 +352,22 @@ public class FileUtils
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null)
             {
-                Path outPath = outputDir.resolve(entry.getName()).normalize();
+                String rawName = entry.getName();
+                String safeName = sanitizeArchiveEntryName(rawName);
 
-                // Zip Slip protection
+                if (!rawName.equals(safeName))
+                {
+                    FlansMod.log.warn(
+                            "Sanitized invalid archive entry name: '{}' -> '{}'",
+                            rawName, safeName
+                    );
+                }
+
+                Path outPath = outputDir.resolve(safeName).normalize();
+
+                // Zip Slip protection (still required!)
                 if (!outPath.startsWith(outputDir))
-                    throw new IOException("Blocked zip entry (zip slip): " + entry.getName());
+                    throw new IOException("Blocked zip entry (zip slip): " + rawName);
 
                 if (entry.isDirectory())
                 {
@@ -669,5 +681,19 @@ public class FileUtils
         {
             return delegate.iterator();
         }
+    }
+
+    public static String sanitizeArchiveEntryName(String name)
+    {
+        name = name.replace('\\', '/');
+        name = name.replaceAll("[:*?\"<>|\u00D7]", "_");
+        name = name.replaceAll("\\p{Cntrl}", "");
+
+        name = Arrays.stream(name.split("/"))
+                .filter(s -> !s.isEmpty())
+                .map(String::trim)
+                .collect(Collectors.joining("/"));
+
+        return name;
     }
 }
