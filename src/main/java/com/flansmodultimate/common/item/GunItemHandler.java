@@ -308,7 +308,7 @@ public class GunItemHandler
             if (!level.isClientSide)
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getLoopedSound(), false);
         }
-        else if (!data.isShootKeyPressed(hand))
+        else if (!data.isShootKeyPressed(hand) && !level.isClientSide)
         {
             PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
         }
