@@ -239,6 +239,9 @@ public class ModClient
         if (scopeTime > 0 || player == null || mc.screen != null || currentScope == desiredScope)
             return;
 
+        if (!canUseScope(player))
+            return;
+
         if (currentScope == null)
         {
             // entering scope
@@ -632,6 +635,17 @@ public class ModClient
     {
         if (currentScope != null)
         {
+            if (!canUseScope(player))
+            {
+                currentScope = null;
+
+                mc.options.sensitivity().set(originalMouseSensitivity);
+                mc.options.setCameraType(originalCameraType);
+
+                PacketHandler.sendToServer(new PacketGunScopedState(false));
+                return;
+            }
+
             ItemStack stackInHand = player.getMainHandItem();
             Item itemInHand = stackInHand.getItem();
 
@@ -648,6 +662,21 @@ public class ModClient
                 mc.options.setCameraType(originalCameraType);
             }
         }
+    }
+
+    private static boolean canUseScope(Player player)
+    {
+        ItemStack stack = player.getMainHandItem();
+        if (player.isSprinting() || !(stack.getItem() instanceof GunItem))
+            return false;
+
+        GunAnimations mainAnims = getGunAnimations(player, InteractionHand.MAIN_HAND);
+        GunAnimations offAnims = getGunAnimations(player, InteractionHand.OFF_HAND);
+
+        if (mainAnims.isReloading() || offAnims.isReloading())
+            return false;
+
+        return !(Math.abs(pendingPitch) > 0.01F) && !(Math.abs(pendingYaw) > 0.01F);
     }
 
     private static void updateZoom()

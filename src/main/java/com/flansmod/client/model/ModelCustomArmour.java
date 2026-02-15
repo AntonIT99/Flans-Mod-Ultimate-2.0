@@ -152,23 +152,14 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
 
     public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, EnumRenderPass renderPass)
     {
-        setBodyPart(models, bodyPart, scale);
         for (ModelRendererTurbo mod : models)
         {
-            mod.rotateAngleX = bodyPart.xRot;
-            mod.rotateAngleY = bodyPart.yRot;
-            mod.rotateAngleZ = bodyPart.zRot;
-            mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass);
-        }
-    }
+            poseStack.pushPose();
+            bodyPart.translateAndRotate(poseStack);
 
-    public void setBodyPart(ModelRendererTurbo[] models, ModelPart bodyPart, float scale)
-    {
-        for (ModelRendererTurbo mod : models)
-        {
-            mod.rotationPointX = bodyPart.x / scale;
-            mod.rotationPointY = bodyPart.y / scale;
-            mod.rotationPointZ = bodyPart.z / scale;
+            mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass);
+
+            poseStack.popPose();
         }
     }
 }
