@@ -4,6 +4,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ public class FiredShot
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter, shootableStack.getDamageValue());
+        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType, shooter, shooter, shootableStack.getDamageValue());
     }
 
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack shootableStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)

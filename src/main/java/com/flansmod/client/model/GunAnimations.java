@@ -5,6 +5,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import net.minecraft.util.RandomSource;
@@ -90,16 +91,18 @@ public class GunAnimations
     protected EnumLookAtState lookAt = EnumLookAtState.NONE;
     protected int lookAtTimer = 0;
 
-    protected static final int[] lookAtTimes = new int[]{1, 10, 20, 10, 20, 10};
-
+    @Getter
+    @RequiredArgsConstructor
     public enum EnumLookAtState
     {
-        NONE,
-        TILT1,
-        LOOK1,
-        TILT2,
-        LOOK2,
-        UNTILT
+        NONE(1),
+        TILT1(10),
+        LOOK1(20),
+        TILT2(10),
+        LOOK2(20),
+        UNTILT(10);
+
+        private final int time;
     }
 
     public void updateSprintStance(GunType type)
@@ -270,7 +273,7 @@ public class GunAnimations
             case TILT1, LOOK1, TILT2, LOOK2, UNTILT:
             {
                 lookAtTimer++;
-                if (lookAtTimer >= lookAtTimes[lookAt.ordinal()])
+                if (lookAtTimer >= lookAt.getTime())
                 {
                     lookAt = EnumLookAtState.values()[(lookAt.ordinal() + 1) % EnumLookAtState.values().length];
                     lookAtTimer = 0;

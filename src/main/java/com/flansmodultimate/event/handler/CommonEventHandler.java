@@ -11,10 +11,15 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -49,6 +54,16 @@ public final class CommonEventHandler
     @Getter
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
+
+    private static final Int2ObjectMap<Pair<Vec3, Vec3>> PREVIOUS_POS = new Int2ObjectOpenHashMap<>();
+
+    /**
+     * This is the only way to know if the entity is moving,
+     * because server resets all the information about previous pos and movement after tick ends
+     */
+    public static Vec3 getPrevPos(LivingEntity entity) {
+        return PREVIOUS_POS.get(entity.getId()).left();
+    }
 
     @SubscribeEvent
     public void onWorldLoad(LevelEvent.Load event)
@@ -148,6 +163,16 @@ public final class CommonEventHandler
             CustomArmorItem.handleSpecialEffects(event.getEntity());
             CustomArmorItem.handleMobEffects(event.getEntity());
         }
+
+        Pair<Vec3, Vec3> posPair = PREVIOUS_POS.get(event.getEntity().getId());
+        Vec3 current = event.getEntity().position();
+        Vec3 prev;
+        if (posPair != null) {
+            prev = posPair.right();
+        } else {
+            prev = current;
+        }
+        PREVIOUS_POS.put(event.getEntity().getId(), Pair.of(prev, current));
     }
 
     @SubscribeEvent
@@ -198,5 +223,12 @@ public final class CommonEventHandler
         LivingEntity entity = event.getEntity();
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
+    }
+
+    @SubscribeEvent
+    public static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof LivingEntity entity) {
+            PREVIOUS_POS.remove(entity.getId());
+        }
     }
 }

@@ -20,6 +20,7 @@ import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
+import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,8 +74,8 @@ public class ClientGunHooksImpl implements IClientGunHooks
                 ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
             else
             {
-                ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + gunItem.getConfigType().getRecoilPitch(gunStack, player.isCrouching(), player.isSprinting()));
-                ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + gunItem.getConfigType().getRecoilYaw(gunStack, player.isCrouching(), player.isSprinting()));
+                ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + gunItem.getConfigType().getRecoilPitch(gunStack, ModUtils.getEnumMovement(player)));
+                ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + gunItem.getConfigType().getRecoilYaw(gunStack, ModUtils.getEnumMovement(player)));
             }
 
             shootTime += gunItem.getConfigType().getShootDelay(gunStack);
