@@ -17,6 +17,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -24,6 +25,7 @@ import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -261,7 +263,7 @@ public class ModClient
             opts.setCameraType(CameraType.FIRST_PERSON);
 
             //Send ads spread packet to server
-            sendADSSpreadToServer(gunStack, gunItem, player.isCrouching(), player.isSprinting());
+            sendADSSpreadToServer(gunStack, gunItem, ModUtils.getEnumMovement(player), !player.onGround());
 
             PacketHandler.sendToServer(new PacketGunScopedState(true));
         }
@@ -282,9 +284,9 @@ public class ModClient
         scopeTime = 10;
     }
 
-    private static void sendADSSpreadToServer(ItemStack gunStack, GunItem gunItem, boolean sneaking, boolean sprinting)
+    private static void sendADSSpreadToServer(ItemStack gunStack, GunItem gunItem, EnumMovement enumMovement, boolean airborne)
     {
-        float spread = gunItem.getConfigType().getSpread(gunStack, sneaking, sprinting);
+        float spread = gunItem.getConfigType().getSpread(gunStack, enumMovement, airborne);
 
         if (gunItem.getConfigType().getNumBullets() == 1)
             spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();

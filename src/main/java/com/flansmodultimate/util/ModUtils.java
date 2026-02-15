@@ -4,7 +4,9 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -334,5 +336,26 @@ public final class ModUtils
         double z = Mth.cos(yawRad) * Mth.cos(pitchRad);
 
         return new Vec3(x, y, z);
+    }
+
+    public static EnumMovement getEnumMovement(LivingEntity entity) {
+        if (entity != null) {
+            if (entity.isSprinting()) {
+                return EnumMovement.SPRINTING;
+            }
+
+            Vec3 prevPos = CommonEventHandler.getPrevPos(entity);
+            System.out.println(prevPos.x + ", " + entity.getX());
+            boolean isMoving = prevPos.x != entity.getX() || prevPos.z != entity.getZ();
+            if (isMoving) {
+                return EnumMovement.WALKING;
+            }
+
+            if (entity.isCrouching()) {
+                return EnumMovement.SNEAKING;
+            }
+        }
+
+        return EnumMovement.NONE;
     }
 }

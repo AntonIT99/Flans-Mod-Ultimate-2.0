@@ -4,6 +4,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ public class FiredShot
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, shooter.isCrouching(), shooter.isSprinting()), bulletType, shooter, shooter, shootableStack.getDamageValue());
+        this(new FireableGun(gunType, gunStack, shootableStack, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType, shooter, shooter, shootableStack.getDamageValue());
     }
 
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack shootableStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
@@ -71,27 +72,6 @@ public class FiredShot
 
         if (spread <= 0F)
             spread = fireableGun.getSpread();
-
-        if (shooter != null) {
-            double vx = shooter.getDeltaMovement().x;
-            double vz = shooter.getDeltaMovement().z;
-
-            boolean isMoving = vx * vx + vz * vz > 0.0004;
-
-            if (shooter.isSprinting()) {
-                spread *= 5.0F;
-            } else if (isMoving) {
-                spread *= 1.8F;
-            }
-
-            if (!shooter.onGround()) {
-                spread *= 1.5F;
-            }
-
-            if (shooter.isCrouching()) {
-                spread *= 0.8F;
-            }
-        }
 
         return spread;
     }
