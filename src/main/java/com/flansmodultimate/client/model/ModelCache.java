@@ -76,21 +76,13 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadTypeModel(InfoType type)
     {
-        if (StringUtils.isNotBlank(type.getModelClassName()))
-        {
-            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, null))).orElse(null);
-        }
-        return null;
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, null);
     }
 
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {
-        if (StringUtils.isNotBlank(type.getModelClassName()))
-        {
-            return cache.computeIfAbsent(new ModelCacheKey(type.getModelClassName(), type.getShortName()), key -> Optional.ofNullable(loadModel(key.modelClassName(), type, new ModelDefaultArmor(type.getArmorItemType())))).orElse(null);
-        }
-        return null;
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, new ModelDefaultArmor(type.getArmorItemType()));
     }
 
     @Nullable
@@ -136,8 +128,13 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
     {
-        if (StringUtils.isBlank(modelCacheKey.modelClassName()) && defaultModel != null)
-            modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
+        if (StringUtils.isBlank(modelCacheKey.modelClassName()))
+        {
+            if (defaultModel != null)
+                modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName());
+            else
+                return null;
+        }
 
         return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
     }
