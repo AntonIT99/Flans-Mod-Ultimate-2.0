@@ -77,13 +77,15 @@ public class GunType extends PaintableType implements IScope
     protected float decreaseRecoilYaw;
 
     /**
-     * The alternatives to the above. Simple multipliers for sneaking, sprinting on yaw and pitch respectively. 1F = no change.
+     * The alternatives to the above. Simple multipliers for sneaking, sprinting and walking on yaw and pitch respectively. 1F = no change.
      * -1F is to be used to enable backwards compatibility for sneaking (-2F rather than multiplying)
      */
-    protected float recoilSneakingMultiplier = -1F;
+    protected float recoilWalkingMultiplier = 1F;
+    protected float recoilWalkingMultiplierYaw = 1.1F;
     protected float recoilSprintingMultiplier = 1F;
-    protected float recoilSneakingMultiplierYaw = 0.8F;
     protected float recoilSprintingMultiplierYaw = 1.2F;
+    protected float recoilSneakingMultiplier = -1F;
+    protected float recoilSneakingMultiplierYaw = 0.8F;
 
     /* Countering gun recoil can be modelled with angle=n^tick where n is the coefficient here. */
     /**
@@ -129,8 +131,10 @@ public class GunType extends PaintableType implements IScope
     protected float bulletSpread;
     protected boolean readDispersion;
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
+    protected float walkSpreadModifier = 1.8F;
     protected float sneakSpreadModifier = 0.63F;
-    protected float sprintSpreadModifier = 1.75F;
+    protected float sprintSpreadModifier = 7.0F;
+    protected float airborneSpreadModifier = 1.5F;
     /**
      * If true, spread determined by loaded ammo type
      */
@@ -652,10 +656,12 @@ public class GunType extends PaintableType implements IScope
         rndRecoilYawRange = readValue("RandomRecoilYawRange", rndRecoilYawRange, file);
         decreaseRecoilPitch = readValue("DecreaseRecoil", decreaseRecoilPitch, file);
         decreaseRecoilYaw = readValue("DecreaseRecoilYaw", decreaseRecoilYaw, file);
-        recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
+        recoilWalkingMultiplier = readValue("RecoilWalkingMultiplier", recoilWalkingMultiplier, file);
+        recoilWalkingMultiplierYaw = readValue("RecoilWalkingMultiplierYaw", recoilWalkingMultiplierYaw, file);
         recoilSprintingMultiplier = readValue("RecoilSprintingMultiplier", recoilSprintingMultiplier, file);
-        recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
         recoilSprintingMultiplierYaw = readValue("RecoilSprintingMultiplierYaw", recoilSprintingMultiplierYaw, file);
+        recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
+        recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
         readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil -> {
             try
             {
@@ -707,10 +713,14 @@ public class GunType extends PaintableType implements IScope
 
         //Other settings
         knockback = readValue("Knockback", knockback, file);
+        walkSpreadModifier = readValue("WalkSpreadModifier", walkSpreadModifier, file);
+        walkSpreadModifier = readValue("WalkSpreadMultiplier", walkSpreadModifier, file);
         sneakSpreadModifier = readValue("SneakSpreadModifier", sneakSpreadModifier, file);
         sneakSpreadModifier = readValue("SneakSpreadMultiplier", sneakSpreadModifier, file);
         sprintSpreadModifier = readValue("SprintSpreadModifier", sprintSpreadModifier, file);
         sprintSpreadModifier = readValue("SprintSpreadMultiplier", sprintSpreadModifier, file);
+        airborneSpreadModifier = readValue("AirborneSpreadModifier", airborneSpreadModifier, file);
+        airborneSpreadModifier = readValue("AirborneSpreadMultiplier", airborneSpreadModifier, file);
         allowRearm = readValue("AllowRearm", allowRearm, file);
         consumeGunUponUse = readValue("ConsumeGunOnUse", consumeGunUponUse, file);
         showCrosshair = readValue("ShowCrosshair", showCrosshair, file);
@@ -1188,7 +1198,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the bullet spread of a specific gun, taking into account attachments
      */
-    public float getSpread(@Nullable ItemStack stack, boolean sneaking, boolean sprinting)
+    public float getSpread(@Nullable ItemStack stack, EnumMovement enumMovement, boolean airborne)
     {
         float stackSpread = bulletSpread;
 
@@ -1201,17 +1211,28 @@ public class GunType extends PaintableType implements IScope
                 stackSpread *= attachment.spreadMultiplier;
         }
 
-        if (sprinting)
-            stackSpread *= sprintSpreadModifier;
-        else if (sneaking)
-            stackSpread *= sneakSpreadModifier;
+        switch (enumMovement) {
+            case SPRINTING:
+                stackSpread *= sprintSpreadModifier;
+                break;
+            case WALKING:
+                stackSpread *= walkSpreadModifier;
+                break;
+            case SNEAKING:
+                stackSpread *= sneakSpreadModifier;
+                break;
+        }
+
+        if (airborne) {
+            stackSpread *= airborneSpreadModifier;
+        }
 
         return stackSpread * (readDispersion ? ModCommonConfig.get().gunDispersionModifier() : ModCommonConfig.get().gunAccuracySpreadModifier());
     }
 
     public float getSpread(@Nullable ItemStack stack)
     {
-        return getSpread(stack, false, false);
+        return getSpread(stack, EnumMovement.NONE, false);
     }
 
     public float getDispersionForDisplay(ItemStack stack)
@@ -1248,33 +1269,31 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the pitch recoil of a specific gun, taking into account attachments, randomess and sneak/sprint
      */
-    public float getRecoilPitch(ItemStack stack, boolean sneaking, boolean sprinting)
+    public float getRecoilPitch(ItemStack stack, EnumMovement enumMovement)
     {
         float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
 
-        if (sneaking)
-        {
-            if (decreaseRecoilPitch != 0)
-            {
-                // backwards compatibility
-                stackRecoil -= decreaseRecoilPitch;
-            }
-            else if (recoilSneakingMultiplier == -1)
-            {
-                // backwards compatibility 2: simulate decreaseRecoilPitch 2
-                stackRecoil = stackRecoil < 0.5F ? 0 : stackRecoil - 0.5F;
-            }
-            else
-            {
-                stackRecoil *= recoilSneakingMultiplier;
-            }
-        }
-        else if (sprinting)
-        {
-            stackRecoil *= recoilSprintingMultiplier;
+        switch (enumMovement) {
+            case SNEAKING:
+                if (decreaseRecoilPitch != 0) {
+                    // backwards compatibility
+                    stackRecoil -= decreaseRecoilPitch;
+                } else if (recoilSneakingMultiplier == -1) {
+                    // backwards compatibility 2: simulate decreaseRecoilPitch 2
+                    stackRecoil = stackRecoil < 0.5F ? 0 : stackRecoil - 0.5F;
+                } else {
+                    stackRecoil *= recoilSneakingMultiplier;
+                }
+                break;
+            case SPRINTING:
+                stackRecoil *= recoilSprintingMultiplier;
+                break;
+            case WALKING:
+                stackRecoil *= recoilWalkingMultiplier;
+                break;
         }
 
         return stackRecoil * ModCommonConfig.get().gunRecoilModifier();
@@ -1283,27 +1302,27 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the yaw recoil of a specific gun, taking into account attachments, randomess and sneak/sprint
      */
-    public float getRecoilYaw(ItemStack stack, boolean sneaking, boolean sprinting)
+    public float getRecoilYaw(ItemStack stack, EnumMovement enumMovement)
     {
         float stackRecoilYaw = recoilYaw + ((rand.nextFloat() - 0.5F) * rndRecoilYawRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
 
-        if (sneaking)
-        {
-            if (decreaseRecoilYaw < 0)
-            {
-                stackRecoilYaw /= decreaseRecoilYaw;
-            }
-            else
-            {
-                stackRecoilYaw *= recoilSneakingMultiplierYaw;
-            }
-        }
-        else if (sprinting)
-        {
-            stackRecoilYaw *= recoilSprintingMultiplierYaw;
+        switch (enumMovement) {
+            case SNEAKING:
+                if (decreaseRecoilYaw < 0) {
+                    stackRecoilYaw /= decreaseRecoilYaw;
+                } else {
+                    stackRecoilYaw *= recoilSneakingMultiplierYaw;
+                }
+                break;
+            case SPRINTING:
+                stackRecoilYaw *= recoilSprintingMultiplierYaw;
+                break;
+            case WALKING:
+                stackRecoilYaw *= recoilWalkingMultiplierYaw;
+                break;
         }
 
         return stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier();
