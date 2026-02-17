@@ -156,9 +156,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         {
             poseStack.pushPose();
             bodyPart.translateAndRotate(poseStack);
-
             mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass);
-
             poseStack.popPose();
         }
     }
