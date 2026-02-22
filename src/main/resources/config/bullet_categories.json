@@ -20,7 +20,10 @@
             "m4carbineammo",
             "sg550ammo",
             "5.56x45mm60rounds",
-            "5.56x45mm100rounds"
+            "5.56x45mm100rounds",
+            "m16a4ammo",
+            "acrammo",
+            "adar15ammo"
         ]
     },
 
@@ -338,7 +341,8 @@
             "krissvectorammo",
             "44_coltammo",
             "44_greasegunammo",
-            "44_thompsonm1a1ammo"
+            "44_thompsonm1a1ammo",
+            "m1911ammo"
         ]
     },
 

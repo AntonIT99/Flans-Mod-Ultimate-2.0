@@ -29,12 +29,14 @@ CATEGORY_TO_JSON: Dict[str, str] = {
 }
 
 SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(\S+)\s*$", re.IGNORECASE)
+NAME_RE = re.compile(r"^\s*Name\s+(.+?)\s*$", re.IGNORECASE)  # captures the rest of the line
 
 
 @dataclass(frozen=True)
 class ShortnameOrigin:
     category: str
     shortname_lower: str
+    full_name: str
     zip_path: str
     internal_txt_path: str
 
@@ -64,6 +66,15 @@ def extract_shortnames_from_text(text: str) -> List[str]:
     return out
 
 
+def extract_full_name_from_text(text: str) -> str:
+    # take the first "Name ..." line (common in these files)
+    for line in text.splitlines():
+        m = NAME_RE.match(line)
+        if m:
+            return m.group(1).strip()
+    return ""
+
+
 def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
     results: List[ShortnameOrigin] = []
     try:
@@ -87,9 +98,16 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
                 except UnicodeDecodeError:
                     text = raw.decode("latin-1", errors="replace")
 
+                full_name = extract_full_name_from_text(text)
                 for sn in extract_shortnames_from_text(text):
                     results.append(
-                        ShortnameOrigin(category, sn, str(zip_path), info.filename.replace("\\", "/"))
+                        ShortnameOrigin(
+                            category=category,
+                            shortname_lower=sn,
+                            full_name=full_name,
+                            zip_path=str(zip_path),
+                            internal_txt_path=info.filename.replace("\\", "/"),
+                        )
                     )
     except Exception as e:
         print(f"[WARN] Failed to process zip {zip_path}: {e}", file=sys.stderr)
@@ -146,9 +164,10 @@ def main() -> int:
 
     with OUTPUT_CSV.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter=";", quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["category", "shortname", "reason", "zip_path", "zip_internal_txt_path"])
-        for reason, origin in missing_rows:
-            writer.writerow([origin.category, origin.shortname_lower, reason, origin.zip_path, origin.internal_txt_path])
+        # replaced "reason" with "full_name"
+        writer.writerow(["category", "shortname", "full_name", "zip_path", "zip_internal_txt_path"])
+        for _reason, origin in missing_rows:
+            writer.writerow([origin.category, origin.shortname_lower, origin.full_name, origin.zip_path, origin.internal_txt_path])
 
     print(f"[OK] Wrote output: {OUTPUT_CSV.resolve()}")
     print(f"[OK] Missing entries: {len(missing_rows)}")
