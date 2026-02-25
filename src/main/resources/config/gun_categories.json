@@ -39,7 +39,7 @@
             "Dispersion": 0.18
         },
         "items": [
-            "acr"
+            "adar15"
         ]
     },
 
@@ -352,7 +352,8 @@
             "Dispersion": 0.20
         },
         "items": [
-            "g36"
+            "g36",
+            "g36compact"
         ]
     },
 
@@ -512,7 +513,8 @@
             "Dispersion": 0.65
         },
         "items": [
-            "c96"
+            "c96",
+            "mauserc96"
         ]
     },
 
@@ -582,7 +584,8 @@
             "Dispersion": 0.45
         },
         "items": [
-            "minigun"
+            "minigun",
+            "chicagotypewriter"
         ]
     },
 
@@ -667,7 +670,9 @@
             "Dispersion": 0.32
         },
         "items": [
-            "44_m1919a630cal"
+            "44_m1919a630cal",
+            "browningm1919a6",
+            "browningtyrant"
         ]
     },
 
@@ -758,7 +763,8 @@
             "Dispersion": 0.23
         },
         "items": [
-            "44_mg131"
+            "44_mg131",
+            "mg131"
         ]
     },
 
@@ -914,6 +920,16 @@
         "items": [
             "panzerfaust",
             "44_panzerfaust"
+        ]
+    },
+
+    "Neopup PAW-20": {
+        "properties": {
+            "MuzzleVelocity": 310.0,
+            "RoundsPerMin": 20.0
+        },
+        "items": [
+            "paw20"
         ]
     },
 
@@ -1096,6 +1112,16 @@
         ]
     },
 
+    "Springfield Armory EMP4": {
+        "properties": {
+            "MuzzleVelocity": 380.0,
+            "RoundsPerMin": 300.0
+        },
+        "items": [
+            "emp4"
+        ]
+    },
+
     "Sten Mk.2": {
         "properties": {
             "MuzzleVelocity": 365.0,
@@ -1138,7 +1164,8 @@
         },
         "items": [
             "mp44",
-            "44_stg44"
+            "44_stg44",
+            "stg44"
         ]
     },
 
@@ -1197,7 +1224,8 @@
         "items": [
             "type38",
             "type38sniper",
-            "44_type38"
+            "44_type38",
+            "arisaka38"
         ]
     },
 
@@ -1220,7 +1248,8 @@
         },
         "items": [
             "type99",
-            "44_type99"
+            "44_type99",
+            "type99mg"
         ]
     },
 

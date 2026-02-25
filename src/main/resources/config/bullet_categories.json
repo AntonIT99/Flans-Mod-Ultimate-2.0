@@ -10,6 +10,18 @@
         ]
     },
 
+    "5.45x39mm 7N6": {
+        "properties": {
+            "Mass": 3.4,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "ak74ammo",
+            "an94ammo"
+        ]
+    },
+
     "5.56x45mm NATO": {
         "properties": {
             "Mass": 4.0,
@@ -23,7 +35,17 @@
             "5.56x45mm100rounds",
             "m16a4ammo",
             "acrammo",
-            "adar15ammo"
+            "adar15ammo",
+            "augammo",
+            "famasammo",
+            "fnscarammo",
+            "g36ammo",
+            "galilammo",
+            "l86ammo",
+            "m249ammo",
+            "mtarammo",
+            "5.56x45mm30rounds",
+            "5.56x45mm40rounds"
         ]
     },
 
@@ -88,6 +110,32 @@
         ]
     },
 
+    "7.62x39mm 57-N-231": {
+        "properties": {
+            "Mass": 7.9,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "ak47ammo",
+            "rpdammo",
+            "rpkammo"
+        ]
+    },
+
+    "7.62x51mm NATO .308 Winchester M80": {
+        "properties": {
+            "Mass": 9.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "fnscarammo",
+            "m60ammo",
+            "minigunammo"
+        ]
+    },
+
     "7.62x54mmR 57-N-323S": {
         "properties": {
             "Mass": 9.6,
@@ -144,7 +192,8 @@
             "44_winchestermodel70ammo",
             "browning30calammo",
             "browning30calammo1000",
-            "browning30calammotracer"
+            "browning30calammotracer",
+            "hcarammo"
         ]
     },
 
@@ -289,7 +338,8 @@
             "FlakParticles": 0
         },
         "items": [
-            "bizonAmmo"
+            "bizonAmmo",
+            "makarovammo"
         ]
     },
 
@@ -311,7 +361,11 @@
             "44_lugerammo",
             "44_mp40ammo",
             "44_stenammo",
-            "44_sterlingammo"
+            "44_sterlingammo",
+            "emp4ammo",
+            "glockammo",
+            "m9ammo",
+            "sigp226ammo"
         ]
     },
 
@@ -358,6 +412,17 @@
         ]
     },
 
+    "12.7x33mmRB .50 Action Express": {
+        "properties": {
+            "Mass": 19.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            ""
+        ]
+    },
+
     "12.7x99mm .50 BMG": {
         "properties": {
             "Mass": 42.0,
@@ -369,7 +434,23 @@
             "50calammo",
             "browning50calammo",
             "browning50calammo500",
-            "browning50calammotracer"
+            "browning50calammotracer",
+            "barrettammo",
+            "barrettcompactammo",
+            "gau19ammo"
+        ]
+    },
+
+    "12.7x99mm .50 BMG Raufoss Mk 211": {
+        "properties": {
+            "Mass": 42.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0,
+            "ExplosiveMass": 0.0013,
+            "PenetrationAt100m": 20
+        },
+        "items": [
+            "barrettexplosiveammo"
         ]
     },
 
@@ -410,6 +491,32 @@
         },
         "items": [
             "mg151ammo"
+        ]
+    },
+
+    "20x42mm": {
+        "properties": {
+            "Mass": 110.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0,
+            "ExplosiveMass": 0.0075,
+            "PenetrationAt100m": 8
+        },
+        "items": [
+            "paw20ammo"
+        ]
+    },
+
+    "20x82mm": {
+        "properties": {
+            "Mass": 120.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0,
+            "ExplosiveMass": 0.0108,
+            "PenetrationAt100m": 24
+        },
+        "items": [
+            "ntw20ammo"
         ]
     },
 
