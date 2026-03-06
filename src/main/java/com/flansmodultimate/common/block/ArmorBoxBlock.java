@@ -47,7 +47,10 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
     @NotNull
     public MenuProvider getMenuProvider(BlockState state, @NotNull Level level, @NotNull BlockPos pos)
     {
-        return new SimpleMenuProvider((containerId, inv, player) -> new ArmorBoxMenu(containerId), state.getBlock().getName());
+        Block block = state.getBlock();
+        if (!(block instanceof ArmorBoxBlock armorBoxBlock))
+            throw new IllegalStateException("Block at " + pos + " is not an instance of " + ArmorBoxBlock.class.getSimpleName());
+        return new SimpleMenuProvider((containerId, inv, player) -> new ArmorBoxMenu(containerId, inv, pos, armorBoxBlock), armorBoxBlock.getName());
     }
 
     @Override
@@ -57,10 +60,10 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
-        if (!level.isClientSide)
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen((ServerPlayer) player, provider, pos);
+            NetworkHooks.openScreen(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

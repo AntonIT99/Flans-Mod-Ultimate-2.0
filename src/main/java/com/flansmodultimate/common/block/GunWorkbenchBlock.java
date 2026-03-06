@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,22 +27,21 @@ public class GunWorkbenchBlock extends Block
     @NotNull
     public MenuProvider getMenuProvider(BlockState state, @NotNull Level level, @NotNull BlockPos pos)
     {
-        return new SimpleMenuProvider((containerId, inv, player) -> new GunWorkbenchMenu(containerId, inv, ContainerLevelAccess.create(level, pos)), state.getBlock().getName());
+        return new SimpleMenuProvider((containerId, inv, player) -> new GunWorkbenchMenu(containerId, inv, pos), state.getBlock().getName());
     }
 
     @Override
     @NotNull
-    public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
-        if (level.isClientSide)
-            return InteractionResult.SUCCESS;
+        if (player.isShiftKeyDown())
+            return InteractionResult.PASS;
 
-        if (player instanceof ServerPlayer sp)
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen(sp, provider, pos);
+            NetworkHooks.openScreen(serverPlayer, provider, pos);
         }
-
-        return InteractionResult.CONSUME;
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }

@@ -38,16 +38,16 @@ public class PaintjobTableBlock extends BaseEntityBlock
     }
 
     @Override
-    public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
-        if (level.isClientSide)
-            return InteractionResult.SUCCESS;
+        if (player.isShiftKeyDown())
+            return InteractionResult.PASS;
 
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof PaintjobTableBlockEntity table && player instanceof ServerPlayer sp)
-            NetworkHooks.openScreen(sp, table, pos);
-
-        return InteractionResult.CONSUME;
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof PaintjobTableBlockEntity blockEntity)
+        {
+            NetworkHooks.openScreen(serverPlayer, blockEntity, pos);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

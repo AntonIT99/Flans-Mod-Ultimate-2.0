@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GunItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -56,10 +57,10 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private static final String[] SPECIFIC_TAGS = { GunItem.NBT_BARREL, GunItem.NBT_SCOPE, GunItem.NBT_STOCK, GunItem.NBT_GRIP, GunItem.NBT_GADGET, GunItem.NBT_SLIDE, GunItem.NBT_PUMP, GunItem.NBT_ACCESSORY };
 
-    public GunWorkbenchMenu(int id, Inventory playerInv, ContainerLevelAccess access)
+    public GunWorkbenchMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
         super(FlansMod.gunWorkbenchMenu.get(), id);
-        this.access = access;
+        this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
         // 1 gun + 8 specific + 8 generic = 17 slots
         gunInv = new GunWorkbenchContainer(this, 1 + SPECIFIC_ATTACHMENT_SLOTS + GENERIC_ATTACHMENT_SLOTS);

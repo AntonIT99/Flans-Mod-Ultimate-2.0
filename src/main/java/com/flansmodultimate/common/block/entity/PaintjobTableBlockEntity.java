@@ -21,7 +21,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -98,7 +97,7 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player)
     {
         if (level != null)
-            return new PaintjobTableMenu(id, inv, ContainerLevelAccess.create(level, worldPosition), this);
+            return new PaintjobTableMenu(id, inv, worldPosition, this);
         else
             return null;
     }

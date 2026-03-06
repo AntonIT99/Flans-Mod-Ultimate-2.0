@@ -32,10 +32,10 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     private static final int HOTBAR_END = HOTBAR_START + 9;
     private static final int GUI_TOP_H = 92;
 
-    public PaintjobTableMenu(int id, Inventory playerInv, ContainerLevelAccess access, PaintjobTableBlockEntity table)
+    public PaintjobTableMenu(int id, Inventory playerInv, BlockPos blockPos, PaintjobTableBlockEntity table)
     {
         super(FlansMod.paintjobTableMenu.get(), id);
-        this.access = access;
+        this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
         // TE slots via capability
         table.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
@@ -58,14 +58,14 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         }
     }
 
-    public static PaintjobTableMenu fromNetwork(int id, Inventory inv, FriendlyByteBuf buf)
+    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, FriendlyByteBuf buf)
     {
-        Level level = inv.player.level();
+        Level level = playerInv.player.level();
         BlockPos pos = buf.readBlockPos();
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof PaintjobTableBlockEntity table))
-            throw new IllegalStateException("PaintjobTable BE missing at " + pos);
-        return new PaintjobTableMenu(id, inv, ContainerLevelAccess.create(level, pos), table);
+            throw new IllegalStateException("BlockEntity at " + pos + " is not an instance of " + PaintjobTableBlockEntity.class.getSimpleName());
+        return new PaintjobTableMenu(id, playerInv, pos, table);
     }
 
     @Override

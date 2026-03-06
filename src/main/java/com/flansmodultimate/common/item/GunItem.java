@@ -6,7 +6,6 @@ import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -156,25 +155,24 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             // Attachments
             if (configType.isShowAttachments())
             {
-                List<AttachmentType> attachments = configType.getCurrentAttachments(stack);
+                List<ItemStack> attachmentItems = configType.getCurrentAttachmentItems(stack);
 
-                if (!attachments.isEmpty())
+                if (!attachmentItems.isEmpty())
                     tooltipComponents.add(Component.literal("Attachments").withStyle(ChatFormatting.YELLOW));
 
-                for (AttachmentType attachment : attachments)
-                    tooltipComponents.add(Component.literal(attachment.getName()).withStyle(ChatFormatting.AQUA));
+                for (ItemStack attachmentItem : attachmentItems)
+                    tooltipComponents.add(Component.literal(attachmentItem.getDisplayName().getString()).withStyle(ChatFormatting.AQUA));
             }
 
 
             // Ammo info
             for (ItemStack bulletStack : getBulletItemStackList(stack))
             {
-                if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
+                if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem)
                 {
-                    BulletType bulletType = bulletItem.getConfigType();
                     int max = bulletStack.getMaxDamage();
                     int remaining = max - bulletStack.getDamageValue();
-                    String line = bulletType.getName() + " " + remaining + "/" + max;
+                    String line = bulletStack.getDisplayName().getString() + " " + remaining + "/" + max;
                     tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_BLUE));
                 }
             }

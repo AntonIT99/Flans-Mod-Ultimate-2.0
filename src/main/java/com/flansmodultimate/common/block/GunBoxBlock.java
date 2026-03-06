@@ -56,10 +56,10 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
-        if (!level.isClientSide)
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen((ServerPlayer) player, provider, pos);
+            NetworkHooks.openScreen(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

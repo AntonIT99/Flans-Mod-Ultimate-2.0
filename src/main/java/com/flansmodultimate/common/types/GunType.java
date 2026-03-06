@@ -8,6 +8,7 @@ import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -986,7 +987,7 @@ public class GunType extends PaintableType implements IScope
     }
 
     /**
-     * Returns all attachments currently attached to the specified gun
+     * Returns all types of attachments currently attached to the specified gun
      */
     public List<AttachmentType> getCurrentAttachments(ItemStack gun)
     {
@@ -994,27 +995,53 @@ public class GunType extends PaintableType implements IScope
         List<AttachmentType> attachments = new ArrayList<>();
         for (int i = 0; i < numGenericAttachmentSlots; i++)
         {
-            appendToList(gun, GunItem.NBT_GENERIC + i, attachments);
+            appendToTypeList(gun, GunItem.NBT_GENERIC + i, attachments);
         }
-        appendToList(gun, GunItem.NBT_BARREL, attachments);
-        appendToList(gun, GunItem.NBT_SCOPE, attachments);
-        appendToList(gun, GunItem.NBT_STOCK, attachments);
-        appendToList(gun, GunItem.NBT_GRIP, attachments);
-        appendToList(gun, GunItem.NBT_GADGET, attachments);
-        appendToList(gun, GunItem.NBT_SLIDE, attachments);
-        appendToList(gun, GunItem.NBT_PUMP, attachments);
-        appendToList(gun, GunItem.NBT_ACCESSORY, attachments);
+        appendToTypeList(gun, GunItem.NBT_BARREL, attachments);
+        appendToTypeList(gun, GunItem.NBT_SCOPE, attachments);
+        appendToTypeList(gun, GunItem.NBT_STOCK, attachments);
+        appendToTypeList(gun, GunItem.NBT_GRIP, attachments);
+        appendToTypeList(gun, GunItem.NBT_GADGET, attachments);
+        appendToTypeList(gun, GunItem.NBT_SLIDE, attachments);
+        appendToTypeList(gun, GunItem.NBT_PUMP, attachments);
+        appendToTypeList(gun, GunItem.NBT_ACCESSORY, attachments);
         return attachments;
     }
 
     /**
-     * Private method for attaching attachments to a list of attachments with a null check
+     * Returns all attachment items currently attached to the specified gun
      */
-    private void appendToList(ItemStack gun, String name, List<AttachmentType> attachments)
+    public List<ItemStack> getCurrentAttachmentItems(ItemStack gun)
+    {
+        checkForTags(gun);
+        List<ItemStack> attachmentItems = new ArrayList<>();
+        for (int i = 0; i < numGenericAttachmentSlots; i++)
+        {
+            appendToItemStackList(gun, GunItem.NBT_GENERIC + i, attachmentItems);
+        }
+        appendToItemStackList(gun, GunItem.NBT_BARREL, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_SCOPE, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_STOCK, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_GRIP, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_GADGET, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_SLIDE, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_PUMP, attachmentItems);
+        appendToItemStackList(gun, GunItem.NBT_ACCESSORY, attachmentItems);
+        return attachmentItems;
+    }
+
+    private void appendToTypeList(ItemStack gun, String name, List<AttachmentType> attachments)
     {
         AttachmentType type = getAttachment(gun, name);
         if (type != null)
             attachments.add(type);
+    }
+
+    private void appendToItemStackList(ItemStack gun, String name, List<ItemStack> attachmentItems)
+    {
+        ItemStack itemStack = getAttachmentItemStack(gun, name);
+        if (!itemStack.isEmpty() && itemStack.getItem() instanceof AttachmentItem)
+            attachmentItems.add(itemStack);
     }
 
     //Attachment getter methods

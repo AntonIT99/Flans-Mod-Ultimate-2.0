@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
+import com.flansmodultimate.client.gui.ArmorBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -95,6 +96,7 @@ public final class ModClientEventHandler
             // Menus registration
             MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
             MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
+            MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
         });
     }
 
