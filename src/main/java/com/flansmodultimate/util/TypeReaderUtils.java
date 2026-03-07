@@ -545,6 +545,11 @@ public class TypeReaderUtils
         FlansMod.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s);
     }
 
+    public static void logError(String s, TypeFile file, Exception exception)
+    {
+        FlansMod.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s, exception);
+    }
+
     private static String incorrectFormat(String key, String valuePattern)
     {
         return String.format("Incorrect format for '%s': Should be '%s %s'", key, key, valuePattern);

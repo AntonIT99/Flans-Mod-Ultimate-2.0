@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,18 +40,18 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         int x0 = leftPos;
         int y0 = topPos;
 
-        addRenderableWidget(new ImageButton(
-            x0 + 77, y0 + 87, 10, 10,
-            176, 0, 10, FlansMod.armorBoxGuiTexture,
-            btn -> { if (page > 0) page--; }
+        addRenderableWidget(new ImageButton(x0 + 77, y0 + 87, 10, 10, 176, 0, 10, FlansMod.armorBoxGuiTexture,
+            btn -> {
+                if (page > 0)
+                    page--;
+            }
         ));
 
-        addRenderableWidget(new ImageButton(
-            x0 + 89, y0 + 87, 10, 10,
-            186, 0, 10, FlansMod.armorBoxGuiTexture,
+        addRenderableWidget(new ImageButton(x0 + 89, y0 + 87, 10, 10, 186, 0, 10, FlansMod.armorBoxGuiTexture,
             btn -> {
                 int max = menu.getBlock().getConfigType().getPages().size() - 1;
-                if (page < max) page++;
+                if (page < max)
+                    page++;
             }
         ));
     }
@@ -87,7 +88,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         drawRecipe(gg, type, page);
     }
 
-    private void drawRecipe(GuiGraphics gg, ArmorBoxType type, int pageIndex) {
+    private void drawRecipe(GuiGraphics gg, ArmorBoxType type, int pageIndex)
+    {
         if (type.getPages().isEmpty())
             return;
         ArmorBoxType.ArmourBoxEntry currentPage = type.getPages().get(pageIndex);
@@ -105,8 +107,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
             {
                 int idx = i * 2 + j;
 
-                ArmorType armorType = currentPage.getArmours()[idx];
-                if (armorType == null)
+                if (!(InfoType.getInfoType(currentPage.getArmors()[idx]) instanceof ArmorType armorType))
                     continue;
 
                 int ax = leftPos + 9 + 83 * i;
@@ -117,7 +118,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                     gg.renderItemDecorations(font, armorStack, ax, ay);
                 });
 
-                List<ItemStack> req = currentPage.getRequiredStacks()[idx];
+                List<ItemStack> req = currentPage.getRequiredStacks().get(idx);
                 int numParts = req.size();
                 if (numParts > 0)
                 {
@@ -155,7 +156,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                     for (int y = 0; y < 2; y++)
                     {
                         int idx = x * 2 + y;
-                        if (type.getPages().get(page).getArmours()[idx] != null
+                        if (type.getPages().get(page).getArmors()[idx] != null
                             && m > 7 + 83 * x && m < 27 + 83 * x
                             && n > 42 + 22 * y && n < 62 + 22 * y)
                         {

@@ -18,6 +18,8 @@ public class TypeFile
     private final EnumType type;
     @Getter
     private final IContentProvider contentPack;
+    @Getter
+    private final List<String> lines = new ArrayList<>();
     private final Map<String, List<String>> configMap = new HashMap<>();
 
     public TypeFile(String name, EnumType type, IContentProvider contentPack, List<String> lines)
@@ -25,14 +27,17 @@ public class TypeFile
         this.name = name;
         this.type = type;
         this.contentPack = contentPack;
-        for (String line : lines)
+        this.lines.addAll(lines);
+
+        for (String line : this.lines)
         {
             if (line.isBlank() || line.startsWith("//"))
                 continue;
 
             String[] split = line.trim().split("\\s+", 2);
-            configMap.putIfAbsent(split[0].toLowerCase(Locale.ROOT), new ArrayList<>());
-            configMap.get(split[0].toLowerCase(Locale.ROOT)).add((split.length > 1) ? split[1] : null);
+            String configKey = split[0].toLowerCase(Locale.ROOT);
+            configMap.putIfAbsent(configKey, new ArrayList<>());
+            configMap.get(configKey).add((split.length > 1) ? split[1] : null);
         }
     }
 

@@ -121,6 +121,12 @@ public abstract class InfoType
         contentPack = file.getContentPack();
         type = file.getType();
         read(file);
+        List<String> lines = file.getLines();
+        for (int i = 0; i < lines.size(); i++)
+        {
+            String[] split = lines.get(i).split("\\s+");
+            readLine(split, i, file);
+        }
         if (FMLEnvironment.dist == Dist.CLIENT)
             readClient(file);
     }
@@ -148,6 +154,7 @@ public abstract class InfoType
         readIntValues("Colour", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
         readIntValues("Color", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
 
+        //TODO: fix/test recipe lines
         readLines("Recipe", file).ifPresent(lines ->
         {
             recipeLines.addAll(lines);
@@ -159,6 +166,11 @@ public abstract class InfoType
             recipeLines.addAll(lines);
             shapeless = true;
         });
+    }
+
+    protected void readLine(String[] split, int lineIndex, TypeFile file)
+    {
+
     }
 
     private void addToRecipeGrid(List<String> recipeRows)
