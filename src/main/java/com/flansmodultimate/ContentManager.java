@@ -418,7 +418,7 @@ public class ContentManager
                 .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".txt"))
                 .map(txtFile -> readTypeFile(txtFile, folderName, provider))
                 .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(TypeFile::getType).thenComparing(TypeFile::getName))
+                .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
                 .toList()
             );
         }
@@ -466,7 +466,11 @@ public class ContentManager
 
     private static void registerConfigs(IContentProvider contentPack)
     {
-        for (TypeFile typeFile : files.get(contentPack))
+        List<TypeFile> typeFiles = files.get(contentPack).stream()
+            .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
+            .toList();
+
+        for (TypeFile typeFile : typeFiles)
         {
             try
             {

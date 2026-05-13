@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.recipe.RecipeParser;
 import lombok.Getter;
 
 import net.minecraft.world.item.ItemStack;
@@ -9,7 +10,8 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flansmodultimate.util.TypeReaderUtils.*;
+import static com.flansmodultimate.util.TypeReaderUtils.readValue;
+import static com.flansmodultimate.util.TypeReaderUtils.readValues;
 
 public class PartType extends InfoType
 {
@@ -84,7 +86,7 @@ public class PartType extends InfoType
         fuel = readValue("Fuel", fuel, file);
 
         //Recipe
-        partBoxRecipe.addAll(getPartBoxRecipeStacks(readValues("PartBoxRecipe", file), file));
+        partBoxRecipe.addAll(RecipeParser.resolveAmountThenItemPairs(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
 
         if (category == Category.ENGINE && !useRFPower)
         {
@@ -104,65 +106,4 @@ public class PartType extends InfoType
         return engineSpeed > quitePossiblyAnInferiorEngine.engineSpeed;
     }
 
-    protected List<ItemStack> getPartBoxRecipeStacks(String[] split, TypeFile file)
-    {
-        int pairs = Math.max(0, (split.length - 2) / 2);
-        List<ItemStack> stacks = new ArrayList<>(pairs);
-
-        for (int i = 0; i < pairs; i++)
-        {
-            int amountIndex = 2 * i + 2;
-            int itemIndex   = 2 * i + 3;
-
-            if (amountIndex >= split.length || itemIndex >= split.length)
-                break;
-
-            int amount;
-            try
-            {
-                amount = Integer.parseInt(split[amountIndex].trim());
-            }
-            catch (Exception e)
-            {
-                logError("Invalid amount '" + split[amountIndex] + "' in PartBoxRecipe", file);
-                continue;
-            }
-
-            String token = split[itemIndex] == null ? "" : split[itemIndex].trim();
-            if (token.isEmpty())
-            {
-                logError("Missing item token in PartBoxRecipe", file);
-                continue;
-            }
-
-            String itemName = token;
-            int damage = 0;
-
-            int dot = token.indexOf('.');
-            if (dot >= 0)
-            {
-                itemName = token.substring(0, dot).trim();
-                String dmgStr = (dot + 1 < token.length()) ? token.substring(dot + 1).trim() : "";
-                if (!dmgStr.isEmpty())
-                {
-                    try
-                    {
-                        damage = Integer.parseInt(dmgStr);
-                    }
-                    catch (Exception e)
-                    {
-                        logError("Invalid damage '" + dmgStr + "' in PartBoxRecipe", file);
-                    }
-                }
-            }
-
-            ItemStack recipeElement = getRecipeElement(itemName, amount, damage, contentPack);
-            if (recipeElement == null)
-                logError("Could not find item for PartBoxRecipe: '" + itemName + "'", file);
-            else
-                stacks.add(recipeElement);
-        }
-
-        return stacks;
-    }
 }

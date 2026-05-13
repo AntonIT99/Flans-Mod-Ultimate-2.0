@@ -1,9 +1,9 @@
 General:
+- Automatic file cleanup in textures/
 - Fix Frag Radius
 - Config option to disable block drops for explosions
 - Recipes
 - Change Fire Mode
-- Armor & Gun Boxes
 - Team Mod: Commands, Teams, Classes, Stats
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
 

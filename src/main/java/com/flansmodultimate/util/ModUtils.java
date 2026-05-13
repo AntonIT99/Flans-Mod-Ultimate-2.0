@@ -204,11 +204,18 @@ public final class ModUtils
         if (StringUtils.isBlank(id))
             return Optional.empty();
 
-        id = ResourceUtils.sanitize(id.trim());
+        id = id.trim();
 
-        // If no namespace, assume minecraft
-        if (!id.contains(":"))
-            id = "minecraft:" + id;
+        if (id.contains(":"))
+        {
+            String[] split = id.split(":", 2);
+            id = ResourceUtils.sanitize(split[0]) + ":" + ResourceUtils.sanitize(split[1]);
+        }
+        else
+        {
+            // If no namespace, assume minecraft
+            id = "minecraft:" + ResourceUtils.sanitize(id);
+        }
 
         ResourceLocation rl = ResourceLocation.tryParse(id);
         if (rl == null)

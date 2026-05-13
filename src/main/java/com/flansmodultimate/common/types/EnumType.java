@@ -26,15 +26,15 @@ import java.util.Optional;
 @Getter
 public enum EnumType
 {
-    ARMOR("armor", "armorFiles", ContentManager.TEXTURES_ARMOR_FOLDER, ArmorType.class, CustomArmorItem.class, null, false),
-    ARMOR_BOX("armor_box", "armorBoxes", ContentManager.TEXTURES_SKINS_FOLDER, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false),
-    ATTACHMENT("attachment", "attachments", ContentManager.TEXTURES_SKINS_FOLDER, AttachmentType.class, AttachmentItem.class, null, false),
-    BULLET("bullet", "bullets", ContentManager.TEXTURES_SKINS_FOLDER, BulletType.class, BulletItem.class, null, false),
-    GRENADE("grenade", "grenades", ContentManager.TEXTURES_SKINS_FOLDER, GrenadeType.class, GrenadeItem.class, null, false),
-    GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, null, true),
-    GUN_BOX("gun_box", "boxes", ContentManager.TEXTURES_SKINS_FOLDER, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false),
-    PARTS("part", "parts", ContentManager.TEXTURES_SKINS_FOLDER, PartType.class, PartItem.class, null, false),
-    TOOLS("tool", "tools", ContentManager.TEXTURES_SKINS_FOLDER, ToolType.class, ToolItem.class, null, false);
+    ARMOR("armor", "armorFiles", ContentManager.TEXTURES_ARMOR_FOLDER, ArmorType.class, CustomArmorItem.class, null, false, 0),
+    ARMOR_BOX("armor_box", "armorBoxes", ContentManager.TEXTURES_SKINS_FOLDER, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false, 7),
+    ATTACHMENT("attachment", "attachments", ContentManager.TEXTURES_SKINS_FOLDER, AttachmentType.class, AttachmentItem.class, null, false, 1),
+    BULLET("bullet", "bullets", ContentManager.TEXTURES_SKINS_FOLDER, BulletType.class, BulletItem.class, null, false, 2),
+    GRENADE("grenade", "grenades", ContentManager.TEXTURES_SKINS_FOLDER, GrenadeType.class, GrenadeItem.class, null, false, 3),
+    GUN("gun", "guns", ContentManager.TEXTURES_SKINS_FOLDER, GunType.class, GunItem.class, null, true, 4),
+    GUN_BOX("gun_box", "boxes", ContentManager.TEXTURES_SKINS_FOLDER, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 8),
+    PARTS("part", "parts", ContentManager.TEXTURES_SKINS_FOLDER, PartType.class, PartItem.class, null, false, 5),
+    TOOLS("tool", "tools", ContentManager.TEXTURES_SKINS_FOLDER, ToolType.class, ToolItem.class, null, false, 6);
 
     private final String identifier;
     private final String configFolderName;
@@ -45,8 +45,9 @@ public enum EnumType
     private final boolean hasItem;
     private final boolean hasBlock;
     private final boolean handHeldItem;
+    private final int loadOrder;
 
-    EnumType(String name, String configFolder, String textureFolder, Class<? extends InfoType> type, @Nullable Class<? extends IFlanItem<?>> item, @Nullable Class<? extends IFlanBlock<?>> block, boolean handHeld)
+    EnumType(String name, String configFolder, String textureFolder, Class<? extends InfoType> type, @Nullable Class<? extends IFlanItem<?>> item, @Nullable Class<? extends IFlanBlock<?>> block, boolean handHeld, int order)
     {
         identifier = name;
         configFolderName = configFolder;
@@ -57,6 +58,7 @@ public enum EnumType
         blockClass = block;
         hasBlock = (blockClass != null);
         handHeldItem = handHeld;
+        loadOrder = order;
     }
 
     @Unmodifiable

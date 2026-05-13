@@ -108,6 +108,7 @@ public class FlansMod
     public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
     public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
     public static final ResourceLocation armorBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
+    public static final ResourceLocation gunBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
 
     // Registries
     private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);
@@ -144,7 +145,7 @@ public class FlansMod
     public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
     public static final RegistryObject<MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> IForgeMenuType.create(PaintjobTableMenu::createFromNetwork));
     public static final RegistryObject<MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> IForgeMenuType.create(ArmorBoxMenu::createFromNetwork));
-    public static final RegistryObject<MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunBoxMenu(windowId)));
+    public static final RegistryObject<MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create(GunBoxMenu::createFromNetwork));
 
     // Particles
     public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));

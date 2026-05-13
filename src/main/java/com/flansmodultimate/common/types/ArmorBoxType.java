@@ -1,14 +1,19 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.ContentManager;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.recipe.RecipeIngredient;
+import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import static com.flansmodultimate.util.TypeReaderUtils.logError;
 
@@ -16,6 +21,14 @@ public class ArmorBoxType extends BlockType
 {
     @Getter
     protected List<ArmourBoxEntry> pages = new ArrayList<>();
+    protected String guiTexturePath;
+
+    @Override
+    protected void read(TypeFile file)
+    {
+        super.read(file);
+        guiTexturePath = readFileNameResource("GuiTexture", guiTexturePath, file);
+    }
 
     @Override
     protected void readLine(String[] split, int lineIndex, TypeFile file)
@@ -66,39 +79,14 @@ public class ArmorBoxType extends BlockType
     protected void parseArmourLine(ArmourBoxEntry entry, int armorSlot, String line, TypeFile file, IContentProvider contentPack)
     {
         String[] lineSplit = line.split("\\s+");
-        entry.armors[armorSlot] = lineSplit[0].toLowerCase(Locale.ROOT);
-
-        for (int j = 0; j < (lineSplit.length - 1) / 2; j++)
-        {
-            ItemStack recipeElement = parseRecipeElement(lineSplit, j, contentPack);
-
-            if (recipeElement != null)
-                entry.requiredStacks.get(armorSlot).add(recipeElement);
-            else
-                logError("Could not find item for armour recipe " + line, file);
-        }
+        String armorShortName = ResourceUtils.sanitize(lineSplit[0]);
+        entry.armors[armorSlot] = ContentManager.getShortnameAliasInContentPack(armorShortName, contentPack);
+        entry.requiredStackRefs.get(armorSlot).addAll(RecipeParser.parseItemThenAmountReferences(lineSplit, 1, contentPack, file, "armour recipe " + line));
     }
 
-    protected ItemStack parseRecipeElement(String[] lineSplit, int j, IContentProvider contentPack) {
-        String itemToken = lineSplit[j * 2 + 1];
-        int amount = Integer.parseInt(lineSplit[j * 2 + 2]);
-
-        String itemName;
-        int meta;
-
-        int dotIndex = itemToken.indexOf('.');
-        if (dotIndex >= 0)
-        {
-            itemName = itemToken.substring(0, dotIndex);
-            meta = Integer.parseInt(itemToken.substring(dotIndex + 1));
-        }
-        else
-        {
-            itemName = itemToken;
-            meta = 0;
-        }
-
-        return getRecipeElement(itemName, amount, meta, contentPack);
+    public ResourceLocation getGuiTexture()
+    {
+        return loadGuiTextureLocation(guiTexturePath, FlansMod.armorBoxGuiTexture);
     }
 
     /** Each instance of this class refers to one page full of recipes, that is, one full set of armour */
@@ -108,14 +96,31 @@ public class ArmorBoxType extends BlockType
         final String shortName;
         final String name;
         final String[] armors = new String[4];
-        final List<List<ItemStack>> requiredStacks = new ArrayList<>(4);
+        final List<List<RecipeIngredient>> requiredStackRefs = new ArrayList<>(4);
 
         public ArmourBoxEntry(String s, String s1)
         {
             shortName = s;
             name = s1;
             for (int i = 0; i < 4; i++)
-                requiredStacks.add(new ArrayList<>());
+                requiredStackRefs.add(new ArrayList<>());
+        }
+
+        public List<List<ItemStack>> getRequiredStacks()
+        {
+            List<List<ItemStack>> requiredStacks = new ArrayList<>(4);
+            for (List<RecipeIngredient> recipeItems : requiredStackRefs)
+            {
+                List<ItemStack> stacks = new ArrayList<>();
+                for (RecipeIngredient recipeItem : recipeItems)
+                {
+                    ItemStack stack = recipeItem.resolve();
+                    if (!stack.isEmpty())
+                        stacks.add(stack);
+                }
+                requiredStacks.add(stacks);
+            }
+            return requiredStacks;
         }
     }
 }

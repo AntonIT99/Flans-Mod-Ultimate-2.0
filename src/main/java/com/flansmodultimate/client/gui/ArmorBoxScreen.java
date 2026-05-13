@@ -1,6 +1,5 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
@@ -12,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,15 +39,16 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         // forward:     x+89..99, y+87..97
         int x0 = leftPos;
         int y0 = topPos;
+        ResourceLocation guiTexture = menu.getBlock().getConfigType().getGuiTexture();
 
-        addRenderableWidget(new ImageButton(x0 + 77, y0 + 87, 10, 10, 176, 0, 10, FlansMod.armorBoxGuiTexture,
+        addRenderableWidget(new ImageButton(x0 + 77, y0 + 87, 10, 10, 176, 0, 10, guiTexture,
             btn -> {
                 if (page > 0)
                     page--;
             }
         ));
 
-        addRenderableWidget(new ImageButton(x0 + 89, y0 + 87, 10, 10, 186, 0, 10, FlansMod.armorBoxGuiTexture,
+        addRenderableWidget(new ImageButton(x0 + 89, y0 + 87, 10, 10, 186, 0, 10, guiTexture,
             btn -> {
                 int max = menu.getBlock().getConfigType().getPages().size() - 1;
                 if (page < max)
@@ -74,18 +75,25 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     @Override
     protected void renderBg(@NotNull GuiGraphics gg, float partialTick, int mouseX, int mouseY)
     {
-        gg.blit(FlansMod.armorBoxGuiTexture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-
         ArmorBoxType type = menu.getBlock().getConfigType();
+        ResourceLocation guiTexture = type.getGuiTexture();
+        gg.blit(guiTexture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+
         gg.drawCenteredString(font, menu.getBlock().getName().getString(), leftPos + imageWidth / 2, topPos + 5, 0xFFFFFF);
 
         // Grey out arrows like old GUI (draw overlay on top)
         if (page == 0)
-            gg.blit(FlansMod.armorBoxGuiTexture, leftPos + 77, topPos + 87, 176, 0, 10, 10);
+            gg.blit(guiTexture, leftPos + 77, topPos + 87, 176, 0, 10, 10);
         if (page >= type.getPages().size() - 1)
-            gg.blit(FlansMod.armorBoxGuiTexture, leftPos + 89, topPos + 87, 186, 0, 10, 10);
+            gg.blit(guiTexture, leftPos + 89, topPos + 87, 186, 0, 10, 10);
 
         drawRecipe(gg, type, page);
+    }
+
+    @Override
+    protected void renderLabels(@NotNull GuiGraphics gg, int mouseX, int mouseY)
+    {
+        // The armor box GUI draws its own title in renderBg and does not need the default inventory label.
     }
 
     private void drawRecipe(GuiGraphics gg, ArmorBoxType type, int pageIndex)

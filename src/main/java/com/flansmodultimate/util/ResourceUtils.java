@@ -29,6 +29,22 @@ public final class ResourceUtils
         return name.toLowerCase(Locale.ROOT).replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
     }
 
+    public static String sanitizeFileNameStem(@Nullable String name)
+    {
+        if (name == null)
+            return StringUtils.EMPTY;
+
+        String normalizedName = name.trim().replace('\\', '/');
+        int lastSeparator = normalizedName.lastIndexOf('/');
+        if (lastSeparator >= 0)
+            normalizedName = normalizedName.substring(lastSeparator + 1);
+
+        if (normalizedName.toLowerCase(Locale.ROOT).endsWith(".png"))
+            normalizedName = normalizedName.substring(0, normalizedName.length() - 4);
+
+        return sanitize(normalizedName);
+    }
+
     @AllArgsConstructor
     public static class ModelJson
     {

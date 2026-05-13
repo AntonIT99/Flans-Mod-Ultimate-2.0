@@ -3,9 +3,9 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.TypeReaderUtils;
 import lombok.AccessLevel;
@@ -22,8 +22,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -32,7 +30,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -188,6 +185,11 @@ public abstract class InfoType
     protected static String readResource(String key, String defaultValue, TypeFile file)
     {
         return ResourceUtils.sanitize(readValue(key, defaultValue, file));
+    }
+
+    protected static String readFileNameResource(String key, String defaultValue, TypeFile file)
+    {
+        return ResourceUtils.sanitizeFileNameStem(readValue(key, defaultValue, file));
     }
 
     protected static String readSound(String key, String defaultValue, TypeFile file)
@@ -379,65 +381,32 @@ public abstract class InfoType
         return Optional.empty();
     }
 
+    @OnlyIn(Dist.CLIENT)
+    protected ResourceLocation loadGuiTextureLocation(String textureName, ResourceLocation defaultTexture)
+    {
+        if (StringUtils.isBlank(textureName) || textureName.equalsIgnoreCase("none"))
+            return defaultTexture;
+
+        var refsMap = ContentManager.getGuiTextureReferences().get(contentPack);
+        if (refsMap != null)
+        {
+            refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
+            DynamicReference ref = refsMap.get(textureName);
+            if (ref != null)
+                textureName = ref.get();
+        }
+
+        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + textureName + ".png");
+    }
+
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
     {
-        String[] split = str.split("\\.");
-        if (split.length == 0)
-            return ItemStack.EMPTY;
-
-        String id = split[0];
-        int damage = split.length > 1 ? Short.parseShort(split[1]) : Short.MAX_VALUE;
-        int amount = 1;
-
-        return getRecipeElement(id, amount, damage, provider);
+        return RecipeResolver.resolve(str, provider);
     }
 
     public static ItemStack getRecipeElement(String id, int amount, int damage, @Nullable IContentProvider provider)
     {
-        // Do a handful of special cases, mostly legacy recipes
-        switch (id.toLowerCase(Locale.ROOT))
-        {
-            case "dooriron":
-                return new ItemStack(Items.IRON_DOOR, amount);
-            case "clayitem":
-                return new ItemStack(Items.CLAY_BALL, amount);
-            case "iron_trapdoor":
-                return new ItemStack(Blocks.IRON_TRAPDOOR, amount);
-            case "trapdoor":
-                return new ItemStack(Blocks.OAK_TRAPDOOR, amount);
-            case "gunpowder":
-                return new ItemStack(Items.GUNPOWDER, amount);
-            case "ingotiron", "iron":
-                return new ItemStack(Items.IRON_INGOT, amount);
-            case "boat":
-                return new ItemStack(Items.OAK_BOAT, amount);
-            default:
-                break;
-        }
-
-        // Try a "modid:itemid" style lookup, default to "minecraft:itemid" if no modid
-        Optional<ItemStack> stack = ModUtils.getItemStack(id, amount, damage);
-        if (stack.isPresent())
-            return stack.get();
-
-
-        // Then fallback to "flansmod:itemid" (get shortname alias if the item is in the same content pack)
-        id = ContentManager.getShortnameAliasInContentPack(id, provider);
-        stack = ModUtils.getItemStack(id, amount, damage);
-        if (stack.isPresent())
-            return stack.get();
-
-        //TODO: special ingredients
-        // OreIngredients, just pick an ingot
-        /*if (SPECIAL_INGREDIENTS.containsKey(id))
-        {
-            Ingredient ing = SPECIAL_INGREDIENTS.get(id);
-            if (ing.getMatchingStacks().length > 0)
-                return ing.getMatchingStacks()[0];
-        }*/
-
-        FlansMod.log.warn("Could not find {} in recipe", id);
-        return ItemStack.EMPTY;
+        return RecipeResolver.resolve(id, amount, damage, provider);
     }
 
     @Nullable
