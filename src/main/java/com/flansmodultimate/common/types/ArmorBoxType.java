@@ -20,6 +20,8 @@ public class ArmorBoxType extends BlockType
     @Override
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
+        super.readLine(split, lineIndex, file);
+
         if (split.length > 0 && (split[0].equalsIgnoreCase("AddArmour") || split[0].equalsIgnoreCase("AddArmor")))
         {
             try

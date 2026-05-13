@@ -31,6 +31,7 @@ public class GunBoxType extends BlockType
     @Override
     protected void read(TypeFile file)
     {
+        super.read(file);
         guiTexturePath = readResource("GuiTexture", guiTexturePath, file);
         gunBoxTextColor = readValue("GunBoxNameColor", gunBoxTextColor, file);
         pageTextColor = readValue("PageTextColor", pageTextColor, file);
@@ -43,6 +44,8 @@ public class GunBoxType extends BlockType
     @Override
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
+        super.readLine(split, lineIndex, file);
+
         if (split.length > 0 && (split[0].equalsIgnoreCase("Page") || split[0].equalsIgnoreCase("SetPage")))
         {
             try
