@@ -23,11 +23,18 @@ import static net.minecraft.server.packs.repository.Pack.readPackInfo;
 public class ModRepositorySource extends FolderRepositorySource
 {
     protected final Path folder;
+    protected final PackType packType;
 
     public ModRepositorySource(Path pFolder)
     {
-        super(pFolder, PackType.CLIENT_RESOURCES, PackSource.BUILT_IN);
+        this(pFolder, PackType.CLIENT_RESOURCES);
+    }
+
+    public ModRepositorySource(Path pFolder, PackType packType)
+    {
+        super(pFolder, packType, PackSource.BUILT_IN);
         folder = pFolder;
+        this.packType = packType;
     }
 
     @Override
@@ -40,7 +47,7 @@ public class ModRepositorySource extends FolderRepositorySource
                 String fileName = path.getFileName().toString();
                 Pack.Info mcmetaFileInfo = readPackInfo("file/" + fileName, resourcesSupplier);
 
-                int packFormat = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
+                int packFormat = SharedConstants.getCurrentVersion().getPackVersion(packType);
                 Pack.Info info = new Pack.Info(
                         (mcmetaFileInfo != null) ? mcmetaFileInfo.description() : MutableComponent.create(new LiteralContents(FilenameUtils.getBaseName(fileName))),
                         packFormat,
@@ -48,7 +55,7 @@ public class ModRepositorySource extends FolderRepositorySource
                         (mcmetaFileInfo != null) ? mcmetaFileInfo.requestedFeatures() : FeatureFlagSet.of(),
                         false);
 
-                Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, resourcesSupplier, info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, false, PackSource.BUILT_IN);
+                Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, resourcesSupplier, info, packType, Pack.Position.TOP, false, PackSource.BUILT_IN);
                 pOnLoad.accept(pack);
             });
         }

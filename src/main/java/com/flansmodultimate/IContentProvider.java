@@ -51,6 +51,20 @@ public interface IContentProvider
         return getPath().resolve("assets").resolve(FlansMod.FLANSMOD_ID);
     }
 
+    default Path getDataPath()
+    {
+        return getDataPath(null);
+    }
+
+    default Path getDataPath(FileSystem fs)
+    {
+        if (isArchive())
+        {
+            return (fs != null) ? fs.getPath("/data").resolve(FlansMod.FLANSMOD_ID) : getExtractedPath().resolve("data").resolve(FlansMod.FLANSMOD_ID);
+        }
+        return getPath().resolve("data").resolve(FlansMod.FLANSMOD_ID);
+    }
+
     default Path getModelPath(String modelFullClassName, @Nullable FileSystem fs)
     {
         if (isArchive() && fs != null)

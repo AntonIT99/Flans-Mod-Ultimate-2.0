@@ -1,8 +1,6 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.client.gui.ArmorBoxScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
@@ -44,7 +42,6 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -66,7 +63,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 
-import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -100,15 +96,6 @@ public final class ModClientEventHandler
             MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
             MenuScreens.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
         });
-    }
-
-    @SubscribeEvent
-    public static void registerPack(AddPackFindersEvent event)
-    {
-        if (ContentManager.getFlanFolder() != null && Files.exists(ContentManager.getFlanFolder()))
-        {
-            event.addRepositorySource(new ModRepositorySource(ContentManager.getFlanFolder()));
-        }
     }
 
     @SubscribeEvent

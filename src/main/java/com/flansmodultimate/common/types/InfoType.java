@@ -28,6 +28,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +68,17 @@ public abstract class InfoType
     protected float modelScale = 1F;
     @Getter
     protected int colour = 0xFFFFFF;
-    protected final List<String> recipeLines = new ArrayList<>();
+    @Getter
+    protected final List<String> recipeTokens = new ArrayList<>();
+    @Getter
+    protected final List<String> recipePattern = new ArrayList<>(3);
+    @Getter
     protected char[][] recipeGrid = new char[3][3];
+    @Getter
     protected int recipeOutput = 1;
+    @Getter
     protected boolean shapeless;
+    @Getter
     protected String smeltableFrom;
     /** If this is set to false, then this item cannot be dropped */
     protected boolean canDrop = true;
@@ -151,23 +159,77 @@ public abstract class InfoType
         readIntValues("Colour", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
         readIntValues("Color", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
 
-        //TODO: fix/test recipe lines
-        readLines("Recipe", file).ifPresent(lines ->
-        {
-            recipeLines.addAll(lines);
-            addToRecipeGrid(recipeLines);
-            shapeless = false;
-        });
-        readLines("ShapelessRecipe", file).ifPresent(lines ->
-        {
-            recipeLines.addAll(lines);
-            shapeless = true;
-        });
+        readRecipeDefinitions(file);
     }
 
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
 
+    }
+
+    private void readRecipeDefinitions(TypeFile file)
+    {
+        clearRecipeDefinition();
+
+        List<String> lines = file.getLines();
+        for (int i = 0; i < lines.size(); i++)
+        {
+            String line = lines.get(i);
+            if (StringUtils.isBlank(line) || line.trim().startsWith("//"))
+                continue;
+
+            String[] split = line.trim().split("\\s+");
+            if (split.length < 1)
+                continue;
+
+            if (split[0].equalsIgnoreCase("Recipe"))
+            {
+                clearRecipeDefinition();
+                recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
+                shapeless = false;
+
+                for (int row = 0; row < 3; row++)
+                {
+                    String recipeRow = (i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY;
+                    recipeRow = recipeRow == null ? StringUtils.EMPTY : recipeRow;
+                    if (recipeRow.length() > 3)
+                        TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
+
+                    recipePattern.add(padRecipeRow(recipeRow));
+                }
+                addToRecipeGrid(recipePattern);
+            }
+            else if (split[0].equalsIgnoreCase("ShapelessRecipe"))
+            {
+                clearRecipeDefinition();
+                recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
+                shapeless = true;
+            }
+        }
+    }
+
+    private void clearRecipeDefinition()
+    {
+        recipeTokens.clear();
+        recipePattern.clear();
+        clearRecipeGrid();
+        shapeless = false;
+    }
+
+    private void clearRecipeGrid()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+                recipeGrid[i][j] = ' ';
+        }
+    }
+
+    private static String padRecipeRow(String recipeRow)
+    {
+        if (recipeRow.length() >= 3)
+            return recipeRow.substring(0, 3);
+        return StringUtils.rightPad(recipeRow, 3);
     }
 
     private void addToRecipeGrid(List<String> recipeRows)
@@ -180,6 +242,16 @@ public abstract class InfoType
                 recipeGrid[i][j] = j < recipeRow.length() ? recipeRow.charAt(j) : ' ';
             }
         }
+    }
+
+    public boolean hasCraftingRecipe()
+    {
+        return !recipeTokens.isEmpty();
+    }
+
+    public boolean hasSmeltingRecipe()
+    {
+        return StringUtils.isNotBlank(smeltableFrom);
     }
 
     protected static String readResource(String key, String defaultValue, TypeFile file)

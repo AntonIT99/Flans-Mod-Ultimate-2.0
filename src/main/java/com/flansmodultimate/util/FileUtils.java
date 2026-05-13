@@ -39,6 +39,30 @@ public class FileUtils
 {
     private FileUtils() {}
 
+    public static void writeString(Path outputFile, String content)
+    {
+        try
+        {
+            Files.writeString(outputFile, content, StandardCharsets.UTF_8);
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not create {}", outputFile, e);
+        }
+    }
+
+    public static void deleteIfExists(Path file)
+    {
+        try
+        {
+            Files.deleteIfExists(file);
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not delete {}", file, e);
+        }
+    }
+
     /** If a destination path already exists (or would alias on case-insensitive FS), append -1, -2, ... */
     public static Path ensureUnique(Path dst)
     {

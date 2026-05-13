@@ -7,9 +7,11 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -64,6 +66,91 @@ public final class RecipeResolver
         return ItemStack.EMPTY;
     }
 
+    public static Optional<ResourceLocation> resolveItemId(String token, @Nullable IContentProvider provider)
+    {
+        if (StringUtils.isBlank(token))
+            return Optional.empty();
+
+        RecipeIngredient ingredient = RecipeIngredient.parse(token.trim(), 1, provider);
+        return resolveItemId(ingredient.getItemName(), ingredient.getMeta(), provider);
+    }
+
+    public static Optional<ResourceLocation> resolveItemId(String id, int damage, @Nullable IContentProvider provider)
+    {
+        if (StringUtils.isBlank(id))
+            return Optional.empty();
+
+        String rawId = id.trim();
+        String sanitizedId = ResourceUtils.sanitize(rawId);
+
+        Optional<ResourceLocation> legacyId = getLegacyRecipeItemId(sanitizedId, damage);
+        if (legacyId.isPresent())
+            return legacyId;
+
+        Optional<ResourceLocation> namespacedContentId = resolveNamespacedContentPackItemId(rawId, provider);
+        if (namespacedContentId.isPresent())
+            return namespacedContentId;
+
+        ResourceLocation rawLocation = resolveExistingItemId(rawId);
+        if (rawLocation != null)
+            return Optional.of(rawLocation);
+
+        if (!rawId.equals(sanitizedId))
+        {
+            ResourceLocation sanitizedLocation = resolveExistingItemId(sanitizedId);
+            if (sanitizedLocation != null)
+                return Optional.of(sanitizedLocation);
+        }
+
+        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
+        InfoType type = InfoType.getInfoType(aliasedId);
+        if (type != null && type.getType().isHasItem())
+            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId));
+
+        ResourceLocation flanId = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId);
+        if (ForgeRegistries.ITEMS.containsKey(flanId))
+            return Optional.of(flanId);
+
+        return Optional.empty();
+    }
+
+    private static Optional<ResourceLocation> resolveNamespacedContentPackItemId(String id, @Nullable IContentProvider provider)
+    {
+        if (!id.contains(":"))
+            return Optional.empty();
+
+        String[] split = id.split(":", 2);
+        if (!ResourceUtils.sanitize(split[0]).equals(FlansMod.FLANSMOD_ID))
+            return Optional.empty();
+
+        String aliasedId = ContentManager.getShortnameAliasInContentPack(ResourceUtils.sanitize(split[1]), provider);
+        InfoType type = InfoType.getInfoType(aliasedId);
+        if (type != null && type.getType().isHasItem())
+            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId));
+
+        return Optional.empty();
+    }
+
+    @Nullable
+    private static ResourceLocation resolveExistingItemId(String id)
+    {
+        ResourceLocation location;
+        if (id.contains(":"))
+        {
+            String[] split = id.split(":", 2);
+            location = ResourceLocation.tryBuild(ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]));
+        }
+        else
+        {
+            location = ResourceLocation.tryBuild("minecraft", ResourceUtils.sanitize(id));
+        }
+
+        if (location != null && ForgeRegistries.ITEMS.containsKey(location))
+            return location;
+
+        return null;
+    }
+
     private static ItemStack getLegacyRecipeElement(String id, int amount, int damage)
     {
         return switch (id)
@@ -100,9 +187,50 @@ public final class RecipeResolver
         };
     }
 
+    private static Optional<ResourceLocation> getLegacyRecipeItemId(String id, int damage)
+    {
+        return switch (id)
+        {
+            case "dooriron" -> id(Items.IRON_DOOR);
+            case "doorwood" -> id(Items.OAK_DOOR);
+            case "clayitem" -> id(Items.CLAY_BALL);
+            case "iron_trapdoor" -> id(Blocks.IRON_TRAPDOOR);
+            case "trapdoor" -> id(Blocks.OAK_TRAPDOOR);
+            case "gunpowder", "sulphur" -> id(Items.GUNPOWDER);
+            case "ingotiron", "iron", "ingotsteel", "ingotnickel", "ingotlead", "ingottin" -> id(Items.IRON_INGOT);
+            case "ingotgold", "gold", "ingotelectrum", "ingotconstantan", "ingotsilver", "ingotbronze" -> id(Items.GOLD_INGOT);
+            case "ingotcopper" -> id(Items.COPPER_INGOT);
+            case "nuggetiron", "nuggetsteel", "nuggetnickel", "nuggetlead", "nuggettin", "nuggetcopper" -> id(Items.IRON_NUGGET);
+            case "nuggetgold", "nuggetelectrum", "nuggetconstantan", "nuggetsilver", "nuggetbronze" -> id(Items.GOLD_NUGGET);
+            case "blockiron", "blocksteel", "blocknickel", "blocklead", "blocktin" -> id(Blocks.IRON_BLOCK);
+            case "blockgold", "blockelectrum", "blockconstantan", "blocksilver", "blockbronze" -> id(Blocks.GOLD_BLOCK);
+            case "blockcopper" -> id(Blocks.COPPER_BLOCK);
+            case "blockdiamond" -> id(Blocks.DIAMOND_BLOCK);
+            case "blockemerald" -> id(Blocks.EMERALD_BLOCK);
+            case "blockredstone" -> id(Blocks.REDSTONE_BLOCK);
+            case "boat" -> id(Items.OAK_BOAT);
+            case "log" -> id(legacyLog(damage));
+            case "log2" -> id(legacyLog2(damage));
+            case "wood", "planks", "treatedplanks" -> id(legacyPlanks(damage));
+            case "cloth", "wool" -> id(legacyWool(damage));
+            case "dyepowder" -> id(legacyDye(damage));
+            case "yellowdust", "lightstone" -> id(Items.GLOWSTONE_DUST);
+            case "slimeball" -> id(Items.SLIME_BALL);
+            case "enderpearl" -> id(Items.ENDER_PEARL);
+            case "reeds" -> id(Items.SUGAR_CANE);
+            case "seeds" -> id(Items.WHEAT_SEEDS);
+            default -> Optional.empty();
+        };
+    }
+
     private static ItemStack stack(ItemLike item, int amount)
     {
         return new ItemStack(item, amount);
+    }
+
+    private static Optional<ResourceLocation> id(ItemLike item)
+    {
+        return Optional.ofNullable(ForgeRegistries.ITEMS.getKey(item.asItem()));
     }
 
     private static ItemLike legacyLog(int damage)

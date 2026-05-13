@@ -3,6 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.InfoType;
@@ -269,8 +270,9 @@ public class ContentManager
 
             boolean archiveExtracted = false;
             boolean preLoadAssets = shouldPreLoadAssets(provider);
+            boolean preLoadData = shouldPreLoadData(provider);
 
-            if (shouldUnpackArchive(provider, preLoadAssets))
+            if (shouldUnpackArchive(provider, preLoadAssets, preLoadData))
             {
                 FlansMod.log.info("Reprocessing {}...", provider.getName());
                 FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
@@ -281,6 +283,9 @@ public class ContentManager
             {
                 createMcMeta(provider);
                 writeToAliasMappingFile(ID_ALIAS_FILE, provider,DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+
+                if (preLoadData)
+                    createRecipeJsonFiles(provider);
 
                 if (preLoadAssets)
                 {
@@ -534,19 +539,17 @@ public class ContentManager
             // otherFileOriginal -> the file that registered the original shortname
             // otherFileAlias -> in case another file of the same pack already registered the existing alias
             String otherFileOriginal = registeredItems.get(originalShortname);
-            Optional<String> otherFileAlias = Optional.empty();
-            if (shortnameReferences.get(provider).containsKey(originalShortname))
-                otherFileAlias = Optional.ofNullable(registeredItems.get(shortnameReferences.get(provider).get(originalShortname).get()));
+            Optional<String> otherFileAlias = Optional.ofNullable(shortnameReferences.get(provider).get(originalShortname))
+                .map(DynamicReference::get)
+                .map(registeredItems::get);
 
             // Conflict is in the same Content Pack -> Ignore file
-            if (contentPackName.equals(TypeFile.getContentPackName(otherFileOriginal)))
+            Optional<String> conflictingFileInSamePack = Optional.of(otherFileOriginal)
+                .filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile)))
+                .or(() -> otherFileAlias.filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile))));
+            if (conflictingFileInSamePack.isPresent())
             {
-                FlansMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFileOriginal, fileName);
-                return StringUtils.EMPTY;
-            }
-            else if (otherFileAlias.isPresent() && contentPackName.equals(TypeFile.getContentPackName(otherFileAlias.get())))
-            {
-                FlansMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, otherFileAlias.get(), fileName);
+                FlansMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, conflictingFileInSamePack.get(), fileName);
                 return StringUtils.EMPTY;
             }
 
@@ -705,9 +708,24 @@ public class ContentManager
         return missingAssets;
     }
 
-    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets)
+    private static boolean shouldPreLoadData(IContentProvider provider)
     {
-        return provider.isArchive() && (preLoadAssets || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
+        if (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds())
+            return true;
+
+        if (provider.isJarFile()
+            || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))))
+            return true;
+
+        FileSystem fs = FileUtils.createFileSystem(provider);
+        boolean missingData = isMissingGeneratedRecipeFiles(provider, fs);
+        FileUtils.closeFileSystem(fs, provider);
+        return missingData;
+    }
+
+    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData)
+    {
+        return provider.isArchive() && (preLoadAssets || preLoadData || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
     }
 
     private static void createItemAndBlockJsonFiles(IContentProvider provider)
@@ -742,6 +760,29 @@ public class ContentManager
                     generateBlockModelJson(blockConfig, jsonBlockModelsFolderPath);
             }
         }
+    }
+
+    private static void createRecipeJsonFiles(IContentProvider provider)
+    {
+        Path recipeFolderPath = provider.getDataPath().resolve("recipes");
+        for (InfoType config : listItems(provider))
+        {
+            RecipeJsonGenerator.writeRecipes(config, recipeFolderPath);
+        }
+    }
+
+    private static boolean isMissingGeneratedRecipeFiles(IContentProvider provider, FileSystem fs)
+    {
+        Path recipeFolderPath = provider.getDataPath(fs).resolve("recipes");
+        for (InfoType config : listItems(provider))
+        {
+            for (String recipeFileName : RecipeJsonGenerator.getRecipeFileNames(config))
+            {
+                if (!Files.exists(recipeFolderPath.resolve(recipeFileName)))
+                    return true;
+            }
+        }
+        return false;
     }
 
     private static void convertExistingJsonFiles(Path jsonFolderPath)
@@ -808,25 +849,11 @@ public class ContentManager
         if (!shortName.equals(config.getOriginalShortName()))
         {
             Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
-            try
-            {
-                Files.deleteIfExists(oldFile);
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.error("Could not delete {}", oldFile, e);
-            }
+            FileUtils.deleteIfExists(oldFile);
         }
 
         Path outputFile = outputFolder.resolve(shortName + ".json");
-        try
-        {
-            Files.write(outputFile, jsonContent.getBytes());
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create {}", outputFile, e);
-        }
+        FileUtils.writeString(outputFile, jsonContent);
 
         if (config instanceof PaintableType paintableType)
         {
@@ -837,14 +864,7 @@ public class ContentManager
                     outputFile = outputFolder.resolve(p.getIcon() + ".json");
                     model = ResourceUtils.ModelJson.createItemModel(config, p);
                     jsonContent = gson.toJson(model);
-                    try
-                    {
-                        Files.write(outputFile, jsonContent.getBytes());
-                    }
-                    catch (IOException e)
-                    {
-                        FlansMod.log.error("Could not create {}", outputFile, e);
-                    }
+                    FileUtils.writeString(outputFile, jsonContent);
                 }
             }
         }
@@ -859,25 +879,11 @@ public class ContentManager
         if (!shortName.equals(config.getOriginalShortName()))
         {
             Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
-            try
-            {
-                Files.deleteIfExists(oldFile);
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.error("Could not delete {}", oldFile, e);
-            }
+            FileUtils.deleteIfExists(oldFile);
         }
 
         Path outputFile = outputFolder.resolve(shortName + ".json");
-        try
-        {
-            Files.write(outputFile, jsonContent.getBytes());
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create {}", outputFile, e);
-        }
+        FileUtils.writeString(outputFile, jsonContent);
     }
 
     private static void generateBlockstateJson(InfoType config, Path outputFolder)
@@ -889,25 +895,11 @@ public class ContentManager
         if (!shortName.equals(config.getOriginalShortName()))
         {
             Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
-            try
-            {
-                Files.deleteIfExists(oldFile);
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.error("Could not delete {}", oldFile, e);
-            }
+            FileUtils.deleteIfExists(oldFile);
         }
 
         Path outputFile = outputFolder.resolve(shortName + ".json");
-        try
-        {
-            Files.write(outputFile, jsonContent.getBytes());
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not create {}", outputFile, e);
-        }
+        FileUtils.writeString(outputFile, jsonContent);
     }
 
     private static void copyItemIcons(IContentProvider provider)
