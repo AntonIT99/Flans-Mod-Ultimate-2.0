@@ -227,15 +227,15 @@ public final class RecipeJsonGenerator
 
     private static void deleteGeneratedRecipes(InfoType config, Path outputFolder)
     {
-        deleteRecipe(outputFolder.resolve(config.getShortName() + SHAPED_SUFFIX + ".json"));
-        deleteRecipe(outputFolder.resolve(config.getShortName() + SHAPELESS_SUFFIX + ".json"));
-        deleteRecipe(outputFolder.resolve(config.getShortName() + SMELTING_SUFFIX + ".json"));
+        deleteRecipe(outputFolder.resolve(config.getShortName() + SHAPED_SUFFIX + FileUtils.JSON_EXTENSION));
+        deleteRecipe(outputFolder.resolve(config.getShortName() + SHAPELESS_SUFFIX + FileUtils.JSON_EXTENSION));
+        deleteRecipe(outputFolder.resolve(config.getShortName() + SMELTING_SUFFIX + FileUtils.JSON_EXTENSION));
 
         if (!config.getShortName().equals(config.getOriginalShortName()))
         {
-            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SHAPED_SUFFIX + ".json"));
-            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SHAPELESS_SUFFIX + ".json"));
-            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SMELTING_SUFFIX + ".json"));
+            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SHAPED_SUFFIX + FileUtils.JSON_EXTENSION));
+            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SHAPELESS_SUFFIX + FileUtils.JSON_EXTENSION));
+            deleteRecipe(outputFolder.resolve(config.getOriginalShortName() + SMELTING_SUFFIX + FileUtils.JSON_EXTENSION));
         }
     }
 
@@ -258,11 +258,11 @@ public final class RecipeJsonGenerator
 
     private static String getCraftingFileName(InfoType config)
     {
-        return config.getShortName() + (config.isShapeless() ? SHAPELESS_SUFFIX : SHAPED_SUFFIX) + ".json";
+        return config.getShortName() + (config.isShapeless() ? SHAPELESS_SUFFIX : SHAPED_SUFFIX) + FileUtils.JSON_EXTENSION;
     }
 
     private static String getSmeltingFileName(InfoType config)
     {
-        return config.getShortName() + SMELTING_SUFFIX + ".json";
+        return config.getShortName() + SMELTING_SUFFIX + FileUtils.JSON_EXTENSION;
     }
 }

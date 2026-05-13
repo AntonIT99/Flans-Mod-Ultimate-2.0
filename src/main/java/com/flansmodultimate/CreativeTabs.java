@@ -67,13 +67,11 @@ public final class CreativeTabs
             {
                 Item item = ro.get();
 
-                if (item instanceof BulletItem bi)
-                {
-                    if (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType()))
+                if (item instanceof BulletItem bi
+                    && (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
+                    || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
                         continue;
-                    if (onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType()))
-                        continue;
-                }
+
 
                 output.accept(item);
 

@@ -2,6 +2,7 @@ package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,9 +36,18 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class FileUtils
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public final class FileUtils
 {
-    private FileUtils() {}
+    public static final String CLASS_EXTENSION = ".class";
+    public static final String JAR_EXTENSION = ".jar";
+    public static final String JSON_EXTENSION = ".json";
+    public static final String LANG_EXTENSION = ".lang";
+    public static final String OGG_EXTENSION = ".ogg";
+    public static final String PNG_EXTENSION = ".png";
+    public static final String TXT_EXTENSION = ".txt";
+    public static final String ZIP_EXTENSION = ".zip";
+
 
     public static void writeString(Path outputFile, String content)
     {
@@ -134,7 +144,7 @@ public class FileUtils
     {
         String n = p.getFileName().toString();
         int dot = n.lastIndexOf('.');
-        return dot >= 0 && n.substring(dot).equalsIgnoreCase(".ogg");
+        return dot >= 0 && n.substring(dot).equalsIgnoreCase(OGG_EXTENSION);
     }
 
     /** Build sanitized target filename for an .ogg (lowercase, safe chars, force .ogg). */
@@ -143,7 +153,7 @@ public class FileUtils
         int dot = currentName.lastIndexOf('.');
         String base = dot >= 0 ? currentName.substring(0, dot) : currentName;
         String sanitizedBase = ResourceUtils.sanitize(base); // must lowercase + map illegal chars to '_'
-        return sanitizedBase + ".ogg";
+        return sanitizedBase + OGG_EXTENSION;
     }
 
     /** Sanitize a relative path: lowercase, replace spaces with '_', remove illegal chars, force .png extension. */
@@ -260,7 +270,7 @@ public class FileUtils
     public static boolean isImageFile(Path p)
     {
         String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-        return n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg")
+        return n.endsWith(PNG_EXTENSION) || n.endsWith(".jpg") || n.endsWith(".jpeg")
             || n.endsWith(".gif") || n.endsWith(".bmp") || n.endsWith(".webp");
     }
 
@@ -422,7 +432,7 @@ public class FileUtils
     public static void repackArchive(IContentProvider provider)
     {
         Path target = provider.isJarFile()
-            ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ".zip")
+            ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION)
             : provider.getPath();
 
         Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
@@ -478,7 +488,7 @@ public class FileUtils
 
             // 3) If we created a .zip from a .jar, update provider
             if (provider.isJarFile())
-                provider.update(FilenameUtils.getBaseName(provider.getName()) + ".zip", target);
+                provider.update(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION, target);
 
             // 4) Cleanup extracted dir (only after successful commit)
             deleteRecursively(provider.getExtractedPath());

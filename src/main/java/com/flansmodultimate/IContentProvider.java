@@ -1,5 +1,6 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.util.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,9 +70,9 @@ public interface IContentProvider
     {
         if (isArchive() && fs != null)
         {
-            return fs.getPath("/" + modelFullClassName.replace(".", "/") + ".class");
+            return fs.getPath("/" + modelFullClassName.replace(".", "/") + FileUtils.CLASS_EXTENSION);
         }
-        return getPath().resolve(modelFullClassName.replace(".", "/") + ".class");
+        return getPath().resolve(modelFullClassName.replace(".", "/") + FileUtils.CLASS_EXTENSION);
     }
 
     boolean equals(Object obj);
@@ -90,11 +91,11 @@ public interface IContentProvider
 
     default boolean isJarFile()
     {
-        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(".jar");
+        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.JAR_EXTENSION);
     }
 
     default boolean isZipFile()
     {
-        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(".zip");
+        return getPath().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.ZIP_EXTENSION);
     }
 }

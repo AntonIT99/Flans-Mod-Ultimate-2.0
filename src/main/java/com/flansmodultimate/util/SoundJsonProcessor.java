@@ -304,12 +304,12 @@ public final class SoundJsonProcessor {
         try (Stream<Path> stream = Files.walk(soundsDir))
         {
             return stream
-                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".ogg"))
+                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.OGG_EXTENSION))
                     .map(p -> {
                         Path rel = soundsDir.relativize(p);
                         // Build id path with forward slashes and no ".ogg"
                         String relUnix = rel.toString().replace('\\', '/');
-                        String noExt = relUnix.endsWith(".ogg") ? relUnix.substring(0, relUnix.length() - 4) : relUnix;
+                        String noExt = relUnix.endsWith(FileUtils.OGG_EXTENSION) ? relUnix.substring(0, relUnix.length() - 4) : relUnix;
 
                         // SANITIZE the path part and the derived event key
                         String sanitizedPath = ResourceUtils.sanitize(noExt);
@@ -330,7 +330,7 @@ public final class SoundJsonProcessor {
 
     private static String stripOgg(String name)
     {
-        return name.toLowerCase(Locale.ROOT).endsWith(".ogg") ? name.substring(0, name.length() - 4) : name;
+        return name.toLowerCase(Locale.ROOT).endsWith(FileUtils.OGG_EXTENSION) ? name.substring(0, name.length() - 4) : name;
     }
 
     /** Build a set of all referenced sound identifiers found in all "sounds" arrays (SANITIZED). */

@@ -134,7 +134,7 @@ public final class ClassLoaderUtils
             if (loadedClass != null)
                 return loadedClass;
 
-            String relativeClassPath = fileClassName.replace('.', '/') + ".class";
+            String relativeClassPath = fileClassName.replace('.', '/') + FileUtils.CLASS_EXTENSION;
 
             byte[] classData;
 

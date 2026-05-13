@@ -60,9 +60,26 @@ import java.util.zip.ZipFile;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentManager
 {
-    public static final String TEXTURES_ARMOR_FOLDER = "armor";
-    public static final String TEXTURES_GUI_FOLDER = "gui";
-    public static final String TEXTURES_SKINS_FOLDER = "skins";
+    public static final String FOLDER_BLOCKSTATES = "blockstates";
+    public static final String FOLDER_MODELS = "models";
+    public static final String FOLDER_MODELS_BLOCK = "block";
+    public static final String FOLDER_MODELS_ITEM = "item";
+    public static final String FOLDER_LANG = "lang";
+    public static final String FOLDER_TEXTURES = "textures";
+    public static final String FOLDER_TEXTURES_ARMOR = "armor";
+    public static final String FOLDER_TEXTURES_GUI = "gui";
+    public static final String FOLDER_TEXTURES_SKINS = "skins";
+    public static final String FOLDER_TEXTURES_BLOCK = "block";
+    public static final String FOLDER_TEXTURES_BLOCKS = "blocks";
+    public static final String FOLDER_TEXTURES_ITEM = "item";
+    public static final String FOLDER_TEXTURES_ITEMS = "items";
+    public static final String FOLDER_SOUNDS = "sounds";
+    public static final String FOLDER_RECIPES = "recipes";
+
+    private static final String TRANSLATION_KEY_PREFIX_ITEM = "item.";
+    private static final String TRANSLATION_KEY_PREFIX_BLOCK = "block.";
+    private static final String TRANSLATION_KEY_PREFIX_TYPE = "tile.";
+    private static final String TRANSLATION_KEY_SUFFIX_NAME = ".name";
 
     @Getter
     private static Path flanFolder;
@@ -107,9 +124,9 @@ public class ContentManager
 
     static
     {
-        textures.put(TEXTURES_ARMOR_FOLDER, new HashMap<>());
-        textures.put(TEXTURES_GUI_FOLDER, new HashMap<>());
-        textures.put(TEXTURES_SKINS_FOLDER, new HashMap<>());
+        textures.put(FOLDER_TEXTURES_ARMOR, new HashMap<>());
+        textures.put(FOLDER_TEXTURES_GUI, new HashMap<>());
+        textures.put(FOLDER_TEXTURES_SKINS, new HashMap<>());
     }
 
     /**
@@ -121,67 +138,83 @@ public class ContentManager
     {
         final Path modsFolder = FMLPaths.MODSDIR.get();
 
-        if (flanFolder == null)
+        if (canSearchModsFolderForContentPacks(modsFolder))
+        {
+            try
+            {
+                moveMisplacedContentPacks(modsFolder);
+            }
+            catch (IOException e)
+            {
+                FlansMod.log.warn("Error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+            }
+            catch (Exception e)
+            {
+                FlansMod.log.warn("Unexpected error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+            }
+        }
+    }
+
+    private static boolean canSearchModsFolderForContentPacks(Path modsFolder)
+    {
+        return flanFolder != null && FileUtils.tryCreateDirectories(flanFolder) && Files.isDirectory(modsFolder);
+    }
+
+    private static void moveMisplacedContentPacks(Path modsFolder) throws IOException
+    {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsFolder, ContentManager::isJarOrZipFile))
+        {
+            for (Path candidate : stream)
+                moveContentPackIfNeeded(candidate);
+        }
+    }
+
+    private static boolean isJarOrZipFile(Path entry)
+    {
+        if (!Files.isRegularFile(entry))
+            return false;
+
+        String name = entry.getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(FileUtils.JAR_EXTENSION) || name.endsWith(FileUtils.ZIP_EXTENSION);
+    }
+
+    private static void moveContentPackIfNeeded(Path candidate)
+    {
+        if (!isReadableContentPack(candidate))
             return;
 
-        if (!FileUtils.tryCreateDirectories(flanFolder))
+        Path destination = flanFolder.resolve(candidate.getFileName());
+        if (Files.exists(destination))
+        {
+            FlansMod.log.warn("Found Flan content pack '{}' in mods folder, but '{}' already exists in '{}'. Not moving to avoid overwriting.", candidate.getFileName(), destination.getFileName(), flanFolder.toAbsolutePath());
             return;
+        }
 
+        moveContentPack(candidate, destination);
+    }
+
+    private static boolean isReadableContentPack(Path candidate)
+    {
         try
         {
-            if (!Files.isDirectory(modsFolder))
-                return;
-
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsFolder, entry -> {
-                if (!Files.isRegularFile(entry))
-                    return false;
-                String name = entry.getFileName().toString().toLowerCase(Locale.ROOT);
-                return name.endsWith(".jar") || name.endsWith(".zip");
-            }))
-            {
-                for (Path candidate : stream)
-                {
-                    boolean isPack;
-                    try
-                    {
-                        isPack = looksLikeContentPack(candidate);
-                    }
-                    catch (IOException e)
-                    {
-                        // Corrupt/unreadable archive -> ignore
-                        continue;
-                    }
-
-                    if (!isPack)
-                        continue;
-
-                    Path dest = flanFolder.resolve(candidate.getFileName());
-
-                    if (Files.exists(dest))
-                    {
-                        FlansMod.log.warn("Found Flan content pack '{}' in mods folder, but '{}' already exists in '{}'. Not moving to avoid overwriting.", candidate.getFileName(), dest.getFileName(), flanFolder.toAbsolutePath());
-                        continue;
-                    }
-
-                    try
-                    {
-                        FileUtils.safeMove(candidate, dest);
-                        FlansMod.log.info("Moved misplaced Flan content pack '{}' to '{}'.", candidate.getFileName(), flanFolder.toAbsolutePath());
-                    }
-                    catch (IOException e)
-                    {
-                        FlansMod.log.warn("Failed to move '{}' to '{}': {}", candidate.getFileName(), dest, e.toString());
-                    }
-                }
-            }
+            return looksLikeContentPack(candidate);
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+            return false;
         }
-        catch (Exception e)
+    }
+
+    private static void moveContentPack(Path candidate, Path destination)
+    {
+        try
         {
-            FlansMod.log.warn("Unexpected error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
+            FileUtils.safeMove(candidate, destination);
+            FlansMod.log.info("Moved misplaced Flan content pack '{}' to '{}'.", candidate.getFileName(), flanFolder.toAbsolutePath());
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.warn("Failed to move '{}' to '{}': {}", candidate.getFileName(), destination, e.toString());
         }
     }
 
@@ -296,9 +329,9 @@ public class ContentManager
                     createLocalization(provider);
                     copyItemIcons(provider);
                     copyBlockTextures(provider);
-                    copyTextures(provider, TEXTURES_ARMOR_FOLDER, armorTextureReferences.get(provider));
-                    copyTextures(provider, TEXTURES_GUI_FOLDER, guiTextureReferences.get(provider));
-                    copyTextures(provider, TEXTURES_SKINS_FOLDER, skinsTextureReferences.get(provider));
+                    copyTextures(provider, FOLDER_TEXTURES_ARMOR, armorTextureReferences.get(provider));
+                    copyTextures(provider, FOLDER_TEXTURES_GUI, guiTextureReferences.get(provider));
+                    copyTextures(provider, FOLDER_TEXTURES_SKINS, skinsTextureReferences.get(provider));
                     createSounds(provider);
                 }
             }
@@ -341,7 +374,7 @@ public class ContentManager
                 if (path.equals(rootPath))
                     return false;
 
-                if (Files.isDirectory(path) || path.toString().toLowerCase(Locale.ROOT).endsWith(".jar") || path.toString().toLowerCase(Locale.ROOT).endsWith(".zip"))
+                if (Files.isDirectory(path) || path.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.JAR_EXTENSION) || path.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.ZIP_EXTENSION))
                 {
                     String name = FilenameUtils.getBaseName(path.getFileName().toString());
                     if (!processedNames.contains(name))
@@ -420,7 +453,7 @@ public class ContentManager
         {
             files.get(provider).addAll(walk
                 .filter(Files::isRegularFile)
-                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".txt"))
+                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.TXT_EXTENSION))
                 .map(txtFile -> readTypeFile(txtFile, folderName, provider))
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
@@ -575,9 +608,9 @@ public class ContentManager
     private static void findDuplicateTextures(IContentProvider provider)
     {
         FileSystem fs = FileUtils.createFileSystem(provider);
-        findDuplicateTexturesInFolder(TEXTURES_ARMOR_FOLDER, provider, fs, armorTextureReferences.get(provider));
-        findDuplicateTexturesInFolder(TEXTURES_GUI_FOLDER, provider, fs, guiTextureReferences.get(provider));
-        findDuplicateTexturesInFolder(TEXTURES_SKINS_FOLDER, provider, fs, skinsTextureReferences.get(provider));
+        findDuplicateTexturesInFolder(FOLDER_TEXTURES_ARMOR, provider, fs, armorTextureReferences.get(provider));
+        findDuplicateTexturesInFolder(FOLDER_TEXTURES_GUI, provider, fs, guiTextureReferences.get(provider));
+        findDuplicateTexturesInFolder(FOLDER_TEXTURES_SKINS, provider, fs, skinsTextureReferences.get(provider));
         FileUtils.closeFileSystem(fs, provider);
     }
 
@@ -589,12 +622,12 @@ public class ContentManager
         {
             try (Stream<Path> stream = Files.list(textureFolderPath))
             {
-                stream.filter(p -> p.toString().toLowerCase(Locale.ROOT).endsWith(".png"))
+                stream.filter(p -> p.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
                         .forEach(p -> checkForDuplicateTextures(p, provider, folderName, aliasMapping));
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Could not read {}", textureFolderPath, e);
+                FlansMod.log.error("Could not scan '{}' textures for duplicate detection in content pack '{}'", folderName, provider.getName(), e);
             }
         }
     }
@@ -602,7 +635,7 @@ public class ContentManager
     private static void checkForDuplicateTextures(Path texturePath, IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
     {
         String fileName = FilenameUtils.getBaseName(texturePath.getFileName().toString());
-        if (folderName.equals(TEXTURES_ARMOR_FOLDER))
+        if (folderName.equals(FOLDER_TEXTURES_ARMOR))
             fileName = getArmorTextureBaseName(fileName);
         fileName = ResourceUtils.sanitize(fileName);
         String aliasName = fileName;
@@ -693,16 +726,16 @@ public class ContentManager
 
         FileSystem fs = FileUtils.createFileSystem(provider);
 
-        boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve("blockstates"))
-            || !Files.exists(provider.getAssetsPath(fs).resolve("models").resolve("item"))
-            || !Files.exists(provider.getAssetsPath(fs).resolve("models").resolve("block"))
-            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("item")) && Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("items")))
-            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("block")) && Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve("blocks")))
-            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_ARMOR_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_ARMOR_FOLDER)))
-            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_GUI_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_GUI_FOLDER)))
-            || (!Files.exists(provider.getAssetsPath(fs).resolve("textures").resolve(TEXTURES_SKINS_FOLDER)) && Files.exists(provider.getAssetsPath(fs).resolve(TEXTURES_SKINS_FOLDER)))
-            || !Files.exists(provider.getAssetsPath(fs).resolve("lang"))
-            || !Files.exists(provider.getAssetsPath(fs).resolve("lang").resolve("en_us.json"));
+        boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_BLOCKSTATES))
+            || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_ITEM))
+            || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_BLOCK))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS)))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS)))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ARMOR)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES_ARMOR)))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_GUI)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES_GUI)))
+            || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_SKINS)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES_SKINS)))
+            || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_LANG))
+            || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_LANG).resolve("en_us.json"));
 
         FileUtils.closeFileSystem(fs, provider);
         return missingAssets;
@@ -730,10 +763,10 @@ public class ContentManager
 
     private static void createItemAndBlockJsonFiles(IContentProvider provider)
     {
-        Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve("blockstates");
-        Path jsonModelsFolderPath = provider.getAssetsPath().resolve("models");
-        Path jsonItemModelsFolderPath = jsonModelsFolderPath.resolve("item");
-        Path jsonBlockModelsFolderPath = jsonModelsFolderPath.resolve("block");
+        Path jsonBlockstatesFolderPath = provider.getAssetsPath().resolve(FOLDER_BLOCKSTATES);
+        Path jsonModelsFolderPath = provider.getAssetsPath().resolve(FOLDER_MODELS);
+        Path jsonItemModelsFolderPath = jsonModelsFolderPath.resolve(FOLDER_MODELS_ITEM);
+        Path jsonBlockModelsFolderPath = jsonModelsFolderPath.resolve(FOLDER_MODELS_BLOCK);
 
         convertExistingJsonFiles(jsonBlockstatesFolderPath);
         convertExistingJsonFiles(jsonModelsFolderPath);
@@ -764,7 +797,7 @@ public class ContentManager
 
     private static void createRecipeJsonFiles(IContentProvider provider)
     {
-        Path recipeFolderPath = provider.getDataPath().resolve("recipes");
+        Path recipeFolderPath = provider.getDataPath().resolve(FOLDER_RECIPES);
         for (InfoType config : listItems(provider))
         {
             RecipeJsonGenerator.writeRecipes(config, recipeFolderPath);
@@ -773,7 +806,7 @@ public class ContentManager
 
     private static boolean isMissingGeneratedRecipeFiles(IContentProvider provider, FileSystem fs)
     {
-        Path recipeFolderPath = provider.getDataPath(fs).resolve("recipes");
+        Path recipeFolderPath = provider.getDataPath(fs).resolve(FOLDER_RECIPES);
         for (InfoType config : listItems(provider))
         {
             for (String recipeFileName : RecipeJsonGenerator.getRecipeFileNames(config))
@@ -792,7 +825,7 @@ public class ContentManager
 
         try (Stream<Path> walk = Files.walk(jsonFolderPath))
         {
-            walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".json"))
+            walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(FileUtils.JSON_EXTENSION))
                 .forEach(ContentManager::processJsonItemFile);
         }
         catch (IOException e)
@@ -848,11 +881,11 @@ public class ContentManager
 
         if (!shortName.equals(config.getOriginalShortName()))
         {
-            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + FileUtils.JSON_EXTENSION);
             FileUtils.deleteIfExists(oldFile);
         }
 
-        Path outputFile = outputFolder.resolve(shortName + ".json");
+        Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
         FileUtils.writeString(outputFile, jsonContent);
 
         if (config instanceof PaintableType paintableType)
@@ -861,7 +894,7 @@ public class ContentManager
             {
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {
-                    outputFile = outputFolder.resolve(p.getIcon() + ".json");
+                    outputFile = outputFolder.resolve(p.getIcon() + FileUtils.JSON_EXTENSION);
                     model = ResourceUtils.ModelJson.createItemModel(config, p);
                     jsonContent = gson.toJson(model);
                     FileUtils.writeString(outputFile, jsonContent);
@@ -878,11 +911,11 @@ public class ContentManager
 
         if (!shortName.equals(config.getOriginalShortName()))
         {
-            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + FileUtils.JSON_EXTENSION);
             FileUtils.deleteIfExists(oldFile);
         }
 
-        Path outputFile = outputFolder.resolve(shortName + ".json");
+        Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
         FileUtils.writeString(outputFile, jsonContent);
     }
 
@@ -894,32 +927,32 @@ public class ContentManager
 
         if (!shortName.equals(config.getOriginalShortName()))
         {
-            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + ".json");
+            Path oldFile = outputFolder.resolve(config.getOriginalShortName() + FileUtils.JSON_EXTENSION);
             FileUtils.deleteIfExists(oldFile);
         }
 
-        Path outputFile = outputFolder.resolve(shortName + ".json");
+        Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
         FileUtils.writeString(outputFile, jsonContent);
     }
 
     private static void copyItemIcons(IContentProvider provider)
     {
-        Path sourcePath = provider.getAssetsPath().resolve("textures").resolve("items");
-        Path destPath = provider.getAssetsPath().resolve("textures").resolve("item");
+        Path sourcePath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS);
+        Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM);
         copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
     }
 
     private static void copyBlockTextures(IContentProvider provider)
     {
-        Path sourcePath = provider.getAssetsPath().resolve("textures").resolve("blocks");
-        Path destPath = provider.getAssetsPath().resolve("textures").resolve("block");
+        Path sourcePath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS);
+        Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK);
         copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
     }
 
     private static void copyTextures(IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
     {
         Path sourcePath = provider.getAssetsPath().resolve(folderName);
-        Path destPath = provider.getAssetsPath().resolve("textures").resolve(folderName);
+        Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(folderName);
         copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
         renameTextureFilesWithAliases(destPath, aliasMapping);
     }
@@ -933,21 +966,21 @@ public class ContentManager
                 stream.filter(file ->
                     {
                         String baseFileName = FilenameUtils.getBaseName(file.getFileName().toString());
-                        if (folder.getFileName().toString().equals(TEXTURES_ARMOR_FOLDER))
+                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
                         {
                             baseFileName = getArmorTextureBaseName(baseFileName);
                         }
-                        return file.toString().toLowerCase(Locale.ROOT).endsWith(".png") && aliasMapping.containsKey(baseFileName);
+                        return file.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION) && aliasMapping.containsKey(baseFileName);
                     })
                     .forEach(file ->
                     {
                         String baseFileName = FilenameUtils.getBaseName(file.getFileName().toString());
-                        if (folder.getFileName().toString().equals(TEXTURES_ARMOR_FOLDER))
+                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
                         {
                             baseFileName = getArmorTextureBaseName(baseFileName);
                         }
                         String newFileName = aliasMapping.get(baseFileName).get();
-                        if (folder.getFileName().toString().equals(TEXTURES_ARMOR_FOLDER))
+                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
                         {
                             if (file.getFileName().toString().endsWith("_1.png"))
                             {
@@ -958,7 +991,7 @@ public class ContentManager
                                 newFileName += "_2";
                             }
                         }
-                        Path destFile = file.getParent().resolve(newFileName + ".png");
+                        Path destFile = file.getParent().resolve(newFileName + FileUtils.PNG_EXTENSION);
                         try
                         {
                             Files.move(file, destFile, StandardCopyOption.REPLACE_EXISTING);
@@ -971,14 +1004,14 @@ public class ContentManager
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Could not read {}", folder, e);
+                FlansMod.log.error("Could not scan generated texture folder '{}' while applying texture aliases", folder, e);
             }
         }
     }
 
     private static void createLocalization(IContentProvider provider)
     {
-        Path langDir = provider.getAssetsPath().resolve("lang");
+        Path langDir = provider.getAssetsPath().resolve(FOLDER_LANG);
 
         if (!FileUtils.tryCreateDirectories(langDir))
             return;
@@ -1015,7 +1048,7 @@ public class ContentManager
             }
         }
 
-        String jsonFileName = langFile.getFileName().toString().toLowerCase(Locale.ROOT).replace(".lang", ".json");
+        String jsonFileName = langFile.getFileName().toString().toLowerCase(Locale.ROOT).replace(FileUtils.LANG_EXTENSION, FileUtils.JSON_EXTENSION);
         Path jsonPath = langFile.getParent().resolve(jsonFileName);
 
         try (Writer writer = Files.newBufferedWriter(jsonPath, StandardCharsets.UTF_8))
@@ -1076,20 +1109,20 @@ public class ContentManager
 
     private static String convertTranslationKey(String legacyKey)
     {
-        if (legacyKey.startsWith("item.") && legacyKey.endsWith(".name")) {
+        if (legacyKey.startsWith(TRANSLATION_KEY_PREFIX_ITEM) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME)) {
             String id = legacyKey.substring(5, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
-            return "item." + FlansMod.FLANSMOD_ID + "." + id;
+            return TRANSLATION_KEY_PREFIX_ITEM + FlansMod.FLANSMOD_ID + "." + id;
         }
-        if ((legacyKey.startsWith("tile.") || legacyKey.startsWith("block.")) && legacyKey.endsWith(".name")) {
+        if ((legacyKey.startsWith(TRANSLATION_KEY_PREFIX_TYPE) || legacyKey.startsWith(TRANSLATION_KEY_PREFIX_BLOCK)) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME)) {
             String id = legacyKey.substring(legacyKey.indexOf('.') + 1, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
-            return "block." + FlansMod.FLANSMOD_ID + "." + id;
+            return TRANSLATION_KEY_PREFIX_BLOCK + FlansMod.FLANSMOD_ID + "." + id;
         }
         return legacyKey;
     }
 
     private static String generateTranslationKey(String itemId, boolean isBlock)
     {
-        return (isBlock ? "block." : "item.") + FlansMod.FLANSMOD_ID + "." + itemId;
+        return (isBlock ? TRANSLATION_KEY_PREFIX_BLOCK : TRANSLATION_KEY_PREFIX_ITEM) + FlansMod.FLANSMOD_ID + "." + itemId;
     }
 
     private static void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath)
@@ -1102,7 +1135,7 @@ public class ContentManager
         try (Stream<Path> paths = Files.walk(sourcePath, 1))
         {
             paths.filter(Files::isRegularFile)
-                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".png"))
+                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
                 .forEach(src -> {
                     // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
                     Path rel = sourcePath.relativize(src);
@@ -1125,13 +1158,13 @@ public class ContentManager
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not read {}", sourcePath, e);
+            FlansMod.log.error("Could not walk source texture folder '{}' while copying PNG files to '{}'", sourcePath, destPath, e);
         }
     }
 
     private static void createSounds(IContentProvider provider)
     {
-        Path soundsDir = provider.getAssetsPath().resolve("sounds");
+        Path soundsDir = provider.getAssetsPath().resolve(FOLDER_SOUNDS);
         Path soundsJsonFile = provider.getAssetsPath().resolve("sounds.json");
 
         if (Files.isDirectory(soundsDir))
@@ -1154,9 +1187,7 @@ public class ContentManager
     {
         for (Path src : stream)
         {
-            if (!FileUtils.isOgg(src))
-                continue;
-            if (!FileUtils.needsRename(src))
+            if (!FileUtils.isOgg(src) || !FileUtils.needsRename(src))
                 continue;
 
             try

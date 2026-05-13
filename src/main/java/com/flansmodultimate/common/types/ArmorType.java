@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FileUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -148,7 +149,7 @@ public class ArmorType extends InfoType
     @Override
     protected String getTexturePath(String textureName)
     {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + ".png";
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + FileUtils.PNG_EXTENSION;
     }
 
     public boolean hasDurability()

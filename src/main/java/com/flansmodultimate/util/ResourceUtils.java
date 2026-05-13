@@ -39,7 +39,7 @@ public final class ResourceUtils
         if (lastSeparator >= 0)
             normalizedName = normalizedName.substring(lastSeparator + 1);
 
-        if (normalizedName.toLowerCase(Locale.ROOT).endsWith(".png"))
+        if (normalizedName.toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
             normalizedName = normalizedName.substring(0, normalizedName.length() - 4);
 
         return sanitize(normalizedName);

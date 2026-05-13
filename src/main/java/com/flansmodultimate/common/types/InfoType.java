@@ -312,7 +312,7 @@ public abstract class InfoType
 
     protected String getTexturePath(String textureName)
     {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + ".png";
+        return "textures/" + type.getTextureFolderName() + "/" + textureName + FileUtils.PNG_EXTENSION;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -448,7 +448,7 @@ public abstract class InfoType
             DynamicReference ref = refsMap.get(overlayName);
 
             if (ref != null)
-                return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + ref.get() + ".png"));
+                return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + ref.get() + FileUtils.PNG_EXTENSION));
         }
         return Optional.empty();
     }
@@ -468,7 +468,7 @@ public abstract class InfoType
                 textureName = ref.get();
         }
 
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + textureName + ".png");
+        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + textureName + FileUtils.PNG_EXTENSION);
     }
 
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)
