@@ -12,6 +12,7 @@ public record CommonConfigSnapshot(
 
     boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
+    boolean flanExplosionsDropBlocks,
     int bonusRegenAmount,
     int bonusRegenTickDelay,
     int bonusRegenFoodLimit,
@@ -60,7 +61,7 @@ public record CommonConfigSnapshot(
     List<String> penetrableBlocksLines
 )
 {
-    public static final int CURRENT_VERSION = 1;
+    public static final int CURRENT_VERSION = 2;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -70,6 +71,7 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
+        buf.writeBoolean(s.flanExplosionsDropBlocks);
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
         buf.writeVarInt(s.bonusRegenFoodLimit);
@@ -127,6 +129,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readVarInt(),

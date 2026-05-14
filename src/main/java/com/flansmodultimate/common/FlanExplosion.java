@@ -173,7 +173,7 @@ public class FlanExplosion extends Explosion
                 if (state.isAir())
                     continue;
 
-                if (state.canDropFromExplosion(level, pos, this))
+                if (ModCommonConfig.get().flanExplosionsDropBlocks() && state.canDropFromExplosion(level, pos, this))
                 {
                     BlockEntity be = level.getBlockEntity(pos);
                     Entity attacker = getIndirectSourceEntity();
