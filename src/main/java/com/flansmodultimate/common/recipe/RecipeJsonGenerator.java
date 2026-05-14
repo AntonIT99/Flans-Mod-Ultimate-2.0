@@ -55,21 +55,24 @@ public final class RecipeJsonGenerator
 
         if (config.hasCraftingRecipe())
         {
-            Optional<JsonObject> recipe = config.isShapeless() ? createShapelessRecipe(config) : createShapedRecipe(config);
-            recipe.ifPresent(json -> writeRecipe(outputFolder.resolve(getCraftingFileName(config)), json));
+            JsonObject recipe = config.isShapeless() ? createShapelessRecipe(config) : createShapedRecipe(config);
+            writeRecipe(outputFolder.resolve(getCraftingFileName(config)), recipe);
         }
 
         if (config.hasSmeltingRecipe())
-            createSmeltingRecipe(config).ifPresent(json -> writeRecipe(outputFolder.resolve(getSmeltingFileName(config)), json));
+        {
+            JsonObject recipe = createSmeltingRecipe(config);
+            writeRecipe(outputFolder.resolve(getSmeltingFileName(config)), recipe);
+        }
     }
 
-    private static Optional<JsonObject> createShapedRecipe(InfoType config)
+    private static JsonObject createShapedRecipe(InfoType config)
     {
         Optional<List<String>> pattern = getTrimmedPattern(config);
         if (pattern.isEmpty())
         {
             FlansMod.log.warn("Invalid recipe grid in {}", config);
-            return Optional.empty();
+            return new JsonObject();
         }
 
         Map<Character, String> recipeKeys = parseShapedRecipeKeys(config);
@@ -82,12 +85,15 @@ public final class RecipeJsonGenerator
             if (StringUtils.isBlank(itemToken))
             {
                 FlansMod.log.warn("Failed to find '{}' in recipe for {}", c, config);
-                return Optional.empty();
+                return new JsonObject();
             }
 
             Optional<JsonObject> ingredient = createIngredient(itemToken, config);
             if (ingredient.isEmpty())
-                return Optional.empty();
+            {
+                FlansMod.log.warn("Failed to create ingredient '{}' in recipe for {}", itemToken, config);
+                return new JsonObject();
+            }
 
             keyJson.add(String.valueOf(c), ingredient.get());
         }
@@ -97,20 +103,27 @@ public final class RecipeJsonGenerator
 
         JsonArray patternJson = new JsonArray();
         pattern.get().forEach(patternJson::add);
+
         root.add("pattern", patternJson);
         root.add("key", keyJson);
         root.add("result", createResult(config, true));
-        return Optional.of(root);
+
+        return root;
     }
 
-    private static Optional<JsonObject> createShapelessRecipe(InfoType config)
+    private static JsonObject createShapelessRecipe(InfoType config)
     {
         JsonArray ingredients = new JsonArray();
+
         for (String itemToken : config.getRecipeTokens())
         {
             Optional<JsonObject> ingredient = createIngredient(itemToken, config);
             if (ingredient.isEmpty())
-                return Optional.empty();
+            {
+                FlansMod.log.warn("Failed to create ingredient '{}' in shapeless recipe for {}", itemToken, config);
+                return new JsonObject();
+            }
+
             ingredients.add(ingredient.get());
         }
 
@@ -118,14 +131,18 @@ public final class RecipeJsonGenerator
         root.addProperty("type", "minecraft:crafting_shapeless");
         root.add("ingredients", ingredients);
         root.add("result", createResult(config, true));
-        return Optional.of(root);
+
+        return root;
     }
 
-    private static Optional<JsonObject> createSmeltingRecipe(InfoType config)
+    private static JsonObject createSmeltingRecipe(InfoType config)
     {
         Optional<JsonObject> ingredient = createIngredient(config.getSmeltableFrom(), config);
         if (ingredient.isEmpty())
-            return Optional.empty();
+        {
+            FlansMod.log.warn("Failed to create smelting ingredient '{}' for {}", config.getSmeltableFrom(), config);
+            return new JsonObject();
+        }
 
         JsonObject root = new JsonObject();
         root.addProperty("type", "minecraft:smelting");
@@ -133,7 +150,8 @@ public final class RecipeJsonGenerator
         root.addProperty("result", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         root.addProperty("experience", 0.0F);
         root.addProperty("cookingtime", 200);
-        return Optional.of(root);
+
+        return root;
     }
 
     private static Optional<JsonObject> createIngredient(String itemToken, InfoType config)

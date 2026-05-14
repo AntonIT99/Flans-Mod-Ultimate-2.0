@@ -383,24 +383,27 @@ public final class FileUtils
             Files.deleteIfExists(readyMarker);
             Files.writeString(extractingMarker, "extracting " + Instant.now(), StandardCharsets.UTF_8);
 
+            Path normalizedOutputDir = outputDir.toAbsolutePath().normalize();
+
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null)
             {
                 String rawName = entry.getName();
                 String safeName = sanitizeArchiveEntryName(rawName);
 
-                if (!rawName.equals(safeName))
+                if (safeName.isBlank())
                 {
-                    FlansMod.log.warn(
-                            "Sanitized invalid archive entry name: '{}' -> '{}'",
-                            rawName, safeName
-                    );
+                    FlansMod.log.warn("Skipping archive entry with empty sanitized name: '{}'", rawName);
+                    continue;
                 }
 
-                Path outPath = outputDir.resolve(safeName).normalize();
+                if (wasMeaningfullySanitized(rawName, safeName, entry.isDirectory()))
+                    FlansMod.log.warn("Sanitized invalid archive entry name: '{}' -> '{}'", rawName, safeName);
 
-                // Zip Slip protection (still required!)
-                if (!outPath.startsWith(outputDir))
+                Path outPath = normalizedOutputDir.resolve(safeName).normalize();
+
+                // Zip Slip protection
+                if (!outPath.startsWith(normalizedOutputDir))
                     throw new IOException("Blocked zip entry (zip slip): " + rawName);
 
                 if (entry.isDirectory())
@@ -729,5 +732,20 @@ public final class FileUtils
                 .collect(Collectors.joining("/"));
 
         return name;
+    }
+
+    private static boolean wasMeaningfullySanitized(String rawName, String safeName, boolean isDirectory)
+    {
+        String comparableRawName = rawName.replace('\\', '/');
+
+        if (isDirectory && comparableRawName.endsWith("/"))
+            comparableRawName = comparableRawName.substring(0, comparableRawName.length() - 1);
+
+        comparableRawName = Arrays.stream(comparableRawName.split("/"))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.joining("/"));
+
+        return !comparableRawName.equals(safeName);
     }
 }
