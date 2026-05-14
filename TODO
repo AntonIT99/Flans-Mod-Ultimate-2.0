@@ -1,6 +1,5 @@
 General:
 - Investigate recipe problem (just missing items?)
-- Better logging for "Missing textures in model"
 - Config option to disable block drops for explosions
 - Fix Frag Radius
 - Change Fire Mode

@@ -1,5 +1,6 @@
 package com.flansmodultimate.event.handler;
 
+import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.gui.ArmorBoxScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
@@ -200,7 +201,10 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
-        event.registerReloadListener((ResourceManagerReloadListener) rm -> ModelCache.reload());
+        event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+            ModelCache.reload();
+            ContentManager.logMissingModelTextures(rm);
+        });
     }
 
     @SubscribeEvent

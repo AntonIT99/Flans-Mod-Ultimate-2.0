@@ -30,6 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.MalformedInputException;
@@ -118,10 +121,20 @@ public class ContentManager
     /** &lt; model class name, &lt; contentPack &gt;&gt; */
     @Getter
     private static final Map<String, IContentProvider> registeredModels = new HashMap<>();
+    private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private record TextureFile(String name, IContentProvider contentPack) {}
+    private record TextureOrigin(String contentPackName, String typeFolderName, String fileName)
+    {
+        @Override
+        public String toString()
+        {
+            return typeFolderName + "/" + fileName + " [" + contentPackName + "]";
+        }
+    }
+    private record MissingModelTexture(ResourceLocation textureId, TextureOrigin origin) {}
 
     static
     {
@@ -530,12 +543,12 @@ public class ContentManager
                             if (type.isHasBlock())
                                 registerBlock(shortName, config);
                             config.onItemRegistration(shortName);
-                            configs.get(contentPack).add(config);
+                            addConfig(contentPack, config);
                         }
                     }
                     else
                     {
-                        configs.get(contentPack).add(config);
+                        addConfig(contentPack, config);
                     }
                 }
                 else
@@ -550,6 +563,75 @@ public class ContentManager
             }
         }
         files.clear();
+    }
+
+    private static void addConfig(IContentProvider contentPack, InfoType config)
+    {
+        configs.get(contentPack).add(config);
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            registerModelTextureOrigins(config);
+    }
+
+    private static void registerModelTextureOrigins(InfoType config)
+    {
+        TextureOrigin origin = new TextureOrigin(config.getContentPack().getName(), config.getType().getConfigFolderName(), config.getFileName());
+
+        if (config instanceof BlockType blockConfig)
+        {
+            registerModelTextureOrigin(FOLDER_TEXTURES_BLOCK, blockConfig.getTopTextureName(), origin);
+            registerModelTextureOrigin(FOLDER_TEXTURES_BLOCK, blockConfig.getBottomTextureName(), origin);
+            registerModelTextureOrigin(FOLDER_TEXTURES_BLOCK, blockConfig.getSideTextureName(), origin);
+            return;
+        }
+
+        if (config.getType().isHasItem())
+            registerModelTextureOrigin(FOLDER_TEXTURES_ITEM, config.getIcon(), origin);
+
+        if (config instanceof PaintableType paintableType)
+        {
+            paintableType.getPaintjobs().values().stream()
+                .filter(paintjob -> !paintjob.equals(paintableType.getDefaultPaintjob()))
+                .forEach(paintjob -> registerModelTextureOrigin(FOLDER_TEXTURES_ITEM, paintjob.getIcon(), origin));
+        }
+    }
+
+    private static void registerModelTextureOrigin(String textureFolder, @Nullable String textureName, TextureOrigin origin)
+    {
+        String texturePath = textureFolder + "/" + ResourceUtils.sanitize(textureName);
+        try
+        {
+            ResourceLocation textureId = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, texturePath);
+            modelTextureOrigins.computeIfAbsent(textureId, key -> new HashSet<>()).add(origin);
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.warn("Could not register expected model texture '{}': {}", texturePath, origin);
+        }
+    }
+
+    public static void logMissingModelTextures(ResourceManager resourceManager)
+    {
+        List<MissingModelTexture> missingTextures = new ArrayList<>();
+        for (Map.Entry<ResourceLocation, Set<TextureOrigin>> entry : modelTextureOrigins.entrySet())
+        {
+            if (resourceManager.getResource(toTextureResource(entry.getKey())).isEmpty())
+            {
+                for (TextureOrigin origin : entry.getValue())
+                    missingTextures.add(new MissingModelTexture(entry.getKey(), origin));
+            }
+        }
+
+        missingTextures.stream()
+            .sorted(Comparator.comparing((MissingModelTexture missing) -> missing.origin().contentPackName())
+                .thenComparing(missing -> missing.origin().typeFolderName())
+                .thenComparing(missing -> missing.origin().fileName())
+                .thenComparing(missing -> missing.textureId().toString()))
+            .forEach(missing -> FlansMod.log.warn("Missing texture {}: {}", missing.textureId(), missing.origin()));
+    }
+
+    private static ResourceLocation toTextureResource(ResourceLocation textureId)
+    {
+        return ResourceLocation.fromNamespaceAndPath(textureId.getNamespace(), FOLDER_TEXTURES + "/" + textureId.getPath() + FileUtils.PNG_EXTENSION);
     }
 
     private static String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
