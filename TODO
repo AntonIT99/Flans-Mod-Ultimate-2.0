@@ -1,8 +1,8 @@
 General:
-- Automatic file cleanup in textures/
-- Fix Frag Radius
+- Investigate recipe problem (just missing items?)
+- Better logging for "Missing textures in model"
 - Config option to disable block drops for explosions
-- Recipes
+- Fix Frag Radius
 - Change Fire Mode
 - Team Mod: Commands, Teams, Classes, Stats
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
@@ -28,7 +28,6 @@ New Sound Features:
 
 Testing:
 - Dedicated Server Testing
-- Check for conflicts with Flan's Mod Reloaded
 
 Entities:
 - AAGun - TODO
@@ -73,7 +72,7 @@ Types:
 
 TODO Content Packs:
 - Fix AK47 Paintjobs
-- Fix FlakParticle TaP Guns
+- Fix FlakParticle TaP Guns -> use categories
 - Fix Scope Attachment Points in WW2 Improved Pack
 - Fix Barrel Attachment and Muzzle Flash
 - Remove Minigun Mode in WW2 Improved Pack
@@ -81,6 +80,7 @@ TODO Content Packs:
 - Set Penetration?
 
 Feature Ideas:
+- Command to get default ammo quickly
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
 - Dynamic activation of Aiming Pose

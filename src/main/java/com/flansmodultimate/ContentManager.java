@@ -104,6 +104,7 @@ public class ContentManager
     private static final String ARMOR_TEXTURES_ALIAS_FILE = "armor_textures_alias.json";
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
+    private static final String GENERATED_TEXTURES_MANIFEST_FILE = ".flansmod_generated_textures.json";
 
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
@@ -729,6 +730,7 @@ public class ContentManager
         boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_BLOCKSTATES))
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_ITEM))
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_BLOCK))
+            || shouldUpdateGeneratedTextureFiles(provider, fs)
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ARMOR)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES_ARMOR)))
@@ -739,6 +741,40 @@ public class ContentManager
 
         FileUtils.closeFileSystem(fs, provider);
         return missingAssets;
+    }
+
+    private static boolean shouldUpdateGeneratedTextureFiles(IContentProvider provider, FileSystem fs)
+    {
+        Path assetsPath = provider.getAssetsPath(fs);
+        return shouldUpdateGeneratedTextureFiles(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM), Collections.emptyMap(), false)
+            || shouldUpdateGeneratedTextureFiles(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK), Collections.emptyMap(), false)
+            || shouldUpdateGeneratedTextureFiles(assetsPath.resolve(FOLDER_TEXTURES_ARMOR), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ARMOR), armorTextureReferences.get(provider), true)
+            || shouldUpdateGeneratedTextureFiles(assetsPath.resolve(FOLDER_TEXTURES_GUI), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_GUI), guiTextureReferences.get(provider), false)
+            || shouldUpdateGeneratedTextureFiles(assetsPath.resolve(FOLDER_TEXTURES_SKINS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_SKINS), skinsTextureReferences.get(provider), false);
+    }
+
+    private static boolean shouldUpdateGeneratedTextureFiles(Path sourcePath, Path destPath, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder)
+    {
+        Set<String> previousGeneratedTextures = readGeneratedTexturesManifest(destPath);
+        if (!Files.exists(sourcePath))
+            return !previousGeneratedTextures.isEmpty();
+
+        List<Path> sourceFiles = listSourcePngFiles(sourcePath);
+        if (sourceFiles == null)
+            return false;
+
+        Map<String, Path> textureCopyPlan = createTextureCopyPlan(sourcePath, destPath, sourceFiles, aliasMapping, armorTextureFolder, previousGeneratedTextures);
+        if (!previousGeneratedTextures.equals(textureCopyPlan.keySet()))
+            return true;
+
+        for (Map.Entry<String, Path> entry : textureCopyPlan.entrySet())
+        {
+            Path destFile = destPath.resolve(entry.getKey());
+            if (!Files.exists(destFile) || FileUtils.isDifferentFileContent(entry.getValue(), destFile, false))
+                return true;
+        }
+
+        return !findUntrackedDuplicateGeneratedTextures(destPath, textureCopyPlan).isEmpty();
     }
 
     private static boolean shouldPreLoadData(IContentProvider provider)
@@ -953,60 +989,7 @@ public class ContentManager
     {
         Path sourcePath = provider.getAssetsPath().resolve(folderName);
         Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(folderName);
-        copyPngFilesAndLowercaseFileNames(sourcePath, destPath);
-        renameTextureFilesWithAliases(destPath, aliasMapping);
-    }
-
-    private static void renameTextureFilesWithAliases(Path folder, Map<String, DynamicReference> aliasMapping)
-    {
-        if (Files.exists(folder))
-        {
-            try (Stream<Path> stream = Files.list(folder))
-            {
-                stream.filter(file ->
-                    {
-                        String baseFileName = FilenameUtils.getBaseName(file.getFileName().toString());
-                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
-                        {
-                            baseFileName = getArmorTextureBaseName(baseFileName);
-                        }
-                        return file.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION) && aliasMapping.containsKey(baseFileName);
-                    })
-                    .forEach(file ->
-                    {
-                        String baseFileName = FilenameUtils.getBaseName(file.getFileName().toString());
-                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
-                        {
-                            baseFileName = getArmorTextureBaseName(baseFileName);
-                        }
-                        String newFileName = aliasMapping.get(baseFileName).get();
-                        if (folder.getFileName().toString().equals(FOLDER_TEXTURES_ARMOR))
-                        {
-                            if (file.getFileName().toString().endsWith("_1.png"))
-                            {
-                                newFileName += "_1";
-                            }
-                            else if (file.getFileName().toString().endsWith("_2.png"))
-                            {
-                                newFileName += "_2";
-                            }
-                        }
-                        Path destFile = file.getParent().resolve(newFileName + FileUtils.PNG_EXTENSION);
-                        try
-                        {
-                            Files.move(file, destFile, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        catch (IOException e)
-                        {
-                            FlansMod.log.error("Could not create {}", file, e);
-                        }
-                    });
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.error("Could not scan generated texture folder '{}' while applying texture aliases", folder, e);
-            }
-        }
+        copyPngFilesAndLowercaseFileNames(sourcePath, destPath, aliasMapping, folderName.equals(FOLDER_TEXTURES_ARMOR));
     }
 
     private static void createLocalization(IContentProvider provider)
@@ -1127,39 +1110,223 @@ public class ContentManager
 
     private static void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath)
     {
+        copyPngFilesAndLowercaseFileNames(sourcePath, destPath, Collections.emptyMap(), false);
+    }
+
+    private static void copyPngFilesAndLowercaseFileNames(Path sourcePath, Path destPath, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder)
+    {
         if (!Files.exists(sourcePath))
+        {
+            cleanupGeneratedTexturesWhenSourceMissing(destPath);
             return;
+        }
         if (!FileUtils.tryCreateDirectories(destPath))
             return;
 
+        List<Path> sourceFiles = listSourcePngFiles(sourcePath);
+        if (sourceFiles == null)
+            return;
+
+        Set<String> previousGeneratedTextures = readGeneratedTexturesManifest(destPath);
+        Map<String, Path> textureCopyPlan = createTextureCopyPlan(sourcePath, destPath, sourceFiles, aliasMapping, armorTextureFolder, previousGeneratedTextures);
+
+        cleanupStaleGeneratedTextures(destPath, previousGeneratedTextures, textureCopyPlan.keySet());
+        copyGeneratedTextures(destPath, textureCopyPlan);
+        cleanupUntrackedDuplicateGeneratedTextures(destPath, textureCopyPlan);
+        writeGeneratedTexturesManifest(destPath, textureCopyPlan.keySet());
+    }
+
+    @Nullable
+    private static List<Path> listSourcePngFiles(Path sourcePath)
+    {
         try (Stream<Path> paths = Files.walk(sourcePath, 1))
         {
-            paths.filter(Files::isRegularFile)
+            return paths.filter(Files::isRegularFile)
                 .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
-                .forEach(src -> {
-                    // Sanitize each path segment (even though depth=1, this is safe if you later allow subfolders)
-                    Path rel = sourcePath.relativize(src);
-                    String sanitizedRel = FileUtils.sanitizePngRelPath(rel);
-                    Path dst = destPath.resolve(sanitizedRel).normalize();
-                    if (FileUtils.tryCreateDirectories(dst.getParent()))
-                    {
-                        try
-                        {
-                            Path target = FileUtils.skipIfSameElseEnsureUnique(src, dst);
-                            if (target != null)
-                                Files.copy(src, target, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        catch (IOException e)
-                        {
-                            FlansMod.log.error("Could not copy {} to {}", src, dst, e);
-                        }
-                    }
-                });
+                .sorted(Comparator.comparing(path -> path.getFileName().toString().toLowerCase(Locale.ROOT)))
+                .toList();
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not walk source texture folder '{}' while copying PNG files to '{}'", sourcePath, destPath, e);
+            FlansMod.log.error("Could not walk source texture folder '{}' while planning generated PNG files", sourcePath, e);
+            return null;
         }
+    }
+
+    private static Map<String, Path> createTextureCopyPlan(Path sourcePath, Path destPath, List<Path> sourceFiles, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder, Set<String> previousGeneratedTextures)
+    {
+        Map<String, Path> textureCopyPlan = new LinkedHashMap<>();
+        boolean overwriteExistingConflicts = !aliasMapping.isEmpty();
+        for (Path sourceFile : sourceFiles)
+        {
+            String desiredFileName = getGeneratedTextureFileName(sourcePath, sourceFile, aliasMapping, armorTextureFolder);
+            getAvailableGeneratedTextureFileName(sourceFile, desiredFileName, destPath, previousGeneratedTextures, textureCopyPlan, overwriteExistingConflicts)
+                .ifPresent(fileName -> textureCopyPlan.put(fileName, sourceFile));
+        }
+        return textureCopyPlan;
+    }
+
+    private static String getGeneratedTextureFileName(Path sourcePath, Path sourceFile, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder)
+    {
+        if (aliasMapping.isEmpty())
+            return FileUtils.sanitizePngRelPath(sourcePath.relativize(sourceFile));
+
+        String sourceFileName = sourceFile.getFileName().toString();
+        String baseFileName = FilenameUtils.getBaseName(sourceFileName);
+        String suffix = StringUtils.EMPTY;
+
+        if (armorTextureFolder)
+        {
+            String lowerFileName = sourceFileName.toLowerCase(Locale.ROOT);
+            if (lowerFileName.endsWith("_1" + FileUtils.PNG_EXTENSION))
+                suffix = "_1";
+            else if (lowerFileName.endsWith("_2" + FileUtils.PNG_EXTENSION))
+                suffix = "_2";
+            baseFileName = getArmorTextureBaseName(baseFileName);
+        }
+
+        String sanitizedBaseFileName = ResourceUtils.sanitize(baseFileName);
+        DynamicReference ref = aliasMapping.get(sanitizedBaseFileName);
+        String generatedBaseFileName = ref != null ? ref.get() : sanitizedBaseFileName;
+        return ResourceUtils.sanitize(generatedBaseFileName) + suffix + FileUtils.PNG_EXTENSION;
+    }
+
+    private static Optional<String> getAvailableGeneratedTextureFileName(Path sourceFile, String desiredFileName, Path destPath, Set<String> previousGeneratedTextures, Map<String, Path> textureCopyPlan, boolean overwriteExistingConflicts)
+    {
+        String candidateFileName = desiredFileName;
+        for (int suffix = 1; ; suffix++)
+        {
+            Path plannedSource = textureCopyPlan.get(candidateFileName);
+            if (plannedSource != null)
+            {
+                if (!FileUtils.isDifferentFileContent(sourceFile, plannedSource, false))
+                    return Optional.empty();
+            }
+            else if (!isReservedTextureFileConflict(sourceFile, destPath.resolve(candidateFileName), candidateFileName, previousGeneratedTextures, overwriteExistingConflicts))
+            {
+                return Optional.of(candidateFileName);
+            }
+
+            candidateFileName = addGeneratedTextureSuffix(desiredFileName, suffix);
+        }
+    }
+
+    private static boolean isReservedTextureFileConflict(Path sourceFile, Path candidateFile, String candidateFileName, Set<String> previousGeneratedTextures, boolean overwriteExistingConflicts)
+    {
+        return !overwriteExistingConflicts
+            && Files.exists(candidateFile)
+            && !previousGeneratedTextures.contains(candidateFileName)
+            && FileUtils.isDifferentFileContent(sourceFile, candidateFile, false);
+    }
+
+    private static String addGeneratedTextureSuffix(String fileName, int suffix)
+    {
+        return FilenameUtils.getBaseName(fileName) + "-" + suffix + FileUtils.PNG_EXTENSION;
+    }
+
+    private static void cleanupGeneratedTexturesWhenSourceMissing(Path destPath)
+    {
+        Set<String> previousGeneratedTextures = readGeneratedTexturesManifest(destPath);
+        cleanupStaleGeneratedTextures(destPath, previousGeneratedTextures, Collections.emptySet());
+        writeGeneratedTexturesManifest(destPath, Collections.emptySet());
+    }
+
+    private static void cleanupStaleGeneratedTextures(Path destPath, Set<String> previousGeneratedTextures, Set<String> currentGeneratedTextures)
+    {
+        for (String fileName : previousGeneratedTextures)
+        {
+            if (!currentGeneratedTextures.contains(fileName))
+                FileUtils.deleteIfExists(destPath.resolve(fileName));
+        }
+    }
+
+    private static void copyGeneratedTextures(Path destPath, Map<String, Path> textureCopyPlan)
+    {
+        for (Map.Entry<String, Path> entry : textureCopyPlan.entrySet())
+        {
+            Path sourceFile = entry.getValue();
+            Path destFile = destPath.resolve(entry.getKey()).normalize();
+            if (FileUtils.tryCreateDirectories(destFile.getParent()))
+            {
+                try
+                {
+                    if (!Files.exists(destFile) || FileUtils.isDifferentFileContent(sourceFile, destFile, false))
+                        Files.copy(sourceFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                }
+                catch (IOException e)
+                {
+                    FlansMod.log.error("Could not copy {} to {}", sourceFile, destFile, e);
+                }
+            }
+        }
+    }
+
+    private static void cleanupUntrackedDuplicateGeneratedTextures(Path destPath, Map<String, Path> textureCopyPlan)
+    {
+        findUntrackedDuplicateGeneratedTextures(destPath, textureCopyPlan).forEach(FileUtils::deleteIfExists);
+    }
+
+    private static List<Path> findUntrackedDuplicateGeneratedTextures(Path destPath, Map<String, Path> textureCopyPlan)
+    {
+        if (textureCopyPlan.isEmpty() || !Files.isDirectory(destPath))
+            return Collections.emptyList();
+
+        try (Stream<Path> files = Files.list(destPath))
+        {
+            return files.filter(Files::isRegularFile)
+                .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
+                .filter(path -> !textureCopyPlan.containsKey(path.getFileName().toString()))
+                .filter(path -> hasSameContentAsGeneratedSource(path, textureCopyPlan.values()))
+                .toList();
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not scan generated texture folder '{}' while cleaning stale generated texture copies", destPath, e);
+            return Collections.emptyList();
+        }
+    }
+
+    private static boolean hasSameContentAsGeneratedSource(Path file, Iterable<Path> sourceFiles)
+    {
+        for (Path sourceFile : sourceFiles)
+        {
+            if (!FileUtils.isDifferentFileContent(file, sourceFile, false))
+                return true;
+        }
+        return false;
+    }
+
+    private static Set<String> readGeneratedTexturesManifest(Path destPath)
+    {
+        Path manifestFile = destPath.resolve(GENERATED_TEXTURES_MANIFEST_FILE);
+        Set<String> generatedTextures = new HashSet<>();
+        if (!Files.isRegularFile(manifestFile))
+            return generatedTextures;
+
+        try
+        {
+            String[] fileNames = gson.fromJson(Files.readString(manifestFile, StandardCharsets.UTF_8), String[].class);
+            if (fileNames != null)
+                Collections.addAll(generatedTextures, fileNames);
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.warn("Could not read generated texture manifest '{}': {}", manifestFile, e.toString());
+        }
+        return generatedTextures;
+    }
+
+    private static void writeGeneratedTexturesManifest(Path destPath, Set<String> generatedTextures)
+    {
+        Path manifestFile = destPath.resolve(GENERATED_TEXTURES_MANIFEST_FILE);
+        if (generatedTextures.isEmpty())
+        {
+            FileUtils.deleteIfExists(manifestFile);
+            return;
+        }
+
+        List<String> sortedGeneratedTextures = generatedTextures.stream().sorted().toList();
+        FileUtils.writeString(manifestFile, gson.toJson(sortedGeneratedTextures));
     }
 
     private static void createSounds(IContentProvider provider)
