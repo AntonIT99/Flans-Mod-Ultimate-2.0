@@ -27,6 +27,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -34,6 +35,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
@@ -42,12 +44,15 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -108,6 +113,7 @@ public class ContentManager
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
     private static final String GENERATED_TEXTURES_MANIFEST_FILE = ".flansmod_generated_textures.json";
+    private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
 
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
@@ -126,9 +132,11 @@ public class ContentManager
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private record TextureFile(String name, IContentProvider contentPack) {}
+    private record FileContentSignature(long size, String sha256) {}
     private record TextureOrigin(String contentPackName, String typeFolderName, String fileName)
     {
         @Override
+        @NotNull
         public String toString()
         {
             return typeFolderName + "/" + fileName + " [" + contentPackName + "]";
@@ -281,7 +289,23 @@ public class ContentManager
 
     public static void readContentPacks()
     {
-        FileUtils.cleanupFlanTempOnStartup(contentPacks);
+        if (flanFolder == null)
+            return;
+
+        Path gameDir = flanFolder.getParent();
+        if (gameDir == null)
+        {
+            FlansMod.log.error("Cannot load content packs because flan folder '{}' has no parent directory.", flanFolder);
+            return;
+        }
+
+        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan content startup", ContentManager::readContentPacksLocked);
+    }
+
+    private static void readContentPacksLocked()
+    {
+        Path tempRoot = flanFolder.getParent().resolve(".flantemp");
+        FileUtils.cleanupFlanTempOnStartup(tempRoot);
 
         for (IContentProvider provider : contentPacks)
         {
@@ -360,7 +384,7 @@ public class ContentManager
             FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), loadingTimeMs);
         }
 
-        FileUtils.deleteDirectoryIfEmpty(flanFolder.getParent().resolve(".flantemp"));
+        FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
 
     private static void loadFlanFolder()
@@ -852,7 +876,7 @@ public class ContentManager
         for (Map.Entry<String, Path> entry : textureCopyPlan.entrySet())
         {
             Path destFile = destPath.resolve(entry.getKey());
-            if (!Files.exists(destFile) || FileUtils.isDifferentFileContent(entry.getValue(), destFile, false))
+            if (!Files.exists(destFile) || FileUtils.isDifferentFileBytes(entry.getValue(), destFile, false))
                 return true;
         }
 
@@ -1281,7 +1305,7 @@ public class ContentManager
             Path plannedSource = textureCopyPlan.get(candidateFileName);
             if (plannedSource != null)
             {
-                if (!FileUtils.isDifferentFileContent(sourceFile, plannedSource, false))
+                if (!FileUtils.isDifferentFileBytes(sourceFile, plannedSource, false))
                     return Optional.empty();
             }
             else if (!isReservedTextureFileConflict(sourceFile, destPath.resolve(candidateFileName), candidateFileName, previousGeneratedTextures, overwriteExistingConflicts))
@@ -1298,7 +1322,7 @@ public class ContentManager
         return !overwriteExistingConflicts
             && Files.exists(candidateFile)
             && !previousGeneratedTextures.contains(candidateFileName)
-            && FileUtils.isDifferentFileContent(sourceFile, candidateFile, false);
+            && FileUtils.isDifferentFileBytes(sourceFile, candidateFile, false);
     }
 
     private static String addGeneratedTextureSuffix(String fileName, int suffix)
@@ -1332,7 +1356,7 @@ public class ContentManager
             {
                 try
                 {
-                    if (!Files.exists(destFile) || FileUtils.isDifferentFileContent(sourceFile, destFile, false))
+                    if (!Files.exists(destFile) || FileUtils.isDifferentFileBytes(sourceFile, destFile, false))
                         Files.copy(sourceFile, destFile, StandardCopyOption.REPLACE_EXISTING);
                 }
                 catch (IOException e)
@@ -1353,12 +1377,16 @@ public class ContentManager
         if (textureCopyPlan.isEmpty() || !Files.isDirectory(destPath))
             return Collections.emptyList();
 
+        Map<Long, Set<String>> generatedSourceHashesBySize = createFileContentHashesBySize(textureCopyPlan.values());
+        if (generatedSourceHashesBySize.isEmpty())
+            return Collections.emptyList();
+
         try (Stream<Path> files = Files.list(destPath))
         {
             return files.filter(Files::isRegularFile)
                 .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
                 .filter(path -> !textureCopyPlan.containsKey(path.getFileName().toString()))
-                .filter(path -> hasSameContentAsGeneratedSource(path, textureCopyPlan.values()))
+                .filter(path -> hasMatchingFileContentSignature(path, generatedSourceHashesBySize))
                 .toList();
         }
         catch (IOException e)
@@ -1368,14 +1396,73 @@ public class ContentManager
         }
     }
 
-    private static boolean hasSameContentAsGeneratedSource(Path file, Iterable<Path> sourceFiles)
+    private static Map<Long, Set<String>> createFileContentHashesBySize(Iterable<Path> files)
     {
-        for (Path sourceFile : sourceFiles)
+        Map<Long, Set<String>> hashesBySize = new HashMap<>();
+        files.forEach(file -> readFileContentSignature(file)
+            .ifPresent(signature -> hashesBySize.computeIfAbsent(signature.size(), ignored -> new HashSet<>()).add(signature.sha256())));
+        return hashesBySize;
+    }
+
+    private static boolean hasMatchingFileContentSignature(Path file, Map<Long, Set<String>> hashesBySize)
+    {
+        try
         {
-            if (!FileUtils.isDifferentFileContent(file, sourceFile, false))
-                return true;
+            Set<String> sourceHashes = hashesBySize.get(Files.size(file));
+            if (sourceHashes == null)
+                return false;
+
+            return readFileSha256(file)
+                .map(sourceHashes::contains)
+                .orElse(false);
         }
-        return false;
+        catch (IOException e)
+        {
+            FlansMod.log.warn("Could not inspect generated texture candidate '{}': {}", file, e.toString());
+            return false;
+        }
+    }
+
+    private static Optional<FileContentSignature> readFileContentSignature(Path file)
+    {
+        try
+        {
+            long size = Files.size(file);
+            return readFileSha256(file).map(sha256 -> new FileContentSignature(size, sha256));
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.warn("Could not hash generated texture candidate '{}': {}", file, e.toString());
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<String> readFileSha256(Path file)
+    {
+        try
+        {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            try (InputStream input = Files.newInputStream(file))
+            {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = input.read(buffer)) >= 0)
+                    digest.update(buffer, 0, read);
+            }
+
+            return Optional.of(HexFormat.of().formatHex(digest.digest()));
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.warn("Could not hash generated texture candidate '{}': {}", file, e.toString());
+            return Optional.empty();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            FlansMod.log.error("SHA-256 is not available for generated texture cleanup.", e);
+            return Optional.empty();
+        }
     }
 
     private static Set<String> readGeneratedTexturesManifest(Path destPath)

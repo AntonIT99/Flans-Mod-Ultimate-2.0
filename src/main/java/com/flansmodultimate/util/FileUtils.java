@@ -8,11 +8,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryStream;
@@ -21,16 +26,20 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Duration;
-import java.time.Instant;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -48,7 +57,24 @@ public final class FileUtils
     public static final String TXT_EXTENSION = ".txt";
     public static final String ZIP_EXTENSION = ".zip";
 
+    private static final long IMAGE_COMPARE_TIMEOUT_SECONDS = 5L;
+    private static final long MAX_IMAGE_PIXELS_FOR_COMPARE = 67_108_864L;
+    private static final int MAX_IMAGE_COMPARE_PIXELS_PER_CHUNK = 1_048_576;
+    private static final AtomicInteger IMAGE_COMPARE_THREAD_ID = new AtomicInteger();
+    private static final Object FILE_LOCK_MONITOR = new Object();
+    private static final ExecutorService IMAGE_COMPARE_EXECUTOR = Executors.newCachedThreadPool(r ->
+    {
+        Thread thread = new Thread(r, "flansmod-image-compare-" + IMAGE_COMPARE_THREAD_ID.incrementAndGet());
+        thread.setDaemon(true);
+        return thread;
+    });
 
+    /**
+     * Writes UTF-8 text to a file and logs failures instead of throwing them.
+     *
+     * @param outputFile target file to write
+     * @param content text content to write
+     */
     public static void writeString(Path outputFile, String content)
     {
         try
@@ -61,6 +87,11 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Deletes a file if it exists and logs failures instead of throwing them.
+     *
+     * @param file file to delete
+     */
     public static void deleteIfExists(Path file)
     {
         try
@@ -73,7 +104,13 @@ public final class FileUtils
         }
     }
 
-    /** If a destination path already exists (or would alias on case-insensitive FS), append -1, -2, ... */
+    /**
+     * Finds an unused sibling path by appending a numeric suffix when the destination exists.
+     *
+     * @param dst desired destination path
+     * @return {@code dst} when it does not exist, otherwise a sibling with a {@code -1}, {@code -2},
+     * etc. suffix before the extension
+     */
     public static Path ensureUnique(Path dst)
     {
         if (!Files.exists(dst))
@@ -98,7 +135,12 @@ public final class FileUtils
         return candidate;
     }
 
-    /** Returns true if the current filename differs from the sanitized target name. */
+    /**
+     * Checks whether an OGG file name needs sanitizing.
+     *
+     * @param p path whose file name should be checked
+     * @return {@code true} when the current file name differs from its sanitized OGG target name
+     */
     public static boolean needsRename(Path p)
     {
         String current = p.getFileName().toString();
@@ -106,7 +148,13 @@ public final class FileUtils
         return !current.equals(target);
     }
 
-    /** Move that handles case-only renames on case-insensitive filesystems. */
+    /**
+     * Moves a file while safely handling case-only renames on case-insensitive filesystems.
+     *
+     * @param src source file to move
+     * @param dst destination file
+     * @throws IOException when either move operation fails
+     */
     public static void moveWithCaseOnlyHopIfNeeded(Path src, Path dst) throws IOException
     {
         String srcName = src.getFileName().toString();
@@ -127,7 +175,13 @@ public final class FileUtils
         }
     }
 
-    /** Rename file to lowercase (and replace spaces with underscores). */
+    /**
+     * Renames a file to its sanitized lowercase resource name.
+     *
+     * @param file file to rename
+     * @return the renamed path, or the original path when no rename was needed
+     * @throws IOException when the rename fails
+     */
     public static Path renameToLowercase(Path file) throws IOException
     {
         String name = file.getFileName().toString();
@@ -140,6 +194,12 @@ public final class FileUtils
         return target;
     }
 
+    /**
+     * Checks whether a path has an {@code .ogg} file extension.
+     *
+     * @param p path to inspect
+     * @return {@code true} when the file name ends with {@code .ogg}, case-insensitively
+     */
     public static boolean isOgg(Path p)
     {
         String n = p.getFileName().toString();
@@ -147,7 +207,12 @@ public final class FileUtils
         return dot >= 0 && n.substring(dot).equalsIgnoreCase(OGG_EXTENSION);
     }
 
-    /** Build sanitized target filename for an .ogg (lowercase, safe chars, force .ogg). */
+    /**
+     * Builds the sanitized target filename for an OGG file.
+     *
+     * @param currentName current file name
+     * @return sanitized lowercase base name with a forced {@code .ogg} extension
+     */
     private static String sanitizedOggName(String currentName)
     {
         int dot = currentName.lastIndexOf('.');
@@ -156,7 +221,15 @@ public final class FileUtils
         return sanitizedBase + OGG_EXTENSION;
     }
 
-    /** Sanitize a relative path: lowercase, replace spaces with '_', remove illegal chars, force .png extension. */
+    /**
+     * Sanitizes a relative PNG path for resource output.
+     * <p>
+     * Each path segment is sanitized independently, converted to lowercase by
+     * {@link ResourceUtils#sanitize(String)}, and forced to use the {@code .png} extension.
+     *
+     * @param rel relative source path
+     * @return sanitized relative path using forward slashes
+     */
     public static String sanitizePngRelPath(Path rel)
     {
         StringBuilder out = new StringBuilder();
@@ -199,6 +272,21 @@ public final class FileUtils
         return ensureUnique(desired);
     }
 
+    /**
+     * Compares two files by content.
+     * <p>
+     * Non-image files use cheap size and byte checks. Image files still use byte equality as the
+     * fast path, but when bytes differ they are decoded and compared by normalized ARGB pixels so
+     * differently encoded copies of the same image are treated as equivalent. If either file is
+     * missing, {@code assumeDifferentWhenMissing} is returned. If comparison fails for any other
+     * reason, this method returns {@code true} so callers refresh or keep files separate instead of
+     * silently treating unknown content as identical.
+     *
+     * @param file1 first file to compare
+     * @param file2 second file to compare
+     * @param assumeDifferentWhenMissing value to return when either file does not exist
+     * @return {@code true} when the files should be treated as different
+     */
     public static boolean isDifferentFileContent(Path file1, Path file2, boolean assumeDifferentWhenMissing)
     {
         if (!Files.exists(file1) || !Files.exists(file2))
@@ -208,6 +296,9 @@ public final class FileUtils
 
         try
         {
+            if (Files.isSameFile(file1, file2))
+                return false;
+
             // For non-images, size mismatch => different (fast fail)
             if (!bothImages && Files.size(file1) != Files.size(file2))
                 return true;
@@ -225,10 +316,54 @@ public final class FileUtils
         catch (IOException e)
         {
             FlansMod.log.error("Could not compare files {} and {}", file1, file2, e);
-            return false;
+            return true;
         }
     }
 
+    /**
+     * Compares two files by raw bytes only.
+     * <p>
+     * This is the preferred comparison for generated files that are written with
+     * {@link Files#copy(Path, Path, java.nio.file.CopyOption...)} or other byte-preserving writes.
+     * It avoids image decoding and returns {@code true} on read errors so callers refresh or keep
+     * files separate instead of treating unknown content as identical.
+     *
+     * @param file1 first file to compare
+     * @param file2 second file to compare
+     * @param assumeDifferentWhenMissing value to return when either file does not exist
+     * @return {@code true} when the files should be treated as byte-different
+     */
+    public static boolean isDifferentFileBytes(Path file1, Path file2, boolean assumeDifferentWhenMissing)
+    {
+        if (!Files.exists(file1) || !Files.exists(file2))
+            return assumeDifferentWhenMissing;
+
+        try
+        {
+            if (Files.isSameFile(file1, file2))
+                return false;
+
+            return Files.size(file1) != Files.size(file2) || Files.mismatch(file1, file2) != -1;
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Could not compare file bytes {} and {}", file1, file2, e);
+            return true;
+        }
+    }
+
+    /**
+     * Compares a file with in-memory bytes using a streaming byte-by-byte comparison.
+     * <p>
+     * If the file is missing, {@code assumeDifferentWhenMissing} is returned. If the file cannot be
+     * read, this method returns {@code true} so callers rewrite or regenerate the file rather than
+     * assuming the existing content is correct.
+     *
+     * @param file file to compare
+     * @param data expected file content
+     * @param assumeDifferentWhenMissing value to return when the file does not exist
+     * @return {@code true} when the file content differs from {@code data}
+     */
     public static boolean isDifferentFileContent(Path file, byte[] data, boolean assumeDifferentWhenMissing)
     {
         if (!Files.exists(file))
@@ -267,29 +402,73 @@ public final class FileUtils
         }
     }
 
-    public static boolean isImageFile(Path p)
+    /**
+     * Checks whether a path has a file extension that this utility treats as an image candidate.
+     * Actual image decoding is still validated later; unsupported or corrupt image files are not
+     * considered identical by pixel comparison.
+     *
+     * @param p path to inspect
+     * @return {@code true} when the file name has a known image extension
+     */
+    private static boolean isImageFile(Path p)
     {
         String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
         return n.endsWith(PNG_EXTENSION) || n.endsWith(".jpg") || n.endsWith(".jpeg")
             || n.endsWith(".gif") || n.endsWith(".bmp") || n.endsWith(".webp");
     }
 
-    public static boolean isSameImage(Path file1, Path file2)
+    /**
+     * Compares two image files by decoded normalized ARGB pixels.
+     * <p>
+     * Decoding is performed on a daemon worker with a timeout because some malformed images or image
+     * readers can block indefinitely. Timeout, interruption, unsupported formats, oversized images,
+     * decode errors, or any other failure return {@code false}. Pixel comparison is chunked by rows
+     * to avoid allocating one large temporary array per image.
+     *
+     * @param file1 first image file
+     * @param file2 second image file
+     * @return {@code true} only when both images decode successfully and all pixels match
+     */
+    private static boolean isSameImage(Path file1, Path file2)
     {
-        BufferedImage img1;
-        BufferedImage img2;
+        Future<Boolean> result = IMAGE_COMPARE_EXECUTOR.submit(() -> hasSameImagePixels(file1, file2));
 
-        try (InputStream in1 = Files.newInputStream(file1);
-             InputStream in2 = Files.newInputStream(file2))
+        try
         {
-            img1 = ImageIO.read(in1);
-            img2 = ImageIO.read(in2);
+            return result.get(IMAGE_COMPARE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         }
-        catch (IOException e)
+        catch (TimeoutException e)
         {
-            FlansMod.log.error("Could not compare images {} and {}", file1, file2, e);
+            result.cancel(true);
+            FlansMod.log.warn("Timed out comparing image pixels between {} and {}", file1, file2);
             return false;
         }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+            result.cancel(true);
+            FlansMod.log.warn("Interrupted while comparing image pixels between {} and {}", file1, file2);
+            return false;
+        }
+        catch (ExecutionException e)
+        {
+            FlansMod.log.warn("Could not compare image pixels between {} and {}: {}", file1, file2, String.valueOf(e.getCause()));
+            return false;
+        }
+    }
+
+    /**
+     * Decodes both images and compares dimensions plus normalized ARGB pixels.
+     *
+     * @param file1 first image file
+     * @param file2 second image file
+     * @return {@code true} when both images decode and have identical dimensions and pixels
+     * @throws IOException when an image reader fails while inspecting or decoding either file
+     */
+    private static boolean hasSameImagePixels(Path file1, Path file2) throws IOException
+    {
+        BufferedImage img1 = readImage(file1);
+        BufferedImage img2 = readImage(file2);
 
         if (img1 == null || img2 == null)
             return false;
@@ -299,12 +478,77 @@ public final class FileUtils
         if (w != img2.getWidth() || h != img2.getHeight())
             return false;
 
-        // Fast path: same underlying raster data type/format *might* still differ in RGB conversion, so we compare normalized ARGB pixels via bulk getRGB.
-        int[] a = img1.getRGB(0, 0, w, h, null, 0, w);
-        int[] b = img2.getRGB(0, 0, w, h, null, 0, w);
-        return Arrays.equals(a, b);
+        int rowsPerChunk = Math.max(1, Math.min(h, MAX_IMAGE_COMPARE_PIXELS_PER_CHUNK / w));
+        int[] pixels1 = new int[w * rowsPerChunk];
+        int[] pixels2 = new int[w * rowsPerChunk];
+
+        for (int y = 0; y < h; y += rowsPerChunk)
+        {
+            int rows = Math.min(rowsPerChunk, h - y);
+            int pixels = w * rows;
+
+            img1.getRGB(0, y, w, rows, pixels1, 0, w);
+            img2.getRGB(0, y, w, rows, pixels2, 0, w);
+
+            for (int i = 0; i < pixels; i++)
+            {
+                if (pixels1[i] != pixels2[i])
+                    return false;
+            }
+        }
+
+        return true;
     }
 
+    /**
+     * Reads the first image frame from a file through an explicit {@link ImageReader}.
+     * <p>
+     * The image dimensions are checked before full decode so clearly invalid or unreasonably large
+     * files fail before allocating the decoded image buffer.
+     *
+     * @param file image file to decode
+     * @return the decoded image, or {@code null} when no reader is available or dimensions are invalid
+     * @throws IOException when the selected image reader fails while reading metadata or pixels
+     */
+    @Nullable
+    private static BufferedImage readImage(Path file) throws IOException
+    {
+        try (ImageInputStream input = ImageIO.createImageInputStream(file.toFile()))
+        {
+            if (input == null)
+                return null;
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+            if (!readers.hasNext())
+                return null;
+
+            ImageReader reader = readers.next();
+            try
+            {
+                reader.setInput(input, true, true);
+
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+                if (width <= 0 || height <= 0 || (long) width * height > MAX_IMAGE_PIXELS_FOR_COMPARE)
+                    return null;
+
+                return reader.read(0);
+            }
+            finally
+            {
+                reader.dispose();
+            }
+        }
+    }
+
+    /**
+     * Creates a directory and any missing parent directories.
+     * <p>
+     * Failures are logged and reported as {@code false} instead of being thrown.
+     *
+     * @param path directory path to create
+     * @return {@code true} when the directory exists or was created successfully
+     */
     public static boolean tryCreateDirectories(Path path)
     {
         if (path == null)
@@ -325,6 +569,58 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Runs an operation while holding an exclusive OS file lock.
+     * <p>
+     * The lock serializes shared filesystem mutations across separate game instances that use the
+     * same directory. A local JVM monitor is also used because Java throws
+     * {@link OverlappingFileLockException} instead of waiting when the same JVM already owns an
+     * overlapping lock. If the lock cannot be created or acquired, the operation is not run.
+     *
+     * @param lockFile file used as the lock target
+     * @param operationName human-readable operation name for log messages
+     * @param operation operation to execute while the lock is held
+     * @return {@code true} if the operation ran, {@code false} if the lock could not be acquired
+     */
+    public static boolean runWithFileLock(Path lockFile, String operationName, Runnable operation)
+    {
+        if (lockFile == null)
+        {
+            FlansMod.log.error("Cannot run locked operation '{}': lock file is null", operationName);
+            return false;
+        }
+
+        Path normalizedLockFile = lockFile.toAbsolutePath().normalize();
+        Path lockParent = normalizedLockFile.getParent();
+        if (lockParent != null && !tryCreateDirectories(lockParent))
+            return false;
+
+        synchronized (FILE_LOCK_MONITOR)
+        {
+            try (FileChannel channel = FileChannel.open(normalizedLockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE))
+            {
+                FlansMod.log.debug("Waiting for {} lock at {}", operationName, normalizedLockFile);
+                try (FileLock ignored = channel.lock())
+                {
+                    FlansMod.log.debug("Acquired {} lock at {}", operationName, normalizedLockFile);
+                    operation.run();
+                    return true;
+                }
+            }
+            catch (IOException | OverlappingFileLockException e)
+            {
+                FlansMod.log.error("Could not acquire {} lock at {}", operationName, normalizedLockFile, e);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Opens a filesystem view for an archive content provider.
+     *
+     * @param provider content provider to open
+     * @return a filesystem for archive providers, or {@code null} for non-archives or open failures
+     */
     @Nullable
     public static FileSystem createFileSystem(IContentProvider provider)
     {
@@ -342,6 +638,12 @@ public final class FileUtils
         return null;
     }
 
+    /**
+     * Closes a filesystem opened for a content provider and logs close failures.
+     *
+     * @param fs filesystem to close, or {@code null}
+     * @param provider provider used only for contextual logging
+     */
     public static void closeFileSystem(@Nullable FileSystem fs, IContentProvider provider)
     {
         if (fs != null)
@@ -358,6 +660,17 @@ public final class FileUtils
     }
 
 
+    /**
+     * Creates a directory stream over the root of a content provider.
+     * <p>
+     * Directory providers are streamed directly. Archive providers are opened as a filesystem and the
+     * returned stream closes that filesystem when the stream itself is closed.
+     *
+     * @param provider content provider to read
+     * @return directory stream for the provider root
+     * @throws IOException when the provider directory or archive cannot be opened
+     * @throws IllegalArgumentException when the provider is neither a directory nor an archive
+     */
     public static DirectoryStream<Path> createDirectoryStream(IContentProvider provider) throws IOException
     {
         if (provider.isDirectory())
@@ -372,16 +685,21 @@ public final class FileUtils
         throw new IllegalArgumentException("Content Pack must be either a directory or a ZIP/JAR-archive");
     }
 
+    /**
+     * Extracts a ZIP or JAR archive into a prepared output directory.
+     * <p>
+     * Entry names are sanitized and normalized before writing, and Zip Slip attempts are rejected.
+     * Failures are logged and reported as {@code false}.
+     *
+     * @param archivePath archive file to extract
+     * @param outputDir destination directory
+     * @return {@code true} when extraction completed successfully
+     */
     public static boolean extractArchive(Path archivePath, Path outputDir)
     {
-        Path extractingMarker = outputDir.resolve("EXTRACTING");
-        Path readyMarker = outputDir.resolve("READY");
-
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(archivePath)))
         {
             Files.createDirectories(outputDir);
-            Files.deleteIfExists(readyMarker);
-            Files.writeString(extractingMarker, "extracting " + Instant.now(), StandardCharsets.UTF_8);
 
             Path normalizedOutputDir = outputDir.toAbsolutePath().normalize();
 
@@ -420,9 +738,6 @@ public final class FileUtils
                 }
             }
 
-            // mark success
-            Files.deleteIfExists(extractingMarker);
-            Files.writeString(readyMarker, "ready " + Instant.now(), StandardCharsets.UTF_8);
             return true;
         }
         catch (IOException e)
@@ -432,6 +747,15 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Rewrites an archive provider from its extracted directory and swaps it back into place.
+     * <p>
+     * JAR content packs are converted to ZIP files. The original archive is moved to a backup before
+     * replacement, the extracted directory is deleted after a successful swap, and temporary output
+     * files are cleaned up on failure when possible.
+     *
+     * @param provider archive provider whose extracted directory should be repacked
+     */
     public static void repackArchive(IContentProvider provider)
     {
         Path target = provider.isJarFile()
@@ -514,6 +838,17 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Replaces a target file with a temporary file while preserving a backup of the old target.
+     * <p>
+     * Atomic moves are attempted first and regular replacement moves are used when the filesystem
+     * does not support atomic moves.
+     *
+     * @param tmp replacement file that should become the target
+     * @param target file to replace
+     * @param backup backup location for the previous target
+     * @throws IOException when any required move fails
+     */
     private static void atomicReplace(Path tmp, Path target, Path backup) throws IOException
     {
         // Move target to backup (best effort)
@@ -540,6 +875,13 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Moves a file, using an atomic move when supported by the filesystem.
+     *
+     * @param src source path to move
+     * @param dest destination path
+     * @throws IOException when the move fails
+     */
     public static void safeMove(Path src, Path dest) throws IOException
     {
         try
@@ -552,6 +894,13 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Deletes a directory tree or single file recursively.
+     * <p>
+     * Individual delete failures are logged and traversal failures are logged after traversal stops.
+     *
+     * @param dir path to delete
+     */
     public static void deleteRecursively(Path dir)
     {
         if (Files.notExists(dir)) return;
@@ -577,6 +926,13 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Deletes a directory only when it exists and contains no entries.
+     * <p>
+     * This helper is best-effort; deletion failures are intentionally ignored.
+     *
+     * @param dir directory to remove when empty
+     */
     public static void deleteDirectoryIfEmpty(@Nullable Path dir)
     {
         if (dir == null)
@@ -602,82 +958,42 @@ public final class FileUtils
         }
     }
 
-    public static void cleanupFlanTempOnStartup(Iterable<IContentProvider> providers)
+    /**
+     * Clears all direct entries inside the shared Flan temporary directory at startup.
+     * <p>
+     * Directories are deleted recursively and files are deleted directly. The temp root itself is
+     * left in place unless later removed by {@link #deleteDirectoryIfEmpty(Path)}.
+     *
+     * @param tempRoot temporary root directory, usually {@code .flantemp}
+     */
+    public static void cleanupFlanTempOnStartup(@Nullable Path tempRoot)
     {
-        // tune these to taste
-        Duration extractingMaxAge = Duration.ofMinutes(15);
-        Duration readyMaxAge = Duration.ofHours(24);
-
-        Set<Path> roots = new HashSet<>();
-        for (IContentProvider p : providers)
-        {
-            if (p != null && p.isArchive())
-            {
-                try
-                {
-                    roots.add(p.getTempRoot());
-                }
-                catch (Exception ignored)
-                {
-                    // Ignored
-                }
-            }
-        }
-
-        for (Path root : roots)
-        {
-            cleanupTempRoot(root, extractingMaxAge, readyMaxAge);
-        }
-    }
-
-    private static void cleanupTempRoot(Path tempRoot, Duration extractingMaxAge, Duration readyMaxAge)
-    {
-        if (tempRoot == null || Files.notExists(tempRoot))
+        if (tempRoot == null)
             return;
+
+        if (Files.notExists(tempRoot))
+            return;
+
+        if (!Files.isDirectory(tempRoot))
+        {
+            FlansMod.log.warn("Skipping .flantemp startup cleanup because {} is not a directory", tempRoot);
+            return;
+        }
 
         try (Stream<Path> entries = Files.list(tempRoot))
         {
-            Instant now = Instant.now();
-
-            entries.filter(Files::isDirectory).forEach(dir ->
+            entries.forEach(path ->
             {
-                Path extracting = dir.resolve("EXTRACTING");
-                Path ready = dir.resolve("READY");
-
                 try
                 {
-                    if (Files.exists(extracting))
-                    {
-                        java.time.Instant t = Files.getLastModifiedTime(extracting).toInstant();
-                        if (t.plus(extractingMaxAge).isBefore(now))
-                        {
-                            FlansMod.log.warn("Cleaning stale temp extraction dir {}", dir);
-                            deleteRecursively(dir);
-                        }
-                        return;
-                    }
-
-                    if (Files.exists(ready))
-                    {
-                        Instant t = Files.getLastModifiedTime(ready).toInstant();
-                        if (t.plus(readyMaxAge).isBefore(now))
-                        {
-                            deleteRecursively(dir);
-                        }
-                    }
+                    if (Files.isDirectory(path))
+                        deleteRecursively(path);
                     else
-                    {
-                        // No marker? Treat as suspicious; delete if old enough (use dir mtime)
-                        Instant t = Files.getLastModifiedTime(dir).toInstant();
-                        if (t.plus(readyMaxAge).isBefore(now))
-                        {
-                            deleteRecursively(dir);
-                        }
-                    }
+                        Files.deleteIfExists(path);
                 }
-                catch (Exception e)
+                catch (IOException e)
                 {
-                    FlansMod.log.debug("Temp cleanup skipped for {}: {}", dir, e.toString());
+                    FlansMod.log.warn("Failed to clean .flantemp entry {} on startup: {}", path, e.toString());
                 }
             });
         }
@@ -687,6 +1003,11 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Ensures an archive extraction directory is empty and ready for a fresh extraction.
+     *
+     * @param outputDir extraction directory to recreate
+     */
     public static void prepareFreshExtractionDir(Path outputDir)
     {
         try
@@ -703,8 +1024,19 @@ public final class FileUtils
         }
     }
 
+    /**
+     * Directory stream wrapper that also owns the filesystem opened for an archive.
+     *
+     * @param delegate directory stream returned by the archive filesystem
+     * @param fileSystem archive filesystem that must be closed with the stream
+     */
     private record AutoCloseableDirectoryStream(DirectoryStream<Path> delegate, FileSystem fileSystem) implements DirectoryStream<Path>
     {
+        /**
+         * Closes the wrapped directory stream and then closes the archive filesystem that owns it.
+         *
+         * @throws IOException when closing the stream or filesystem fails
+         */
         @Override
         public void close() throws IOException
         {
@@ -712,6 +1044,11 @@ public final class FileUtils
             fileSystem.close();
         }
 
+        /**
+         * Returns the iterator from the wrapped directory stream.
+         *
+         * @return iterator over paths in the wrapped stream
+         */
         @Override
         @NotNull
         public Iterator<Path> iterator()
@@ -720,7 +1057,16 @@ public final class FileUtils
         }
     }
 
-    public static String sanitizeArchiveEntryName(String name)
+    /**
+     * Sanitizes an archive entry name for safe extraction.
+     * <p>
+     * Backslashes are normalized to slashes, invalid filename characters are replaced, control
+     * characters are removed, and empty path segments are discarded.
+     *
+     * @param name raw archive entry name
+     * @return sanitized relative entry path
+     */
+    private static String sanitizeArchiveEntryName(String name)
     {
         name = name.replace('\\', '/');
         name = name.replaceAll("[:*?\"<>|\u00D7]", "_");
@@ -734,6 +1080,17 @@ public final class FileUtils
         return name;
     }
 
+    /**
+     * Checks whether archive entry sanitization changed anything significant.
+     * <p>
+     * Directory trailing slashes and redundant empty path segments are ignored so normal ZIP
+     * directory entries do not produce warnings.
+     *
+     * @param rawName original archive entry name
+     * @param safeName sanitized archive entry name
+     * @param isDirectory whether the entry is a directory
+     * @return {@code true} when sanitization materially changed the entry name
+     */
     private static boolean wasMeaningfullySanitized(String rawName, String safeName, boolean isDirectory)
     {
         String comparableRawName = rawName.replace('\\', '/');
