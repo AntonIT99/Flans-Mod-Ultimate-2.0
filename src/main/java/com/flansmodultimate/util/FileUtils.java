@@ -513,7 +513,8 @@ public final class FileUtils
     @Nullable
     private static BufferedImage readImage(Path file) throws IOException
     {
-        try (ImageInputStream input = ImageIO.createImageInputStream(file.toFile()))
+        try (InputStream fileInput = Files.newInputStream(file);
+             ImageInputStream input = ImageIO.createImageInputStream(fileInput))
         {
             if (input == null)
                 return null;
