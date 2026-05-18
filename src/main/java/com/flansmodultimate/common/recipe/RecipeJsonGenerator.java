@@ -159,8 +159,9 @@ public final class RecipeJsonGenerator
         Optional<ResourceLocation> itemId = RecipeResolver.resolveItemId(itemToken, config.getContentPack());
         if (itemId.isEmpty())
         {
-            FlansMod.log.warn("Could not find item '{}' for recipe in {}", itemToken, config);
-            return Optional.empty();
+            ResourceLocation fallbackItemId = RecipeResolver.createFallbackItemId(itemToken);
+            FlansMod.log.warn("Could not find item '{}' for recipe in {}, using {}", itemToken, config, fallbackItemId);
+            itemId = Optional.of(fallbackItemId);
         }
 
         JsonObject ingredient = new JsonObject();

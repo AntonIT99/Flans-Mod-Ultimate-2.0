@@ -352,7 +352,6 @@ public final class ModUtils
             }
 
             Vec3 prevPos = CommonEventHandler.getPrevPos(entity);
-            System.out.println(prevPos.x + ", " + entity.getX());
             boolean isMoving = prevPos.x != entity.getX() || prevPos.z != entity.getZ();
             if (isMoving) {
                 return EnumMovement.WALKING;

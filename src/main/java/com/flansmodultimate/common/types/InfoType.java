@@ -190,8 +190,7 @@ public abstract class InfoType
 
                 for (int row = 0; row < 3; row++)
                 {
-                    String recipeRow = (i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY;
-                    recipeRow = recipeRow == null ? StringUtils.EMPTY : recipeRow;
+                    String recipeRow = Objects.requireNonNullElse((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY, StringUtils.EMPTY);
                     if (recipeRow.length() > 3)
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 

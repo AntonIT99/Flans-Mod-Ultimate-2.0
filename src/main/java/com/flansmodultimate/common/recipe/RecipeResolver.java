@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -22,6 +23,16 @@ import java.util.Optional;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class RecipeResolver
 {
+    /**
+     * Resolves a legacy recipe token to an item stack with a default count of one.
+     * <p>
+     * The token may include a legacy metadata suffix such as {@code dyePowder.1}; that suffix is parsed before
+     * delegating to {@link #resolve(String, int, int, IContentProvider)}.
+     *
+     * @param token    raw recipe token from a content pack recipe definition
+     * @param provider content pack context used for short name alias lookup
+     * @return the resolved stack, or {@link ItemStack#EMPTY} when the token cannot be resolved
+     */
     public static ItemStack resolve(String token, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(token))
@@ -30,6 +41,20 @@ public final class RecipeResolver
         return RecipeIngredient.parse(token.trim(), 1, provider).resolve();
     }
 
+    /**
+     * Resolves a recipe item id to an item stack for runtime recipe displays and legacy recipe consumers.
+     * <p>
+     * Resolution order is:
+     * content-pack short name alias, raw registered item id, sanitized registered item id, legacy item mapping, then
+     * vanilla registry path fallback. Unresolved {@code minecraft:<id>} values are interpreted as legacy {@code <id>}
+     * during the legacy step.
+     *
+     * @param id       raw item id or legacy recipe token
+     * @param amount   requested stack size
+     * @param damage   legacy metadata value parsed from tokens like {@code cloth.14}
+     * @param provider content pack context used for short name alias lookup
+     * @return the resolved stack, or {@link ItemStack#EMPTY} when no registered item can be found
+     */
     public static ItemStack resolve(String id, int amount, int damage, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(id) || amount <= 0)
@@ -37,11 +62,13 @@ public final class RecipeResolver
 
         String rawId = id.trim();
         String sanitizedId = ResourceUtils.sanitize(rawId);
-        ItemStack legacyStack = getLegacyRecipeElement(sanitizedId, amount, damage);
-        if (!legacyStack.isEmpty())
-            return legacyStack;
+        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
+        InfoType type = InfoType.getInfoType(aliasedId);
+        Optional<ItemStack> stack = ModUtils.getItemStack(type, amount, damage);
+        if (stack.isPresent())
+            return stack.get();
 
-        Optional<ItemStack> stack = ModUtils.getItemStack(rawId, amount, damage);
+        stack = ModUtils.getItemStack(rawId, amount, damage);
         if (stack.isPresent())
             return stack.get();
 
@@ -52,13 +79,15 @@ public final class RecipeResolver
                 return stack.get();
         }
 
-        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
-        InfoType type = InfoType.getInfoType(aliasedId);
-        stack = ModUtils.getItemStack(type, amount, damage);
+        stack = getMinecraftNamespaceLegacyRecipeElement(rawId, amount, damage);
         if (stack.isPresent())
             return stack.get();
 
-        stack = ModUtils.getItemStack(FlansMod.FLANSMOD_ID + ":" + aliasedId, amount, damage);
+        ItemStack legacyStack = getLegacyRecipeElement(sanitizedId, amount, damage);
+        if (!legacyStack.isEmpty())
+            return legacyStack;
+
+        stack = getVanillaRegistryPathRecipeElement(rawId, amount);
         if (stack.isPresent())
             return stack.get();
 
@@ -66,6 +95,16 @@ public final class RecipeResolver
         return ItemStack.EMPTY;
     }
 
+    /**
+     * Resolves a legacy recipe token to a recipe JSON item id.
+     * <p>
+     * The token may include a legacy metadata suffix such as {@code dyePowder.1}; that suffix is parsed before
+     * delegating to {@link #resolveItemId(String, int, IContentProvider)}.
+     *
+     * @param token    raw recipe token from a content pack recipe definition
+     * @param provider content pack context used for short name alias lookup
+     * @return the resolved item id, or {@link Optional#empty()} when the token cannot be resolved
+     */
     public static Optional<ResourceLocation> resolveItemId(String token, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(token))
@@ -75,6 +114,19 @@ public final class RecipeResolver
         return resolveItemId(ingredient.getItemName(), ingredient.getMeta(), provider);
     }
 
+    /**
+     * Resolves a recipe item id to the item id that should be written into generated recipe JSON.
+     * <p>
+     * Resolution order is:
+     * legacy item mapping, namespaced {@code flansmod:<short name>} content-pack alias, raw registered item id,
+     * sanitized registered item id, unresolved {@code minecraft:<id>} interpreted as legacy {@code <id>},
+     * content-pack short name alias, then registered {@code flansmod:<aliased id>}.
+     *
+     * @param id       raw item id or legacy recipe token
+     * @param damage   legacy metadata value parsed from tokens like {@code wool.11}
+     * @param provider content pack context used for short name alias lookup
+     * @return the resolved item id, or {@link Optional#empty()} when no known id can be found
+     */
     public static Optional<ResourceLocation> resolveItemId(String id, int damage, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(id))
@@ -102,6 +154,10 @@ public final class RecipeResolver
                 return Optional.of(sanitizedLocation);
         }
 
+        Optional<ResourceLocation> minecraftLegacyId = getMinecraftNamespaceLegacyRecipeItemId(rawId, damage);
+        if (minecraftLegacyId.isPresent())
+            return minecraftLegacyId;
+
         String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
         InfoType type = InfoType.getInfoType(aliasedId);
         if (type != null && type.getType().isHasItem())
@@ -112,6 +168,28 @@ public final class RecipeResolver
             return Optional.of(flanId);
 
         return Optional.empty();
+    }
+
+    /**
+     * Creates the fallback item id used by generated recipe JSON when no registered or legacy item id can be found.
+     * <p>
+     * This intentionally does not check the item registry. It assumes unresolved content-pack tokens refer to future
+     * or generated items. Namespaced tokens keep their namespace; unnamespaced tokens are written as
+     * {@code flansmod:<sanitized token>}.
+     *
+     * @param token raw recipe token from a content pack recipe definition
+     * @return fallback item id for generated recipe JSON
+     */
+    public static ResourceLocation createFallbackItemId(String token)
+    {
+        String trimmedToken = token.trim();
+        if (trimmedToken.contains(":"))
+        {
+            String[] split = trimmedToken.split(":", 2);
+            return ResourceLocation.fromNamespaceAndPath(ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]));
+        }
+
+        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, ResourceUtils.sanitize(trimmedToken));
     }
 
     private static Optional<ResourceLocation> resolveNamespacedContentPackItemId(String id, @Nullable IContentProvider provider)
@@ -153,74 +231,111 @@ public final class RecipeResolver
 
     private static ItemStack getLegacyRecipeElement(String id, int amount, int damage)
     {
-        return switch (id)
-        {
-            case "dooriron" -> stack(Items.IRON_DOOR, amount);
-            case "doorwood" -> stack(Items.OAK_DOOR, amount);
-            case "clayitem" -> stack(Items.CLAY_BALL, amount);
-            case "iron_trapdoor" -> stack(Blocks.IRON_TRAPDOOR, amount);
-            case "trapdoor" -> stack(Blocks.OAK_TRAPDOOR, amount);
-            case "gunpowder", "sulphur" -> stack(Items.GUNPOWDER, amount);
-            case "ingotiron", "iron", "ingotsteel", "ingotnickel", "ingotlead", "ingottin" -> stack(Items.IRON_INGOT, amount);
-            case "ingotgold", "gold", "ingotelectrum", "ingotconstantan", "ingotsilver", "ingotbronze" -> stack(Items.GOLD_INGOT, amount);
-            case "ingotcopper" -> stack(Items.COPPER_INGOT, amount);
-            case "nuggetiron", "nuggetsteel", "nuggetnickel", "nuggetlead", "nuggettin", "nuggetcopper" -> stack(Items.IRON_NUGGET, amount);
-            case "nuggetgold", "nuggetelectrum", "nuggetconstantan", "nuggetsilver", "nuggetbronze" -> stack(Items.GOLD_NUGGET, amount);
-            case "blockiron", "blocksteel", "blocknickel", "blocklead", "blocktin" -> stack(Blocks.IRON_BLOCK, amount);
-            case "blockgold", "blockelectrum", "blockconstantan", "blocksilver", "blockbronze" -> stack(Blocks.GOLD_BLOCK, amount);
-            case "blockcopper" -> stack(Blocks.COPPER_BLOCK, amount);
-            case "blockdiamond" -> stack(Blocks.DIAMOND_BLOCK, amount);
-            case "blockemerald" -> stack(Blocks.EMERALD_BLOCK, amount);
-            case "blockredstone" -> stack(Blocks.REDSTONE_BLOCK, amount);
-            case "boat" -> stack(Items.OAK_BOAT, amount);
-            case "log" -> stack(legacyLog(damage), amount);
-            case "log2" -> stack(legacyLog2(damage), amount);
-            case "wood", "planks", "treatedplanks" -> stack(legacyPlanks(damage), amount);
-            case "cloth", "wool" -> stack(legacyWool(damage), amount);
-            case "dyepowder" -> stack(legacyDye(damage), amount);
-            case "yellowdust", "lightstone" -> stack(Items.GLOWSTONE_DUST, amount);
-            case "slimeball" -> stack(Items.SLIME_BALL, amount);
-            case "enderpearl" -> stack(Items.ENDER_PEARL, amount);
-            case "reeds" -> stack(Items.SUGAR_CANE, amount);
-            case "seeds" -> stack(Items.WHEAT_SEEDS, amount);
-            default -> ItemStack.EMPTY;
-        };
+        return getLegacyRecipeItem(id, damage)
+            .map(item -> stack(item, amount))
+            .orElse(ItemStack.EMPTY);
     }
 
     private static Optional<ResourceLocation> getLegacyRecipeItemId(String id, int damage)
     {
-        return switch (id)
+        return getLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
+    }
+
+    private static Optional<ItemStack> getMinecraftNamespaceLegacyRecipeElement(String id, int amount, int damage)
+    {
+        return getMinecraftNamespaceLegacyRecipeItem(id, damage).map(item -> stack(item, amount));
+    }
+
+    private static Optional<ResourceLocation> getMinecraftNamespaceLegacyRecipeItemId(String id, int damage)
+    {
+        return getMinecraftNamespaceLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
+    }
+
+    private static Optional<ItemLike> getMinecraftNamespaceLegacyRecipeItem(String id, int damage)
+    {
+        if (!id.contains(":"))
+            return Optional.empty();
+
+        String[] split = id.split(":", 2);
+        if (!ResourceUtils.sanitize(split[0]).equals("minecraft"))
+            return Optional.empty();
+
+        return getLegacyRecipeItem(ResourceUtils.sanitize(split[1]), damage);
+    }
+
+    private static Optional<ItemStack> getVanillaRegistryPathRecipeElement(String id, int amount)
+    {
+        String lookupPath = getLookupPath(id);
+        for (Item item : ForgeRegistries.ITEMS)
         {
-            case "dooriron" -> id(Items.IRON_DOOR);
-            case "doorwood" -> id(Items.OAK_DOOR);
-            case "clayitem" -> id(Items.CLAY_BALL);
-            case "iron_trapdoor" -> id(Blocks.IRON_TRAPDOOR);
-            case "trapdoor" -> id(Blocks.OAK_TRAPDOOR);
-            case "gunpowder", "sulphur" -> id(Items.GUNPOWDER);
-            case "ingotiron", "iron", "ingotsteel", "ingotnickel", "ingotlead", "ingottin" -> id(Items.IRON_INGOT);
-            case "ingotgold", "gold", "ingotelectrum", "ingotconstantan", "ingotsilver", "ingotbronze" -> id(Items.GOLD_INGOT);
-            case "ingotcopper" -> id(Items.COPPER_INGOT);
-            case "nuggetiron", "nuggetsteel", "nuggetnickel", "nuggetlead", "nuggettin", "nuggetcopper" -> id(Items.IRON_NUGGET);
-            case "nuggetgold", "nuggetelectrum", "nuggetconstantan", "nuggetsilver", "nuggetbronze" -> id(Items.GOLD_NUGGET);
-            case "blockiron", "blocksteel", "blocknickel", "blocklead", "blocktin" -> id(Blocks.IRON_BLOCK);
-            case "blockgold", "blockelectrum", "blockconstantan", "blocksilver", "blockbronze" -> id(Blocks.GOLD_BLOCK);
-            case "blockcopper" -> id(Blocks.COPPER_BLOCK);
-            case "blockdiamond" -> id(Blocks.DIAMOND_BLOCK);
-            case "blockemerald" -> id(Blocks.EMERALD_BLOCK);
-            case "blockredstone" -> id(Blocks.REDSTONE_BLOCK);
-            case "boat" -> id(Items.OAK_BOAT);
-            case "log" -> id(legacyLog(damage));
-            case "log2" -> id(legacyLog2(damage));
-            case "wood", "planks", "treatedplanks" -> id(legacyPlanks(damage));
-            case "cloth", "wool" -> id(legacyWool(damage));
-            case "dyepowder" -> id(legacyDye(damage));
-            case "yellowdust", "lightstone" -> id(Items.GLOWSTONE_DUST);
-            case "slimeball" -> id(Items.SLIME_BALL);
-            case "enderpearl" -> id(Items.ENDER_PEARL);
-            case "reeds" -> id(Items.SUGAR_CANE);
-            case "seeds" -> id(Items.WHEAT_SEEDS);
-            default -> Optional.empty();
+            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
+            if (itemId != null && itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
+                return Optional.of(new ItemStack(item, amount));
+        }
+        return Optional.empty();
+    }
+
+    private static boolean registryPathMatches(String registryPath, String lookupPath)
+    {
+        return registryPath.equals(lookupPath) || registryPath.replace("_", StringUtils.EMPTY).equals(lookupPath.replace("_", StringUtils.EMPTY));
+    }
+
+    private static String getLookupPath(String id)
+    {
+        String lookupId = id.trim();
+        if (lookupId.contains(":"))
+            lookupId = lookupId.split(":", 2)[1];
+        return ResourceUtils.sanitize(lookupId);
+    }
+
+    private static Optional<ItemLike> getLegacyRecipeItem(String id, int damage)
+    {
+        ItemLike item = switch (id)
+        {
+            case "workbench" -> Items.CRAFTING_TABLE;
+            case "stone" -> Items.STONE;
+            case "skull" -> Items.SKELETON_SKULL;
+            case "thinglass" -> Items.GLASS_PANE;
+            case "blockcoal" -> Items.COAL_BLOCK;
+            case "button" -> Items.STONE_BUTTON;
+            case "netherstar" -> Items.NETHER_STAR;
+            case "helmetdiamond" -> Items.DIAMOND_HELMET;
+            case "beefraw" -> Items.BEEF;
+            case "stonebrick" -> Items.STONE_BRICKS;
+            case "flintandsteel" -> Items.FLINT_AND_STEEL;
+            case "fenceiron" -> Items.IRON_BARS;
+            case "rottenflesh" -> Items.ROTTEN_FLESH;
+            case "dooriron" -> Items.IRON_DOOR;
+            case "doorwood" -> Items.OAK_DOOR;
+            case "clayitem" -> Items.CLAY_BALL;
+            case "iron_trapdoor" -> Blocks.IRON_TRAPDOOR;
+            case "trapdoor" -> Blocks.OAK_TRAPDOOR;
+            case "gunpowder", "sulphur" -> Items.GUNPOWDER;
+            case "ingotiron", "iron", "ingotsteel", "ingotnickel", "ingotlead", "ingottin" -> Items.IRON_INGOT;
+            case "ingotgold", "gold", "ingotelectrum", "ingotconstantan", "ingotsilver", "ingotbronze" -> Items.GOLD_INGOT;
+            case "ingotcopper" -> Items.COPPER_INGOT;
+            case "nuggetiron", "nuggetsteel", "nuggetnickel", "nuggetlead", "nuggettin", "nuggetcopper" -> Items.IRON_NUGGET;
+            case "nuggetgold", "nuggetelectrum", "nuggetconstantan", "nuggetsilver", "nuggetbronze" -> Items.GOLD_NUGGET;
+            case "blockiron", "blocksteel", "blocknickel", "blocklead", "blocktin" -> Blocks.IRON_BLOCK;
+            case "blockgold", "blockelectrum", "blockconstantan", "blocksilver", "blockbronze" -> Blocks.GOLD_BLOCK;
+            case "blockcopper" -> Blocks.COPPER_BLOCK;
+            case "blockdiamond" -> Blocks.DIAMOND_BLOCK;
+            case "blockemerald" -> Blocks.EMERALD_BLOCK;
+            case "blockredstone" -> Blocks.REDSTONE_BLOCK;
+            case "boat" -> Items.OAK_BOAT;
+            case "log" -> legacyLog(damage);
+            case "log2" -> legacyLog2(damage);
+            case "wood", "planks", "treatedplanks" -> legacyPlanks(damage);
+            case "cloth", "wool" -> legacyWool(damage);
+            case "dyepowder" -> legacyDye(damage);
+            case "yellowdust", "lightstone" -> Items.GLOWSTONE_DUST;
+            case "slimeball" -> Items.SLIME_BALL;
+            case "enderpearl" -> Items.ENDER_PEARL;
+            case "reeds" -> Items.SUGAR_CANE;
+            case "seeds" -> Items.WHEAT_SEEDS;
+            default -> null;
         };
+        return Optional.ofNullable(item);
     }
 
     private static ItemStack stack(ItemLike item, int amount)
