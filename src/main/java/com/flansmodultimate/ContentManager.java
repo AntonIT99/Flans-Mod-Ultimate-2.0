@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -869,18 +870,18 @@ public class ContentManager
         if (sourceFiles == null)
             return false;
 
-        Map<String, Path> textureCopyPlan = createTextureCopyPlan(sourcePath, destPath, sourceFiles, aliasMapping, armorTextureFolder, previousGeneratedTextures);
-        if (!previousGeneratedTextures.equals(textureCopyPlan.keySet()))
+        Set<String> textureNamePlan = createTextureNamePlan(sourcePath, destPath, sourceFiles, aliasMapping, armorTextureFolder, previousGeneratedTextures);
+        if (!previousGeneratedTextures.equals(textureNamePlan))
             return true;
 
-        for (Map.Entry<String, Path> entry : textureCopyPlan.entrySet())
+        for (String fileName : textureNamePlan)
         {
-            Path destFile = destPath.resolve(entry.getKey());
-            if (!Files.exists(destFile) || FileUtils.isDifferentFileBytes(entry.getValue(), destFile, false))
+            Path destFile = destPath.resolve(fileName);
+            if (!Files.exists(destFile))
                 return true;
         }
 
-        return !findUntrackedDuplicateGeneratedTextures(destPath, textureCopyPlan).isEmpty();
+        return false;
     }
 
     private static boolean shouldPreLoadData(IContentProvider provider)
@@ -1272,6 +1273,19 @@ public class ContentManager
         return textureCopyPlan;
     }
 
+    private static Set<String> createTextureNamePlan(Path sourcePath, Path destPath, List<Path> sourceFiles, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder, Set<String> previousGeneratedTextures)
+    {
+        Set<String> textureNamePlan = new LinkedHashSet<>();
+        boolean overwriteExistingConflicts = !aliasMapping.isEmpty();
+        for (Path sourceFile : sourceFiles)
+        {
+            String desiredFileName = getGeneratedTextureFileName(sourcePath, sourceFile, aliasMapping, armorTextureFolder);
+            getAvailableGeneratedTextureFileNameByName(desiredFileName, destPath, previousGeneratedTextures, textureNamePlan, overwriteExistingConflicts)
+                .ifPresent(textureNamePlan::add);
+        }
+        return textureNamePlan;
+    }
+
     private static String getGeneratedTextureFileName(Path sourcePath, Path sourceFile, Map<String, DynamicReference> aliasMapping, boolean armorTextureFolder)
     {
         if (aliasMapping.isEmpty())
@@ -1317,12 +1331,65 @@ public class ContentManager
         }
     }
 
+    private static Optional<String> getAvailableGeneratedTextureFileNameByName(String desiredFileName, Path destPath, Set<String> previousGeneratedTextures, Set<String> textureNamePlan, boolean overwriteExistingConflicts)
+    {
+        if (textureNamePlan.contains(desiredFileName))
+            return findPreviouslyGeneratedDuplicateTextureName(desiredFileName, previousGeneratedTextures, textureNamePlan);
+
+        String candidateFileName = desiredFileName;
+        for (int suffix = 1; ; suffix++)
+        {
+            if (!textureNamePlan.contains(candidateFileName)
+                && !isReservedTextureFileNameConflict(destPath.resolve(candidateFileName), candidateFileName, previousGeneratedTextures, overwriteExistingConflicts))
+                return Optional.of(candidateFileName);
+
+            candidateFileName = addGeneratedTextureSuffix(desiredFileName, suffix);
+        }
+    }
+
+    private static Optional<String> findPreviouslyGeneratedDuplicateTextureName(String desiredFileName, Set<String> previousGeneratedTextures, Set<String> textureNamePlan)
+    {
+        String desiredBaseName = FilenameUtils.getBaseName(desiredFileName);
+        return previousGeneratedTextures.stream()
+            .filter(fileName -> !textureNamePlan.contains(fileName))
+            .filter(fileName -> getGeneratedTextureSuffix(fileName, desiredBaseName) != Integer.MAX_VALUE)
+            .min(Comparator.comparingInt(fileName -> getGeneratedTextureSuffix(fileName, desiredBaseName)));
+    }
+
+    private static int getGeneratedTextureSuffix(String fileName, String desiredBaseName)
+    {
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
+            return Integer.MAX_VALUE;
+
+        String candidateBaseName = FilenameUtils.getBaseName(fileName);
+        String suffixPrefix = desiredBaseName + "-";
+        if (!candidateBaseName.startsWith(suffixPrefix))
+            return Integer.MAX_VALUE;
+
+        try
+        {
+            int suffix = Integer.parseInt(candidateBaseName.substring(suffixPrefix.length()));
+            return suffix > 0 ? suffix : Integer.MAX_VALUE;
+        }
+        catch (NumberFormatException e)
+        {
+            return Integer.MAX_VALUE;
+        }
+    }
+
     private static boolean isReservedTextureFileConflict(Path sourceFile, Path candidateFile, String candidateFileName, Set<String> previousGeneratedTextures, boolean overwriteExistingConflicts)
     {
         return !overwriteExistingConflicts
             && Files.exists(candidateFile)
             && !previousGeneratedTextures.contains(candidateFileName)
             && FileUtils.isDifferentFileBytes(sourceFile, candidateFile, false);
+    }
+
+    private static boolean isReservedTextureFileNameConflict(Path candidateFile, String candidateFileName, Set<String> previousGeneratedTextures, boolean overwriteExistingConflicts)
+    {
+        return !overwriteExistingConflicts
+            && Files.exists(candidateFile)
+            && !previousGeneratedTextures.contains(candidateFileName);
     }
 
     private static String addGeneratedTextureSuffix(String fileName, int suffix)
