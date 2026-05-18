@@ -154,7 +154,7 @@ public final class ClientHudOverlays
                 g.renderItemDecorations(font, bulletStack, iconX, iconY);
 
                 // Text “remaining/max” unless it’s a 1-durability item (old behavior)
-                String s = (max == 1) ? "" : (remaining + "/" + max);
+                String s = (max == 1) ? "" : (remaining + "/" + max) + "[" + gunType.getFireMode(stack).getDisplayName() + "]";
 
                 int textX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 112 + xAccum : sw / 2 - 160 - xAccum;
                 int textY = sh - 13;

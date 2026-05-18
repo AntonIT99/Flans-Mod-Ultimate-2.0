@@ -14,11 +14,28 @@ public enum EnumFireMode
 
     public static EnumFireMode getFireMode(String s)
     {
+        String normalized = normalize(s);
         for (EnumFireMode mode : EnumFireMode.values())
         {
-            if (s.equalsIgnoreCase(mode.toString()))
+            if (normalized.equals(normalize(mode.name())) || normalized.equals(normalize(mode.toString())))
                 return mode;
         }
         return SEMIAUTO;
+    }
+
+    private static String normalize(String s)
+    {
+        return s == null ? "" : s.replace("-", "").replace("_", "").replace(" ", "").toLowerCase();
+    }
+
+    public String getDisplayName()
+    {
+        return switch (this)
+        {
+            case SEMIAUTO -> "Semi-Auto";
+            case FULLAUTO -> "Full-Auto";
+            case MINIGUN -> "Minigun";
+            case BURST -> "Burst";
+        };
     }
 }

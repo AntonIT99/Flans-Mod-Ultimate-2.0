@@ -161,7 +161,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
 
             if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine("Fire Mode", formatFireMode(configType.getFireMode(stack))));
+                tooltipComponents.add(IFlanItem.statLine("Fire Mode", configType.getFireMode(stack).getDisplayName()));
 
             // Attachments
             if (configType.isShowAttachments())
@@ -305,14 +305,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         {
             if (i > 0)
                 modes.append(", ");
-            modes.append(formatFireMode(fireModes[i]));
+            modes.append(fireModes[i].getDisplayName());
         }
         return modes.toString();
-    }
-
-    private static String formatFireMode(EnumFireMode mode)
-    {
-        return mode.name().toLowerCase();
     }
 
     @Override
