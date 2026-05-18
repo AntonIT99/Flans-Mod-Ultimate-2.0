@@ -1,6 +1,5 @@
 General:
 - Fix Frag Radius
-- Change Fire Mode
 - Team Mod: Commands, Teams, Classes, Stats
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
 
@@ -78,6 +77,7 @@ TODO Content Packs:
 
 Feature Ideas:
 - Command to get default ammo quickly
+- Switching Fire Mode Sound
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
 - Dynamic activation of Aiming Pose

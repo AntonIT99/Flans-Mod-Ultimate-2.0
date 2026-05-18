@@ -11,6 +11,7 @@ import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
 import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketFlashBang;
+import com.flansmodultimate.network.client.PacketGunFireModeClient;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
@@ -20,6 +21,7 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
+import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
@@ -86,6 +88,7 @@ public final class PacketHandler {
         registerS2C(PacketFlanExplosionBlockParticles.class);
         registerS2C(PacketFlanExplosionParticles.class);
         registerS2C(PacketFlashBang.class);
+        registerS2C(PacketGunFireModeClient.class);
         registerS2C(PacketGunMeleeClient.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShootClient.class);
@@ -97,6 +100,7 @@ public final class PacketHandler {
         // Client to Server Packets
         registerC2S(PacketDeployedGunInput.class);
         registerC2S(PacketBuyWeapon.class);
+        registerC2S(PacketGunFireMode.class);
         registerC2S(PacketGunInput.class);
         registerC2S(PacketGunReload.class);
         registerC2S(PacketGunScopedState.class);

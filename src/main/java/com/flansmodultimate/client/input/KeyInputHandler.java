@@ -6,6 +6,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -30,6 +31,7 @@ public final class KeyInputHandler
     private static final String CATEGORY = "key.categories." + FlansMod.MOD_ID;
 
     private static final KeyMapping reloadKey = new KeyMapping("key." + FlansMod.MOD_ID + ".reload", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_R, CATEGORY);
+    private static final KeyMapping fireModeKey = new KeyMapping("key." + FlansMod.MOD_ID + ".fireMode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_B, CATEGORY);
     private static final KeyMapping lookAtGunKey = new KeyMapping("key." + FlansMod.MOD_ID + ".lookAtGun", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_M, CATEGORY);
     private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY);
 
@@ -39,6 +41,7 @@ public final class KeyInputHandler
     public static void registerKeys(RegisterKeyMappingsEvent event)
     {
         event.register(reloadKey);
+        event.register(fireModeKey);
         event.register(lookAtGunKey);
         event.register(debugKey);
     }
@@ -54,6 +57,11 @@ public final class KeyInputHandler
                 doReload();
                 return;
             }
+            if (fireModeKey.consumeClick())
+            {
+                doSwitchFireMode();
+                return;
+            }
             if (lookAtGunKey.consumeClick())
             {
                 doLookAtGun();
@@ -67,6 +75,25 @@ public final class KeyInputHandler
 
             }
         }
+    }
+
+    private static void doSwitchFireMode()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+
+        if (canSwitchFireMode(player.getMainHandItem()))
+        {
+            PacketHandler.sendToServer(new PacketGunFireMode(InteractionHand.MAIN_HAND));
+            return;
+        }
+
+        if (canSwitchFireMode(player.getOffhandItem()))
+            PacketHandler.sendToServer(new PacketGunFireMode(InteractionHand.OFF_HAND));
+    }
+
+    private static boolean canSwitchFireMode(ItemStack stack)
+    {
+        return stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().canSwitchFireMode(stack);
     }
 
     private static boolean isGunContext()

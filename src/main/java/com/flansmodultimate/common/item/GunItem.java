@@ -4,6 +4,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
+import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
@@ -152,6 +153,16 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
+            AttachmentType barrel = configType.getBarrel(stack);
+            if (barrel != null && barrel.isSilencer())
+                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
+
+            if (configType.getSecondaryFire(stack))
+                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
+
+            if (configType.isShowMode())
+                tooltipComponents.add(IFlanItem.statLine("Fire Mode", formatFireMode(configType.getFireMode(stack))));
+
             // Attachments
             if (configType.isShowAttachments())
             {
@@ -185,13 +196,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
         {
             tooltipComponents.add(Component.empty());
-
-            AttachmentType barrel = configType.getBarrel(stack);
-            if (barrel != null && barrel.isSilencer())
-                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
-
-            if (configType.getSecondaryFire(stack))
-                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
 
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
@@ -282,7 +286,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
 
             if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
+                tooltipComponents.add(IFlanItem.statLine("Fire Modes", formatFireModes()));
 
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
@@ -291,6 +295,24 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (zoomFactor != 1F)
                 tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
+    }
+
+    private String formatFireModes()
+    {
+        EnumFireMode[] fireModes = configType.getFireModes();
+        StringBuilder modes = new StringBuilder();
+        for (int i = 0; i < fireModes.length; i++)
+        {
+            if (i > 0)
+                modes.append(", ");
+            modes.append(formatFireMode(fireModes[i]));
+        }
+        return modes.toString();
+    }
+
+    private static String formatFireMode(EnumFireMode mode)
+    {
+        return mode.name().toLowerCase();
     }
 
     @Override
