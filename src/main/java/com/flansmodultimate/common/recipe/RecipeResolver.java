@@ -45,9 +45,9 @@ public final class RecipeResolver
      * Resolves a recipe item id to an item stack for runtime recipe displays and legacy recipe consumers.
      * <p>
      * Resolution order is:
-     * content-pack short name alias, raw registered item id, sanitized registered item id, legacy item mapping, then
-     * vanilla registry path fallback. Unresolved {@code minecraft:<id>} values are interpreted as legacy {@code <id>}
-     * during the legacy step.
+     * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
+     * registered {@code flansmod:<id>}, registered {@code minecraft:<id>}, legacy item mapping, then vanilla registry
+     * path fallback.
      *
      * @param id       raw item id or legacy recipe token
      * @param amount   requested stack size
@@ -61,33 +61,7 @@ public final class RecipeResolver
             return ItemStack.EMPTY;
 
         String rawId = id.trim();
-        String sanitizedId = ResourceUtils.sanitize(rawId);
-        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
-        InfoType type = InfoType.getInfoType(aliasedId);
-        Optional<ItemStack> stack = ModUtils.getItemStack(type, amount, damage);
-        if (stack.isPresent())
-            return stack.get();
-
-        stack = ModUtils.getItemStack(rawId, amount, damage);
-        if (stack.isPresent())
-            return stack.get();
-
-        if (!rawId.equals(sanitizedId))
-        {
-            stack = ModUtils.getItemStack(sanitizedId, amount, damage);
-            if (stack.isPresent())
-                return stack.get();
-        }
-
-        stack = getMinecraftNamespaceLegacyRecipeElement(rawId, amount, damage);
-        if (stack.isPresent())
-            return stack.get();
-
-        ItemStack legacyStack = getLegacyRecipeElement(sanitizedId, amount, damage);
-        if (!legacyStack.isEmpty())
-            return legacyStack;
-
-        stack = getVanillaRegistryPathRecipeElement(rawId, amount);
+        Optional<ItemStack> stack = resolveRecipeItem(rawId, damage, provider, stackResolution(amount, damage));
         if (stack.isPresent())
             return stack.get();
 
@@ -118,9 +92,9 @@ public final class RecipeResolver
      * Resolves a recipe item id to the item id that should be written into generated recipe JSON.
      * <p>
      * Resolution order is:
-     * legacy item mapping, namespaced {@code flansmod:<short name>} content-pack alias, raw registered item id,
-     * sanitized registered item id, unresolved {@code minecraft:<id>} interpreted as legacy {@code <id>},
-     * content-pack short name alias, then registered {@code flansmod:<aliased id>}.
+     * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
+     * registered {@code flansmod:<id>}, registered {@code minecraft:<id>}, legacy item mapping, then vanilla registry
+     * path fallback.
      *
      * @param id       raw item id or legacy recipe token
      * @param damage   legacy metadata value parsed from tokens like {@code wool.11}
@@ -133,41 +107,7 @@ public final class RecipeResolver
             return Optional.empty();
 
         String rawId = id.trim();
-        String sanitizedId = ResourceUtils.sanitize(rawId);
-
-        Optional<ResourceLocation> legacyId = getLegacyRecipeItemId(sanitizedId, damage);
-        if (legacyId.isPresent())
-            return legacyId;
-
-        Optional<ResourceLocation> namespacedContentId = resolveNamespacedContentPackItemId(rawId, provider);
-        if (namespacedContentId.isPresent())
-            return namespacedContentId;
-
-        ResourceLocation rawLocation = resolveExistingItemId(rawId);
-        if (rawLocation != null)
-            return Optional.of(rawLocation);
-
-        if (!rawId.equals(sanitizedId))
-        {
-            ResourceLocation sanitizedLocation = resolveExistingItemId(sanitizedId);
-            if (sanitizedLocation != null)
-                return Optional.of(sanitizedLocation);
-        }
-
-        Optional<ResourceLocation> minecraftLegacyId = getMinecraftNamespaceLegacyRecipeItemId(rawId, damage);
-        if (minecraftLegacyId.isPresent())
-            return minecraftLegacyId;
-
-        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
-        InfoType type = InfoType.getInfoType(aliasedId);
-        if (type != null && type.getType().isHasItem())
-            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId));
-
-        ResourceLocation flanId = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId);
-        if (ForgeRegistries.ITEMS.containsKey(flanId))
-            return Optional.of(flanId);
-
-        return Optional.empty();
+        return resolveRecipeItem(rawId, damage, provider, ITEM_ID_RESOLUTION);
     }
 
     /**
@@ -192,41 +132,231 @@ public final class RecipeResolver
         return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, ResourceUtils.sanitize(trimmedToken));
     }
 
-    private static Optional<ResourceLocation> resolveNamespacedContentPackItemId(String id, @Nullable IContentProvider provider)
+    private static <T> Optional<T> resolveRecipeItem(String rawId, int damage, @Nullable IContentProvider provider, RecipeItemResolution<T> resolution)
     {
-        if (!id.contains(":"))
-            return Optional.empty();
+        if (hasNamespace(rawId))
+            return resolveNamespacedRecipeItem(rawId, damage, provider, resolution);
 
-        String[] split = id.split(":", 2);
-        if (!ResourceUtils.sanitize(split[0]).equals(FlansMod.FLANSMOD_ID))
-            return Optional.empty();
+        String sanitizedId = ResourceUtils.sanitize(rawId);
+        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
 
-        String aliasedId = ContentManager.getShortnameAliasInContentPack(ResourceUtils.sanitize(split[1]), provider);
-        InfoType type = InfoType.getInfoType(aliasedId);
-        if (type != null && type.getType().isHasItem())
-            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, aliasedId));
+        Optional<T> result = resolution.flansmod(aliasedId);
+        if (result.isPresent())
+            return result;
+
+        if (!aliasedId.equals(sanitizedId))
+        {
+            result = resolution.flansmod(sanitizedId);
+            if (result.isPresent())
+                return result;
+        }
+
+        result = resolution.registered("minecraft", sanitizedId);
+        if (result.isPresent())
+            return result;
+
+        result = resolution.legacy(sanitizedId, damage);
+        if (result.isPresent())
+            return result;
+
+        return resolution.vanillaPath(sanitizedId);
+    }
+
+    private static <T> Optional<T> resolveNamespacedRecipeItem(String rawId, int damage, @Nullable IContentProvider provider, RecipeItemResolution<T> resolution)
+    {
+        Optional<T> result = resolution.raw(rawId);
+        if (result.isPresent())
+            return result;
+
+        String[] split = rawId.split(":", 2);
+        String namespace = ResourceUtils.sanitize(split[0]);
+        String path = ResourceUtils.sanitize(split[1]);
+        if (namespace.equals(FlansMod.FLANSMOD_ID))
+        {
+            String aliasedId = ContentManager.getShortnameAliasInContentPack(path, provider);
+            result = resolution.flansmod(aliasedId);
+            if (result.isPresent())
+                return result;
+
+            if (!aliasedId.equals(path))
+                return resolution.flansmod(path);
+
+            return Optional.empty();
+        }
+
+        if (namespace.equals("minecraft"))
+        {
+            result = resolution.registered("minecraft", path);
+            if (result.isPresent())
+                return result;
+
+            result = resolution.legacy(path, damage);
+            if (result.isPresent())
+                return result;
+
+            return resolution.vanillaPath(path);
+        }
+
+        return resolution.registered(namespace, path);
+    }
+
+    private static boolean hasNamespace(String id)
+    {
+        int separator = id.indexOf(':');
+        return separator > 0 && separator < id.length() - 1;
+    }
+
+    private static Optional<ResourceLocation> resolveRawItemId(String id)
+    {
+        ResourceLocation location = ResourceLocation.tryParse(id);
+        if (location != null && ForgeRegistries.ITEMS.containsKey(location))
+            return Optional.of(location);
 
         return Optional.empty();
     }
 
-    @Nullable
-    private static ResourceLocation resolveExistingItemId(String id)
+    private static Optional<ItemStack> resolveRawRecipeElement(String id, int amount, int damage)
     {
-        ResourceLocation location;
-        if (id.contains(":"))
-        {
-            String[] split = id.split(":", 2);
-            location = ResourceLocation.tryBuild(ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]));
-        }
-        else
-        {
-            location = ResourceLocation.tryBuild("minecraft", ResourceUtils.sanitize(id));
-        }
+        ResourceLocation location = ResourceLocation.tryParse(id);
+        if (location == null || !ForgeRegistries.ITEMS.containsKey(location))
+            return Optional.empty();
 
+        Item item = ForgeRegistries.ITEMS.getValue(location);
+        if (item == null)
+            return Optional.empty();
+
+        ItemStack stack = new ItemStack(item, amount);
+        if (damage > 0)
+            stack.setDamageValue(damage);
+
+        return Optional.of(stack);
+    }
+
+    private static Optional<ResourceLocation> resolveFlansmodItemId(String id)
+    {
+        InfoType type = InfoType.getInfoType(id);
+        if (type != null && type.getType().isHasItem())
+            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getShortName()));
+
+        return resolveRegisteredItemId(FlansMod.FLANSMOD_ID, id);
+    }
+
+    private static Optional<ResourceLocation> resolveRegisteredItemId(String namespace, String path)
+    {
+        ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
         if (location != null && ForgeRegistries.ITEMS.containsKey(location))
-            return location;
+            return Optional.of(location);
 
-        return null;
+        return Optional.empty();
+    }
+
+    private static Optional<ItemStack> getFlansmodRecipeElement(String id, int amount, int damage)
+    {
+        Optional<ItemStack> stack = ModUtils.getItemStack(InfoType.getInfoType(id), amount, damage);
+        if (stack.isPresent())
+            return stack;
+
+        return getRegisteredRecipeElement(FlansMod.FLANSMOD_ID, id, amount, damage);
+    }
+
+    private static Optional<ItemStack> getRegisteredRecipeElement(String namespace, String path, int amount, int damage)
+    {
+        ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
+        if (location == null || !ForgeRegistries.ITEMS.containsKey(location))
+            return Optional.empty();
+
+        Item item = ForgeRegistries.ITEMS.getValue(location);
+        if (item == null)
+            return Optional.empty();
+
+        ItemStack stack = new ItemStack(item, amount);
+        if (damage > 0)
+            stack.setDamageValue(damage);
+
+        return Optional.of(stack);
+    }
+
+    private static RecipeItemResolution<ItemStack> stackResolution(int amount, int stackDamage)
+    {
+        return new RecipeItemResolution<>()
+        {
+            @Override
+            public Optional<ItemStack> raw(String id)
+            {
+                return resolveRawRecipeElement(id, amount, stackDamage);
+            }
+
+            @Override
+            public Optional<ItemStack> flansmod(String id)
+            {
+                return getFlansmodRecipeElement(id, amount, stackDamage);
+            }
+
+            @Override
+            public Optional<ItemStack> registered(String namespace, String path)
+            {
+                return getRegisteredRecipeElement(namespace, path, amount, stackDamage);
+            }
+
+            @Override
+            public Optional<ItemStack> legacy(String id, int damage)
+            {
+                ItemStack stack = getLegacyRecipeElement(id, amount, damage);
+                return stack.isEmpty() ? Optional.empty() : Optional.of(stack);
+            }
+
+            @Override
+            public Optional<ItemStack> vanillaPath(String id)
+            {
+                return getVanillaRegistryPathRecipeElement(id, amount);
+            }
+        };
+    }
+
+    private static final RecipeItemResolution<ResourceLocation> ITEM_ID_RESOLUTION = new RecipeItemResolution<>()
+    {
+        @Override
+        public Optional<ResourceLocation> raw(String id)
+        {
+            return resolveRawItemId(id);
+        }
+
+        @Override
+        public Optional<ResourceLocation> flansmod(String id)
+        {
+            return resolveFlansmodItemId(id);
+        }
+
+        @Override
+        public Optional<ResourceLocation> registered(String namespace, String path)
+        {
+            return resolveRegisteredItemId(namespace, path);
+        }
+
+        @Override
+        public Optional<ResourceLocation> legacy(String id, int damage)
+        {
+            return getLegacyRecipeItemId(id, damage);
+        }
+
+        @Override
+        public Optional<ResourceLocation> vanillaPath(String id)
+        {
+            return getVanillaRegistryPathRecipeItemId(id);
+        }
+    };
+
+    private interface RecipeItemResolution<T>
+    {
+        Optional<T> raw(String id);
+
+        Optional<T> flansmod(String id);
+
+        Optional<T> registered(String namespace, String path);
+
+        Optional<T> legacy(String id, int damage);
+
+        Optional<T> vanillaPath(String id);
     }
 
     private static ItemStack getLegacyRecipeElement(String id, int amount, int damage)
@@ -241,36 +371,24 @@ public final class RecipeResolver
         return getLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
     }
 
-    private static Optional<ItemStack> getMinecraftNamespaceLegacyRecipeElement(String id, int amount, int damage)
-    {
-        return getMinecraftNamespaceLegacyRecipeItem(id, damage).map(item -> stack(item, amount));
-    }
-
-    private static Optional<ResourceLocation> getMinecraftNamespaceLegacyRecipeItemId(String id, int damage)
-    {
-        return getMinecraftNamespaceLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
-    }
-
-    private static Optional<ItemLike> getMinecraftNamespaceLegacyRecipeItem(String id, int damage)
-    {
-        if (!id.contains(":"))
-            return Optional.empty();
-
-        String[] split = id.split(":", 2);
-        if (!ResourceUtils.sanitize(split[0]).equals("minecraft"))
-            return Optional.empty();
-
-        return getLegacyRecipeItem(ResourceUtils.sanitize(split[1]), damage);
-    }
-
     private static Optional<ItemStack> getVanillaRegistryPathRecipeElement(String id, int amount)
+    {
+        return getVanillaRegistryPathRecipeItem(id).map(item -> new ItemStack(item, amount));
+    }
+
+    private static Optional<ResourceLocation> getVanillaRegistryPathRecipeItemId(String id)
+    {
+        return getVanillaRegistryPathRecipeItem(id).flatMap(RecipeResolver::id);
+    }
+
+    private static Optional<ItemLike> getVanillaRegistryPathRecipeItem(String id)
     {
         String lookupPath = getLookupPath(id);
         for (Item item : ForgeRegistries.ITEMS)
         {
             ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
             if (itemId != null && itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
-                return Optional.of(new ItemStack(item, amount));
+                return Optional.of(item);
         }
         return Optional.empty();
     }
@@ -328,11 +446,12 @@ public final class RecipeResolver
             case "wood", "planks", "treatedplanks" -> legacyPlanks(damage);
             case "cloth", "wool" -> legacyWool(damage);
             case "dyepowder" -> legacyDye(damage);
-            case "yellowdust", "lightstone" -> Items.GLOWSTONE_DUST;
+            case "lightgem", "yellowdust", "lightstone" -> Items.GLOWSTONE_DUST;
             case "slimeball" -> Items.SLIME_BALL;
             case "enderpearl" -> Items.ENDER_PEARL;
             case "reeds" -> Items.SUGAR_CANE;
             case "seeds" -> Items.WHEAT_SEEDS;
+            case "diode" -> Items.REPEATER;
             default -> null;
         };
         return Optional.ofNullable(item);
