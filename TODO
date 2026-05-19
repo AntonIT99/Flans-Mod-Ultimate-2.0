@@ -15,55 +15,27 @@ Driveable Features:
 - Planes
 - Mechas & Mecha Items
 
-New Render Features:
-- Render Attachment Item in 3D?
-
-New Sound Features:
-- Assets/Sounds Priority list?
-
-Testing:
-- Dedicated Server Testing
-
 Entities:
 - AAGun - TODO
-- Bullet - Done
-- DeployableGun - Done
 - Driveable - TODO
-- Grenade - Done
 - Mecha - TODO
 - Plane - TODO
 - Vehicle - TODO
 
 Rendering:
 - AAGun - TODO
-- Bullet - Done
-- CustomArmor - Done
-- Grenade - Done
-- Gun - Done
-- MG - Done
 - Mecha - TODO
 - Plane - TODO
 - Vehicle - TODO
 
 Items:
-- AttachmentItem - Done
-- BulletItem - Done
-- CustomArmorItem - Done
-- GrenadeItem - Done
-- GunItem - WIP
-- PartItem - WIP
-- ToolItem - WIP
+- GunItem - TODO (WIP)
+- PartItem - TODO (WIP)
+- ToolItem - TODO (WIP)
 
 Types:
-- ArmorType - Done
-- AttachmentType - Done
-- BulletType - Done
 - DriveableType - TODO
-- GrenadeType - Done
-- GunType - Done
-- InfoType - WIP
-- PartType - Done
-- ToolType - Done
+- InfoType - TODO (WIP)
 
 TODO Content Packs:
 - Fix AK47 Paintjobs
@@ -75,6 +47,8 @@ TODO Content Packs:
 - Set Penetration?
 
 Feature Ideas:
+- Render Attachment Item in 3D?
+- Assets/Sounds Priority list?
 - Command to get default ammo quickly
 - Switching Fire Mode Sound
 - Sword blocking (GunItem)

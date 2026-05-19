@@ -2,6 +2,7 @@ package com.flansmodultimate;
 
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
+import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
@@ -138,6 +139,7 @@ public class FlansMod
 
     // Block Entities
     public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
 
     // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
@@ -293,7 +295,15 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_grenades", FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumType.PART), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumSet.of(EnumType.PART, EnumType.ITEM_HOLDER)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+    }
+
+    private static Block[] getRegisteredBlocks(EnumType type)
+    {
+        Map<String, RegistryObject<Block>> registeredBlocks = blocks.get(type);
+        if (registeredBlocks == null)
+            return new Block[0];
+        return registeredBlocks.values().stream().map(RegistryObject::get).toArray(Block[]::new);
     }
 
     private static void registerSounds()

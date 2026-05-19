@@ -4,6 +4,7 @@ import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.common.block.ArmorBoxBlock;
 import com.flansmodultimate.common.block.GunBoxBlock;
 import com.flansmodultimate.common.block.IFlanBlock;
+import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.item.ArmorBoxItem;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
@@ -13,6 +14,7 @@ import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.common.item.GunBoxItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.item.ItemHolderItem;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ToolItem;
 import lombok.Getter;
@@ -35,6 +37,7 @@ public enum EnumType
     GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
     GLOVE("glove", "gloves", ContentManager.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 7),
     GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 8),
+    ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
     PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
     TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
 

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
@@ -79,16 +80,25 @@ public final class ResourceUtils
             return new ModelJson(parent, null, textures, null);
         }
 
+        public static ModelJson createItemHolderBlockModel(ItemHolderType config)
+        {
+            String parent = "minecraft:block/cube_all";
+            Map<String, String> textures = Map.of("all", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon());
+            return new ModelJson(parent, null, textures, null);
+        }
+
         public static ModelJson createItemModel(InfoType config)
         {
             String parent = "minecraft:item/generated";
-            if (config.getType().isHasBlock())
+            if (config instanceof ItemHolderType)
+                parent = "minecraft:item/generated";
+            else if (config.getType().isHasBlock())
                 parent = FlansMod.FLANSMOD_ID + ":block/" + config.getShortName();
             else if (config.getType().isHandHeldItem())
                 parent = "minecraft:item/handheld";
 
             Map<String, String> textures = null;
-            if (!config.getType().isHasBlock())
+            if (!config.getType().isHasBlock() || config instanceof ItemHolderType)
                 textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon());
 
             List<Override> overrides = null;
@@ -130,6 +140,8 @@ public final class ResourceUtils
 
         public static BlockStateJson create(InfoType type)
         {
+            if (type instanceof ItemHolderType)
+                return BlockStateJson.horizontalFacing(FlansMod.FLANSMOD_ID + ":block/" + type.getShortName(), true);
             return BlockStateJson.single(FlansMod.FLANSMOD_ID + ":block/" + type.getShortName());
         }
 

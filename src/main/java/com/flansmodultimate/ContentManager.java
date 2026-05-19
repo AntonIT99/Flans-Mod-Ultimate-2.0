@@ -7,6 +7,7 @@ import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
@@ -932,8 +933,8 @@ public class ContentManager
             {
                 if (blockstatesExist)
                     generateBlockstateJson(config, jsonBlockstatesFolderPath);
-                if (blockModelsExist && config instanceof BlockType blockConfig)
-                    generateBlockModelJson(blockConfig, jsonBlockModelsFolderPath);
+                if (blockModelsExist)
+                    generateBlockModelJson(config, jsonBlockModelsFolderPath);
             }
         }
     }
@@ -1046,9 +1047,16 @@ public class ContentManager
         }
     }
 
-    private static void generateBlockModelJson(BlockType config, Path outputFolder)
+    private static void generateBlockModelJson(InfoType config, Path outputFolder)
     {
-        ResourceUtils.ModelJson model = ResourceUtils.ModelJson.createBlockModel(config);
+        ResourceUtils.ModelJson model;
+        if (config instanceof BlockType blockConfig)
+            model = ResourceUtils.ModelJson.createBlockModel(blockConfig);
+        else if (config instanceof ItemHolderType itemHolderType)
+            model = ResourceUtils.ModelJson.createItemHolderBlockModel(itemHolderType);
+        else
+            return;
+
         String jsonContent = gson.toJson(model);
         String shortName = config.getShortName();
 
