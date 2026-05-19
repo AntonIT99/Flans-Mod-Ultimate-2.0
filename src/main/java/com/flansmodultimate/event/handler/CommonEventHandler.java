@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -17,7 +18,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -37,6 +37,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -202,6 +203,8 @@ public final class CommonEventHandler
         if (entity.level().isClientSide)
             return;
 
+        EnchantmentModule.applyOffHandWeaponDamage(event);
+
         if (entity instanceof Player || entity instanceof Mob)
         {
             if (ModCommonConfig.get().enableOldArmorRatioSystem())
@@ -215,6 +218,8 @@ public final class CommonEventHandler
                 CustomArmorItem.applyArmorBulletDefense(event, entity);
             }
         }
+
+        EnchantmentModule.applyJuggernaut(event);
     }
 
     @SubscribeEvent

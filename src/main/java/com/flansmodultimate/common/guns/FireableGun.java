@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -29,19 +31,15 @@ public class FireableGun
     @Getter
     private final EnumSpreadPattern spreadPattern;
 
-    public FireableGun(GunType gunType, @Nullable ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, EnumMovement enumMovement, boolean airborne)
+    public FireableGun(GunType gunType, @Nullable ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @Nullable LivingEntity shooter, EnumMovement enumMovement, boolean airborne)
     {
         this(gunType, gunType.getDamage(gunStack), gunType.getSpread(gunStack, enumMovement, airborne), gunType.getBulletSpeed(gunStack, shootableStack), gunType.getSpreadPattern(gunStack));
-        //TODO: shields & gloves & EnchantmentModule
-        /*if (otherHandStack != null && !otherHandStack.isEmpty() && otherHandStack.getItem() instanceof ShieldItem || otherHandStack.getItem() instanceof ItemGlove)
-        {
-            EnchantmentModule.modifyGun(fireableGun, player, otherHand);
-        }*/
+        EnchantmentModule.modifyGun(this, shooter, otherHandStack);
     }
 
     public FireableGun(GunType gunType, @NotNull ItemStack shootableStack)
     {
-        this(gunType, null, shootableStack, null, EnumMovement.NONE, false);
+        this(gunType, null, shootableStack, null, null, EnumMovement.NONE, false);
     }
 
     public FireableGun(InfoType type, float damage, float spread, float bulletSpeed, EnumSpreadPattern spreadPattern)

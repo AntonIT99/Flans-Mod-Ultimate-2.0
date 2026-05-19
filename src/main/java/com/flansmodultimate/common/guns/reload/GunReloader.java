@@ -31,7 +31,7 @@ public record GunReloader(GunItem item)
     /**
      * Returns true if we reloaded or successfully queued a reload
      */
-    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload, boolean ammoToUpperInventory, UUID reloadSoundUUID)
+    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload, boolean ammoToUpperInventory, float reloadTime, UUID reloadSoundUUID)
     {
         // Deployable guns cannot be reloaded in the inventory
         if (item.getConfigType().isDeployable())
@@ -63,7 +63,7 @@ public record GunReloader(GunItem item)
         if (plans.isEmpty())
             return false;
 
-        long ticks = (long) Math.ceil(item.getActualReloadTime(gunStack));
+        long ticks = (long) Math.ceil(reloadTime);
         long applyAt = level.getGameTime() + ticks;
 
         return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID));

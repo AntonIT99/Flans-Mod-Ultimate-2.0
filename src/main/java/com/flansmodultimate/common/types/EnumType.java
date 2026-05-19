@@ -8,6 +8,7 @@ import com.flansmodultimate.common.item.ArmorBoxItem;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.common.item.GunBoxItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -32,9 +33,10 @@ public enum EnumType
     BULLET("bullet", "bullets", ContentManager.FOLDER_TEXTURES_SKINS, BulletType.class, BulletItem.class, null, false, 2),
     GRENADE("grenade", "grenades", ContentManager.FOLDER_TEXTURES_SKINS, GrenadeType.class, GrenadeItem.class, null, false, 3),
     GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
+    GLOVE("glove", "gloves", ContentManager.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 7),
     GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 8),
-    PARTS("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
-    TOOLS("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
+    PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
+    TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
 
     private final String identifier;
     private final String configFolderName;

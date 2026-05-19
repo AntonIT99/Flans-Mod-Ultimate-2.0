@@ -1,5 +1,11 @@
 {
   "item.flansmod.rainbowpaintcan": "Rainbow Paintcan",
   "block.flansmod.gunworkbench": "Gun Modification Table",
-  "block.flansmod.paintjobtable": "Paintjob Table"
+  "block.flansmod.paintjobtable": "Paintjob Table",
+  "enchantment.flansmod.enchantment_steady": "Steady",
+  "enchantment.flansmod.enchantment_nimble": "Nimble",
+  "enchantment.flansmod.enchantment_lumberjack": "Lumberjack",
+  "enchantment.flansmod.enchantment_duelist": "Duelist",
+  "enchantment.flansmod.enchantment_sharpshooter": "Sharpshooter",
+  "enchantment.flansmod.enchantment_juggernaut": "Juggernaut"
 }

@@ -3,6 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
+import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
@@ -51,6 +52,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -116,6 +118,7 @@ public class FlansMod
     public static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
     private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
     public static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.MOD_ID);
@@ -212,11 +215,13 @@ public class FlansMod
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         // Init Registries
+        EnchantmentModule.register(enchantmentRegistry);
         blockRegistry.register(modEventBus);
         blockEntityRegistry.register(modEventBus);
         itemRegistry.register(modEventBus);
         particleRegistry.register(modEventBus);
         soundEventRegistry.register(modEventBus);
+        enchantmentRegistry.register(modEventBus);
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
         menuRegistry.register(modEventBus);
@@ -286,9 +291,9 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_grenades", FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumType.TOOLS), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumType.PARTS), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumType.PART), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
     }
 
     private static void registerSounds()

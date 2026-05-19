@@ -22,6 +22,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final ForgeConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
+    private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
@@ -88,6 +89,9 @@ public final class ModCommonConfig
         FLAN_EXPLOSIONS_DROP_BLOCKS = builder
             .comment("Whether blocks broken by Flan's Mod explosions should drop items")
             .define("flanExplosionsDropBlocks", true);
+        ENCHANTMENT_MODULE_ENABLED = builder
+            .comment("Whether Flan's Mod glove and offhand enchantments should apply their effects")
+            .define("enchantmentModuleEnabled", true);
         BONUS_REGEN_AMOUNT = builder
             .comment("Allows you to increase health regen, best used alongside increased max health")
             .defineInRange("bonusRegenAmount", 0, 0, 1000);
@@ -241,6 +245,7 @@ public final class ModCommonConfig
             DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),
             FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
+            ENCHANTMENT_MODULE_ENABLED.get(),
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
