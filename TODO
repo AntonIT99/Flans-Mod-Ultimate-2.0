@@ -4,7 +4,6 @@ General:
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
 
 1.12.2 Features:
-- itemHolders
 - rewardBoxes
 - loadouts
 

@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
@@ -10,6 +11,7 @@ import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -91,6 +93,16 @@ public final class ModelCache
         if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null) instanceof ModelMG modelMG)
         {
             return modelMG;
+        }
+        return null;
+    }
+
+    @Nullable
+    public static ModelAAGun getOrLoadAAGunModel(AAGunType aaGunType)
+    {
+        if (getOrLoadModel(new ModelCacheKey(aaGunType.getModelClassName(), aaGunType.getShortName()), aaGunType, null) instanceof ModelAAGun modelAAGun)
+        {
+            return modelAAGun;
         }
         return null;
     }

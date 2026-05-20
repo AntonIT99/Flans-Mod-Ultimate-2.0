@@ -2,6 +2,7 @@ package com.flansmodultimate.hooks;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GunItem;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,8 @@ public interface IClientGunHooks
     void accelerateMinigun(Player player, InteractionHand hand, float rotationSpeed);
 
     void tickDeployedGun(DeployedGun deployedGun);
+
+    void tickAAGun(AAGun aaGun);
 
     @Nullable
     HitResult getClientHitResult();

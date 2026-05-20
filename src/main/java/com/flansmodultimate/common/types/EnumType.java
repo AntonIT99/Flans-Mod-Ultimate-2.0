@@ -5,6 +5,7 @@ import com.flansmodultimate.common.block.ArmorBoxBlock;
 import com.flansmodultimate.common.block.GunBoxBlock;
 import com.flansmodultimate.common.block.IFlanBlock;
 import com.flansmodultimate.common.block.ItemHolderBlock;
+import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.ArmorBoxItem;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
@@ -32,6 +33,7 @@ public enum EnumType
     ARMOR("armor", "armorFiles", ContentManager.FOLDER_TEXTURES_ARMOR, ArmorType.class, CustomArmorItem.class, null, false, 0),
     ARMOR_BOX("armor_box", "armorBoxes", ContentManager.FOLDER_TEXTURES_SKINS, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false, 7),
     ATTACHMENT("attachment", "attachments", ContentManager.FOLDER_TEXTURES_SKINS, AttachmentType.class, AttachmentItem.class, null, false, 1),
+    AA_GUN("aagun", "aaguns", ContentManager.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 5),
     BULLET("bullet", "bullets", ContentManager.FOLDER_TEXTURES_SKINS, BulletType.class, BulletItem.class, null, false, 2),
     GRENADE("grenade", "grenades", ContentManager.FOLDER_TEXTURES_SKINS, GrenadeType.class, GrenadeItem.class, null, false, 3),
     GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),

@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.server;
 
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,13 @@ public class PacketDeployedGunInput implements IServerPacket
     public PacketDeployedGunInput(DeployedGun deployedGun, boolean shootKeyPressed, boolean prevShootKeyPressed)
     {
         deployedGunId = deployedGun.getId();
+        this.shootKeyPressed = shootKeyPressed;
+        this.prevShootKeyPressed = prevShootKeyPressed;
+    }
+
+    public PacketDeployedGunInput(AAGun aaGun, boolean shootKeyPressed, boolean prevShootKeyPressed)
+    {
+        deployedGunId = aaGun.getId();
         this.shootKeyPressed = shootKeyPressed;
         this.prevShootKeyPressed = prevShootKeyPressed;
     }
@@ -46,6 +54,11 @@ public class PacketDeployedGunInput implements IServerPacket
         {
             deployedGun.setShootKeyPressed(shootKeyPressed);
             deployedGun.setPrevShootKeyPressed(prevShootKeyPressed);
+        }
+        else if (level.getEntity(deployedGunId) instanceof AAGun aaGun && aaGun.getFirstPassenger() == player)
+        {
+            aaGun.setShootKeyPressed(shootKeyPressed);
+            aaGun.setPrevShootKeyPressed(prevShootKeyPressed);
         }
     }
 }

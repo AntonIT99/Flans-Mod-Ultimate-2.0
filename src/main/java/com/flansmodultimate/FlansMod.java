@@ -5,6 +5,7 @@ import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
@@ -190,6 +191,13 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
     );
+    public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
+        .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(AAGun.RENDER_DISTANCE)
+        .updateInterval(2)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
+    );
     public static final RegistryObject<EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
         .sized(1F, 1F)
         .clientTrackingRange(16)
@@ -291,7 +299,7 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.AA_GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_grenades", FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
