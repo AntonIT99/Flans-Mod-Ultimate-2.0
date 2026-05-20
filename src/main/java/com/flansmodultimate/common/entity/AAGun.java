@@ -55,7 +55,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 {
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
-    private static final double MODEL_UNIT = 1D / 16D;
+    private static final double LEGACY_SENTRY_ORIGIN_Y_OFFSET = 1.5D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
     public static final String NBT_TYPE_NAME = "type";
@@ -668,7 +668,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
                 continue;
 
             attempted = true;
-            if (fireBarrel(level, attacker, barrel, slot))
+            if (fireBarrel(level, attacker, barrel, slot, !requireInput))
             {
                 if (type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
                     discard();
@@ -679,7 +679,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             currentBarrel = (currentBarrel + 1) % type.getNumBarrels();
     }
 
-    private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot)
+    private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot, boolean sentryShot)
     {
         AAGunType type = getConfigType();
         ItemStack ammoStack = ammo[slot];
@@ -689,7 +689,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         float bulletSpeed = type.getDefaultBulletSpeed(bulletType);
         FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getAccuracy(), bulletSpeed, type.getSpreadPattern());
         FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ammoStack.getDamageValue());
-        ShootingHelper.fireGun(level, firedShot, 1, getBarrelOrigin(barrel), getShootingDirection(), () -> damageAmmo(slot));
+        ShootingHelper.fireGun(level, firedShot, 1, getBarrelOrigin(barrel, sentryShot), getShootingDirection(), () -> damageAmmo(slot));
 
         shootDelay = type.getShootDelay();
         barrelRecoil[barrel] = type.getRecoil();
@@ -839,33 +839,46 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     public Vec3 getBarrelOrigin(int barrel)
     {
+        return getBarrelOrigin(barrel, false);
+    }
+
+    private Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
+    {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
-        // Barrel entries are model-space pixels; use the same yaw/pitch axes as AAGunRenderer / ModelAAGun.
-        double scale = type.getModelScale() * MODEL_UNIT;
-        double x = type.getBarrelX()[barrel] * scale;
-        double y = type.getBarrelY()[barrel] * scale;
-        double z = type.getBarrelZ()[barrel] * scale;
-        return position().add(transformGunModelOffset(x, y, z));
+        Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
+        return sentryShot && type.isSentry() ? origin.add(0D, LEGACY_SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
     }
 
-    private Vec3 transformGunModelOffset(double x, double y, double z)
+    private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
     {
-        double pitch = -getGunPitch() * Mth.DEG_TO_RAD;
-        double yaw = (270F - getGunYaw()) * Mth.DEG_TO_RAD;
+        double barrelX = type.getBarrelX()[barrel];
+        double barrelY = type.getBarrelY()[barrel];
+        double barrelZ = type.getBarrelZ()[barrel];
+
+        double x = (barrelZ + barrelX) / 16D;
+        double y = barrelY / 16D;
+        double z = (barrelZ - barrelX) / 16D;
+
+        return rotate(x, y, z, getGunPitch(), getGunYaw());
+    }
+
+    public Vec3 rotate(double x, double y, double z, double gunPitch, double gunYaw)
+    {
+        double yaw = 180D - gunYaw * Mth.DEG_TO_RAD;
+        double pitch = gunPitch * Mth.DEG_TO_RAD;
+
         double cosYaw = Math.cos(yaw);
         double sinYaw = Math.sin(yaw);
         double cosPitch = Math.cos(pitch);
         double sinPitch = Math.sin(pitch);
 
-        double pitchedX = x * cosPitch - y * sinPitch;
-        double pitchedY = x * sinPitch + y * cosPitch;
+        double newX = x * cosYaw + (y * sinPitch + z * cosPitch) * sinYaw;
+        double newY = y * cosPitch - z * sinPitch;
+        double newZ = -x * sinYaw + (y * sinPitch + z * cosPitch) * cosYaw;
 
-        double newX = pitchedX * cosYaw + z * sinYaw;
-        double newY = pitchedY;
-        double newZ = -pitchedX * sinYaw + z * cosYaw;
         return new Vec3(newX, newY, newZ);
     }
 
