@@ -76,20 +76,26 @@ public final class RecipeJsonGenerator
         }
 
         Map<Character, String> recipeKeys = parseShapedRecipeKeys(config);
-        pattern = removeUndefinedRecipeKeys(pattern.get(), recipeKeys, config);
-        if (pattern.isEmpty())
-        {
-            FlansMod.log.warn("Invalid recipe grid in {}", config);
-            return new JsonObject();
-        }
-
         Set<Character> usedKeys = getUsedRecipeKeys(pattern.get());
         JsonObject keyJson = new JsonObject();
 
         for (char c : usedKeys)
         {
             String itemToken = recipeKeys.get(c);
-            keyJson.add(String.valueOf(c), createIngredient(itemToken, config));
+            if (StringUtils.isBlank(itemToken))
+            {
+                FlansMod.log.warn("Failed to find '{}' in recipe for {}", c, config);
+                return new JsonObject();
+            }
+
+            Optional<JsonObject> ingredient = createIngredient(itemToken, config);
+            if (ingredient.isEmpty())
+            {
+                FlansMod.log.warn("Failed to create ingredient '{}' in recipe for {}", itemToken, config);
+                return new JsonObject();
+            }
+
+            keyJson.add(String.valueOf(c), ingredient.get());
         }
 
         JsonObject root = new JsonObject();
@@ -100,35 +106,9 @@ public final class RecipeJsonGenerator
 
         root.add("pattern", patternJson);
         root.add("key", keyJson);
-        root.add("result", createResult(config));
+        root.add("result", createResult(config, true));
 
         return root;
-    }
-
-    private static Optional<List<String>> removeUndefinedRecipeKeys(List<String> pattern, Map<Character, String> recipeKeys, InfoType config)
-    {
-        List<String> sanitizedPattern = new ArrayList<>(pattern.size());
-        Set<Character> warnedKeys = new HashSet<>();
-
-        for (String row : pattern)
-        {
-            StringBuilder builder = new StringBuilder(row.length());
-            for (int i = 0; i < row.length(); i++)
-            {
-                char c = row.charAt(i);
-                if (c != ' ' && StringUtils.isBlank(recipeKeys.get(c)))
-                {
-                    if (warnedKeys.add(c))
-                        FlansMod.log.warn("Failed to find '{}' in recipe for {}", c, config);
-                    builder.append(' ');
-                }
-                else
-                    builder.append(c);
-            }
-            sanitizedPattern.add(builder.toString());
-        }
-
-        return trimPattern(sanitizedPattern);
     }
 
     private static JsonObject createShapelessRecipe(InfoType config)
@@ -136,22 +116,37 @@ public final class RecipeJsonGenerator
         JsonArray ingredients = new JsonArray();
 
         for (String itemToken : config.getRecipeTokens())
-            ingredients.add(createIngredient(itemToken, config));
+        {
+            Optional<JsonObject> ingredient = createIngredient(itemToken, config);
+            if (ingredient.isEmpty())
+            {
+                FlansMod.log.warn("Failed to create ingredient '{}' in shapeless recipe for {}", itemToken, config);
+                return new JsonObject();
+            }
+
+            ingredients.add(ingredient.get());
+        }
 
         JsonObject root = new JsonObject();
         root.addProperty("type", "minecraft:crafting_shapeless");
         root.add("ingredients", ingredients);
-        root.add("result", createResult(config));
+        root.add("result", createResult(config, true));
 
         return root;
     }
 
     private static JsonObject createSmeltingRecipe(InfoType config)
     {
-        JsonObject root = new JsonObject();
+        Optional<JsonObject> ingredient = createIngredient(config.getSmeltableFrom(), config);
+        if (ingredient.isEmpty())
+        {
+            FlansMod.log.warn("Failed to create smelting ingredient '{}' for {}", config.getSmeltableFrom(), config);
+            return new JsonObject();
+        }
 
+        JsonObject root = new JsonObject();
         root.addProperty("type", "minecraft:smelting");
-        root.add("ingredient", createIngredient(config.getSmeltableFrom(), config));
+        root.add("ingredient", ingredient.get());
         root.addProperty("result", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         root.addProperty("experience", 0.0F);
         root.addProperty("cookingtime", 200);
@@ -159,25 +154,26 @@ public final class RecipeJsonGenerator
         return root;
     }
 
-    private static JsonObject createIngredient(String itemToken, InfoType config)
+    private static Optional<JsonObject> createIngredient(String itemToken, InfoType config)
     {
         Optional<ResourceLocation> itemId = RecipeResolver.resolveItemId(itemToken, config.getContentPack());
         if (itemId.isEmpty())
         {
             ResourceLocation fallbackItemId = RecipeResolver.createFallbackItemId(itemToken);
+            FlansMod.log.warn("Could not find item '{}' for recipe in {}, using {}", itemToken, config, fallbackItemId);
             itemId = Optional.of(fallbackItemId);
         }
 
         JsonObject ingredient = new JsonObject();
         ingredient.addProperty("item", itemId.get().toString());
-        return ingredient;
+        return Optional.of(ingredient);
     }
 
-    private static JsonObject createResult(InfoType config)
+    private static JsonObject createResult(InfoType config, boolean includeCount)
     {
         JsonObject result = new JsonObject();
         result.addProperty("item", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
-        if (config.getRecipeOutput() != 1)
+        if (includeCount && config.getRecipeOutput() != 1)
             result.addProperty("count", config.getRecipeOutput());
         return result;
     }
@@ -185,11 +181,8 @@ public final class RecipeJsonGenerator
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)
     {
         List<String> tokens = config.getRecipeTokens();
-        if (tokens.size() % 2 != 0) {
-            String token = tokens.get(tokens.size() - 1);
-            FlansMod.log.warn("Ignoring trailing recipe token '{}' in {}", token, config);
-        }
-
+        if (tokens.size() % 2 != 0)
+            FlansMod.log.warn("Ignoring trailing recipe token '{}' in {}", tokens.get(tokens.size() - 1), config);
 
         Map<Character, String> keys = new HashMap<>();
         for (int i = 0; i + 1 < tokens.size(); i += 2)
@@ -202,26 +195,17 @@ public final class RecipeJsonGenerator
 
     private static Optional<List<String>> getTrimmedPattern(InfoType config)
     {
-        List<String> recipeRows = new ArrayList<>(3);
         char[][] grid = config.getRecipeGrid();
-        for (int row = 0; row < 3; row++)
-            recipeRows.add(new String(grid[row]));
-        return trimPattern(recipeRows);
-    }
-
-    private static Optional<List<String>> trimPattern(List<String> recipeRows)
-    {
-        int minRow = recipeRows.size();
-        int minColumn = recipeRows.stream().mapToInt(String::length).max().orElse(0);
+        int minRow = 3;
+        int minColumn = 3;
         int maxRow = -1;
         int maxColumn = -1;
 
-        for (int row = 0; row < recipeRows.size(); row++)
+        for (int row = 0; row < 3; row++)
         {
-            String recipeRow = recipeRows.get(row);
-            for (int column = 0; column < recipeRow.length(); column++)
+            for (int column = 0; column < 3; column++)
             {
-                if (recipeRow.charAt(column) != ' ')
+                if (grid[row][column] != ' ')
                 {
                     minRow = Math.min(minRow, row);
                     minColumn = Math.min(minColumn, column);
@@ -237,10 +221,9 @@ public final class RecipeJsonGenerator
         List<String> pattern = new ArrayList<>();
         for (int row = minRow; row <= maxRow; row++)
         {
-            String recipeRow = recipeRows.get(row);
             StringBuilder builder = new StringBuilder();
             for (int column = minColumn; column <= maxColumn; column++)
-                builder.append(column < recipeRow.length() ? recipeRow.charAt(column) : ' ');
+                builder.append(grid[row][column]);
             pattern.add(builder.toString());
         }
         return Optional.of(pattern);

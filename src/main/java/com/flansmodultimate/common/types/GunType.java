@@ -124,6 +124,17 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected int reloadTime;
 
+    /**
+     * Digital ammo system: which ammo type to consume (1-7 by default)
+     */
+    @Getter
+    protected int consumeBulletType = 1;
+    /**
+     * Digital ammo system: how much ammo to consume per reload (supports decimals, e.g., 3.4 = 3.4%)
+     */
+    @Getter
+    protected double bulletsPerReload = 30.0;
+
     //Projectile Mechanic Variables
     /**
      * The amount that bullets spread out when fired from this gun
@@ -182,7 +193,7 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected EnumFireMode mode = EnumFireMode.SEMIAUTO;
-    protected EnumFireMode[] submode = new EnumFireMode[]{EnumFireMode.SEMIAUTO};
+    protected EnumFireMode[] submode = new EnumFireMode[]{EnumFireMode.FULLAUTO};
     protected EnumFireMode defaultmode = mode;
     /**
      * The number of bullets to fire per burst in burst mode
@@ -631,6 +642,8 @@ public class GunType extends PaintableType implements IScope
         //Reload
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
+        consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
+        bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
         //Fire Rate
         shootDelay = readValue("ShootDelay", shootDelay, file);
@@ -810,7 +823,19 @@ public class GunType extends PaintableType implements IScope
         useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
         //Mode
-        readFireModes(file);
+        mode = readValue("Mode", mode, EnumFireMode.class, file);
+        defaultmode = mode;
+        String[] submodeSplit = readValues("Mode", file);
+        if (submodeSplit.length > 1)
+        {
+            submode = new EnumFireMode[submodeSplit.length];
+            for (int i = 0; i < submode.length; i++)
+                submode[i] = EnumFireMode.getFireMode(submodeSplit[i]);
+        }
+        else if (submodeSplit.length == 1)
+        {
+            submode = new EnumFireMode[]{mode};
+        }
 
         //Overlay and zoom settings
         overlayName = readResource("Scope", overlayName, file);
@@ -1575,36 +1600,24 @@ public class GunType extends PaintableType implements IScope
         tag.putString(GunItem.NBT_GUN_MODE, mode.name());
     }
 
-    public EnumFireMode[] getFireModes()
+    public EnumFireMode cycleFireMode(ItemStack stack)
     {
-        return submode.clone();
-    }
+        if (!canSwitchFireMode(stack))
+            return getFireMode(stack);
 
-    private void readFireModes(TypeFile file)
-    {
-        String[] modeValues = readValues("Mode", file);
-        if (modeValues.length == 0)
+        EnumFireMode currentMode = getFireMode(stack);
+        for (int i = 0; i < submode.length; i++)
         {
-            defaultmode = mode;
-            submode = new EnumFireMode[]{mode};
-            return;
+            if (submode[i] == currentMode)
+            {
+                EnumFireMode nextMode = submode[(i + 1) % submode.length];
+                setFireMode(stack, nextMode);
+                return nextMode;
+            }
         }
 
-        int startIndex = "=".equals(modeValues[0]) ? 1 : 0;
-        if (startIndex >= modeValues.length)
-        {
-            defaultmode = mode;
-            submode = new EnumFireMode[]{mode};
-            return;
-        }
-
-        ArrayList<EnumFireMode> parsedModes = new ArrayList<>();
-        for (int i = startIndex; i < modeValues.length; i++)
-            parsedModes.add(EnumFireMode.getFireMode(modeValues[i]));
-
-        mode = parsedModes.get(0);
-        defaultmode = mode;
-        submode = parsedModes.toArray(new EnumFireMode[0]);
+        setFireMode(stack, mode);
+        return mode;
     }
 
     public boolean canSwitchFireMode(@Nullable ItemStack stack)
@@ -1627,24 +1640,9 @@ public class GunType extends PaintableType implements IScope
         return true;
     }
 
-    public EnumFireMode cycleFireMode(ItemStack stack)
+    public boolean hasMultipleFireModes()
     {
-        if (!canSwitchFireMode(stack))
-            return getFireMode(stack);
-
-        EnumFireMode currentMode = getFireMode(stack);
-        for (int i = 0; i < submode.length; i++)
-        {
-            if (submode[i] == currentMode)
-            {
-                EnumFireMode nextMode = submode[(i + 1) % submode.length];
-                setFireMode(stack, nextMode);
-                return nextMode;
-            }
-        }
-
-        setFireMode(stack, mode);
-        return mode;
+        return submode != null && submode.length > 1;
     }
 
     /**
@@ -1678,7 +1676,8 @@ public class GunType extends PaintableType implements IScope
             }
 
             // Reset fire mode to default for the gun stack
-            setFireMode(stack, mode);
+            EnumFireMode defaultMode = (submode != null && submode.length > 0) ? submode[0] : mode;
+            setFireMode(stack, defaultMode);
         }
 
         return mode;

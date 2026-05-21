@@ -2,7 +2,6 @@ package com.flansmodultimate.hooks.server;
 
 import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.hooks.IClientGunHooks;
@@ -54,12 +53,6 @@ public class ClientGunHooksNoop implements IClientGunHooks
 
     @Override
     public void tickDeployedGun(DeployedGun deployedGun)
-    {
-        /* no-op */
-    }
-
-    @Override
-    public void tickAAGun(AAGun aaGun)
     {
         /* no-op */
     }

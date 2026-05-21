@@ -86,7 +86,7 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
     private static boolean hasSolidTop(Level level, BlockPos pos)
     {
         BlockState state = level.getBlockState(pos);
-        return state.isSolidRender(level, pos) && state.canOcclude();
+        return state.isFaceSturdy(level, pos, net.minecraft.core.Direction.UP);
     }
 
     @Override

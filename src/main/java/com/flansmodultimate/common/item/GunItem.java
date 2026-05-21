@@ -4,7 +4,6 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
-import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
@@ -153,16 +152,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
-            AttachmentType barrel = configType.getBarrel(stack);
-            if (barrel != null && barrel.isSilencer())
-                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
-
-            if (configType.getSecondaryFire(stack))
-                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
-
-            if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine("Fire Mode", configType.getFireMode(stack).getDisplayName()));
-
             // Attachments
             if (configType.isShowAttachments())
             {
@@ -179,11 +168,28 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             // Ammo info
             for (ItemStack bulletStack : getBulletItemStackList(stack))
             {
-                if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem)
+                if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
                 {
-                    int max = bulletStack.getMaxDamage();
-                    int remaining = max - bulletStack.getDamageValue();
-                    String line = bulletStack.getDisplayName().getString() + " " + remaining + "/" + max;
+                    int remaining = ShootableItem.getRoundsRemaining(bulletStack);
+                    int max = bulletItem.getConfigType().getRoundsPerItem();
+                    String line;
+                    if (max > 1)
+                    {
+                        int stackCount = bulletStack.getCount();
+                        if (stackCount > 1)
+                        {
+                            int totalRounds = ShootableItem.getTotalRounds(bulletStack);
+                            line = bulletStack.getDisplayName().getString() + " " + remaining + "/" + max + " (x" + stackCount + " = " + totalRounds + ")";
+                        }
+                        else
+                        {
+                            line = bulletStack.getDisplayName().getString() + " " + remaining + "/" + max;
+                        }
+                    }
+                    else
+                    {
+                        line = bulletStack.getDisplayName().getString() + " x" + bulletStack.getCount();
+                    }
                     tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.DARK_BLUE));
                 }
             }
@@ -196,6 +202,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         else
         {
             tooltipComponents.add(Component.empty());
+
+            AttachmentType barrel = configType.getBarrel(stack);
+            if (barrel != null && barrel.isSilencer())
+                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
+
+            if (configType.getSecondaryFire(stack))
+                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
 
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
@@ -286,7 +299,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
 
             if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine("Fire Modes", formatFireModes()));
+                tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
 
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
@@ -295,19 +308,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (zoomFactor != 1F)
                 tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
-    }
-
-    private String formatFireModes()
-    {
-        EnumFireMode[] fireModes = configType.getFireModes();
-        StringBuilder modes = new StringBuilder();
-        for (int i = 0; i < fireModes.length; i++)
-        {
-            if (i > 0)
-                modes.append(", ");
-            modes.append(fireModes[i].getDisplayName());
-        }
-        return modes.toString();
     }
 
     @Override
@@ -384,7 +384,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.isDeployable() && gunItemHandler.tryPlaceDeployable(level, player, stack))
             return InteractionResultHolder.sidedSuccess(stack, false);
 
-        ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
+        boolean dualWield = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof GunItem
+            && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof GunItem;
+
+        if (!dualWield)
+        {
+            boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom()
+                || configType.getZoomFactor() > 1F || configType.getFovFactor() > 1F;
+
+            if (!canZoom)
+                ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
+        }
 
         return InteractionResultHolder.pass(stack);
     }
@@ -579,16 +589,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
             .mapToObj(i -> getAmmoItemStack(gun, i))
-            .filter(s -> s != null && s.getItem() instanceof ShootableItem)
+            .filter(s -> s != null && s.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(s))
             .toList();
     }
 
     public int getReloadCount(ItemStack gunStack)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        return (maxAmmo <= 1) ? 1 : Math.toIntExact(getBulletItemStackList(gunStack).stream()
-            .filter(stack -> (gunStack.getMaxDamage() - gunStack.getDamageValue()) == 0)
-            .count());
+        if (maxAmmo <= 1)
+            return 1;
+        int emptySlots = 0;
+        for (int i = 0; i < maxAmmo; i++)
+        {
+            ItemStack bulletStack = getAmmoItemStack(gunStack, i);
+            if (bulletStack == null || bulletStack.isEmpty() || !ShootableItem.hasRoundsLeft(bulletStack))
+                emptySlots++;
+        }
+        return emptySlots;
     }
 
     public float getActualReloadTime(ItemStack gunStack)

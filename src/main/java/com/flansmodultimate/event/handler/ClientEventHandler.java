@@ -259,8 +259,18 @@ public final class ClientEventHandler
             EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
             EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
 
-            if ((event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw() && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
-                || (event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw() && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE))
+            boolean isPrimaryButton = event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw();
+            boolean isSecondaryButton = event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw();
+
+            if (isSecondaryButton && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE)
+            {
+                if (mc.hitResult == null || mc.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS)
+                {
+                    event.setCanceled(true);
+                    event.setSwingHand(false);
+                }
+            }
+            else if (isPrimaryButton && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
             {
                 event.setCanceled(true);
                 event.setSwingHand(false);

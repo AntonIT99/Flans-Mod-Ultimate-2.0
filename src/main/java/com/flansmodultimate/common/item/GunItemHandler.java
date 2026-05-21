@@ -3,7 +3,6 @@ package com.flansmodultimate.common.item;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -98,8 +97,10 @@ public class GunItemHandler
 
         if (dualWield)
         {
+            return false;
+            // TODO: implement gloves
             // Gloves are special enchantable items that can be placed in the offhand while still letting you shoot 2H
-            return off.getItem() instanceof GloveItem;
+            //return off.getItem() instanceof ItemGlove;
         }
 
         return true;
@@ -149,7 +150,7 @@ public class GunItemHandler
     {
         for (ItemStack bulletStack : item.getBulletItemStackList(gunStack))
         {
-            if (bulletStack.getDamageValue() < bulletStack.getMaxDamage())
+            if (ShootableItem.hasRoundsLeft(bulletStack))
                 return false;
         }
         return true;
@@ -190,11 +191,7 @@ public class GunItemHandler
         data.setShooting(hand, true);
         PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
 
-        EnumFireMode fireMode = item.configType.getFireMode(gunStack);
-        if (fireMode == EnumFireMode.BURST && data.getBurstRoundsRemaining(hand) <= 0)
-            data.setBurstRoundsRemaining(hand, Math.max(1, item.configType.getNumBurstRounds()));
-
-        boolean automaticFire = fireMode.isAutomaticFire();
+        boolean automaticFire = item.configType.getFireMode(null).isAutomaticFire();
         float shootTime = data.getShootTime(hand);
         float shootDelay = item.configType.getShootDelay(gunStack);
 
@@ -220,9 +217,6 @@ public class GunItemHandler
             if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
                 PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
 
-            if (fireMode == EnumFireMode.BURST && data.getBurstRoundsRemaining(hand) > 0)
-                data.setBurstRoundsRemaining(hand, data.getBurstRoundsRemaining(hand) - 1);
-
             shootTime += shootDelay;
 
             if (!automaticFire)
@@ -234,15 +228,12 @@ public class GunItemHandler
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
-        ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
-        float reloadTime = EnchantmentModule.getModifiedReloadTime(item.getActualReloadTime(gunStack), otherHand);
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadTime, reloadSoundUUID))
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadSoundUUID))
         {
-            EnchantmentModule.damageReloadModifier(player, otherHand);
-
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack);
+            float reloadTime = item.getActualReloadTime(gunStack);
 
             data.doGunReload(hand, reloadTime);
             PacketHandler.sendToDimension(level.dimension(), new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo));
@@ -277,7 +268,7 @@ public class GunItemHandler
         for (int i = 0; i < slots; i++)
         {
             ItemStack s = item.getAmmoItemStack(gunStack, i);
-            if (s != null && !s.isEmpty() && s.getDamageValue() < s.getMaxDamage())
+            if (s != null && !s.isEmpty() && ShootableItem.hasRoundsLeft(s))
             {
                 return Optional.of(new AmmoSlot(i, s));
             }

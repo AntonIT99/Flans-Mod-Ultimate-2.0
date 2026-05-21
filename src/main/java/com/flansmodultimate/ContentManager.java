@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.charset.MalformedInputException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -528,10 +529,23 @@ public class ContentManager
         {
             return Files.readAllLines(file, StandardCharsets.UTF_8);
         }
-        catch (MalformedInputException e)
+        catch (Exception e)
         {
-            // Legacy/Windows encodings often decode fine as ISO-8859-1
-            return Files.readAllLines(file, StandardCharsets.ISO_8859_1);
+            try
+            {
+                return Files.readAllLines(file, Charset.forName("GBK"));
+            }
+            catch (Exception e2)
+            {
+                try
+                {
+                    return Files.readAllLines(file, Charset.forName("GB2312"));
+                }
+                catch (Exception e3)
+                {
+                    return Files.readAllLines(file, StandardCharsets.ISO_8859_1);
+                }
+            }
         }
     }
 

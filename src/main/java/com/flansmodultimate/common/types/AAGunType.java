@@ -25,11 +25,9 @@ public class AAGunType extends InfoType
 {
     public static final int MAX_BARRELS = 16;
 
-    /** The ammo shortnames accepted by this gun. */
     protected Set<String> ammo = new LinkedHashSet<>();
     protected int reloadTime;
     protected float recoil = 5F;
-    /** Legacy AA guns call this Accuracy, but it is passed through the current spread pipeline. */
     protected float accuracy;
     protected float damage;
     protected int shootDelay;
@@ -51,14 +49,12 @@ public class AAGunType extends InfoType
     protected int[] barrelY = new int[] { 0 };
     protected int[] barrelZ = new int[] { 0 };
 
-    /** Sentry mode targeting flags. */
     protected boolean targetMobs;
     protected boolean targetPlayers;
     protected boolean targetVehicles;
     protected boolean targetPlanes;
     protected boolean targetMechas;
     protected float targetRange = 10F;
-    /** If true, all barrels consume the first ammo slot. */
     protected boolean shareAmmo;
 
     protected boolean canShootHomingMissile;

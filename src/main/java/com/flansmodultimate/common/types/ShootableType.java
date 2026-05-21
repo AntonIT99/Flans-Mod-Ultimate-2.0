@@ -91,9 +91,9 @@ public abstract class ShootableType extends InfoType
     /** The number of rounds fired by a gun per item */
     @Getter
     protected int roundsPerItem;
-    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
+    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true. 0 = defer to gun's NumBullets */
     @Getter
-    protected int numBullets = 1;
+    protected int numBullets = 0;
     /**
      * Bullet spread multiplier to be applied to gun's bullet spread
      * Ammo-based spread setting if allowSpreadByBullet = true
@@ -236,7 +236,7 @@ public abstract class ShootableType extends InfoType
         fallSpeed = readValue("FallSpeed", fallSpeed, file);
         throwSpeed = readValue("ThrowSpeed", throwSpeed, file);
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);
-        hitBoxSize = readValue("HitBoxSize", fallSpeed, file);
+        hitBoxSize = readValue("HitBoxSize", hitBoxSize, file);
         mass = readValue("Mass", mass, file);
 
         //Hit stuff

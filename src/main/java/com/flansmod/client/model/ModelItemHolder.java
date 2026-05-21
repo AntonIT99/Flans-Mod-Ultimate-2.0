@@ -11,9 +11,6 @@ public class ModelItemHolder extends ModelBase
     public Vector3f itemOffset = new Vector3f();
     public Vector3f itemRotation = new Vector3f();
 
-    /**
-     * Flips the model. Generally only for backwards compatibility.
-     */
     public void flipAll()
     {
         flip(baseModel);

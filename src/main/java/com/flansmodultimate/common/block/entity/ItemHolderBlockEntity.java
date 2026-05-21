@@ -48,7 +48,7 @@ public class ItemHolderBlockEntity extends BlockEntity
 
     public ItemHolderBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansMod.itemHolderEntity.get(), pos, state);
+        super(FlansMod.itemHolderBlockEntity.get(), pos, state);
         if (state.getBlock() instanceof ItemHolderBlock itemHolderBlock)
             type = itemHolderBlock.getConfigType();
     }

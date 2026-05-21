@@ -92,10 +92,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
             for (int i = 0; i < numBullets; i++)
+            {
+                Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
                 level.addFreshEntity(shootable);
+            }
         }
 
         handler.onShoot();
@@ -115,10 +116,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
             for (int i = 0; i < numBullets; i++)
+            {
+                Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
                 level.addFreshEntity(shootable);
+            }
         }
 
         handler.onShoot();
@@ -135,10 +137,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
             for (int i = 0; i < numBullets; i++)
+            {
+                Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
                 level.addFreshEntity(bullet);
+            }
         }
 
         handler.onShoot();

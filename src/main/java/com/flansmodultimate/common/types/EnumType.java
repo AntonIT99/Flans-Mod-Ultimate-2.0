@@ -33,15 +33,15 @@ public enum EnumType
     ARMOR("armor", "armorFiles", ContentManager.FOLDER_TEXTURES_ARMOR, ArmorType.class, CustomArmorItem.class, null, false, 0),
     ARMOR_BOX("armor_box", "armorBoxes", ContentManager.FOLDER_TEXTURES_SKINS, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false, 7),
     ATTACHMENT("attachment", "attachments", ContentManager.FOLDER_TEXTURES_SKINS, AttachmentType.class, AttachmentItem.class, null, false, 1),
-    AA_GUN("aagun", "aaguns", ContentManager.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 5),
     BULLET("bullet", "bullets", ContentManager.FOLDER_TEXTURES_SKINS, BulletType.class, BulletItem.class, null, false, 2),
     GRENADE("grenade", "grenades", ContentManager.FOLDER_TEXTURES_SKINS, GrenadeType.class, GrenadeItem.class, null, false, 3),
     GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
-    GLOVE("glove", "gloves", ContentManager.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 7),
     GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 8),
-    ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
-    PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
-    TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
+    PARTS("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
+    TOOLS("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
+    AA_GUN("aagun", "aaguns", ContentManager.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 9),
+    GLOVE("glove", "gloves", ContentManager.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 10),
+    ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 11);
 
     private final String identifier;
     private final String configFolderName;

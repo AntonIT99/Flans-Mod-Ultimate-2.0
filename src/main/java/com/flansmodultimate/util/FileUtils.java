@@ -753,16 +753,13 @@ public final class FileUtils
      * <p>
      * JAR content packs are converted to ZIP files. The original archive is moved to a backup before
      * replacement, the extracted directory is deleted after a successful swap, and temporary output
-     * files are cleaned up on failure when possible. When converting from JAR to ZIP, the original
-     * JAR is deleted only after the ZIP has been written successfully.
+     * files are cleaned up on failure when possible.
      *
      * @param provider archive provider whose extracted directory should be repacked
      */
     public static void repackArchive(IContentProvider provider)
     {
-        boolean convertJarToZip = provider.isJarFile();
-        Path originalArchive = provider.getPath();
-        Path target = convertJarToZip
+        Path target = provider.isJarFile()
             ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION)
             : provider.getPath();
 
@@ -817,13 +814,9 @@ public final class FileUtils
             // 2) Swap: target -> bak, tmp -> target (atomic when supported)
             atomicReplace(tmp, target, bak);
 
-            // 3) If we created a .zip from a .jar, update provider and remove the original jar.
-            if (convertJarToZip)
-            {
+            // 3) If we created a .zip from a .jar, update provider
+            if (provider.isJarFile())
                 provider.update(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION, target);
-                if (!originalArchive.equals(target))
-                    deleteIfExists(originalArchive);
-            }
 
             // 4) Cleanup extracted dir (only after successful commit)
             deleteRecursively(provider.getExtractedPath());

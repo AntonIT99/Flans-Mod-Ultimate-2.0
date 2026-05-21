@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns.handler;
 
+import com.flansmodultimate.common.item.ShootableItem;
 import net.minecraft.world.item.ItemStack;
 
 public class DeployableGunShootingHandler implements ShootingHandler
@@ -14,7 +15,6 @@ public class DeployableGunShootingHandler implements ShootingHandler
     @Override
     public void onShoot()
     {
-        // Damage the bullet item
-        bulletStack.setDamageValue(bulletStack.getDamageValue() + 1);
+        ShootableItem.consumeRound(bulletStack);
     }
 }

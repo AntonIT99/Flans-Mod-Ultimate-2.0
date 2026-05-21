@@ -8,7 +8,6 @@ import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
@@ -172,36 +171,53 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static void handleScope(GunItem gunItem, Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
-        if (dualWield || (!gunItem.getConfigType().getSecondaryFunction().isZoom() && !gunItem.getConfigType().getPrimaryFunction().isZoom()))
+        GunType gunType = gunItem.getConfigType();
+        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom()
+            || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
+
+        if (dualWield || !canZoom)
             return;
 
         IScope scope = null;
         EnumAimType aimType = ModClientConfig.get().aimType;
 
-        if (gunItem.getConfigType().getSecondaryFunction().isZoom())
+        if (gunType.getSecondaryFunction().isZoom())
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = secondaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                scope = secondaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
                 if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
             }
         }
-        else if (gunItem.getConfigType().getPrimaryFunction().isZoom())
+        else if (gunType.getPrimaryFunction().isZoom())
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = primaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                scope = primaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
                 if (primaryFunctionState.isPressed() && !primaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
+            }
+        }
+        else if (gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F)
+        {
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = secondaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
             }
         }
 
@@ -256,31 +272,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
             // Send update to server when key is pressed or released
             if (deployedGun.isShootKeyPressed() != deployedGun.isPrevShootKeyPressed())
                 PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, deployedGun.isShootKeyPressed(), deployedGun.isPrevShootKeyPressed()));
-        }
-    }
-
-    @Override
-    public void tickAAGun(AAGun aaGun)
-    {
-        if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
-            return;
-
-        if (Minecraft.getInstance().screen != null)
-        {
-            if (aaGun.isShootKeyPressed())
-            {
-                aaGun.setShootKeyPressed(false);
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false, aaGun.isPrevShootKeyPressed()));
-            }
-        }
-        else
-        {
-            GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(InteractionHand.MAIN_HAND);
-            aaGun.setShootKeyPressed(primaryFunctionState.isPressed());
-            aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
-
-            if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed()));
         }
     }
 

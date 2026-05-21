@@ -23,6 +23,9 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,9 +42,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -157,6 +162,17 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     public boolean isPickable()
     {
         return !isRemoved() && getConfigType().isDeployableBag();
+    }
+
+    @Override
+    @NotNull
+    public EntityDimensions getDimensions(@NotNull Pose pose)
+    {
+        if (getConfigType().isDeployableBag())
+        {
+            return EntityDimensions.fixed(1.0F, 0.5F);
+        }
+        return super.getDimensions(pose);
     }
 
     @Override
@@ -306,8 +322,24 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             // Ammo give
             if (configType.getNumClips() > 0)
             {
-                ItemStack inHand = player.getItemInHand(hand);
-                if (!inHand.isEmpty() && inHand.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isAllowRearm())
+                ItemStack gunStack = null;
+                GunItem gunItem = null;
+
+                ItemStack mainHandStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+                ItemStack offHandStack = player.getItemInHand(InteractionHand.OFF_HAND);
+
+                if (!mainHandStack.isEmpty() && mainHandStack.getItem() instanceof GunItem gi && gi.getConfigType().isAllowRearm())
+                {
+                    gunStack = mainHandStack;
+                    gunItem = gi;
+                }
+                else if (!offHandStack.isEmpty() && offHandStack.getItem() instanceof GunItem gi && gi.getConfigType().isAllowRearm())
+                {
+                    gunStack = offHandStack;
+                    gunItem = gi;
+                }
+
+                if (gunStack != null && gunItem != null)
                 {
                     GunType gunType = gunItem.getConfigType();
                     List<ShootableType> ammoTypes = gunType.getAmmoTypes();
@@ -315,10 +347,21 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     if (!ammoTypes.isEmpty())
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
-                        int numToGive = Math.min(bulletToGive.getMaxStackSize(), configType.getNumClips() * gunType.getNumAmmoItemsInGun(inHand));
-                        Item item = ItemFactory.createItem(bulletToGive);
-                        if (item != null && player.getInventory().add(new ItemStack(item, numToGive)))
-                            used = true;
+                        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
+                        if (item != null && item != Items.AIR)
+                        {
+                            int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
+                            while (totalToGive > 0)
+                            {
+                                int stackSize = Math.min(totalToGive, item.getMaxStackSize(new ItemStack(item)));
+                                ItemStack ammoStack = new ItemStack(item, stackSize);
+                                if (player.getInventory().add(ammoStack))
+                                {
+                                    used = true;
+                                }
+                                totalToGive -= stackSize;
+                            }
+                        }
                     }
                 }
             }

@@ -24,4 +24,15 @@ public enum EnumRenderPass
             default -> RenderType.entityTranslucent(texture);
         };
     }
+
+    public RenderType getArmorRenderType(ResourceLocation texture)
+    {
+        return switch(this)
+        {
+            case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture);
+            case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture);
+            case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture);
+            default -> RenderType.armorCutoutNoCull(texture);
+        };
+    }
 }

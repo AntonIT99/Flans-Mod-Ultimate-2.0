@@ -92,7 +92,6 @@ public class GunAnimations
     protected int lookAtTimer = 0;
 
     @Getter
-    @RequiredArgsConstructor
     public enum EnumLookAtState
     {
         NONE(1),
@@ -103,6 +102,11 @@ public class GunAnimations
         UNTILT(10);
 
         private final int time;
+
+        EnumLookAtState(int time)
+        {
+            this.time = time;
+        }
     }
 
     public void updateSprintStance(GunType type)

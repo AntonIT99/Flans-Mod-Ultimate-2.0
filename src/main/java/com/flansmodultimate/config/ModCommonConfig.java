@@ -1,6 +1,7 @@
 package com.flansmodultimate.config;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,6 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final ForgeConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
-    private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
@@ -70,6 +70,15 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_DIGITAL_AMMO_SYSTEM;
+    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_DEFAULT_AMOUNT;
+    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_MAX_AMOUNT;
+    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_NUM_TYPES;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
+    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
+
+    private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
+
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
@@ -89,9 +98,6 @@ public final class ModCommonConfig
         FLAN_EXPLOSIONS_DROP_BLOCKS = builder
             .comment("Whether blocks broken by Flan's Mod explosions should drop items")
             .define("flanExplosionsDropBlocks", true);
-        ENCHANTMENT_MODULE_ENABLED = builder
-            .comment("Whether Flan's Mod glove and offhand enchantments should apply their effects")
-            .define("enchantmentModuleEnabled", true);
         BONUS_REGEN_AMOUNT = builder
             .comment("Allows you to increase health regen, best used alongside increased max health")
             .defineInRange("bonusRegenAmount", 0, 0, 1000);
@@ -231,6 +237,37 @@ public final class ModCommonConfig
             .defineList("blocks", Collections.emptyList(), String.class::isInstance);
         builder.pop();
 
+        builder.push("Digital Ammo System Settings");
+        ENABLE_DIGITAL_AMMO_SYSTEM = builder
+            .comment("Enable the digital ammo system. When enabled, players have a virtual ammo pool",
+                "instead of needing physical magazines. Ammo is stored per-player and synced to client.")
+            .define("enableDigitalAmmoSystem", false);
+        DIGITAL_AMMO_DEFAULT_AMOUNT = builder
+            .comment("Default amount of ammo for each type when a player first joins")
+            .defineInRange("digitalAmmoDefaultAmount", 100, 0, Integer.MAX_VALUE);
+        DIGITAL_AMMO_MAX_AMOUNT = builder
+            .comment("Maximum amount of ammo allowed for each type",
+                "Players cannot have more than this amount per ammo type")
+            .defineInRange("digitalAmmoMaxAmount", 1000, 1, Integer.MAX_VALUE);
+        DIGITAL_AMMO_NUM_TYPES = builder
+            .comment("Number of different ammo types supported by the digital ammo system")
+            .defineInRange("digitalAmmoNumTypes", 7, 1, 20);
+        DIGITAL_AMMO_SUPPLY_BLOCKS = builder
+            .comment("List of block IDs that act as supply blocks for digital ammo.",
+                "When a player right-clicks these blocks, their digital ammo is replenished.",
+                "Format: namespace:block (e.g., minecraft:iron_block)")
+            .defineList("digitalAmmoSupplyBlocks", Collections.emptyList(), String.class::isInstance);
+        DIGITAL_AMMO_SUPPLY_AMOUNT = builder
+            .comment("Amount of ammo to restore for each type when using supply blocks")
+            .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.push("Enchantment Module");
+        ENCHANTMENT_MODULE_ENABLED = builder
+            .comment("Enable the Flan's Mod enchantment module (Steady, Nimble, Lumberjack, Duelist, Sharpshooter, Juggernaut)")
+            .define("enchantmentModuleEnabled", true);
+        builder.pop();
+
         configSpec = builder.build();
     }
 
@@ -245,7 +282,6 @@ public final class ModCommonConfig
             DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),
             FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
-            ENCHANTMENT_MODULE_ENABLED.get(),
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
@@ -291,7 +327,16 @@ public final class ModCommonConfig
             ENABLE_BLOCK_PENETRATION.get(),
             BLOCK_PENETRATION_MODIFIER.get(),
 
-            List.copyOf(PENETRABLE_BLOCKS_RAW.get())
+            List.copyOf(PENETRABLE_BLOCKS_RAW.get()),
+
+            ENABLE_DIGITAL_AMMO_SYSTEM.get(),
+            DIGITAL_AMMO_DEFAULT_AMOUNT.get(),
+            DIGITAL_AMMO_MAX_AMOUNT.get(),
+            DIGITAL_AMMO_NUM_TYPES.get(),
+            List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
+            DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
+
+            ENCHANTMENT_MODULE_ENABLED.get()
         );
     }
 
@@ -320,6 +365,7 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
+        DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
     private static void rebuildPenetrableBlocks(List<String> lines)

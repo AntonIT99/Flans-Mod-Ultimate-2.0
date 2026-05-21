@@ -15,5 +15,6 @@ public record PendingReload(
         boolean creative,
         boolean combineAmmoOnReload,
         boolean ammoToUpperInventory,
-        UUID reloadSoundUUID)
+        UUID reloadSoundUUID,
+        boolean useDigitalAmmo)
 {}

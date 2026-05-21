@@ -29,7 +29,7 @@ public interface IClientGunHooks
 
     void tickDeployedGun(DeployedGun deployedGun);
 
-    void tickAAGun(AAGun aaGun);
+    default void tickAAGun(AAGun aaGun) {}
 
     @Nullable
     HitResult getClientHitResult();

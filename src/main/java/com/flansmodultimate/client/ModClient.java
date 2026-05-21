@@ -391,8 +391,16 @@ public class ModClient
     /** Handle lights from bullets and mechas. */
     private static void handleDynamicEntityLights(ClientLevel level)
     {
+        LocalPlayer localPlayer = Minecraft.getInstance().player;
+        if (localPlayer == null)
+            return;
+
+        double maxDistanceSq = 64 * 64;
         for (Entity entity : level.entitiesForRendering())
         {
+            if (entity.distanceToSqr(localPlayer) > maxDistanceSq)
+                continue;
+
             if (entity instanceof Shootable shootable)
                 handleShootableLight(level, shootable);
             else if (entity instanceof Mecha mecha)

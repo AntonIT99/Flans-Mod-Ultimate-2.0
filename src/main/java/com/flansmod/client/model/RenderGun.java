@@ -42,6 +42,20 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RenderGun
 {
+    private static final Vector3f VEC3_ZERO = new Vector3f(0F, 0F, 0F);
+    private static final Vector3f VEC3_SWITCH_POS1 = new Vector3f(0, -0.4f, 0);
+    private static final Vector3f VEC3_SWITCH_POS2 = new Vector3f(0, 0, 0);
+    private static final Vector3f VEC3_SWITCH_START_ANGLES = new Vector3f(90, 30, -40);
+    private static final Vector3f VEC3_SWITCH_END_ANGLES = new Vector3f(0, 0, 0);
+    private static final Vector3f VEC3_SPRINT_DEFAULT_TRANSLATE = new Vector3f(0, 0F, -0.2F);
+    private static final Vector3f VEC3_SPRINT_DEFAULT_ROTATION = new Vector3f(-15F, 45F, -10F);
+    private static final Vector3f VEC3_LOOK_IDLE_POS = new Vector3f(0.0f, 0.0f, 0.0f);
+    private static final Vector3f VEC3_LOOK1_POS = new Vector3f(0.25f, 0.25f, 0.0f);
+    private static final Vector3f VEC3_LOOK2_POS = new Vector3f(0.25f, 0.25f, -0.5f);
+    private static final Vector3f VEC3_LOOK_IDLE_ANGLES = new Vector3f(0.0f, 0.0f, 0.0f);
+    private static final Vector3f VEC3_LOOK1_ANGLES = new Vector3f(0.0f, 70.0f, 0.0f);
+    private static final Vector3f VEC3_LOOK2_ANGLES = new Vector3f(0.0f, -60.0f, 60.0f);
+
     public static void renderItem(ModelGun model, ItemStack stack, ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         poseStack.pushPose();
@@ -179,15 +193,12 @@ public final class RenderGun
         if (animations.switchAnimationProgress <= 0F || animations.switchAnimationLength <= 0F)
             return;
 
-        Vector3f pos1 = new Vector3f(0, -0.4f, 0);
-        Vector3f pos2 = new Vector3f(0, 0, 0);
-        Vector3f startAngles = new Vector3f(90, 30, -40);
-        Vector3f endAngles = new Vector3f(0, 0, 0);
-        float interp = (animations.switchAnimationProgress + Minecraft.getInstance().getFrameTime()) / animations.switchAnimationLength;
+        float frameTime = Minecraft.getInstance().getFrameTime();
+        float interp = (animations.switchAnimationProgress + frameTime) / animations.switchAnimationLength;
 
-        poseStack.translate(pos2.x + (pos2.x - pos1.x) * interp, pos1.y + (pos2.y - pos1.y) * interp, pos1.z + (pos2.z - pos1.z) * interp);
-        poseStack.mulPose(Axis.YP.rotationDegrees(startAngles.y + (endAngles.y - startAngles.y) * interp));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(startAngles.z + (endAngles.z - startAngles.z) * interp));
+        poseStack.translate(VEC3_SWITCH_POS2.x + (VEC3_SWITCH_POS2.x - VEC3_SWITCH_POS1.x) * interp, VEC3_SWITCH_POS1.y + (VEC3_SWITCH_POS2.y - VEC3_SWITCH_POS1.y) * interp, VEC3_SWITCH_POS1.z + (VEC3_SWITCH_POS2.z - VEC3_SWITCH_POS1.z) * interp);
+        poseStack.mulPose(Axis.YP.rotationDegrees(VEC3_SWITCH_START_ANGLES.y + (VEC3_SWITCH_END_ANGLES.y - VEC3_SWITCH_START_ANGLES.y) * interp));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(VEC3_SWITCH_START_ANGLES.z + (VEC3_SWITCH_END_ANGLES.z - VEC3_SWITCH_START_ANGLES.z) * interp));
     }
 
     private static void renderSprintingMovement(ModelGun model, GunAnimations animations, boolean sprinting, PoseStack poseStack)
@@ -197,39 +208,35 @@ public final class RenderGun
             if (animations.runningStanceAnimationProgress == 0F)
                 animations.runningStanceAnimationProgress = 1F;
 
-            Vector3f defaultTranslate = new Vector3f(0, 0F, -0.2);
-            Vector3f defaultRotation = new Vector3f(-15F, 45F, -10F);
-
             Vector3f configuredTranslate = model.sprintStanceTranslate;
             Vector3f configuredRotation = model.sprintStanceRotate;
 
-            float progress = (animations.runningStanceAnimationProgress + Minecraft.getInstance().getFrameTime()) / animations.runningStanceAnimationLength;
+            float frameTime = Minecraft.getInstance().getFrameTime();
+            float progress = (animations.runningStanceAnimationProgress + frameTime) / animations.runningStanceAnimationLength;
             if (animations.runningStanceAnimationProgress == animations.runningStanceAnimationLength)
                 progress = 1;
+
+            Vector3f translateToUse = VEC3_SPRINT_DEFAULT_TRANSLATE;
+            Vector3f rotationToUse = VEC3_SPRINT_DEFAULT_ROTATION;
 
             if (ModClientConfig.get().enableRandomSprintStance)
             {
                 animations.updateSprintStance(model.type);
-                defaultRotation = animations.sprintingStance;
+                rotationToUse = animations.sprintingStance;
             }
 
-            if (!Objects.equals(model.sprintStanceTranslate, new Vector3f(0F, 0F, 0F)))
+            boolean hasCustomTranslate = !Objects.equals(configuredTranslate, VEC3_ZERO);
+            boolean hasCustomRotation = !Objects.equals(configuredRotation, VEC3_ZERO);
+
+            if (hasCustomTranslate)
                 poseStack.translate(configuredTranslate.x * progress, configuredTranslate.y * progress, configuredTranslate.z * progress);
             else
-                poseStack.translate(defaultTranslate.x * progress, defaultTranslate.y * progress, defaultTranslate.z * progress);
+                poseStack.translate(translateToUse.x * progress, translateToUse.y * progress, translateToUse.z * progress);
 
-            if (!Objects.equals(model.sprintStanceRotate, new Vector3f(0F, 0F, 0F)))
-            {
-                poseStack.mulPose(Axis.XP.rotationDegrees(configuredRotation.x * progress));
-                poseStack.mulPose(Axis.YP.rotationDegrees(configuredRotation.y * progress));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(configuredRotation.z * progress));
-            }
-            else
-            {
-                poseStack.mulPose(Axis.XP.rotationDegrees(defaultRotation.x * progress));
-                poseStack.mulPose(Axis.YP.rotationDegrees(defaultRotation.y * progress));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(defaultRotation.z * progress));
-            }
+            Vector3f rot = hasCustomRotation ? configuredRotation : rotationToUse;
+            poseStack.mulPose(Axis.XP.rotationDegrees(rot.x * progress));
+            poseStack.mulPose(Axis.YP.rotationDegrees(rot.y * progress));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(rot.z * progress));
         }
         else
         {
@@ -268,51 +275,49 @@ public final class RenderGun
 
     private static void renderLookAtGunMovement(GunAnimations animations, PoseStack poseStack)
     {
-        float interp = animations.lookAtTimer + Minecraft.getInstance().getFrameTime();
+        float frameTime = Minecraft.getInstance().getFrameTime();
+        float interp = animations.lookAtTimer + frameTime;
         interp /= animations.lookAt.getTime();
 
-        final Vector3f idlePos = new Vector3f(0.0f, 0.0f, 0.0f);
-        final Vector3f look1Pos = new Vector3f(0.25f, 0.25f, 0.0f);
-        final Vector3f look2Pos = new Vector3f(0.25f, 0.25f, -0.5f);
-        final Vector3f idleAngles = new Vector3f(0.0f, 0.0f, 0.0f);
-        final Vector3f look1Angles = new Vector3f(0.0f, 70.0f, 0.0f);
-        final Vector3f look2Angles = new Vector3f(0.0f, -60.0f, 60.0f);
-        Vector3f startPos = new Vector3f();
-        Vector3f endPos = new Vector3f();
-        Vector3f startAngles = new Vector3f();
-        Vector3f endAngles = new Vector3f();
+        Vector3f startPos;
+        Vector3f endPos;
+        Vector3f startAngles;
+        Vector3f endAngles;
 
         switch (animations.lookAt)
         {
             case NONE -> {
-                startPos = endPos = idlePos;
-                startAngles = endAngles = idleAngles;
+                startPos = endPos = VEC3_LOOK_IDLE_POS;
+                startAngles = endAngles = VEC3_LOOK_IDLE_ANGLES;
             }
             case LOOK1 -> {
-                startPos = endPos = look1Pos;
-                startAngles = endAngles = look1Angles;
+                startPos = endPos = VEC3_LOOK1_POS;
+                startAngles = endAngles = VEC3_LOOK1_ANGLES;
             }
             case LOOK2 -> {
-                startPos = endPos = look2Pos;
-                startAngles = endAngles = look2Angles;
+                startPos = endPos = VEC3_LOOK2_POS;
+                startAngles = endAngles = VEC3_LOOK2_ANGLES;
             }
             case TILT1 -> {
-                startPos = idlePos;
-                startAngles = idleAngles;
-                endPos = look1Pos;
-                endAngles = look1Angles;
+                startPos = VEC3_LOOK_IDLE_POS;
+                startAngles = VEC3_LOOK_IDLE_ANGLES;
+                endPos = VEC3_LOOK1_POS;
+                endAngles = VEC3_LOOK1_ANGLES;
             }
             case TILT2 -> {
-                startPos = look1Pos;
-                startAngles = look1Angles;
-                endPos = look2Pos;
-                endAngles = look2Angles;
+                startPos = VEC3_LOOK1_POS;
+                startAngles = VEC3_LOOK1_ANGLES;
+                endPos = VEC3_LOOK2_POS;
+                endAngles = VEC3_LOOK2_ANGLES;
             }
             case UNTILT -> {
-                startPos = look2Pos;
-                startAngles = look2Angles;
-                endPos = idlePos;
-                endAngles = idleAngles;
+                startPos = VEC3_LOOK2_POS;
+                startAngles = VEC3_LOOK2_ANGLES;
+                endPos = VEC3_LOOK_IDLE_POS;
+                endAngles = VEC3_LOOK_IDLE_ANGLES;
+            }
+            default -> {
+                return;
             }
         }
 
@@ -571,11 +576,7 @@ public final class RenderGun
             if (bullet == null || !(bullet.getItem() instanceof ShootableItem))
                 continue;
 
-            final int max = bullet.getMaxDamage();
-            final int damage = bullet.getDamageValue();
-
-            if (damage < max)
-                rounds += (max - damage);
+            rounds += ShootableItem.getRoundsRemaining(bullet);
         }
 
         return rounds;
