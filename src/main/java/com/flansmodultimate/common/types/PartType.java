@@ -10,8 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 public class PartType extends InfoType
 {
@@ -86,7 +85,8 @@ public class PartType extends InfoType
         fuel = readValue("Fuel", fuel, file);
 
         //Recipe
-        partBoxRecipe.addAll(RecipeParser.resolveAmountThenItemPairs(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
+        if (hasValueForConfigField("PartBoxRecipe", file))
+            partBoxRecipe.addAll(RecipeParser.resolveAmountThenItemPairs(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
 
         if (category == Category.ENGINE && !useRFPower)
         {

@@ -32,6 +32,7 @@ public final class FilteringPackResources implements PackResources
             && (location.getPath().startsWith(ContentManager.FOLDER_TEXTURES_ARMOR + "/")
             || location.getPath().startsWith(ContentManager.FOLDER_TEXTURES_GUI + "/")
             || location.getPath().startsWith(ContentManager.FOLDER_TEXTURES_SKINS + "/")
+            || location.getPath().startsWith(ContentManager.FOLDER_SOUND + "/")
             || location.getPath().startsWith(ContentManager.FOLDER_TEXTURES + "/" + ContentManager.FOLDER_TEXTURES_ITEMS + "/")
             || location.getPath().startsWith(ContentManager.FOLDER_TEXTURES + "/" + ContentManager.FOLDER_TEXTURES_BLOCKS + "/"));
     }
