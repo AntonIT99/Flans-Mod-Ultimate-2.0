@@ -32,7 +32,7 @@ public record GunReloader(GunItem item)
     /**
      * Returns true if we reloaded or successfully queued a reload
      */
-    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload, boolean ammoToUpperInventory, UUID reloadSoundUUID)
+    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload, boolean ammoToUpperInventory, float reloadTime, UUID reloadSoundUUID)
     {
         // Deployable guns cannot be reloaded in the inventory
         if (item.getConfigType().isDeployable())
@@ -63,7 +63,7 @@ public record GunReloader(GunItem item)
             List<ReloadPlan> digitalPlans = computeDigitalAmmoPlansWithCheck(level, player, gunStack, allowed, forceReload);
             if (!digitalPlans.isEmpty())
             {
-                long ticks = (long) Math.ceil(item.getActualReloadTime(gunStack));
+                long ticks = (long) Math.ceil(reloadTime);
                 long applyAt = level.getGameTime() + ticks;
                 return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, digitalPlans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, true));
             }
@@ -76,7 +76,7 @@ public record GunReloader(GunItem item)
         if (plans.isEmpty())
             return false;
 
-        long ticks = (long) Math.ceil(item.getActualReloadTime(gunStack));
+        long ticks = (long) Math.ceil(reloadTime);
         long applyAt = level.getGameTime() + ticks;
 
         return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, false));
@@ -128,6 +128,12 @@ public record GunReloader(GunItem item)
 
     private static void applyPlans(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, GunItem gunItem, ItemStack actualGunStack)
     {
+        if (pending.useDigitalAmmo() && reloadingEntity instanceof ServerPlayer serverPlayer)
+        {
+            applyDigitalAmmoPlans(serverPlayer, actualGunStack, gunItem, pending.plans());
+            return;
+        }
+
         for (ReloadPlan plan : pending.plans())
         {
             applySinglePlan(level, reloadingEntity, inventory, pending, plan, gunItem, actualGunStack);
@@ -137,12 +143,6 @@ public record GunReloader(GunItem item)
     private static void applySinglePlan(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, ReloadPlan plan, GunItem gunItem, ItemStack actualGunStack)
     {
         int ammoIndex = plan.gunAmmoIndex();
-
-        if (pending.useDigitalAmmo() && reloadingEntity instanceof ServerPlayer serverPlayer)
-        {
-            applyDigitalAmmoPlan(serverPlayer, actualGunStack, gunItem, ammoIndex);
-            return;
-        }
 
         int invSlot = plan.inventorySlot();
 
@@ -195,9 +195,10 @@ public record GunReloader(GunItem item)
             inventory.setItem(invSlot, newMag);
     }
 
-    private static void applyDigitalAmmoPlan(ServerPlayer player, ItemStack actualGunStack, GunItem gunItem, int ammoIndex)
+    private static void applyDigitalAmmoPlans(ServerPlayer player, ItemStack actualGunStack, GunItem gunItem, List<ReloadPlan> plans)
     {
-        DigitalAmmoHelper.tryReloadFromDigitalAmmo(player, gunItem, actualGunStack, ammoIndex);
+        List<Integer> ammoSlots = plans.stream().map(ReloadPlan::gunAmmoIndex).toList();
+        DigitalAmmoHelper.tryReloadFromDigitalAmmo(player, gunItem, actualGunStack, ammoSlots);
     }
 
     private List<ReloadPlan> computeDigitalAmmoPlans(ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload)
@@ -222,8 +223,6 @@ public record GunReloader(GunItem item)
         int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
         List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
 
-        double bulletsNeeded = item.getConfigType().getBulletsPerReload();
-
         for (int i = 0; i < ammoSlots; i++)
         {
             ItemStack current = item.getAmmoItemStack(gunStack, i);
@@ -236,7 +235,7 @@ public record GunReloader(GunItem item)
         if (plans.isEmpty())
             return new ArrayList<>();
 
-        if (!DigitalAmmoHelper.hasEnoughDigitalAmmo(player, item, gunStack))
+        if (!DigitalAmmoHelper.hasEnoughDigitalAmmo(player, item))
             return new ArrayList<>();
 
         return plans;

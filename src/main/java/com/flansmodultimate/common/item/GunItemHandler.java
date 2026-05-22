@@ -3,6 +3,7 @@ package com.flansmodultimate.common.item;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -97,10 +98,8 @@ public class GunItemHandler
 
         if (dualWield)
         {
-            return false;
-            // TODO: implement gloves
             // Gloves are special enchantable items that can be placed in the offhand while still letting you shoot 2H
-            //return off.getItem() instanceof ItemGlove;
+            return off.getItem() instanceof GloveItem;
         }
 
         return true;
@@ -191,7 +190,8 @@ public class GunItemHandler
         data.setShooting(hand, true);
         PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
 
-        boolean automaticFire = item.configType.getFireMode(null).isAutomaticFire();
+        EnumFireMode fireMode = item.configType.getFireMode(gunStack);
+        boolean automaticFire = fireMode.isAutomaticFire();
         float shootTime = data.getShootTime(hand);
         float shootDelay = item.configType.getShootDelay(gunStack);
 
@@ -228,12 +228,15 @@ public class GunItemHandler
     public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadSoundUUID))
+        ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
+        float reloadTime = EnchantmentModule.getModifiedReloadTime(item.getActualReloadTime(gunStack), otherHand);
+        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadTime, reloadSoundUUID))
         {
+            EnchantmentModule.damageReloadModifier(player, otherHand);
+
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack);
-            float reloadTime = item.getActualReloadTime(gunStack);
 
             data.doGunReload(hand, reloadTime);
             PacketHandler.sendToDimension(level.dimension(), new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo));
