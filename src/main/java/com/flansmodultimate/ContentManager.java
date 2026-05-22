@@ -38,8 +38,9 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.nio.charset.MalformedInputException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -134,6 +135,12 @@ public class ContentManager
     private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    // Latin-1 must stay last because it can decode every byte sequence.
+    private static final List<Charset> TYPE_FILE_CHARSETS = List.of(
+        StandardCharsets.UTF_8,
+        Charset.forName("GB18030"),
+        StandardCharsets.ISO_8859_1
+    );
 
     private record TextureFile(String name, IContentProvider contentPack) {}
     private record FileContentSignature(long size, String sha256) {}
@@ -513,7 +520,7 @@ public class ContentManager
     {
         try
         {
-            List<String> lines = readAllLinesUtf8OrLatin1(file);
+            List<String> lines = readTypeFileLines(file);
             stripBomIfPresent(lines);
             return new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines);
         }
@@ -524,29 +531,26 @@ public class ContentManager
         }
     }
 
-    private static List<String> readAllLinesUtf8OrLatin1(Path file) throws IOException {
-        try
-        {
-            return Files.readAllLines(file, StandardCharsets.UTF_8);
-        }
-        catch (Exception e)
+    private static List<String> readTypeFileLines(Path file) throws IOException
+    {
+        CharacterCodingException firstDecodeFailure = null;
+
+        for (Charset charset : TYPE_FILE_CHARSETS)
         {
             try
             {
-                return Files.readAllLines(file, Charset.forName("GBK"));
+                return Files.readAllLines(file, charset);
             }
-            catch (Exception e2)
+            catch (CharacterCodingException e)
             {
-                try
-                {
-                    return Files.readAllLines(file, Charset.forName("GB2312"));
-                }
-                catch (Exception e3)
-                {
-                    return Files.readAllLines(file, StandardCharsets.ISO_8859_1);
-                }
+                if (firstDecodeFailure == null)
+                    firstDecodeFailure = e;
+                else
+                    firstDecodeFailure.addSuppressed(e);
             }
         }
+
+        throw firstDecodeFailure != null ? firstDecodeFailure : new IOException("No charset configured for " + file);
     }
 
     private static void stripBomIfPresent(List<String> lines)
