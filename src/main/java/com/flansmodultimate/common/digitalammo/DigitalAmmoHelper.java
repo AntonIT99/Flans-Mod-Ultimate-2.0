@@ -8,15 +8,17 @@ import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import com.flansmodultimate.util.ModUtils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DigitalAmmoHelper
 {
-    private DigitalAmmoHelper() {}
-
     public static boolean isDigitalAmmoEnabled()
     {
         try
@@ -30,7 +32,7 @@ public final class DigitalAmmoHelper
         }
     }
 
-    public static boolean hasEnoughDigitalAmmo(ServerPlayer player, GunItem gunItem, ItemStack gunStack)
+    public static boolean hasEnoughDigitalAmmo(ServerPlayer player, GunItem gunItem)
     {
         if (!isDigitalAmmoEnabled()) return false;
 
@@ -44,7 +46,13 @@ public final class DigitalAmmoHelper
 
     public static boolean tryReloadFromDigitalAmmo(ServerPlayer player, GunItem gunItem, ItemStack gunStack, int ammoSlot)
     {
+        return tryReloadFromDigitalAmmo(player, gunItem, gunStack, List.of(ammoSlot));
+    }
+
+    public static boolean tryReloadFromDigitalAmmo(ServerPlayer player, GunItem gunItem, ItemStack gunStack, List<Integer> ammoSlots)
+    {
         if (!isDigitalAmmoEnabled()) return false;
+        if (ammoSlots == null || ammoSlots.isEmpty()) return false;
 
         GunType gunType = gunItem.getConfigType();
         int consumeType = gunType.getConsumeBulletType();
@@ -64,7 +72,7 @@ public final class DigitalAmmoHelper
         }
 
         ShootableType ammoType = allowedAmmo.get(0);
-        int magazineSize = ammoType.getRoundsPerItem();
+        int magazineSize = Math.max(1, ammoType.getRoundsPerItem());
         ItemStack ammoStack = createVirtualAmmoStack(ammoType, magazineSize);
 
         if (ammoStack.isEmpty())
@@ -73,7 +81,20 @@ public final class DigitalAmmoHelper
         }
 
         PlayerBulletStorage.takeBulletsById(bulletData, consumeType, bulletsNeeded);
-        gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot);
+        boolean loadedAny = false;
+        for (int ammoSlot : ammoSlots)
+        {
+            if (ammoSlot < 0)
+                continue;
+            gunItem.setBulletItemStack(gunStack, ammoStack.copy(), ammoSlot);
+            loadedAny = true;
+        }
+
+        if (!loadedAny)
+        {
+            PlayerBulletStorage.addBulletsById(bulletData, consumeType, bulletsNeeded);
+            return false;
+        }
 
         PacketSyncDigitalAmmo.syncToClient(player);
 

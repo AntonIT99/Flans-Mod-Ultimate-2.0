@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.ModCommonConfig;
+import lombok.Getter;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,11 @@ public final class PlayerBulletStorage
         setBulletsById(data, typeId, getBulletsTypeById(data, typeId) - amount);
     }
 
+    public static void addBulletsById(PlayerBulletData data, int typeId, double amount)
+    {
+        setBulletsById(data, typeId, getBulletsTypeById(data, typeId) + amount);
+    }
+
     public static void clearPlayerData(UUID playerUUID)
     {
         PLAYER_BULLET_DATA.remove(playerUUID);
@@ -52,18 +58,18 @@ public final class PlayerBulletStorage
 
     public static final class PlayerBulletData
     {
+        @Getter
         private final UUID player;
         private final double[] bullets;
-        private final int numTypes;
-        private final int defaultAmount;
+        @Getter
         private final int maxAmount;
 
         public PlayerBulletData(UUID playerUUID)
         {
             this.player = playerUUID;
-            this.numTypes = getConfigNumTypes();
+            int numTypes = getConfigNumTypes();
             this.bullets = new double[numTypes];
-            this.defaultAmount = getConfigDefaultAmount();
+            int defaultAmount = getConfigDefaultAmount();
             this.maxAmount = getConfigMaxAmount();
             for (int i = 0; i < numTypes; i++)
             {
@@ -107,11 +113,6 @@ public final class PlayerBulletStorage
             }
         }
 
-        public UUID getPlayer()
-        {
-            return player;
-        }
-
         public double getBullets(int typeId)
         {
             if (typeId < 1 || typeId > bullets.length)
@@ -134,11 +135,6 @@ public final class PlayerBulletStorage
         public int getNumTypes()
         {
             return bullets.length;
-        }
-
-        public int getMaxAmount()
-        {
-            return maxAmount;
         }
 
         @Override

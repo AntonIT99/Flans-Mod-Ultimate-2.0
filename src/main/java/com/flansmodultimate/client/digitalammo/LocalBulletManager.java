@@ -10,7 +10,7 @@ public final class LocalBulletManager
 {
     private static final int DEFAULT_NUM_TYPES = 7;
     private static final int DEFAULT_AMOUNT = 100;
-    
+
     private static double[] bullets;
     private static boolean initialized = false;
 
@@ -43,9 +43,9 @@ public final class LocalBulletManager
     public static void setAllBullets(double[] values)
     {
         if (!initialized) init();
-        if (values == null || values.length != bullets.length)
+        if (values == null)
             return;
-        System.arraycopy(values, 0, bullets, 0, bullets.length);
+        bullets = Arrays.copyOf(values, values.length);
     }
 
     public static int getNumTypes()
