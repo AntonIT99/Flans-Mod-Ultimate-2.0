@@ -1,5 +1,6 @@
 package com.flansmodultimate.event.handler;
 
+import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.gui.ArmorBoxScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
@@ -22,11 +23,11 @@ import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
+import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
+import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
-import com.flansmodultimate.client.render.entity.AAGunRenderer;
-import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -204,7 +205,10 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
-        event.registerReloadListener((ResourceManagerReloadListener) rm -> ModelCache.reload());
+        event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+            ModelCache.reload();
+            ContentManager.logMissingModelTextures(rm);
+        });
     }
 
     @SubscribeEvent
