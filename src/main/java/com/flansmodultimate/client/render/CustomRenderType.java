@@ -93,27 +93,4 @@ public class CustomRenderType
     {
         return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthKey(tex, false));
     }
-
-    private static final Function<ResourceLocation, RenderType> ARMOR_CUTOUT_NO_CULL_ZOFFSET = Util.memoize(tex -> {
-        RenderStateShard.TransparencyStateShard NO_TRANSPARENCY = new RenderStateShard.TransparencyStateShard(
-            "no_transparency",
-            () -> {},
-            () -> {}
-        );
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionTexLightmapColorShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(tex, false, false))
-            .setTransparencyState(NO_TRANSPARENCY)
-            .setCullState(new RenderStateShard.CullStateShard(false))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .setDepthTestState(new RenderStateShard.DepthTestStateShard("<=", GL11C.GL_LEQUAL))
-            .createCompositeState(true);
-        return RenderType.create("armor_cutout_no_cull_zoffset", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
-    });
-
-    public static RenderType armorCutoutNoCullZOffset(ResourceLocation tex)
-    {
-        return ARMOR_CUTOUT_NO_CULL_ZOFFSET.apply(tex);
-    }
 }

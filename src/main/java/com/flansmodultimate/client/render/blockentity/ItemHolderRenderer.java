@@ -79,6 +79,7 @@ public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEn
             case WEST -> poseStack.mulPose(Axis.YP.rotationDegrees(270F));
             default ->
             {
+                // no-op
             }
         }
     }

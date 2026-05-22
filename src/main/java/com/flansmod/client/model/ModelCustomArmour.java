@@ -80,6 +80,28 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         return ArmorType.class;
     }
 
+    public boolean hasGlowParts()
+    {
+        return hasGlowParts(headModel)
+            || hasGlowParts(bodyModel)
+            || hasGlowParts(leftArmModel)
+            || hasGlowParts(rightArmModel)
+            || hasGlowParts(leftLegModel)
+            || hasGlowParts(rightLegModel)
+            || hasGlowParts(skirtFrontModel)
+            || hasGlowParts(skirtRearModel);
+    }
+
+    private static boolean hasGlowParts(ModelRendererTurbo[] models)
+    {
+        for (ModelRendererTurbo model : models)
+        {
+            if (model.glow || model.glowAdditive || model.glowNoDepthWrite)
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
@@ -136,7 +158,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotateAngleX = Math.min(leftLeg.xRot, rightLeg.xRot);
             mod.rotateAngleY = leftLeg.yRot;
             mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
         for (ModelRendererTurbo mod : skirtRearModel)
         {
@@ -146,7 +168,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotateAngleX = Math.max(leftLeg.xRot, rightLeg.xRot);
             mod.rotateAngleY = leftLeg.yRot;
             mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
     }
 

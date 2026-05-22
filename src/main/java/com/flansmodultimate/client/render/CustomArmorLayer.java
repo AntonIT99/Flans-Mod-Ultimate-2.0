@@ -85,12 +85,22 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
                 model.rightLeg.visible = true;
                 model.leftLeg.visible = true;
             }
+            default ->
+            {
+                // no-op
+            }
         }
     }
 
     private void renderModel(ModelCustomArmour model, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay)
     {
-        RenderType renderType = RenderType.armorCutoutNoCull(texture);
-        model.renderToBuffer(poseStack, buffer.getBuffer(renderType), packedLight, overlay, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
+        if (!model.hasGlowParts())
+        {
+            model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.armorCutoutNoCull(texture)), packedLight, overlay, 1F, 1F, 1F, 1F);
+            return;
+        }
+
+        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
     }
 }
