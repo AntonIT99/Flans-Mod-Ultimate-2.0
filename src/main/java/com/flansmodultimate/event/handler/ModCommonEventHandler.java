@@ -3,6 +3,8 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoCommand;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
@@ -10,6 +12,7 @@ import com.flansmodultimate.network.PacketHandler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
@@ -60,5 +63,12 @@ public final class ModCommonEventHandler
 
         if (event.getConfig().getSpec() == ModClientConfig.configSpec)
             ModClientConfig.bake();
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event)
+    {
+        DigitalAmmoCommand.register(event.getDispatcher());
+        DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 }

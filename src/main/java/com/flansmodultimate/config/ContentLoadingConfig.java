@@ -25,7 +25,7 @@ public final class ContentLoadingConfig
     @Getter
     private static boolean useDefaultCategories = true;
 
-    private static final int CONTENT_LOADING_SYSTEM_VERSION = 2;
+    private static final int CONTENT_LOADING_SYSTEM_VERSION = 3;
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.properties";
 
     static

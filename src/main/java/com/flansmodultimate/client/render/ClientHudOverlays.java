@@ -19,7 +19,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,13 +29,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
 {
-    private static final ResourceLocation AMMO_GUI_TEXTURE = ResourceLocation.tryParse("flansmod:textures/gui/ammoGui.png");
     private static final int TEXTURE_WIDTH = 120;
     private static final int TEXTURE_HEIGHT = 64;
     private static final double BAR_MAX_WIDTH = 14.5;
     private static final int BAR_HEIGHT = 3;
-    private static final double BAR_REFERENCE = 100.0;
-
     private static final double[] BAR_X_OFFSETS = {
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
@@ -77,7 +73,7 @@ public final class ClientHudOverlays
                 continue;
             if (player.getItemBySlot(slot).getItem() instanceof CustomArmorItem armorItem)
             {
-                armorItem.getConfigType().getOverlay().ifPresent(overlayTexture -> 
+                armorItem.getConfigType().getOverlay().ifPresent(overlayTexture ->
                     g.blit(overlayTexture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh));
             }
         }
@@ -155,7 +151,7 @@ public final class ClientHudOverlays
             int xAccum = 0;
 
             List<ItemStack> bulletStacks = gunItem.getBulletItemStackList(stack);
-            
+
             java.util.Map<ShootableItem, Integer> simpleAmmoTotals = new java.util.LinkedHashMap<>();
             java.util.Map<ShootableItem, ItemStack> simpleAmmoSamples = new java.util.LinkedHashMap<>();
             java.util.List<ItemStack> magazineAmmo = new java.util.ArrayList<>();
@@ -235,11 +231,6 @@ public final class ClientHudOverlays
         }
     }
 
-    //TODO: implement these methods
-    public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
-    public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
-    public static void renderVehicleDebug(GuiGraphics g, int sw, int sh) {}
-
     public static void renderDigitalAmmo(GuiGraphics g, int sw, int sh)
     {
         if (!ModCommonConfig.get().enableDigitalAmmoSystem())
@@ -252,7 +243,7 @@ public final class ClientHudOverlays
 
         int numTypes = Math.min(LocalBulletManager.getNumTypes(), BAR_X_OFFSETS.length);
 
-        RenderSystem.setShaderTexture(0, AMMO_GUI_TEXTURE);
+        RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -260,12 +251,13 @@ public final class ClientHudOverlays
         int bgX = 10;
         int bgY = sh - 50;
 
-        g.blit(AMMO_GUI_TEXTURE, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        g.blit(FlansMod.ammoGuiTexture, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         for (int i = 0; i < numTypes; i++)
         {
             double amount = LocalBulletManager.getBullets(i + 1);
-            double percentage = Math.min(amount / BAR_REFERENCE, 1.0);
+            double maxAmount = Math.max(1.0, ModCommonConfig.get().digitalAmmoMaxAmount());
+            double percentage = Math.min(amount / maxAmount, 1.0);
             int barWidth = (int) (BAR_MAX_WIDTH * percentage);
 
             if (barWidth > 0)
@@ -273,11 +265,16 @@ public final class ClientHudOverlays
                 int barX = (int) Math.round(bgX + BAR_X_OFFSETS[i]);
                 int barY = bgY + 12;
 
-                RenderSystem.setShaderTexture(0, AMMO_GUI_TEXTURE);
-                g.blit(AMMO_GUI_TEXTURE, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+                RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
+                g.blit(FlansMod.ammoGuiTexture, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
             }
         }
 
         RenderSystem.disableBlend();
     }
+
+    //TODO: implement these methods
+    public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
+    public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
+    public static void renderVehicleDebug(GuiGraphics g, int sw, int sh) {}
 }
