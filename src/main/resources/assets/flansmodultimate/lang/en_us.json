@@ -21,5 +21,11 @@
   "death.attack.headshot": "%1$s was headshot",
   "death.attack.headshot.player": "%1$s was headshot by %2$s",
   "death.attack.explosion": "%1$s was blown up",
-  "death.attack.explosion.player": "%1$s was blown up by %2$s"
+  "death.attack.explosion.player": "%1$s was blown up by %2$s",
+  "enchantment.flansmodultimate.steady": "Steady",
+  "enchantment.flansmodultimate.nimble": "Nimble",
+  "enchantment.flansmodultimate.lumberjack": "Lumberjack",
+  "enchantment.flansmodultimate.duelist": "Duelist",
+  "enchantment.flansmodultimate.sharpshooter": "Sharpshooter",
+  "enchantment.flansmodultimate.juggernaut": "Juggernaut"
 }
