@@ -38,12 +38,6 @@ public class ItemHolderBlockEntity extends BlockEntity
         {
             setChangedAndSync();
         }
-
-        @Override
-        public int getSlotLimit(int slot)
-        {
-            return 64;
-        }
     };
 
     public ItemHolderBlockEntity(BlockPos pos, BlockState state)
@@ -124,6 +118,7 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
+    @NotNull
     public CompoundTag getUpdateTag()
     {
         CompoundTag tag = new CompoundTag();

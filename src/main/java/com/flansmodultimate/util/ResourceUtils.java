@@ -82,11 +82,15 @@ public final class ResourceUtils
 
         public static ModelJson createItemHolderBlockModel(ItemHolderType config)
         {
-            return new ModelJson("minecraft:block/cube_bottom_top", null, Map.of(
-                "top", FlansMod.FLANSMOD_ID + ":block/" + config.getIcon(),
-                "bottom", FlansMod.FLANSMOD_ID + ":block/" + config.getIcon(),
-                "side", FlansMod.FLANSMOD_ID + ":block/" + config.getIcon()
-            ), null);
+            String iconTexture = FlansMod.FLANSMOD_ID + ":item/" + config.getIcon();
+
+            Map<String, String> textures = new LinkedHashMap<>();
+            textures.put("particle", iconTexture);
+            textures.put("top", iconTexture);
+            textures.put("bottom", iconTexture);
+            textures.put("side", iconTexture);
+
+            return new ModelJson("minecraft:block/cube_bottom_top", null, textures, null);
         }
 
         public static ModelJson createItemModel(InfoType config)

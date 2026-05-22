@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ItemHolderType;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +19,13 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
 {
     @Getter
     protected final ItemHolderType configType;
+    protected final String shortname;
 
-    public ItemHolderItem(ItemHolderType type)
+    public ItemHolderItem(ItemHolderType configType)
     {
-        super(null, new Properties());
-        this.configType = type;
+        super(FlansMod.getBlocks().get(configType.getType()).get(configType.getShortName()).get(), new Properties());
+        this.configType = configType;
+        shortname = configType.getShortName();
     }
 
     @Override
