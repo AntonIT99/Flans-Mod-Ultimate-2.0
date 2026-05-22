@@ -41,6 +41,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -261,16 +262,18 @@ public final class ClientEventHandler
 
             boolean isPrimaryButton = event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw();
             boolean isSecondaryButton = event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw();
+            EnumFunction primaryFunction = gunItem.getConfigType().getPrimaryFunction();
+            EnumFunction secondaryFunction = gunItem.getConfigType().getSecondaryFunction();
 
-            if (isSecondaryButton && gunItem.getConfigType().getSecondaryFunction() != EnumFunction.MELEE)
+            if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE)
             {
-                if (mc.hitResult == null || mc.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS)
+                if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS)
                 {
                     event.setCanceled(true);
                     event.setSwingHand(false);
                 }
             }
-            else if (isPrimaryButton && gunItem.getConfigType().getPrimaryFunction() != EnumFunction.MELEE)
+            else if (isPrimaryButton && primaryFunction != EnumFunction.MELEE)
             {
                 event.setCanceled(true);
                 event.setSwingHand(false);
