@@ -1,0 +1,53 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name P90
+ShortName TEP90_SD
+//��ҩ����(����)
+Ammo TEP90Ammo
+Ammo TEP90Ammo1
+Ammo TEP90Ammo2
+Icon TEP90_SD
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 50
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.1
+RandomRecoilRange 2.4
+RandomRecoilYawRange 2.4
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 80.0
+//ɱ����
+Damage 7.3
+//MeleeDamage 0
+//4
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 3
+//ѭ��ʱ��
+ShootDelay 1
+ShootSound TEP90Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto
+BulletSpeed 12.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TEP90
+Texture TEP90_2403_SD
+ModelScale 0.45
+//�������
+Description ��a<M.S> | ��d<Ʒ�ʣ��Ƚ�>_SMG-���ǹ_[Sub Machine Gun]
+//
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+//NEW2333
+
+// 5

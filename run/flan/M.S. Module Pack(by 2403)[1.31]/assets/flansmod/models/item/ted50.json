@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/ted50"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/ted50_1"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/ted50_2"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/ted50_3"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/ted50_4"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/ted50_5"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 6
+      },
+      "model": "flansmod:item/ted50_6"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 7
+      },
+      "model": "flansmod:item/ted50_7"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 8
+      },
+      "model": "flansmod:item/ted50_8"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 9
+      },
+      "model": "flansmod:item/ted50_9"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 10
+      },
+      "model": "flansmod:item/ted50_10"
+    }
+  ]
+}

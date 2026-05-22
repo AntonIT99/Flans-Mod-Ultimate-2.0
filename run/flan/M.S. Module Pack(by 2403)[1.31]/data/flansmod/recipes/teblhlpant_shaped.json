@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ILI",
+    "L L",
+    "ILI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "flansmod:stuff_4"
+    }
+  },
+  "result": {
+    "item": "flansmod:teblhlpant"
+  }
+}

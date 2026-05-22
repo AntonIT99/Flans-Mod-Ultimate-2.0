@@ -1,0 +1,109 @@
+---- Minecraft Crash Report ----
+// Daisy, daisy...
+
+Time: 2026-05-20 20:00:42
+Description: Mod loading failures have occurred; consult the issue messages for more details
+
+net.neoforged.neoforge.logging.CrashReportExtender$ModLoadingCrashException: Mod loading has failed
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Render thread
+Stacktrace:
+	at java.base/java.util.Objects.requireNonNull(Objects.java:233) ~[?:?] {}
+-- Mod loading issue for: flansmodultimate --
+Details:
+	Mod file: /C:/Users/LHR/Desktop/TRAE/flan/Flans-Mod-NeoForge-1.21.1/build/classes/java/main/
+	Failure message: Flan's Mod Ultimate (flansmodultimate) encountered an error while dispatching the net.neoforged.neoforge.registries.RegisterEvent event
+		java.lang.NullPointerException: null
+	Mod version: 2.0-neo-beta-1
+	Mod issues URL: <No issues URL found>
+	Exception message: java.lang.NullPointerException
+Stacktrace:
+	at java.base/java.util.Objects.requireNonNull(Objects.java:233) ~[?:?] {}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.register(MappedRegistry.java:129) ~[neoforge-21.1.228.jar%23189!/:?] {re:mixin,re:classloading,pl:mixin:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.register(MappedRegistry.java:123) ~[neoforge-21.1.228.jar%23189!/:?] {re:mixin,re:classloading,pl:mixin:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.DefaultedMappedRegistry.register(DefaultedMappedRegistry.java:22) ~[neoforge-21.1.228.jar%23189!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.Registry.register(Registry.java:129) ~[neoforge-21.1.228.jar%23189!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.Registry.register(Registry.java:125) ~[neoforge-21.1.228.jar%23189!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.228/net.neoforged.neoforge.registries.RegisterEvent.register(RegisterEvent.java:48) ~[neoforge-21.1.228.jar%23190!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.228/net.neoforged.neoforge.registries.DeferredRegister.addEntries(DeferredRegister.java:375) ~[neoforge-21.1.228.jar%23190!/:?] {re:classloading}
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.ConsumerEventHandler.invoke(ConsumerEventHandler.java:27) ~[bus-8.0.5.jar%23150!/:?] {}
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.post(EventBus.java:360) ~[bus-8.0.5.jar%23150!/:?] {}
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.post(EventBus.java:342) ~[bus-8.0.5.jar%23150!/:?] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModContainer.acceptEvent(ModContainer.java:177) ~[loader-4.0.42.jar%23146!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModLoader.lambda$postEventWithWrapInModOrder$16(ModLoader.java:379) ~[loader-4.0.42.jar%23146!/:4.0] {}
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[?:?] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModList.forEachModInOrder(ModList.java:174) ~[loader-4.0.42.jar%23146!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModLoader.postEventWithWrapInModOrder(ModLoader.java:377) ~[loader-4.0.42.jar%23146!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModLoader.postEventWrapContainerInModOrder(ModLoader.java:368) ~[loader-4.0.42.jar%23146!/:4.0] {}
+	at TRANSFORMER/neoforge@21.1.228/net.neoforged.neoforge.registries.GameData.postRegisterEvents(GameData.java:92) ~[neoforge-21.1.228.jar%23190!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.228/net.neoforged.neoforge.internal.CommonModLoader.lambda$begin$0(CommonModLoader.java:54) ~[neoforge-21.1.228.jar%23190!/:?] {re:classloading}
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[?:?] {}
+
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21.1
+	Minecraft Version ID: 1.21.1
+	Operating System: Windows 10 (amd64) version 10.0
+	Java Version: 21, Oracle Corporation
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Oracle Corporation
+	Memory: 208421296 bytes (198 MiB) / 601882624 bytes (574 MiB) up to 4185915392 bytes (3992 MiB)
+	CPUs: 8
+	Processor Vendor: GenuineIntel
+	Processor Name: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+	Identifier: Intel64 Family 6 Model 142 Stepping 12
+	Microarchitecture: Whiskey Lake
+	Frequency (GHz): 2.30
+	Number of physical packages: 1
+	Number of physical CPUs: 4
+	Number of logical CPUs: 8
+	Graphics card #0 name: Intel(R) UHD Graphics
+	Graphics card #0 vendor: Intel Corporation
+	Graphics card #0 VRAM (MiB): 1024.00
+	Graphics card #0 deviceId: VideoController1
+	Graphics card #0 versionInfo: 31.0.101.2135
+	Memory slot #0 capacity (MiB): 8192.00
+	Memory slot #0 clockSpeed (GHz): 2.67
+	Memory slot #0 type: DDR4
+	Memory slot #1 capacity (MiB): 8192.00
+	Memory slot #1 clockSpeed (GHz): 2.67
+	Memory slot #1 type: DDR4
+	Virtual memory max (MiB): 23804.87
+	Virtual memory used (MiB): 15872.00
+	Swap memory total (MiB): 7840.03
+	Swap memory used (MiB): 429.12
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 46209.02, total: 185678.58
+	Space in storage for workdir (MiB): available: 46209.02, total: 185678.58
+	JVM Flags: 0 total; 
+	ModLauncher: 11.0.5+main.901c6ea8
+	ModLauncher launch target: forgeclientdev
+	ModLauncher services: 
+		sponge-mixin-0.15.2+mixin.0.8.7.jar mixin PLUGINSERVICE 
+		loader-4.0.42.jar slf4jfixer PLUGINSERVICE 
+		loader-4.0.42.jar runtime_enum_extender PLUGINSERVICE 
+		at-modlauncher-10.0.1.jar accesstransformer PLUGINSERVICE 
+		loader-4.0.42.jar runtimedistcleaner PLUGINSERVICE 
+		modlauncher-11.0.5.jar mixin TRANSFORMATIONSERVICE 
+		modlauncher-11.0.5.jar fml TRANSFORMATIONSERVICE 
+	FML Language Providers: 
+		javafml@4.0
+		lowcodefml@4.0
+		minecraft@4.0
+	Mod List: 
+		main                                              |Flan's Mod Ultimate           |flansmodultimate              |2.0-neo-beta-1      |Manifest: NOSIGNATURE
+		neoforge-21.1.228.jar                             |Minecraft                     |minecraft                     |1.21.1              |Manifest: NOSIGNATURE
+		neoforge-21.1.228.jar                             |NeoForge                      |neoforge                      |21.1.228            |Manifest: NOSIGNATURE
+	Crash Report UUID: de3d25ba-b064-41ca-b070-46c2297b2293
+	FML: 4.0.42
+	NeoForge: 21.1.228

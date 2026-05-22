@@ -1,0 +1,34 @@
+["General Settings"]
+	#Show content pack names in item descriptions
+	showPackNameInItemDescriptions = true
+	#If true, loads and caches ALL models up-front during resource reload.
+	#⚠ Warning:
+	#Do NOT enable this if you use many content packs / large amounts of content.
+	#This can be very RAM-hungry and may significantly increase client reload times.
+	#Recommended: leave this OFF and let models load on-demand.
+	#
+	loadAllModelsInCache = false
+
+["Input Settings"]
+	#Main Hand Gun shooting / primary function button
+	#Allowed Values: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE, MOUSE_4, MOUSE_5
+	shootButton = "MOUSE_LEFT"
+	#Offhand Gun shooting / primary function button
+	#Allowed Values: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE, MOUSE_4, MOUSE_5
+	shootButtonOffhand = "MOUSE_RIGHT"
+	#Aiming / secondary function button
+	#Allowed Values: MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE, MOUSE_4, MOUSE_5
+	aimButton = "MOUSE_RIGHT"
+	#Aim behavior
+	#Allowed Values: HOLD, TOGGLE
+	aimType = "TOGGLE"
+
+["Gun Rendering Settings"]
+	#Enable arms rendering
+	enableArms = true
+	#This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players
+	enableGunAnimationsInThirdPerson = true
+	#This will move weapons to a lowered position when sprinting
+	enableWeaponSprintStance = true
+	#This will randomly generate unique positions for each weapon using the weapon name as a seed
+	enableRandomSprintStance = false

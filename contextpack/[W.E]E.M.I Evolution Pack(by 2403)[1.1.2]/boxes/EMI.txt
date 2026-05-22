@@ -1,0 +1,111 @@
+Name EMI
+ShortName EMI
+TopTexture EMI_D
+SideTexture EMI_S
+BottomTexture EMI_T
+GunBoxID 512
+Recipe I ingotIron R workbench C wood B thinGlass 
+CBC
+IRI
+CIC
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as iron (ingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns must come before all the addGun lines and must be correct.
+NumGuns 32
+
+AddGun SWR_2403 6 Stuff_7 2 Stuff_8
+AddAmmo SWR_2403Ammo 1 Stuff_7
+
+AddGun EMIFN57 7 Stuff_7 4 Stuff_8
+AddAmmo SWR_2403Ammo 1 Stuff_7
+
+AddGun EMI50KUN 12 Stuff_7 8 Stuff_8
+AddAmmo EMIkundAmmo 1 Stuff_7
+
+AddGun EMIkund 16 Stuff_7 8 Stuff_8
+AddAmmo EMIkundAmmo 1 Stuff_7
+
+AddGun EMIkatanas 18 Stuff_7 30 Stuff_8
+AddAmmo EMIbox_1 4 Stuff_7 2 Stuff_8
+
+AddGun WSD 8 Stuff_7 6 Stuff_8
+AddAmmo WSDAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun EMISMK5 18 Stuff_7 12 Stuff_8
+AddAmmo EMISMK5Ammo 1 Stuff_7 1 Stuff_8
+
+AddGun EMIC90 10 Stuff_7 8 Stuff_8
+AddAmmo EMIC90Ammo 2 Stuff_7
+
+AddGun EMIPP19 12 Stuff_7 15 Stuff_8
+AddAmmo EMIC90Ammo 2 Stuff_7
+
+AddGun YJD 8 Stuff_7 12 Stuff_8
+AddAmmo YJDAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun YJD_W 8 Stuff_7 12 Stuff_8
+AddAmmo YJDAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun EMIHK401 18 Stuff_7 16 Stuff_8
+AddAmmo YJDAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun EMIBR12 15 Stuff_7 16 Stuff_8
+AddAmmo YJDAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun EMI6P62 15 Stuff_7 8 Stuff_8
+AddAmmo EMI6P62Ammo 1 Stuff_7 1 Stuff_8
+
+AddGun EMIG11 8 Stuff_7 20 Stuff_8
+AddAmmo EMIC90Ammo 2 Stuff_7
+
+AddGun EMIAWS20 18 Stuff_7 16 Stuff_8
+AddAmmo EMIbox_1 4 Stuff_7 2 Stuff_8
+
+AddGun EMIWa2000 20 Stuff_7 25 Stuff_8
+AddAmmo SWR_2403Ammo 1 Stuff_7
+
+AddGun EMISBMG 26 Stuff_7 18 Stuff_8
+AddAmmo EMISBMGAmmo 1 Stuff_7 1 Stuff_8
+
+AddGun PMG20 24 Stuff_7 12 Stuff_8
+AddAmmo PMG20Ammo 1 Stuff_7 1 Stuff_8
+
+AddGun EMIAWP70 25 Stuff_7 25 Stuff_8
+AddAmmo EMIAWP70Ammo 1 Stuff_7 2 Stuff_8
+
+AddGun DCS 25 Stuff_7 20 Stuff_8
+AddAmmo DCSAmmo 1 Stuff_7
+
+AddGun EMIPTRD 25 Stuff_7 20 Stuff_8
+AddAmmo EMIbox_2 2 Stuff_7 2 Stuff_8
+
+AddGun EMISXM170 24 Stuff_7 15 Stuff_8
+AddAmmo EMIbox_3 4 Stuff_7 1 Stuff_8
+
+AddGun EMIKSG1 30 Stuff_7 18 Stuff_8
+AddAmmo EMIbox_3 4 Stuff_7 1 Stuff_8
+
+AddGun EMISPAS12 28 Stuff_7 20 Stuff_8
+AddAmmo EMIbox_3 4 Stuff_7 1 Stuff_8
+
+AddGun JACK 24 Stuff_7 16 Stuff_8
+AddAmmo JACKAmmo 4 Stuff_7 1 Stuff_8
+
+AddGun EMISaiga18 22 Stuff_7 20 Stuff_8
+AddAmmo EMISaiga18Ammo 2 Stuff_7 1 Stuff_8
+
+AddGun EMIM607 40 Stuff_7 35 Stuff_8
+AddAmmo EMIM607Ammo 6 Stuff_7 1 Stuff_8
+
+AddGun EMINegev 42 Stuff_7 32 Stuff_8
+AddAmmo EMIM607Ammo 6 Stuff_7 1 Stuff_8
+
+AddGun GCM134 25 Stuff_7 32 Stuff_8
+AddAmmo GCM134Ammo 5 Stuff_7 1 Stuff_8
+
+AddGun M910 1 Stuff_7 1 Stuff_8
+
+AddGun YM911 1 Stuff_7 2 Stuff_8

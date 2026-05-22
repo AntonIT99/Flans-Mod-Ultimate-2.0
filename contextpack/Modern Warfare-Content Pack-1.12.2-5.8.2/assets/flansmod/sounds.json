@@ -1,0 +1,860 @@
+{
+  "ak47shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ak47shoot"
+    ]
+  },
+  "ak74shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ak74shoot"
+    ]
+  },
+  "barreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:barreload"
+    ]
+  },
+  "barrettshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:barrettshoot"
+    ]
+  },
+  "mwbazookareload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwbazookareload"
+    ]
+  },
+  "brenreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:brenreload"
+    ]
+  },
+  "browningreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:browningreload"
+    ]
+  },
+  "mwcoltreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwcoltreload"
+    ]
+  },
+  "deserteagleshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:deserteagleshoot"
+    ]
+  },
+  "dp28reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dp28reload"
+    ]
+  },
+  "dragunovshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dragunovshoot"
+    ]
+  },
+  "g36shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:g36shoot"
+    ]
+  },
+  "kar98kreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kar98kreload"
+    ]
+  },
+  "leeenfieldreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:leeenfieldreload"
+    ]
+  },
+  "mwlugerreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwlugerreload"
+    ]
+  },
+  "l96shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:l96shoot"
+    ]
+  },
+  "m1carbinereload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1carbinereload"
+    ]
+  },
+  "m9shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m9shoot"
+    ]
+  },
+  "m14shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m14shoot"
+    ]
+  },
+  "m21shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m21shoot"
+    ]
+  },
+  "m60shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m60shoot"
+    ]
+  },
+  "m249shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m249shoot"
+    ]
+  },
+  "l86shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:l86shoot"
+    ]
+  },
+  "m1014reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1014reload"
+    ]
+  },
+  "m1014shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1014shoot"
+    ]
+  },
+  "mg42reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg42reload"
+    ]
+  },
+  "miniuzishoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:miniuzishoot"
+    ]
+  },
+  "mp5shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mp5shoot"
+    ]
+  },
+  "mwmp40reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwmp40reload"
+    ]
+  },
+  "mwmp44reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwmp44reload"
+    ]
+  },
+  "p90shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:p90shoot"
+    ]
+  },
+  "ppshreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ppshreload"
+    ]
+  },
+  "r700shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:r700shoot"
+    ]
+  },
+  "reload1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:reload1"
+    ]
+  },
+  "rpdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rpdshoot"
+    ]
+  },
+  "rpgshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rpgshoot"
+    ]
+  },
+  "skorpionshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:skorpionshoot"
+    ]
+  },
+  "mwspringfieldreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwspringfieldreload"
+    ]
+  },
+  "mwstenreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwstenreload"
+    ]
+  },
+  "mwthompsonreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mwthompsonreload"
+    ]
+  },
+  "tt33reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tt33reload"
+    ]
+  },
+  "uspshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:uspshoot"
+    ]
+  },
+  "w1200reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:w1200reload"
+    ]
+  },
+  "w1200shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:w1200shoot"
+    ]
+  },
+  "glockshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:glockshoot"
+    ]
+  },
+  "sg550shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:sg550shoot"
+    ]
+  },
+  "at4shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:at4shoot"
+    ]
+  },
+  "makarovshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:makarovshoot"
+    ]
+  },
+  "sigp229shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:makarovshoot"
+    ]
+  },
+  "r870shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:r870shoot"
+    ]
+  },
+  "fnscarshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:fnscarshoot"
+    ]
+  },
+  "helicopter1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:helicopter1"
+    ]
+  },
+  "helicopter2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:helicopter2"
+    ]
+  },
+  "helicopterstart": {
+    "category": "player",
+    "sounds": [
+      "flansmod:helicopterstart"
+    ]
+  },
+  "jetengine1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:jetengine1"
+    ]
+  },
+  "jetengine2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:jetengine2"
+    ]
+  },
+  "rocketfire1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocketfire1"
+    ]
+  },
+  "rocketfire2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocketfire2"
+    ]
+  },
+  "bullethit": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullethit"
+    ]
+  },
+  "minigunwarmup": {
+    "category": "player",
+    "sounds": [
+      "flansmod:minigunwarmup"
+    ]
+  },
+  "minigunspin": {
+    "category": "player",
+    "sounds": [
+      "flansmod:minigunspin"
+    ]
+  },
+  "miniguncooldown": {
+    "category": "player",
+    "sounds": [
+      "flansmod:miniguncooldown"
+    ]
+  },
+  "m1887shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1887shoot"
+    ]
+  },
+  "m1887reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1887reload"
+    ]
+  },
+  "grenadelaunchershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:grenadelaunchershoot"
+    ]
+  },
+  "gl6reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:gl6reload"
+    ]
+  },
+  "grenadelauncherreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:grenadelauncherreload"
+    ]
+  },
+  "m1a2start": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1a2start"
+    ]
+  },
+  "m1a2_run": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1a2_run"
+    ]
+  },
+  "90mm": {
+    "category": "player",
+    "sounds": [
+      "flansmod:90mm"
+    ]
+  },
+  "challengeridle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:challengeridle"
+    ]
+  },
+  "challengerrun": {
+    "category": "player",
+    "sounds": [
+      "flansmod:challengerrun"
+    ]
+  },
+  "minigunshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:minigunshoot"
+    ]
+  },
+  "turrettraverse1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:turrettraverse1"
+    ]
+  },
+  "turrettraverse2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:turrettraverse2"
+    ]
+  },
+  "judgereload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:judgereload"
+    ]
+  },
+  "juryreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:juryreload"
+    ]
+  },
+  "juryshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:juryshoot"
+    ]
+  },
+  "executionershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:executionershoot"
+    ]
+  },
+  "executionerreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:executionerreload"
+    ]
+  },
+  "jetidle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:jetidle"
+    ]
+  },
+  "krabershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:krabershoot"
+    ]
+  },
+  "kraberreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kraberreload"
+    ]
+  },
+  "tripletakeshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tripletakeshoot"
+    ]
+  },
+  "tripletakereload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tripletakereload"
+    ]
+  },
+  "mastiffshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mastiffshoot"
+    ]
+  },
+  "mastiffreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mastiffreload"
+    ]
+  },
+  "kcasmartpistolshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kcasmartpistolshoot"
+    ]
+  },
+  "kcasmartpistolreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kcasmartpistolreload"
+    ]
+  },
+  "honeybadgerreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:honeybadgerreload"
+    ]
+  },
+  "honeybadgershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:honeybadgershoot"
+    ]
+  },
+  "hcarreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:hcarreload"
+    ]
+  },
+  "hcarshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:hcarshoot"
+    ]
+  },
+  "eldiabloshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:eldiabloshoot"
+    ]
+  },
+  "emp4shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emp4shoot"
+    ]
+  },
+  "pr3shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:pr3shoot"
+    ]
+  },
+  "pr3reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:pr3reload"
+    ]
+  },
+  "automaticannihilation100shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:automaticannihilation100shoot"
+    ]
+  },
+  "grizzlybrshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:grizzlybrshoot"
+    ]
+  },
+  "devotionx55shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:devotionx55shoot"
+    ]
+  },
+  "devotionx55reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:devotionx55reload"
+    ]
+  },
+  "peacekeepershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:peacekeepershoot"
+    ]
+  },
+  "peacekeeperreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:peacekeeperreload"
+    ]
+  },
+  "flamethrowershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:flamethrowershoot"
+    ]
+  },
+  "flamethrowerreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:flamethrowerreload"
+    ]
+  },
+  "mlrs6shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mlrs6shoot"
+    ]
+  },
+  "mlrs6reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mlrs6reload"
+    ]
+  },
+  "krissvectorshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:krissvectorshoot"
+    ]
+  },
+  "krissvectorreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:krissvectorreload"
+    ]
+  },
+  "spasshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:spasshoot"
+    ]
+  },
+  "spasreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:spasreload"
+    ]
+  },
+  "aa12shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:aa12shoot"
+    ]
+  },
+  "aa12reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:aa12reload"
+    ]
+  },
+  "rocket1shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket1shoot"
+    ]
+  },
+  "rocket1reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket1reload"
+    ]
+  },
+  "rocket2shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket2shoot"
+    ]
+  },
+  "rocket2reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket2reload"
+    ]
+  },
+  "rocket3shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket3shoot"
+    ]
+  },
+  "rocket3reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket3reload"
+    ]
+  },
+  "rocket4shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket4shoot"
+    ]
+  },
+  "rocket4reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocket4reload"
+    ]
+  },
+  "coldware2shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:coldware2shoot"
+    ]
+  },
+  "coldware2reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:coldware2reload"
+    ]
+  },
+  "galilshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:galilshoot"
+    ]
+  },
+  "galilreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:galilreload"
+    ]
+  },
+  "b4crossbowshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:b4crossbowshoot"
+    ]
+  },
+  "b4crossbowreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:b4crossbowreload"
+    ]
+  },
+  "an94shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:an94shoot"
+    ]
+  },
+  "an94reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:an94reload"
+    ]
+  },
+  "famasshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:famasshoot"
+    ]
+  },
+  "famasreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:famasreload"
+    ]
+  },
+  "adar15shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:adar15shoot"
+    ]
+  },
+  "adar15reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:adar15reload"
+    ]
+  },
+  "ammobagplace": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ammobagplace"
+    ]
+  },
+  "medicbagplace": {
+    "category": "player",
+    "sounds": [
+      "flansmod:medicbagplace"
+    ]
+  },
+  "fragmentationgrenadedetonate": {
+    "category": "player",
+    "sounds": [
+      "flansmod:fragmentationgrenadedetonate"
+    ]
+  },
+  "electricsmokegrenadedetonate": {
+    "category": "player",
+    "sounds": [
+      "flansmod:electricsmokegrenadedetonate"
+    ]
+  },
+  "ash12shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ash12shoot"
+    ]
+  },
+  "ash12reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ash12reload"
+    ]
+  },
+  "alarmtrapdetonate": {
+    "category": "player",
+    "sounds": [
+      "flansmod:alarmtrapdetonate"
+    ]
+  },
+  "decoycanisterdetonate": {
+    "category": "player",
+    "sounds": [
+      "flansmod:decoycanisterdetonate"
+    ]
+  },
+  "enaturretshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:enaturretshoot"
+    ]
+  },
+  "sigp229shoot-1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:sigp229shoot"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IDP",
+    "I P",
+    "III"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:iron_block"
+    },
+    "D": {
+      "item": "minecraft:oak_trapdoor"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:heavytankbody"
+  }
+}

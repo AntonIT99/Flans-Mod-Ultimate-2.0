@@ -1,0 +1,181 @@
+["General Settings"]
+	#Whether all paintjobs should appear in creative
+	addAllPaintjobsToCreative = true
+	#Disables crosshair for guns except melee weapons
+	disableCrosshairForGuns = true
+	#Whether explosions can break blocks
+	explosionBreakBlocks = true
+	#Whether blocks broken by Flan's Mod explosions should drop items
+	flanExplosionsDropBlocks = true
+	#Allows you to increase health regen, best used alongside increased max health
+	# Default: 0
+	# Range: 0 ~ 1000
+	bonusRegenAmount = 0
+	#Number of ticks between heals, vanilla is 80
+	# Default: 80
+	# Range: 0 ~ 1000
+	bonusRegenTickDelay = 80
+	#Amount of food required to activate this regen, vanilla is 18
+	# Default: 18
+	# Range: 0 ~ 20
+	bonusRegenFoodLimit = 18
+
+["Damage Settings"]
+	#All headshot damage will be modified by this amount
+	# Default: 2.0
+	# Range: 0.0 ~ 1000.0
+	headshotDamageModifier = 2.0
+	#All chest shot damage will be modified by this amount
+	# Default: 1.0
+	# Range: 0.0 ~ 1000.0
+	chestshotDamageModifier = 1.0
+	#All arm shot damage will be modified by this amount
+	# Default: 0.7
+	# Range: 0.0 ~ 1000.0
+	armshotDamageModifier = 0.7
+	#All leg shot damage will be modified by this amount
+	# Default: 0.8
+	# Range: 0.0 ~ 1000.0
+	legshotModifier = 0.8
+	#Proportion of damage from an explosion when it has hit a wheel or seat
+	# Default: 1.0
+	# Range: 0.0 ~ 1.0
+	vehicleWheelSeatExplosionModifier = 1.0
+
+["Armor Settings"]
+	#0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config
+	# Default: 2
+	# Range: 0 ~ 2
+	breakableArmor = 2
+	#Default durability if breakableArmor = 1
+	# Default: 500
+	# Range: > 1
+	defaultArmorDurability = 500
+	#The quality of enchantments received for the same level of XP 0=UnEnchantable 25=Gold armor
+	# Default: 0
+	# Range: > 0
+	defaultArmorEnchantability = 0
+	#Enable the old ratio-based armor reduction system
+	enableOldArmorRatioSystem = false
+
+["Gun Settings"]
+	#Guns will be always usable by players in creative mode, regardless of the parameter 'UsableByPlayers' in gun configs
+	gunsAlwaysUsableByPlayersInCreativeMode = true
+	#All gun damage will be modified by this amount
+	# Default: 1.0
+	# Range: 0.0 ~ 100.0
+	gunDamageModifier = 1.0
+	#All gun recoil will be modified by this amount
+	# Default: 1.0
+	# Range: 0.0 ~ 100.0
+	gunRecoilModifier = 1.0
+	#All gun dispersion will be modified by this amount (only applies to 'Dispersion')
+	# Default: 1.0
+	# Range: 0.0 ~ 100.0
+	gunDispersionModifier = 1.0
+	#All gun accuracy / spread will be modified by this amount (applies to 'Accuracy' and 'Spread')
+	# Default: 1.0
+	# Range: 0.0 ~ 100.0
+	gunAccuracySpreadModifier = 1.0
+	#Modifier for spread when the player is aiming.
+	# Default: 0.2
+	# Range: 0.0 ~ 10.0
+	defaultADSSpreadMultiplier = 0.2
+	#Modifier for spread when the player is aiming. (Multishot guns only).
+	# Default: 0.8
+	# Range: 0.0 ~ 10.0
+	defaultADSSpreadMultiplierShotgun = 0.8
+	#Cancel reload when switching to a different item
+	cancelReloadOnWeaponSwitch = true
+	#Combine unloaded ammo with damaged ammo in the inventory
+	combineAmmoOnReload = true
+	#Try to put unloaded ammo in the upper inventory first
+	ammoToUpperInventoryOnReload = false
+	#Changes recoil to be more realistic
+	realisticRecoil = false
+	#Enable downward movement of the sight after shot
+	enableSightDownwardMovement = true
+
+["Shootable Settings"]
+	#Whether guns and grenades can break glass
+	shootablesCanBreakGlass = true
+	#Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to the damage of a 9g bullet at 333 m/s
+	# Default: 5.0
+	# Range: 0.0 ~ 1000.0
+	newDamageSystemDamageReference = 5.0
+	#Explosion damage reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the damage of 1kg TNT
+	# Default: 80.0
+	# Range: 0.0 ~ 1000.0
+	newDamageSystemExplosiveDamageReference = 80.0
+	#Explosion power reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the power of 1kg TNT
+	# Default: 4.0
+	# Range: 0.0 ~ 1000.0
+	newDamageSystemExplosivePowerReference = 4.0
+	#Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT
+	# Default: 10.0
+	# Range: 0.0 ~ 1000.0
+	newDamageSystemExplosiveRadiusReference = 10.0
+	#Ratio of the blast radius (damage area) relative to the explosion radius (block breaking and particles area)
+	# Default: 2.5
+	# Range: 0.0 ~ 10.0
+	newDamageSystemBlastToExplosionRadiusRatio = 2.5
+	#Whether proximity triggers can get triggered by allies and cause friendly fire
+	shootableProximityTriggerFriendlyFire = false
+	#Max despawn time in ticks (0.05s). 0 means no despawn time.
+	# Default: 0
+	# Range: > 0
+	shootableDefaultRespawnTime = 0
+
+["Sound Settings"]
+	#Range in blocks for general sound packets (also determines volume).
+	# Default: 48.0
+	# Range: 1.0 ~ 4096.0
+	soundRange = 48.0
+	#Range in blocks for gun fire sound packets (also determines volume).
+	# Default: 128.0
+	# Range: 1.0 ~ 4096.0
+	gunFireSoundRange = 128.0
+	#Range in blocks for explosion sound packets (also determines volume).
+	# Default: 256.0
+	# Range: 1.0 ~ 4096.0
+	explosionSoundRange = 256.0
+
+["Penetration System Settings"]
+	#Whether to use new penetration system
+	useNewPenetrationSystem = false
+	#Enable the block penetration system
+	enableBlockPenetration = false
+	#Default block penetration modifier power. Individual bullets will override
+	# Default: 0.0
+	# Range: 0.0 ~ 100.0
+	blockPenetrationModifier = 0.0
+	#Per-block penetration data.
+	#Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>
+	#Example: minecraft:stone; 3.0; false
+	blocks = []
+
+["Digital Ammo System Settings"]
+	#Enable the digital ammo system. When enabled, players have a virtual ammo pool
+	#instead of needing physical magazines. Ammo is stored per-player and synced to client.
+	enableDigitalAmmoSystem = false
+	#Default amount of ammo for each type when a player first joins
+	# Default: 100
+	# Range: > 0
+	digitalAmmoDefaultAmount = 100
+	#Maximum amount of ammo allowed for each type
+	#Players cannot have more than this amount per ammo type
+	# Default: 1000
+	# Range: > 1
+	digitalAmmoMaxAmount = 1000
+	#Number of different ammo types supported by the digital ammo system
+	# Default: 7
+	# Range: 1 ~ 20
+	digitalAmmoNumTypes = 7
+	#List of block IDs that act as supply blocks for digital ammo.
+	#When a player right-clicks these blocks, their digital ammo is replenished.
+	#Format: namespace:block (e.g., minecraft:iron_block)
+	digitalAmmoSupplyBlocks = []
+	#Amount of ammo to restore for each type when using supply blocks
+	# Default: 100
+	# Range: > 1
+	digitalAmmoSupplyAmount = 100

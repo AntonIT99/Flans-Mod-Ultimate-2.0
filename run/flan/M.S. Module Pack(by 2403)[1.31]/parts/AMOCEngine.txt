@@ -1,0 +1,18 @@
+Name AMOCEngine
+ShortName AMOCEngine
+Icon AMOCEngine
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Engine
+EngineSpeed 2.5
+FuelConsumption 1.5
+//UseRF True
+//RFDrawRate 500
+WorksWith vehicles planes
+StackSize 4
+RecipeOutput 1
+Recipe I ingotIron L diamond B Stuff_4
+IBI
+ILI
+IBI

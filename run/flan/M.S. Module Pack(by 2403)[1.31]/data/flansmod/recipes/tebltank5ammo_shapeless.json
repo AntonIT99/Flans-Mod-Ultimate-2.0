@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:stuff_3"
+    },
+    {
+      "item": "flansmod:stuff_3"
+    },
+    {
+      "item": "flansmod:stuff_4"
+    },
+    {
+      "item": "minecraft:stone_bricks"
+    },
+    {
+      "item": "minecraft:stone_bricks"
+    },
+    {
+      "item": "minecraft:stone_bricks"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tebltank5ammo"
+  }
+}

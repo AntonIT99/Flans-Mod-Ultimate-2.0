@@ -1,0 +1,48 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEEMISB
+ShortName TEEMISBA1
+//弹药名称(短名)
+Ammo TEEMISBAmmoA1
+Icon TEEMISB
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 20
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 20
+MeleeDamage 32
+//这个值越高，子弹时速的越高
+Accuracy 0
+NumBullets 6
+//循环时间
+ShootDelay 70
+ShootSound SB2
+ReloadSound SB1
+Mode SemiAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEEMISB
+Texture TEEMISB_2403
+ModelScale 0.47
+BulletSpeed 4.0
+//组件设置
+Description §5妖 - <B模式>_§4KillCount : 1472_§5ProudSoul : 437012205_SA:束能粒子流_Refine : 470_ _§4RankAttackDamage_§6B-SS§t/§4SSS§t/§5Limit_§6+6.0§t/§4+24.0§t/§5+118.0_EU电容强化 VI_火控终端 VII_高能粒子束 II_ 
+//§b<T.E.B.L> | §6<品质：遗迹>_SK-拔刀剑_[Slash Knife]_§6COLE ONLY
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 8

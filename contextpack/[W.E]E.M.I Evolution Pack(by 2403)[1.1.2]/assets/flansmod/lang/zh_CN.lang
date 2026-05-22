@@ -1,0 +1,165 @@
+﻿//最后战线官方制作团队原创武器包
+//by EMI科技有限公司
+//版权所有 翻版必究
+//外贸版已授权部分服务器使用，详情可见“EMI科技有限公司吧”
+
+//材料
+item.Stuff_7.name=§e轻量化合金
+item.Stuff_8.name=§e炭纤维
+
+//组件
+item.HUD_FHZB.name=腐化灾兵 瞄具芯片
+item.HUD_PMG20.name=§e高倍狙击镜 瞄具芯片
+item.HUD_SRS99.name=§eSRS99 瞄具芯片
+item.HUD_TCPL.name=§eT.C.P.L 瞄具芯片
+item.HUD_TCPLXD.name=§e能量卡宾枪HUD芯片
+item.HUD_TCPLZCL.name=§e恒星毁灭者HUD芯片
+item.HUD_TEBL.name=§eT.E.B.L 瞄具芯片
+item.HUD_void.name=§evoid高倍狙击镜 瞄具芯片
+item.HUD_voidH.name=§evoid血族 瞄具芯片
+item.HUD_voidT.name=§e光速步枪 瞄具芯片
+item.HUD_YJD.name=§e突击步枪 瞄具芯片
+
+item.EMIGrowX.name=§e高阶增速牵引器
+item.EMIGrow.name=§e增速牵引器
+
+item.EMIReverse.name=§e反向制退器
+item.EMIExtend.name=§e收束牵引器
+item.EMIReverse2X.name=§e矢量制退器
+item.EMISever.name=§e磁场分离器
+
+item.EMIReform.name=§e改良型内核组件
+item.EMIPlus1.name=§e试验型发射组件
+item.EMIPlus2.name=§e调试型射击组件
+item.EMIPlus3.name=§e全频射击组件
+item.EMIPlus4.name=§e训练用磁场阻断器
+item.EMIPlus5.name=§e独头弹击发组件
+item.EMIPlus6.name=§e猎鹿弹击发组件
+item.EMIPlus7.name=§e双室增速弹膛
+item.EMIPlus8.name=§e影袭者扩展组件
+item.EMIPlus9.name=§e扩展型增速弹膛
+item.EMIPlus10.name=§e削短型增速弹膛
+item.EMIPlus11.name=§e.300BLK 光学瞄具芯片
+
+//组装台
+tile.EMI.name=§e[E.M.I]合成终端
+tile.EMI2.name=§e[E.M.I]资源转换终端
+tile.EMI3.name=§e[E.M.I]改造终端
+
+//通用弹匣
+item.SWR_2403Ammo.name=§e.32SNF 通用弹匣
+item.EMI6P62Ammo.name=§e.95AP 步枪弹匣
+item.DCSAmmo.name=§eS09 轨道炮弹头
+item.YJDAmmo.name=§e.32SNF 步枪弹匣
+
+item.GussAmmo.name=§e装填式轨道炮弹匣
+item.EMIkundAmmo.name=§e 手枪弹匣
+
+item.EMIKINE21Ammo.name=§e.52x8AM 加速步枪弹匣
+item.EMIL501Ammo.name=§e.52x2AM 加速步枪弹匣
+
+item.EMIAmmo_1.name=§e3.32mm 钢针弹
+item.EMIAmmo_2.name=§e9.95mm 钢针弹
+item.EMIAmmo_3.name=§e16号钢针集束弹
+item.EMIbox_1.name=§e3.32mm 盒装钢针弹
+item.EMIbox_2.name=§e9.95mm 盒装钢针弹
+item.EMIbox_3.name=§e盒装16号钢针集束弹
+item.EMIAmmo_5.name=§e5.52mm 束能钢针弹
+item.EMIbox_5.name=§e盒装5.52mm束能钢针弹
+item.EMIAmmo_4.name=§e高爆霰弹
+item.EMIbox_4.name=§e盒装高爆霰弹
+
+item.GCM134Ammo.name=§e.32x150MG 大容量弹箱
+item.WSDAmmo.name=§e.32GAP 冲锋枪弹匣
+item.PMG20Ammo.name=§e.95SAP 狙击步枪弹匣
+item.JACKAmmo.name=§e12号霰弹弹股
+
+item.EMISMK5Ammo.name=§e.32x45 冲锋枪弹匣
+item.TwoSineAmmo.name=§e嵌入式高爆弹
+item.TwoSinesAmmo.name=§e嵌入式强酸弹
+item.TwoSine2Ammo.name=§e.300KIL 追猎者飞弹
+
+item.EMIGCS82Ammo.name=§e特质型轨道炮弹头[高爆]
+item.EMISEvilAmmo.name=§e.95AP 扩容手枪弹匣
+item.EMIMGS20Ammo.name=§e.95MA 步枪弹股
+item.EMISBMGAmmo.name=§e.32DMR 狙击步枪弹匣
+item.EMIAWP70Ammo.name=§e.32SNF 狙击步枪弹匣
+item.EMIAWP70SAmmo.name=§e.300KILx10 次口径空尖弹弹匣
+item.EMIC90Ammo.name=§e.32SNF 横向弹匣
+item.TEBLM134Ammo.name=§e.32SNF 机炮弹仓
+item.EMIfreedomAmmo.name=§e770 轨道炮弹匣
+
+item.EMIM1072Ammo.name=§e.32SAP 狙击步枪弹匣
+item.EMISINKXAmmo.name=§eSAP 动力燃油储罐
+item.EMIM607Ammo.name=§e3.2ESN 大容量弹仓
+
+//武器
+item.Guss.name=§eS.H.R.G
+item.M910.name=§e逆境守护者战术格斗匕首
+item.YM911.name=§e天空撕裂者反叛军匕首
+
+item.GCM134.name=§eEM194 A2 机炮
+item.EMI6P62.name=§eAP62-T 反器材步枪
+item.SWR_2403.name=§eXSP-12 脉冲手枪
+item.DCS.name=§eGR-S 09 轨道炮
+item.YJD.name=§eSK-12 A2 铆钉步枪
+item.YJD_W.name=§eSK-12 A2 铆钉步枪
+
+item.SWRT_2403.name=§eXSP-12 脉冲手枪「殉道者」
+item.PMG20.name=§ePUR Eecate II 反器材狙击步枪
+
+item.JACK.name=§eJack-12 全自动霰弹枪
+item.WSD.name=§eESMG-5 冲锋枪
+item.EMISPAS12.name=§eEPAS-12 战术霰弹枪
+item.EMIL501.name=§eEL-501 加速步枪
+item.EMIKINE21.name=§eKINE-21 加速步枪
+
+item.EMIkund.name=§eMAC-12 重型手枪
+item.EMISEvil.name=§eMAC-12(MOD II) 极地探索者
+item.EMIMDE.name=§eEDA-50 重型手枪
+item.EMIWa2000.name=§eEAK-2000 精确射手步枪
+item.EMIGCS82.name=§eGR-S 09(MK2) 轨道炮
+item.EMIRIF020.name=§eGR-SOPMOD IV 轨道炮
+item.EMIFN57.name=§eXN-57 脉冲手枪
+
+item.EMISINKX.name=§eEANTIAN 链锯
+item.TEBLM134.name=§eEMG-130 机炮
+item.TEBLGCM134.name=§eEMG-707 主神机炮
+
+item.INSACK.name=§eJack-12 全自动霰弹枪「殉道者」
+item.EMIMGS20.name=§eAPM 92 单兵重型突击步枪
+
+item.EMITwoSine.name=§eEM203 A2 尖庄发射器
+
+item.EMISXM170.name=§eEM-1019 半自动霰弹枪
+item.EMIMAMK5.name=§eUMK-45 A2 消音步枪
+item.EMISMK5.name=§eUMK-45 冲锋枪
+item.EMIPP19.name=§e9x19-ENS 冲锋枪
+item.EMIPTRD.name=§eETRD-40 反装甲步枪
+
+item.EMIAWS20.name=§eEM-700 铆钉狙击步枪
+item.EMISBMG.name=§eEM98 EBR 精确射手步枪
+
+item.EMIkatanas.name=§eKris Lv9 近卫短剑
+
+item.EMIfreedom.name=§eFED-770 准线
+
+item.EMIAWP70.name=§eEAP-98 狙击步枪
+
+item.SWR_2403_Ona.name=§6E.M.I脉冲手枪「熔岩漫步者」
+item.EMI50KUN.name=§eMAC 9 穿甲手枪
+
+item.EMIM607.name=§eEM-60 轻机枪
+item.EMINegev.name=§eEegev-40 轻机枪
+
+item.EMIHK401.name=§eEM416-C 卡宾步枪
+item.EMIC90.name=§ePCH 90 冲锋枪
+item.EMIBR12.name=§eEBR-12 攻击步枪
+item.EMIG11.name=§eEMG-11 突击步枪
+item.EMIKSG1.name=§eESG-17 霰弹枪
+item.EMIM1072.name=§eEM-107 远程步枪 
+
+item.EMIVTS240.name=§eMAD-XP9 镇暴重剑
+item.EMISaiga18.name=§eEaiga UX 半自动霰弹枪
+item.EMISaiga18Ammo.name=§e16x10钢针霰弹弹匣
+item.EMISWR.name=§eXSP-12(MK2) 脉冲手枪

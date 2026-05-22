@@ -1,0 +1,100 @@
+package com.flansmodultimate.common.block;
+
+import com.flansmodultimate.common.inventory.ArmorBoxMenu;
+import com.flansmodultimate.common.types.ArmorBoxType;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.BlockHitResult;
+
+public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
+{
+    @Getter
+    protected final ArmorBoxType configType;
+
+    public ArmorBoxBlock(ArmorBoxType type)
+    {
+        super(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(2.0F, 4.0F)
+            .sound(SoundType.WOOD)
+        );
+        configType = type;
+    }
+
+    @Override
+    @NotNull
+    public Block asBlock()
+    {
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public MenuProvider getMenuProvider(BlockState state, @NotNull Level level, @NotNull BlockPos pos)
+    {
+        Block block = state.getBlock();
+        if (!(block instanceof ArmorBoxBlock armorBoxBlock))
+            throw new IllegalStateException("Block at " + pos + " is not an instance of " + ArmorBoxBlock.class.getSimpleName());
+        return new SimpleMenuProvider((containerId, inv, player) -> new ArmorBoxMenu(containerId, inv, pos, armorBoxBlock), armorBoxBlock.getName());
+    }
+
+    @Override
+    @NotNull
+    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    {
+        if (player.isShiftKeyDown())
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
+        {
+            MenuProvider provider = getMenuProvider(state, level, pos);
+            serverPlayer.openMenu(provider, pos);
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /**
+     * DO NOT call this directly from client in 1.20.1.
+     * If a button in your screen triggers buying, send a packet to the server.
+     */
+    /*public void buyArmourServer(String shortName, int piece, ServerPlayer player)
+    {
+        ArmourBoxType.ArmourBoxEntry entryPicked = null;
+        for (var page : type.pages) {
+            if (page.shortName.equals(shortName)) {
+                entryPicked = page;
+                break;
+            }
+        }
+        if (entryPicked == null) return;
+
+        // 1.20.1 ItemStack construction:
+        ItemStack resultStack = new ItemStack(entryPicked.armours[piece].item);
+
+        // Your CraftingInstance needs a rewrite too:
+        // - InventoryPlayer -> player.getInventory()
+        // - canCraft / craft should be server-side only
+        CraftingInstance crafting = new CraftingInstance(player.getInventory(),
+            entryPicked.requiredStacks[piece],
+            resultStack);
+
+        if (crafting.canCraft(player)) {
+            crafting.craft(player);
+        }
+    }*/
+}

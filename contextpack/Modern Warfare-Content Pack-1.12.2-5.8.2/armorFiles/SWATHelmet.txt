@@ -1,0 +1,11 @@
+Name SWAT Helmet
+ShortName SWATHelmet
+Icon SWATHelmet
+Colour 255 255 255
+Type Hat
+Defence 0.2
+ArmourTexture SWAT
+Enchantability 0
+Toughness 1
+Durability 0
+DamageReductionAmount 5

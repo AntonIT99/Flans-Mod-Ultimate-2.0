@@ -1,0 +1,57 @@
+////Ãû
+Name RPG
+ShortName TEKS79Ammo2
+Icon TEKS79Ammo2
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 10
+////Visuals
+Model YE2403.TERPGAMMO
+Texture TERPGAMMO_2403
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 5
+NumExplodeParticles 30
+SmokeParticles magicCrit
+SmokeEffect 18 300 4
+SmokeEffect 15 50 1
+SmokeEffect 9 250 1
+SmokeEffect 2 400 3
+SmokeEffect 19 20 4
+SmokeRadius 6
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 2
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.4
+HitEntityDamage 1
+ThrowSpeed 6.0
+FallSpeed 2.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 4.0
+Fuse 40
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEALRShoot
+////Misc
+MeleeDamage 10

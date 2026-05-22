@@ -1,0 +1,72 @@
+Name MS MG-34
+ShortName TEMG134
+//The ammo this gun uses (shortName)
+Ammo TEMG4Ammo
+Ammo TEMG4Ammo1
+Ammo TEMG4Ammo2
+Ammo TEMG4Ammo3
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Icon TEMG134
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 0.5
+//Damage in half hearts
+Damage 4
+//The higher this value, the more the bullets spread
+Accuracy 5
+LoadIntoGun 3
+//Time in ticks between rounds
+ShootDelay 1
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+NumBullets 3
+//Spin sound plays the whole time the player holds the shoot button, on loop. Warmup plays first, and cooldown plays when they stop firing
+WarmupSound TEa2
+SpinSound TEa1
+CooldownSound TEa3
+WarmupSoundLength 11
+SpinSoundLength 9
+ShootSound TEa4
+ReloadSound TEaReload
+Mode Minigun
+//Bullet speed, default 3.0
+BulletSpeed 6.0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model YE2403.TEMG134
+Texture TEMG134_2403
+ModelScale 0.45
+Description §a<M.S> | §6<品质：遗迹>_MG-机枪_[Machine Gun]
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD TEONLYSMG134 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TESDOOA2 TESDOOA3 TESDOOA4
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+//Modifiers
+MoveSpeedModifier 0.4
+KnockbackModifier 0
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+//涂装格式“Icon/text”
+Paintjob TEMG134_1 TEMG134_2403_1
+Paintjob TEMG134_2 TEMG134_2403_2
+Paintjob TEMG134_3 TEMG134_2403_3
+Paintjob TEMG134_4 TEMG134_2403_4
+Paintjob TEMG134_5 TEMG134_2403_5

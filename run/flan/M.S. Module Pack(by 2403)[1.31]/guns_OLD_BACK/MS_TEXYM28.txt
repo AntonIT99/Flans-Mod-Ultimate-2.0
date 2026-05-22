@@ -1,0 +1,43 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEXYM28
+ShortName TEXYM28
+//弹药名称(短名)
+Ammo TEXYM28Ammo
+Icon TEXYM28
+//弹药装填时间, 1=20/1秒
+ReloadTime 35
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5
+//杀伤力
+Damage 5
+MeleeDamage 270
+//这个值越高，子弹时速的越高
+Accuracy 2
+//循环时间
+ShootDelay 1
+ShootSound TEGlockShoot
+ReloadSound TEGlockReload
+Mode SemiAuto
+//机瞄设置
+Scope None
+ZoomLevel 0.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEXYM28
+Texture TEXYM28_2403
+ModelScale 0.4
+//组件设置
+Description §a<M.S> | §6<品质：遗迹>_MA-近身武器_[Melee Attack]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD SMG2 TEGlock2
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+KnockbackModifier 1

@@ -1,0 +1,27 @@
+Name §3弹匣改造-#0猎鹿彈
+ShortName GRIFFIN_LLD2
+Icon GRIFFIN_LLD2
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType generic
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//Flashlight variables
+Flashlight false
+FlashlightRange 10
+FlashlightStrength 12
+//近战伤害，伤害，散射，后坐力，子弹时速，模式
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.2
+SpreadMultiplier 1.2
+RecoilMultiplier 1.04
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+
+Description 装备/弹匣改良_§9命中-10_§9伤害+10_§9后坐力+2
+
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01

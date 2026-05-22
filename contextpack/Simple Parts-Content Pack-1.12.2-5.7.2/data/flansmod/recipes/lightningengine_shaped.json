@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LDL",
+    "DID",
+    "LDL"
+  ],
+  "key": {
+    "D": {
+      "item": "flansmod:denseredstonecoil"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "L": {
+      "item": "flansmod:lightgem"
+    }
+  },
+  "result": {
+    "item": "flansmod:lightningengine"
+  }
+}

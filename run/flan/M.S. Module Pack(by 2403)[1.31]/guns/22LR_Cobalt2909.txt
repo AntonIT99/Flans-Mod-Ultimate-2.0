@@ -1,0 +1,64 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name TEM60 ���ǹ
+ShortName TECobalt2909
+//��ҩ����(����)
+Ammo TECobalt2909Ammo
+Icon TECobalt2909
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 60
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 80.0
+//ɱ����
+Damage 4.2
+//8.3
+//MeleeDamage 0
+//4
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 4
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound TECobalt2909Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+BulletSpeed 15
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TECobalt2909
+Texture TECobalt2909_2403
+ModelScale 0.93
+MoveSpeedModifier 0.7
+//�������
+Description ��7<��񷾺��> | ��2<Ʒ�ʣ�����>_MG-��ǹ_[Machine Gun]
+//
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+MoveSpeedModifier 0.85
+// 6
+//Ϳװ��ʽ��Icon/text��

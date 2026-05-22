@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "flansmod:block/modernarmourboxtop",
+    "bottom": "flansmod:block/modernarmourboxtop",
+    "side": "flansmod:block/modernarmourboxside"
+  }
+}

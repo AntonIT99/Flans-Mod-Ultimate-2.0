@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IWI"
+  ],
+  "key": {
+    "W": {
+      "item": "flansmod:metalwingsection"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:metalwingsmall"
+  }
+}

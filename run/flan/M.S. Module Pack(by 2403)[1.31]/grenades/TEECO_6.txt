@@ -1,0 +1,60 @@
+////名字
+Name TEECO_6
+ShortName TEECO_6
+Icon TEECO_6
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 1
+
+////模型
+Model YE2403.TEECO_1
+Texture TEGL4_2403
+NumExplodeParticles 10
+ExplodeParticles suspended
+SmokeRadius 3
+SmokeTime 20
+SmokeParticles suspended
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 1 280 1
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 0.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky false
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 1.0
+//延时
+Fuse 1
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+////Misc
+DetonateSound TEMARRORShoot
+MeleeDamage 0
+
+//合成表

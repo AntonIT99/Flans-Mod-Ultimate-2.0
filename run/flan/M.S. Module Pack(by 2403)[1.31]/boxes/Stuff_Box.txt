@@ -1,0 +1,65 @@
+Name Resources Index
+ShortName Stuff_Box
+TopTexture Stuff_B
+SideTexture Stuff_S
+BottomTexture Stuff_T
+GunBoxID 320
+Recipe I ingotIron R workbench C stonebricksmooth B thinGlass
+CRC
+ICI
+CBC
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 12
+AddGun Stuff_1 1 rottenFlesh
+AddAmmo Stuff_1 1 spiderEye
+AddAltAmmo Stuff_1 1 bone
+
+AddGun Stuff_1 1 string
+AddAmmo Stuff_1 1 slimeball
+AddAltAmmo Stuff_1 1 leather
+
+AddGun Stuff_2 1 bread
+AddAmmo Stuff_2 1 beefCooked
+AddAltAmmo Stuff_2 1 potatoBaked
+
+AddGun Stuff_2 1 pumpkin
+AddAmmo Stuff_2 1 carrotGolden
+AddAltAmmo Stuff_2 1 chickenCooked
+
+AddGun Stuff_2 4 cookie
+AddAmmo Stuff_2 1 porkchopCooked
+AddAltAmmo Stuff_2 1 pumpkinPie
+
+AddGun Stuff_2 6 sugar
+AddAmmo Stuff_2 1 speckledMelon
+AddAltAmmo Stuff_2 4 egg
+
+AddGun Stuff_3 1 sulphur
+AddAmmo Stuff_3 1 blazePowder
+AddAltAmmo Stuff_3 1 magmaCream
+
+AddGun Stuff_3 6 coal
+AddAmmo Stuff_3 8 yellowDust
+AddAltAmmo Stuff_3 10 redstone
+
+AddGun Stuff_4 1 ingotIron
+AddAmmo Stuff_4 1 ingotGold
+AddAltAmmo Stuff_4 8 glass
+
+AddGun Stuff_4 1 comparator
+AddAmmo Stuff_4 1 blazeRod
+AddAltAmmo Stuff_4 1 enderPearl
+
+AddGun Stuff_5 4 Stuff_4
+AddAmmo Stuff_5 8 Stuff_3
+AddAltAmmo Stuff_5 8 Stuff_2
+
+AddGun Stuff_5 12 Stuff_1
+AddAmmo Stuff_6 3 Stuff_5 6 Stuff_4
+AddAltAmmo Stuff_6 4 Stuff_5

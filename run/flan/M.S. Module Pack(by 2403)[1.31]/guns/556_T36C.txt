@@ -1,0 +1,69 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name T-36
+ShortName TET36C
+Ammo TMAG30Ammo
+Ammo 30RifleAmmo
+Ammo 30RifleAmmo1
+Ammo 30RifleAmmo2
+Ammo 30RifleAmmo3
+Ammo 30RifleAmmo4
+Ammo 60RifleAmmo
+Ammo CarrieAmmo1
+Ammo CarrieAmmo2
+Ammo CarrieAmmo3
+Ammo CarrieAmmo6
+Ammo TMAG30Ammo4
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Ammo GRIFFIN_HVA1
+Ammo GRIFFIN_HVA2
+Ammo GRIFFIN_HVA3
+Ammo GRIFFIN_HVA4
+Icon TET36C
+//ͼ����ɫ:��ɫ����ɫ����ɫ, �����д 255.
+Colour 255 255 255
+ItemID 23805
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 55
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 0.8
+RandomRecoilYawRange 0.8
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//ɱ����
+Damage 7
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 3
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound TEG36CShootN
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto BURST
+BulletSpeed 15.0
+//6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TET36C
+Texture TET36C_2403
+ModelScale 0.45
+//�������
+Description ��b<T.E.B.L> | ��9<Ʒ�ʣ�����>_AR-ͻ����ǹ_[Assult Rife]
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+//NEW2333
+
+// 2

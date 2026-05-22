@@ -1,0 +1,35 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-名称、短名-
+Name AC1消音器
+ShortName GRIFFIN_XY1
+Icon GRIFFIN_XY1
+ItemID 23861
+//组件类型generic=枪托, barrel=枪管部件, sights=瞄准器, grip=下挂式战术组件
+AttachmentType barrel
+//开启/关闭消音
+Silencer true
+//-物理影响值设定-
+//混战伤害倍数
+MeleeDamageMultiplier 1.0
+//伤害增加
+DamageMultiplier 1.05
+//扩展倍数
+SpreadMultiplier 0.96
+//后坐力倍数
+RecoilMultiplier 1.0
+//散射倍数
+BulletSpeedMultiplier 1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+Description 配件/消音器_ _§9命中+2_§9伤害+5%
+//-机瞄与HUD参数设置-
+ZoomLevel 1
+FOVZoomLevel 1.0
+//机瞄与HUD材质
+ZoomOverlay None
+//-模型与材质设置-
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01
+   

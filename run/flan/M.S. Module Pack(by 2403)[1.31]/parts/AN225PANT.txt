@@ -1,0 +1,14 @@
+Name AN225PANT
+ShortName AN225PANT
+Icon AN225PANT
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23260
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Propeller
+StackSize 16
+RecipeOutput 8
+Recipe I Stuff_4 L fenceIron S yellowDust
+SIS
+ILI
+SIS

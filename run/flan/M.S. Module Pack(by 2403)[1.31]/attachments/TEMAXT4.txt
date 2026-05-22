@@ -1,0 +1,33 @@
+Name §1稳定性升级(40/50)
+ShortName TEMAXT4
+Icon TEMAXT4
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType generic
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//Flashlight variables
+Flashlight false
+FlashlightRange 10
+FlashlightStrength 12
+//近战伤害，伤害，散射，后坐力，子弹时速，模式
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 1.0
+RecoilMultiplier 0.6
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+
+Description §7稳定性升级(40/50)
+
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01
+StackSize 64
+RecipeOutput 1
+Recipe A TEMAXT3 B TEMAXT1
+AB 
+   
+   

@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate"
+version="2.0-neo-beta-1"
+displayName="Flan's Mod Ultimate"
+logoFile="flansmodultimate2.png"
+credits="All code contributors."
+authors="Wolff, Jamioflan"
+description='''Unofficial continuation of Flan's Mod to load content packs designed for legacy versions'''
+
+[[mixins]]
+config="flansmodultimate.mixins.json"
+
+[[dependencies.flansmodultimate]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1.228,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.flansmodultimate]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1,1.21.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.flansmodultimate]]
+    modId="flansmodultimate_packs"
+    type="optional"
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

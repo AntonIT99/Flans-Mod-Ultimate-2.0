@@ -1,0 +1,36 @@
+//名字与ID
+Name EMIbox 5
+ShortName EMIbox_5
+//显示区
+Colour 255 255 255
+ItemID 23838
+Icon EMIbox_5
+//下降时速
+FallSpeed 0.25
+//The 最高堆叠
+MaxStackSize 16
+//子弹数量
+RoundsPerItem 12
+//杀伤倍数
+Damage 1
+DamageVsLiving 1
+DamageVsVehicles 0.5
+//爆炸范围
+Explosion 0
+//一行是子弹是否在击中物体前爆炸，二行是爆炸时间，三行是对空威力
+ExplodeOnImpact False
+Fuse 0
+FlakParticles 0
+//第一行是火焰范围，二行是子弹是否打碎玻璃类的方块和萤石
+Fire 0
+BreaksGlass True
+//碰撞盒体积，以及伤害声音
+HitBoxSize 0.1
+HitSound bullet
+//第一行是是否能穿透实体前伤害一个实体，就是是否有弹道，第二行是飞行时是否有烟雾轨迹
+PenetratingPower 5.0
+SmokeTrail False
+Description <盒装弹药>_可在合成台分解为散装弹药使用
+//输出设定
+//RecipeOutput 100
+//ShapelessRecipe EM

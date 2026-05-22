@@ -1,0 +1,66 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name MG5
+ShortName TEAK74
+//��ҩ����(����)
+Ammo TEAN94Ammo
+//TEMG4Ammo
+Icon TEAK74
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 55
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.3
+RandomRecoilRange 1.3
+RandomRecoilYawRange 1.3
+DecreaseRecoil 1
+DecreaseRecoilYaw 10.0
+//ɱ����
+Damage 7.7
+//9.8
+//MeleeDamage 0
+//4
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 3.1
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound TEAK74Shoot
+ReloadSound TEAKReloadMW
+Mode FullAuto SemiAuto
+BulletSpeed 17
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TEAK74
+Texture TEAK74_2403
+ModelScale 0.45
+Description ��c<C.H.K> | ��9<Ʒ�ʣ�����>_AR-ͻ����ǹ_[Assult Rife]
+//
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+// 6
+//Ϳװ��ʽ��Icon/text��
+
+aimFixedYOffset 0.245
+//����΢��
+aimSwitchOffset 0
+//ǰ��΢��
+aimFixedOffset 0
+//��׼���ȣ��������ú�����Զ���ĽǶȣ���һ���ǲ�ǹ0.5�Ƚ���Ȼ��
+aimSwitchProcess 0.5

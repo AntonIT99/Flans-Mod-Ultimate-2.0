@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    "SSS",
+    "III"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:sponge"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:squeakyupperreceiver"
+  }
+}

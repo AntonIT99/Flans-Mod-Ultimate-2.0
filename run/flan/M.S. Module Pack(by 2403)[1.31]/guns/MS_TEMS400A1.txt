@@ -1,0 +1,49 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS-400 A
+ShortName TEMS400A1
+//弹药名称(短名)
+Ammo TEMS400A1Ammo
+Icon TEMS400A1
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+UsableByPlayers false
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 25
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 1000
+MeleeDamage 0
+NumBullets 2
+//这个值越高，子弹时速的越高
+Accuracy 18
+//循环时间
+ShootDelay 10
+ShootSound TEMP7Shoot
+ReloadSound TEAR2Reload
+Mode FullAuto
+BulletSpeed 2.5
+//机瞄设置
+Scope MSHUD
+ZoomLevel 1.1
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.BGM71RS
+Texture BGM71RS_2403
+ModelScale 0.45
+//组件设置
+Description §a<M.S>_重型武器
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 3
+Description MS-400 A_[无法直接使用/装填]_可用于前往弹药箱补给MS-400 A弹药

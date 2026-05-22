@@ -1,0 +1,51 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name EPAS-12
+ShortName EMISPAS12
+//弹药名称(短名)
+Ammo EMIAmmo_3
+Ammo EMIAmmo_5
+Ammo EMIAmmo_4
+Icon EMISPAS12
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 75
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 7
+//杀伤力
+Damage 4
+NumBullets 8
+MeleeDamage 16
+//这个值越高，子弹时速的越高
+Accuracy 15
+LoadIntoGun 6
+//循环时间
+ShootDelay 17
+ShootSound KSGShoot
+ReloadSound KSGReload
+Mode SemiAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+Description §e<E.M.I>_SG-霰弹枪_[Shot Gun]_§8<W.E> Flan's Pack开发组[by 2403]
+//近战-------------------------------------------------------------------------
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.EMISPAS12
+Texture EMISPAS12_020
+ModelScale 0.45
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 EMIGrow EMIReverse HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 1
+//杀伤坐标

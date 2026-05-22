@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    "  A",
+    "  A"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:temaxd4"
+    }
+  },
+  "result": {
+    "item": "flansmod:temaxd5"
+  }
+}

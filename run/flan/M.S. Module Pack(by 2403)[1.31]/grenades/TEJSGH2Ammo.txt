@@ -1,0 +1,54 @@
+////Ãû
+Name RPG
+ShortName TEJSGH2Ammo
+Icon TEJSGH2Ammo
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 5
+////Visuals
+Model YE2403.TERPGAMMO
+Texture TERPGAMMO_2403
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 2
+//ExplodeParticleType <particleType>
+SmokeTime 1
+//SmokeParticleType <particleType>
+SmokeEffect 2 200 3
+SmokeEffect 20 160 4
+SmokeEffect 18 200 0
+SmokeRadius 3
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 0
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact true
+Bounciness 0.0
+HitEntityDamage 0
+ThrowSpeed 4.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.1
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 4.0
+Fuse 0
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+//DetonateSound DWEShoot
+////Misc
+MeleeDamage 0

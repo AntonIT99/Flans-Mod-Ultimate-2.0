@@ -1,0 +1,1 @@
+{ "parent": "block/cube", "textures": { "particle": "flansmod:blocks/zombieweaponbox", "down": "flansmod:blocks/zombieweaponbox", "up": "flansmod:blocks/zombieweaponboxtop", "north": "flansmod:blocks/zombieweaponbox", "east": "flansmod:blocks/zombieweaponbox", "south": "flansmod:blocks/zombieweaponbox", "west": "flansmod:blocks/zombieweaponbox" } } 

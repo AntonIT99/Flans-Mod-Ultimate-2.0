@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:tegl1"
+    },
+    {
+      "item": "flansmod:stuff_4"
+    },
+    {
+      "item": "flansmod:tegl2"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tec4",
+    "count": 2
+  }
+}

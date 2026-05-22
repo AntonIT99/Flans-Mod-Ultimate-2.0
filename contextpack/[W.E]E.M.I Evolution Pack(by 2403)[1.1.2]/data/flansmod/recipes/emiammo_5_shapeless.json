@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:emibox_5"
+    }
+  ],
+  "result": {
+    "item": "flansmod:emiammo_5",
+    "count": 12
+  }
+}

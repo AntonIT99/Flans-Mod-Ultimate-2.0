@@ -1,0 +1,104 @@
+//---Standard-------------------------------------
+// Naming
+Name SR-AN552
+ShortName TECRAN225C
+Description 空中机动作战中心_[超重型武装运输机]
+
+//Misc
+Mode Plane
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model TEBL.TECRAN225
+Texture TECRAN225_2403
+Icon TECRAN225
+//ModelScale 0.9
+CameraDistance 26.0
+
+//Movement
+MaxThrottle 6.0
+MaxNegativeThrottle 0.0
+Drag 2.1
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -52 -23 -33
+WheelPosition 1 -52 -23 31
+WheelPosition 2 116 -23 0
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot 128 38 -12
+Passengers 11
+Passenger 1 128 38 11 core
+Passenger 2 40 38 18 core
+Passenger 3 40 38 -19 core
+Passenger 4 12 38 -27 core
+Passenger 5 -7 38 -27 core
+Passenger 6 12 38 26 core
+Passenger 7 -7 38 26 core
+Passenger 8 -26 38 26 core
+Passenger 9 -26 38 -27 core
+Passenger 10 66 38 -19 core
+Passenger 11 66 38 18 core
+
+//Inventory Slots
+CargoSlots 96
+BombSlots 0
+MissileSlots 18
+FuelTankSize 5000
+
+//Sounds
+StartSound TEBLAmoc_Start
+StartSoundLength 100
+ShootSoundPrimary TEBLAmoc_Shoot2
+ShootSoundSecondary TEBLAmoc_Shoot
+PropSoundLength 68
+PropSound TEBLAmoc_Flight
+
+//Movement
+TurnLeftSpeed 4
+TurnRightSpeed 4
+LookUpSpeed 4
+LookDownSpeed 4
+RollLeftSpeed 4
+RollRightSpeed 4
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 10
+ShootDelaySecondary 3
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 54 0 0 core AN225PANT
+
+//Health, Collision and Recipe
+SetupPart core 24700 -271 -3 -34 409 79 67
+SetupPart nose 8500 138 6 -34 50 63 67
+SetupPart tail 8500 -384 9 -34 113 66 67
+SetupPart leftWing 6500 -114 47 33 143 18 42
+SetupPart rightWing 6500 -114 47 -76 143 18 42
+SetupPart leftWingWheel 4500 -82 -25 27 59 15 9
+SetupPart rightWingWheel 4500 -82 -25 -36 59 15 9
+SetupPart coreWheel 4500 109 -25 -9 14 17 18
+
+AddDye 10 black
+AddRecipeParts core 50 TEBLCL_1
+AddRecipeParts nose 5 TEBLCL_1
+AddRecipeParts tail 20 TEBLCL_1
+AddRecipeParts leftWing 5 TEBLCL_1 1 AMOCEngine
+AddRecipeParts rightWing 5 TEBLCL_1 1 AMOCEngine
+AddRecipeParts leftWingWheel 5 TEBLCL_1
+AddRecipeParts rightWingWheel 5 TEBLCL_1
+AddRecipeParts coreWheel TEBLCL_1

@@ -1,0 +1,300 @@
+[225月2026 16:29:06.152] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientdev, --version, 21.1.228, --assetIndex, 17, --assetsDir, C:\\Users\\LHR\\.gradle\\caches\\neoformruntime\\assets, --gameDir, ., --fml.fmlVersion, 4.0.42, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.228, --fml.neoFormVersion, 20240808.144430]
+[225月2026 16:29:06.158] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: JVM identified as Oracle Corporation OpenJDK 64-Bit Server VM 21+35-2513
+[225月2026 16:29:06.162] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21 by Oracle Corporation; OS Windows 10 arch amd64 version 10.0
+[225月2026 16:29:06.369] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[225月2026 16:29:06.579] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[225月2026 16:29:06.680] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
+[225月2026 16:29:06.832] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/C:/Users/LHR/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%23138!/ Service=ModLauncher Env=CLIENT
+[225月2026 16:29:07.269] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: Intel(R) UHD Graphics GL version 4.6.0 - Build 31.0.101.2135, Intel
+[225月2026 16:29:07.617] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[225月2026 16:29:07.619] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
+     Mod List:
+		Name Version (Mod Id)
+
+		Flan's Mod Ultimate 2.0-neo-beta-1 (flansmodultimate)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.228 (neoforge)
+[225月2026 16:29:09.414] [main/INFO] [mixin/]: Compatibility level set to JAVA_21
+[225月2026 16:29:09.428] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientdev' with arguments [--version, 21.1.228, --gameDir, ., --assetsDir, C:\Users\LHR\.gradle\caches\neoformruntime\assets, --assetIndex, 17]
+[225月2026 16:29:09.509] [main/WARN] [mixin/]: Reference map 'flansmodultimate.refmap.json' for flansmodultimate.mixins.json could not be read. If this is a development environment you can ignore this message
+[225月2026 16:29:13.604] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 229 Datafixer optimizations took 1282 milliseconds
+[225月2026 16:29:13.721] [pool-7-thread-1/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[225月2026 16:29:22.532] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[225月2026 16:29:22.535] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[225月2026 16:29:22.540] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[225月2026 16:29:22.543] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[225月2026 16:29:22.546] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[225月2026 16:29:22.753] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/LHR/Desktop/TRAE/flan/Flans-Mod-NeoForge-1.21.1/build/moddev/artifacts/neoforge-21.1.228.jar%23189!/assets/.mcassetsroot' uses unexpected schema
+[225月2026 16:29:22.754] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/LHR/Desktop/TRAE/flan/Flans-Mod-NeoForge-1.21.1/build/moddev/artifacts/neoforge-21.1.228.jar%23189!/data/.mcassetsroot' uses unexpected schema
+[225月2026 16:29:22.793] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[225月2026 16:29:22.810] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[225月2026 16:29:22.983] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.3+5
+[225月2026 16:29:23.307] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.228, for MC 1.21.1
+[225月2026 16:29:23.365] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loading categories
+[225月2026 16:29:23.401] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded 36 categories for bullet type
+[225月2026 16:29:23.404] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded 10 categories for grenade type
+[225月2026 16:29:23.412] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded 119 categories for gun type
+[225月2026 16:29:23.415] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Finished loading categories
+[225月2026 16:29:23.427] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Content pack found in flan folder: 'Greylight_3.0.1-1.7.10.zip'
+[225月2026 16:29:23.428] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Content pack found in flan folder: 'M.S. Module Pack(by 2403)[1.31]'
+[225月2026 16:29:23.428] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Content pack found in flan folder: 'Modern Warfare-Content Pack-1.12.2-5.8.2.zip'
+[225月2026 16:29:23.429] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Content pack found in flan folder: 'WW2-Content Pack-1.12.2-5.7.2.zip'
+[225月2026 16:29:23.429] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Content pack found in flan folder: '[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip'
+[225月2026 16:29:23.949] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_AmbirconSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.957] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_ApertureSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.964] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_ArtilleryBarrel.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.977] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_BrassStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.985] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_CarbineStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.992] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_LanternFrontrail.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:23.998] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_ModernFrontrail.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.007] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_MultiFrontrail.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.014] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_PressureStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.021] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_RoundFrontrail.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.029] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_SharedMuzzleBrake.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.035] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_SharedSuppressor.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.047] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_TritiumSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.055] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/ABT_WalnutStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.062] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/DW_ScopeDetachment.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.072] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/DW_StockDetachment.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.080] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_AimpointSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.084] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_AngledGrip.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.091] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_AssaultFlashlight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.097] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_AssaultGrip.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.104] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_CarbineKit.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.110] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_ExtendedBarrel.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.116] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_HeatsinkCover.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.122] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_HoloSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.130] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_KatAssaultStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.136] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_PistolFlashlight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.143] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_PistolGrip.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.146] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_PistolLaserSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.153] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_RedDotSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.158] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_SharedMuzzleBrake.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.164] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_SharedSuppressor.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.171] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_ShortScope.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.183] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_SolidTacticalStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.189] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_TacticalStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.195] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/LPM_WoodenStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.199] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_ACSStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.204] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_AssaultGrip.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.215] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_CompactHoloSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.221] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_EagleStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.231] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_MilspecSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.235] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_MuzzleBrake.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.248] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_PipeStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.254] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_PistolCompensator.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.261] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_PistolFlashlight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.266] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_PistolSuppressor.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.272] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_RailStabiliser.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.278] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_RedDotSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.282] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_ReflexSight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.287] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_RifleSuppressor.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.292] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_RoundAccelerator.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.298] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_SMTPCStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.305] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_SolidStock.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.310] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_StableGrip.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:24.316] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Greylight_3.0.1-1.7.10.zip/attachments/SMC_StandardFlashlight.txt: Incorrect format for 'ZoomOverlay': Should be 'ZoomOverlay <single value>'
+[225月2026 16:29:25.568] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Reprocessing Greylight_3.0.1-1.7.10.zip...
+[225月2026 16:29:29.951] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'blazeRod' for recipe in part item 'dwblazitefuelkit' [03_BlaziteFuelKit.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:blazerod
+[225月2026 16:29:29.977] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'diode' for recipe in part item 'dwelectricalunit' [14_ElectricalUnit.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:diode
+[225月2026 16:29:30.069] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'diode' for recipe in part item 'dwmotorpart' [A10_MotorPart.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:diode
+[225月2026 16:29:30.082] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'blazePowder' for recipe in part item 'dwincendiaryround' [B02_IncendiaryRound.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:blazepowder
+[225月2026 16:29:30.099] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'spiderEye' for recipe in part item 'dwpoisonround' [B07_PoisonRound.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:spidereye
+[225月2026 16:29:30.125] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'diode' for recipe in part item 'dwlogiccontrol' [V25_LogicController.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:diode
+[225月2026 16:29:30.132] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'pickaxeIron' for recipe in gun_box item 'extractorblock' [BrassExtractor.txt] in [Greylight_3.0.1-1.7.10.zip], using flansmod:pickaxeiron
+[225月2026 16:29:39.738] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded content pack Greylight_3.0.1-1.7.10.zip in 16,304 ms.
+[225月2026 16:29:40.704] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV1.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.705] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV1.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.707] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV2.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.707] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV2.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.708] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV3.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.709] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV3.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.710] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV4.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.711] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_GRIFFIN_HV4.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.712] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEC4Box.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.712] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEC4Box.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.713] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEEXTPBox.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.713] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEEXTPBox.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.715] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEGL1Box.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.715] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEGL1Box.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.716] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEGL2Box.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.716] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEGL2Box.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.718] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEJSGH2Box.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.718] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEJSGH2Box.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.719] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEM12FBox.txt: Incorrect format for 'ShootSound': Should be 'ShootSound <single value>'
+[225月2026 16:29:40.719] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/guns/Box_TEM12FBox.txt: Incorrect format for 'ReloadSound': Should be 'ReloadSound <single value>'
+[225月2026 16:29:40.818] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/T_DollBox.txt: Unable to find item 'TEBLSUR' for GunBox, skipping entry: AddGun TEBLSUR 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4
+[225月2026 16:29:40.819] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/T_DollBox.txt: Unable to find item 'TEFanet' for GunBox, skipping entry: AddGun TEFanet 48 Stuff_1 35 Stuff_2 25 Stuff_3 35 Stuff_4
+[225月2026 16:29:40.820] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TEBLSURII' for GunBox, skipping entry: AddGun TEBLSURII 1 TEBLSUR 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+[225月2026 16:29:40.820] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TE020UMP9' for GunBox, skipping entry: AddGun TE020UMP9 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+[225月2026 16:29:40.820] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TE020UMP45' for GunBox, skipping entry: AddGun TE020UMP45 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+[225月2026 16:29:40.820] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TEFanetA1' for GunBox, skipping entry: AddGun TEFanetA1 5 Stuff_1 2 Stuff_3 12 Stuff_4
+[225月2026 16:29:40.821] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TEFanetA2' for GunBox, skipping entry: AddGun TEFanetA2 15 Stuff_1 10 Stuff_3 15 Stuff_4
+[225月2026 16:29:40.821] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in M.S. Module Pack(by 2403)[1.31]/boxes/UpgradeBox.txt: Unable to find item 'TEKHAO' for GunBox, skipping entry: AddGun TEKHAO 20 Stuff_1 45 Stuff_3 40 Stuff_4
+[225月2026 16:29:40.843] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Failed to find 'I' in recipe for attachment item 'teall2' [TEALL2.txt] in [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:29:40.846] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Failed to find 'I' in recipe for attachment item 'teall4' [TEALL4.txt] in [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:29:40.855] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'goldNugget' for recipe in attachment item 'temaxd1' [TEMAXD1.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:goldnugget
+[225月2026 16:29:40.901] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'TESupply26' for recipe in bullet item '30rifleammo' [30RifleAmmo.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:tesupply26
+[225月2026 16:29:40.917] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'TESupply26' for recipe in bullet item 'tecobalt2909ammo' [TECobalt2909Ammo.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:tesupply26
+[225月2026 16:29:40.925] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'TESupply26' for recipe in bullet item 'tekineticss07ammo' [TEKineticsS07Ammo.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:tesupply26
+[225月2026 16:29:40.989] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'stonebricksmooth' for recipe in gun_box item 'stuff_box' [Stuff_Box.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:stonebricksmooth
+[225月2026 16:29:40.992] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'stonebricksmooth' for recipe in gun_box item 't_dollbox' [T_DollBox.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:stonebricksmooth
+[225月2026 16:29:40.994] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'stonebricksmooth' for recipe in gun_box item 'upgradebox' [UpgradeBox.txt] in [M.S. Module Pack(by 2403)[1.31]], using flansmod:stonebricksmooth
+[225月2026 16:29:47.435] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded content pack M.S. Module Pack(by 2403)[1.31] in 7,696 ms.
+[225月2026 16:29:48.859] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in Modern Warfare-Content Pack-1.12.2-5.8.2.zip/guns/B4CrossBow.txt: Incorrect format for 'Mode Mode': Not one of: SEMIAUTO, FULLAUTO, MINIGUN, BURST
+[225月2026 16:29:49.272] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Reprocessing Modern Warfare-Content Pack-1.12.2-5.8.2.zip...
+[225月2026 16:29:58.876] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'smallBomb' for recipe in bullet item 'mim23ammo' [MIM23Ammo.txt] in [Modern Warfare-Content Pack-1.12.2-5.8.2.zip], using flansmod:smallbomb
+[225月2026 16:29:58.878] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'smallBomb' for recipe in bullet item 'mk4rocket' [Mk4Rocket.txt] in [Modern Warfare-Content Pack-1.12.2-5.8.2.zip], using flansmod:smallbomb
+[225月2026 16:29:58.883] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'flansmodapocalypse:flanSulphur' for recipe in part item 'highexgunpowder' [HighExplosiveGunpowder.txt] in [Modern Warfare-Content Pack-1.12.2-5.8.2.zip], using flansmodapocalypse:flansulphur
+[225月2026 16:30:13.766] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded content pack Modern Warfare-Content Pack-1.12.2-5.8.2.zip in 26,330 ms.
+[225月2026 16:30:13.865] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in WW2-Content Pack-1.12.2-5.7.2.zip/attachments/ZF4Scope.txt: Incorrect format for 'ModelScale': Should be 'ModelScale <single value>'
+[225月2026 16:30:14.820] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Reprocessing WW2-Content Pack-1.12.2-5.7.2.zip...
+[225月2026 16:30:23.902] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded content pack WW2-Content Pack-1.12.2-5.7.2.zip in 10,136 ms.
+[225月2026 16:30:24.486] [modloading-worker-0/ERROR] [com.flansmodultimate.FlansMod/]: Error in [W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip/bullets/EMITwoSineAmmo.txt: Incorrect format for 'Penetrates Falst': Not a boolean
+[225月2026 16:30:25.427] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Reprocessing [W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip...
+[225月2026 16:30:27.633] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'stonebricksmooth' for recipe in gun_box item 'emi2' [EMI2.txt] in [[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip], using flansmod:stonebricksmooth
+[225月2026 16:30:27.636] [modloading-worker-0/WARN] [com.flansmodultimate.FlansMod/]: Could not find item 'stonebricksmooth' for recipe in gun_box item 'emi3' [EMI3.txt] in [[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip], using flansmod:stonebricksmooth
+[225月2026 16:30:31.358] [modloading-worker-0/INFO] [com.flansmodultimate.FlansMod/]: Loaded content pack [W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip in 7,456 ms.
+[225月2026 16:30:33.175] [Render thread/INFO] [net.neoforged.neoforge.gametest.GameTestHooks/]: Enabled Gametest Namespaces: [flansmodultimate]
+[225月2026 16:30:34.184] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources, mod/neoforge, mod/flansmodultimate, file/WW2-Content Pack-1.12.2-5.7.2.zip, file/Greylight_3.0.1-1.7.10.zip, file/M.S. Module Pack(by 2403)[1.31], file/Modern Warfare-Content Pack-1.12.2-5.8.2.zip, file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip
+[225月2026 16:30:34.729] [Worker-Main-1/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.1.05.hex, loading
+[225月2026 16:30:34.761] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/_dawnfield8fire.ogg does not exist, cannot add it to event flansmod:_dawnfield8fire
+[225月2026 16:30:34.762] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/_flightchaserfire.ogg does not exist, cannot add it to event flansmod:_flightchaserfire
+[225月2026 16:30:34.767] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/cssrsshoot.ogg does not exist, cannot add it to event flansmod:cssrsshoot
+[225月2026 16:30:34.768] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/csw1300shoot.ogg does not exist, cannot add it to event flansmod:csw1300shoot
+[225月2026 16:30:34.772] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/honeybadgerreload.ogg does not exist, cannot add it to event flansmod:honeybadgerreload
+[225月2026 16:30:34.773] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/hcarreload.ogg does not exist, cannot add it to event flansmod:hcarreload
+[225月2026 16:30:34.773] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/automaticannihilation100shoot.ogg does not exist, cannot add it to event flansmod:automaticannihilation100shoot
+[225月2026 16:30:34.775] [Worker-Main-5/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/w1300shoot.ogg does not exist, cannot add it to event flansmod:w1300shoot
+[225月2026 16:30:35.269] [Worker-Main-5/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_jp_patch-15.1.05.hex, loading
+[225月2026 16:30:46.006] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[225月2026 16:30:46.007] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[225月2026 16:30:46.007] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:bullet_hit
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:_pup762fire
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:msammo_mz1
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:msammo_mz2
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:ms_dwshoot
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:paw20shoot
+[225月2026 16:30:46.008] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:paw20reload
+[225月2026 16:30:46.009] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:sidewinder7shoot
+[225月2026 16:30:46.009] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:sidewinder7reload
+[225月2026 16:30:46.009] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:voltv3shoot
+[225月2026 16:30:46.009] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:voltv3reload
+[225月2026 16:30:46.009] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:flakexplode
+[225月2026 16:30:46.087] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Realtek HD Audio 2nd output (Realtek(R) Audio)
+[225月2026 16:30:46.087] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[225月2026 16:30:46.091] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:bullet_hit: bullets/101_gs5ammo.txt [Greylight_3.0.1-1.7.10.zip]
+[225月2026 16:30:46.091] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:_pup762fire: guns/322_LPM_Dzky103.txt [Greylight_3.0.1-1.7.10.zip]
+[225月2026 16:30:46.091] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:msammo_mz1: bullets/100RifleAmmo1.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:30:46.091] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:msammo_mz2: bullets/TEMK2051Ammo.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:ms_dwshoot: guns/22LR_Cobalt2909.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:paw20reload: guns/PAW20.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:paw20shoot: guns/PAW20.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:sidewinder7shoot: guns/SideWinder7.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:sidewinder7reload: guns/SideWinder7.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:voltv3shoot: guns/VoltV3.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:voltv3reload: guns/VoltV3.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:30:46.092] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:flakexplode: bullets/BoforsAmmo.txt [WW2-Content Pack-1.12.2-5.7.2.zip]
+[225月2026 16:30:46.332] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x2048x4 minecraft:textures/atlas/blocks.png-atlas
+[225月2026 16:30:50.096] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[225月2026 16:30:50.145] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[225月2026 16:30:50.314] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[225月2026 16:30:50.502] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[225月2026 16:30:52.402] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[225月2026 16:30:52.415] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[225月2026 16:30:52.423] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[225月2026 16:30:52.437] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[225月2026 16:30:52.612] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/particles.png-atlas
+[225月2026 16:30:52.631] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[225月2026 16:30:52.638] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[225月2026 16:30:52.642] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[225月2026 16:30:52.644] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
+[225月2026 16:30:53.059] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[225月2026 16:30:53.884] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[225月2026 16:30:55.948] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources, mod/neoforge, mod/flansmodultimate, file/WW2-Content Pack-1.12.2-5.7.2.zip, file/Greylight_3.0.1-1.7.10.zip, file/M.S. Module Pack(by 2403)[1.31], file/Modern Warfare-Content Pack-1.12.2-5.8.2.zip, file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip
+[225月2026 16:30:55.973] [Worker-Main-5/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.1.05.hex, loading
+[225月2026 16:30:56.058] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/_dawnfield8fire.ogg does not exist, cannot add it to event flansmod:_dawnfield8fire
+[225月2026 16:30:56.059] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/_flightchaserfire.ogg does not exist, cannot add it to event flansmod:_flightchaserfire
+[225月2026 16:30:56.060] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/cssrsshoot.ogg does not exist, cannot add it to event flansmod:cssrsshoot
+[225月2026 16:30:56.061] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/csw1300shoot.ogg does not exist, cannot add it to event flansmod:csw1300shoot
+[225月2026 16:30:56.062] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/honeybadgerreload.ogg does not exist, cannot add it to event flansmod:honeybadgerreload
+[225月2026 16:30:56.062] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/hcarreload.ogg does not exist, cannot add it to event flansmod:hcarreload
+[225月2026 16:30:56.063] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/automaticannihilation100shoot.ogg does not exist, cannot add it to event flansmod:automaticannihilation100shoot
+[225月2026 16:30:56.063] [Worker-Main-1/WARN] [net.minecraft.client.sounds.SoundManager/]: File flansmod:sounds/w1300shoot.ogg does not exist, cannot add it to event flansmod:w1300shoot
+[225月2026 16:30:56.205] [Worker-Main-5/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_jp_patch-15.1.05.hex, loading
+[225月2026 16:31:01.575] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[225月2026 16:31:01.575] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:bullet_hit
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:_pup762fire
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:msammo_mz1
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:msammo_mz2
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:ms_dwshoot
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:paw20shoot
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:paw20reload
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:sidewinder7shoot
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:sidewinder7reload
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:voltv3shoot
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:voltv3reload
+[225月2026 16:31:01.576] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: flansmod:flakexplode
+[225月2026 16:31:01.634] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Realtek HD Audio 2nd output (Realtek(R) Audio)
+[225月2026 16:31:01.635] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:bullet_hit: bullets/101_gs5ammo.txt [Greylight_3.0.1-1.7.10.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:_pup762fire: guns/322_LPM_Dzky103.txt [Greylight_3.0.1-1.7.10.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:msammo_mz1: bullets/100RifleAmmo1.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:msammo_mz2: bullets/TEMK2051Ammo.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:ms_dwshoot: guns/22LR_Cobalt2909.txt [M.S. Module Pack(by 2403)[1.31]]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:paw20reload: guns/PAW20.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:paw20shoot: guns/PAW20.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:sidewinder7shoot: guns/SideWinder7.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:sidewinder7reload: guns/SideWinder7.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:voltv3shoot: guns/VoltV3.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:voltv3reload: guns/VoltV3.txt [Modern Warfare-Content Pack-1.12.2-5.8.2.zip]
+[225月2026 16:31:01.636] [Render thread/WARN] [com.flansmodultimate.FlansMod/]: Missing sound flansmod:flakexplode: bullets/BoforsAmmo.txt [WW2-Content Pack-1.12.2-5.7.2.zip]
+[225月2026 16:31:01.689] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x2048x4 minecraft:textures/atlas/blocks.png-atlas
+[225月2026 16:31:04.348] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[225月2026 16:31:04.386] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[225月2026 16:31:04.473] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[225月2026 16:31:04.558] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[225月2026 16:31:05.890] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[225月2026 16:31:05.891] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[225月2026 16:31:05.891] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[225月2026 16:31:05.892] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[225月2026 16:31:05.902] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/particles.png-atlas
+[225月2026 16:31:05.913] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[225月2026 16:31:05.917] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[225月2026 16:31:05.919] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[225月2026 16:31:05.920] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
+[225月2026 16:31:06.286] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[225月2026 16:31:06.955] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[225月2026 16:31:14.239] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1290 recipes
+[225月2026 16:31:14.427] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1399 advancements
+[225月2026 16:31:15.066] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[225月2026 16:31:15.066] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[225月2026 16:31:19.119] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[225月2026 16:31:19.959] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: 准备生成区域中：0%
+[225月2026 16:31:19.960] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: 准备生成区域中：0%
+[225月2026 16:31:20.254] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[225月2026 16:31:20.258] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 1123 ms
+[225月2026 16:31:20.345] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 12, from 10
+[225月2026 16:31:20.345] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
+[225月2026 16:31:21.902] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:bdc08f70] logged in with entity id 18 at (-133.70026297714273, 135.0, -61.83647135919706)
+[225月2026 16:31:22.068] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev加入了游戏
+[225月2026 16:31:22.625] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 62 advancements
+[225月2026 16:31:38.116] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[225月2026 16:31:38.156] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:overworld
+[225月2026 16:31:38.197] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:the_end
+[225月2026 16:31:38.197] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:the_nether
+[225月2026 16:31:38.925] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: 连接中断
+[225月2026 16:31:38.925] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev退出了游戏
+[225月2026 16:31:38.959] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
+[225月2026 16:31:39.015] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[225月2026 16:31:39.015] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[225月2026 16:31:39.016] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[225月2026 16:31:40.111] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:overworld
+[225月2026 16:31:40.616] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:the_end
+[225月2026 16:31:40.624] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[新的世界]'/minecraft:the_nether
+[225月2026 16:31:40.645] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (新的世界): All chunks are saved
+[225月2026 16:31:40.645] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[225月2026 16:31:40.645] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[225月2026 16:31:40.645] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[225月2026 16:31:41.980] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

@@ -1,0 +1,48 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name SDO
+ShortName TESDOO
+//弹药名称(短名)
+Ammo TESDOOAmmo
+Icon TESDOO
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 0
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+MeleeDamage 2.2
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 2
+ShootSound TEAK12Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TESDOO
+Texture TESDOO_2403
+ModelScale 1.2
+//组件设置
+Description <无阵营> | §f<品质：民用>_手电筒_§6[黑暗中提供光照,需要装入电池]_战前常见的旧时代小型手电筒
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments TESDOOA1
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments True
+NumGenericAttachmentSlots 0

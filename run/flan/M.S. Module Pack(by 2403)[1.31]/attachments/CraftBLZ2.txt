@@ -1,0 +1,56 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//注意：开头打上"//"的内容为注释，不会被游戏及mod读取。你可以在某些数值开头删除或添加"//"来达到启用/禁用某些属性的作用
+//------------------------------------------------------------------------------------------
+
+//Name=显示名称，在合成台及相应部分显示，并不等于zh_cn翻译文件，推荐使用英文
+//ShortName=配件内部名称(即短名/数字ID)，仅可使用英文、下划线即数字，不允许有空格，不允许数字开头(推荐直接写成你模型导出时的名字)
+Name CraftBLZ2
+ShortName CraftBLZ2
+
+//配件图标文件名
+Icon CraftBLZ2
+
+//组件类型:stock=枪托, barrel=枪管部件, sights=瞄准器, grip=握把，generic=通用型战术配件
+AttachmentType grip
+
+//开启/关闭消音
+Silencer false
+
+//-----------------物理影响值设定-----------------
+//近战伤害倍数(经测试无作用)
+MeleeDamageMultiplier 1.0
+
+//武器伤害倍数
+DamageMultiplier 1.0
+
+//精准度倍数
+SpreadMultiplier 1.1
+
+//后坐力倍数
+RecoilMultiplier 1.0
+
+//子弹飞行时间倍数
+BulletSpeedMultiplier 1.0
+
+//装填时间倍数
+ReloadTimeMultiplier 0.6
+
+//配件描述，使用"_"来换行
+Description A.E - 下挂式附件_§9射速+4_§9命中-1
+
+//瞄准设置(仅对瞄准镜配件起作用)ZoomLevel=第一人称放大倍数,FOVZoomLevel=放大倍数
+ZoomLevel 1.0
+FOVZoomLevel 2.0
+
+//Scope=瞄准镜贴图(写None关闭)
+ZoomOverlay None
+
+//模型设置:Model=目标模型<模型文件夹.模型名称>，Texture=材质文件名称，ModelScale=模型缩放比例
+Model TEBL.TEHAC1
+Texture 0xAE
+ModelScale 0.01
+
+//合成方式设置(一般不用写)
+//RecipeOutput 1
+//Recipe 

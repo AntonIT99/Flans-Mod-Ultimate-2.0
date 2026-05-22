@@ -1,0 +1,500 @@
+{
+  "srsshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:srsshoot"
+    ]
+  },
+  "srsreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:srsreload"
+    ]
+  },
+  "emifn57shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emifn57shoot"
+    ]
+  },
+  "emisaiga18shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisaiga18shoot"
+    ]
+  },
+  "emim607shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emim607shoot"
+    ]
+  },
+  "emibr12shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emibr12shoot"
+    ]
+  },
+  "emig11shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emig11shoot"
+    ]
+  },
+  "emisinkxd1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxd1"
+    ]
+  },
+  "emisinkxd2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxd2"
+    ]
+  },
+  "emisinkxd3": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxd3"
+    ]
+  },
+  "emisinkxd4": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxd4"
+    ]
+  },
+  "emiwa2000shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiwa2000shoot"
+    ]
+  },
+  "emimdeshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emimdeshoot"
+    ]
+  },
+  "srf40s3shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:srf40s3shoot"
+    ]
+  },
+  "emi6p62shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emi6p62shoot"
+    ]
+  },
+  "eminegevshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:eminegevshoot"
+    ]
+  },
+  "yjdreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:yjdreload"
+    ]
+  },
+  "hgreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:hgreload"
+    ]
+  },
+  "smgreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:smgreload"
+    ]
+  },
+  "emisinkxreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxreload"
+    ]
+  },
+  "emisinkxshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisinkxshoot"
+    ]
+  },
+  "emikine21shoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "flansmod:emikine21shoot",
+        "stream": true
+      }
+    ]
+  },
+  "teblm134gcshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:teblm134gcshoot"
+    ]
+  },
+  "emil501shoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "flansmod:emil501shoot",
+        "stream": true
+      }
+    ]
+  },
+  "teblm134shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:teblm134shoot"
+    ]
+  },
+  "ksgshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ksgshoot"
+    ]
+  },
+  "ksgreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ksgreload"
+    ]
+  },
+  "emil501reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emil501reload"
+    ]
+  },
+  "emi50kunshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emi50kunshoot"
+    ]
+  },
+  "emic90shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emic90shoot"
+    ]
+  },
+  "emihk401shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emihk401shoot"
+    ]
+  },
+  "xh130shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:xh130shoot"
+    ]
+  },
+  "emimamk5shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emimamk5shoot"
+    ]
+  },
+  "emiawp70reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiawp70reload"
+    ]
+  },
+  "emiawp70shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiawp70shoot"
+    ]
+  },
+  "insshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:insshoot"
+    ]
+  },
+  "emikatanasshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emikatanasshoot"
+    ]
+  },
+  "emiyixinshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiyixinshoot"
+    ]
+  },
+  "tsxweshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tsxweshoot"
+    ]
+  },
+  "tssezcshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tssezcshoot"
+    ]
+  },
+  "tsr1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tsr1"
+    ]
+  },
+  "tsr2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tsr2"
+    ]
+  },
+  "tsr3": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tsr3"
+    ]
+  },
+  "tsymjshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tsymjshoot"
+    ]
+  },
+  "emisbmgshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisbmgshoot"
+    ]
+  },
+  "emisxm170reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisxm170reload"
+    ]
+  },
+  "emismk5shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emismk5shoot"
+    ]
+  },
+  "emiaws20reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiaws20reload"
+    ]
+  },
+  "emiaws20shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiaws20shoot"
+    ]
+  },
+  "emisxm170shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emisxm170shoot"
+    ]
+  },
+  "m107shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m107shoot"
+    ]
+  },
+  "gussxshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:gussxshoot"
+    ]
+  },
+  "emitwosineshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emitwosineshoot"
+    ]
+  },
+  "emitwosinereload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emitwosinereload"
+    ]
+  },
+  "mi4reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mi4reload"
+    ]
+  },
+  "mi4shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mi4shoot"
+    ]
+  },
+  "jackxshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:jackxshoot"
+    ]
+  },
+  "emistarshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emistarshoot"
+    ]
+  },
+  "emimgs20shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emimgs20shoot"
+    ]
+  },
+  "jackshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:jackshoot"
+    ]
+  },
+  "emipp19shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emipp19shoot"
+    ]
+  },
+  "emikundshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emikundshoot"
+    ]
+  },
+  "fhzbshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:fhzbshoot"
+    ]
+  },
+  "wsdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:wsdshoot"
+    ]
+  },
+  "emifreedomshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emifreedomshoot"
+    ]
+  },
+  "gussshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:gussshoot"
+    ]
+  },
+  "lackldshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lackldshoot"
+    ]
+  },
+  "qdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:qdshoot"
+    ]
+  },
+  "gcm134shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:gcm134shoot"
+    ]
+  },
+  "tcplbqshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tcplbqshoot"
+    ]
+  },
+  "pmg20shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:pmg20shoot"
+    ]
+  },
+  "swshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:swshoot"
+    ]
+  },
+  "dcsshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dcsshoot"
+    ]
+  },
+  "dcsqdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dcsqdshoot"
+    ]
+  },
+  "yjdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:yjdshoot"
+    ]
+  },
+  "emiptrdshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emiptrdshoot"
+    ]
+  },
+  "dcsreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dcsreload"
+    ]
+  },
+  "swrshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:swrshoot"
+    ]
+  },
+  "swrreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:swrreload"
+    ]
+  },
+  "w1300shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:w1300shoot"
+    ]
+  },
+  "emimgs20shoot2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:emimgs20shoot2"
+    ]
+  },
+  "kine21shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kine21shoot"
+    ]
+  }
+}

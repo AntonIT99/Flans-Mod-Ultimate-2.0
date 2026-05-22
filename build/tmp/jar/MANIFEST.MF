@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: flansmodultimate
+Specification-Vendor: Wolff
+Specification-Version: 1
+Implementation-Title: Flans-Mod-NeoForge-1.21.1
+Implementation-Version: 2.0-neo-beta-1
+Implementation-Vendor: Wolff
+Implementation-Timestamp: 2026-05-22T16:32:18+0800
+

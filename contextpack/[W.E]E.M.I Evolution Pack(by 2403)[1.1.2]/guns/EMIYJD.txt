@@ -1,0 +1,49 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name SK-12
+ShortName YJD
+//弹药名称(短名)
+Ammo YJDAmmo
+Ammo YJDAmmo1
+Ammo YJDAmmo2
+Icon YJD
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8
+//杀伤力
+Damage 10
+MeleeDamage 8
+//这个值越高，子弹时速的越高
+Accuracy 4
+//循环时间
+ShootDelay 2
+ShootSound YJDShoot
+ReloadSound SWRReload
+Mode FullAuto
+//机瞄设置
+Scope YJD
+ZoomLevel 2.0
+FOVZoomLevel 1.2
+Description §e<E.M.I>_AR-突击步枪_[Assult Rife]_§8<W.E> Flan's Pack开发组[by 2403]
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model Goth.YJD
+Texture YJD_2403
+ModelScale 0.45
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 EMIGrow EMIReverse HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever EMIARHUD EMIPlus1 EMIPlus2 EMIPlus3 EMIPlus4 EMIPlus11
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 1
+//涂装格式“Icon/text”
+Paintjob YJD_B YJD_2403_B 2

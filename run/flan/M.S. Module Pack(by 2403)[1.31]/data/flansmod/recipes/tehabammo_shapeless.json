@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:tegl1"
+    },
+    {
+      "item": "flansmod:stuff_4"
+    },
+    {
+      "item": "flansmod:tegl2"
+    },
+    {
+      "item": "flansmod:stuff_4"
+    },
+    {
+      "item": "flansmod:tec4"
+    },
+    {
+      "item": "flansmod:stuff_4"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tehabammo",
+    "count": 15
+  }
+}

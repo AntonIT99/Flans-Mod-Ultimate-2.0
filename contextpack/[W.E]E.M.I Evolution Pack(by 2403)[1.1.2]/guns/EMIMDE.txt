@@ -1,0 +1,46 @@
+Name EDA-50
+ShortName EMIMDE
+//The ammo this gun uses (shortName)
+Ammo EMIkundAmmo
+Ammo EMIkundAmmo1
+Ammo EMIkundAmmo2
+Ammo EMIkundAmmo3
+Icon EMIMDE
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23805
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 50
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 10
+//Damage in half hearts
+Damage 28
+//The higher this value, the more the bullets spread
+Accuracy 1
+//Time in ticks between rounds
+ShootDelay 6
+ShootSound EMIMDEShoot
+ReloadSound SWRReload
+Mode SemiAuto
+BulletSpeed 8
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+Description §e<E.M.I>_HG-手枪_[Hand Gun]_§8<W.E> Flan's Pack开发组[by 2403]
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model Settings
+Model EMIGUN.EMIMDE
+Texture EMIMDE_2403
+ModelScale 0.47
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 EMIGrow EMIReverse HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 1
