@@ -331,7 +331,7 @@ public abstract class InfoType
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
                 classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
 
-                // Handle 1.12.2 package format
+                // Try 1.12.2 package format
                 if (!Files.exists(classFile))
                 {
                     if (modelNameSplit[0].equals("jamespostmodernweapons"))
@@ -359,7 +359,12 @@ public abstract class InfoType
                             FlansMod.log.error("Could not open {}", redirectFile, e);
                         }
                     }
+
                     classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
+
+                    // Fallback to default
+                    if (!Files.exists(classFile))
+                        modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
                 }
             }
             else

@@ -8,6 +8,7 @@ import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
@@ -272,6 +273,31 @@ public class ClientGunHooksImpl implements IClientGunHooks
             // Send update to server when key is pressed or released
             if (deployedGun.isShootKeyPressed() != deployedGun.isPrevShootKeyPressed())
                 PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, deployedGun.isShootKeyPressed(), deployedGun.isPrevShootKeyPressed()));
+        }
+    }
+
+    @Override
+    public void tickAAGun(AAGun aaGun)
+    {
+        if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
+            return;
+
+        if (Minecraft.getInstance().screen != null)
+        {
+            if (aaGun.isShootKeyPressed())
+            {
+                aaGun.setShootKeyPressed(false);
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false, aaGun.isPrevShootKeyPressed()));
+            }
+        }
+        else
+        {
+            GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(InteractionHand.MAIN_HAND);
+            aaGun.setShootKeyPressed(primaryFunctionState.isPressed());
+            aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
+
+            if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed()));
         }
     }
 

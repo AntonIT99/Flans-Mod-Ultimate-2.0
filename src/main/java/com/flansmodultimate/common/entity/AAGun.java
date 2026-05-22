@@ -55,7 +55,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 {
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
-    private static final double MODEL_UNIT = 1D / 16D;
+    private static final double LEGACY_SENTRY_ORIGIN_Y_OFFSET = 1.5D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
     public static final String NBT_TYPE_NAME = "type";
@@ -144,8 +144,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         ItemStack[] previousAmmo = ammo;
         ammo = new ItemStack[configType.getAmmoSlotCount()];
         Arrays.fill(ammo, ItemStack.EMPTY);
-        for (int i = 0; i < Math.min(previousAmmo.length, ammo.length); i++)
-            ammo[i] = previousAmmo[i];
+        System.arraycopy(previousAmmo, 0, ammo, 0, Math.min(previousAmmo.length, ammo.length));
 
         updateAmmoMask();
     }
@@ -227,12 +226,6 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     public boolean isPickable()
     {
         return isAlive();
-    }
-
-    @Override
-    public boolean isPushable()
-    {
-        return false;
     }
 
     @Override
@@ -416,7 +409,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return true;
         }
 
-        health -= amount;
+        health -= (int) amount;
         if (health <= 0)
             discard();
 
@@ -620,13 +613,9 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     {
         Vec3 origin = position().add(0D, 1.5D, 0D);
         Vec3 targetPos = targetEntity instanceof LivingEntity living ? living.getEyePosition() : targetEntity.position().add(0D, targetEntity.getBbHeight() * 0.5D, 0D);
-
-        double dX = targetPos.x - origin.x;
-        double dY = targetPos.y - origin.y;
-        double dZ = targetPos.z - origin.z;
-
-        float targetYaw = 180F + (float) Math.toDegrees(Math.atan2(dZ, dX));
-        float targetPitch = -(float) Math.toDegrees(Math.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)));
+        Vec3 direction = targetPos.subtract(origin);
+        float targetYaw = ModUtils.getYawFromDirection(direction);
+        float targetPitch = ModUtils.getPitchFromDirection(direction);
 
         if (getConfigType().isCanShootHomingMissile())
         {
@@ -672,10 +661,10 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
                 continue;
 
             attempted = true;
-            if (fireBarrel(level, attacker, barrel, slot))
+            if (fireBarrel(level, attacker, barrel, slot, !requireInput)
+                && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
             {
-                if (type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
-                    discard();
+                discard();
             }
         }
 
@@ -683,7 +672,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             currentBarrel = (currentBarrel + 1) % type.getNumBarrels();
     }
 
-    private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot)
+    private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot, boolean sentryShot)
     {
         AAGunType type = getConfigType();
         ItemStack ammoStack = ammo[slot];
@@ -695,10 +684,9 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ammoStack.getDamageValue());
 
         Vec3 shootingDir = getShootingDirection();
-        Vec3 barrelOrigin = getBarrelOrigin(barrel);
-        Vec3 spawnOrigin = barrelOrigin.add(shootingDir.scale(1.5D));
+        Vec3 barrelOrigin = getBarrelOrigin(barrel, sentryShot);
 
-        ShootingHelper.fireGun(level, firedShot, 1, spawnOrigin, shootingDir, () -> damageAmmo(slot));
+        ShootingHelper.fireGun(level, firedShot, type.getNumBullets(), barrelOrigin, shootingDir, () -> damageAmmo(slot));
 
         shootDelay = type.getShootDelay();
         barrelRecoil[barrel] = type.getRecoil();
@@ -828,7 +816,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             if (stack.isEmpty())
                 continue;
 
-            boolean spent = false;
+            boolean spent;
             if (stack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType().getRoundsPerItem() > 1)
                 spent = ShootableItem.getRoundsRemaining(stack) <= 0;
             else
@@ -867,25 +855,41 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     public Vec3 getBarrelOrigin(int barrel)
     {
+        return getBarrelOrigin(barrel, false);
+    }
+
+    private Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
+    {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
-        double scale = 1D / 16D;
-        double x = type.getBarrelX()[barrel] * scale - type.getBarrelZ()[barrel] * scale;
-        double y = type.getBarrelY()[barrel] * scale;
-        double z = type.getBarrelX()[barrel] * scale + type.getBarrelZ()[barrel] * scale;
-
-        Vec3 rotated = rotateBarrelOffset(x, y, z);
-        return position().add(0D, type.isSentry() ? 1.5D : 0D, 0D).add(rotated);
+        Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
+        return sentryShot && type.isSentry() ? origin.add(0D, LEGACY_SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
     }
 
-    private Vec3 rotateBarrelOffset(double x, double y, double z)
+    private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
     {
-        double cosYaw = Math.cos((180F - getGunYaw()) * Mth.DEG_TO_RAD);
-        double sinYaw = Math.sin((180F - getGunYaw()) * Mth.DEG_TO_RAD);
-        double cosPitch = Math.cos(getGunPitch() * Mth.DEG_TO_RAD);
-        double sinPitch = Math.sin(getGunPitch() * Mth.DEG_TO_RAD);
+        double barrelX = type.getBarrelX()[barrel];
+        double barrelY = type.getBarrelY()[barrel];
+        double barrelZ = type.getBarrelZ()[barrel];
+
+        double x = (barrelZ + barrelX) / 16D;
+        double y = barrelY / 16D;
+        double z = (barrelZ - barrelX) / 16D;
+
+        return rotate(x, y, z, getGunPitch(), getGunYaw());
+    }
+
+    public Vec3 rotate(double x, double y, double z, double gunPitch, double gunYaw)
+    {
+        double yaw = 180D - gunYaw * Mth.DEG_TO_RAD;
+        double pitch = gunPitch * Mth.DEG_TO_RAD;
+
+        double cosYaw = Math.cos(yaw);
+        double sinYaw = Math.sin(yaw);
+        double cosPitch = Math.cos(pitch);
+        double sinPitch = Math.sin(pitch);
 
         double newX = x * cosYaw + (y * sinPitch + z * cosPitch) * sinYaw;
         double newY = y * cosPitch - z * sinPitch;
@@ -896,14 +900,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     public Vec3 getShootingDirection()
     {
-        float yawRad = getGunYaw() * Mth.DEG_TO_RAD;
-        float pitchRad = getGunPitch() * Mth.DEG_TO_RAD;
-
-        double x = -Mth.cos(yawRad) * Mth.cos(pitchRad);
-        double y = -Mth.sin(pitchRad);
-        double z = -Mth.sin(yawRad) * Mth.cos(pitchRad);
-
-        return new Vec3(x, y, z);
+        return ModUtils.getDirectionFromPitchAndYaw(getGunPitch(), getGunYaw());
     }
 
     private float clampPitch(float pitch)

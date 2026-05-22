@@ -32,6 +32,7 @@ public class AAGunType extends InfoType
     protected float damage;
     protected int shootDelay;
     protected int shootSoundLength;
+    protected int numBullets = 1;
     protected int numBarrels = 1;
     protected boolean fireAlternately;
     protected int health;
@@ -81,6 +82,7 @@ public class AAGunType extends InfoType
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
         spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
+        numBullets = readValue("NumBullets", numBullets, file);
 
         targetMobs = readValue("TargetMobs", targetMobs, file);
         targetPlayers = readValue("TargetPlayers", targetPlayers, file);
