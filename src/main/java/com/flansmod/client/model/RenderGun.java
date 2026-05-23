@@ -18,11 +18,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.model.HumanoidModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
@@ -91,8 +91,6 @@ public final class RenderGun
                 else if (!animations.reloading)
                     animations.onGunEmpty(false);
             }
-
-
 
             poseStack.pushPose();
             if (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)

@@ -4,6 +4,8 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.world.item.ItemDisplayContext;
+
 import java.util.function.Consumer;
 
 public interface ICustomRendereredItem<T extends InfoType> extends IFlanItem<T>
@@ -23,4 +25,16 @@ public interface ICustomRendereredItem<T extends InfoType> extends IFlanItem<T>
     boolean useCustomRendererInFrame();
 
     boolean useCustomRendererInGui();
+
+    default boolean useCustomRenderer(ItemDisplayContext itemDisplayContext)
+    {
+        return switch (itemDisplayContext)
+        {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> useCustomRendererInHand();
+            case GROUND -> useCustomRendererOnGround();
+            case FIXED -> useCustomRendererInFrame();
+            case GUI -> useCustomRendererInGui();
+            default -> false;
+        };
+    }
 }
