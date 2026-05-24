@@ -604,7 +604,7 @@ public class ContentManager
             catch (Exception e)
             {
                 FlansMod.log.error("Failed to add {}", typeFile);
-                LogUtils.logWithoutStacktrace(e);
+                LogUtils.logErrorWithoutStacktrace(e);
             }
         }
         files.clear();

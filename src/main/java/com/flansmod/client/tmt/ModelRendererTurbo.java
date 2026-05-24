@@ -1852,6 +1852,29 @@ public class ModelRendererTurbo extends ModelRenderer
         rotationPointZ = z;
     }
 
+    public boolean appendVertexBounds(double[] bounds)
+    {
+        if (vertices == null || vertices.length == 0)
+            return false;
+
+        boolean found = false;
+        for (PositionTextureVertex vertex : vertices)
+        {
+            if (vertex == null)
+                continue;
+
+            Vec3 vector = vertex.vector3D;
+            bounds[0] = Math.min(bounds[0], vector.x);
+            bounds[1] = Math.min(bounds[1], vector.y);
+            bounds[2] = Math.min(bounds[2], vector.z);
+            bounds[3] = Math.max(bounds[3], vector.x);
+            bounds[4] = Math.max(bounds[4], vector.y);
+            bounds[5] = Math.max(bounds[5], vector.z);
+            found = true;
+        }
+        return found;
+    }
+
     /**
      * Mirrors the model in any direction.
      *

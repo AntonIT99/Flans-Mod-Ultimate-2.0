@@ -12,9 +12,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 {
+    public record BarrelOriginData(Vec3[] pivots, Vec3[] muzzles) {}
+
     @Getter @Setter
     protected AAGunType type;
 
@@ -104,6 +107,59 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
             part.rotateAngleZ = pitch;
             part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
+    }
+
+    public BarrelOriginData getModelBarrelOriginData(AAGunType type)
+    {
+        int count = type.getNumBarrels();
+        if (count <= 0 || barrelModel == null || barrelModel.length < count)
+            return null;
+
+        Vec3[] pivots = new Vec3[count];
+        Vec3[] muzzles = new Vec3[count];
+        Vec3 pivot = new Vec3(barrelX, barrelY, barrelZ);
+
+        for (int barrel = 0; barrel < count; barrel++)
+        {
+            Vec3 muzzle = findMuzzlePoint(barrelModel[barrel]);
+            if (muzzle == null)
+                return null;
+
+            pivots[barrel] = pivot;
+            muzzles[barrel] = muzzle;
+        }
+
+        return new BarrelOriginData(pivots, muzzles);
+    }
+
+    private static Vec3 findMuzzlePoint(ModelRendererTurbo[] parts)
+    {
+        if (parts == null || parts.length == 0)
+            return null;
+
+        double[] bounds = new double[] {
+            Double.POSITIVE_INFINITY,
+            Double.POSITIVE_INFINITY,
+            Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY,
+            Double.NEGATIVE_INFINITY,
+            Double.NEGATIVE_INFINITY
+        };
+        boolean found = false;
+        for (ModelRendererTurbo part : parts)
+        {
+            if (part != null)
+                found |= part.appendVertexBounds(bounds);
+        }
+
+        if (!found)
+            return null;
+
+        return new Vec3(
+            bounds[3],
+            (bounds[1] + bounds[4]) * 0.5D,
+            (bounds[2] + bounds[5]) * 0.5D
+        );
     }
 
     public void flipAll()

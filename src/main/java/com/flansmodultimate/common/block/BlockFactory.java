@@ -24,7 +24,7 @@ public final class BlockFactory
         catch (Exception e)
         {
             FlansMod.log.error("Failed to instantiate Block for {}", config);
-            LogUtils.logWithoutStacktrace(e);
+            LogUtils.logErrorWithoutStacktrace(e);
             return null;
         }
     }

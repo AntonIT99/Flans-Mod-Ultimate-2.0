@@ -170,7 +170,7 @@ public final class ModelCache
                         if (e instanceof IOException ioException && ioException.getCause() instanceof NoSuchFileException noSuchFileException)
                             FlansMod.log.error("File not found: {}", noSuchFileException.getFile());
                         else
-                            LogUtils.logWithoutStacktrace(e);
+                            LogUtils.logErrorWithoutStacktrace(e);
                     }
                 }
             }

@@ -76,6 +76,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     protected static final EntityDataAccessor<Float> DATA_GUN_PITCH = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Integer> DATA_AMMO_MASK = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_CURRENT_BARREL = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -92,6 +93,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     @Getter
     protected float[] barrelRecoil = new float[0];
     protected ItemStack[] ammo = new ItemStack[0];
+    protected Vec3[] modelBarrelPivots = new Vec3[0];
+    protected Vec3[] modelBarrelMuzzles = new Vec3[0];
     @Getter @Setter
     protected boolean shootKeyPressed;
     @Getter @Setter
@@ -150,6 +153,37 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         updateAmmoMask();
     }
 
+    public void setModelBarrelOriginData(Vec3[] pivots, Vec3[] muzzles)
+    {
+        AAGunType type = getConfigType();
+        if (type == null || pivots == null || muzzles == null || pivots.length != type.getNumBarrels() || muzzles.length != type.getNumBarrels())
+            return;
+
+        Vec3[] safePivots = new Vec3[type.getNumBarrels()];
+        Vec3[] safeMuzzles = new Vec3[type.getNumBarrels()];
+        for (int i = 0; i < type.getNumBarrels(); i++)
+        {
+            if (!isValidModelBarrelVector(pivots[i]) || !isValidModelBarrelVector(muzzles[i]))
+                return;
+            safePivots[i] = pivots[i];
+            safeMuzzles[i] = muzzles[i];
+        }
+
+        modelBarrelPivots = safePivots;
+        modelBarrelMuzzles = safeMuzzles;
+    }
+
+    private static boolean isValidModelBarrelVector(Vec3 vector)
+    {
+        return vector != null
+            && Double.isFinite(vector.x)
+            && Double.isFinite(vector.y)
+            && Double.isFinite(vector.z)
+            && Math.abs(vector.x) <= 512D
+            && Math.abs(vector.y) <= 512D
+            && Math.abs(vector.z) <= 512D;
+    }
+
     @Override
     public String getShortName()
     {
@@ -190,6 +224,14 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     public void setReloadTimer(int v)
     {
         entityData.set(DATA_RELOAD_TIMER, v);
+    }
+
+    public void setCurrentBarrel(int barrel)
+    {
+        AAGunType type = getConfigType();
+        int barrelCount = type == null ? 0 : type.getNumBarrels();
+        currentBarrel = barrelCount <= 0 ? 0 : Math.floorMod(barrel, barrelCount);
+        entityData.set(DATA_CURRENT_BARREL, currentBarrel);
     }
 
     public int getAmmoMask()
@@ -257,6 +299,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         entityData.define(DATA_GUN_PITCH, 0F);
         entityData.define(DATA_AMMO_MASK, 0);
         entityData.define(DATA_RELOAD_TIMER, 0);
+        entityData.define(DATA_CURRENT_BARREL, 0);
     }
 
     @Override
@@ -267,6 +310,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         buf.writeFloat(getGunPitch());
         buf.writeInt(getAmmoMask());
         buf.writeInt(getReloadTimer());
+        buf.writeInt(getCurrentBarrelIndex());
     }
 
     @Override
@@ -288,6 +332,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             setGunPitch(buf.readFloat());
             setAmmoMask(buf.readInt());
             setReloadTimer(buf.readInt());
+            setCurrentBarrel(buf.readInt());
         }
         catch (Exception e)
         {
@@ -314,7 +359,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         setGunYaw(tag.getFloat(NBT_GUN_YAW));
         setGunPitch(tag.getFloat(NBT_GUN_PITCH));
         setReloadTimer(tag.getInt(NBT_RELOAD_TIMER));
-        currentBarrel = tag.getInt(NBT_CURRENT_BARREL);
+        setCurrentBarrel(tag.getInt(NBT_CURRENT_BARREL));
         shotsFired = tag.getInt(NBT_SHOTS_FIRED);
         if (tag.hasUUID(NBT_PLACER))
             placerId = tag.getUUID(NBT_PLACER);
@@ -345,7 +390,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         tag.putFloat(NBT_GUN_YAW, getGunYaw());
         tag.putFloat(NBT_GUN_PITCH, getGunPitch());
         tag.putInt(NBT_RELOAD_TIMER, getReloadTimer());
-        tag.putInt(NBT_CURRENT_BARREL, currentBarrel);
+        tag.putInt(NBT_CURRENT_BARREL, getCurrentBarrelIndex());
         tag.putInt(NBT_SHOTS_FIRED, shotsFired);
         if (placerId != null)
             tag.putUUID(NBT_PLACER, placerId);
@@ -646,7 +691,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         {
             if (shootDelay > 0)
                 break;
-            if (type.isFireAlternately() && barrel != currentBarrel)
+            if (type.isFireAlternately() && barrel != getCurrentBarrelIndex())
                 continue;
 
             int slot = ammoSlotForBarrel(barrel);
@@ -662,7 +707,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         }
 
         if (attempted)
-            currentBarrel = (currentBarrel + 1) % type.getNumBarrels();
+            setCurrentBarrel(getCurrentBarrelIndex() + 1);
     }
 
     private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot, boolean sentryShot)
@@ -845,19 +890,11 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         return type.isShareAmmo() ? 0 : barrel;
     }
 
-    public Vec3 getBarrelOrigin(int barrel)
-    {
-        return getBarrelOrigin(barrel, false);
-    }
-
-    public Vec3 getCurrentBarrelOrigin()
+    public int getCurrentBarrelIndex()
     {
         AAGunType type = getConfigType();
-        if (type == null)
-            return position();
-
-        int barrel = Math.floorMod(currentBarrel, type.getNumBarrels());
-        return getBarrelOrigin(barrel, type.isSentry());
+        int barrelCount = type == null ? 0 : type.getNumBarrels();
+        return barrelCount <= 0 ? 0 : Math.floorMod(entityData.get(DATA_CURRENT_BARREL), barrelCount);
     }
 
     public Vec3 getGunnerSeatPosition()
@@ -880,14 +917,37 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         return new Vec3(getX() + x2, getY() + y - 1.5, getZ() + z2);
     }
 
-    private Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
+    public Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
     {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
+        if (barrel < modelBarrelPivots.length && barrel < modelBarrelMuzzles.length)
+            return position().add(transformModelBarrelOffset(modelBarrelPivots[barrel], modelBarrelMuzzles[barrel]));
+
         Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
         return sentryShot && type.isSentry() ? origin.add(0D, SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
+    }
+
+    private Vec3 transformModelBarrelOffset(Vec3 pivot, Vec3 muzzle)
+    {
+        double pitch = -getGunPitch() * Mth.DEG_TO_RAD;
+        double cosPitch = Math.cos(pitch);
+        double sinPitch = Math.sin(pitch);
+
+        double modelX = pivot.x + muzzle.x * cosPitch - muzzle.y * sinPitch;
+        double modelY = pivot.y + muzzle.x * sinPitch + muzzle.y * cosPitch;
+        double modelZ = pivot.z + muzzle.z;
+
+        double yaw = (270D - getGunYaw()) * Mth.DEG_TO_RAD;
+        double cosYaw = Math.cos(yaw);
+        double sinYaw = Math.sin(yaw);
+
+        double x = modelX * cosYaw + modelZ * sinYaw;
+        double z = -modelX * sinYaw + modelZ * cosYaw;
+
+        return new Vec3(x / 16D, modelY / 16D, z / 16D);
     }
 
     private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
