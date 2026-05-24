@@ -3,6 +3,8 @@ package com.flansmodultimate.client.render;
 import com.flansmod.client.model.ModelCustomArmour;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -10,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -41,19 +42,22 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource pBuffer, T entity, EquipmentSlot pSlot, int packedLight, int overlay)
+    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource buffer, T entity, EquipmentSlot slot, int packedLight, int overlay)
     {
-        ItemStack itemStack = entity.getItemBySlot(pSlot);
+        ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
 
-        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
+        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
         {
-            ResourceLocation texture = armorItem.getConfigType().getTexture();
+            ArmorType armorType = armorItem.getConfigType();
+            ResourceLocation texture = armorType.getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
             
-            setModelPartVisibility(modelCustomArmour, pSlot, entity);
-            
-            renderModel(modelCustomArmour, texture, poseStack, pBuffer, packedLight, overlay);
+            setModelPartVisibility(modelCustomArmour, slot, entity);
+
+            boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
+            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+                modelCustomArmour.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
         }
     }
 
@@ -90,17 +94,5 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
                 // no-op
             }
         }
-    }
-
-    private void renderModel(ModelCustomArmour model, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay)
-    {
-        if (!model.hasGlowParts())
-        {
-            model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.armorCutoutNoCull(texture)), packedLight, overlay, 1F, 1F, 1F, 1F);
-            return;
-        }
-
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
     }
 }

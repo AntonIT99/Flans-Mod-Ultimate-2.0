@@ -26,6 +26,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 
@@ -966,7 +967,8 @@ public class GunType extends PaintableType implements IScope
 
     public Optional<ShootableType> getDefaultAmmo()
     {
-        if (!ammo.isEmpty()) {
+        if (!ammo.isEmpty())
+        {
             return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
         }
         return Optional.empty();
@@ -1240,6 +1242,19 @@ public class GunType extends PaintableType implements IScope
         return stackDamage * ModCommonConfig.get().gunDamageModifier();
     }
 
+    public float getDamageForDisplay(ShootableType type, ItemStack gunStack)
+    {
+        return getDamageForDisplay(type, gunStack, null);
+    }
+
+    public float getDamageForDisplay(ShootableType type, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
+    {
+        if (type.useKineticDamageSystem())
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * getBulletSpeed(gunStack) * 20.0);
+        else
+            return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage(gunStack);
+    }
+
     /**
      * Get the bullet spread of a specific gun, taking into account attachments
      */
@@ -1402,7 +1417,7 @@ public class GunType extends PaintableType implements IScope
 
         if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
         {
-            float bulletSpeedOfBulletItem = bulletItem.getConfigType().bulletSpeed;
+            float bulletSpeedOfBulletItem = bulletItem.getConfigType().getBulletSpeed();
 
             if (bulletItem.getConfigType().hasDifferentRounds())
                 bulletSpeedOfBulletItem = bulletItem.getConfigType().statsForShot(bulletStack.getDamageValue()).bulletSpeed();

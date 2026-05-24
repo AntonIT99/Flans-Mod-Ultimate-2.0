@@ -66,14 +66,14 @@ public final class KeyInputHandler
             {
                 doLookAtGun();
             }
-            if (debugKey.consumeClick())
-            {
-                if (ModClient.isDebug())
-                    ModClient.setDebug(false);
-                else
-                    PacketHandler.sendToServer(new PacketRequestDebug());
+        }
 
-            }
+        if (noScreen && debugKey.consumeClick())
+        {
+            if (ModClient.isDebug())
+                ModClient.setDebug(false);
+            else
+                PacketHandler.sendToServer(new PacketRequestDebug());
         }
     }
 

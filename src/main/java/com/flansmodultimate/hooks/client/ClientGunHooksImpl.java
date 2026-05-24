@@ -32,6 +32,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
@@ -279,6 +280,8 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void tickAAGun(AAGun aaGun)
     {
+        spawnAAGunDebugMarkers(aaGun);
+
         if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
             return;
 
@@ -299,6 +302,18 @@ public class ClientGunHooksImpl implements IClientGunHooks
             if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
                 PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed()));
         }
+    }
+
+    private static void spawnAAGunDebugMarkers(AAGun aaGun)
+    {
+        Vec3 barrelOrigin = aaGun.getCurrentBarrelOrigin();
+        Vec3 gunnerSeat = aaGun.getGunnerSeatPosition();
+        Vec3 shootingVector = aaGun.getShootingDirection().scale(1.5D);
+
+        DebugHelper.spawnDebugDot(barrelOrigin, 2, 1F, 0F, 0F);
+        DebugHelper.spawnDebugVector(barrelOrigin, shootingVector, 2, 1F, 0.2F, 0F);
+        if (!aaGun.getConfigType().isSentry())
+            DebugHelper.spawnDebugDot(gunnerSeat, 2, 0F, 0.45F, 1F);
     }
 
     @Override

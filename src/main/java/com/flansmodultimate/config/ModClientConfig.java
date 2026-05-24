@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.common.types.InfoType;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,6 +25,13 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
 
+    public final boolean alwaysEnableArmorTranslucentRenderingByDefault;
+    public final boolean alwaysEnableGunTranslucentRenderingByDefault;
+    public final boolean alwaysEnableGrenadeTranslucentRenderingByDefault;
+    public final boolean alwaysEnableBulletTranslucentRenderingByDefault;
+    public final boolean alwaysEnableAttachmentTranslucentRenderingByDefault;
+    public final boolean alwaysEnableAAGunTranslucentRenderingByDefault;
+
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
 
@@ -36,6 +44,13 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
     private static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
     private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
+
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -87,6 +102,15 @@ public final class ModClientConfig
             .define("enableRandomSprintStance", false);
         builder.pop();
 
+        builder.push("Translucent Rendering Defaults");
+        ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("armors", "alwaysEnableArmorsTranslucentRenderingByDefault", false);
+        ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("guns", "alwaysEnableGunsTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("grenades", "alwaysEnableGrenadesTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("bullets", "alwaysEnableBulletsTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("attachments", "alwaysEnableAttachmentsTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("aa-guns", "alwaysEnableAAGunsTranslucentRenderingByDefault", false);
+        builder.pop();
+
         configSpec = builder.build();
     }
 
@@ -104,11 +128,42 @@ public final class ModClientConfig
         enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
+
+        alwaysEnableArmorTranslucentRenderingByDefault = ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableGunTranslucentRenderingByDefault = ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableGrenadeTranslucentRenderingByDefault = ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableBulletTranslucentRenderingByDefault = ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableAttachmentTranslucentRenderingByDefault = ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableAAGunTranslucentRenderingByDefault = ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
     }
 
     public static ModClientConfig get()
     {
         return instance.get();
+    }
+
+    public boolean useTranslucentRendering(InfoType type)
+    {
+        if (type.getRenderOptions().translucentRendering())
+            return true;
+
+        return switch (type.getType())
+        {
+            case ARMOR -> alwaysEnableArmorTranslucentRenderingByDefault;
+            case GUN -> alwaysEnableGunTranslucentRenderingByDefault;
+            case GRENADE -> alwaysEnableGrenadeTranslucentRenderingByDefault;
+            case BULLET -> alwaysEnableBulletTranslucentRenderingByDefault;
+            case ATTACHMENT -> alwaysEnableAttachmentTranslucentRenderingByDefault;
+            case AA_GUN -> alwaysEnableAAGunTranslucentRenderingByDefault;
+            default -> false;
+        };
+    }
+
+    private static ForgeConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
+    {
+        return builder
+            .comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
+            .define(configName, defaultValue);
     }
 
     public static void bake()

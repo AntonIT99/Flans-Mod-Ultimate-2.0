@@ -5,6 +5,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.types.AAGunType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
@@ -38,17 +39,18 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
         float blue = (color & 255) / 255F;
         float modelScale = type.getModelScale();
         ResourceLocation texture = type.getTexture();
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
 
         poseStack.pushPose();
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
         poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         poseStack.popPose();
     }

@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -52,6 +53,23 @@ public class CustomRenderType
 
     private static final Function<TexDepthKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
     private static final Function<TexDepthKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
+    private static final Function<ResourceLocation, RenderType> ARMOR_TRANSLUCENT_NO_CULL = Util.memoize(CustomRenderType::createArmorTranslucentNoCull);
+
+    private static final RenderStateShard.LayeringStateShard ARMOR_VIEW_OFFSET_LAYERING =
+        new RenderStateShard.LayeringStateShard(
+            "armor_view_offset_layering",
+            () -> {
+                PoseStack poseStack = RenderSystem.getModelViewStack();
+                poseStack.pushPose();
+                poseStack.scale(0.99975586F, 0.99975586F, 0.99975586F);
+                RenderSystem.applyModelViewMatrix();
+            },
+            () -> {
+                PoseStack poseStack = RenderSystem.getModelViewStack();
+                poseStack.popPose();
+                RenderSystem.applyModelViewMatrix();
+            }
+        );
 
     private static RenderType createEntityEmissive(ResourceLocation texture, boolean depthWrite, RenderStateShard.TransparencyStateShard transparency, String debugName)
     {
@@ -68,6 +86,21 @@ public class CustomRenderType
             .createCompositeState(true);
 
         return RenderType.create(debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
+    }
+
+    private static RenderType createArmorTranslucentNoCull(ResourceLocation texture)
+    {
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
+            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
+            .setCullState(new RenderStateShard.CullStateShard(false))
+            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+            .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
+            .createCompositeState(true);
+
+        return RenderType.create("armor_translucent_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true, state);
     }
 
     /** Emissive alpha-blended layer (writes depth) */
@@ -92,5 +125,11 @@ public class CustomRenderType
     public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex)
     {
         return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthKey(tex, false));
+    }
+
+    /** Armor layer render type with armor z-offset and entity-style partial alpha blending */
+    public static RenderType armorTranslucentNoCull(ResourceLocation tex)
+    {
+        return ARMOR_TRANSLUCENT_NO_CULL.apply(tex);
     }
 }

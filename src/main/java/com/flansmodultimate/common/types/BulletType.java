@@ -27,6 +27,7 @@ public class BulletType extends ShootableType
     //TODO: make these constants configurable
     public static final double LOCK_ON_RANGE = 128.0;
     public static final int FLAK_PARTICLES_RANGE = 256;
+    public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
     public record RoundStats(float mass, float explosiveMass, float bulletSpeed, float penetrationAt100m) {}
@@ -326,21 +327,34 @@ public class BulletType extends ShootableType
         return explosiveMass > 0F || hasDifferentRounds();
     }
 
+    public float getBulletSpeed(boolean enforceDefaultFallback)
+    {
+        float speed = hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed;
+        boolean useMultiplier = speedMultiplier > 0F && speedMultiplier != 1F;
+        speed = useMultiplier ? speed * speedMultiplier : speed;
+
+        if (enforceDefaultFallback && speed <= 0F)
+            return useMultiplier ? DEFAULT_BULLET_SPEED * speedMultiplier : DEFAULT_BULLET_SPEED;
+
+        return speed;
+    }
+
     public float getBulletSpeed()
     {
-        if (hasDifferentRounds())
-        {
-            return statsForShot(0).bulletSpeed;
-        }
-        return bulletSpeed;
+        return getBulletSpeed(false);
     }
 
     @Override
     public float getMass()
     {
+        return getMass(0);
+    }
+
+    public float getMass(int shotsFired)
+    {
         if (hasDifferentRounds())
         {
-            return statsForShot(0).mass;
+            return statsForShot(shotsFired).mass;
         }
         return super.getMass();
     }

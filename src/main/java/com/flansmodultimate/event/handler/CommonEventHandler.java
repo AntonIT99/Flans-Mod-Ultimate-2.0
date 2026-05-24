@@ -3,21 +3,23 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.command.DefaultAmmoCommand;
+import com.flansmodultimate.common.command.DigitalAmmoCommand;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
-import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -29,14 +31,15 @@ import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +59,15 @@ public final class CommonEventHandler
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
 
     @SubscribeEvent
-    public void onWorldLoad(LevelEvent.Load event)
+    public static void onRegisterCommands(RegisterCommandsEvent event)
+    {
+        DigitalAmmoCommand.register(event.getDispatcher());
+        DefaultAmmoCommand.register(event.getDispatcher());
+        DigitalAmmoSupplyHandler.reloadSupplyBlocks();
+    }
+
+    @SubscribeEvent
+    public static void onWorldLoad(LevelEvent.Load event)
     {
         if (event.getLevel().isClientSide())
             return;
@@ -244,14 +255,10 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public void onLivingDeath(LivingDeathEvent event)
+    public static void onLivingDeath(LivingDeathEvent event)
     {
         LivingEntity entity = event.getEntity();
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
-    }
-
-    @SubscribeEvent
-    public static void onEntityLeave(EntityLeaveLevelEvent event) {
     }
 }

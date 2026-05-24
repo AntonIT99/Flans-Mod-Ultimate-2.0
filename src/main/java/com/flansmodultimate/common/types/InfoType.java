@@ -94,7 +94,9 @@ public abstract class InfoType
     @Nullable
     protected ResourceLocation overlay;
     @Getter
-    protected boolean additiveBlending;
+    protected RenderOptions renderOptions;
+
+    public record RenderOptions(boolean translucentRendering, boolean additiveBlending) {}
 
     public String getShortName()
     {
@@ -146,7 +148,9 @@ public abstract class InfoType
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);
-        additiveBlending = readValue("AdditiveBlending", additiveBlending, file);
+        boolean translucentRendering = readValue("TranslucentRendering", false, file);
+        boolean additiveBlending = readValue("AdditiveBlending", false, file);
+        renderOptions = new RenderOptions(translucentRendering, additiveBlending);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);

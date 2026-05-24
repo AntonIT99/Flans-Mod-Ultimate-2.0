@@ -1,5 +1,7 @@
-package com.flansmodultimate.common.digitalammo;
+package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.common.digitalammo.DigitalAmmoHelper;
+import com.flansmodultimate.common.digitalammo.PlayerBulletStorage;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.brigadier.CommandDispatcher;

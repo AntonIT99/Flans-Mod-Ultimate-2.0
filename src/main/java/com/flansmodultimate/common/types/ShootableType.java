@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -409,14 +408,6 @@ public abstract class ShootableType extends InfoType
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
         return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
-    }
-
-    public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
-    {
-        if (useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(getMass()) * gunType.getBulletSpeed(gunStack) * 20.0);
-        else
-            return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }
 
     public float getDispersionForDisplay() {

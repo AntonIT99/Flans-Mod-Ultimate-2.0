@@ -145,7 +145,7 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
         event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
         event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);

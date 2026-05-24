@@ -231,30 +231,34 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 {
                     if (shootableType.useKineticDamageSystem())
                     {
-                        tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, null), 1)));
+                        tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1)));
                     }
                     else
                     {
-                        float damage = shootableType.getDamageForDisplay(configType, stack, null);
-                        MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(damage, 1));
-
+                        float damage = configType.getDamageForDisplay(shootableType, stack);
+                        float damageVsLiving = configType.getDamageForDisplay(shootableType, stack, LivingEntity.class);
+                        float damageVsPlayer = configType.getDamageForDisplay(shootableType, stack, Player.class);
+                        float damageVsVehicle = configType.getDamageForDisplay(shootableType, stack, Vehicle.class);
+                        float damageVsPlane = configType.getDamageForDisplay(shootableType, stack, Plane.class);
                         final float EPS = 0.0001F;
 
+                        MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(damage, 1));
+
                         // vs Living: only show if explicitly configured AND different from base
-                        if (shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - shootableType.getDamageForDisplay(configType, stack, LivingEntity.class)) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, LivingEntity.class), 1)).withStyle(ChatFormatting.GREEN));
+                        if (shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - damageVsLiving) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsLiving, 1)).withStyle(ChatFormatting.GREEN));
 
                         // vs Player: inherits from vsLiving
-                        if (shootableType.getDamage().isReadDamageVsPlayer() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Player.class) - shootableType.getDamageForDisplay(configType, stack, LivingEntity.class)) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Player.class), 1)).withStyle(ChatFormatting.RED));
+                        if (shootableType.getDamage().isReadDamageVsPlayer() && Math.abs(damageVsPlayer - damageVsLiving) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsPlayer, 1)).withStyle(ChatFormatting.RED));
 
                         // vs Vehicle: inherits from base
-                        if (shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Vehicle.class) - damage) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Vehicle.class), 1)).withStyle(ChatFormatting.AQUA));
+                        if (shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(damageVsVehicle - damage) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsVehicle, 1)).withStyle(ChatFormatting.AQUA));
 
                         // vs Plane: inherits from vsVehicle
-                        if (shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(shootableType.getDamageForDisplay(configType, stack, Plane.class) - shootableType.getDamageForDisplay(configType, stack, Vehicle.class)) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(shootableType.getDamageForDisplay(configType, stack, Plane.class), 1)).withStyle(ChatFormatting.LIGHT_PURPLE));
+                        if (shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(damageVsPlane - damageVsVehicle) > EPS)
+                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsPlane, 1)).withStyle(ChatFormatting.LIGHT_PURPLE));
 
                         tooltipComponents.add(damageComponent);
                     }

@@ -55,7 +55,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 {
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
-    private static final double LEGACY_SENTRY_ORIGIN_Y_OFFSET = 1.5D;
+
+    private static final double SENTRY_ORIGIN_Y_OFFSET = 1.5D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
     public static final String NBT_TYPE_NAME = "type";
@@ -456,16 +457,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         if (!(passenger instanceof Player) || type == null)
             return;
 
-        double x = type.getGunnerX() / 16D;
-        double y = type.getGunnerY() / 16D;
-        double z = type.getGunnerZ() / 16D;
-        double yaw = -getGunYaw() * Mth.DEG_TO_RAD;
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-        double x2 = x * cosYaw + z * sinYaw;
-        double z2 = -x * sinYaw + z * cosYaw;
-
-        move.accept(passenger, getX() + x2, getY() + y, getZ() + z2);
+        Vec3 gunnerSeatPosition = getGunnerSeatPosition();
+        move.accept(passenger, gunnerSeatPosition.x, gunnerSeatPosition.y, gunnerSeatPosition.z);
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0F;
     }
@@ -679,8 +672,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         if (type == null || !(ammoStack.getItem() instanceof ShootableItem shootableItem) || !(shootableItem.getConfigType() instanceof BulletType bulletType))
             return false;
 
-        float bulletSpeed = type.getDefaultBulletSpeed(bulletType);
-        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getAccuracy(), bulletSpeed, type.getSpreadPattern());
+        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(), bulletType.getBulletSpeed(true), type.getSpreadPattern());
         FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ammoStack.getDamageValue());
 
         Vec3 shootingDir = getShootingDirection();
@@ -858,6 +850,36 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         return getBarrelOrigin(barrel, false);
     }
 
+    public Vec3 getCurrentBarrelOrigin()
+    {
+        AAGunType type = getConfigType();
+        if (type == null)
+            return position();
+
+        int barrel = Math.floorMod(currentBarrel, type.getNumBarrels());
+        return getBarrelOrigin(barrel, type.isSentry());
+    }
+
+    public Vec3 getGunnerSeatPosition()
+    {
+        AAGunType type = getConfigType();
+        if (type == null)
+            return position();
+
+        // Map legacy position to actual position
+        double x = type.getGunnerZ() / 16D;
+        double y = type.getGunnerY() / 16D;
+        double z = -type.getGunnerX() / 16D;
+
+        double yaw = -getGunYaw() * Mth.DEG_TO_RAD;
+        double cosYaw = Math.cos(yaw);
+        double sinYaw = Math.sin(yaw);
+        double x2 = x * cosYaw + z * sinYaw;
+        double z2 = -x * sinYaw + z * cosYaw;
+
+        return new Vec3(getX() + x2, getY() + y - 1.5, getZ() + z2);
+    }
+
     private Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
     {
         AAGunType type = getConfigType();
@@ -865,18 +887,19 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return position();
 
         Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
-        return sentryShot && type.isSentry() ? origin.add(0D, LEGACY_SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
+        return sentryShot && type.isSentry() ? origin.add(0D, SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
     }
 
     private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
     {
-        double barrelX = type.getBarrelX()[barrel];
+        // Map legacy position to actual position
+        double barrelX = type.getBarrelZ()[barrel];
         double barrelY = type.getBarrelY()[barrel];
-        double barrelZ = type.getBarrelZ()[barrel];
+        double barrelZ = -type.getBarrelX()[barrel];
 
-        double x = (barrelZ + barrelX) / 16D;
+        double x = (barrelX - barrelZ) / 16D;
         double y = barrelY / 16D;
-        double z = (barrelZ - barrelX) / 16D;
+        double z = (barrelX + barrelZ) / 16D;
 
         return rotate(x, y, z, getGunPitch(), getGunYaw());
     }

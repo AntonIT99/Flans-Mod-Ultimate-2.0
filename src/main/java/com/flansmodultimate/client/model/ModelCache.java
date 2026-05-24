@@ -183,7 +183,7 @@ public final class ModelCache
         if (model instanceof IFlanTypeModel<?> flanItemModel && flanItemModel.typeClass().isInstance(type))
             ((IFlanTypeModel<InfoType>) flanItemModel).setType(type);
 
-        if (model != null && type.isAdditiveBlending())
+        if (model != null && type.getRenderOptions().additiveBlending())
         {
             for (ModelRenderer modelRenderer : model.getBoxList())
             {
