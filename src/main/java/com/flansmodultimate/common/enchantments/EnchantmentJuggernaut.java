@@ -17,26 +17,20 @@ public class EnchantmentJuggernaut extends Enchantment
     }
 
     @Override
-    public int getMaxLevel()
+    public int getMinCost(int level)
     {
-        return 1;
+        return level * 25;
+    }
+
+    @Override
+    public int getMaxCost(int level)
+    {
+        return getMinCost(level) + 50;
     }
 
     @Override
     public boolean isTreasureOnly()
     {
         return true;
-    }
-
-    @Override
-    public int getMinCost(int enchantmentLevel)
-    {
-        return enchantmentLevel * 25;
-    }
-
-    @Override
-    public int getMaxCost(int enchantmentLevel)
-    {
-        return getMinCost(enchantmentLevel) + 50;
     }
 }

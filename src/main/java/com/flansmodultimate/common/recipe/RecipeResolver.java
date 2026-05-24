@@ -452,6 +452,8 @@ public final class RecipeResolver
             case "reeds" -> Items.SUGAR_CANE;
             case "seeds" -> Items.WHEAT_SEEDS;
             case "diode" -> Items.REPEATER;
+            case "hellsand" -> Items.SOUL_SAND;
+            case "mushroom" -> Items.BROWN_MUSHROOM;
             default -> null;
         };
         return Optional.ofNullable(item);

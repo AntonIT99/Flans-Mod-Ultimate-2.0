@@ -3,6 +3,9 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.command.DefaultAmmoCommand;
+import com.flansmodultimate.common.command.DigitalAmmoCommand;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
@@ -12,14 +15,11 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
-import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -31,8 +31,10 @@ import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -56,18 +58,16 @@ public final class CommonEventHandler
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
 
-    private static final Int2ObjectMap<Pair<Vec3, Vec3>> PREVIOUS_POS = new Int2ObjectOpenHashMap<>();
-
-    /**
-     * This is the only way to know if the entity is moving,
-     * because server resets all the information about previous pos and movement after tick ends
-     */
-    public static Vec3 getPrevPos(LivingEntity entity) {
-        return PREVIOUS_POS.get(entity.getId()).left();
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event)
+    {
+        DigitalAmmoCommand.register(event.getDispatcher());
+        DefaultAmmoCommand.register(event.getDispatcher());
+        DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
     @SubscribeEvent
-    public void onWorldLoad(LevelEvent.Load event)
+    public static void onWorldLoad(LevelEvent.Load event)
     {
         if (event.getLevel().isClientSide())
             return;
@@ -164,16 +164,6 @@ public final class CommonEventHandler
             CustomArmorItem.handleSpecialEffects(event.getEntity());
             CustomArmorItem.handleMobEffects(event.getEntity());
         }
-
-        Pair<Vec3, Vec3> posPair = PREVIOUS_POS.get(event.getEntity().getId());
-        Vec3 current = event.getEntity().position();
-        Vec3 prev;
-        if (posPair != null) {
-            prev = posPair.right();
-        } else {
-            prev = current;
-        }
-        PREVIOUS_POS.put(event.getEntity().getId(), Pair.of(prev, current));
     }
 
     @SubscribeEvent
@@ -204,6 +194,16 @@ public final class CommonEventHandler
             return;
 
         EnchantmentModule.applyOffHandWeaponDamage(event);
+        EnchantmentModule.applyJuggernaut(event);
+
+        if (entity instanceof Player player)
+        {
+            float absorption = getShieldAbsorption(player);
+            if (absorption > 0F && !FlanDamageSources.isShootableDamage(source) && isAttackFromFront(player, source))
+            {
+                event.setAmount(event.getAmount() * (1F - absorption));
+            }
+        }
 
         if (entity instanceof Player || entity instanceof Mob)
         {
@@ -218,22 +218,47 @@ public final class CommonEventHandler
                 CustomArmorItem.applyArmorBulletDefense(event, entity);
             }
         }
+    }
 
-        EnchantmentModule.applyJuggernaut(event);
+    private static float getShieldAbsorption(Player player)
+    {
+        float absorption = 0F;
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
+            {
+                if (gunItem.getConfigType().isShield())
+                {
+                    absorption = Math.max(absorption, gunItem.getConfigType().getShieldDamageAbsorption());
+                }
+            }
+        }
+        return absorption;
+    }
+
+    private static boolean isAttackFromFront(Player player, DamageSource source)
+    {
+        Entity attacker = source.getDirectEntity();
+        if (attacker == null)
+            attacker = source.getEntity();
+        if (attacker == null)
+            return true;
+
+        Vec3 playerLook = player.getLookAngle();
+        Vec3 toAttacker = player.position().vectorTo(attacker.position()).normalize();
+        if (toAttacker.lengthSqr() < 0.001)
+            return true;
+
+        double dot = playerLook.dot(toAttacker);
+        return dot > 0.0;
     }
 
     @SubscribeEvent
-    public void onLivingDeath(LivingDeathEvent event)
+    public static void onLivingDeath(LivingDeathEvent event)
     {
         LivingEntity entity = event.getEntity();
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
-    }
-
-    @SubscribeEvent
-    public static void onEntityLeave(EntityLeaveLevelEvent event) {
-        if (event.getEntity() instanceof LivingEntity entity) {
-            PREVIOUS_POS.remove(entity.getId());
-        }
     }
 }

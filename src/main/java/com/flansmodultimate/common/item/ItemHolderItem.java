@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -31,5 +32,6 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        tooltipComponents.add(Component.literal("Place items on display").withStyle(ChatFormatting.DARK_AQUA));
     }
 }

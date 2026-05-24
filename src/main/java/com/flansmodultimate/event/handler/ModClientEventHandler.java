@@ -145,13 +145,13 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
         event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
         event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
         event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
         event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
-        event.registerBlockEntityRenderer(FlansMod.itemHolderEntity.get(), ItemHolderRenderer::new);
+        event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
     }
 
     @SubscribeEvent

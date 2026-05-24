@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.guns.handler;
 
+import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.GunType;
@@ -12,9 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Applies all "on shoot" side-effects for the final bullet in a burst.
- */
 public final class PlayerShootingHandler implements ShootingHandler
 {
 
@@ -56,49 +55,45 @@ public final class PlayerShootingHandler implements ShootingHandler
         if (gunType == null || shootableType == null)
             return;
 
-        // Drop item on shooting if bullet requires it
         if (!player.getAbilities().instabuild)
             ModUtils.dropItem(level, player, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
 
-        // Drop item on shooting if gun requires it
         ModUtils.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
-        // Apply knockback to Player
         if (gunType.getKnockback() > 0F && !player.isCrouching())
             knockbackOppositeLook(player, gunType.getKnockback());
 
-        // Damage the bullet item
-        bulletStack.setDamageValue(bulletStack.getDamageValue() + 1);
+        ShootableItem.consumeRound(bulletStack);
 
-        // Update the stack in the gun
         gunItem.setBulletItemStack(gunStack, bulletStack, ammoIndex);
 
-        // Optionally consume the gun
         if (gunType.isConsumeGunUponUse())
             player.setItemInHand(hand, ItemStack.EMPTY);
+
+        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? net.minecraftforge.fml.LogicalSide.CLIENT : net.minecraftforge.fml.LogicalSide.SERVER);
+        EnumFireMode mode = gunType.getFireMode(gunStack);
+        
+        if (mode == EnumFireMode.BURST)
+        {
+            int remaining = data.getBurstRoundsRemaining(hand);
+            if (remaining > 0)
+            {
+                data.setBurstRoundsRemaining(hand, remaining - 1);
+            }
+            else
+            {
+                data.setBurstRoundsRemaining(hand, gunType.getNumBurstRounds() - 1);
+            }
+        }
     }
 
-    public static void knockbackOppositeLook(Player player, double strength)
+    private void knockbackOppositeLook(Player player, float knockback)
     {
-        if (player.level().isClientSide)
-            return;
-
-        // Get where the player is looking
         Vec3 look = player.getLookAngle();
-
-        // Invert the look direction (opposite of where they look) and flatten Y so it's mostly horizontal
-        Vec3 dir = new Vec3(-look.x, 0.0, -look.z);
-
-        if (dir.lengthSqr() < 1.0E-4)
-            return;
-
-        // Normalize & scale by your strength
-        dir = dir.normalize().scale(strength);
-
-        // Apply knockback
-        player.setDeltaMovement(dir);
-
-        // important so the client actually updates
-        player.hurtMarked = true;
+        player.setDeltaMovement(player.getDeltaMovement().add(
+            -look.x * knockback * 0.1,
+            -look.y * knockback * 0.1,
+            -look.z * knockback * 0.1
+        ));
     }
 }

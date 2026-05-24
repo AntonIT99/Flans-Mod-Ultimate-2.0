@@ -82,23 +82,33 @@ public final class ResourceUtils
 
         public static ModelJson createItemHolderBlockModel(ItemHolderType config)
         {
-            String parent = "minecraft:block/cube_all";
-            Map<String, String> textures = Map.of("all", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon());
-            return new ModelJson(parent, null, textures, null);
+            String iconTexture = FlansMod.FLANSMOD_ID + ":item/" + config.getIcon();
+
+            Map<String, String> textures = new LinkedHashMap<>();
+            textures.put("particle", iconTexture);
+            textures.put("top", iconTexture);
+            textures.put("bottom", iconTexture);
+            textures.put("side", iconTexture);
+
+            return new ModelJson("minecraft:block/cube_bottom_top", null, textures, null);
         }
 
         public static ModelJson createItemModel(InfoType config)
         {
-            String parent = "minecraft:item/generated";
             if (config instanceof ItemHolderType)
-                parent = "minecraft:item/generated";
-            else if (config.getType().isHasBlock())
+            {
+                return new ModelJson("minecraft:item/generated", null,
+                    Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon()), null);
+            }
+
+            String parent = "minecraft:item/generated";
+            if (config.getType().isHasBlock())
                 parent = FlansMod.FLANSMOD_ID + ":block/" + config.getShortName();
             else if (config.getType().isHandHeldItem())
                 parent = "minecraft:item/handheld";
 
             Map<String, String> textures = null;
-            if (!config.getType().isHasBlock() || config instanceof ItemHolderType)
+            if (!config.getType().isHasBlock())
                 textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon());
 
             List<Override> overrides = null;

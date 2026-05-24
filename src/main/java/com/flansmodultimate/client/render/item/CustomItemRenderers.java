@@ -27,17 +27,17 @@ public final class CustomItemRenderers
     {
         register(GunItem.class, (stack, ctx, pose, buffer, light, overlay) ->
         {
-            if (stack.getItem() instanceof GunItem gunItem && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
-                RenderGun.renderItem(modelGun, stack, ctx, pose, buffer, light, overlay);
-            else
+            if (stack.getItem() instanceof GunItem gunItem && gunItem.useCustomRenderer(ctx) && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
             {
-                ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+                RenderGun.renderItem(modelGun, stack, ctx, pose, buffer, light, overlay);
+                return;
             }
 
+            ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
         });
         register(GrenadeItem.class, (stack, ctx, pose, buffer, light, overlay) ->
         {
-            if (stack.getItem() instanceof GrenadeItem grenadeItem)
+            if (stack.getItem() instanceof GrenadeItem grenadeItem && grenadeItem.useCustomRenderer(ctx))
             {
                 IModelBase model = ModelCache.getOrLoadTypeModel(grenadeItem.getConfigType());
                 if (model != null)
@@ -47,12 +47,11 @@ public final class CustomItemRenderers
                     float green = (color >> 8 & 255) / 255F;
                     float blue = (color & 255) / 255F;
                     LegacyTransformApplier.renderModel(model, grenadeItem.getConfigType(), grenadeItem.getConfigType().getTexture(), pose, buffer, light, overlay, red, green, blue, 1F);
-                }
-                else
-                {
-                    ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+                    return;
                 }
             }
+
+            ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
         });
     }
 

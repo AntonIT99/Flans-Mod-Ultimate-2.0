@@ -13,7 +13,6 @@ public record CommonConfigSnapshot(
     boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
     boolean flanExplosionsDropBlocks,
-    boolean enchantmentModuleEnabled,
     int bonusRegenAmount,
     int bonusRegenTickDelay,
     int bonusRegenFoodLimit,
@@ -59,10 +58,19 @@ public record CommonConfigSnapshot(
     boolean enableBlockPenetration,
     double blockPenetrationModifier,
 
-    List<String> penetrableBlocksLines
+    List<String> penetrableBlocksLines,
+
+    boolean enableDigitalAmmoSystem,
+    int digitalAmmoDefaultAmount,
+    int digitalAmmoMaxAmount,
+    int digitalAmmoNumTypes,
+    List<String> digitalAmmoSupplyBlocks,
+    int digitalAmmoSupplyAmount,
+
+    boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 3;
+    public static final int CURRENT_VERSION = 4;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -73,7 +81,6 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeBoolean(s.flanExplosionsDropBlocks);
-        buf.writeBoolean(s.enchantmentModuleEnabled);
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
         buf.writeVarInt(s.bonusRegenFoodLimit);
@@ -122,6 +129,17 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.penetrableBlocksLines.size());
         for (String line : s.penetrableBlocksLines)
             buf.writeUtf(line, 32767);
+
+        buf.writeBoolean(s.enableDigitalAmmoSystem);
+        buf.writeVarInt(s.digitalAmmoDefaultAmount);
+        buf.writeVarInt(s.digitalAmmoMaxAmount);
+        buf.writeVarInt(s.digitalAmmoNumTypes);
+        buf.writeVarInt(s.digitalAmmoSupplyBlocks.size());
+        for (String block : s.digitalAmmoSupplyBlocks)
+            buf.writeUtf(block, 32767);
+        buf.writeVarInt(s.digitalAmmoSupplyAmount);
+
+        buf.writeBoolean(s.enchantmentModuleEnabled);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -131,7 +149,6 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
 
-            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -180,7 +197,16 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readDouble(),
 
-            List.copyOf(readLines(buf))
+            List.copyOf(readLines(buf)),
+
+            buf.readBoolean(),
+            buf.readVarInt(),
+            buf.readVarInt(),
+            buf.readVarInt(),
+            List.copyOf(readLines(buf)),
+            buf.readVarInt(),
+
+            buf.readBoolean()
         );
     }
 

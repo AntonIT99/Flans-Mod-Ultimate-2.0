@@ -38,6 +38,8 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -133,6 +135,12 @@ public class ContentManager
     private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    // Latin-1 must stay last because it can decode every byte sequence.
+    private static final List<Charset> TYPE_FILE_CHARSETS = List.of(
+        StandardCharsets.UTF_8,
+        Charset.forName("GB18030"),
+        StandardCharsets.ISO_8859_1
+    );
 
     private record TextureFile(String name, IContentProvider contentPack) {}
     private record FileContentSignature(long size, String sha256) {}
@@ -512,7 +520,7 @@ public class ContentManager
     {
         try
         {
-            List<String> lines = readAllLinesUtf8OrLatin1(file);
+            List<String> lines = readTypeFileLines(file);
             stripBomIfPresent(lines);
             return new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines);
         }
@@ -523,16 +531,26 @@ public class ContentManager
         }
     }
 
-    private static List<String> readAllLinesUtf8OrLatin1(Path file) throws IOException {
-        try
+    private static List<String> readTypeFileLines(Path file) throws IOException
+    {
+        CharacterCodingException firstDecodeFailure = null;
+
+        for (Charset charset : TYPE_FILE_CHARSETS)
         {
-            return Files.readAllLines(file, StandardCharsets.UTF_8);
+            try
+            {
+                return Files.readAllLines(file, charset);
+            }
+            catch (CharacterCodingException e)
+            {
+                if (firstDecodeFailure == null)
+                    firstDecodeFailure = e;
+                else
+                    firstDecodeFailure.addSuppressed(e);
+            }
         }
-        catch (MalformedInputException e)
-        {
-            // Legacy/Windows encodings often decode fine as ISO-8859-1
-            return Files.readAllLines(file, StandardCharsets.ISO_8859_1);
-        }
+
+        throw firstDecodeFailure != null ? firstDecodeFailure : new IOException("No charset configured for " + file);
     }
 
     private static void stripBomIfPresent(List<String> lines)
@@ -586,7 +604,7 @@ public class ContentManager
             catch (Exception e)
             {
                 FlansMod.log.error("Failed to add {}", typeFile);
-                LogUtils.logWithoutStacktrace(e);
+                LogUtils.logErrorWithoutStacktrace(e);
             }
         }
         files.clear();

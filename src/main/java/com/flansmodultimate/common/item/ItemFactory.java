@@ -24,7 +24,7 @@ public final class ItemFactory
         catch (Exception e)
         {
             FlansMod.log.error("Failed to instantiate Item for {}", config);
-            LogUtils.logWithoutStacktrace(e);
+            LogUtils.logErrorWithoutStacktrace(e);
             return null;
         }
     }

@@ -3,6 +3,8 @@ package com.flansmodultimate.client.render;
 import com.flansmod.client.model.ModelCustomArmour;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -16,6 +18,8 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -38,22 +42,57 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource pBuffer, T entity, EquipmentSlot pSlot, int packedLight, int overlay)
+    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource buffer, T entity, EquipmentSlot slot, int packedLight, int overlay)
     {
-        ItemStack itemStack = entity.getItemBySlot(pSlot);
+        ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
 
-        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == pSlot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
+        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
         {
-            ResourceLocation texture = armorItem.getConfigType().getTexture();
+            ArmorType armorType = armorItem.getConfigType();
+            ResourceLocation texture = armorType.getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
-            renderModel(modelCustomArmour, texture, poseStack, pBuffer, packedLight, overlay);
+            
+            setModelPartVisibility(modelCustomArmour, slot, entity);
+
+            boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
+            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+                modelCustomArmour.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
         }
     }
 
-    private void renderModel(ModelCustomArmour model, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay)
+    private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, LivingEntity entity)
     {
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
+        model.setAllVisible(false);
+        
+        switch (slot)
+        {
+            case HEAD ->
+            {
+                model.head.visible = true;
+                model.hat.visible = entity instanceof Player player && player.isModelPartShown(PlayerModelPart.HAT);
+            }
+            case CHEST ->
+            {
+                model.body.visible = true;
+                model.rightArm.visible = true;
+                model.leftArm.visible = true;
+            }
+            case LEGS ->
+            {
+                model.body.visible = true;
+                model.rightLeg.visible = true;
+                model.leftLeg.visible = true;
+            }
+            case FEET ->
+            {
+                model.rightLeg.visible = true;
+                model.leftLeg.visible = true;
+            }
+            default ->
+            {
+                // no-op
+            }
+        }
     }
 }

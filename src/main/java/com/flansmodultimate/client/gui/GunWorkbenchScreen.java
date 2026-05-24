@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import com.flansmodultimate.util.InventoryHelper;
@@ -194,13 +195,22 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
 
     private static float getDamageStat(ItemStack gunStack, GunItem gunItem)
     {
-        float damage;
-        if (gunItem.getAmmoItemStack(gunStack, 0).getItem() instanceof ShootableItem shootableItem)
-            damage = shootableItem.getConfigType().getDamageForDisplay(gunItem.getConfigType(), gunStack, null);
-        else
-            damage = gunItem.getConfigType().getAmmoTypes().get(0).getDamageForDisplay(gunItem.getConfigType(), gunStack, null);
-        if (damage == 0F && gunItem.getConfigType().getMeleeDamage(gunStack, false) > 0)
-            damage = gunItem.getConfigType().getMeleeDamage(gunStack, false);
+        GunType gunType = gunItem.getConfigType();
+
+        Optional<ShootableType> currentAmmoType = Optional.ofNullable(gunItem.getAmmoItemStack(gunStack, 0))
+            .map(stack -> stack.getItem() instanceof ShootableItem shootableItem ? shootableItem.getConfigType() : null);
+        Optional<ShootableType> defaultAmmoType = gunType.getDefaultAmmo();
+
+        float damage = 0F;
+
+        if (currentAmmoType.isPresent())
+            damage = gunType.getDamageForDisplay(currentAmmoType.get(), gunStack, null);
+        else if (defaultAmmoType.isPresent())
+            damage = gunType.getDamageForDisplay(defaultAmmoType.get(), gunStack, null);
+
+        if (damage == 0F && gunType.getMeleeDamage(gunStack, false) > 0)
+            damage = gunType.getMeleeDamage(gunStack, false);
+
         return damage;
     }
 

@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,24 +21,18 @@ public final class InstantBulletRenderer
 
     public static void addTrail(InstantShotTrail trail)
     {
-        // Called from your client packet on the main thread
         trails.add(trail);
     }
 
-    /**
-     * Call from a level render event (see subscriber below).
-     */
     public static void renderAllTrails(PoseStack poseStack, float partialTicks, Camera camera)
     {
         if (trails.isEmpty())
             return;
 
         Minecraft mc = Minecraft.getInstance();
-        // Safe-guard: level may be null during transitions
         if (mc.level == null)
             return;
 
-        // Basic state
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
@@ -58,15 +53,13 @@ public final class InstantBulletRenderer
         RenderSystem.disableBlend();
     }
 
-    /**
-     * Call from ClientTickEvent (END)
-     */
     public static void updateAllTrails()
     {
-        for (int i = trails.size() - 1; i >= 0; i--)
+        Iterator<InstantShotTrail> iterator = trails.iterator();
+        while (iterator.hasNext())
         {
-            if (trails.get(i).update())
-                trails.remove(i);
+            if (iterator.next().update())
+                iterator.remove();
         }
     }
 }

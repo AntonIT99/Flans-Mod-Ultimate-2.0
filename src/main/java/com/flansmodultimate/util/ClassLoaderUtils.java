@@ -169,7 +169,7 @@ public final class ClassLoaderUtils
                 catch (Exception | NoClassDefFoundError | ClassFormatError e)
                 {
                     FlansMod.log.error("Could not load super class {} for {}", superClassName, fileClassName);
-                    LogUtils.logWithoutStacktrace(e);
+                    LogUtils.logErrorWithoutStacktrace(e);
                 }
             }
 

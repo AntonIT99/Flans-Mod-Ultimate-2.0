@@ -15,6 +15,7 @@ public class TeamsManager
         NONE, DROPS, SMART_DROPS
     }
 
+
     @Getter @Setter
     private boolean explosionsBreakBlocks = true;
     @Getter @Setter
@@ -36,7 +37,6 @@ public class TeamsManager
     private boolean survivalCanPlaceVehicles = true;
     @Getter
     private EnumWeaponDrop weaponDrops = EnumWeaponDrop.DROPS;
-
     /** Life in seconds of certain entity types. 0 is eternal */
     @Getter
     private int mgLife;

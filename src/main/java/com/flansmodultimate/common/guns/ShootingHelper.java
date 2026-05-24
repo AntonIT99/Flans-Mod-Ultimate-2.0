@@ -92,10 +92,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
             for (int i = 0; i < numBullets; i++)
+            {
+                Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
                 level.addFreshEntity(shootable);
+            }
         }
 
         handler.onShoot();
@@ -106,7 +107,7 @@ public final class ShootingHelper
     {
         int numBullets = deployedGun.getConfigType().getNumBullets(null, shootableType);
 
-        if (deployedGun.getConfigType().getBulletSpeed() == 0F && shootableType instanceof BulletType bulletType)
+        if (deployedGun.getConfigType().getBulletSpeed() <= 0F && shootableType instanceof BulletType bulletType)
         {
             // Raytrace without entity
             FiredShot firedShot = new FiredShot(new FireableGun(deployedGun.getConfigType(), shootableStack), bulletType, deployedGun, shooter, shootableStack.getDamageValue());
@@ -115,10 +116,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
             for (int i = 0; i < numBullets; i++)
+            {
+                Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
                 level.addFreshEntity(shootable);
+            }
         }
 
         handler.onShoot();
@@ -127,7 +129,7 @@ public final class ShootingHelper
     /** Call this to fire bullets from other sources (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection, @NotNull ShootingHandler handler)
     {
-        if (firedShot.getFireableGun().getBulletSpeed() == 0F)
+        if (firedShot.getFireableGun().getBulletSpeed() <= 0F)
         {
             // Raytrace without entity
             for (int i = 0; i < numBullets; i++)
@@ -135,10 +137,11 @@ public final class ShootingHelper
         }
         else
         {
-            // Spawn shootable entities
-            Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
             for (int i = 0; i < numBullets; i++)
+            {
+                Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
                 level.addFreshEntity(bullet);
+            }
         }
 
         handler.onShoot();
@@ -384,11 +387,9 @@ public final class ShootingHelper
             type = shootable.getConfigType();
         if (firedShot != null)
         {
-            type = firedShot.getBulletType();
-            if (firedShot.getBulletType().hasDifferentRounds())
-                projectileMass = firedShot.getBulletType().statsForShot(firedShot.getShot()).mass();
-            else
-                projectileMass = type.getMass();
+            BulletType bulletType = firedShot.getBulletType();
+            type = bulletType;
+            projectileMass = bulletType.getMass(firedShot.getShot());
         }
 
         if (type == null)
@@ -396,6 +397,7 @@ public final class ShootingHelper
 
         if (shootable != null && projectileMass > 0F)
         {
+            // proportional to the square root of kinetic energy
             return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(projectileMass) * shootable.getDeltaMovement().length() * 20.0);
         }
         else

@@ -1,6 +1,7 @@
 package com.flansmodultimate.hooks.client;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelGun;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
@@ -13,12 +14,14 @@ import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.util.ModUtils;
@@ -27,14 +30,22 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
+    private static final int AA_GUN_BARREL_ORIGIN_SYNC_INTERVAL = 100;
+    private static final Map<Integer, Long> aaGunBarrelOriginSyncTicks = new HashMap<>();
+
     @Override
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
@@ -172,36 +183,53 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static void handleScope(GunItem gunItem, Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
-        if (dualWield || (!gunItem.getConfigType().getSecondaryFunction().isZoom() && !gunItem.getConfigType().getPrimaryFunction().isZoom()))
+        GunType gunType = gunItem.getConfigType();
+        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom()
+            || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
+
+        if (dualWield || !canZoom)
             return;
 
         IScope scope = null;
         EnumAimType aimType = ModClientConfig.get().aimType;
 
-        if (gunItem.getConfigType().getSecondaryFunction().isZoom())
+        if (gunType.getSecondaryFunction().isZoom())
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = secondaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                scope = secondaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
                 if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
             }
         }
-        else if (gunItem.getConfigType().getPrimaryFunction().isZoom())
+        else if (gunType.getPrimaryFunction().isZoom())
         {
             if (aimType == EnumAimType.HOLD)
             {
-                scope = primaryFunctionState.isPressed() ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                scope = primaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
             }
             else if (aimType == EnumAimType.TOGGLE)
             {
                 scope = ModClient.getCurrentScope();
                 if (primaryFunctionState.isPressed() && !primaryFunctionState.isPrevPressed())
-                    scope = (scope == null) ? gunItem.getConfigType().getCurrentScope(gunStack) : null;
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
+            }
+        }
+        else if (gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F)
+        {
+            if (aimType == EnumAimType.HOLD)
+            {
+                scope = secondaryFunctionState.isPressed() ? gunType.getCurrentScope(gunStack) : null;
+            }
+            else if (aimType == EnumAimType.TOGGLE)
+            {
+                scope = ModClient.getCurrentScope();
+                if (secondaryFunctionState.isPressed() && !secondaryFunctionState.isPrevPressed())
+                    scope = (scope == null) ? gunType.getCurrentScope(gunStack) : null;
             }
         }
 
@@ -262,6 +290,10 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void tickAAGun(AAGun aaGun)
     {
+        ModelAAGun.BarrelOriginData barrelOriginData = getAAGunModelBarrelOrigins(aaGun);
+        syncAAGunModelBarrelOrigins(aaGun, barrelOriginData);
+        spawnAAGunDebugMarkers(aaGun, barrelOriginData);
+
         if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
             return;
 
@@ -270,7 +302,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             if (aaGun.isShootKeyPressed())
             {
                 aaGun.setShootKeyPressed(false);
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false, aaGun.isPrevShootKeyPressed()));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false, aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
             }
         }
         else
@@ -280,8 +312,106 @@ public class ClientGunHooksImpl implements IClientGunHooks
             aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
 
             if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed()));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
         }
+    }
+
+    @Nullable
+    private static ModelAAGun.BarrelOriginData getAAGunModelBarrelOrigins(AAGun aaGun)
+    {
+        AAGunType type = aaGun.getConfigType();
+        if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelAAGun model))
+            return null;
+
+        return model.getModelBarrelOriginData(type);
+    }
+
+    private static void syncAAGunModelBarrelOrigins(AAGun aaGun, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    {
+        if (barrelOriginData == null)
+            return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+            return;
+
+        long gameTime = minecraft.level.getGameTime();
+        long nextSyncTick = aaGunBarrelOriginSyncTicks.getOrDefault(aaGun.getId(), 0L);
+        if (gameTime < nextSyncTick)
+            return;
+
+        aaGunBarrelOriginSyncTicks.put(aaGun.getId(), gameTime + AA_GUN_BARREL_ORIGIN_SYNC_INTERVAL);
+        PacketHandler.sendToServer(new PacketAAGunModelBarrelOrigins(aaGun, barrelOriginData.pivots(), barrelOriginData.muzzles()));
+    }
+
+    @Nullable
+    private static Vec3[] pivots(@Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    {
+        return barrelOriginData == null ? null : barrelOriginData.pivots();
+    }
+
+    @Nullable
+    private static Vec3[] muzzles(@Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    {
+        return barrelOriginData == null ? null : barrelOriginData.muzzles();
+    }
+
+    private static void spawnAAGunDebugMarkers(AAGun aaGun, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    {
+        AAGunType type = aaGun.getConfigType();
+        if (type == null)
+            return;
+
+        int currentBarrel = aaGun.getCurrentBarrelIndex();
+        boolean sentry = type.isSentry();
+        Vec3 gunnerSeat = aaGun.getGunnerSeatPosition();
+
+        for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
+        {
+            Vec3 barrelOrigin = getAAGunDebugBarrelOrigin(aaGun, barrel, sentry, barrelOriginData);
+            Vec3 shootingVector = aaGun.getShootingDirection().scale(1.5D);
+            if (barrel == currentBarrel)
+            {
+                DebugHelper.spawnDebugDot(barrelOrigin, 2, 1F, 0F, 0F);
+                DebugHelper.spawnDebugVector(barrelOrigin, shootingVector, 2, 1F, 0.2F, 0F);
+            }
+            else
+            {
+                DebugHelper.spawnDebugDot(barrelOrigin, 2, 1F, 1F, 0F);
+                DebugHelper.spawnDebugVector(barrelOrigin, shootingVector, 2, 1F, 1F, 0F);
+            }
+        }
+
+        if (!sentry)
+            DebugHelper.spawnDebugDot(gunnerSeat, 2, 0F, 0.45F, 1F);
+    }
+
+    private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    {
+        if (barrelOriginData != null && barrel < barrelOriginData.pivots().length && barrel < barrelOriginData.muzzles().length)
+            return aaGun.position().add(transformAAGunModelBarrelOffset(aaGun, barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel]));
+
+        return aaGun.getBarrelOrigin(barrel, sentryShot);
+    }
+
+    private static Vec3 transformAAGunModelBarrelOffset(AAGun aaGun, Vec3 pivot, Vec3 muzzle)
+    {
+        double pitch = -aaGun.getGunPitch() * Mth.DEG_TO_RAD;
+        double cosPitch = Math.cos(pitch);
+        double sinPitch = Math.sin(pitch);
+
+        double modelX = pivot.x + muzzle.x * cosPitch - muzzle.y * sinPitch;
+        double modelY = pivot.y + muzzle.x * sinPitch + muzzle.y * cosPitch;
+        double modelZ = pivot.z + muzzle.z;
+
+        double yaw = (270D - aaGun.getGunYaw()) * Mth.DEG_TO_RAD;
+        double cosYaw = Math.cos(yaw);
+        double sinYaw = Math.sin(yaw);
+
+        double x = modelX * cosYaw + modelZ * sinYaw;
+        double z = -modelX * sinYaw + modelZ * cosYaw;
+
+        return new Vec3(x / 16D, modelY / 16D, z / 16D);
     }
 
     @Override

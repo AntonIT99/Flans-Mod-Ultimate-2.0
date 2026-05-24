@@ -1,9 +1,8 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmod.client.model.ModelBomb;
-import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.TransformOp;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,7 +15,6 @@ import lombok.NoArgsConstructor;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -27,26 +25,15 @@ public final class LegacyTransformApplier
     public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
-        try
-        {
-            applyForClass(poseStack, model.getClass().getName());
-            if (model instanceof ModelBase modelBase)
-                modelBase.setScale(infoType.getModelScale());
+        applyForClass(poseStack, model.getClass().getName());
+        if (model instanceof ModelBase modelBase)
+            modelBase.setScale(infoType.getModelScale());
 
-            if (model.getClass() == ModelBullet.class || model.getClass() == ModelBomb.class)
-            {
-                model.renderToBuffer(poseStack, buffer.getBuffer(RenderType.entityTranslucent(texture)), packedLight, packedOverlay, red, green, blue, alpha);
-            }
-            else
-            {
-                for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                    renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
-            }
-        }
-        finally
-        {
-            poseStack.popPose();
-        }
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
+        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+            renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
+
+        poseStack.popPose();
     }
 
     private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)

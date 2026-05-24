@@ -113,17 +113,18 @@ public class FlansMod
     public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
     public static final ResourceLocation armorBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
     public static final ResourceLocation gunBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
+    public static final ResourceLocation ammoGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
 
     // Registries
     private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
-    public static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
     private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
-    public static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.MOD_ID);
+    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, FlansMod.MOD_ID);
 
     // Blocks
     public static final RegistryObject<Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
@@ -139,8 +140,8 @@ public class FlansMod
     );
 
     // Block Entities
-    public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
-    public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
+    public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
 
     // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
@@ -191,18 +192,18 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
     );
-    public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
-        .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(AAGun.RENDER_DISTANCE)
-        .updateInterval(2)
-        .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
-    );
     public static final RegistryObject<EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
         .sized(1F, 1F)
         .clientTrackingRange(16)
         .updateInterval(20)
         .build("gun_item")
+    );
+    public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
+        .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(AAGun.RENDER_DISTANCE)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
     );
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
@@ -225,16 +226,17 @@ public class FlansMod
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         // Init Registries
-        EnchantmentModule.register(enchantmentRegistry);
         blockRegistry.register(modEventBus);
         blockEntityRegistry.register(modEventBus);
         itemRegistry.register(modEventBus);
         particleRegistry.register(modEventBus);
         soundEventRegistry.register(modEventBus);
-        enchantmentRegistry.register(modEventBus);
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
         menuRegistry.register(modEventBus);
+        enchantmentRegistry.register(modEventBus);
+
+        EnchantmentModule.register(enchantmentRegistry);
 
         waitForPacksExtractionIfPresent();
 
@@ -299,10 +301,11 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.AA_GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_grenades", FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_aaguns", FlansMod.getItems(EnumType.AA_GUN), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumSet.of(EnumType.PART, EnumType.ITEM_HOLDER)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
     }
 

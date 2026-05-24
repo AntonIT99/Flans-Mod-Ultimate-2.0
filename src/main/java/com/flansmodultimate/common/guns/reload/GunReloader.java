@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns.reload;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoHelper;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.ShootableType;
@@ -56,6 +57,18 @@ public record GunReloader(GunItem item)
         if (evt.isCanceled())
             return false;
 
+        // Digital ammo system: check if enabled and try to use it
+        if (ModCommonConfig.get().enableDigitalAmmoSystem())
+        {
+            List<ReloadPlan> digitalPlans = computeDigitalAmmoPlansWithCheck(level, player, gunStack, allowed, forceReload);
+            if (!digitalPlans.isEmpty())
+            {
+                long ticks = (long) Math.ceil(reloadTime);
+                long applyAt = level.getGameTime() + ticks;
+                return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, digitalPlans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, true));
+            }
+        }
+
         // Compute plans
         String preferredAmmo = item.getPreferredAmmo(gunStack);
         List<ReloadPlan> plans = computePlans(gunStack, player.getInventory(), allowed, preferredAmmo, forceReload);
@@ -66,7 +79,7 @@ public record GunReloader(GunItem item)
         long ticks = (long) Math.ceil(reloadTime);
         long applyAt = level.getGameTime() + ticks;
 
-        return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID));
+        return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, false));
     }
 
     public static void handlePendingReload(Level level, ServerPlayer player, PlayerData data)
@@ -75,17 +88,15 @@ public record GunReloader(GunItem item)
         if (pendingReload == null)
             return;
 
-        // cancel on weapon switch
         boolean canceled = cancelReloadIfSwitched(player, pendingReload);
         if (canceled)
         {
             PacketHandler.sendTo(new PacketCancelGunReloadClient(pendingReload.hand()), player);
-            // Position of the player reloading might have changed, so send it to all players in dimension to be sure
             PacketHandler.sendToDimension(level.dimension(), new PacketCancelSound(pendingReload.reloadSoundUUID()));
             data.clearPendingReload();
+            return;
         }
 
-        // apply when ready
         tryApplyPendingReload(level, player, data, pendingReload);
     }
 
@@ -102,25 +113,37 @@ public record GunReloader(GunItem item)
         if (level.getGameTime() < pendingReload.applyAtGameTime())
             return;
 
-
-        if (player.getItemInHand(pendingReload.hand()).getItem() instanceof GunItem gunItem)
+        ItemStack currentGunStack = player.getItemInHand(pendingReload.hand());
+        if (currentGunStack.getItem() instanceof GunItem gunItem)
         {
-            applyPlans(level, player, player.getInventory(), pendingReload, gunItem);
+            if (!ItemStack.isSameItem(currentGunStack, pendingReload.gunStack()))
+            {
+                data.clearPendingReload();
+                return;
+            }
+            applyPlans(level, player, player.getInventory(), pendingReload, gunItem, currentGunStack);
             data.clearPendingReload();
         }
     }
 
-    private static void applyPlans(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, GunItem gunItem)
+    private static void applyPlans(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, GunItem gunItem, ItemStack actualGunStack)
     {
+        if (pending.useDigitalAmmo() && reloadingEntity instanceof ServerPlayer serverPlayer)
+        {
+            applyDigitalAmmoPlans(serverPlayer, actualGunStack, gunItem, pending.plans());
+            return;
+        }
+
         for (ReloadPlan plan : pending.plans())
         {
-            applySinglePlan(level, reloadingEntity, inventory, pending, plan, gunItem);
+            applySinglePlan(level, reloadingEntity, inventory, pending, plan, gunItem, actualGunStack);
         }
     }
 
-    private static void applySinglePlan(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, ReloadPlan plan, GunItem gunItem)
+    private static void applySinglePlan(Level level, Entity reloadingEntity, Container inventory, PendingReload pending, ReloadPlan plan, GunItem gunItem, ItemStack actualGunStack)
     {
         int ammoIndex = plan.gunAmmoIndex();
+
         int invSlot = plan.inventorySlot();
 
         ItemStack newMag = inventory.getItem(invSlot);
@@ -134,12 +157,12 @@ public record GunReloader(GunItem item)
         if (allowed == null || !allowed.contains(newShootable.getConfigType()))
             return;
 
-        ItemStack oldMag = gunItem.getAmmoItemStack(pending.gunStack(), ammoIndex);
+        ItemStack oldMag = gunItem.getAmmoItemStack(actualGunStack, ammoIndex);
 
         // Drop-on-reload when old mag is empty (null-safe)
         if (!pending.creative()
             && oldMag != null && !oldMag.isEmpty()
-            && oldMag.getDamageValue() >= oldMag.getMaxDamage()
+            && !ShootableItem.hasRoundsLeft(oldMag)
             && oldMag.getItem() instanceof ShootableItem oldShootable)
         {
 
@@ -148,7 +171,7 @@ public record GunReloader(GunItem item)
 
         // Return unfinished old mag
         if (oldMag != null && !oldMag.isEmpty()
-            && oldMag.getDamageValue() < oldMag.getMaxDamage())
+            && ShootableItem.hasRoundsLeft(oldMag))
         {
 
             ItemStack toReturn = oldMag.copy();
@@ -160,7 +183,7 @@ public record GunReloader(GunItem item)
         // Load new mag into gun
         ItemStack stackToLoad = newMag.copy();
         stackToLoad.setCount(1);
-        gunItem.setBulletItemStack(pending.gunStack(), stackToLoad, ammoIndex);
+        gunItem.setBulletItemStack(actualGunStack, stackToLoad, ammoIndex);
 
         // Consume inventory mag
         if (!pending.creative())
@@ -172,13 +195,16 @@ public record GunReloader(GunItem item)
             inventory.setItem(invSlot, newMag);
     }
 
-    private List<ReloadPlan> computePlans(ItemStack gunStack, Container inventory, List<ShootableType> allowedAmmoTypes, String preferredAmmo, boolean forceReload)
+    private static void applyDigitalAmmoPlans(ServerPlayer player, ItemStack actualGunStack, GunItem gunItem, List<ReloadPlan> plans)
+    {
+        List<Integer> ammoSlots = plans.stream().map(ReloadPlan::gunAmmoIndex).toList();
+        DigitalAmmoHelper.tryReloadFromDigitalAmmo(player, gunItem, actualGunStack, ammoSlots);
+    }
+
+    private List<ReloadPlan> computeDigitalAmmoPlans(ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload)
     {
         int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
         List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
-
-        // prevent reusing the same inv slot for multiple ammo slots
-        boolean[] reserved = new boolean[inventory.getContainerSize()];
 
         for (int i = 0; i < ammoSlots; i++)
         {
@@ -186,11 +212,63 @@ public record GunReloader(GunItem item)
             if (!needsSwap(current, forceReload))
                 continue;
 
-            int bestSlot = findBestSlotPreferredFirst(inventory, allowedAmmoTypes, preferredAmmo, reserved);
+            plans.add(new ReloadPlan(i, -1));
+        }
+
+        return plans;
+    }
+
+    private List<ReloadPlan> computeDigitalAmmoPlansWithCheck(Level level, ServerPlayer player, ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload)
+    {
+        int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
+        List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
+
+        for (int i = 0; i < ammoSlots; i++)
+        {
+            ItemStack current = item.getAmmoItemStack(gunStack, i);
+            if (needsSwap(current, forceReload))
+            {
+                plans.add(new ReloadPlan(i, -1));
+            }
+        }
+
+        if (plans.isEmpty())
+            return new ArrayList<>();
+
+        if (!DigitalAmmoHelper.hasEnoughDigitalAmmo(player, item))
+            return new ArrayList<>();
+
+        return plans;
+    }
+
+    private List<ReloadPlan> computePlans(ItemStack gunStack, Container inventory, List<ShootableType> allowedAmmoTypes, String preferredAmmo, boolean forceReload)
+    {
+        int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
+        List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
+
+        int invSize = inventory.getContainerSize();
+        int[] remainingCount = new int[invSize];
+        for (int s = 0; s < invSize; s++)
+        {
+            ItemStack stack = inventory.getItem(s);
+            if (!stack.isEmpty() && stack.getItem() instanceof ShootableItem shootableItem && allowedAmmoTypes.contains(shootableItem.getConfigType()))
+            {
+                int bullets = ShootableItem.getRoundsRemaining(stack);
+                remainingCount[s] = (bullets > 0) ? stack.getCount() : 0;
+            }
+        }
+
+        for (int i = 0; i < ammoSlots; i++)
+        {
+            ItemStack current = item.getAmmoItemStack(gunStack, i);
+            if (!needsSwap(current, forceReload))
+                continue;
+
+            int bestSlot = findBestSlotWithRemaining(inventory, allowedAmmoTypes, preferredAmmo, remainingCount);
             if (bestSlot == -1)
                 continue;
 
-            reserved[bestSlot] = true;
+            remainingCount[bestSlot]--;
             plans.add(new ReloadPlan(i, bestSlot));
         }
 
@@ -202,7 +280,7 @@ public record GunReloader(GunItem item)
         if (forceReload || bulletStack == null || bulletStack.isEmpty())
             return true;
 
-        return bulletStack.getDamageValue() >= bulletStack.getMaxDamage();
+        return !ShootableItem.hasRoundsLeft(bulletStack);
     }
 
     public static int findBestSlotPreferredFirst(Container inventory, List<ShootableType> allowedAmmoTypes, @Nullable String preferredAmmoShortName, boolean[] reservedSlots)
@@ -228,7 +306,53 @@ public record GunReloader(GunItem item)
             if (!allowedAmmoTypes.contains(type))
                 continue;
 
-            int bullets = stack.getMaxDamage() - stack.getDamageValue();
+            int bullets = ShootableItem.getRoundsRemaining(stack);
+            if (bullets <= 0)
+                continue;
+
+            boolean preferred = preferredAmmoShortName != null && preferredAmmoShortName.equals(type.getOriginalShortName());
+
+            if (preferred)
+            {
+                if (bullets > bestPrefBullets)
+                {
+                    bestPrefBullets = bullets;
+                    bestPrefSlot = i;
+                }
+            }
+            else if (bestPrefSlot == -1 && bullets > bestAnyBullets)
+            {
+                bestAnyBullets = bullets;
+                bestAnySlot = i;
+            }
+        }
+        return bestPrefSlot != -1 ? bestPrefSlot : bestAnySlot;
+    }
+
+    private static int findBestSlotWithRemaining(Container inventory, List<ShootableType> allowedAmmoTypes, @Nullable String preferredAmmoShortName, int[] remainingCount)
+    {
+        int bestAnySlot = -1;
+        int bestAnyBullets = 0;
+        int bestPrefSlot = -1;
+        int bestPrefBullets = 0;
+
+        for (int i = 0; i < inventory.getContainerSize(); i++)
+        {
+            if (remainingCount[i] <= 0)
+                continue;
+
+            ItemStack stack = inventory.getItem(i);
+            if (stack.isEmpty())
+                continue;
+
+            if (!(stack.getItem() instanceof ShootableItem shootableItem))
+                continue;
+
+            ShootableType type = shootableItem.getConfigType();
+            if (!allowedAmmoTypes.contains(type))
+                continue;
+
+            int bullets = ShootableItem.getRoundsRemaining(stack);
             if (bullets <= 0)
                 continue;
 

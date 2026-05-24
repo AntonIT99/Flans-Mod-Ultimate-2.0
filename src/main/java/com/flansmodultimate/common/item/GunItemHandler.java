@@ -149,7 +149,7 @@ public class GunItemHandler
     {
         for (ItemStack bulletStack : item.getBulletItemStackList(gunStack))
         {
-            if (bulletStack.getDamageValue() < bulletStack.getMaxDamage())
+            if (ShootableItem.hasRoundsLeft(bulletStack))
                 return false;
         }
         return true;
@@ -191,9 +191,6 @@ public class GunItemHandler
         PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
 
         EnumFireMode fireMode = item.configType.getFireMode(gunStack);
-        if (fireMode == EnumFireMode.BURST && data.getBurstRoundsRemaining(hand) <= 0)
-            data.setBurstRoundsRemaining(hand, Math.max(1, item.configType.getNumBurstRounds()));
-
         boolean automaticFire = fireMode.isAutomaticFire();
         float shootTime = data.getShootTime(hand);
         float shootDelay = item.configType.getShootDelay(gunStack);
@@ -219,9 +216,6 @@ public class GunItemHandler
 
             if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
                 PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
-
-            if (fireMode == EnumFireMode.BURST && data.getBurstRoundsRemaining(hand) > 0)
-                data.setBurstRoundsRemaining(hand, data.getBurstRoundsRemaining(hand) - 1);
 
             shootTime += shootDelay;
 
@@ -277,7 +271,7 @@ public class GunItemHandler
         for (int i = 0; i < slots; i++)
         {
             ItemStack s = item.getAmmoItemStack(gunStack, i);
-            if (s != null && !s.isEmpty() && s.getDamageValue() < s.getMaxDamage())
+            if (s != null && !s.isEmpty() && ShootableItem.hasRoundsLeft(s))
             {
                 return Optional.of(new AmmoSlot(i, s));
             }

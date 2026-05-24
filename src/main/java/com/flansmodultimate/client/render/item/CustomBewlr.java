@@ -25,30 +25,19 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
         // Cancel the offsetting in ItemRenderer.render()
         poseStack.translate(0.5F, 0.5F, 0.5F);
 
-        boolean useCustomRenderer = false;
+        boolean rendered = false;
 
-        if (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem)
-        {
-            useCustomRenderer = switch (itemDisplayContext)
-            {
-                case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> customRendererItem.useCustomRendererInHand();
-                case GROUND -> customRendererItem.useCustomRendererOnGround();
-                case FIXED -> customRendererItem.useCustomRendererInFrame();
-                case GUI -> customRendererItem.useCustomRendererInGui();
-                default -> false;
-            };
-        }
-
-        if (useCustomRenderer)
+        if (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem && customRendererItem.useCustomRenderer(itemDisplayContext))
         {
             ICustomItemRenderer renderer = CustomItemRenderers.get(stack.getItem());
             if (renderer != null)
+            {
                 renderer.renderItem(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
-            else
-                useCustomRenderer = false;
+                rendered = true;
+            }
         }
 
-        if (!useCustomRenderer)
+        if (!rendered)
             ICustomItemRenderer.renderItemFallback(stack, itemDisplayContext, poseStack, buffer, packedLight, packedOverlay);
 
         poseStack.popPose();

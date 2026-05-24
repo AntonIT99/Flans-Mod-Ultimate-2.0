@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -25,15 +28,16 @@ public class AAGunType extends InfoType
 {
     public static final int MAX_BARRELS = 16;
 
-    /** The ammo shortnames accepted by this gun. */
+    /** The ammo types used by this gun */
     protected Set<String> ammo = new LinkedHashSet<>();
     protected int reloadTime;
     protected float recoil = 5F;
-    /** Legacy AA guns call this Accuracy, but it is passed through the current spread pipeline. */
-    protected float accuracy;
+    protected float bulletSpread;
+    protected boolean readDispersion;
     protected float damage;
     protected int shootDelay;
     protected int shootSoundLength;
+    protected int numBullets = 1;
     protected int numBarrels = 1;
     protected boolean fireAlternately;
     protected int health;
@@ -51,14 +55,15 @@ public class AAGunType extends InfoType
     protected int[] barrelY = new int[] { 0 };
     protected int[] barrelZ = new int[] { 0 };
 
-    /** Sentry mode targeting flags. */
+    /** Sentry mode. If target players is true then it either targets everyone on the other team, or everyone other than the owner when not playing with teams */
     protected boolean targetMobs;
     protected boolean targetPlayers;
     protected boolean targetVehicles;
     protected boolean targetPlanes;
     protected boolean targetMechas;
+    /** Targeting radius */
     protected float targetRange = 10F;
-    /** If true, all barrels consume the first ammo slot. */
+    /** If true, then all barrels share the same ammo slot */
     protected boolean shareAmmo;
 
     protected boolean canShootHomingMissile;
@@ -74,8 +79,13 @@ public class AAGunType extends InfoType
         damage = readValue("Damage", damage, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
         recoil = readValue("Recoil", recoil, file);
-        accuracy = readValue("Accuracy", accuracy, file);
-        accuracy = readValue("Spread", accuracy, file);
+        bulletSpread = readValue("Accuracy", bulletSpread, file);
+        bulletSpread = readValue("Spread", bulletSpread, file);
+        if (hasValueForConfigField("Dispersion", file))
+        {
+            bulletSpread = readValue("Dispersion", 0F, file) * Mth.DEG_TO_RAD / ShootingHelper.ANGULAR_SPREAD_FACTOR;
+            readDispersion = true;
+        }
         shootDelay = readValue("ShootDelay", shootDelay, file);
         shootSoundLength = readValue("SoundLength", shootSoundLength, file);
         shootSoundLength = readValue("ShootSoundLength", shootSoundLength, file);
@@ -85,6 +95,7 @@ public class AAGunType extends InfoType
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
         spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
+        numBullets = readValue("NumBullets", numBullets, file);
 
         targetMobs = readValue("TargetMobs", targetMobs, file);
         targetPlayers = readValue("TargetPlayers", targetPlayers, file);
@@ -115,7 +126,7 @@ public class AAGunType extends InfoType
         barrelY = new int[numBarrels];
         barrelZ = new int[numBarrels];
         readBarrels(file);
-        readAmmo(file);
+        readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         readGunnerPosition(file);
     }
 
@@ -134,18 +145,6 @@ public class AAGunType extends InfoType
                 barrelY[id] = values[2];
                 barrelZ[id] = values[3];
             }));
-    }
-
-    private void readAmmo(TypeFile file)
-    {
-        readLines("Ammo", file).ifPresent(lines -> lines.forEach(line -> {
-            if (StringUtils.isBlank(line))
-                return;
-
-            String[] split = line.trim().split("\\s+");
-            if (split.length > 0 && StringUtils.isNotBlank(split[0]))
-                ammo.add(ResourceUtils.sanitize(split[0]));
-        }));
     }
 
     private void readGunnerPosition(TypeFile file)
@@ -204,15 +203,24 @@ public class AAGunType extends InfoType
         return Optional.empty();
     }
 
-    public float getDefaultBulletSpeed(BulletType bulletType)
+    public float getDamageForDisplay(ShootableType type)
     {
-        return bulletType.getBulletSpeed() > 0F ? bulletType.getBulletSpeed() : bulletType.getSpeedMultiplier() * 3F;
+        return getDamageForDisplay(type, null);
     }
 
-    public static AAGunType getAAGun(String shortName)
+    public float getDamageForDisplay(ShootableType type, @Nullable Class<? extends Entity> entityClass)
     {
-        if (InfoType.getInfoType(shortName) instanceof AAGunType aaGunType)
-            return aaGunType;
-        return null;
+        if (type.useKineticDamageSystem())
+        {
+            float bulletSpeed = (type instanceof BulletType bulletType) ? bulletType.getBulletSpeed(true) : 1F;
+            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * bulletSpeed * 20.0);
+        }
+        else
+            return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage();
+    }
+
+    public float getDispersionForDisplay()
+    {
+        return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
     }
 }

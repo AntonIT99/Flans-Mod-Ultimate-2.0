@@ -44,12 +44,12 @@ public final class EnchantmentModule
 
     public static void register(DeferredRegister<Enchantment> registry)
     {
-        steadyEnchant = register(registry, "enchantment_steady", EnchantmentSteady::new);
-        nimbleEnchant = register(registry, "enchantment_nimble", EnchantmentNimble::new);
-        lumberjackEnchant = register(registry, "enchantment_lumberjack", EnchantmentLumberjack::new);
-        duelistEnchant = register(registry, "enchantment_duelist", EnchantmentDuelist::new);
-        sharpshooterEnchant = register(registry, "enchantment_sharpshooter", EnchantmentSharpshooter::new);
-        juggernautEnchant = register(registry, "enchantment_juggernaut", EnchantmentJuggernaut::new);
+        steadyEnchant = register(registry, "steady", EnchantmentSteady::new);
+        nimbleEnchant = register(registry, "nimble", EnchantmentNimble::new);
+        lumberjackEnchant = register(registry, "lumberjack", EnchantmentLumberjack::new);
+        duelistEnchant = register(registry, "duelist", EnchantmentDuelist::new);
+        sharpshooterEnchant = register(registry, "sharpshooter", EnchantmentSharpshooter::new);
+        juggernautEnchant = register(registry, "juggernaut", EnchantmentJuggernaut::new);
     }
 
     private static RegistryObject<Enchantment> register(DeferredRegister<Enchantment> registry, String name, Supplier<Enchantment> supplier)

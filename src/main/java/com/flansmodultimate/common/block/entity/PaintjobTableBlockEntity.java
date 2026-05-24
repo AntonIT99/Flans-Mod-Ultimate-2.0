@@ -44,7 +44,7 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
 
     public PaintjobTableBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansMod.paintjobTableEntity.get(), pos, state);
+        super(FlansMod.paintjobTableBlockEntity.get(), pos, state);
         blockState = state;
     }
 

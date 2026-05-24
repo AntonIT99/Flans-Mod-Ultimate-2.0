@@ -6,12 +6,14 @@
   "creativetab.flansmodultimate.creative_tab_grenades": "FMU: Grenades",
   "creativetab.flansmodultimate.creative_tab_tools": "FMU: Tools",
   "creativetab.flansmodultimate.creative_tab_vehicles": "FMU: Vehicles",
+  "creativetab.flansmodultimate.creative_tab_aaguns": "FMU: AA Guns",
   "creativetab.flansmodultimate.creative_tab_parts": "FMU: Parts",
   "key.categories.flansmodultimate": "Flan's Mod Ultimate Controls",
   "key.flansmodultimate.reload": "Reload",
-  "key.flansmodultimate.fireMode": "Change Fire Mode",
+  "key.flansmodultimate.fireMode": "Switch Fire Mode",
   "key.flansmodultimate.lookAtGun": "Look at gun",
   "key.flansmodultimate.debug": "Debug Mode",
+  "message.flansmodultimate.fire_mode_changed": "Fire Mode: %s",
   "death.attack.melee": "%1$s was slain",
   "death.attack.melee.player": "%1$s was slain by %2$s",
   "death.attack.shootable": "%1$s was shot",
@@ -19,5 +21,11 @@
   "death.attack.headshot": "%1$s was headshot",
   "death.attack.headshot.player": "%1$s was headshot by %2$s",
   "death.attack.explosion": "%1$s was blown up",
-  "death.attack.explosion.player": "%1$s was blown up by %2$s"
+  "death.attack.explosion.player": "%1$s was blown up by %2$s",
+  "enchantment.flansmodultimate.steady": "Steady",
+  "enchantment.flansmodultimate.nimble": "Nimble",
+  "enchantment.flansmodultimate.lumberjack": "Lumberjack",
+  "enchantment.flansmodultimate.duelist": "Duelist",
+  "enchantment.flansmodultimate.sharpshooter": "Sharpshooter",
+  "enchantment.flansmodultimate.juggernaut": "Juggernaut"
 }

@@ -42,7 +42,7 @@ public class BewlrRoutingModel implements BakedModel
                     return BewlrRoutingModel.this.delegate;
 
                 BewlrRoutingModel routingModel = (resolved instanceof BewlrRoutingModel brm) ? brm : new BewlrRoutingModel(resolved);
-                routingModel.hasCustomModel = (stack.getItem() instanceof ICustomRendereredItem<?> customRendererItem) && ModelCache.getOrLoadTypeModel(customRendererItem.getConfigType()) != null;
+                routingModel.hasCustomModel = stack.getItem() instanceof ICustomRendereredItem<?>;
                 return routingModel;
             }
         };

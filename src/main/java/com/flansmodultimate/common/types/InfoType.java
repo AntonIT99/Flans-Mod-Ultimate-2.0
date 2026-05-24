@@ -94,7 +94,9 @@ public abstract class InfoType
     @Nullable
     protected ResourceLocation overlay;
     @Getter
-    protected boolean additiveBlending;
+    protected RenderOptions renderOptions;
+
+    public record RenderOptions(boolean translucentRendering, boolean additiveBlending) {}
 
     public String getShortName()
     {
@@ -146,7 +148,9 @@ public abstract class InfoType
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);
-        additiveBlending = readValue("AdditiveBlending", additiveBlending, file);
+        boolean translucentRendering = readValue("TranslucentRendering", false, file);
+        boolean additiveBlending = readValue("AdditiveBlending", false, file);
+        renderOptions = new RenderOptions(translucentRendering, additiveBlending);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
@@ -326,16 +330,19 @@ public abstract class InfoType
 
             if (modelNameSplit.length > 1)
             {
-                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelNameSplit[0] + ".Model" + modelNameSplit[1];
+                String modelPackageName = String.join(".", Arrays.copyOf(modelNameSplit, modelNameSplit.length - 1));
+                String modelSimpleName = modelNameSplit[modelNameSplit.length - 1];
+                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
                 classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
 
-                // Handle 1.12.2 package format
+                // Try 1.12.2 package format
                 if (!Files.exists(classFile))
                 {
                     if (modelNameSplit[0].equals("jamespostmodernweapons"))
                         modelNameSplit[0] = "modernweapons";
 
-                    modelClassName = "com." + FlansMod.FLANSMOD_ID + "." + modelNameSplit[0] + ".client.model.Model" + modelNameSplit[1];
+                    modelPackageName = String.join(".", Arrays.copyOf(modelNameSplit, modelNameSplit.length - 1));
+                    modelClassName = "com." + FlansMod.FLANSMOD_ID + "." + modelPackageName + ".client.model.Model" + modelSimpleName;
                     Path redirectFile = fs.map(fileSystem -> fileSystem.getPath("redirect.info")).orElseGet(() -> contentPack.getPath().resolve("redirect.info"));
 
                     if (Files.exists(redirectFile))
@@ -345,7 +352,10 @@ public abstract class InfoType
                             List<String> lines = Files.readAllLines(redirectFile);
                             if (lines.size() > 1 && modelNameSplit[0].equals(lines.get(0)))
                             {
-                                modelClassName = lines.get(1) + ".Model" + modelNameSplit[1];
+                                String redirectedPackageName = lines.get(1);
+                                if (modelNameSplit.length > 2)
+                                    redirectedPackageName += "." + String.join(".", Arrays.copyOfRange(modelNameSplit, 1, modelNameSplit.length - 1));
+                                modelClassName = redirectedPackageName + ".Model" + modelSimpleName;
                             }
                         }
                         catch (IOException e)
@@ -353,7 +363,12 @@ public abstract class InfoType
                             FlansMod.log.error("Could not open {}", redirectFile, e);
                         }
                     }
+
                     classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
+
+                    // Fallback to default
+                    if (!Files.exists(classFile))
+                        modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
                 }
             }
             else

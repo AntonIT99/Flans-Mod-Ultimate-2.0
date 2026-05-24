@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,9 +90,9 @@ public abstract class ShootableType extends InfoType
     /** The number of rounds fired by a gun per item */
     @Getter
     protected int roundsPerItem;
-    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true */
+    /** Number of bullets to fire per shot if allowNumBulletsByBulletType = true. 0 = defer to gun's NumBullets */
     @Getter
-    protected int numBullets = 1;
+    protected int numBullets = 0;
     /**
      * Bullet spread multiplier to be applied to gun's bullet spread
      * Ammo-based spread setting if allowSpreadByBullet = true
@@ -236,7 +235,7 @@ public abstract class ShootableType extends InfoType
         fallSpeed = readValue("FallSpeed", fallSpeed, file);
         throwSpeed = readValue("ThrowSpeed", throwSpeed, file);
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);
-        hitBoxSize = readValue("HitBoxSize", fallSpeed, file);
+        hitBoxSize = readValue("HitBoxSize", hitBoxSize, file);
         mass = readValue("Mass", mass, file);
 
         //Hit stuff
@@ -409,14 +408,6 @@ public abstract class ShootableType extends InfoType
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
         return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
-    }
-
-    public float getDamageForDisplay(GunType gunType, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
-    {
-        if (useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(getMass()) * gunType.getBulletSpeed(gunStack) * 20.0);
-        else
-            return getDamage().getDamageAgainstEntityClass(entityClass) * gunType.getDamage(gunStack);
     }
 
     public float getDispersionForDisplay() {

@@ -136,7 +136,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotateAngleX = Math.min(leftLeg.xRot, rightLeg.xRot);
             mod.rotateAngleY = leftLeg.yRot;
             mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
         for (ModelRendererTurbo mod : skirtRearModel)
         {
@@ -146,18 +146,21 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotateAngleX = Math.max(leftLeg.xRot, rightLeg.xRot);
             mod.rotateAngleY = leftLeg.yRot;
             mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale);
+            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
     }
 
     public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale, EnumRenderPass renderPass)
     {
+        if (models.length == 0)
+            return;
+
+        poseStack.pushPose();
+        bodyPart.translateAndRotate(poseStack);
         for (ModelRendererTurbo mod : models)
         {
-            poseStack.pushPose();
-            bodyPart.translateAndRotate(poseStack);
             mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass);
-            poseStack.popPose();
         }
+        poseStack.popPose();
     }
 }

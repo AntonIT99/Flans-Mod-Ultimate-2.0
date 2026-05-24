@@ -38,17 +38,11 @@ public class ItemHolderBlockEntity extends BlockEntity
         {
             setChangedAndSync();
         }
-
-        @Override
-        public int getSlotLimit(int slot)
-        {
-            return 64;
-        }
     };
 
     public ItemHolderBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansMod.itemHolderEntity.get(), pos, state);
+        super(FlansMod.itemHolderBlockEntity.get(), pos, state);
         if (state.getBlock() instanceof ItemHolderBlock itemHolderBlock)
             type = itemHolderBlock.getConfigType();
     }
@@ -124,6 +118,7 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
+    @NotNull
     public CompoundTag getUpdateTag()
     {
         CompoundTag tag = new CompoundTag();

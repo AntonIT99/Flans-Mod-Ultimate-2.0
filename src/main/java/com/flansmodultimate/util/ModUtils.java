@@ -351,8 +351,8 @@ public final class ModUtils
                 return EnumMovement.SPRINTING;
             }
 
-            Vec3 prevPos = CommonEventHandler.getPrevPos(entity);
-            boolean isMoving = prevPos.x != entity.getX() || prevPos.z != entity.getZ();
+            Vec3 delta = entity.getDeltaMovement();
+            boolean isMoving = Math.abs(delta.x) > 0.005 || Math.abs(delta.z) > 0.005;
             if (isMoving) {
                 return EnumMovement.WALKING;
             }
