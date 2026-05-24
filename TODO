@@ -1,10 +1,8 @@
-- Fix missing recipes
+General:
 - Generate Doc / Create Wiki
-
+- Fix missing recipes
 - Investigate issue with Oerlikon model
 - Fix particles
-
-General:
 - Fix Frag Radius
 - Team Mod: Commands, Teams, Classes, Stats
 - Refactor the Armor config to separate use of old logic vs new minecraft armor system
@@ -14,8 +12,6 @@ General:
 - loadouts
 
 Driveable Features:
-- Parts
-- AA Guns
 - Vehicles
 - Planes
 - Mechas & Mecha Items
