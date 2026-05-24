@@ -1,3 +1,9 @@
+- Fix missing recipes
+- Generate Doc / Create Wiki
+
+- Investigate issue with Oerlikon model
+- Fix particles
+
 General:
 - Fix Frag Radius
 - Team Mod: Commands, Teams, Classes, Stats
@@ -48,7 +54,6 @@ TODO Content Packs:
 Feature Ideas:
 - Render Attachment Item in 3D?
 - Assets/Sounds Priority list?
-- Command to get default ammo quickly
 - Switching Fire Mode Sound
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
