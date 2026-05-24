@@ -2,12 +2,14 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;
-import net.minecraft.nbt.CompoundTag;
+import com.flansmodultimate.config.ModClientConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -142,6 +144,39 @@ public abstract class ShootableItem extends Item
         int maxStack = Math.max(1, configType.getMaxStackSize());
         p.stacksTo(maxStack);
         return p;
+    }
+
+    @Override
+    public boolean isBarVisible(@NotNull ItemStack stack)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config != null && !config.showShootableDurabilityBars)
+            return false;
+
+        int maxRounds = getConfigType().getRoundsPerItem();
+        return maxRounds > 1 && getRoundsRemaining(stack) < maxRounds;
+    }
+
+    @Override
+    public int getBarWidth(@NotNull ItemStack stack)
+    {
+        int maxRounds = getConfigType().getRoundsPerItem();
+        if (maxRounds <= 1)
+            return 13;
+
+        int rounds = Mth.clamp(getRoundsRemaining(stack), 0, maxRounds);
+        return Math.round(13F * rounds / maxRounds);
+    }
+
+    @Override
+    public int getBarColor(@NotNull ItemStack stack)
+    {
+        int maxRounds = getConfigType().getRoundsPerItem();
+        if (maxRounds <= 1)
+            return 0x00FF00;
+
+        float fill = Mth.clamp((float)getRoundsRemaining(stack) / maxRounds, 0F, 1F);
+        return Mth.hsvToRgb(fill / 3F, 1F, 1F);
     }
 
     @Override

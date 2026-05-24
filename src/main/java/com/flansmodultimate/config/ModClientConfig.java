@@ -14,6 +14,7 @@ public final class ModClientConfig
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean loadAllModelsInCache;
+    public final boolean showShootableDurabilityBars;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -34,6 +35,7 @@ public final class ModClientConfig
 
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
+    private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
 
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -70,6 +72,9 @@ public final class ModClientConfig
                     Recommended: leave this OFF and let models load on-demand.
                     """)
                 .define("loadAllModelsInCache", false);
+        SHOW_SHOOTABLE_DURABILITY_BARS = builder
+                .comment("Show a durability-style bar for shootable items when their current round item is not full")
+                .define("showShootableDurabilityBars", true);
         builder.pop();
 
         builder.push("Input Settings");
@@ -118,6 +123,7 @@ public final class ModClientConfig
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
+        showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
