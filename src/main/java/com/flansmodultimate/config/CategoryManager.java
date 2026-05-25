@@ -18,8 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -32,6 +35,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CategoryManager
 {
+    private static final String EMPTY_CATEGORY_CONFIG = "{}\n";
     private static final Map<EnumType, List<Category>> categories = new EnumMap<>(EnumType.class);
     private static final Map<String, List<Category>> itemCategories = new HashMap<>();
     private static final Gson gson = new GsonBuilder()
@@ -72,6 +76,8 @@ public final class CategoryManager
             Path defaultFile = defaultConfigDir.resolve(fileName);
             Path userFile = configDir.resolve(fileName);
 
+            ensureUserCategoryFileExists(userFile);
+
             try (InputStream in = CategoryManager.class.getResourceAsStream("/config/" + fileName))
             {
                 if (in != null)
@@ -98,6 +104,25 @@ public final class CategoryManager
         }
 
         FlansMod.log.info("Finished loading categories");
+    }
+
+    private static void ensureUserCategoryFileExists(Path file)
+    {
+        if (Files.exists(file))
+            return;
+
+        try
+        {
+            Files.writeString(file, EMPTY_CATEGORY_CONFIG, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+        }
+        catch (FileAlreadyExistsException ignored)
+        {
+            // Ignored
+        }
+        catch (IOException e)
+        {
+            FlansMod.log.error("Failed to create empty category config file {}", file.toAbsolutePath(), e);
+        }
     }
 
     private static List<Category> loadForType(EnumType type, Path file)
