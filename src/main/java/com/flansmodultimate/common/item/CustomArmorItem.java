@@ -45,6 +45,12 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
     protected static final Map<UUID, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
 
+    protected static final UUID[] armor_uuid = new UUID[] {
+        UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"),
+        UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"),
+        UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"),
+        UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")
+    };
     protected static final UUID[] speed_uuid = new UUID[] { UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID() };
     protected static final UUID[] kb_uuid = new UUID[] { UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID() };
 
@@ -91,13 +97,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        String defense = ModCommonConfig.get().enableOldArmorRatioSystem() ?
-                IFlanItem.formatDouble(configType.getDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getDefence() * ArmorType.ARMOR_POINT_FACTOR));
-        String bulletDefense = ModCommonConfig.get().enableOldArmorRatioSystem() ?
-                IFlanItem.formatDouble(configType.getBulletDefence() * 100.0) + "%" : String.valueOf(Math.round(configType.getBulletDefence() * ArmorType.ARMOR_POINT_FACTOR));
+        String defense = String.valueOf(configType.getDisplayedArmorPoints());
+        String bulletDefense = String.valueOf(configType.getDisplayedBulletArmorPoints());
 
         tooltipComponents.add(IFlanItem.statLine("Defense", defense));
-        if (configType.getBulletDefence() != configType.getDefence())
+        if (configType.getDisplayedBulletArmorPoints() != configType.getDisplayedArmorPoints())
             tooltipComponents.add(IFlanItem.statLine("Bullet Defense", bulletDefense));
 
         if (configType.getDurability() > 0F)
@@ -131,28 +135,34 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         {
             ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
 
-            if (ModCommonConfig.get().enableOldArmorRatioSystem())
+            for (var entry : vanilla.entries())
             {
-                // Copy everything EXCEPT vanilla armor/toughness (disables vanilla mitigation for this piece)
-                for (var entry : vanilla.entries())
-                {
-                    Attribute attr = entry.getKey();
-                    if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == null || entry.getValue() == null)
-                        continue;
-                    builder.put(attr, entry.getValue());
-                }
-            }
-            else
-            {
-                builder.putAll(vanilla);
+                Attribute attr = entry.getKey();
+                if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == null || entry.getValue() == null)
+                    continue;
+                builder.put(attr, entry.getValue());
             }
 
+            builder.put(Attributes.ARMOR, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor modifier", getDefense(), AttributeModifier.Operation.ADDITION));
+            builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor toughness", getToughness(), AttributeModifier.Operation.ADDITION));
             builder.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(speed_uuid[configType.getArmorItemType().getSlot().getIndex()], "Movement Speed", configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
             builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(kb_uuid[configType.getArmorItemType().getSlot().getIndex()], "Knockback Resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.MULTIPLY_TOTAL));
             return builder.build();
         }
 
         return vanilla;
+    }
+
+    @Override
+    public int getDefense()
+    {
+        return configType.getMinecraftArmorPoints();
+    }
+
+    @Override
+    public float getToughness()
+    {
+        return configType.getToughness();
     }
 
     public static void handleMobEffects(LivingEntity entity)

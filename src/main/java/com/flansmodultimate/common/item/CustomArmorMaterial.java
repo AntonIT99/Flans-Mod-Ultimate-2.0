@@ -18,7 +18,7 @@ public record CustomArmorMaterial(String name, int durability, int defense, int 
 {
     CustomArmorMaterial(ArmorType type)
     {
-        this(type.getShortName(), type.getDurability(), (int) Math.round(type.getDefence() * ArmorType.ARMOR_POINT_FACTOR), type.getEnchantability(), FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryObject::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
+        this(type.getShortName(), type.getDurability(), type.getDefaultMinecraftArmorPoints(), type.getEnchantability(), FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryObject::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
     }
 
     @Override

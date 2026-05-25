@@ -26,7 +26,7 @@ public record CommonConfigSnapshot(
     int breakableArmor,
     int defaultArmorDurability,
     int defaultArmorEnchantability,
-    boolean enableOldArmorRatioSystem,
+    boolean forceDefenseAsModernArmor,
 
     boolean gunsAlwaysUsableByPlayersInCreativeMode,
     float gunDamageModifier,
@@ -70,7 +70,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 4;
+    public static final int CURRENT_VERSION = 5;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -94,7 +94,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.breakableArmor);
         buf.writeVarInt(s.defaultArmorDurability);
         buf.writeVarInt(s.defaultArmorEnchantability);
-        buf.writeBoolean(s.enableOldArmorRatioSystem);
+        buf.writeBoolean(s.forceDefenseAsModernArmor);
 
         buf.writeBoolean(s.gunsAlwaysUsableByPlayersInCreativeMode);
         buf.writeFloat(s.gunDamageModifier);

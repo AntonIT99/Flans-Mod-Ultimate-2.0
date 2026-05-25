@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.FileUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,12 +25,20 @@ public class ArmorType extends InfoType
     @Getter
     protected ArmorItem.Type armorItemType;
     /** The amount of damage to absorb. From 0 to 1. Stacks additively between armour pieces */
-    @Getter
-    protected double defence;
+    protected double damageReductionDefence;
+    protected boolean readDamageReductionDefence;
+    /** Value read from Defence / Defense. Default: legacy ratio. Can be forced to vanilla armour points by config. */
+    protected double defenseDefence;
+    protected boolean readDefenseDefence;
+    /** Value read from OtherDefence / OtherDefense. Always a legacy ratio. */
+    protected double otherDefence;
+    protected boolean readOtherDefence;
     /** The amount of damage to absorb. From 0 to 1. Stacks additively between armour pieces. For bullet damage specifically. */
-    @Getter
     protected double bulletDefence;
     protected boolean readBulletDefence;
+    /** Vanilla Minecraft armour points. */
+    protected double armorPoints;
+    protected boolean readArmorPoints;
     /** How good the armour is at stopping bullets. Same units as bullet penetration. Default 0 to emulate previous behaviour */
     @Getter
     protected float penetrationResistance;
@@ -89,12 +98,17 @@ public class ArmorType extends InfoType
         rawArmorItemType = readValue("Type", rawArmorItemType, file);
         textureName = readResource("ArmourTexture", textureName, file);
         textureName = readResource("ArmorTexture", textureName, file);
-        defence = readValue("DamageReduction", defence, file);
-        defence = readValue("Defence", defence, file);
-        defence = readValue("Defense", defence, file);
-        defence = readValue("OtherDefence", defence, file);
-        defence = readValue("OtherDefense", defence, file);
-        defence = Math.max(readValue("DamageReductionAmount", 0, file) / ARMOR_POINT_FACTOR, defence);
+        readDamageReductionDefence = file.hasConfigLine("DamageReduction");
+        damageReductionDefence = readValue("DamageReduction", damageReductionDefence, file);
+        readDefenseDefence = hasAnyConfigLine(file, "Defence", "Defense");
+        defenseDefence = readValue("Defence", defenseDefence, file);
+        defenseDefence = readValue("Defense", defenseDefence, file);
+        readOtherDefence = hasAnyConfigLine(file, "OtherDefence", "OtherDefense");
+        otherDefence = readValue("OtherDefence", otherDefence, file);
+        otherDefence = readValue("OtherDefense", otherDefence, file);
+        readArmorPoints = hasAnyConfigLine(file, "ArmorPoints", "DamageReductionAmount");
+        armorPoints = readValue("DamageReductionAmount", armorPoints, file);
+        armorPoints = readValue("ArmorPoints", armorPoints, file);
         bulletDefence = readValue("BulletDefence", bulletDefence, file);
         readBulletDefence = file.hasConfigLine("BulletDefence");
         enchantability = readValue("Enchantability", enchantability, file);
@@ -142,8 +156,6 @@ public class ArmorType extends InfoType
                 armorItemType = ArmorItem.Type.HELMET;
                 break;
         }
-        if (!readBulletDefence)
-            bulletDefence = defence;
     }
 
     @Override
@@ -155,5 +167,63 @@ public class ArmorType extends InfoType
     public boolean hasDurability()
     {
         return durability > 0;
+    }
+
+    public double getDefence()
+    {
+        double result = 0.0;
+
+        if (readDamageReductionDefence)
+            result = damageReductionDefence;
+        if (!ModCommonConfig.forceDefenseAsModernArmor() && readDefenseDefence)
+            result = defenseDefence;
+        if (readOtherDefence)
+            result = otherDefence;
+
+        return result;
+    }
+
+    public double getBulletDefence()
+    {
+        return readBulletDefence ? bulletDefence : getDefence();
+    }
+
+    public int getMinecraftArmorPoints()
+    {
+        return getMinecraftArmorPoints(ModCommonConfig.forceDefenseAsModernArmor());
+    }
+
+    public int getDefaultMinecraftArmorPoints()
+    {
+        return getMinecraftArmorPoints(false);
+    }
+
+    public int getDisplayedArmorPoints()
+    {
+        return (int) Math.round(Math.max(getDefence() * ARMOR_POINT_FACTOR, getMinecraftArmorPoints()));
+    }
+
+    public int getDisplayedBulletArmorPoints()
+    {
+        return (int) Math.round(Math.max(getBulletDefence() * ARMOR_POINT_FACTOR, getMinecraftArmorPoints()));
+    }
+
+    private int getMinecraftArmorPoints(boolean forceDefenseAsModernArmor)
+    {
+        if (readArmorPoints)
+            return Math.max(0, (int) Math.round(armorPoints));
+        if (forceDefenseAsModernArmor && readDefenseDefence)
+            return Math.max(0, (int) Math.round(defenseDefence * ARMOR_POINT_FACTOR));
+        return 0;
+    }
+
+    private static boolean hasAnyConfigLine(TypeFile file, String... keys)
+    {
+        for (String key : keys)
+        {
+            if (file.hasConfigLine(key))
+                return true;
+        }
+        return false;
     }
 }

@@ -36,7 +36,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue BREAKABLE_ARMOR;
     private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_DURABILITY;
     private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_ENCHANTABILITY;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_OLD_ARMOR_RATIO_SYSTEM;
+    private static final ForgeConfigSpec.BooleanValue FORCE_DEFENSE_AS_MODERN_ARMOR;
 
     private static final ForgeConfigSpec.BooleanValue GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
     private static final ForgeConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
@@ -137,9 +137,10 @@ public final class ModCommonConfig
         DEFAULT_ARMOR_ENCHANTABILITY = builder
             .comment("The quality of enchantments received for the same level of XP 0=UnEnchantable 25=Gold armor")
             .defineInRange("defaultArmorEnchantability", 0, 0, Integer.MAX_VALUE);
-        ENABLE_OLD_ARMOR_RATIO_SYSTEM = builder
-            .comment("Enable the old ratio-based armor reduction system")
-            .define("enableOldArmorRatioSystem", false);
+        FORCE_DEFENSE_AS_MODERN_ARMOR = builder
+            .comment("Force Defence / Defense values to be interpreted as vanilla Minecraft armor points instead of legacy ratio-based armor reduction.",
+                "DamageReduction and OtherDefence always remain legacy ratio-based values.")
+            .define("forceDefenseAsModernArmor", false);
         builder.pop();
 
         builder.push("Gun Settings");
@@ -295,7 +296,7 @@ public final class ModCommonConfig
             BREAKABLE_ARMOR.get(),
             DEFAULT_ARMOR_DURABILITY.get(),
             DEFAULT_ARMOR_ENCHANTABILITY.get(),
-            ENABLE_OLD_ARMOR_RATIO_SYSTEM.get(),
+            FORCE_DEFENSE_AS_MODERN_ARMOR.get(),
 
             GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(),
             GUN_DAMAGE_MODIFIER.get().floatValue(),
@@ -344,6 +345,12 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
+    }
+
+    public static boolean forceDefenseAsModernArmor()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.forceDefenseAsModernArmor();
     }
 
     public static void applyServerSnapshot(CommonConfigSnapshot config)

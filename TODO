@@ -1,11 +1,10 @@
 General:
-- Generate Doc / Create Wiki
 - Fix missing recipes
+- Generate Doc / Create Wiki
+- Fix Frag Radius
 - Investigate issue with Oerlikon model
 - Fix particles
-- Fix Frag Radius
 - Team Mod: Commands, Teams, Classes, Stats
-- Refactor the Armor config to separate use of old logic vs new minecraft armor system
 
 1.12.2 Features:
 - rewardBoxes

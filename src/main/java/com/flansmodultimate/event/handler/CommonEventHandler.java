@@ -207,16 +207,16 @@ public final class CommonEventHandler
 
         if (entity instanceof Player || entity instanceof Mob)
         {
-            if (ModCommonConfig.get().enableOldArmorRatioSystem())
-                CustomArmorItem.applyOldArmorRatioSystem(event, entity);
-
             if (FlanDamageSources.isShootableDamage(source))
             {
                 if (CustomArmorItem.tryApplyIgnoreArmorShot(event, entity, source))
                     return;
-
-                CustomArmorItem.applyArmorBulletDefense(event, entity);
             }
+
+            CustomArmorItem.applyOldArmorRatioSystem(event, entity);
+
+            if (FlanDamageSources.isShootableDamage(source))
+                CustomArmorItem.applyArmorBulletDefense(event, entity);
         }
     }
 
