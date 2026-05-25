@@ -15,6 +15,7 @@ import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.util.AliasFileManager;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.JavaModelCompiler;
 import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundJsonProcessor;
@@ -331,19 +332,10 @@ public class ContentManager
             skinsTextureReferences.putIfAbsent(provider, new HashMap<>());
             modelReferences.putIfAbsent(provider, new HashMap<>());
 
-            if (FlansMod.log.isDebugEnabled())
-            {
-                long start = System.currentTimeMillis();
-                readFiles(provider);
-                registerConfigs(provider);
-                long end = System.currentTimeMillis();
-                FlansMod.log.debug("{}: Types loaded in {} ms", provider.getName(), String.format("%,d", end - start));
-            }
-            else
-            {
-                readFiles(provider);
-                registerConfigs(provider);
-            }
+            if (!provider.isArchive())
+                compileJavaModelsIfNeeded(provider);
+
+            loadTypes(provider);
 
             if (FMLEnvironment.dist == Dist.CLIENT)
             {
@@ -363,6 +355,9 @@ public class ContentManager
 
             if (archiveExtracted || !provider.isArchive())
             {
+                if (archiveExtracted)
+                    compileJavaModelsIfNeeded(provider);
+
                 createMcMeta(provider);
                 writeToAliasMappingFile(ID_ALIAS_FILE, provider,DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
 
@@ -396,6 +391,23 @@ public class ContentManager
         }
 
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
+    }
+
+    private static void loadTypes(IContentProvider provider)
+    {
+        if (FlansMod.log.isDebugEnabled())
+        {
+            long start = System.currentTimeMillis();
+            readFiles(provider);
+            registerConfigs(provider);
+            long end = System.currentTimeMillis();
+            FlansMod.log.debug("{}: Types loaded in {} ms", provider.getName(), String.format("%,d", end - start));
+        }
+        else
+        {
+            readFiles(provider);
+            registerConfigs(provider);
+        }
     }
 
     private static void loadFlanFolder()
@@ -922,6 +934,31 @@ public class ContentManager
     private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData)
     {
         return provider.isArchive() && (preLoadAssets || preLoadData || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
+    }
+
+    private static void compileJavaModelsIfNeeded(IContentProvider provider)
+    {
+        if (FMLEnvironment.dist != Dist.CLIENT)
+            return;
+
+        try
+        {
+            boolean hasOutdatedJavaModels = JavaModelCompiler.hasOutdatedJavaModels(provider);
+            if (!hasOutdatedJavaModels)
+                return;
+
+            if (!JavaModelCompiler.isCompilerAvailable())
+            {
+                FlansMod.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
+                return;
+            }
+
+            JavaModelCompiler.compileJavaModels(provider);
+        }
+        catch (LinkageError e)
+        {
+            FlansMod.log.warn("Java model source compilation is unavailable for content pack '{}': {}", provider.getName(), e.toString());
+        }
     }
 
     private static void createItemAndBlockJsonFiles(IContentProvider provider)

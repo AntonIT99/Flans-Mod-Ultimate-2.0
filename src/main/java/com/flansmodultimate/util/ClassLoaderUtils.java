@@ -35,6 +35,7 @@ public final class ClassLoaderUtils
 
     private static final CustomClassLoader classLoader = new CustomClassLoader();
 
+    @Getter
     private static final Map<String, String> minecraftMethodMappings = Map.ofEntries(
         Map.entry("func_78084_a", "getTextureOffset"),
         Map.entry("func_78085_a", "setTextureOffset"),
@@ -57,6 +58,7 @@ public final class ClassLoaderUtils
         Map.entry("func_178686_a", "setModelAttributes")
     );
 
+    @Getter
     private static final Map<String, String> minecraftFieldMappings = Map.ofEntries(
         Map.entry("field_78782_b", "textureOffsetY"),
         Map.entry("field_78783_a", "textureOffsetX"),
@@ -93,6 +95,14 @@ public final class ClassLoaderUtils
     private static final String LEGACY_MODELBASE = "net/minecraft/client/model/ModelBase";
     private static final String NEW_MODELBASE = "com/wolffsmod/api/client/model/ModelBase";
     private static final String INTERFACE_MODELBASE = "com/wolffsmod/api/client/model/IModelBase";
+
+    public static Map<String, String> getSourceClassMappings()
+    {
+        Map<String, String> map = new HashMap<>();
+        map.put(LEGACY_MODELBASE.replace('/', '.'), NEW_MODELBASE.replace('/', '.'));
+        classMappings.forEach((from, to) -> map.put(from.replace('/', '.'), to.replace('/', '.')));
+        return Map.copyOf(map);
+    }
 
     /**
      * Loads a compiled Java class (.class file) from a given file path.
@@ -177,7 +187,7 @@ public final class ClassLoaderUtils
         }
     }
 
-    private static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)
+    public static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)
     {
         ClassReader cr = new ClassReader(classData);
 
