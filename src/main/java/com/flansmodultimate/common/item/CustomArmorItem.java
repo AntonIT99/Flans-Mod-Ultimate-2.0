@@ -97,12 +97,16 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
-        String defense = String.valueOf(configType.getDisplayedArmorPoints());
-        String bulletDefense = String.valueOf(configType.getDisplayedBulletArmorPoints());
+        int armorPoints = configType.getMinecraftArmorPoints();
+        double damageAbsorption = configType.getDefence();
+        double bulletAbsorption = configType.getBulletDefence();
 
-        tooltipComponents.add(IFlanItem.statLine("Defense", defense));
-        if (configType.getDisplayedBulletArmorPoints() != configType.getDisplayedArmorPoints())
-            tooltipComponents.add(IFlanItem.statLine("Bullet Defense", bulletDefense));
+        if (armorPoints > 0 || damageAbsorption <= 0.0)
+            tooltipComponents.add(IFlanItem.statLine("Armor Points", String.valueOf(armorPoints)));
+        if (damageAbsorption > 0.0)
+            tooltipComponents.add(IFlanItem.statLine("Damage Absorption", formatAbsorption(damageAbsorption)));
+        if (Math.abs(bulletAbsorption - damageAbsorption) > 0.0001)
+            tooltipComponents.add(IFlanItem.statLine("Bullet Absorption", formatAbsorption(bulletAbsorption)));
 
         if (configType.getDurability() > 0F)
             tooltipComponents.add(IFlanItem.statLine("Durability", IFlanItem.formatDouble(configType.getDurability())));
@@ -124,6 +128,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             tooltipComponents.add(Component.literal("+Fire Resistance").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isWaterBreathing())
             tooltipComponents.add(Component.literal("+Water Breathing").withStyle(ChatFormatting.DARK_GREEN));
+    }
+
+    private static String formatAbsorption(double absorption)
+    {
+        return IFlanItem.formatDouble(Mth.clamp(absorption, 0.0, 1.0) * 100.0) + "%";
     }
 
     @Override

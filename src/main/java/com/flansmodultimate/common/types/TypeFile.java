@@ -46,6 +46,16 @@ public class TypeFile
         return configMap.containsKey(key.toLowerCase(Locale.ROOT));
     }
 
+    public boolean hasAnyConfigLine(String... keys)
+    {
+        for (String key : keys)
+        {
+            if (hasConfigLine(key))
+                return true;
+        }
+        return false;
+    }
+
     public List<String> getConfigLines(String key)
     {
         return configMap.get(key.toLowerCase(Locale.ROOT));

@@ -7,7 +7,9 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
@@ -20,6 +22,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -29,6 +32,18 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
 {
+    private static final ResourceLocation GUI_ICONS_LOCATION = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/icons.png");
+    private static final int ARMOR_EMPTY_U = 16;
+    private static final int ARMOR_HALF_U = 25;
+    private static final int ARMOR_FULL_U = 34;
+    private static final int ARMOR_V = 9;
+    private static final int ARMOR_ICON_SIZE = 9;
+    private static final float ABSORPTION_ICON_RED = 0.25F;
+    private static final float ABSORPTION_ICON_GREEN = 0.95F;
+    private static final float ABSORPTION_ICON_BLUE = 0.9F;
+    private static final float ABSORPTION_EMPTY_RED = 0.06F;
+    private static final float ABSORPTION_EMPTY_GREEN = 0.22F;
+    private static final float ABSORPTION_EMPTY_BLUE = 0.22F;
     private static final int TEXTURE_WIDTH = 120;
     private static final int TEXTURE_HEIGHT = 64;
     private static final double BAR_MAX_WIDTH = 14.5;
@@ -91,6 +106,17 @@ public final class ClientHudOverlays
         renderVehicleDebug(g, sw, sh);
     };
 
+    public static final IGuiOverlay DAMAGE_ABSORPTION = (gui, g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || gui.getMinecraft().options.hideGui || !gui.shouldDrawSurvivalElements())
+            return;
+
+        LocalPlayer player = gui.getMinecraft().player;
+        boolean vanillaArmorVisible = player != null && player.getArmorValue() > 0;
+        int top = sh - gui.leftHeight + (vanillaArmorVisible ? 0 : 10);
+        if (renderDamageAbsorptionArmorBar(player, g, sw / 2 - 91, top) && vanillaArmorVisible)
+            gui.leftHeight += 10;
+    };
+
     //TODO: FMU Style hit marker
     /** Draw the hit marker at screen center with fade-out alpha. */
     public static void renderHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
@@ -121,6 +147,59 @@ public final class ClientHudOverlays
         g.blit(texture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh);
 
         //TODO: compare with renderArmorOverlay()
+    }
+
+    private static boolean renderDamageAbsorptionArmorBar(LocalPlayer player, GuiGraphics g, int left, int top)
+    {
+        if (player == null)
+            return false;
+
+        double damageAbsorption = 0.0;
+        double bulletAbsorption = 0.0;
+
+        for (ItemStack stack : player.getArmorSlots())
+        {
+            if (!(stack.getItem() instanceof CustomArmorItem armorItem))
+                continue;
+
+            ArmorType armorType = armorItem.getConfigType();
+            damageAbsorption += armorType.getDefence();
+            bulletAbsorption += armorType.getBulletDefence();
+        }
+
+        int absorptionPoints = toAbsorptionArmorPoints(Math.max(damageAbsorption, bulletAbsorption));
+        if (absorptionPoints <= 0)
+            return false;
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        for (int i = 0; i < 10; i++)
+        {
+            int x = left + i * 8;
+            drawTintedArmorIcon(g, x, top, ARMOR_EMPTY_U, ABSORPTION_EMPTY_RED, ABSORPTION_EMPTY_GREEN, ABSORPTION_EMPTY_BLUE, 0.65F);
+
+            int point = i * 2 + 1;
+            if (point < absorptionPoints)
+                drawTintedArmorIcon(g, x, top, ARMOR_FULL_U, ABSORPTION_ICON_RED, ABSORPTION_ICON_GREEN, ABSORPTION_ICON_BLUE, 1.0F);
+            else if (point == absorptionPoints)
+                drawTintedArmorIcon(g, x, top, ARMOR_HALF_U, ABSORPTION_ICON_RED, ABSORPTION_ICON_GREEN, ABSORPTION_ICON_BLUE, 1.0F);
+        }
+
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
+        return true;
+    }
+
+    private static int toAbsorptionArmorPoints(double absorption)
+    {
+        return Mth.clamp((int) Math.round(absorption * 20.0), 0, 20);
+    }
+
+    private static void drawTintedArmorIcon(GuiGraphics g, int x, int y, int u, float red, float green, float blue, float alpha)
+    {
+        RenderSystem.setShaderColor(red, green, blue, alpha);
+        g.blit(GUI_ICONS_LOCATION, x, y, u, ARMOR_V, ARMOR_ICON_SIZE, ARMOR_ICON_SIZE);
     }
 
     public static void renderPlayerAmmo(GuiGraphics g, int sw, int sh)

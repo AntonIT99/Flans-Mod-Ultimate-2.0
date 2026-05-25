@@ -159,6 +159,7 @@ public final class ModClientEventHandler
     {
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiOverlay.ARMOR_LEVEL.id(), "damage_absorption", ClientHudOverlays.DAMAGE_ABSORPTION);
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
     }
 

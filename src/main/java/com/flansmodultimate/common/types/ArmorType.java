@@ -28,8 +28,8 @@ public class ArmorType extends InfoType
     protected double damageReductionDefence;
     protected boolean readDamageReductionDefence;
     /** Value read from Defence / Defense. Default: legacy ratio. Can be forced to vanilla armour points by config. */
-    protected double defenseDefence;
-    protected boolean readDefenseDefence;
+    protected double defence;
+    protected boolean readDefence;
     /** Value read from OtherDefence / OtherDefense. Always a legacy ratio. */
     protected double otherDefence;
     protected boolean readOtherDefence;
@@ -100,13 +100,13 @@ public class ArmorType extends InfoType
         textureName = readResource("ArmorTexture", textureName, file);
         readDamageReductionDefence = file.hasConfigLine("DamageReduction");
         damageReductionDefence = readValue("DamageReduction", damageReductionDefence, file);
-        readDefenseDefence = hasAnyConfigLine(file, "Defence", "Defense");
-        defenseDefence = readValue("Defence", defenseDefence, file);
-        defenseDefence = readValue("Defense", defenseDefence, file);
-        readOtherDefence = hasAnyConfigLine(file, "OtherDefence", "OtherDefense");
+        readDefence = file.hasAnyConfigLine("Defence", "Defense");
+        defence = readValue("Defence", defence, file);
+        defence = readValue("Defense", defence, file);
+        readOtherDefence = file.hasAnyConfigLine("OtherDefence", "OtherDefense");
         otherDefence = readValue("OtherDefence", otherDefence, file);
         otherDefence = readValue("OtherDefense", otherDefence, file);
-        readArmorPoints = hasAnyConfigLine(file, "ArmorPoints", "DamageReductionAmount");
+        readArmorPoints = file.hasAnyConfigLine("ArmorPoints", "DamageReductionAmount");
         armorPoints = readValue("DamageReductionAmount", armorPoints, file);
         armorPoints = readValue("ArmorPoints", armorPoints, file);
         bulletDefence = readValue("BulletDefence", bulletDefence, file);
@@ -174,11 +174,11 @@ public class ArmorType extends InfoType
         double result = 0.0;
 
         if (readDamageReductionDefence)
-            result = damageReductionDefence;
-        if (!ModCommonConfig.forceDefenseAsModernArmor() && readDefenseDefence)
-            result = defenseDefence;
+            result = Math.max(result, damageReductionDefence);
+        if (!ModCommonConfig.forceDefenseAsModernArmor() && readDefence)
+            result = Math.max(result, defence);
         if (readOtherDefence)
-            result = otherDefence;
+            result = Math.max(result, otherDefence);
 
         return result;
     }
@@ -198,32 +198,11 @@ public class ArmorType extends InfoType
         return getMinecraftArmorPoints(false);
     }
 
-    public int getDisplayedArmorPoints()
-    {
-        return (int) Math.round(Math.max(getDefence() * ARMOR_POINT_FACTOR, getMinecraftArmorPoints()));
-    }
-
-    public int getDisplayedBulletArmorPoints()
-    {
-        return (int) Math.round(Math.max(getBulletDefence() * ARMOR_POINT_FACTOR, getMinecraftArmorPoints()));
-    }
-
     private int getMinecraftArmorPoints(boolean forceDefenseAsModernArmor)
     {
-        if (readArmorPoints)
-            return Math.max(0, (int) Math.round(armorPoints));
-        if (forceDefenseAsModernArmor && readDefenseDefence)
-            return Math.max(0, (int) Math.round(defenseDefence * ARMOR_POINT_FACTOR));
-        return 0;
-    }
+        if (forceDefenseAsModernArmor)
+            return Math.max(0, Math.max((int) Math.round(armorPoints), (int) Math.round(defence * ARMOR_POINT_FACTOR)));
 
-    private static boolean hasAnyConfigLine(TypeFile file, String... keys)
-    {
-        for (String key : keys)
-        {
-            if (file.hasConfigLine(key))
-                return true;
-        }
-        return false;
+        return Math.max(0, (int) Math.round(armorPoints));
     }
 }
