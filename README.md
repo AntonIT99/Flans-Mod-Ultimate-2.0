@@ -91,6 +91,12 @@ Generate data:
 
 Build artifacts are written under `build/libs/`.
 
+## Documentation
+
+Project wiki pages live in `docs/`.
+
+- [Config Reference](docs/ConfigReference.md): legacy content-pack `.txt` type parameters, inheritance, formats, defaults, and parser notes.
+
 ## Repository Layout
 
 | Path                  | Purpose                                                      |
