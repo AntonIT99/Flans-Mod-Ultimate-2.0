@@ -1,6 +1,5 @@
 General:
 - Fix missing recipes
-- Generate Doc / Create Wiki
 - Fix Frag Radius
 - Investigate issue with Oerlikon model
 - Fix particles
@@ -16,7 +15,6 @@ Driveable Features:
 - Mechas & Mecha Items
 
 Entities:
-- AAGun - TODO
 - Driveable - TODO
 - Mecha - TODO
 - Plane - TODO
