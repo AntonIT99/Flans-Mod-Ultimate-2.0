@@ -95,8 +95,6 @@ Build artifacts are written under `build/libs/`.
 
 Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki).
 
-- [Config Reference](docs/ConfigReference.md): legacy content-pack `.txt` type parameters, inheritance, formats, defaults, and parser notes.
-
 ## Repository Layout
 
 | Path                  | Purpose                                                      |
