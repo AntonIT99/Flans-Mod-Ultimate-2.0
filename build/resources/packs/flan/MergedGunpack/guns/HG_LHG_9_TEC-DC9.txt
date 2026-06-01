@@ -1,0 +1,54 @@
+Name HG_TEC-DC9
+ShortName hg_tec-dc9
+//The ammo this gun uses (shortName)
+consumeBulletType 7
+bulletsPerReload 3
+Ammo TEGLOCK18FLUXAmmo
+Icon TEC9
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 50
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3.25
+RandomRecoilRange 1.00
+RandomRecoilYawRange 0.60
+DecreaseRecoil 1.00
+DecreaseRecoilYaw 1.75
+//Damage in half hearts
+Damage 0.1
+IgnoreArmorProbability 0.5
+IgnoreArmorDamageFactor 1.0
+//The higher this value, the more the bullets spread
+Accuracy 3
+//Time in ticks between rounds
+ShootDelay 4
+ShootSound mgc.sigshoot
+ReloadSound HGNEWReload
+Mode FullAuto SemiAuto
+OneHanded false
+//Bullet speed, default 3.0
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not 
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+//Deployable Settings
+Deployable False
+DeployedModel None
+//3D Model Settings
+Model mos.TEC_DC9
+Texture SkinTEC-DC9
+ModelScale 1.0
+Description §a[随身弹药(7)]§7消耗：3%_§a武器种类>§7LHG-轻型手枪
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0

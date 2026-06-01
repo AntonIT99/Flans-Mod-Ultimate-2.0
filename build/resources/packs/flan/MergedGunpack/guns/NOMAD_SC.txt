@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Undefined RX.70 MWS
+ShortName TENOMAD_SC
+//弹药名称(短名)
+////Ammo 
+Icon TENOMAD_SC
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 10
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2
+LoadIntoGun 5
+//杀伤力
+Damage 40
+MeleeDamage 48
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 4
+ShootSound NOMADShootZ
+ReloadSound NOMAD_R
+Mode FullAuto
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+Show//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 0.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TENOMAD_SC
+Texture TENOMAD_SC_2403
+ModelScale 0.45
+UseCustomMelee True
+//组件设置
+Description §i§l[模块]:[待机 - * ]_<未知阵营> | §8<品质：未知>_MWS-模块化武器系统_[Modular Weapon System]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments DZ_ALL3 DZ_ALL4 DZALL_D1 DZALL_D2 DZALL_D3 DZALL_D4 DZALL_D5 TESDOOA2 TESDOOA3 TESDOOA4 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 Only_ALL1 Only_ALL2 Only_ALL3 Only_ALL4 Only_ALL5 Only_ALL3D1 Only_ALL3D2 Only_ALL3D3 Only_ALL3D4 TEALLSP1 TEALLSP2 TEALLSP3 TEALLSP4 TEALLSP5 TEALLSP6 TEALLSP7 TEALLSP8
+AllowBarrelAttachments Flase
+AllowScopeAttachments Flase
+AllowStockAttachments Flase
+AllowGripAttachments Flase
+NumGenericAttachmentSlots 8
+// 8
+//涂装格式“Icon/text”
+Paintjob TENOMAD_SC_A1 TENOMAD_SC_A1_2403

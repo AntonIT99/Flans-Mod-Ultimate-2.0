@@ -1,0 +1,5 @@
+Name MFN 5.7x28
+ShortName KTEFN57Ammo
+Icon KTEFN57Ammo
+Colour 255 255 255
+StackSize 64

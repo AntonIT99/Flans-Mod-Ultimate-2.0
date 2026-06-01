@@ -1,0 +1,76 @@
+////名字
+Name TEHABAmmo
+ShortName TEHABAmmo
+Icon TEHABAmmo
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 60
+
+////模型
+Model YE2403.TEHABAmmo
+Texture TEHABAmmo_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 1
+SmokeTime 5
+SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 120 12
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+//ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+CanThrow False
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 5.0
+FallSpeed 1.2
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+FlashBang true
+FlashTime 1
+FlashRange 3
+FlashSoundEnable false
+FlashSoundRange 5
+FlashSound 
+FlashDamageEnable true
+FlashDamage 1000
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 2.0
+//延时
+Fuse 1400
+DetonateWhenShot true
+Remote true
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate TEC4Shoot
+DetonateSound TEHABAmmoShoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 15
+//ShapelessRecipe TEGL1 Stuff_4 TEGL2 Stuff_4 TEC4 Stuff_4
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

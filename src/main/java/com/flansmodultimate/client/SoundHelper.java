@@ -124,7 +124,7 @@ public final class SoundHelper
         Supplier<SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
         if (soundEvent == null)
         {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
+            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound.toLowerCase(java.util.Locale.ROOT)));
             return Optional.empty();
         }
         return Optional.of(soundEvent.get());

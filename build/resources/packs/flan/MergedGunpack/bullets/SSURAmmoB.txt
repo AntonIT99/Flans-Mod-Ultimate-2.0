@@ -1,0 +1,5 @@
+Name 7.62¡Á51
+ShortName SSURAmmoB
+Icon SSURAmmoB
+Colour 255 255 255
+StackSize 64

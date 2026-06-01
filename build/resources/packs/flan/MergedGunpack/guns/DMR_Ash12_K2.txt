@@ -1,0 +1,63 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MK20 SSR
+ShortName TEAsh12_K2
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 5.1
+Ammo TE762_25Ammo
+Icon TEAsh12_K2
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 54
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.4
+RandomRecoilRange 0.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 15.9
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 2.7
+//循环时间
+ShootDelay 3
+ShootSound TEAsh12Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto
+BulletSpeed 27
+//机瞄设置
+Scope RS2
+ZoomLevel 2.5
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEAsh12
+Texture TEAsh12_2403_K2
+ModelScale 0.43
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：5.1%_§a武器种类>§7DMR-精确射手步枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 2
+
+CasingModel WE_GUN.TE556dk
+CasingTexture TE556dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEM61Flash_5

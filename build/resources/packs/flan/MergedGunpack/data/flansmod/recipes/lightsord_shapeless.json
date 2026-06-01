@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:t-hawk"
+    }
+  ],
+  "result": {
+    "item": "flansmod:lightsord"
+  }
+}

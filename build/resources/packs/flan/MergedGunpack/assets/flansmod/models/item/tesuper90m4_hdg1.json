@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/tesuper90m4_hdg1"
+  },
+  "overrides": []
+}

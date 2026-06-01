@@ -1,0 +1,5 @@
+Name .44AE
+ShortName SD44AmmoB
+Icon SD44AmmoB
+Colour 255 255 255
+StackSize 64

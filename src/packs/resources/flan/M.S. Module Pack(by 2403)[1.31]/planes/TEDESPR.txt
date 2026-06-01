@@ -1,0 +1,98 @@
+//---Standard-------------------------------------
+// Naming
+Name DESPR
+ShortName TEDESPR
+Description 单人空中载具_[绝境号模型]
+
+//Misc
+Mode Vtol
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model YE2403.TEDESPR
+Texture TEDESPR_2403
+Icon TEDESPR
+ModelScale 1.0
+CameraDistance 7.0
+
+//Movement
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+Drag 2.0
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -22 -10 -14
+WheelPosition 1 -22 -10 14
+WheelPosition 2 22 -10 14
+WheelPosition 3 22 -10 -14
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot -37 18 0
+Passengers 0
+
+//Inventory Slots
+CargoSlots 160
+BombSlots 16
+MissileSlots 16
+FuelTankSize 6000
+
+//Sounds
+StartSound HL17_Start
+StartSoundLength 100
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary HL17_CannonFire
+PropSoundLength 65
+PropSound HL17_Flight
+
+//Movement
+TurnLeftSpeed 4
+TurnRightSpeed 4
+LookUpSpeed 5
+LookDownSpeed 5
+RollLeftSpeed 3
+RollRightSpeed 3
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 15
+ShootDelaySecondary 1
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+//AddAmmo dwSkyfireClAmmo
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+//ShootPointPrimary 116 -6 0 core 
+ShootPointPrimary -2 -8 36 leftWing 
+ShootPointPrimary -2 -8 -36 rightWing 
+ShootPointPrimary -11 -9 -50 leftWing 
+ShootPointPrimary -11 -9 51 rightWing 
+ShootPointSecondary 11 -5 21 leftWing TEBLSAR
+ShootPointSecondary 11 -5 -21 rightWing TEBLSAR
+
+HeliPropeller 0 14 0 0 core TEBLCL_1
+HeliPropeller 1 14 0 0 core TEBLCL_1
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 0 -2 4 core TEBLHLPANT
+
+//Health, Collision and Recipe
+SetupPart tail 100 -53 -6 -12 30 31 25
+SetupPart core 1000 -23 -5 -5 114 31 11
+SetupPart nose 100 -23 26 -5 36 11 11
+SetupPart leftWing 100 -60 -8 -25 48 31 3
+SetupPart rightWing 100 -60 -8 23 48 31 3
+
+AddRecipeParts leftWing 5 TEBLCL_1
+AddRecipeParts nose 5 TEBLCL_1
+AddRecipeParts tail 5 TEBLCL_1
+AddRecipeParts rightWing 1 TEBLCL_1
+AddRecipeParts core 25 TEBLCL_1

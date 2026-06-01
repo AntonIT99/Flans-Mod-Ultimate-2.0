@@ -1,0 +1,22 @@
+Name PUP Riot Helmet
+ShortName SE_dwRiotHelmet
+Icon penbarRiotHelmet
+Colour 255 255 255
+
+Type Head
+Model dwdefence.RiotHelmet
+Defence 0.05
+//0
+//0.15
+ArmourTexture Penbar_CasualUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe A dwArmorCloth K dwKipliteArmor G dwBallisticGlass
+KKK
+AGA
+   

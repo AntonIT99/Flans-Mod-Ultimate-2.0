@@ -1,0 +1,58 @@
+////名字
+Name 应急医疗箱
+ShortName TEYLBA2
+Icon TEYLB_YL2
+StackSize 20
+
+////模型
+Model WE_GUN.TEYLBA
+Texture TEYLBA_2403
+
+SpinWhenThrown false
+////Throwing
+ThrowDelay 20
+ThrowSound TEMARRORRLD
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.3
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 4.3
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 300
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 40
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEMARRORShoot
+////Misc
+MeleeDamage 0
+
+DeployableBag True
+NumUses 30
+HealAmount 10
+
+//RecipeOutput 3
+//ShapelessRecipe Stuff_4 Stuff_1 Stuff_4 Stuff_4 Stuff_1 Stuff_4
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

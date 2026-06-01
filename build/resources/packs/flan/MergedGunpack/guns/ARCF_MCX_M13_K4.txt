@@ -1,0 +1,80 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEMCX_M13_K1
+ShortName TEMCX_M13_K4
+consumeBulletType 2
+bulletsPerReload 3.0
+Ammo 30RifleAmmo
+Icon TEMCX_M13_K4
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.1
+RandomRecoilRange 1.1
+RandomRecoilYawRange 1.1
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 6.7
+////OneHanded true
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 5.6
+//循环时间
+ShootDelay 1
+ShootSound TEMCX_M13Shoot
+ReloadSound TEAR1Reload
+DistortSound False
+Mode FullAuto BURST
+BulletSpeed 12
+//6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope RS1
+ZoomLevel 1.1
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEMCX_M13
+Texture TEMCX_M13_2403_K4
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：3.0%_§a武器种类>§7SAR-冲锋步枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 6
+//涂装格式“Icon/text”
+CasingModel WE_GUN.TEU794dk
+CasingTexture TEU794dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEM61Flash_5

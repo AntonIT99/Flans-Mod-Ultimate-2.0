@@ -1,0 +1,4 @@
+Name AEHC_YK2
+ShortName AEHC_YK2
+Icon AEHC_YK2
+StackSize 64

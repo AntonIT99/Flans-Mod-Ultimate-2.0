@@ -1,0 +1,5 @@
+Name HG.45 ACP
+ShortName KTE45ACPAmmo
+Icon KTE45ACPAmmo
+Colour 255 255 255
+StackSize 64

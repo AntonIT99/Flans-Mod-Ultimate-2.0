@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/fg_all_1"
+  },
+  "overrides": []
+}

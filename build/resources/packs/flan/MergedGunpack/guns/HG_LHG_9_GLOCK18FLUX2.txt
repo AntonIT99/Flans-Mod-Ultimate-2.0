@@ -1,0 +1,50 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Glock 18
+ShortName TEGLOCK18FLUX2
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 1.5
+Ammo TEGLOCK18FLUXAmmo
+Icon TEGLOCK18FLUX
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 38
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.5
+//杀伤力
+Damage 0.1
+//这个值越高，子弹时速的越高
+Accuracy 3.3
+RandomRecoilRange 0.4
+RandomRecoilYawRange 0.4
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//循环时间
+ShootDelay 2
+ShootSound TEGLOCK18FLUXShoot
+ReloadSound HGNEWReload
+Mode FullAuto
+BulletSpeed 12.0
+//机瞄设置
+Scope FN509SP
+ZoomLevel 1.3
+FOVZoomLevel 1.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEGLOCK18FLUX
+Texture TEGLOCK18FLUX_2403
+ModelScale 0.45
+//组件设置
+Description §a[随身弹药(7)]§7消耗：1.5%_§a武器种类>§7LHG-轻型手枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 2
+//涂装格式“Icon/text”

@@ -1,0 +1,47 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEC4Box
+ShortName TEC4Box
+//弹药名称(短名)
+Ammo TEC4
+Icon TEC4Box
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+UsableByPlayers false
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 20
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+MeleeDamage 0
+//这个值越高，子弹时速的越高
+Accuracy 0
+LoadIntoGun 1
+//循环时间
+ShootDelay 2
+ShootSound 
+ReloadSound 
+Mode FullAuto
+//机瞄设置
+Scope EMIHUD
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model EMIGUN.TEBLAR16
+Texture TEBLAR15_2403
+ModelScale 1
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+Description [装备背袋]_§6可用此背带前往补给点补给:_§6<C4 x 1>

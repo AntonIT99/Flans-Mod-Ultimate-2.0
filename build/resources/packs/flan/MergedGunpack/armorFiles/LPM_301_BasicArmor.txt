@@ -1,0 +1,22 @@
+Name Lupine Civilian Armor
+ShortName SE_dwLupineArmorBasic
+Icon lupineArmorBasic
+Colour 255 255 255
+
+Type Body
+Model dwdefence.LupineArmorBasic
+Defence 0.05
+//0
+//0.05
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 1.0
+
+//Recipe A dwArmorCloth K dwKipliteArmor
+K K
+KKK
+KKK

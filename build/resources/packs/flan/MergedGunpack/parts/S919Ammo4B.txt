@@ -1,0 +1,5 @@
+Name 9x19 FA
+ShortName S919Ammo4B
+Icon S919Ammo4B
+Colour 255 255 255
+StackSize 64

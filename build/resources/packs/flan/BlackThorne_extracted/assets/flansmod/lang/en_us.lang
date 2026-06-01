@@ -1,0 +1,209 @@
+itemGroup.btcivil=§1BlackThorne Civilian Pack
+
+##Vehicles
+
+#TB-313-MCC
+item.btcivil_emergencyvehicle_unu_tb313mcc_2084_firetruck_apple.name=§3UNU Camel Firetruck (Apple) §7[TB-313-MCC]
+item.btcivil_emergencyvehicle_unu_tb313mcc_2084_firetruck_sunflower.name=§3UNU Camel Firetruck (Sunflower) §7[TB-313-MCC]
+description.btcivil_emergencyvehicle_unu_tb313mcc_2084_firetruck=REQUIRES: UNU Seat-T1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17 UNU Siren
+
+#UNU CP-497-LTC
+item.btcivil_vehicle_unu_cp497ltc_2089_sedan_ford.name=§3UNU Rabbit Sedan (Ford) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedan_ivory.name=§3UNU Rabbit Sedan (Ivory) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedan_mint.name=§3UNU Rabbit Sedan (Mint) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedan_tungsten.name=§3UNU Rabbit Sedan (Tungsten) §7[CP-497-LTC]
+description.btcivil_vehicle_unu_cp497ltc_2089_sedan=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_cp497ltc_2089_sedanrhd_ford.name=§3UNU Rabbit RHD Sedan (Ford) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedanrhd_ivory.name=§3UNU Rabbit RHD Sedan (Ivory) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedanrhd_mint.name=§3UNU Rabbit RHD Sedan (Mint) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_sedanrhd_tungsten.name=§3UNU Rabbit RHD Sedan (Tungsten) §7[CP-497-LTC]
+description.btcivil_vehicle_unu_cp497ltc_2089_sedanrhd=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_cp497ltc_2089_sedan_taxi.name=§3UNU Rabbit Sedan (Taxi) §7[CP-497-LTC]
+description.btcivil_vehicle_unu_cp497ltc_2089_sedan_taxi=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_cp497ltc_2089_wagon_apple.name=§3UNU Rabbit RHD Wagon (Apple) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagon_ivory.name=§3UNU Rabbit Wagon (Ivory) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagon_ocean.name=§3UNU Rabbit Wagon (Ocean) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagon_olive.name=§3UNU Rabbit Wagon (Olive) §7[CP-497-LTC]
+description.btcivil_vehicle_unu_cp497ltc_2089_wagon=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_cp497ltc_2089_wagonrhd_apple.name=§3UNU Rabbit RHD Wagon (Apple) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagonrhd_ivory.name=§3UNU Rabbit RHD Wagon (Ivory) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagonrhd_ocean.name=§3UNU Rabbit RHD Wagon (Ocean) §7[CP-497-LTC]
+item.btcivil_vehicle_unu_cp497ltc_2089_wagonrhd_olive.name=§3UNU Rabbit RHD Wagon (Olive) §7[CP-497-LTC]
+description.btcivil_vehicle_unu_cp497ltc_2089_wagonrhd=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_emergencyvehicle_unu_cp497ltc_2089_sedan_police.name=§3UNU Rabbit Sedan (Police) §7[CP-497-LTC]
+description.btcivil_emergencyvehicle_unu_cp497ltc_2089_sedan=REQUIRES: UNU Seat-P3 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_emergencyvehicle_unu_cp497ltc_2089_wagon_police.name=§3UNU Rabbit Wagon (Police) §7[CP-497-LTC]
+description.btcivil_emergencyvehicle_unu_cp497ltc_2089_wagon=REQUIRES: UNU Seat-P3 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+#UNU DD-228-HTC
+item.btcivil_vehicle_unu_dd228htc_2085.name=§3UNU Stag §7[DD-228-HTC]
+description.btcivil_vehicle_unu_dd228htc_2085=REQUIRES: UNU Seat-T1 UNU Seat-B1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17 Bus Destination Sign Bus Advert
+
+#UNU DG-930-MTC
+item.btcivil_vehicle_unu_dg930mtc_2083_blackthorne.name=§3UNU Scarab (BlackThorne) §7[DD-228-HTC]
+item.btcivil_vehicle_unu_dg930mtc_2083_moonspire.name=§3UNU Scarab (Moonspire) §7[DD-228-HTC]
+description.btcivil_vehicle_unu_dg930mtc_2083=REQUIRES: UNU Seat-T1 UNU Seat-B1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17 Bus Destination Sign Bus Advert
+
+#UNU LZ-131-HTA
+item.btcivil_airship_unu_lz131hta_2095.name=§3UNU Aerwhale (UNU Testing) §7[LZ-131-HTA]
+description.btcivil_airship_unu_lz131hta_2095=UNU is still testing this new vehicle.
+
+#UNU RJ-618-LCC
+item.btcivil_vehicle_unu_rj618lcc_2089_truck_apple.name=§3UNU Ferret Truck (Apple) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_truck_olive.name=§3UNU Ferret Truck (Olive) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_truck_silver.name=§3UNU Ferret Truck (Silver) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_truck_tungsten.name=§3UNU Ferret Truck (Tungsten) §7[RJ-618-LCC]
+description.btcivil_vehicle_unu_rj618lcc_2089_truck=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_rj618lcc_2089_van_ford.name=§3UNU Ferret Van (Ford) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_ivory.name=§3UNU Ferret Van (Ivory) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_ocean.name=§3UNU Ferret Van (Ocean) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_tungsten.name=§3UNU Ferret Van (Tungsten) §7[RJ-618-LCC]
+
+#item.btcivil_vehicle_unu_rj618lcc_2089_van_connie.name=§3UNU Ferret Van (Connie) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_publichealth.name=§3UNU Ferret Van (Public Health) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_mmm.name=§3UNU Ferret Van (Moonspire) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_flowers.name=§3UNU Ferret Van (Flowers) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_trin.name=§3UNU Ferret Van (Trin) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_dvc.name=§3UNU Ferret Van (DVC) §7[RJ-618-LCC]
+item.btcivil_vehicle_unu_rj618lcc_2089_van_unuparts.name=§3UNU Ferret Van (UNU Parts) §7[RJ-618-LCC]
+description.btcivil_vehicle_unu_rj618lcc_2089_van=REQUIRES: UNU Seat-P3 UNU Engine-H6 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_vehicle_unu_sb423mtc_2082_sunflower.name=§3UNU Weevil School Bus §7[SB-423-MTC]
+description.btcivil_vehicle_unu_sb423mtc_2082=REQUIRES: UNU Seat-T1 UNU Seat-B1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17
+
+#UNU SV-313-MCC
+item.btcivil_vehicle_unu_sv313mcc_2084.name=§3UNU Turtle () §7[SV-313-MCC]
+item.btcivil_vehicle_unu_sv313mcc_2084_btutilities.name=§3UNU Turtle (BT Utilities) §7[SV-313-MCC]
+item.btcivil_vehicle_unu_sv313mcc_2084_unu.name=§3UNU Turtle (UNU) §7[SV-313-MCC]
+item.btcivil_vehicle_unu_sv313mcc_2084_mtssignallingco.name=§3UNU Turtle (MTS Signalling Co) §7[SV-313-MCC]
+item.btcivil_vehicle_unu_sv313mcc_2084_gramadosbank.name=§3UNU Turtle (Gramados Bank) §7[SV-313-MCC]
+description.btcivil_vehicle_unu_sv313mcc_2084=REQUIRES: UNU Seat-T1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17
+item.btcivil_vehicle_unu_sv313mcc_2084_rail_mtssignallingco.name=§3UNU Turtle (MTS Signalling Co) §7[SV-313-MCC]
+description.btcivil_vehicle_unu_sv313mcc_2084_rail=REQUIRES: UNU Seat-T1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17
+
+#UNU GM-600-LTC
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_chocolate.name=§3UNU Chancellor (Chocolate) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_ford.name=§3UNU Chancellor (Ford) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_seaweed.name=§3UNU Chancellor (Seaweed) §7[GM-600-LTC]
+
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_blackthorne.name=§3UNU Chancellor (BlackThorne) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_moonspire.name=§3UNU Chancellor (Moonspire) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedan_unu.name=§3UNU Chancellor (UNU) §7[GM-600-LTC]
+description.btcivil_vehicle_unu_gm600ltc_2095_sedan=REQUIRES: UNU Seat-P1-L UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+item.btcivil_vehicle_unu_gm600ltc_2095_sedanrhd_chocolate.name=§3UNU Chancellor RHD (Chocolate) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedanrhd_ford.name=§3UNU Chancellor RHD (Ford) §7[GM-600-LTC]
+item.btcivil_vehicle_unu_gm600ltc_2095_sedanrhd_seaweed.name=§3UNU Chancellor RHD (Seaweed) §7[GM-600-LTC]
+description.btcivil_vehicle_unu_gm600ltc_2095_sedanrhd=REQUIRES: UNU Seat-P1-L UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+#UNU IM-510-LTC
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_apple_manilla.name=§3UNU Baron Sedan (Apple/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_chocolate_manilla.name=§3UNU Baron Sedan (Chocolate/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_emerald_manilla.name=§3UNU Baron Sedan (Emerald/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_ford_apple.name=§3UNU Baron Sedan (Ford/Apple) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_ford_manilla.name=§3UNU Baron Sedan (Ford/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_ivory_manilla.name=§3UNU Baron Sedan (Ivory/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_navy_manilla.name=§3UNU Baron Sedan (Navy/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_sedan_ocean_manilla.name=§3UNU Baron Sedan (Ocean/Manilla) §7[IM-510-LTC]
+description.btcivil_vehicle_unu_im510ltc_2092_sedan=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+item.btcivil_emergencyvehicle_unu_im510ltc_2092_sedan_police.name=§3UNU Baron Sedan (Police) §7[IM-510-LTC]
+item.btcivil_emergencyvehicle_unu_im510ltc_2092_sedan_secretpolice.name=§3UNU Baron Sedan (Secret Police) §7[IM-510-LTC]
+description.btcivil_emergencyvehicle_unu_im510ltc_2092_sedan_police=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+description.btcivil_emergencyvehicle_unu_im510ltc_2092_sedan_secretpolice=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+#UNU IM-510-LTC
+item.btcivil_vehicle_unu_im510ltc_2092_wagon_apple_manilla.name=§3UNU Baron Wagon (Apple/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagon_ocean_manilla.name=§3UNU Baron Wagon (Ocean/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagon_silver_manilla.name=§3UNU Baron Wagon (Silver/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagonw_lemon_manilla.name=§3UNU Baron Wagon (Lemon/Apple) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagonw_manilla_saddle.name=§3UNU Baron Wagon (Manilla/Saddle) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagonw_olive_saddle.name=§3UNU Baron Wagon (Olive/Saddle) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagonw_saddle_manilla.name=§3UNU Baron Wagon (Saddle/Manilla) §7[IM-510-LTC]
+item.btcivil_vehicle_unu_im510ltc_2092_wagonw_seaweed_manilla.name=§3UNU Baron Wagon (Seaweed/Manilla) §7[IM-510-LTC]
+description.btcivil_vehicle_unu_im510ltc_2092_wagon=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+item.btcivil_emergencyvehicle_unu_im510ltc_2092_wagon_medic.name=§3UNU Baron Wagon (Medic) §7[IM-510-LTC]
+item.btcivil_emergencyvehicle_unu_im510ltc_2092_wagon_police.name=§3UNU Baron Wagon (Police) §7[IM-510-LTC]
+description.btcivil_emergencyvehicle_unu_im510ltc_2092_wagon=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+description.btcivil_emergencyvehicle_unu_im510ltc_2092_sedan=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-4D14
+
+#UNU RS-702-LTC
+item.btcivil_vehicle_unu_rs702ltc_2095_apple_manilla.name=§3UNU Corsair (Apple/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_emerald_manilla.name=§3UNU Corsair (Emerald/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_emerald_manilla_stripe.name=§3UNU Corsair (Emerald/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_ford_apple.name=§3UNU Corsair (Ford/Apple) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_ford_manilla.name=§3UNU Corsair (Ford/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_ivory_manilla_stripe.name=§3UNU Corsair (Ivory/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_seaweed_manilla_stripe.name=§3UNU Corsair (Seaweed/Manilla) §7[RS-702-LTC]
+description.btcivil_vehicle_unu_rs702ltc_2095=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12
+
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_apple_manilla.name=§3UNU Corsair RHD (Apple/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_emerald_manilla.name=§3UNU Corsair RHD (Emerald/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_emerald_manilla_stripe.name=§3UNU Corsair RHD (Emerald/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_ford_apple.name=§3UNU Corsair RHD (Ford/Apple) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_ford_manilla.name=§3UNU Corsair RHD (Ford/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_ivory_manilla_stripe.name=§3UNU Corsair RHD (Ivory/Manilla) §7[RS-702-LTC]
+item.btcivil_vehicle_unu_rs702ltc_2095_rhd_seaweed_manilla_stripe.name=§3UNU Corsair RHD (Seaweed/Manilla) §7[RS-702-LTC]
+description.btcivil_vehicle_unu_rs702ltc_2095_rhd=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12
+
+item.btcivil_emergencyvehicle_unu_rs702ltc_2095_police.name=§3UNU Corsair (Police) §7[RS-702-LTC]
+item.btcivil_emergencyvehicle_unu_rs702ltc_2095_secretpolice.name=§3UNU Corsair (Secret Police) §7[RS-702-LTC]
+description.btcivil_emergencyvehicle_unu_rs702ltc_2095_police=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12
+description.btcivil_emergencyvehicle_unu_rs702ltc_2095_secretpolice=REQUIRES: UNU Seat-P1 UNU Engine-V8 ACCEPTS: UNU Wheel-3D12
+
+#TB-313-MCC
+item.btcivil_vehicle_unu_tb313mcc_2084.name=§3UNU Camel §7[TB-313-MCC]
+item.btcivil_vehicle_unu_tb313mcc_2084_moonspire.name=§3UNU Camel §7[TB-313-MCC]
+description.btcivil_vehicle_unu_tb313mcc_2084=REQUIRES: UNU Seat-T1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17
+
+#AK-727-HCC
+item.btcivil_vehicle_unu_ak727hcc_2088.name=§3UNU Burro §7[AK-727-HCC]
+item.btcivil_vehicle_unu_ak727hcc_2088_moonspire.name=§3UNU Burro §7[AK-727-HCC]
+description.btcivil_vehicle_unu_ak727hcc_2088=REQUIRES: UNU Seat-T1 UNU Engine-V8H ACCEPTS: UNU Wheel-4D17
+
+item.btcivil_trailer_unu_standard_unu.name=§3UNU Standard Trailer (UNU)
+item.btcivil_trailer_unu_standard_moonspire.name=§3UNU Standard Trailer (Moonspire)
+description.btcivil_trailer_unu_standard=ACCEPTS: UNU Wheel-4D17
+
+item.btcivil_trailer_unu_standard_decor_unu.name=§3UNU Standard Trailer Block (UNU)
+item.btcivil_trailer_unu_standard_decor_moonspire.name=§3UNU Standard Trailer Block (Moonspire)
+description.btcivil_trailer_unu_standard_decor=Trailer Decoration
+
+item.btcivil_trailer_unu_short1_unu.name=§3UNU Short Trailer (UNU)
+item.btcivil_trailer_unu_short1_moonspire.name=§3UNU Short Trailer (Moonspire)
+description.btcivil_trailer_unu_short1=ACCEPTS: UNU Wheel-4D17
+
+item.btcivil_trailer_unu_short2_unu.name=§3UNU Short Trailer 2 (UNU)
+item.btcivil_trailer_unu_short2_moonspire.name=§3UNU Short Trailer 2 (Moonspire)
+description.btcivil_trailer_unu_short2=ACCEPTS: UNU Wheel-4D17
+
+item.btcivil_trailer_unu_log.name=§3UNU Log Trailer
+description.btcivil_trailer_unu_log=ACCEPTS: UNU Wheel-4D17
+
+item.btcivil_trailer_unu_tank_unu.name=§3UNU Tank Trailer (UNU)
+item.btcivil_trailer_unu_tank_moonspire.name=§3UNU Tank Trailer (Moonspire)
+description.btcivil_trailer_unu_tank=ACCEPTS: UNU Wheel-4D17
+
+#SB-728-LTC
+item.btcivil_vehicle_unu_sb728ltc_2091_manilla.name=§3UNU Trio (Manilla) §7[SB-728-LTC]
+item.btcivil_vehicle_unu_sb728ltc_2091_ocean.name=§3UNU Trio (Ocean) §7[SB-728-LTC]
+item.btcivil_vehicle_unu_sb728ltc_2091_olive.name=§3UNU Trio (Olive) §7[SB-728-LTC]
+item.btcivil_vehicle_unu_sb728ltc_2091_sea.name=§3UNU Trio (Sea) §7[SB-728-LTC]
+description.btcivil_vehicle_unu_sb728ltc_2091=REQUIRES: UNU Seat-P3 UNU Engine-I2 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+item.btcivil_emergencyvehicle_unu_sb728ltc_2091_police.name=§3UNU Trio (Police) §7[SB-728-LTC]
+description.btcivil_emergencyvehicle_unu_sb728ltc_2091=REQUIRES: UNU Seat-P3 UNU Engine-I2 ACCEPTS: UNU Wheel-3D12 UNU Crate-12
+
+
+#UNU SS-514-HTA
+item.btcivil_vehicle_unu_ss514hta_2094_blackthorne.name=§3UNU Swift (BlackThorne) §7[UNU SS-514-HTA]
+item.btcivil_vehicle_unu_ss514hta_2094_moonspire.name=§3UNU Swift (Moonspire) §7[UNU SS-514-HTA]
+description.btcivil_vehicle_unu_ss514hta_2094=REQUIRES: TBD

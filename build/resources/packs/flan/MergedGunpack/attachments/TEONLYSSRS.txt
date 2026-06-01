@@ -1,0 +1,33 @@
+Name §6§l技能：特区狩猎者
+ShortName TEONLYSSRS
+Icon TEONLYSSRS
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType generic
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//Flashlight variables
+Flashlight false
+FlashlightRange 10
+FlashlightStrength 12
+//近战伤害，伤害，散射，后坐力，子弹时速，模式
+MeleeDamageMultiplier 0
+//1.0
+DamageMultiplier 0
+//3.0
+SpreadMultiplier 1.0
+//0.6
+RecoilMultiplier 1.0
+//2.0
+BulletSpeedMultiplier 1.0
+//2.0
+ReloadTimeMultiplier 1.0
+//1.0
+
+//Description §7技能芯片_ _§9伤害+100_§9命中+20_§9后坐力+50_§9弹道时速+50
+
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_emergencyvehicle_unu_cp497ltc_2089_wagon_police"
+  },
+  "overrides": []
+}

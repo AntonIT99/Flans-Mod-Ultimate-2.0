@@ -1,0 +1,45 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TESVBA1
+ShortName TESVBA1_BN1
+//弹药名称(短名)
+Ammo TESVBA1Ammos
+Icon TESVBA1
+//弹药装填时间, 1=20/1秒
+ReloadTime 1
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+MeleeDamage 3
+//这个值越高，子弹时速的越高
+Accuracy 0
+OneHanded true
+//循环时间
+ShootDelay 1
+ShootSound 
+ReloadSound 
+Mode FullAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TESVBA1
+Texture TESVBA1_BN1
+ModelScale 0.3
+//组件设置
+Description §6限量款手办，由恶趣味浓重的斯科特在TEBL IV小_§6卖部发售§6§m(骗死宅幸存者的钱)
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments TESVBHai1_1 TESVBHai1_2 TESVBHai1_3 SVB32xL_ZA SVB32xL_CS SVB32xL_XG SVB32xL_YFLTC SVB32xR_ZA SVB32xR_CS SVB32xR_XG SVB32xR_YFLTC SVB16xL_DA SVB16xR_DA SVB16xL_IS SVB16xR_IS SVB16xL_DS SVB16xR_DS
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 2
+// 2
+//涂装格式“Icon/text”

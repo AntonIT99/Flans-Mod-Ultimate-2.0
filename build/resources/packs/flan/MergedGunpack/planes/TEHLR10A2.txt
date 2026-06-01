@@ -1,0 +1,103 @@
+//---Standard-------------------------------------
+// Naming
+Name HLR-10 A2
+ShortName TEHLR10A2
+Description 三人空中载具_[中型直升机]
+
+//Misc
+Mode Heli
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model TEBL.TEHLR10A2
+Texture TEHLR10A2
+Icon TEHLR10A2
+//ModelScale 0.9
+CameraDistance 17.0
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -47 -23 -19
+WheelPosition 1 -47 -23 19
+WheelPosition 2 81 -23 0
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot 12 4 0
+Passengers 2
+Passenger 1 -8 7 0 core
+Passenger 2 -26 7 0 core
+
+//Inventory Slots
+CargoSlots 8
+BombSlots 0
+MissileSlots 2
+FuelTankSize 4000
+
+//Sounds
+StartSound HL17_Start
+StartSoundLength 90
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary TEMG4Shoot
+PropSoundLength 65
+PropSound HLR10_Flight
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 9
+ShootDelaySecondary 2
+AlternatePrimary False
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+ShootPointPrimary 47 3 -10 leftWing 
+ShootPointPrimary 47 3 10 leftWing 
+ShootPointSecondary 23 0 -3 leftWing TEBLMA34
+ShootPointSecondary 23 0 3 rightWing TEBLMA34
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+//HeliPropeller 0 54 0 0 core dwPropeller
+HeliPropeller 0 14 0 0 core TEBLCL_1
+HeliPropeller 1 14 0 0 core TEBLCL_1
+Propeller 0 14 0 0 core TEBLCL_1
+Propeller 1 14 0 0 core TEBLCL_1
+
+//Health, Collision and Recipe
+SetupPart nose 200 26 -21 -14 20 28 28
+SetupPart tail 200 -200 10 -14 110 22 28
+SetupPart core 1000 -75 -18 -14 100 28 28
+SetupPart leftWing 100 -108 -5 -23 60 33 10
+SetupPart rightWing 100 -108 -5 13 60 33 10
+SetupPart coreWheel 100 4 -32 -7 4 4 14
+SetupPart rightWingWheel 100 -68 -28 9 4 4 18
+SetupPart leftWingWheel 100 -68 -28 -27 4 4 18
+
+AddDye 5 black
+AddRecipeParts nose 5 TEBLCL_1
+AddRecipeParts tail 5 TEBLCL_1
+AddRecipeParts core 10 TEBLCL_1
+AddRecipeParts leftWing 10 TEBLCL_1
+AddRecipeParts rightWing 10 TEBLCL_1
+AddRecipeParts coreWheel 1 TEBLCL_1
+AddRecipeParts rightWingWheel 5 TEBLCL_1
+AddRecipeParts leftWingWheel 5 TEBLCL_1

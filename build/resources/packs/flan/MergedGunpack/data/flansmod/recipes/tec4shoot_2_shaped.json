@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ILI",
+    "ILI"
+  ],
+  "key": {
+    "I": {
+      "item": "flansmod:mshc_2"
+    },
+    "L": {
+      "item": "flansmod:mshc_7"
+    }
+  },
+  "result": {
+    "item": "flansmod:tec4shoot_2"
+  }
+}

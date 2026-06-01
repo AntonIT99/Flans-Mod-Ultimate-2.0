@@ -1,0 +1,9 @@
+Name U.S. Marine Helmet
+ShortName SEmarineHelmet
+Icon MarineHelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.1
+ArmourTexture Marine

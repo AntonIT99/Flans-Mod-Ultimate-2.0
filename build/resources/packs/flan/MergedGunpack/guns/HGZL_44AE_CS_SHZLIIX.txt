@@ -1,0 +1,58 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name .44 Colt
+ShortName CS_SHZLIIX
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 3.2
+Ammo ZL357AmmoS3
+Icon CS_SHZLII
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5.3
+RandomRecoilRange 0.9
+RandomRecoilYawRange 0.9
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 10.8
+//这个值越高，子弹时速的越高
+Accuracy 9.4
+//循环时间
+DistortSound False
+ShootDelay 3
+ShootSound CS_SHZLShoot
+ReloadSound CS_SHZLIIReload
+Mode FullAuto
+BulletSpeed 35.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.CS_SHZLII
+Texture Skin_Gun_CS_SHZL
+ModelScale 0.28
+//组件设置
+Description §a[随身弹药(7)]§7消耗：3.2%_§a武器种类>§7RHG-转轮手枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 4
+//涂装格式“Icon/text”
+UseCustomMelee True

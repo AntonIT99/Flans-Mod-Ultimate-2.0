@@ -1,0 +1,4 @@
+Name CAitem_1
+ShortName TELJ_B4
+Icon IOP_19S1
+StackSize 64

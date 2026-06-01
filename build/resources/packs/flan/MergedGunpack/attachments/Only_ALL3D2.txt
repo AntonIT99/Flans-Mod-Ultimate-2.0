@@ -1,0 +1,41 @@
+Name 攻击系统：机构升级
+ShortName Only_ALL3D2
+Icon Only_ALL3D2
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType generic
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//Flashlight variables
+Flashlight false
+FlashlightRange 10
+FlashlightStrength 12
+//近战伤害，伤害，散射，后坐力，子弹时速，模式
+MeleeDamageMultiplier 0
+//1.0
+DamageMultiplier 0
+//1.02
+SpreadMultiplier 1.0
+//0.9
+RecoilMultiplier 1.0
+//0.8
+BulletSpeedMultiplier 1.0
+//1.0
+ReloadTimeMultiplier 1.0
+//1.0
+
+//Description §a[Mobius战术小组]_§8═══════════════════_§a装备种类>§7通用配件_§a装备类型>§7枪械本体改装_§8═══════════════════_§9后坐力-10%_§9命中+20%_§9伤害+2%
+
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01
+
+StackSize 64
+
+//RecipeOutput 1
+//Recipe A TEMAXD3 B TEMAXM3 C TEMAXT1 D Only_AR1
+ B 
+CDC
+ A 

@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name .40 Blowback UMP
+ShortName TE020UMP40
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 3.4
+Ammo TE020UMP40Ammo
+Icon TE020UMP40
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 38
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 0.3
+RandomRecoilYawRange 0.3
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+MeleeDamage 5
+//这个值越高，子弹时速的越高
+Accuracy 3
+//循环时间
+ShootDelay 2
+ShootSound TEUMP40ShootN
+ReloadSound TEUMPReload
+Mode FullAuto
+BulletSpeed 12.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope UMPSP
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TE020UMP40
+Texture TE020UMP40_2403
+ModelScale 0.26
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：3.4%_§a武器种类>§7SMG-冲锋枪_§7[by 020kun&2403 / 改建]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 6

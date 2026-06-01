@@ -1,0 +1,5 @@
+Name IMS #12
+ShortName KTESAI12Ammo
+Icon KTESAI12Ammo
+Colour 255 255 255
+StackSize 64

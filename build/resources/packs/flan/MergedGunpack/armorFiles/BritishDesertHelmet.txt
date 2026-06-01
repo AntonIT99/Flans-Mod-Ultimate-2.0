@@ -1,0 +1,9 @@
+Name British WW2 Desert Helmet
+ShortName britishDesertHelmet
+Icon BritishDesertHelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.05
+KnockbackModifier 0.0
+//0.1
+ArmourTexture BritishDesert

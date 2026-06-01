@@ -1,0 +1,35 @@
+////名字
+Name TE_UE
+ShortName TERedK_2
+Icon TERedK_1
+StackSize 1
+
+////模型
+Model WE_GUN.TERedK_2
+Texture Skin_Gun_TERedK_2
+
+SpinWhenThrown False
+CanThrow False
+ThrowDelay 0
+DetonateOnImpact false
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 0.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+//延时
+Fuse 1
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+MeleeDamage 10

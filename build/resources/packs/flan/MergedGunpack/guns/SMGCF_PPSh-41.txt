@@ -1,0 +1,50 @@
+Name SMG_PPSh-41
+ShortName smg_ppsh-41
+//The ammo this gun uses (shortName)
+consumeBulletType 1
+bulletsPerReload 7.1
+Ammo TEMK1928Ammo1
+Icon TE_PPSH
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 52
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.50
+RandomRecoilRange 1.00
+RandomRecoilYawRange 1.40
+DecreaseRecoil 0.50
+DecreaseRecoilYaw 1.25
+//Damage in half hearts
+Damage 0.1
+//Modifiers
+//The higher this value, the more the bullets spread
+Accuracy 6
+//Time in ticks between rounds
+ShootDelay 1
+ShootSound mgc.umpshoot
+ReloadSound MP5NEWReload
+Mode FullAuto SemiAuto
+//Bullet speed, default 3.0
+BulletSpeed 8.0
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+Model mpack.ppsh
+ModelScale 0.07
+Texture Skin_Gun_ppsh
+Description °Ïa[«·–ÕµØ“©(1)]°Ï7œ˚∫ƒ£∫7.1%_°ÏaŒ‰∆˜÷÷¿‡>°Ï7RSMG-ÀŸ…‰≥Â∑Ê«π
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+//AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.00
+FOVZoomLevel 1.00
+Deployable False
+DeployedModel None

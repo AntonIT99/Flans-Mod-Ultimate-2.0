@@ -3,6 +3,7 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,6 +14,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 
 public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 {
@@ -45,13 +47,22 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderBipod(Entity mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo bipodPart : bipodModel)
         {
             bipodPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
+
+        boolean hideAmmo;
+        if (mg instanceof DeployedGun dg)
+            hideAmmo = dg.getReloadTimer() > 0 || !dg.hasAmmo();
+        else if (mg instanceof AAGun aa)
+            hideAmmo = aa.getReloadTimer() > 0 || !aa.hasAmmo();
+        else
+            hideAmmo = true;
+
+        if (hideAmmo)
             return;
 
         for (ModelRendererTurbo ammoBoxPart : ammoBoxModel)
@@ -60,7 +71,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderGun(DeployedGun mg, float pitchDeg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderGun(Entity mg, float pitchDeg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         float pitch = pitchDeg * Mth.DEG_TO_RAD;
 
@@ -70,7 +81,15 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
             gunPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
-        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
+        boolean hideAmmo;
+        if (mg instanceof DeployedGun dg)
+            hideAmmo = dg.getReloadTimer() > 0 || !dg.hasAmmo();
+        else if (mg instanceof AAGun aa)
+            hideAmmo = aa.getReloadTimer() > 0 || !aa.hasAmmo();
+        else
+            hideAmmo = true;
+
+        if (hideAmmo)
             return;
 
         for (ModelRendererTurbo ammoPart : ammoModel)

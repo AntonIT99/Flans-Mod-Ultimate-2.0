@@ -1,0 +1,4 @@
+Name TEWBox_7
+ShortName TEWBox_7
+Icon TEWBox_7
+StackSize 1

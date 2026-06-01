@@ -1,0 +1,409 @@
+﻿//最后战线官方制作团队原创武器包
+//by EMI科技有限公司
+//版权所有 翻版必究
+//外贸版已授权部分服务器使用，详情可见“EMI科技有限公司吧”
+//涂装扩展包(Merry Christmas~)
+//EAP-98
+item.EMIAWP70_MC.name=§dEAP-98 狙击步枪「平安夜的猎手」
+//Eaiga UX
+item.EMISaiga18_MC.name=§dEaiga UX 半自动霰弹枪「圣诞礼物」
+//EM-1019
+item.EMISXM170_MC.name=§dEM-1019 半自动霰弹枪「巧克力蛋糕」
+//XSP-12(MK2)
+item.EMISWR_MC.name=§dXSP-12(MK2) 脉冲手枪「拐杖糖」
+//MAC 9
+item.EMI50KUN_MC.name=§dMAC 9 穿甲手枪「糖心牛仔」
+
+
+item.EMIMAXZ5.name=§d客制综合模块化系统
+item.EMI_MC.name=§e圣诞节的礼物
+
+item.EMIAmmo_3_MC.name=§e16号节庆冰霜霰弹
+item.JACK_MC.name=§dJack-12 全自动霰弹枪「重装雪傀儡」
+item.M910_MC.name=§d逆境守护者战术格斗匕首「剃刀拐杖糖」
+item.YM911_MC.name=§d天空撕裂者反叛军匕首「糖果盛宴」
+item.SWR_2403Ammo_MC.name=§f3.2x20节庆冰霜手枪弹匣
+item.JACKAmmo_MC.name=§f16号节庆冰霜弹股
+item.EMIkundAmmo_MC.name=§f9.5x8节庆冰霜手枪弹匣
+item.EMIkundAmmo_MC2.name=§f9.5x8节庆冰霜手枪弹匣
+item.EMIAWP70Ammo_MC.name=§f3.2x10节庆冰霜弹匣
+item.EMISaiga18Ammo_MC.name=§f16x10节庆冰霜霰弹弹匣
+item.EMIPlus_MC.name=§f节庆客制化火控系统内存
+
+item.FightMCBody.name=§f节庆客制化外骨骼装甲
+item.FightMCBoots.name=§f节庆客制化外骨骼战靴
+item.FightMCHelmet.name=§f节庆客制化外骨骼头盔
+item.FightMCLegs.name=§f节庆客制化外骨骼护腿
+
+item.EMIColourbox.name=§i涂装喷漆与染料盒
+EMIOtaku.name=§iE.M.I个性化武器工作台
+
+item.DCS_XH.name=§4击碎者(MK3) 轨道炮「血色黎明」
+item.JACK_Yellow.name=§6Jack-12 全自动霰弹枪「惊艳派对」
+item.PMG20_AXMF.name=§iPUR Eecate II 反器材狙击步枪「二西莫夫」
+item.YJD_Lava.name=§6SK-12 铆钉步枪「熔岩漫步者」
+item.JACK_YellowAmmo.name=§6E.M.I集束霰弹弹股「惊艳派对」
+item.EMISXM170_Mercury.name=§9EM102 半自动霰弹枪「剧毒水银」
+item.SWR_2403_Pink.name=§dXSP-12「樱花之恋」
+item.PMG20_Poison.name=§aPUR Eecate II 反器材狙击步枪「自然之魂」
+
+
+item.PMG20_PoisonAmmo.name=§aE.M.I重型长钉「自然之魂」
+item.EMIkund_WB.name=§8MAC-12 重型手枪「白与黑」
+item.EMIkund_WBAmmo.name=§8E.M.I大口径钢针「白与黑」
+item.DCS_XHAmmo.name=§4E.M.I金属弹头「血色黎明」
+item.SWR_2403_PinkAmmo.name=§dE.M.I脉冲手枪弹药「樱花之恋」
+item.EMIAmmo_Mercury.name=§9EMI16号箭形弹「剧毒水银」
+item.YJD_LavaAmmo.name=§6E.M.I铆钉集束弹「熔岩漫步者」
+item.PMG20_AXMFAmmo.name=§6E.M.I重型长钉「二西莫夫」
+//材料
+item.Stuff_7.name=§e轻量化合金
+item.Stuff_8.name=§e炭纤维
+
+item.EMIGX_BISHOP.name=§e装备组「BISHOP」
+item.EMIGX_BLACKCAT.name=§e装备组「BLACKCAT」
+item.EMIGX_COURIER.name=§e装备组「COURIER」
+item.EMIGX_DIRECTRIX.name=§e装备组「DIRECTRIX」
+item.EMIGX_ESTA.name=§e装备组「ESTA」
+item.EMIGX_GUARD.name=§e装备组「GUARD」
+item.EMIGX_IMFALA.name=§e装备组「IMFALA」
+item.EMIGX_KRISS.name=§e装备组「KRISS」
+item.EMIGX_LEADER.name=§e装备组「LEADER」
+item.EMIGX_ORIGINAL.name=§e装备组「ORIGINAL」
+item.EMIGX_PARALLEL.name=§e装备组「PARALLEL」
+item.EMIGX_RAVEN.name=§e装备组「RAVEN」
+item.EMIGX_SKYLINE.name=§e装备组「SKYLINE」
+item.EMIGX_SLOT.name=§e装备组「SLOT」
+item.EMIGX_SUPPORT.name=§e装备组「SUPPORT」
+
+//组件
+item.HUD_FHZB.name=腐化灾兵 瞄具芯片
+item.HUD_PMG20.name=§e高倍狙击镜 瞄具芯片
+item.HUD_SRS99.name=§eSRS99 瞄具芯片
+item.HUD_TCPL.name=§eT.C.P.L 瞄具芯片
+item.HUD_TCPLXD.name=§e能量卡宾枪HUD芯片
+item.HUD_TCPLZCL.name=§e恒星毁灭者HUD芯片
+item.HUD_TEBL.name=§eT.E.B.L 瞄具芯片
+item.HUD_void.name=§evoid高倍狙击镜 瞄具芯片
+item.HUD_voidH.name=§evoid血族 瞄具芯片
+item.HUD_voidT.name=§e光速步枪 瞄具芯片
+item.HUD_YJD.name=§e突击步枪 瞄具芯片
+
+item.EMIGrowX.name=§e高阶增速牵引器
+item.EMIGrow.name=§e增速牵引器
+
+item.EMIReverse.name=§e反向制退器
+item.EMIExtend.name=§e收束牵引器
+item.EMIReverse2X.name=§e矢量制退器
+item.EMISever.name=§e磁场分离器
+
+item.EMIReform.name=§e改良型内核组件
+item.EMIPlus1.name=§e试验型发射组件
+item.EMIPlus2.name=§e调试型射击组件
+item.EMIPlus3.name=§e全频射击组件
+item.EMIPlus4.name=§e训练用磁场阻断器
+item.EMIPlus5.name=§e独头弹击发组件
+item.EMIPlus6.name=§e猎鹿弹击发组件
+item.EMIPlus7.name=§e双室增速弹膛
+item.EMIPlus8.name=§e影袭者扩展组件
+item.EMIPlus9.name=§e扩展型增速弹膛
+item.EMIPlus10.name=§e削短型增速弹膛
+item.EMIPlus11.name=§e.300BLK 光学瞄具芯片
+
+//组装台
+tile.EMI.name=§e[E.M.I]合成终端
+tile.EMI2.name=§e[E.M.I]资源转换终端
+tile.EMI3.name=§e[E.M.I]改造终端
+
+//通用弹匣
+item.SWR_2403Ammo.name=§e.32SNF 通用弹匣
+item.EMI6P62Ammo.name=§e.95AP 步枪弹匣
+item.DCSAmmo.name=§eS09 轨道炮弹头
+item.YJDAmmo.name=§e.32SNF 步枪弹匣
+
+item.GussAmmo.name=§e装填式轨道炮弹匣
+item.EMIkundAmmo.name=§e.95AP 手枪弹匣
+
+item.EMIKINE21Ammo.name=§e.52x8AM 加速步枪弹匣
+item.EMIL501Ammo.name=§e.52x2AM 加速步枪弹匣
+
+item.EMIAmmo_1.name=§e3.32×37 箭形弹
+item.EMIAmmo_2.name=§e9.95×41 箭形弹
+item.EMIAmmo_3.name=§e16号箭形集束高爆弹
+item.EMIbox_1.name=§e3.32mm 盒装箭形弹
+item.EMIbox_2.name=§e9.95mm 盒装箭形弹
+item.EMIbox_3.name=§e盒装16号箭形集束高爆弹
+item.EMIAmmo_5.name=§e5.52mm 束能箭形弹
+item.EMIbox_5.name=§e盒装5.52mm束能箭形弹
+item.EMIAmmo_4.name=§e16号箭形集束高爆弹
+item.EMIbox_4.name=§e16号盒装箭形集束高爆弹
+
+item.GCM134Ammo.name=§e.32x150MG 大容量弹箱
+item.WSDAmmo.name=§e.32GAP 冲锋枪弹匣
+item.PMG20Ammo.name=§e.95SAP 狙击步枪弹匣
+item.JACKAmmo.name=§e12号霰弹弹股
+
+item.EMISMK5Ammo.name=§e.32x45 冲锋枪弹匣
+item.TwoSineAmmo.name=§e嵌入式高爆弹
+item.TwoSinesAmmo.name=§e嵌入式强酸弹
+item.TwoSine2Ammo.name=§e.300KIL 追猎者飞弹
+
+item.EMIGCS82Ammo.name=§eS09 特质型轨道炮弹头[高爆]
+item.EMISEvilAmmo.name=§e.95AP 扩容手枪弹匣
+item.EMIMGS20Ammo.name=§e.95MA 步枪弹股
+item.EMISBMGAmmo.name=§e.32DMR 狙击步枪弹匣
+item.EMIAWP70Ammo.name=§e.32SNF 狙击步枪弹匣
+item.EMIAWP70SAmmo.name=§e.300KILx10 次口径空尖弹弹匣
+item.EMIC90Ammo.name=§e.32SNF 横向弹匣
+item.TEBLM134Ammo.name=§e.32SNF 机炮弹仓
+item.EMIfreedomAmmo.name=§e770 轨道炮弹匣
+
+item.EMIM1072Ammo.name=§e.32SAP 狙击步枪弹匣
+item.EMISINKXAmmo.name=§eSAP 动力燃油储罐
+item.EMIM607Ammo.name=§e3.2ESN 大容量弹仓
+
+//武器
+item.Guss.name=§eS.H.R.G
+item.M910.name=§e逆境守护者战术格斗匕首
+item.YM911.name=§e天空撕裂者反叛军匕首
+
+item.GCM134.name=§eEM194 A2 机炮
+item.EMI6P62.name=§eAP62-T 反器材步枪
+item.SWR_2403.name=§eXSP-12 脉冲手枪
+item.DCS.name=§eGR-S 09 轨道炮
+item.YJD.name=§eSK-12 A2 铆钉步枪
+item.YJD_W.name=§eSK-12 A2 铆钉步枪
+
+item.SWRT_2403.name=§eXSP-12 脉冲手枪「殉道者」
+item.PMG20.name=§ePUR Eecate II 反器材狙击步枪
+
+item.JACK.name=§eJack-12 全自动霰弹枪
+item.WSD.name=§eESMG-5 冲锋枪
+item.EMISPAS12.name=§eEPAS-12 战术霰弹枪
+item.EMIL501.name=§eEL-501 加速步枪
+item.EMIKINE21.name=§eKINE-21 加速步枪
+
+item.EMIkund.name=§eMAC-12 重型手枪
+item.EMISEvil.name=§eMAC-12(MOD II) 极地探索者
+item.EMIMDE.name=§eEDA-50 重型手枪
+item.EMIWa2000.name=§eEAK-2000 精确射手步枪
+item.EMIGCS82.name=§eGR-S 09(MK2) 轨道炮
+item.EMIRIF020.name=§eGR-SOPMOD IV 轨道炮
+item.EMIFN57.name=§eXN-57 脉冲手枪
+
+item.EMISINKX.name=§eEANTIAN 链锯
+item.TEBLM134.name=§eEMG-130 机炮
+item.TEBLGCM134.name=§eEMG-707 主神机炮
+
+item.INSACK.name=§eJack-12 全自动霰弹枪「殉道者」
+item.EMIMGS20.name=§eAPM 92 单兵重型突击步枪
+
+item.EMITwoSine.name=§eEM203 A2 尖庄发射器
+
+item.EMISXM170.name=§eEM-1019 半自动霰弹枪
+item.EMIMAMK5.name=§eUMK-45 A2 消音步枪
+item.EMISMK5.name=§eUMK-45 冲锋枪
+item.EMIPP19.name=§e9x19-ENS 冲锋枪
+item.EMIPTRD.name=§eETRD-40 反装甲步枪
+
+item.EMIAWS20.name=§eEM-700 铆钉狙击步枪
+item.EMISBMG.name=§eEM98 EBR 精确射手步枪
+
+item.EMIkatanas.name=§eKris Lv9 近卫短剑
+
+item.EMIfreedom.name=§eFED-770 准线
+
+item.EMIAWP70.name=§eEAP-98 狙击步枪
+
+item.SWR_2403_Ona.name=§6E.M.I脉冲手枪「熔岩漫步者」
+item.EMI50KUN.name=§eMAC 9 穿甲手枪
+
+item.EMIM607.name=§eEM-60 轻机枪
+item.EMINegev.name=§eEegev-40 轻机枪
+
+item.EMIHK401.name=§eEM416-C 卡宾步枪
+item.EMIC90.name=§ePCH 90 冲锋枪
+item.EMIBR12.name=§eEBR-12 攻击步枪
+item.EMIG11.name=§eEMG-11 突击步枪
+item.EMIKSG1.name=§eESG-17 霰弹枪
+item.EMIM1072.name=§eEM-107 远程步枪 
+
+item.EMIVTS240.name=§eMAD-XP9 镇暴重剑
+item.EMISaiga18.name=§eEaiga UX 半自动霰弹枪
+item.EMISaiga18Ammo.name=§e16x10钢针霰弹弹匣
+item.EMISWR.name=§eXSP-12(MK2) 脉冲手枪
+
+item.EMLESD.name=§eH.A.E TVS-32
+item.EMLESDAmmo.name=§eE7Н14 硬芯弹匣
+
+item.EMLEM14.name=§eHAP-14 Mod 0
+item.EMLEM14Ammo.name=§eE7N1 破甲弹匣
+
+item.EMLFAL.name=§eHE.MPE43 AL
+item.EMLUMP9.name=§eSF-404 EXILE
+item.EMLUMP45.name=§eSF-404 HAL.45
+
+item.EMIAA12.name=§eECS-12 全自动霰弹枪
+
+item.EMLZUN.name=§eExile.32 探针步枪
+item.EMLZUNAmmo.name=§eExile.32 麻痹探针
+item.EMLZUNAmmo2.name=§eExile.32 逆流探针
+item.EMIX20.name=§eX-20 远程步枪
+item.EMIPHG15.name=§ePHG-15 Abyss'Staring
+item.EMIPHG15Ammo.name=§eEXM-1060 热压弹
+
+item.EMLEMP.name=§e电磁脉冲手雷
+item.EMLEMPEX.name=§e箭形弹集束手雷
+
+item.EMIC4.name=§e箭形弹集束炸药
+item.EMIC4Shoot.name=§e遥控引爆器
+item.EMIDL_1.name=§e电击陷阱
+item.EMIDL_2.name=§e电磁自爆陷阱
+//item.EMIEMPEX1.name=§e部署型弹药物资
+item.EMIAmmoBOX.name=§e部署型弹药物资
+
+//改装----------------------------------------------------
+item.TEHB_1.name=5$
+item.TEHB_2.name=10$
+item.TEHB_3.name=20$
+item.TEHB_4.name=50$
+item.TEHB_5.name=100$
+
+item.TEHB_OLD_1.name=银币
+item.TEHB_OLD_2.name=金币
+item.TEHB_OLD_3.name=钻石币
+item.TEHB_OLD_4.name=绿宝石币
+
+item.SVB16xL_DS.name=迷你钻石剑(左手)
+item.SVB16xR_DS.name=迷你钻石剑(右手)
+item.SVB16xL_IS.name=迷你铁剑(左手)
+item.SVB16xR_IS.name=迷你铁剑(右手)
+item.SVB16xL_DA.name=迷你钻石稿(左手)
+item.SVB16xR_DA.name=迷你钻石稿(右手)
+
+item.SVB32xL_ZA.name=迷你逐暗者(左手)
+item.SVB32xR_ZA.name=迷你逐暗者(右手)
+item.SVB32xL_CS.name=迷你阐释者(左手)
+item.SVB32xR_CS.name=迷你阐释者(右手)
+item.SVB32xL_XG.name=迷你血光(左手)
+item.SVB32xR_XG.name=迷你血光(右手)
+item.SVB32xL_YFLTC.name=迷你伊芙利特(左手)
+item.SVB32xR_YFLTC.name=迷你伊芙利特(右手)
+
+item.TESVBHai1_1.name=兽耳 149
+item.TESVBHai1_2.name=兽耳 灰色
+item.TESVBHai1_3.name=兽耳 黑色
+
+item.TESVBA1_6YZ.name=手办 ⑥依子
+item.TESVBA1_007.name=手办 史密斯
+
+item.TESVBA1_020kun.name=手办 福克斯
+item.TESVBA1_020kunZ.name=手办 福克斯-战装
+item.TESVBA1_255k.name=手办 科尔(纪念款)
+item.TESVBA1_360.name=手办 防具设计师
+item.TESVBA1_2403.name=手办 2403
+item.TESVBA1_2403skt.name=手办 斯科特
+item.TESVBA1_2403skt2.name=手办 斯科特(血战)
+item.TESVBA1_5418.name=手办 5418ly
+item.TESVBA1_259484y.name=手办 麦克
+item.TESVBA1_286681y.name=手办
+item.TESVBA1_ADLY.name=手办 安德莉亚
+item.TESVBA1_AIL.name=手办 艾琳(制服)
+item.TESVBA1_AILING1.name=手办 艾琳
+item.TESVBA1_BETA.name=手办 BETA
+
+item.TESVBA1_BISHOP.name=手办 BISHOP
+item.TESVBA1_BJ.name=手办 靶机
+item.TESVBA1_BLACKCAT.name=手办 BLACKCAT
+item.TESVBA1_BN1.name=手办 守卫
+item.TESVBA1_BN2.name=手办 守卫
+item.TESVBA1_BN3.name=手办 守卫
+item.TESVBA1_BN4.name=手办 守卫
+item.TESVBA1_BN5.name=手办 守卫-TCPL
+item.TESVBA1_BN6.name=手办 守卫-神秘使
+item.TESVBA1_BN7.name=手办 守卫-神秘使
+item.TESVBA1_C03.name=手办 NO.Beta 149
+item.TESVBA1_CA.name=手办 菲利克斯
+item.TESVBA1_Carrie.name=手办 CarrieX
+item.TESVBA1_CB.name=手办 维克多
+item.TESVBA1_CC.name=手办 查理斯
+item.TESVBA1_CHAN.name=手办 基佬禅(纪念款)
+item.TESVBA1_CHAN_YIAN.name=手办 禅颜
+item.TESVBA1_Cole.name=手办 科尔(作战服-新)
+item.TESVBA1_coresa.name=手办 Coresa
+
+item.TESVBA1_COURIER.name=手办 COURIER
+item.TESVBA1_Cronus.name=手办 Cronus
+item.TESVBA1_DEACON.name=手办 DEACON
+item.TESVBA1_DEICIDE.name=手办 DEICIDE
+item.TESVBA1_DEVILGUARD.name=手办 DEVILGUARD
+item.TESVBA1_DIRECTRIX.name=手办 DIRECTRIX
+item.TESVBA1_Divison.name=手办 Divison
+item.TESVBA1_Duxtr.name=手办 Duxtr
+item.TESVBA1_END2.name=手办 Aquar(血战)
+item.TESVBA1_ESTA.name=手办 ESTA
+item.TESVBA1_Evil.name=手办 罪恶导航者
+item.TESVBA1_FLK_ST.name=手办 弗兰克·斯坦
+item.TESVBA1_GUARD.name=手办 GUARD
+item.TESVBA1_HM.name=手办 荒漠
+item.TESVBA1_huang_mo2.name=手办 黄馍馍
+item.TESVBA1_IMFALA.name=手办 IMFALA
+item.TESVBA1_jie_mo.name=手办 芥41嗯喵~
+item.TESVBA1_KRISS.name=手办 KRISS
+
+item.TESVBA1_KSTS.name=手办 康斯坦森
+item.TESVBA1_KWE.name=手办 凯恩
+item.TESVBA1_LAINE.name=手办 莱恩
+item.TESVBA1_LANG.name=手办 兰
+item.TESVBA1_LEADER.name=手办 LEADER
+item.TESVBA1_LING.name=手办 林林
+item.TESVBA1_LINYE.name=手办 LINYE(边境猎杀者)
+item.TESVBA1_LOST.name=手办 LOST
+item.TESVBA1_MAPLELUO.name=手办 MAPLELUO
+item.TESVBA1_MRcraft.name=手办 造物主(纪念款)
+item.TESVBA1_NO026.name=手办 NO026
+item.TESVBA1_NO027.name=手办 NO027
+item.TESVBA1_NO073.name=手办 NO073
+item.TESVBA1_NO074.name=手办 NO074
+item.TESVBA1_NO136.name=手办 NO136
+item.TESVBA1_NO157.name=手办 NO157
+item.TESVBA1_NO275.name=手办 NO275
+item.TESVBA1_NO547.name=手办 NO547
+
+item.TESVBA1_ORIGINAL.name=手办 ORIGINAL
+item.TESVBA1_PARALLEL.name=手办 PARALLEL
+item.TESVBA1_Ram.name=手办 Ram
+item.TESVBA1_RAPTOR.name=手办 RAPTOR
+item.TESVBA1_RAVEN.name=手办 RAVEN
+item.TESVBA1_RAZOR.name=手办 RAZOR
+item.TESVBA1_RC.name=手办 RC
+item.TESVBA1_Rem.name=手办 Rem
+item.TESVBA1_SHOCK.name=手办 SHOCK
+item.TESVBA1_skt2403JZ.name=手办 NO547(舰长装)
+item.TESVBA1_skt2403JZ1.name=手办 斯科特(清洁工装)
+item.TESVBA1_SKYLINE.name=手办 SKYLINE
+item.TESVBA1_SLOT.name=手办 SLOT
+item.TESVBA1_START.name=手办 START
+item.TESVBA1_SUPPORT.name=手办 SUPPORT
+item.TESVBA1_TEBL_NO001.name=手办 Herobrine(战术装)
+item.TESVBA1_TEBL_NO002.name=手办 Herobrine(战术装)
+item.TESVBA1_TEBL_NO003.name=手办 Herobrine(战术装)
+item.TESVBA1_TEBL_NO004.name=手办 Herobrine(战术装)
+item.TESVBA1_TEBL_NO005.name=手办 Herobrine(战术装)
+item.TESVBA1_TEBL_NO006.name=手办 苦力怕少年
+item.TESVBA1_TEBL_NO007.name=手办 苦力怕少女
+
+item.TESVBA1_THEBLACK.name=手办 THEBLACK
+item.TESVBA1_TIANNUO.name=手办 TIANNUO
+item.TESVBA1_TIDAO.name=手办 剃刀酱
+item.TESVBA1_TR.name=手办 桐人
+item.TESVBA1_TYL.name=手办 受姐
+item.TESVBA1_WST.name=手办 温斯特
+item.TESVBA1_XN2.name=手办 肖恩(血战)
+item.TESVBA1_YE2403.name=手办 YE2403
+item.TESVBA1_YEBeta1.name=手办 Beta.YE
+item.TESVBA1_YEYE.name=手办 YEYE(传送师)
+item.TESVBA1_YULUO.name=手办 雨洛酱
+item.TESVBA1_YYY.name=手办 肖恩
+item.TESVBA1_zi_ran.name=手办 自然之魂
+

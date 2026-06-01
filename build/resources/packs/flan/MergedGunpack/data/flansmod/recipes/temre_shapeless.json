@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:temrebox"
+    }
+  ],
+  "result": {
+    "item": "flansmod:temre",
+    "count": 8
+  }
+}

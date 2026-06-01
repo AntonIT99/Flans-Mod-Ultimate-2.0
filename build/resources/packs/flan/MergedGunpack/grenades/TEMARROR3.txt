@@ -1,0 +1,75 @@
+////名字
+Name 重型护甲包
+ShortName TEMARROR3
+Icon TEMARROR3
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 2
+
+////模型
+Model YE2403.TEMARROR
+Texture TEMARROR3_2403
+//TrailParticles true
+//TrailParticleType crit
+//NumExplodeParticles 10
+//ExplodeParticles crit
+//SmokeRadius 1
+//SmokeTime 5
+//SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+//SmokeEffect 11 24000 0 
+//SmokeEffect 22 24000 1
+
+SpinWhenThrown false
+////Throwing
+ThrowDelay 0
+ThrowSound TEMARRORRLD
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 4.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse -1
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 40
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEMARRORShoot
+////Misc
+MeleeDamage 0
+
+DeployableBag True
+NumUses 1
+HealAmount 0
+AddPotionEffect 2 3000 3
+AddPotionEffect 11 3000 1
+AddPotionEffect 22 3000 29
+
+//RecipeOutput 3
+//ShapelessRecipe Stuff_4 Stuff_1 Stuff_4 Stuff_4 Stuff_1 Stuff_4
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

@@ -1,0 +1,9 @@
+Name FightMCBoots
+ShortName FightMCBoots
+ItemID 23888
+Icon FightMCBoots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+KnockbackModifier 0
+ArmourTexture 020kunMC

@@ -1,0 +1,4 @@
+Name CAitem_28
+ShortName CAitem_28
+Icon CAitem_28
+StackSize 64

@@ -1,0 +1,4 @@
+Name TECDK_7
+ShortName TECDK_7
+Icon TECDK_7
+StackSize 64

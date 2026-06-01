@@ -1,0 +1,50 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEM82C2_LRSR
+ShortName TEM82C2_LRSR_K1
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 13
+Ammo TEM82C2_LRSRAmmo
+Icon TEM82C2_LRSR_K1
+//弹药装填时间, 1=20/1秒
+ReloadTime 70
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 12
+RandomRecoilYawRange 18.0
+DecreaseRecoil 6.5
+DecreaseRecoilYaw 50.0
+//杀伤力
+Damage 0.1
+//ShapelessRecipe TEKar98kEBR
+//这个值越高，子弹时速的越高
+Accuracy 1.5
+//循环时间
+ShootDelay 55
+ShootSound TEM82C2Shoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+BulletSpeed 20
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope MSGUI_BMG
+ZoomLevel 2
+FOVZoomLevel 2.5
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM82C2_LRSR
+Texture Skin_Gun_TEM82C2_LRSR_K1
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：13%_§a武器种类>§7ISR-干预狙击步枪
+AllowAllAttachments false
+MoveSpeedModifier 0.8
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 3
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEM61Flash_5

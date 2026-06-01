@@ -1,0 +1,58 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AK_BluePl
+ShortName AK_BluePl
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 1.5
+Ammo AK_BluePlAmmo
+Icon AK_BluePl
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 40
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0.2
+//杀伤力
+Damage 10
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 2
+//循环时间
+ShootDelay 2
+ShootSound CB09Shoot
+ReloadSound TERPG17Reload
+BulletSpeed 15
+Mode BURST
+NumBurstRounds 3
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope ARJX_GUI
+ZoomLevel 1.3
+FOVZoomLevel 1.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.AK_BluePl
+Texture Skin_Gun_AK_BluePl
+ModelScale 0.35
+//组件设置
+Description §a[随身弹药(7)]§7消耗：1.5%_§a武器种类>§7MC-军用十字弩_§a装备类型>§7装备武器
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 8
+//涂装格式“Icon/text”

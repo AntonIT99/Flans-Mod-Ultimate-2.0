@@ -4,6 +4,7 @@ import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.common.block.ArmorBoxBlock;
 import com.flansmodultimate.common.block.GunBoxBlock;
 import com.flansmodultimate.common.block.IFlanBlock;
+import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.ArmorBoxItem;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
@@ -34,7 +35,8 @@ public enum EnumType
     GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
     GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 8),
     PARTS("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
-    TOOLS("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
+    TOOLS("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
+    AAGUN("aagun", "aaguns", ContentManager.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 9);
 
     private final String identifier;
     private final String configFolderName;

@@ -1,0 +1,18 @@
+Name SWAT
+ShortName SWAT
+Icon 3TH_SWAT
+//ItemID 10220
+
+Type Body
+Model mos.swat
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture Eswat
+//Durability 32000

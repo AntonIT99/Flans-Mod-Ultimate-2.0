@@ -1,0 +1,139 @@
+//---Standard-------------------------------------
+// Naming
+Name SR-MV712
+ShortName TEVM22A2
+Description 空中支援火力平台_[重型炮艇]
+
+//Misc
+Mode Vtol
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model WE_GUN.TEVM22A2
+Texture TEVM22A2_2403
+Icon TEVM22
+//ModelScale 0.9
+CameraDistance 11.0
+
+//Movement
+MaxThrottle 4.0
+MaxNegativeThrottle 0.0
+Drag 2.1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -22 -22 -14
+WheelPosition 1 -22 -22 14
+WheelPosition 2 101 -22 14
+WheelPosition 3 102 -22 -14
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot 90 20 -11
+Passengers 11
+Passenger 1 90 20 11 core
+Passenger 2 -21 19 -11 core
+Passenger 3 -34 19 -11 core
+Passenger 4 -47 19 -11 core
+Passenger 5 -21 19 11 core
+Passenger 6 -34 19 11 core
+Passenger 7 -47 19 11 core
+Passenger 8 -63 19 11 core
+Passenger 9 -64 19 -3 core
+Passenger 10 30 13 -10 core
+Passenger 11 30 13 10 core
+
+//Inventory Slots
+CargoSlots 96
+BombSlots 0
+MissileSlots 18
+FuelTankSize 5000
+ShootPointPrimary 138 3 -25 rightWing
+ShootPointPrimary 138 3 25 leftWing
+ShootPointPrimary -70 72 9 rightWing
+ShootPointPrimary -70 72 -9 leftWing
+ShootPointSecondary 30 46 -41 core TEBLSAR1
+ShootPointSecondary 30 46 41 core TEBLSAR1
+ShootPointSecondary 30 46 66 core TEBLSAR1
+ShootPointSecondary 30 46 -66 core TEBLSAR1
+
+HeliPropeller 0 14 0 0 core TEBLCL_1
+HeliPropeller 1 14 0 0 core TEBLCL_1
+
+//Sounds
+StartSound MV22A2Qidong
+StartSoundLength 100
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary TEMG4Shoot
+PropSoundLength 70
+PropSound MV22A2Fei
+
+//Movement
+TurnLeftSpeed 5
+TurnRightSpeed 5
+LookUpSpeed 5
+LookDownSpeed 5
+RollLeftSpeed 5
+RollRightSpeed 5
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 10
+ShootDelaySecondary 4
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+//Propeller 0 54 0 0 core AN225PANT
+Propeller 0 4 -80 151 rightWing AN225PANT
+Propeller 1 4 -80 -151 leftWing AN225PANT
+
+PlaceableOnWater True
+FloatOnWater True
+WheelStepHeight 0
+Buoyancy 0.08
+//0.08
+
+//Health, Collision and Recipe
+//SetupPart core 12000 -102 -6 -24 215 67 48
+SetupPart core 12000 -102 -6 -24 215 16 48
+SetupPart nose 1400 111 0 -21 19 54 41
+SetupPart tail 5700 -201 54 -24 113 14 48
+SetupPart leftWing 4100 -20 41 25 50 21 47
+SetupPart rightWing 4100 -20 41 -72 50 21 47
+SetupPart topWing 1100 -130 9 -52 30 61 104
+SetupPart coreWheel 300 85 -21 -10 17 14 21
+SetupPart leftWingWheel 300 -57 -21 -25 109 14 12
+SetupPart rightWingWheel 300 -57 -21 13 109 14 12
+SetupPart tailWheel 300 -197 56 -48 36 9 96
+
+//CollisionPoint 30 -54 0 core
+//CollisionPoint 102 9 20 core
+//CollisionPoint 102 9 -20 core
+//CollisionPoint 102 4 20 core
+//CollisionPoint 102 4 -20 core
+//CollisionPoint -85 9 20 core
+//CollisionPoint -85 9 -20 core
+//CollisionPoint -85 4 20 core
+//CollisionPoint -85 4 -20 core
+
+AddDye 10 black
+AddRecipeParts core 15 TEBLCL_1
+AddRecipeParts nose 1 TEBLCL_1
+AddRecipeParts tail 15 TEBLCL_1
+AddRecipeParts leftWing 10 TEBLCL_1
+AddRecipeParts rightWing 10 TEBLCL_1
+AddRecipeParts topWing 15 TEBLCL_1
+AddRecipeParts coreWheel 15 TEBLCL_1
+AddRecipeParts leftWingWheel 5 TEBLCL_1
+AddRecipeParts rightWingWheel 5 TEBLCL_1
+AddRecipeParts tailWheel 5 TEBLCL_1

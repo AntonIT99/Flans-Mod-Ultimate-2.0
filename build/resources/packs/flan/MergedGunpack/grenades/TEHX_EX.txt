@@ -1,0 +1,75 @@
+////名字
+Name 骇人核心
+ShortName TEHX_EX
+Icon SZitemF_120
+StackSize 64
+
+////模型
+Model WE_GUN.TEHX_EX
+Texture Skin_Gun_TEHX_EX
+//TrailParticles true
+//TrailParticleType cloud
+NumExplodeParticles 50
+ExplodeParticles cloud
+SmokeRadius 5
+SmokeTime 1
+SmokeParticles hugeexplosion
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 100 1
+SmokeEffect 15 100 0
+SmokeEffect 18 100 100
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound NOMAD_SL_Shoot
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.8
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0
+FallSpeed 4.1
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+FlashBang true
+FlashTime 1
+FlashRange 3
+FlashSoundEnable false
+FlashSoundRange 2
+FlashSound ESSS
+FlashDamageEnable true
+FlashDamage 39500
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 80
+DetonateWhenShot false
+Remote false
+//DespawnTime 0
+PrimeDelay 15
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound NOMAD_SL_BOOM
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 10
+//ShapelessRecipe Stuff_1 Stuff_1 Stuff_1 Stuff_3 Stuff_4 Stuff_3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

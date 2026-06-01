@@ -1,0 +1,80 @@
+Name Makarov PB
+
+ShortName mgc.makarovpb
+consumeBulletType 7
+bulletsPerReload 2
+Ammo TE45ACPAmmoEX
+Icon mgc.iconmakarovpb
+
+//ItemID 35408
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 40
+Recoil 4
+Damage 6
+//The higher this value, the more the bullets spread
+
+Accuracy 3
+ShootDelay 4
+
+ShootSound mgc.makarovshoot
+
+
+ReloadSound mgc.makarovreload
+
+
+Mode FullAuto SemiAuto
+
+
+//OneHanded 
+//True
+//Bullet speed, default 3.0
+
+
+BulletSpeed 12.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcmakarovpb
+
+Texture mgc.makarovpb
+
+ModelScale 0.6
+
+Description §a[随身弹药(7)]§7消耗：2%_§a武器种类>§7HG-手枪
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.makarovpbsuppressor
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments false
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

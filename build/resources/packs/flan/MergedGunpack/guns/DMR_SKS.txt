@@ -1,0 +1,83 @@
+Name SKS
+
+ShortName mgc.sksnew
+consumeBulletType 3
+bulletsPerReload 7.5
+Ammo TESVDAmmo
+//Ammo
+
+Icon mgc.iconsksnew
+
+//ItemID 35438
+//Reload time in ticks, 1/20ths of a second
+
+ReloadTime 50
+Recoil 7
+RandomRecoilRange 2.2
+RandomRecoilYawRange 2.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 20.0
+Damage 9
+//The higher this value, the more the bullets spread
+
+Accuracy 1
+
+ShootDelay 3
+
+
+ShootSound mgc.sksnewshoot
+
+
+ReloadSound mgc.m14reload
+
+
+Mode SemiAuto
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+
+//
+Scope CEASGO
+
+
+ZoomLevel 1.7
+
+FOVZoomLevel 1.3
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model WE_GUN.mgcsksnew
+
+Texture mgc.sksnew
+
+ModelScale 0.5
+
+Description §d[特种弹药(3)]§7消耗：7.5%_§a武器种类>§7SR-狙击步枪
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.grozasuppressor mgc.rs27 mgc.rs29 mgc.acog mgc.rvg mgc.afg mgc.pkasscoperail
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments true
+
+
+NumGenericAttachmentSlots 0
+Paintjob mgc.iconsksnewblack mgc.sksnewblack

@@ -1,0 +1,18 @@
+Name JagerBataillon25
+ShortName JagerBataillon25
+Icon 3TH_JB25
+//ItemID 10218
+
+Type Body
+Model mos.jagerbattaillon25
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture jagerbattaillon25
+//Durability 32000

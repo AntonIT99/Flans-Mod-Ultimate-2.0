@@ -1,0 +1,4 @@
+Name CAitem_1
+ShortName TEzs2GUI_B25
+Icon TEzs2GUI_B25
+StackSize 64

@@ -20,6 +20,7 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.server.PacketAAGunInput;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
@@ -82,6 +83,7 @@ public final class PacketHandler
         registrar.playToClient(PacketSyncCommonConfig.TYPE, PacketSyncCommonConfig.STREAM_CODEC, PacketHandler::handleClientPayload);
         registrar.playToClient(PacketSyncDigitalAmmo.TYPE, PacketSyncDigitalAmmo.STREAM_CODEC, PacketHandler::handleClientPayload);
 
+        registrar.playToServer(PacketAAGunInput.TYPE, PacketAAGunInput.STREAM_CODEC, PacketHandler::handleServerPayload);
         registrar.playToServer(PacketBuyWeapon.TYPE, PacketBuyWeapon.STREAM_CODEC, PacketHandler::handleServerPayload);
         registrar.playToServer(PacketDeployedGunInput.TYPE, PacketDeployedGunInput.STREAM_CODEC, PacketHandler::handleServerPayload);
         registrar.playToServer(PacketGunFireMode.TYPE, PacketGunFireMode.STREAM_CODEC, PacketHandler::handleServerPayload);

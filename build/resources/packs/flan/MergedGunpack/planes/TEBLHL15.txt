@@ -1,0 +1,100 @@
+//---Standard-------------------------------------
+// Naming
+Name HL-15
+ShortName TEBLHL15
+Description 单兵空中载具_[轻型直升机]
+
+//Misc
+Mode Heli
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model TEBL.TEBLHL15
+Texture TEBLHL15
+Icon TEBLHL15
+ModelScale 1.6
+CameraDistance 17.0
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -30 -13 -8
+WheelPosition 1 -30 -13 6
+WheelPosition 2 8 -13 0
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot -19 -4 1
+Passengers 0
+
+//Inventory Slots
+CargoSlots 8
+BombSlots 0
+MissileSlots 0
+FuelTankSize 1000
+
+//Sounds
+StartSound HL17_Start
+StartSoundLength 90
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary HL17_CannonFire
+PropSoundLength 65
+PropSound HLR10_Flight
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 50
+ShootDelaySecondary 2
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+ShootPointPrimary 47 3 -20 leftWing 
+ShootPointPrimary 47 3 20 leftWing 
+ShootPointSecondary 23 0 -3 leftWing TEBLAR151
+ShootPointSecondary 23 0 3 rightWing TEBLAR151
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+//HeliPropeller 0 54 0 0 core dwPropeller
+HeliPropeller 0 14 0 0 core TEBLHLPANT
+
+//Health, Collision and Recipe
+SetupPart core 750 -27 -13 -11 31 15 2
+//SetupPart core 800 -18 -13 -5 19 2 12
+SetupPart nose 450 7 -11 -7 19 10 17
+SetupPart nose 450 1 -7 4 9 5 2
+SetupPart nose 450 1 -7 -4 9 5 2
+//SetupPart core 800 -51 4 -7 29 19 16
+//SetupPart core 800 -34 -2 -7 16 6 16
+//SetupPart core 800 -121 8 -7 63 12 17
+SetupPart rightWing 100 -53 1 14 24 17 35
+SetupPart leftWing 100 -53 1 -46 24 17 35
+//SetupPart core 50 -27 -13 12 31 15 2
+
+AddDye 5 black
+AddRecipeParts core 2 TEBLCL_1
+AddRecipeParts coreWheel 1 TEBLCL_1
+AddRecipeParts rightWing 1 TEBLCL_1
+AddRecipeParts leftWing 1 TEBLCL_1
+AddRecipeParts topWing 1 TEBLCL_1
+AddRecipeParts tail 1 TEBLCL_1
+AddRecipeParts tailWheel 1 TEBLCL_1

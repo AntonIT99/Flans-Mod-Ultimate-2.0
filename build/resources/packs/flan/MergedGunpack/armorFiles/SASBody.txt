@@ -1,0 +1,9 @@
+Name British SAS Bodyarmour
+ShortName SEsasBody
+Icon sascoat
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.1
+ArmourTexture sas

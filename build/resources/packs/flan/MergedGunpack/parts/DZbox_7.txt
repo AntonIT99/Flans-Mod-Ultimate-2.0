@@ -1,0 +1,4 @@
+Name DZbox_1
+ShortName DZbox_7
+Icon DZbox_7
+StackSize 1

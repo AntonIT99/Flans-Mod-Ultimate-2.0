@@ -1,0 +1,24 @@
+Name Malughistan Police Boots
+
+ShortName mgc.bootspolice
+
+
+ItemID 36803
+
+
+Icon mgc.iconbootspolice
+
+
+Colour 255 255 255
+
+
+Type Boots
+
+
+Defence 0.05
+//0
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armorpolice

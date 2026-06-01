@@ -1,0 +1,5 @@
+Name 5.56 FA
+ShortName S556Ammo2B
+Icon S556Ammo2B
+Colour 255 255 255
+StackSize 64

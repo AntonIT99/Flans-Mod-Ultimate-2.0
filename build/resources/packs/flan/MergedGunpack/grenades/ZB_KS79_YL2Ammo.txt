@@ -1,0 +1,50 @@
+////Ãû
+Name Ò½ÁÆµ¯2
+ShortName TEKS79_YL2Ammo
+Icon TEJSGH1Ammo
+StackSize 6
+Model YE2403.TERPGAMMO
+Texture KB_1
+TrailParticles true
+TrailParticleType cloud
+//TrailParticleType <particleType>
+ExplodeParticles 2
+//ExplodeParticleType <particleType>
+SmokeTime 1
+//SmokeParticleType <particleType>
+SmokeEffect 10 60 6
+SmokeEffect 33 30 0
+SmokeRadius 4
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 0
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact true
+Bounciness 0.0
+HitEntityDamage 0
+ThrowSpeed 5.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.1
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 3.0
+Fuse 0
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound YLJN3
+////Misc
+MeleeDamage 0

@@ -1,0 +1,21 @@
+Name Casual Boots
+ShortName SE_dwCasualBoots
+Icon penbarCasualBoots
+Colour 255 255 255
+Type Boots
+Model dwdefence.CasualBoots
+Defence 0.05
+//0
+//0.05
+ArmourTexture Penbar_CasualUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe A dwArmorCloth K dwKipliteArmor
+   
+K K
+K K

@@ -1,0 +1,5 @@
+Name P90 5.7x28
+ShortName KTEP90Ammo
+Icon KTEP90Ammo
+Colour 255 255 255
+StackSize 64

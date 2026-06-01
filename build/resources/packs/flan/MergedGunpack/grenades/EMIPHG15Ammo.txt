@@ -1,0 +1,73 @@
+////名字
+Name 坍缩
+ShortName EMIPHG15Ammo
+Icon EMIPHG15Ammo
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model WE_GUN.EMIC4
+Texture KB_1
+TrailParticles true
+TrailParticleType cloud
+NumExplodeParticles 80
+ExplodeParticles lava
+SmokeRadius 8
+SmokeTime 200
+SmokeParticles magicCrit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 19 200 4
+SmokeEffect 2 200 5
+SmokeEffect 17 200 8
+SmokeEffect 18 200 39
+SmokeEffect 4 200 3
+PotionEffect 24 200 4
+
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 0
+//ThrowSound TEGL2R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact true
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 30
+ThrowSpeed 7.8
+FallSpeed 12.1
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 8
+//粘性
+Sticky false
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 30
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound EMLPHG15EX
+////Misc
+MeleeDamage 1
+
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint
+//RecipeOutput 1
+//ShapelessRecipe Stuff_1 Stuff_4 Stuff_1 TEC4 Stuff_6 TEC4 Stuff_1 //Stuff_4 Stuff_1

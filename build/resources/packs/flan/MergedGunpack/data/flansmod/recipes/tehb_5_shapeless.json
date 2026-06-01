@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:tehb_4"
+    },
+    {
+      "item": "flansmod:tehb_4"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tehb_5"
+  }
+}

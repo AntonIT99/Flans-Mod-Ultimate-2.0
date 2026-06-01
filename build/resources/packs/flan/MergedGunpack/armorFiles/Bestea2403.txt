@@ -1,0 +1,34 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name Bestea2403
+ShortName Bestea2403
+Icon TE_UE
+//从古至今没有任何卵用的颜色调节,别改
+Colour 255 255 255
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Boots
+Model WE_GUN.Bestea2403
+//防御值
+Defence 0.05
+//0.0
+//材质
+ArmourTexture Bestea2403
+
+//移动速度与击退抗性?还有跳跃提升
+//MoveSpeedModifier 1.2
+KnockbackModifier 0.0
+//JumpModifier 1.5
+//SmokeProtection true
+//喜闻乐见的注释
+//Description §6Angel With A AR-15 or AA-12_§7神是公平的，拿走了本应该属于我的烤育碧，却_§7将WE、NBTedit与ToolBox2.0赐予了我。_§7还有：去你的，没事别乱穿我的装甲_§9护甲+0
+
+//模型尺寸
+ModelScale 1.0
+//夜视
+//NightVision True
+
+//合成表
+//Recipe L leather M dwMidSteelIngot K dwKipliteArmor U dwElectricalUnit
+//KKK
+//MUM
+// L 

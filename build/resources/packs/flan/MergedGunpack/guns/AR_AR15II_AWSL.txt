@@ -1,0 +1,69 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AR15 MOD-II
+ShortName TEAR15II_AWSL
+consumeBulletType 2
+bulletsPerReload 4.5
+Ammo 30RifleAmmoII
+Icon TEAR15II_AWSL
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 30
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2
+RandomRecoilRange 1.6
+RandomRecoilYawRange 1.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+////OneHanded true
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 4
+//循环时间
+ShootDelay 2
+ShootSound TEAR15IIShoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto BURST
+BulletSpeed 15
+//6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEAR15II
+Texture TEAR15II_AWSL_2403
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：5.5%_§a武器种类>§7AR-突击步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 8
+//涂装格式“Icon/text”
+Paintjob TEAR15II_1 TEAR15II_2403_1
+Paintjob TEAR15II_2 TEAR15II_2403_2
+Paintjob TEAR15II_3 TEAR15II_2403_3
+Paintjob TEAR15II_4 TEAR15II_2403_4
+Paintjob TEAR15II_5 TEAR15II_2403_5
+Paintjob TEAR15II_6 TEAR15II_2403_6
+Paintjob TEAR15II_7 TEAR15II_2403_7
+Paintjob TEAR15II_8 TEAR15II_2403_8
+Paintjob TEAR15II_9 TEAR15II_2403_9
+Paintjob TEAR15II_10 TEAR15II_2403_10

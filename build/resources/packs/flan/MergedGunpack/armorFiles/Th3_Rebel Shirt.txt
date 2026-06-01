@@ -1,0 +1,24 @@
+Name Aktura Rebel Shirt
+
+ShortName mgc.shirtrebel
+
+
+ItemID 36815
+
+
+Icon mgc.iconshirtrebel
+
+
+Colour 255 255 255
+
+
+Type Chest
+
+
+Defence 0.05
+//0
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.shirtrebel

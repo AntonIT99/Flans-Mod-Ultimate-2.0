@@ -1,0 +1,22 @@
+Name Wingbreaker Body
+ShortName SE_dwWingbreakerBody
+Icon ambirconWingbreakerBody
+Colour 255 255 255
+
+Type Body
+Model dwdefence.WingbreakerBody
+Defence 0.05
+//0
+//0.1
+ArmourTexture Ambircon_WingbreakerUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe I dwIngotBrass C cloth L leather B dwBrassCog
+LIL
+CCC
+CCB

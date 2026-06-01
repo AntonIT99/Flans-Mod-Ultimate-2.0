@@ -1,0 +1,45 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name ACS-12
+ShortName C_TEACS12
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 20
+Ammo TEAA12Ammo
+Icon C_TEACS12
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8
+RandomRecoilRange 1.6
+RandomRecoilYawRange 1.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 2.1
+NumBullets 6
+//这个值越高，子弹时速的越高
+Accuracy 28
+//循环时间
+ShootDelay 4
+ShootSound IZHANShoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+UseCustomMelee True
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEACS12
+Texture C_TEACS12_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：20%_§a武器种类>§7SG-霰弹枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 

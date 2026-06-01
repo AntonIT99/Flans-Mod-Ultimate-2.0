@@ -1,0 +1,6 @@
+Name TEHB_2
+ShortName TEHB_2
+Icon TEHB_2
+StackSize 64
+RecipeOutput 1
+ShapelessRecipe TEHB_1 TEHB_1

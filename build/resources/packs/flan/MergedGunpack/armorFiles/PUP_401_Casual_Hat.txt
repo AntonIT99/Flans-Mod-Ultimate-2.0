@@ -1,0 +1,22 @@
+Name Casual Hat
+ShortName SE_dwCasualHat
+Icon penbarCasualHat
+Colour 255 255 255
+
+Type Head
+Model dwdefence.CasualHat
+Defence 0.05
+//0
+//0.05
+ArmourTexture Penbar_CasualUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe L leather K dwKipliteArmor
+LKL
+L L
+   

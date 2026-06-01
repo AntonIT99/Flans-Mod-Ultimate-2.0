@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_vehicle_unu_im510ltc_2092_wagonw_seaweed_manilla"
+  },
+  "overrides": []
+}

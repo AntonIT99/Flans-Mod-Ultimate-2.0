@@ -1,0 +1,18 @@
+Name Hoxton
+ShortName Hoxton
+Icon Mask_Hoxton
+//ItemID 10230
+
+Type Head
+Model mos.Mask_Dallas
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture SkinMask_Hoxton
+//Durability 32000

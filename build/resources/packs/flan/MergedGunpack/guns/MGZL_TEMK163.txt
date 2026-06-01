@@ -1,0 +1,66 @@
+Name MS MG-34
+ShortName TEMK163
+//The ammo this gun uses (shortName)
+consumeBulletType 4
+bulletsPerReload 15
+Ammo TEMG13AAmmo
+Icon TEMK163
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 0
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 1.0
+//Damage 0.1
+//in half hearts
+Damage 0.1
+DistortSound true
+//The higher this value, the more the bullets spread
+Accuracy 6
+//LoadIntoGun 1
+//Time in ticks between rounds
+ShootDelay 1
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+NumBullets 1
+//加特林音效设置
+WarmupSound TEMG13A1
+SpinSound TEMG13A2
+CooldownSound TEMG13A3
+WarmupSoundLength 25
+SpinSoundLength 30
+ShootSound TEMK163FS
+ReloadSound //TEaReload
+Mode Minigun
+//Bullet speed, default 3.0
+BulletSpeed 7.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model WE_GUN.TEMG13A
+Texture TEMG13A_2403
+ModelScale 0.46
+Description §6[重型弹药(4)]§7消耗：15%_§a武器种类>§7MG-机枪
+//
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 0
+// 1
+//Modifiers
+MoveSpeedModifier 0.05
+KnockbackModifier 0
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+//涂装格式“Icon/text”

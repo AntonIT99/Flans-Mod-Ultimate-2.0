@@ -1,0 +1,9 @@
+Name Black Trousers
+ShortName SEblackTrousers
+Icon blacktrousers
+KnockbackModifier 0
+Type Legs
+Defence 0.05
+//0
+//0.1
+ArmourTexture criminal

@@ -1,0 +1,69 @@
+////名字
+Name 莫洛托夫
+ShortName TEMLTFAmmo
+Icon ZBMLTF
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 64
+
+////模型
+Model TEBL.TEBLA1mmoe
+Texture TEBHSZNAmmo_2403
+TrailParticles true
+TrailParticleType lava
+//dripLava
+//flame
+//smoke
+NumExplodeParticles 1
+ExplodeParticles hugeexplosion
+//lava
+//smoke
+//cloud
+SmokeRadius 3
+SmokeTime 160
+SmokeParticles flame
+//lava
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 40 0
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 0
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact true
+//弹跳
+Bounciness 0.1
+////击中实体伤害
+HitEntityDamage 1
+ThrowSpeed 4
+FallSpeed 3.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 6
+//粘性
+Sticky false
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 0
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+DetonateSound TEMLTF2
+//DropItemOnDetonate <itemID.damage>
+////Misc
+MeleeDamage 0
+
+//合成表

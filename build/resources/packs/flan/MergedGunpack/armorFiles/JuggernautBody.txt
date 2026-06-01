@@ -1,0 +1,12 @@
+Name Juggernaut Heavy Bodyarmour (Green)
+ShortName SEjuggernautBody
+Icon juggernautbody
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.4
+ArmourTexture juggernaut
+//MoveSpeedModifier 0.65
+//KnockbackModifier 0
+//0.25

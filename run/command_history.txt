@@ -2,3 +2,13 @@
 /gamemode survival
 /gamemode creative
 /time set day
+/kill @e[type=!minecraft:player]
+/summon flansmodultimate:aa_gun
+/summon flansmodultimate:deployed_gun
+/summon flansmodultimate:grenade
+/give Dev flansmod:tespwpa1ammo
+/time set day
+/summon flansmodultimate:vehicle
+/summon flansmodultimate:seat
+/kill @e[type=!minecraft:player]
+/time set day

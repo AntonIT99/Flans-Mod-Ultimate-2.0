@@ -1,0 +1,70 @@
+////名字
+Name TECZ75MA
+ShortName TECZ75MA
+Icon TECZ75MA
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TECZ75MA
+Texture TECZ75MA_2403
+//TrailParticles true
+//TrailParticleType crit
+//NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 2
+SmokeTime 20
+SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 100 2
+SmokeEffect 18 200 4
+SmokeEffect 20 100 3
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+CanThrow False
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 2
+ThrowSpeed 4.0
+FallSpeed 0.2
+BreaksGlass True
+PenetratesEntities True
+PenetratesBlocks false
+HitBoxSize 1.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger 1.0
+LivingProximityTrigger 2.0
+//延时
+Fuse 30
+DetonateWhenShot true
+Remote true
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 1.5
+ExplosionBreaksBlocks true
+DropItemOnDetonate TECZ75MA
+DetonateSound TEGL3Shoot
+////Misc
+MeleeDamage 12
+
+//RecipeOutput 2
+//ShapelessRecipe TEGL1 Stuff_4 TEGL2
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

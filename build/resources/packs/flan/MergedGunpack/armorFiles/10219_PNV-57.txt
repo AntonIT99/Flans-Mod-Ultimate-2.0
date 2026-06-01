@@ -1,0 +1,18 @@
+Name PNV-57
+ShortName PNV-57
+Icon Armor
+//ItemID 10219
+
+Type Head
+Model mos.pnv57
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision true
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture pvn57
+//Durability 32000

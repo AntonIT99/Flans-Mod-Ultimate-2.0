@@ -1,0 +1,80 @@
+﻿//Naming
+Name btcivil_vehicle_unu_rj618lcc_2089_van_flowers
+ShortName btcivil_vehicle_unu_rj618lcc_2089_van_flowers
+//Visuals
+Icon btcivil_vehicle_unu_rj618lcc_2089_van_flowers
+Model btcivil.btcivil_vehicle_unu_rj618lcc_2089_van
+Texture btcivil_vehicle_unu_rj618lcc_2089_van_flowers
+RotateWheels true
+//Third Person Camera Distance
+CameraDistance 5.0
+//Throttle
+MaxThrottle 1.0
+MaxNegativeThrottle 0.0
+//Steering modifiers
+TurnLeftSpeed 1.0
+TurnRightSpeed 1.0
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+NumWheels 4
+WheelPosition 0 -30 -10 -16
+WheelPosition 1 -30 -10 16
+WheelPosition 2 30 -10 16
+WheelPosition 3 30 -10 -16
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1000
+//Inventory Slots
+CargoSlots 36
+ShellSlots 0
+//Driver and passenger positions
+Driver 29 1 -8
+RotatedDriverOffset 0 0 0
+Passengers 1
+Passenger 1 29 1 8 core
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+StartSound unuparts_part_unu_engine_h6_cranking
+StartSoundLength 17
+EngineSound unuparts_part_unu_engine_h6_running
+EngineSoundLength 10
+ShootSound bullet
+ShellSound shell
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 SMP_Part_Chassis_Car 5 SMP_Part_Mat_Plate_Steel 2 SMP_Part_Misc_Seat_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 4 white
+AddDye 1 red
+//Health and collision
+SetupPart core 1000 -51 -5 -18 99 14 36
+SetupPart backLeftWheel 100 -36 -10 14 12 12 3
+SetupPart backRightWheel 100 -36 -10 -17 12 12 3
+SetupPart frontRightWheel 100 24 -10 -17 12 12 3
+SetupPart frontLeftWheel 100 24 -10 14 12 12 3
+BulletDetection 5
+Description BlackThorne Civilian Pack
+ModelScale 1
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+//Paintjob Humvee_Test SkinHumvee_Test magenta 10

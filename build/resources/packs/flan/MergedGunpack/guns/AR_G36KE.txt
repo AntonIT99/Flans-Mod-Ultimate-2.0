@@ -1,0 +1,83 @@
+Name HK G36KE
+
+ShortName mgc.g36ke
+consumeBulletType 2
+bulletsPerReload 4.5
+Ammo TMAG30Ammo
+//Ammo
+
+Icon mgc.iconhkg36ke
+
+//ItemID 35432
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 55
+Recoil 1.5
+RandomRecoilRange 0.8
+RandomRecoilYawRange 0.8
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 6
+//The higher this value, the more the bullets spread
+
+Accuracy 2
+ShootDelay 2
+
+
+ShootSound mgc.ak74shoot
+
+
+ReloadSound mgc.sigreload
+
+
+Mode FullAuto
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+
+//
+Scope mgc.reticlepkas
+
+
+ZoomLevel 3.0
+
+FOVZoomLevel 1.0
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcg36ke
+
+Texture mgc.g36ke
+
+ModelScale 0.45
+
+Description ¡ì9[²½Ç¹µ¯Ò©(2)]¡ì7ÏûºÄ£º4.5%_¡ìaÎäÆ÷ÖÖÀà>¡ì7AR-Í»»÷²½Ç¹
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.sr5 mgc.rvg mgc.afg
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments false
+
+AllowStockAttachments false
+
+AllowGripAttachments true
+
+
+NumGenericAttachmentSlots 0

@@ -1,0 +1,4 @@
+Name AEHC_LT_SMAW
+ShortName AEHC_LT_SMAW
+Icon AEHC_LT
+StackSize 64

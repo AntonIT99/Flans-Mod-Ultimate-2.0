@@ -1,0 +1,45 @@
+Name §4Pulse RS
+ShortName EMISWR_MC
+//The ammo this gun uses (shortName)
+Ammo SWR_2403Ammo_MC
+consumeBulletType 7
+bulletsPerReload 2.5
+Icon EMISWR_MC
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 50
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3
+//Damage 0.1
+//in half hearts
+Damage 17
+//The higher this value, the more the bullets spread
+Accuracy 4
+//OneHanded true
+//Time in ticks between rounds
+ShootDelay 2
+ShootSound SWShoot
+ReloadSound HGReload
+Mode FullAuto SemiAuto
+BulletSpeed 15.0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model Settings
+Description §a[随身弹药(7)]§7消耗：2.5%_§a武器种类>§7HG-手枪
+Model EMIGUN.EMISEW
+Texture EMISEW_MC
+ModelScale 0.5
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments DZ_ALL1 DZ_ALL2 DZ_ALL3 DZ_ALL4 DZALL_D1 DZALL_D2 DZALL_D3 DZALL_D4 DZALL_D5 DZEMI_D1 DZEMI_D2 DZEMI_D3 DZEMI_D4 DZEMI_D5 Only_ALL3D1 Only_ALL3D2 Only_ALL3D3 Only_ALL3D4 EMIMAXZ5 TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TEALLSP8 TESDOOA2 TESDOOA3 TESDOOA4  EMIGrow EMIReverse HUD_FHZB HUD_PMG20 EMIPlus_MC HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever EMIPlus1 EMIPlus2 EMIPlus3 EMIPlus4 EMIPlus10
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 6

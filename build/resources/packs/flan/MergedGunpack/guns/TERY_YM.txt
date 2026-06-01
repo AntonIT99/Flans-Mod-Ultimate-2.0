@@ -1,0 +1,59 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name 1
+ShortName TERY_YM
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 0
+Ammo TERY_YMAmmo
+Icon TERY_YM
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 1
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0.1
+MeleeDamage 6
+//6.1
+//ShapelessRecipe TEMODULE635
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 16
+ShootSound TERY_YMShoot
+ReloadSound TEAR2Reload11
+DistortSound False
+Mode SemiAuto
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TERY_YM
+Texture TERY_YM
+ModelScale 0.25
+//组件设置
+//Description 使用弹种:9mm_§b<T.E.B.L> | §d<品质：先进>_SMG-冲锋枪_[Sub Machine Gun]
+Description §a[特殊武器]§7无消耗_§a武器种类>§7定制型特殊武器
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments true
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+// 6

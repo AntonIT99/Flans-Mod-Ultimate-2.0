@@ -1,0 +1,60 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS M4A1
+ShortName INC_M4A1X
+consumeBulletType 3
+bulletsPerReload 16
+Ammo TETPLAWAAmmo
+Icon INC_M4A1
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 0
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 7.6
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 1.8
+//循环时间
+ShootDelay 1
+WarmupSound TETPLAWAST
+SpinSound TEa9
+CooldownSound TETPLAWAWB
+WarmupSoundLength 1
+SpinSoundLength 1
+ShootSound TETPLAWAShoot
+ReloadSound TETPLAWAST
+Mode Minigun
+//ReloadTime true
+BulletSpeed 3
+//6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope MSAOCG25
+ZoomLevel 1.5
+FOVZoomLevel 2.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.INC_M4A1
+Texture INC_M4A1_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：16%_§a武器种类>§7FE-火焰喷射器
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 8
+//NEW2333
+// 1

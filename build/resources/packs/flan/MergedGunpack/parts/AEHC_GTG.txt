@@ -1,0 +1,4 @@
+Name AEHC_GTG
+ShortName AEHC_GTG
+Icon AEHC_GTG
+StackSize 64

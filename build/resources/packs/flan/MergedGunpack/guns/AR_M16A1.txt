@@ -1,0 +1,84 @@
+Name M16A1
+
+ShortName mgc.m16a1
+consumeBulletType 2
+bulletsPerReload 3
+Ammo 20RifleAmmoSE
+//Ammo
+
+Icon mgc.iconm16a1
+
+//ItemID 35410
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 25
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 1
+RandomRecoilYawRange 1
+DecreaseRecoil 0.7
+DecreaseRecoilYaw 60.0
+Damage 6
+//The higher this value, the more the bullets spread
+
+Accuracy 3
+
+ShootDelay 2
+
+
+ShootSound mgc.m16a1shoot
+
+
+ReloadSound TELOVACReload
+
+Mode FullAuto
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcm16a1
+
+Texture mgc.m16a1
+
+ModelScale 0.4
+
+Description §9[步枪弹药(2)]§7消耗：3%_§a武器种类>§7AR-突击步枪
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.barska mgc.sr5
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

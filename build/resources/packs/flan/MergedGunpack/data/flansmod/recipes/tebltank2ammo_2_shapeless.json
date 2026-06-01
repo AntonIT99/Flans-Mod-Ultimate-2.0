@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:stuff_3_2"
+    },
+    {
+      "item": "flansmod:stuff_4_2"
+    },
+    {
+      "item": "flansmod:stuff_3_2"
+    },
+    {
+      "item": "flansmod:stuff_3_2"
+    },
+    {
+      "item": "flansmod:stuff_1_2"
+    },
+    {
+      "item": "flansmod:stuff_3_2"
+    },
+    {
+      "item": "flansmod:stuff_1_2"
+    },
+    {
+      "item": "flansmod:stuff_1_2"
+    },
+    {
+      "item": "flansmod:stuff_1_2"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tebltank2ammo_2"
+  }
+}

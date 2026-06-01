@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:teblc8swfa2"
+    }
+  ],
+  "result": {
+    "item": "flansmod:teblc8swfa3"
+  }
+}

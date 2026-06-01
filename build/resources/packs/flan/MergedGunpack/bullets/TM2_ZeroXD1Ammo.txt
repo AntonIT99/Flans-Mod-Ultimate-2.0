@@ -1,0 +1,35 @@
+Name HAKKE六翼天使弹药
+ShortName TM2_ZeroXD1Ammo
+Model TEBL.TEBLAmmo
+Texture TEBLAmmo1_2403
+Icon TM2_ZeroXD1Ammo
+//How affected by gravity the bullet is
+FallSpeed 0.0
+//The maximum stack size
+MaxStackSize 10
+//The number of rounds each item has. Limited to 32000.
+RoundsPerItem 36
+//The damage multiplier caused by the bullet on hitting an entity
+Damage 1.5
+//Size of explosion caused
+Explosion 0
+//True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
+ExplodeOnImpact False
+Fuse 6
+FlakParticles 0
+//Amount of fire to spread on exploding; for each increment, it will increase the dimensions of the burning area by 2. i.e. 1 will burn a 3x3 square, 2 will burn a 5x5 square
+Fire 0
+BreaksGlass False
+//Size of box to check for entities to hit / detonate
+HitBoxSize 0.1
+//Whether or not the bullet can travel through an entity having hit it
+Penetrates False
+SmokeTrail False
+Description M.S 武器研发部门仿制旧时代STANAG弹匣生_产的5.56口径步枪弹匣,可完美兼容新旧时_代各类5.56口径突击步枪
+RecipeOutput 5
+ShapelessRecipe TESupply26
+HitSound MSAmmo_MZ1
+HitSoundEnable true
+HitSoundRange 7
+//EntityHitSoundEnable True
+////DropItemOnReload K30RifleAmmo

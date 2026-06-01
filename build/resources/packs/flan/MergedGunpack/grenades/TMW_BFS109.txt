@@ -1,0 +1,35 @@
+////名字
+Name TE_UE
+ShortName TMW_BFS109
+Icon TMW_BFS109
+StackSize 1
+
+////模型
+Model WE_GUN.TMW_BFS109
+Texture TMW_BFS109_2403
+
+SpinWhenThrown False
+CanThrow False
+ThrowDelay 0
+DetonateOnImpact false
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 0.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+//延时
+Fuse 1
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+MeleeDamage 0d

@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS MK-98
+ShortName TEKar98kEBR
+//弹药名称(短名)
+Ammo TEKar98kEBRAmmo
+Ammo TEKar98kEBRAmmo1
+Ammo TEKar98kEBRAmmo2
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Icon TEKar98kEBR
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 70
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 7
+//杀伤力
+Damage 11
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 32
+ShootSound TEKar98kEBRShoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+//机瞄设置
+Scope MSHUD
+ZoomLevel 1.5
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model TEBL.TEKar98kEBR
+Texture TEKar98kEBR_2403
+ModelScale 0.45
+//组件设置
+Description <无阵营> | §2<品质：警用>_SR-狙击枪_[Sniping RiFle]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD REstork1 TESMP20 TEBLLS20 TEQXEM TEHG TEKHAO TEAG TESRWB TESRAP TESRQT TEHGA1 TEHGA2 TEHGA3 TEBLLS201 TEAG1 TEEOTech551 TEEOTech552 TEEOTech552A1 TEETR108 TEETRdm970 TEEOTech5521 TEBLLS20YE SASS_CHIP TEFanetA1 TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TESDOOA2 TESDOOA3 TESDOOA4 GRIFFIN_HD1 GRIFFIN_HD2 GRIFFIN_HD3 GRIFFIN_HD4 GRIFFIN_QX1 GRIFFIN_QX2 GRIFFIN_QX3 GRIFFIN_QX4 GRIFFIN_SP1 GRIFFIN_SP2 GRIFFIN_SP3 GRIFFIN_SP4
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 3

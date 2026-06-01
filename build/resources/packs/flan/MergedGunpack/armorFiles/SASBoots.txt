@@ -1,0 +1,9 @@
+Name British SAS Boots
+ShortName SEsasBoots
+Icon sasboots
+KnockbackModifier 0
+Type Boots
+Defence 0.05
+//0
+//0.1
+ArmourTexture sas

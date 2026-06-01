@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEWRJ_GUN
+ShortName TEWRJ_GUN
+//弹药名称(短名)
+consumeBulletType 4
+bulletsPerReload 50
+Ammo TEWRJ_GUNAmmo1
+Icon TEWRJ_GUN
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 30
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0.4
+NumBullets 1
+//这个值越高，子弹时速的越高
+Accuracy 12
+//循环时间
+ShootDelay 4
+ShootSound TEWRJShoot1
+ReloadSound TEHABReload
+Mode SemiAuto
+//机瞄设置
+Scope HABHUD
+ZoomLevel 1.2
+FOVZoomLevel 1.1
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEWRJ_GUN
+Texture TEWRJ_GUN_2403
+ModelScale 0.45
+BulletSpeed 30
+//组件设置
+Description §i[重型弹药(4)]§7消耗：50%_§a装备类型>§7战术技能
+//_电击无人机
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 2

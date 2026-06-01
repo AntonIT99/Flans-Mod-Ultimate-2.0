@@ -1,0 +1,90 @@
+Name Advanced Index
+ShortName EMI3
+TopTexture EMI_F
+SideTexture EMI_S
+BottomTexture EMI_T
+GunBoxID 320
+Recipe I ingotIron R workbench C stonebricksmooth B thinGlass A wood
+CRC
+IAI
+CBC
+//////AddGun shortName amountOf item
+////AddAmmo must come immediately after ////AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 1
+//NumGuns 34
+
+////AddGun EMISWR 1 SWR_2403 10 Stuff_7 10 Stuff_8
+//AddAmmo SWR_2403Ammo 1 Stuff_7
+
+////AddGun EMISEvil 1 EMIkund 28 Stuff_7 28 Stuff_8 2 diamond
+//AddAmmo EMIkundAmmo 1 Stuff_7
+
+////AddGun EMIMDE 1 EMIkund 24 Stuff_7 40 Stuff_8 2 diamond
+//AddAmmo EMIkundAmmo 1 Stuff_7
+
+////AddGun EMIVTS240 1 EMIkatanas 24 Stuff_7 30 Stuff_8 1 diamond
+//AddAmmo EMIbox_1 4 Stuff_7 2 Stuff_8
+
+////AddGun EMISINKX 80 Stuff_7 100 Stuff_8 6 diamond
+//AddAmmo EMISINKXAmmo 1 Stuff_7 10 Stuff_8
+
+////AddGun EMIMAMK5 1 EMISMK5 18 Stuff_7 22 Stuff_8 1 diamond
+//AddAmmo EMISMK5Ammo 1 Stuff_7 1 Stuff_8
+
+////AddGun EMIM1072 1 EMIAWP70 145 Stuff_7 120 Stuff_8 4 diamond
+//AddAmmo EMIM1072Ammo 1 Stuff_7 1 Stuff_8
+
+////AddGun EMIGCS82 1 DCS 25 Stuff_7 20 Stuff_8 1 diamond
+//AddAmmo DCSAmmo 1 Stuff_7
+
+////AddGun EMIRIF020 1 DCS 35 Stuff_7 25 Stuff_8 2 diamond
+//AddAmmo DCSAmmo 1 Stuff_7
+
+////AddGun EMIfreedom 1 DCS 100 Stuff_7 80 Stuff_8 8 diamond
+//AddAmmo EMIfreedomAmmo 8 Stuff_8
+
+////AddGun Guss 1 DCS 200 Stuff_7 200 Stuff_8 16 diamond
+//AddAmmo GussAmmo 4 Stuff_7
+
+////AddGun EMIKINE21 1 EMIAWS20 100 Stuff_7 100 Stuff_8 4 diamond
+//AddAmmo EMIKINE21Ammo 4 Stuff_7
+
+////AddGun EMIL501 1 EMIAWS20 100 Stuff_7 100 Stuff_8 4 diamond
+//AddAmmo EMIL501Ammo 4 Stuff_7
+
+////AddGun EMIMGS20 1 EMI6P62 15 Stuff_7 8 Stuff_8
+//AddAmmo EMIMGS20Ammo 2 Stuff_7 2 Stuff_8
+
+////AddGun TEBLM134 1 GCM134 32 Stuff_7 32 Stuff_8 1 diamond
+//AddAmmo TEBLM134Ammo 4 Stuff_7 1 Stuff_8
+
+////AddGun TEBLGCM134 1 GCM134 25 Stuff_7 38 Stuff_8 2 diamond
+//AddAmmo TEBLM134Ammo 4 Stuff_7 1 Stuff_8
+
+////AddGun EMITwoSine 150 Stuff_7 100 Stuff_8 10 diamond
+//AddAmmo TwoSineAmmo 2 Stuff_7 4 Stuff_8
+//AddAltAmmo TwoSine2Ammo 2 Stuff_7 4 Stuff_8
+
+////AddGun HUD_SRS99 2 Stuff_7 1 Stuff_8
+////AddGun HUD_PMG20 2 Stuff_7 1 Stuff_8
+////AddGun HUD_FHZB 2 Stuff_7 1 Stuff_8
+////AddGun HUD_TCPL 2 Stuff_7 1 Stuff_8
+////AddGun HUD_TCPLXD 2 Stuff_7 1 Stuff_8
+////AddGun HUD_TCPLZCL 2 Stuff_7 1 Stuff_8
+////AddGun HUD_TEBL 2 Stuff_7 1 Stuff_8
+////AddGun HUD_void 2 Stuff_7 1 Stuff_8
+////AddGun HUD_voidH 2 Stuff_7 1 Stuff_8
+////AddGun HUD_voidT 2 Stuff_7 1 Stuff_8
+////AddGun HUD_YJD 2 Stuff_7 1 Stuff_8
+////AddGun EMIGrow 2 Stuff_7 5 Stuff_8
+////AddGun EMIGrowX 1 Stuff_7 1 Stuff_8
+////AddGun EMIReform 5 Stuff_7 2 Stuff_8
+////AddGun EMIReverse 6 Stuff_7 2 Stuff_8
+////AddGun EMIReverse2X 8 Stuff_7 2 Stuff_8
+////AddGun EMISever 4 Stuff_7 8 Stuff_8

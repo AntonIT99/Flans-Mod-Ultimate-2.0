@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.types.BulletType;
@@ -76,7 +77,25 @@ public final class ShootableFactory
     }
 
     /**
-     * For Spawning submunitions
+     * For spawning Shootable entities associated with a living entity shooting an AA gun
+     */
+    @NotNull
+    public static Shootable createShootable(Level level, @NotNull ShootableType type, @NotNull AAGun aaGun, @Nullable LivingEntity shooter, @NotNull ItemStack shootableStack)
+    {
+        if (type instanceof BulletType bulletType)
+        {
+            FireableGun fireableGun = new FireableGun(aaGun.getConfigType(), aaGun.getConfigType().getDamage(), aaGun.getConfigType().getAccuracy(), type.getThrowSpeed(), EnumSpreadPattern.CIRCLE);
+            return new Bullet(level, new FiredShot(fireableGun, bulletType, aaGun, shooter, shootableStack.getDamageValue()), aaGun.getShootingOrigin(), aaGun.getShootingDirection());
+        }
+        else if (type instanceof GrenadeType grenadeType)
+        {
+            return new Grenade(level, grenadeType, aaGun.getShootingOrigin(), aaGun.getShootingPitch(), aaGun.getShootingYaw(), shooter);
+        }
+        throw new IllegalArgumentException("Unknown Shootable Type");
+    }
+
+    /**
+     * For spawning submunitions
      * @param firedShot: the shot that spawns the submunitions
      */
     public static Optional<Shootable> createSubmunition(Level level, @NotNull FiredShot firedShot, Vec3 origin, Vec3 direction)

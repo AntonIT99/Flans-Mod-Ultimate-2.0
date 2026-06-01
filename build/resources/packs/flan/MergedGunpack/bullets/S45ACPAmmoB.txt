@@ -1,0 +1,5 @@
+Name 45 ACP
+ShortName S45AmmoB
+Icon S45ACPAmmoB
+Colour 255 255 255
+StackSize 64

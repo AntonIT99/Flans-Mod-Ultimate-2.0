@@ -1,0 +1,4 @@
+Name TSkin_30
+ShortName TSkin_30
+Icon TSkin_30
+StackSize 64

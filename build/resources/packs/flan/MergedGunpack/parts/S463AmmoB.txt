@@ -1,0 +1,5 @@
+Name 4.6x30
+ShortName S463AmmoB
+Icon S463AmmoB
+Colour 255 255 255
+StackSize 64

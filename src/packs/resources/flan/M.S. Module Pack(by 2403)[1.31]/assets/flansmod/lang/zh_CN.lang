@@ -1,0 +1,725 @@
+﻿//追加
+item.TEP90_GQ1.name=§65.7 Project 90 "二西莫夫"
+item.TEP90_GQ.name=§c5.7 Project 90 "红线彼岸"
+item.TEP90_SD.name=§b5.7 Project 90 "寒灾"
+item.TEP90.name=5.7 Project 90
+item.TEP90Ammo.name=FN 5.7×28 水平弹匣
+item.TEP90Ammo1.name=FN 5.7×28 水平弹匣[破甲]
+item.TEP90Ammo2.name=FN 5.7×28 水平弹匣[空尖]
+
+item.TECA415.name=MCA-415
+item.TECA415_FF.name=§6MCA-415 §8"危险节奏"
+
+item.TET36C.name=TE-36C
+item.TET36C_SD.name=§aTE-36C "圣夜密林"
+
+item.TEMG36.name=MT MG-36
+item.TEMG36_FF.name=§6MT MG-36 "纹理·枫林宝石"
+
+item.100RifleAmmoS.name=C-MAG 5.56×45 双室弹鼓
+item.100RifleAmmo1.name=C-MAG 5.56×45 双室弹鼓[MK1]
+item.100RifleAmmo2.name=C-MAG 5.56×45 双室弹鼓[MK2]
+item.100RifleAmmo3.name=C-MAG 5.56×45 双室弹鼓[MK3]
+item.100RifleAmmo4.name=C-MAG 5.56×45 双室弹鼓[MK4]
+
+item.TEAK74.name=.39 CHK-74
+item.TEAK74U.name=.39 CHK-74U
+item.TEAN94Ammo.name=CU 5.45×39 标准弹匣
+
+item.TEMK14_SD.name=§aAX MK-14 §6"极境守夜人"
+item.TEMK14_GQ.name=§7AX MK-14 "雪境法则"
+item.TEMK14_GC.name=§eAX MK-14 §7"非凡战役"
+
+item.TEMK2051.name=Scorpio MK-2051
+item.TEMK2051_ZQ.name=§aScorpio MK-2051 §6"后羿-XI轨道拦截系统"
+item.TEMK2051_YD.name=§cScorpio MK-2051 §6"卡莉斯塔的贺礼"
+item.TEMK2051Ammo.name=Scorpio 7.62×67 亚音速穿甲弹
+
+
+//改装----------------------------------------------------
+item.MSPACK.name=§a§l[W.E]M.S Pack 使用说明书
+item.REstork1.name=Conred 191 AR瞄准镜
+item.TESMP20.name=Fast 2000 光学瞄准镜
+item.TEBLLS20.name=L205 AR 战术激光
+item.TE762.name=后置高速弹仓 AR改良
+item.TEWP.name=AR15 重型稳定框架
+item.TEQXEM.name=ETOenh G51 全息瞄具
+item.TEHG.name=MK H19 红点瞄具
+item.TEKHAO.name=Khaos 概念全息瞄具
+item.TEAG.name=TR2A 战术激光测距仪
+item.TESRWB.name=Super SASS 垂直握把
+item.TESRAP.name=Super SASS AP-增速弹膛
+item.TESRQT.name=Super SASS 缓冲型枪托改良
+item.TEHGA1.name=ETOenh G51 全息瞄具
+item.TEHGA2.name=FRSech 109 三角瞄具
+item.TEHGA3.name=KIN 108 光纤瞄具
+item.TEAG1.name=TR2A 战术激光测距仪
+item.TEBLLS201.name=L205 AR 战术激光
+item.TEBL416A1.name=HK416 杀伤榴弹发射器
+item.TEBL416A2.name=HK416 TR3A 激光测距仪
+item.TEEOTech551.name=EOTech 551 全息瞄具
+item.TEEOTech552.name=EOTech 552 全息瞄具
+item.TEEOTech552A1.name=EOTech 552 全息瞄具
+item.TEETR108.name=ETR 108 全息瞄具
+item.TEETRdm970.name=ETR dm970 内红点瞄具
+item.TEEOTech5521.name=EOTech 552(纪念款) 全息瞄具
+item.TEBLLS20YE.name=L205 AR 战术激光(纪念款)
+
+item.AR15_CHIP.name=Hayha 记忆芯片
+item.HK416_CHIP.name=Titan 火控芯片
+item.SASS_CHIP.name=Sanstr 时空芯片
+
+item.INFAmmo.name=无尽通用弹匣
+item.INFAmmo1.name=无尽通用高爆弹匣
+item.INFAmmo2.name=无尽通用披甲弹匣
+
+item.TEINFINITY.name=SVI INFINITY
+item.TEINFINITYA1.name=SVI INFINITY
+
+item.TEBLAR15C.name=ST AR-15
+item.TEFanet.name=ASG 沃尔科夫
+item.TEFanetA1.name=NEVEL 反射瞄具
+item.TEFanetA2.name=F-210 立场束缚组件
+
+item.RS1.name=Initial 火控芯片
+item.RS2.name=suppress 火控芯片组
+item.RS3.name=Xiber 火控芯片组
+item.RS4.name=Statix 火控芯片阵列
+item.RS5.name=Sanx 火控芯片
+
+item.TEAR15II1.name=轻量化导轨组件
+
+item.TEALL1.name=MS-ALL 抑制器
+item.TEALL2.name=MS-ALL 消焰器
+item.TEALL3.name=MS-ALL 制退器
+item.TEALL4.name=MS-ALL 补偿器
+item.TEALL5.name=MS-ALL 镭射指示器
+item.TEALL6.name=MS-ALL 水平握把
+item.TEALL7.name=MS-ALL 垂直握把
+item.TEALL8.name=MS-ALL 延长枪管
+
+item.TEALLSP1.name=先进战斗光学瞄准镜
+item.TEALLSP2.name=三角准线瞄准镜
+item.TEALLSP3.name=全息瞄准镜
+item.TEALLSP4.name=红点瞄准镜
+item.TEALLSP5.name=俄制红点瞄准镜
+item.TEALLSP6.name=俄制全息瞄准镜
+item.TEALLSP7.name=俄制2.5倍瞄准镜
+item.TEALLSP8.name=俄制三角准线瞄准镜
+
+item.TESDOO.name=SDO 手电筒
+item.TESDOOA1.name=SDO #7 小型电池
+
+item.D50ALL1.name=D-50 重火力套筒配件
+
+item.TEONLYSAR15.name=技能芯片：申冤者打击
+item.TEONLYSAR15II.name=技能芯片：突袭专注
+item.TEONLYSD50.name=技能芯片：断罪者凝视
+item.TEONLYSGlock.name=技能芯片：观测者直击
+item.TEONLYSHK416.name=技能芯片：猎狼之眼
+item.TEONLYSMG134.name=技能芯片：狩猎专注
+item.TEONLYSSASS.name=技能芯片：等价交换
+
+item.SMG1.name=SH ACC-增速弹膛
+item.SMG2.name=VSS 12-空尖弹适配模块
+item.TEM4A5All.name=M4A5模块化增强套件
+item.OS1.name=申冤者 火控系统认证模块
+item.OS2.name=申冤者 认证安全锁
+item.TEGlock2.name=Glock 17 战术升级套件
+
+
+
+//弹药----------------------------------------------------
+item.30RifleAmmo.name=MS-5.56 通用弹匣
+item.30RifleAmmo1.name=MS-5.56 穿甲弹
+item.30RifleAmmo2.name=MS-5.56 燃烧弹
+item.30RifleAmmo3.name=MS-5.56 高爆弹
+item.30RifleAmmo4.name=MS-5.56 穿钢爆裂弹
+item.60RifleAmmo.name=MS-5.56 扩容弹夹
+item.100RifleAmmo.name=MS-5.56 大容量弹仓
+item.416RifleAmmo.name=MS-5.56 次口径高速弹匣
+item.30RifleAmmoII.name=.300 BLACKOUT 高速弹匣
+item.TELWMMGAmmo.name=5.45x46 全金属披甲弹仓
+
+item.TMAG30Ammo.name=TMAG-5.56 聚合物弹匣
+item.TMAG30Ammo4.name=TMAG-5.56 全金属披甲弹
+
+item.30AKAmmo.name=5.45x39 标准弹匣
+
+item.TEBLSURAmmo.name=7.62 NATO步枪弹匣
+item.TEBLSUR1Ammo.name=7.62 NATO高爆弹
+item.TEBLSUR2Ammo.name=7.62 NATO高速破甲弹
+
+item.416Ammo.name=40mm杀伤榴弹
+item.TEMGL40Ammo.name=40mm爆破榴弹
+item.TEMGL40.name=MGL-T40
+
+item.CarrieAmmo1.name=5.56 碎甲高爆弹匣
+item.CarrieAmmo2.name=5.56 动能穿甲弹匣
+item.CarrieAmmo3.name=5.56 清障用高爆弹匣
+item.CarrieAmmo4.name=5.56 入侵抛物弹匣
+item.CarrieAmmo5.name=5.56 [EW]冲击弹匣
+item.CarrieAmmo6.name=5.56 [遗迹]弹匣
+
+item.TEGlockAmmo.name=.45 GAP手枪弹匣
+item.TEGlock1Ammo.name=.45 GAP破甲弹匣
+item.TEGlock2Ammo.name=.45 GAP空尖弹匣
+item.TEGlock3Ammo.name=.45 GAP晕眩弹匣
+item.TEGlockAmmo31.name=.45 GAP长弹匣
+
+item.TEMP7Ammo.name=4.6x30mm冲锋枪弹匣
+item.TEMP72Ammo.name=4.6x30mm空尖弹匣
+item.TEMP73Ammo.name=4.6x30mm燃烧弹匣
+
+item.TEFanetAmmo.name=12号霰弹
+item.TEFanet2Ammo.name=12号猎鹿弹
+item.TEFanet3Ammo.name=12号震撼弹
+item.TEFanet4Ammo.name=12号箭型破甲弹
+item.TEFanet5Ammo.name=12号龙息弹
+item.TEFanet6Ammo.name=12号高爆霰弹
+item.TEFanet7Ammo.name=12号霰射高爆弹
+
+item.TEAMR99Ammo.name=.50 BMG 步枪弹匣
+item.TEAMR99Ammo1.name=.50 BMG 披甲弹匣
+item.TEAMR99Ammo2.name=.50 BMG 燃烧弹匣
+item.TEAMR99Ammo3.name=.50 BMG 高爆弹匣
+item.TEAMR99Ammo4.name=.50 BMG 披甲龙息弹匣
+item.TEM109Ammo.name=25mm 高压榴弹匣
+
+item.TEBLC8SWFA3Ammo.name=12号霰弹匣
+item.TEM4ONLYAmmo.name=炮击平台反应堆单元
+item.TEM4ONLYSEAmmo.name=低强度爆破单元
+
+item.TED50Ammo.name=.50 AE破甲弹匣
+item.TED44Ammo.name=.44 SAP手枪弹匣
+
+item.TEMG4Ammo.name=5.56 NATO大容量弹仓
+item.TEMG4Ammo1.name=5.56 NATO披甲弹仓
+item.TEMG4Ammo2.name=5.56 NATO燃烧弹仓
+item.TEMG4Ammo3.name=5.56 NATO爆破弹仓
+item.TEMG4Ammo4.name=40x53mm 榴弹仓
+
+item.TE020UMP45Ammo.name=.45 SNP冲锋枪弹匣
+item.TE020UMP45Ammo1.name=.45 SNP披甲弹匣
+item.TE020UMP45Ammo2.name=.45 SNP燃烧弹匣
+item.TE020UMP45Ammo3.name=.45 SNP空尖弹匣
+item.TE020UMP45Ammo4.name=.45 SNP长弹匣
+
+item.TE020UMP45Ammo5.name=6.5x25 CBJ HET
+item.TE020UMP45Ammo6.name=6.5x25 CBJ 亚音速穿甲弹
+
+item.SWR_2403Ammo1.name=.32SNF 全金属披甲弹通用弹匣
+item.SWR_2403Ammo2.name=.32SNF 爆破弹通用弹匣
+item.YJDAmmo1.name=.32SNF 全金属披甲弹步枪弹匣
+item.YJDAmmo2.name=.32SNF 爆破弹步枪弹匣
+
+
+//枪械----------------------------------------------------
+item.TEBLAR15.name=MS AR-15
+item.TEBLSUR.name=Super SASS
+item.TEBLHK416.name=MS-416
+item.TEKar98kEBR.name=MS MK-98
+item.TEGlock.name=Glock 17
+item.TEGlock18.name=Glock 18
+item.TEGlock20.name=Glock 20
+item.TEFN57USG.name=FN-57 USG
+item.TEFABARMCQB.name=FABARM CQB
+item.TEM870MCS.name=SG-870 MCS
+
+item.TEBHSZN.name=Black Hawk 11.7
+item.TEBHSZNAmmo.name=B.H 11.7 钢质弩箭
+item.TEBHSZNAmmo1.name=B.H 11.7 破甲弩箭
+item.TEBHSZNAmmo2.name=B.H 11.7 燃烧弩箭
+item.TEBHSZNAmmo3.name=B.H 11.7 爆破弩箭
+item.TEBHSZNAmmoSE.name=损坏的B.H 11.7 钢质弩箭
+item.TEBHSZNAmmo4.name=B.H 11.7 白磷窒息箭
+item.TEBHSZNAmmo5.name=B.H 11.7 烟幕干扰箭
+
+item.SE_TEM1887Shot.name=MS-1887 Shot
+
+item.TEBHSZNAmmoWood.name=木制弩箭
+
+item.TEM16.name=M-16 Mod 4
+item.TEMODULE635.name=Module 635
+
+item.TEMS400A.name=MS-400 A 防空拦截系统
+item.TEMS400A1.name=MS-400 A 发射器部件
+item.TEMS400A1Ammo.name=MS-400 A 发射筒
+
+item.TEMP7.name=MS MP7
+item.TEBLC8SWFA2.name=MS C8-SFW
+item.TEBLC8SWFA3.name=MS C8-SFW[下挂式霰弹枪]
+
+item.TEAMR99.name=AMR-99 II
+item.TET36.name=T-36
+
+item.TEACCH.name=ACC-蜜獾
+item.TEAR15II.name=ATS AR-15(MOD II)
+
+item.AR15II_QML.name=ATS AR-15 [重组·奇美拉]
+item.AR15II_QML_SD.name=ATS AR-15 [重组·奇美拉]|冬日防线
+item.TEAR15II.name=ATS AR-15(MOD II)
+
+item.TEIZTHA8.name=MK8400
+
+item.TEM4ONLY.name=申冤者 火炮支援平台
+
+item.TEM4ONLYSE.name=未知的武器箱
+item.TEM4A5.name=MKM4 A5
+item.TED50.name=D-50
+item.TED44.name=D-44
+item.TEMG4.name=MS MG4
+item.TEVECTOR.name=MS VECTOR
+item.TEV307.name=MS V-307
+item.TESG12.name=SG-12 CQB
+item.TEMK14.name=AX MK-14
+item.TEMG134.name=MS MG-134
+item.TEHKUSP.name=MS USP
+item.TEM4A1.name=MS M4A1
+item.TEXYM28.name=YE-Lv.790 永夜破坏者
+item.TE020UMP45.name=SMG .45 UX
+item.TE020UMP9.name=SMG .9 MS
+
+item.TEBLSURII.name=Super SASS MK-II
+item.TERPG17.name=MS RPG-17
+item.TEFN509.name=FN-509
+item.TELWMMG.name=MS-LWMMG 架设型轻机枪
+
+item.TERPG17Ammo.name=MSG-18 型破甲弹
+item.TEASH.name=MGL-40 榴弹发射器
+item.TERPG17Ammo1.name=MSG-40 型延时爆破弹
+item.TEASE127.name=C0-Ase 12.7
+item.TEBOSG12.name=Maverick HS 12.2
+item.TEC7E.name=C7-E
+
+item.TEMG61A2.name=Shredder MG-61 A2
+item.TEJSGH1.name=AEI-T4 针剂发射手枪
+item.TEJSGH1Ammo.name=治疗针剂
+item.TEJSGH2Ammo.name=剧毒针剂
+
+item.TEAT4.name=AT-4 S2
+item.TEAT4Ammo.name=空心装药破甲弹
+item.TEAT4Ammo1.name=毁坏的装药破甲弹
+item.TEM82A2.name=Mobius M82A1
+
+item.TECMS.name=CBJ Modular PDW
+item.TESG12A.name=Spartan II XC-12S
+item.TEAmeli.name=LSW Ameli 5.56
+
+item.TEMDR.name=Modular MDR
+item.TEMK17.name=MK-17 EBR
+item.TEMK17A1.name=MK-17 EBR
+item.TEM6.name=M6 IC
+item.TET416.name=T-416 Carbine
+item.TET416A1.name=T-416 Carbine「下挂式发射器」
+item.TEM109.name=Mobius M109
+
+item.TEJZZ.name=The Contender G4
+item.TEGLMKV.name=Grizzly Mark V
+item.TE1911SOC.name=1911 TACMPS
+item.TE88TYPE.name=SG TYPE-88
+item.TEACS12.name=ACS-12
+
+item.TEGlockAmmo7.name=0.45ACP 手枪弹匣
+
+item.TEJSGH2.name=强化激素注射器
+
+item.TESPWPA1.name=A.L.F.S 镭射自动炮塔
+item.TESPWPA1Ammo.name=A.L.F.S 镭射能源
+
+item.TEART556.name=ART-556
+item.TEGM50.name=GM-T50
+item.TEM27IAR.name=M27 IAR
+item.TESOPMODM4.name=SOPMOD M4
+item.TEAK12.name=AK-12
+item.TEM7A2SF.name=M-7A2 SF
+
+item.TEKineticsS07.name=Kinetics S07 "动力学"竞技步枪
+item.TECobalt2909.name=Cobalt 2909 .22LR"钴元素"
+item.TEAR15_DE.name=MS AR-15 EX "沙丘行者"
+item.TEC8_JA.name=C8-SFW(RS) "赛博朋克"
+
+item.TECobalt2909Ammo.name=.22LR 轻型弹仓
+item.TEKineticsS07.name=5.56SE 轻短型竞技弹匣
+
+item.TEMSArmor1.name=E.A.P.S 头盔
+item.TEMSArmor2.name=E.A.P.S 装甲
+item.TEMSArmor3.name=E.A.P.S 护腿
+item.TEMSArmor4.name=E.A.P.S 战靴
+
+item.TEAA12Armor2.name=SG-12AS 重型外骨骼装甲
+item.TEASGArmor2.name=ASG-710 重型外骨骼装甲
+item.GX_YULUO.name=§a装备组「YULUO」
+item.GX_BETA.name=§a装备组「BETA」
+item.GX_DEACON.name=§a装备组「DEACON」
+item.GX_DEVILGUARD.name=§a装备组「DEVILGUARD」
+item.GX_LOST.name=§a装备组「LOST」
+item.GX_RAPTOR.name=§a装备组「RAPTOR」
+item.GX_RAZOR.name=§a装备组「RAZOR」
+item.GX_SHOCK.name=§a装备组「SHOCK」
+item.GX_START.name=§a装备组「START」
+item.GX_THEBLACK.name=§a装备组「THEBLACK」
+item.GX_TIANNUO.name=§a装备组「TIANNUO」
+item.GX_MAPLELUO.name=§a装备组「MAPLELUO」
+item.GX_DEICIDE.name=§a装备组「DEICIDE」
+item.GXA2_YE2403.name=§6机密装备组「YE2403_GRIFFIN」
+item.GXA2_Cronus.name=§6机密装备组「Cronus」
+item.GXA2_Divison.name=§6机密装备组「4th Infantry Divison」
+item.GXA2_Cole.name=§b装备组「科尔」
+
+item.TESDOOA2.name=SDR-31 下挂式战术手电筒
+item.TESDOOA3.name=SDR-33 下挂式强光手电筒
+item.TESDOOA4.name=自制下挂式手电筒
+
+item.TECZ75MA2.name=MS-F1 观测者直击
+item.TECZ75MA.name=MS-F1 备用战斧
+item.TEMODEL586.name=MODEL 586
+item.TEColt.name=柯尔特 巨蟒
+item.TEMODEL586Ammo.name=0.357 马格南手枪弹
+item.TEMODEL586Ammo1.name=0.357 空尖弹
+item.TEMODEL586Ammo2.name=0.357 燃烧弹
+item.TEMODEL586Ammo3.name=0.357 全金属披甲弹
+item.TEMODEL586Ammo4.name=0.357 高爆弹
+item.TEMODEL586Ammo5.name=0.357 水银弹
+item.TEMODEL586AmmoMAX.name=Ichor Cloth合金弹
+item.TEMODEL586AmmoMAXBox.name=Ichor Cloth 弹药收纳盒
+item.TECZ75.name=SZ-75
+item.TEG11.name=MAR-11
+item.TEMT95LSW.name=MT-95 LSW
+item.TE6P41.name=MS 6P41
+item.TEG11Ammo.name=5.62 MTO无壳弹匣
+item.TELMG28.name=DPS MK-28
+item.TELMG28A2.name=DPS MK-28
+item.TELOVAC.name=Lova-C
+item.TELMG28Ammo.name=5.56 NATO大容量弹盘
+item.TENTW20.name=NTW-20
+item.TENTW20Ammo.name=.50AP 破甲弹
+
+item.TER4E.name=R4-E
+
+item.TEEMISB.name=仿拔刀-灵钢刃「ARX-2080」
+item.TEEMISBAmmo.name=束能粒子流
+item.TEEMISBA1.name=仿拔刀-灵钢刃「ARX-2080」
+item.TEEMISBAmmoA1.name=束能粒子流
+
+item.TECEAS.name=便携式CEAS终端
+item.TEECO_1.name=§aCEAS技能「复原链接」
+item.TEECO_2.name=§aCEAS技能「战术链接」
+item.TEECO_3.name=§aCEAS技能「幸存者链接」
+item.TEECO_SE.name=§aCEAS技能「紧急修复预案」
+
+item.TEECO_4.name=§b技能「立场盾」
+item.TEECO_5.name=§b技能「能量护盾」
+item.TEECO_6.name=§b技能「冲锋专注」
+item.TEECO_7.name=§b技能「CQC专注」
+//手雷----------------------------------------------------
+item.TEGL1.name=冲击手雷
+item.TEGL2.name=破片手雷
+item.TEAmmoBox.name=盒装弹药
+item.TEAmmoBox2.name=医疗补给箱
+item.TEAmmoBoxA2.name=弹药补给箱
+item.TEGL3.name=震撼手雷
+item.TEGL4.name=毒气手雷
+item.TEGL5.name=闪光弹
+item.TEGL6.name=罐装坍缩液
+item.TEGL6A.name=高浓度坍缩液
+item.TEMACT.name=迎宾踏垫
+
+item.TEGL1Box.name=冲击手雷背带
+item.TEGL2Box.name=破片手雷背带
+item.TEC4Box.name=C4容纳背带
+item.TEM12FBox.name=人员杀伤地雷背带
+item.TEEXTPBox.name=贴片炸药背带
+item.TEJSGH2Box.name=激素注射器背带
+
+item.TEC4.name=C4遥控炸药
+item.TEC4Shoot.name=MS 遥控引爆器
+item.TEALR.name=震荡拌雷
+item.TEM12F.name=MS-18 A2人员杀伤地雷
+item.TEKS79.name=KS-79 榴弹发射器
+item.TEKS79Ammo1.name=MSG-40 型冲击高爆弹
+item.TEKS79Ammo2.name=MSG-40 型震撼弹
+
+item.TFSAARM30.name=TFSA ARM-30 "南极狼"
+item.TFSAARAmmo.name=5.56x45 TFSA聚合物弹匣
+item.TFSAFNX9.name=TFSA NX-9 "恐鸟"
+
+item.TERhino.name=Rhino DS .357
+item.Gold_TERhino.name=Gold Rhino
+item.TERhinoA1.name=Rhino DS .357
+
+item.TEHAB.name=MGL-308 特制弹丸发射器
+item.TEHABAmmo.name=SPARK-MK2 热放弹丸
+item.TEMARROR.name=便携式防弹护甲包
+item.TEMARROR2.name=部署型医疗物资
+
+item.TEBIGEX.name=热放炸药
+item.TEEXTP.name=贴片炸药
+
+item.TEND.name=MCS 粘弹发射器「瘫痪」
+item.TEND1.name=MCS 粘弹发射器「爆破」
+item.TENDAmmo1.name=磁暴脉冲弹
+item.TENDAmmo2.name=爆破粘弹
+
+item.TEMAXD1.name=膛线升级 LV.1
+item.TEMAXD2.name=膛线升级 LV.2
+item.TEMAXD3.name=膛线升级 LV.3
+item.TEMAXD4.name=膛线升级 LV.4
+item.TEMAXD5.name=膛线升级 LV.5
+
+item.TEMAXM1.name=精度升级 LV.1
+item.TEMAXM2.name=精度升级 LV.2
+item.TEMAXM3.name=精度升级 LV.3
+item.TEMAXM4.name=精度升级 LV.4
+item.TEMAXM5.name=精度升级 LV.5
+
+item.TEMAXZ1.name=装填升级 LV.1
+item.TEMAXZ2.name=装填升级 LV.2
+item.TEMAXZ3.name=装填升级 LV.3
+item.TEMAXZ4.name=装填升级 LV.4
+item.TEMAXZ5.name=装填升级 LV.5
+
+item.TEMAXT1.name=稳定性升级 LV.1
+item.TEMAXT2.name=稳定性升级 LV.2
+item.TEMAXT3.name=稳定性升级 LV.3
+item.TEMAXT4.name=稳定性升级 LV.4
+item.TEMAXT5.name=稳定性升级 LV.5
+
+item.TEMAXF1.name=初速升级 LV.1
+item.TEMAXF2.name=初速升级 LV.2
+item.TEMAXF3.name=初速升级 LV.3
+item.TEMAXF4.name=初速升级 LV.4
+item.TEMAXF5.name=初速升级 LV.5
+
+item.TECRAN225.name=SR-AN552(MOD II) 复仇者
+item.TECRAN225C.name=SR-AN552 复仇者
+item.TEBLSAR1.name=复仇者武器平台
+item.TEBLSAR1Ammo.name=40mm破片高爆弹
+item.40mmAMHE.name=40mm贫铀穿甲弹
+item.TEBLCL_2.name=机载重型装甲板
+item.AMOCEngine.name=大型矢量推进器
+item.AN225PANT.name=骨架式内旋翼
+item.TEBLSAR4Ammo.name=SV - 92 追踪飞弹
+item.TEVM22.name=SMV-22 猎鸥
+item.TEBLSAR.name=SANG-41 爆裂机炮
+item.TEBLSARAmmo.name=.50SANG 爆裂机炮弹链箱
+item.TEBLHL15.name=蜂鸟
+item.TEBLHL17.name=P997 天煞
+item.TEBLHL17A.name=P997 天煞(量产版)
+item.TEBLHAR.name=轻型载具维修喷灯
+item.TEBLHAR2.name=重型载具维修喷灯
+item.TEBLCAN.name=大型燃料箱
+item.TEBLT131A2.name=SR108-剑齿虎 主战坦克
+item.TEBLT131A3.name=SR131-犀牛 主战坦克
+item.TEBLTankAmmo.name=125MM 炮弹
+item.TEBLTank3Ammo.name=125MM 实心铅弹
+item.TEBLTank4Ammo.name=125MM 穿甲弹
+item.TEBLTank5Ammo.name=125MM 低强度破片弹
+item.TEEMST90.name=CRM-T90 主战坦克
+item.TEF19.name=MF-19 天行者
+item.TEDESPR.name=载人航空模型 绝境号
+
+item.TEHEV2A.name=Mobius 威胁者
+item.TEHEV2A3.name=Mobius 突袭者
+item.TEBLTank1Ammo.name=.50车载机炮 弹链箱
+item.TEBLTank2Ammo.name=7.62 机炮弹链箱
+item.TEBLAR151.name=SR-151 车载机枪
+item.TEBLMA34.name=MA104 车载速射机枪
+item.TEBLSAR3Ammo.name=SV - 97 射手座飞弹
+item.TEBLHLEngine.name=改进型引擎
+item.TEBLHLPANT.name=内嵌型金属旋翼
+
+item.BGM71RS.name=BGM-71 RS 主体部件
+item.BGM71RSAmmo.name=BGM-71 发射筒
+item.TEBGM71RS.name=BGM-71 反坦克导弹
+
+item.TEAGS30Ammo.name=AGS-30 发射器弹仓
+item.TEAGS30.name=AGS-30 榴弹发射器
+
+item.TEAR1550.name=MS AR-15 .50
+item.TEAR1550Ammo.name=.50 Beowulf 通用弹匣
+
+item.TEHLR10.name=HLR-10 掠翼鸟
+item.TEHLR10A2.name=HLR-10 猎杀者
+item.TEvista.name=Vista MK.V
+item.TEvistaGUN.name=Vista Sar.9 电浆炮
+item.TEvistaGUNAmmo.name=Sar.9 充能电池板
+
+item.TEBLCL_1.name=重型装甲板
+
+item.Stuff_1.name=人力
+item.Stuff_2.name=口粮
+item.Stuff_3.name=弹药
+item.Stuff_4.name=零件
+item.Stuff_5.name=核心部件
+item.Stuff_6.name=火控级核心部件
+
+item.IOP_1.name=枪械制造契约
+item.IOP_2.name=装备制造契约
+item.IOP_3.name=校准点券
+item.IOP_4.name=快速制造契约
+item.IOP_5.name=快速修复契约
+item.IOP_6.name=快速训练契约
+item.IOP_7.name=快速解析契约
+item.IOP_8.name=黑卡
+item.IOP_9.name=电池
+item.IOP_10.name=初级训练资料
+item.IOP_11.name=中级训练资料
+item.IOP_12.name=高级训练资料
+item.IOP_13.name=心智碎片
+item.IOP_14.name=友情点数
+item.IOP_15.name=作战报告书
+item.IOP_16.name=兑换券
+item.IOP_17.name=原始数据样本
+item.IOP_18.name=纯净数据样本
+item.IOP_19.name=数据补丁
+item.IOP_20.name=特种作战报告书
+item.IOP_21.name=无限重复染色剂
+item.IOP_22.name=初级训练秘钥
+item.IOP_23.name=高级训练秘钥
+item.IOP_24.name=协力委托书
+item.IOP_25.name=突击成长存储碟
+item.IOP_26.name=超星内核
+item.IOP_27.name=暗星内核
+item.IOP_28.name=开发培养皿
+item.IOP_29.name=秘钥卡
+item.IOP_30.name=替代核心
+item.IOP_31.name=增幅胶囊
+item.IOP_32.name=通用配件
+item.IOP_33.name=誓约之证
+item.IOP_34.name=采购币
+item.IOP_35.name=指挥官经验
+item.IOP_36.name=云母阀门
+
+item.TESupply1.name=[盒装弹药].45GAP
+item.TESupply2.name=[盒装弹药]4.6x30mm
+item.TESupply3.name=[盒装弹药].50 BMG
+item.TESupply4.name=[盒装弹药]12号霰弹
+item.TESupply5.name=[盒装弹药]12号鹿弹
+item.TESupply6.name=[盒装弹药]5.56x45mm
+item.TESupply7.name=[盒装弹药]40mm爆破榴弹
+
+tile.Stuff_Box.name=[M.S]资源转换设备
+tile.UpgradeBox.name=[M.S]模块化改装设备
+tile.T_DollBox.name=[M.S]枪械组装设备
+
+
+item.GRIFFIN_HD1.name=AMP COMPM2
+item.GRIFFIN_HD2.name=§3AMP COMPM4
+item.GRIFFIN_HD3.name=§aCOG M150
+item.GRIFFIN_HD4.name=§6ITI MARS
+item.GRIFFIN_QX1.name=EOT 506
+item.GRIFFIN_QX2.name=§3EOT 512
+item.GRIFFIN_QX3.name=§aEOT 516
+item.GRIFFIN_QX4.name=§6EOT 518
+item.GRIFFIN_XY1.name=AC1消音器
+item.GRIFFIN_XY2.name=§3AC2消音器
+item.GRIFFIN_XY3.name=§aAC3消音器
+item.GRIFFIN_XY4.name=§6AC4消音器
+item.GRIFFIN_SP1.name=BM 3-12×40
+item.GRIFFIN_SP2.name=§3LRA 2-12×50
+item.GRIFFIN_SP3.name=§aPSO-1
+item.GRIFFIN_SP4.name=§6VFL 6-24×56
+
+item.GRIFFIN_WG1.name=IOP X1外骨骼
+item.GRIFFIN_WG2.name=§3IOP X2外骨骼
+item.GRIFFIN_WG3.name=§aIOP X3外骨骼
+item.GRIFFIN_WG4.name=§6IOP X4外骨骼
+item.GRIFFIN_WGT1.name=IOP T1外骨骼
+item.GRIFFIN_WGT2.name=§3IOP T2外骨骼
+item.GRIFFIN_WGT3.name=§aIOP T3外骨骼
+item.GRIFFIN_WGT4.name=§6IOP T4外骨骼
+
+item.GRIFFIN_HV1.name=FMJ高速弹
+item.GRIFFIN_HV2.name=§3JSP高速弹
+item.GRIFFIN_HV3.name=§aJHP高速弹
+item.GRIFFIN_HV4.name=§6APCR高速弹
+
+item.GRIFFIN_HVA1.name=FMJ高速弹
+item.GRIFFIN_HVA2.name=§3JSP高速弹
+item.GRIFFIN_HVA3.name=§aJHP高速弹
+item.GRIFFIN_HVA4.name=§6APCR高速弹
+
+item.GRIFFIN_FD2.name=§3Type1防弹插板
+item.GRIFFIN_FD3.name=§aType2防弹插板
+item.GRIFFIN_FD4.name=§6Type3防弹插板
+
+item.GRIFFIN_PFA1.name=破旧披风
+item.GRIFFIN_PFA2.name=§3伪装披风
+item.GRIFFIN_PFA3.name=§a城市迷彩披风
+item.GRIFFIN_PFA4.name=§6热光学迷彩披风
+
+item.GRIFFIN_WGTUX1.name=§6GSG UX外骨骼
+item.GRIFFIN_WGTUX2.name=§6UMP UX外骨骼
+
+item.GRIFFIN_DTD1.name=BK独头弹
+item.GRIFFIN_DTD2.name=§3FST独头弹
+item.GRIFFIN_DTD3.name=§aWAD独头弹
+item.GRIFFIN_DTD4.name=§6SABOT独头弹
+item.GRIFFIN_LLD1.name=#1猎鹿弹
+item.GRIFFIN_LLD2.name=§3#0猎鹿弹
+item.GRIFFIN_LLD3.name=§a#00猎鹿弹
+item.GRIFFIN_LLD4.name=§6#000猎鹿弹
+
+item.TEAK107.name=AK-107 A3
+item.TMP7.name=TS MP7
+
+//收藏品
+item.TEMysteryTimes.name=§cMystery Times
+item.TEANMP.name=§cM&P 暗夜守卫
+item.TELWT.name=§c维莉安
+item.C_TEM82A2.name=§cE.A 执政官
+item.C_TEACS12.name=§c.12 Believer
+item.C_TEAmeli.name=§c5.56 Silver Comet
+
+item.C_TED50.name=§c.50AE Martyr
+item.C_TMP7.name=§cCrusader-4.6 殉道者
+
+item.TELVOACTD.name=LOVA-C Division
+item.C_TELVOACTDS.name=§6The Division
+
+item.TEUZI.name=.46 UZI
+item.TEMAC10.name=MAC Model-10
+
+item.30AKAmmo1.name=5.45x39 硬芯穿甲弹
+item.TETPLAWA.name=突破用发焰设备
+item.TETPLAWAAmmo.name=燃料单元
+
+item.TESCM901.name=TS SCM-901
+item.TESCM901A3.name=TS SCM-901[削短型.50发射器]
+
+item.TEITA12S.name=SDASS 12 ITA
+item.TEAWP.name=L115 A1
+
+item.TEKar98kEBRAmmo.name=7.62x67mm步枪弹匣
+item.TEKar98kEBRAmmo1.name=7.62x67mm披甲弹匣
+item.TEKar98kEBRAmmo2.name=7.62x67mm燃烧弹匣
+
+item.TEAR15IIS2.name=轻量化导轨组件[扩展型]
+
+item.CraftBLZ1.name=MOLDE-凸轮/撞火枪托
+item.CraftBLZ2.name=MOLDE-快速装填模块
+//组装台
+tile.EMI.name=§e[E.M.I]合成终端
+tile.EMI2.name=§e[E.M.I]资源转换终端
+tile.EMI3.name=§e[E.M.I]轻量化改造终端
+//通用弹匣
+
+
+//冒险者传说
+item.CraftBLZAmmo.name=火枪子弹
+item.CraftBLZAmmo1.name=§c炎狱子弹
+item.CraftBLZAmmo2.name=§b破甲子弹
+item.CraftBLZAmmo3.name=§2绿藻魔弹
+item.CraftBLZAmmoBox.name=§b木制弹药盒
+//武器
+
+item.CraftBLZ.name=§bDisintergrater[崩裂者]
+item.CraftFHC.name=§e草鸡冲击波
+item.CraftFC.name=§6复仇女神
+item.CraftANYE.name=§d暗夜冲击波
+item.CraftYYE.name=§d暗影夜刃·永夜
+item.CraftDCSEX.name=§8黑色闪电
+item.CraftYD.name=§d妖刀村雨
+
+item.CraftGall1.name=§6§l神圣审判

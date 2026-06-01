@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name FABARM-CQB 霰弹枪
+ShortName TEM26
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 2
+Ammo TEBLC8SWFA3Ammo
+Icon TEM26
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 53
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 6
+//杀伤力
+Damage 5.7
+//ShapelessRecipe TEFABARMCQB
+NumBullets 6
+//这个值越高，子弹时速的越高
+Accuracy 17
+//LoadIntoGun 7
+//循环时间
+ShootDelay 11
+ShootSound TEM26Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+BulletSpeed 20
+//20.0
+//机瞄设置
+Scope RS1
+ZoomLevel 1.2
+FOVZoomLevel 1.2
+//UseCustomMelee True
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM26
+Texture TEM26_2403
+ModelScale 0.45
+//组件设置
+//Description 使用弹种:#12霰弹_§b<T.E.B.L> | §5<品质：尖端>_SG-霰弹枪_[Shot Gun]
+Description §a[随身弹药(7)]§7消耗：2%_§a武器种类>§7LSG-轻量霰弹枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments False
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 0
+// 3
+//涂装格式“Icon/text”

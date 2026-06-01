@@ -1,0 +1,72 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name ST AR-15
+ShortName TM2_ZeroXD2
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 5.5
+Ammo TM2_ZeroXD2Ammo
+Icon TM2_ZeroXD2
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5
+RandomRecoilRange 1.6
+RandomRecoilYawRange 1.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+NumBullets 3
+//4
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 2
+//循环时间
+ShootDelay 27
+ShootSound TM2_Zero2Shoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+BulletSpeed 100.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope ACOG_TDR
+//ACOGTZY2
+ZoomLevel 1.4
+FOVZoomLevel 2.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TM2_ZeroXD2
+Texture Skin_Gun_TM2_ZeroXD1
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：5.5%_§a武器种类>§7AAR-攻击步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+// 2
+aimFixedYOffset 0.165
+//左右微调
+aimSwitchOffset 0
+//前后微调
+aimFixedOffset 0
+//瞄准进度（开机瞄多久后呈现自定义的角度，我一般是步枪0.5比较自然）
+aimSwitchProcess 0.5
+
+CasingModel WE_GUN.TE556dk
+CasingTexture TE556dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEARHBFlash_JH

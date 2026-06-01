@@ -1,0 +1,5 @@
+Name 45 ACP JHP
+ShortName S45Ammo2B
+Icon S45ACP2AmmoB
+Colour 255 255 255
+StackSize 64

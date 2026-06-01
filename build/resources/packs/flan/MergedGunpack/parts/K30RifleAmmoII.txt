@@ -1,0 +1,5 @@
+Name .300 BLACKOUT
+ShortName K30RifleAmmoII
+Icon K30RifleAmmoII
+Colour 255 255 255
+StackSize 64

@@ -1,0 +1,67 @@
+////名字
+Name 震撼弹
+ShortName TEGL3
+Icon TEGL3
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEGL2
+Texture TEGL3_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 6
+SmokeTime 5
+SmokeParticles magicCrit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 15 40 1
+SmokeEffect 9 200 1
+SmokeEffect 2 200 1
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL2R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.5
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 2.8
+FallSpeed 2.3
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky false
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 80
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEALRShoot
+////Misc
+MeleeDamage 1
+
+//合成表
+//RecipeOutput 8
+//ShapelessRecipe Stuff_4 Stuff_3

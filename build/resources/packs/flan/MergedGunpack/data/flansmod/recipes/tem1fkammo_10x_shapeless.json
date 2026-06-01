@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:ssurammob"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tem1fkammo_10x",
+    "count": 30
+  }
+}

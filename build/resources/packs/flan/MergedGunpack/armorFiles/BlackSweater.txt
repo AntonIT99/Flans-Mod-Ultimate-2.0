@@ -1,0 +1,9 @@
+Name Black Sweater
+ShortName SEblackSweater
+Icon blacksweater
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.1
+ArmourTexture criminal

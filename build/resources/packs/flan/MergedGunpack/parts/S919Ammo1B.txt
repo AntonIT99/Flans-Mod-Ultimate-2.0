@@ -1,0 +1,5 @@
+Name 9x19 AP
+ShortName S919Ammo1B
+Icon S919Ammo1B
+Colour 255 255 255
+StackSize 64

@@ -1,0 +1,65 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEMP5K
+ShortName CS_MP5K_ZH
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 3.2
+Ammo TEMP5AmmoR2
+Icon CS_MP5K_ZH
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 26
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 0.5
+RandomRecoilYawRange 0.5
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 5.4
+//MeleeDamage 0.1
+//5
+//这个值越高，子弹时速的越高
+Accuracy 5.3
+DistortSound False
+//循环时间
+ShootDelay 2
+ShootSound CS_ZHShoot
+ReloadSound CS_ZHReload
+Mode FullAuto
+BulletSpeed 11.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope RS2
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.CS_MP5K_ZH
+Texture Skin_Gun_CS_MP5K_ZH
+ModelScale 0.45
+//组件设置
+//Description 使用弹种:9mm_§a<M.S> | §9<品质：军规>_SMG-冲锋枪_[Sub Machine Gun]
+Description §a[轻型弹药(1)]§7消耗：3.2%_§a武器种类>§7SMG-冲锋枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 6
+
+CasingModel WE_GUN.TE919dk
+CasingTexture TE556dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEHGFlash

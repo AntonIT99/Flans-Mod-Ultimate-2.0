@@ -1,0 +1,9 @@
+Name French GIGN Bodyarmour
+ShortName SEgignBody
+Icon gigncoat
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.1
+ArmourTexture gign

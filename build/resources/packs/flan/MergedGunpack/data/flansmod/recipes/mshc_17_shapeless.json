@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:mshc_14"
+    },
+    {
+      "item": "flansmod:mshc_14"
+    },
+    {
+      "item": "flansmod:mshc_14"
+    },
+    {
+      "item": "flansmod:mshc_16"
+    }
+  ],
+  "result": {
+    "item": "flansmod:mshc_17",
+    "count": 4
+  }
+}

@@ -1,0 +1,44 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS RPG-17
+ShortName TEASH
+//弹药名称(短名)
+Ammo TERPG17Ammo1
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Icon TEASH
+//弹药装填时间, 1=20/1秒
+ReloadTime 30
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 12
+//杀伤力
+Damage 20
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 10
+ShootSound TEASHShoot
+ReloadSound TERPG17Reload
+Mode SemiAuto
+//机瞄设置
+Scope MSHUD
+ZoomLevel 1.2
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEASH
+Texture TEASH_2403
+ModelScale 0.45
+//组件设置
+Description §a<M.S> | §5<品质：尖端>_GL-榴弹发射器_[Grenade Launcher]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD TESDOOA2 TESDOOA3 TESDOOA4
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 2

@@ -1,0 +1,87 @@
+Name Molot Bekas-M
+
+ShortName mgc.bekas
+consumeBulletType 3
+bulletsPerReload 4
+Ammo 5FSGAmmo
+Icon mgc.iconbekas
+
+//ItemID 35441
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 75
+Recoil 10
+
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+
+NumBullets 10
+
+//For guns in which the magazine is integrated
+
+Damage 3
+//The higher this value, the more the bullets spread
+
+Accuracy 13
+ShootDelay 17
+
+ShootSound mgc.bekasshoot
+
+
+ReloadSound mgc.bekasreload
+
+
+Mode SemiAuto
+
+
+//OneHanded 
+//False
+//Bullet speed, default 3.0
+
+
+BulletSpeed 30.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcbekas
+
+Texture mgc.bekas
+
+ModelScale 0.5
+
+Description §d[特种弹药(3)]§7消耗：4%_§a武器种类>§7PSG-泵动式霰弹枪
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.s12suppressor
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments false
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

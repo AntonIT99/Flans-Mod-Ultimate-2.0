@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:mshc_11"
+    },
+    {
+      "item": "flansmod:mshc_11"
+    },
+    {
+      "item": "flansmod:mshc_11"
+    },
+    {
+      "item": "flansmod:mshc_3"
+    },
+    {
+      "item": "flansmod:mshc_3"
+    },
+    {
+      "item": "flansmod:mshc_3"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    }
+  ],
+  "result": {
+    "item": "flansmod:mshc_12",
+    "count": 3
+  }
+}

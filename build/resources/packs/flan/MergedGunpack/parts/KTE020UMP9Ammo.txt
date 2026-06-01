@@ -1,0 +1,5 @@
+Name 9x19 SMG
+ShortName KTE020UMP9Ammo
+Icon KTE020UMP9Ammo
+Colour 255 255 255
+StackSize 64

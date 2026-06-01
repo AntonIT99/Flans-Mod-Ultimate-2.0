@@ -1,0 +1,78 @@
+Name SKS-45
+
+ShortName mgc.sks
+consumeBulletType 3
+bulletsPerReload 6
+Ammo TEM44Ammo
+//Ammo
+
+Icon mgc.iconsks
+
+//ItemID 35406
+//Reload time in ticks, 1/20ths of a second
+
+ReloadTime 50
+Recoil 9
+Damage 9
+//The higher this value, the more the bullets spread
+
+Accuracy 1
+
+ShootDelay 3
+
+
+ShootSound mgc.sksshoot
+
+
+ReloadSound mgc.sksreload
+
+
+Mode SemiAuto
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+
+//
+Scope CEASGO
+
+
+ZoomLevel 1.7
+
+FOVZoomLevel 1.3
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcsks
+
+Texture mgc.sks
+
+ModelScale 0.5
+
+Description ¡ìd[ÌØÖÖµ¯Ò©(3)]¡ì7ÏûºÄ£º6%_¡ìaÎäÆ÷ÖÖÀà>¡ì7SR-¾Ñ»÷Ç¹
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.puscope mgc.sksbayonet
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

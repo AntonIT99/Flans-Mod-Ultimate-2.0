@@ -1,0 +1,85 @@
+Name Upgrade Index
+ShortName UpgradeBox
+TopTexture Stuff_D
+SideTexture Stuff_A
+BottomTexture Stuff_T
+GunBoxID 320
+Recipe I ingotIron R workbench C stonebricksmooth B thinGlass
+CBC
+IRI
+CIC
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 41
+
+AddGun TEAR15II 1 TEBLAR15 120 Stuff_1 40 Stuff_2 30 Stuff_3 120 Stuff_4 15 Stuff_6
+AddAmmo 30RifleAmmo 1 Stuff_1 1 Stuff_3
+AddAltAmmo 30RifleAmmoII 1 Stuff_1 3 Stuff_3 1 Stuff_4
+
+AddGun TEACCH 1 TEBLAR15 30 Stuff_1 20 Stuff_2 30 Stuff_3 40 Stuff_4 10 Stuff_5
+AddAmmo 30RifleAmmo 1 Stuff_1 1 Stuff_3
+AddAltAmmo 30RifleAmmoII 1 Stuff_1 3 Stuff_3 1 Stuff_4
+
+AddGun TEV307 1 TEVECTOR 15 Stuff_1 12 Stuff_2 12 Stuff_3 10 Stuff_4
+AddAmmo TEMP7Ammo 2 Stuff_3
+AddAltAmmo TEMP72Ammo 3 Stuff_3 3 Stuff_4
+
+AddGun TEBLC8SWFA2 1 TEBLAR15 60 Stuff_1 30 Stuff_2 40 Stuff_3 40 Stuff_4 5 Stuff_6
+AddAmmo 30RifleAmmo 1 Stuff_1 1 Stuff_3
+AddAltAmmo 30RifleAmmo1 1 Stuff_1 2 Stuff_3 1 Stuff_4
+
+AddGun TEBLSURII 1 TEBLSUR 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+AddAmmo TEBLSURAmmo 4 Stuff_1 2 Stuff_3
+AddAltAmmo TEBLSUR2Ammo 2 Stuff_1 2 Stuff_2 4 Stuff_4
+
+AddGun TE020UMP9 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+AddAmmo TE020UMP45Ammo 2 Stuff_1 2 Stuff_3
+
+AddGun TE020UMP45 25 Stuff_1 15 Stuff_2 15 Stuff_3 18 Stuff_4 5 Stuff_6
+AddAmmo TE020UMP45Ammo 2 Stuff_1 2 Stuff_3
+
+AddGun TEM4ONLY 200 Stuff_1 100 Stuff_2 100 Stuff_3 200 Stuff_4 20 Stuff_6
+AddAmmo TEM4ONLYSEAmmo 4 Stuff_1 4 Stuff_3
+AddAltAmmo TEM4ONLY 4 Stuff_1 4 Stuff_2 4 Stuff_4 1 Stuff_5
+
+AddGun SMG1 20 Stuff_1 15 Stuff_3 5 Stuff_4
+AddGun SMG2 20 Stuff_1 5 Stuff_3 5 Stuff_4
+AddGun TEAG 10 Stuff_1 2 Stuff_3 8 Stuff_4
+
+AddGun TEAG1 15 Stuff_1 2 Stuff_3 8 Stuff_4
+AddGun TEAR15II1 15 Stuff_1 5 Stuff_3 10 Stuff_4
+AddGun TEBL416A2 20 Stuff_1 15 Stuff_3 12 Stuff_4
+AddGun TEBLLS20YE 10 Stuff_1 15 Stuff_3 10 Stuff_4
+AddGun REstork1 5 Stuff_1 5 Stuff_3 5 Stuff_4
+AddGun TE762 15 Stuff_1 10 Stuff_3 4 Stuff_4
+AddGun TEBLLS20 10 Stuff_1 5 Stuff_4
+AddGun TEBLLS201 20 Stuff_1 5 Stuff_3 5 Stuff_4
+AddGun TEHG 10 Stuff_1 15 Stuff_3 10 Stuff_4
+AddGun TEHGA1 15 Stuff_1 5 Stuff_3 8 Stuff_4
+
+AddGun TEHGA2 5 Stuff_1 2 Stuff_3 8 Stuff_4
+AddGun TEHGA3 15 Stuff_1 5 Stuff_3 10 Stuff_4
+AddGun TEQXEM 10 Stuff_1 10 Stuff_3 5 Stuff_4
+AddGun TESMP20 10 Stuff_1 15 Stuff_3 10 Stuff_4
+AddGun TEWP 35 Stuff_1 5 Stuff_3 25 Stuff_4
+AddGun TEEOTech551 5 Stuff_1 2 Stuff_3 2 Stuff_4
+AddGun TEEOTech5521 20 Stuff_1 15 Stuff_4
+AddGun TEEOTech552 10 Stuff_1 5 Stuff_3 2 Stuff_4
+AddGun TEETR108 15 Stuff_1 15 Stuff_3 10 Stuff_4
+AddGun TEETRdm970 10 Stuff_1 2 Stuff_4
+
+AddGun TEFanetA1 5 Stuff_1 2 Stuff_3 12 Stuff_4
+AddGun TEFanetA2 15 Stuff_1 10 Stuff_3 15 Stuff_4
+AddGun TEGlock2 20 Stuff_1 5 Stuff_3 15 Stuff_4
+AddGun TEKHAO 20 Stuff_1 45 Stuff_3 40 Stuff_4
+AddGun TEM4A5All 35 Stuff_1 15 Stuff_3 20 Stuff_4
+AddGun TESRAP 15 Stuff_1 12 Stuff_3 22 Stuff_4
+AddGun TESRQT 10 Stuff_1 4 Stuff_4
+AddGun TESRWB 10 Stuff_1 5 Stuff_3 2 Stuff_4
+AddGun D50ALL1 25 Stuff_1 25 Stuff_3 15 Stuff_4
+AddGun TEBL416A1 15 Stuff_1 24 Stuff_4

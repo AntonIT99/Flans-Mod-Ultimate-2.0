@@ -48,8 +48,8 @@ mouseSensitivity:0.5
 damageTiltStrength:1.0
 highContrast:false
 narratorHotkey:true
-resourcePacks:["vanilla","mod_resources","file/WW2-Content Pack-1.12.2-5.7.2.zip","file/Greylight_3.0.1-1.7.10.zip","file/M.S. Module Pack(by 2403)[1.31]","file/Modern Warfare-Content Pack-1.12.2-5.8.2.zip","file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip"]
-incompatibleResourcePacks:["file/WW2-Content Pack-1.12.2-5.7.2.zip","file/Greylight_3.0.1-1.7.10.zip","file/M.S. Module Pack(by 2403)[1.31]","file/Modern Warfare-Content Pack-1.12.2-5.8.2.zip","file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip"]
+resourcePacks:["vanilla","mod_resources","file/M.S. Module Pack(by 2403)[1.31]","file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip","file/BlackThorne Civilian Vehicles [Flansmod] 1.12.2-5.5.2-2.2.0.zip","file/MergedGunpack"]
+incompatibleResourcePacks:["file/M.S. Module Pack(by 2403)[1.31]","file/[W.E]E.M.I Evolution Pack(by 2403)[1.1.2].zip","file/BlackThorne Civilian Vehicles [Flansmod] 1.12.2-5.5.2-2.2.0.zip","file/MergedGunpack"]
 lastServer:
 lang:zh_cn
 chatVisibility:0

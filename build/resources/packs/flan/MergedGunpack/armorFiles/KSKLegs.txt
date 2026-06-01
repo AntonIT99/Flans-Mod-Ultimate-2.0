@@ -1,0 +1,9 @@
+Name German KSK Trousers
+ShortName SEkskPants
+Icon kskpants
+KnockbackModifier 0
+Type Legs
+Defence 0.05
+//0
+//0.1
+ArmourTexture ksk

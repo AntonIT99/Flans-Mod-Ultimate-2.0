@@ -1,0 +1,52 @@
+////Ãû
+Name RPG
+ShortName TERPG17Ammo1
+Icon TERPG17Ammo1
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 10
+////Visuals
+Model YE2403.TERPGAMMO
+Texture TERPGAMMO_2403
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 5
+//SmokeParticleType <particleType>
+SmokeEffect 18 20 4
+SmokeRadius 2
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 5
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.0
+HitEntityDamage 1
+ThrowSpeed 9.0
+FallSpeed 0.1
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 35
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 4.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEC4Shoot
+////Misc
+MeleeDamage 10

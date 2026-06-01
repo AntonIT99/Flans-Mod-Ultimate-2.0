@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "II ",
+    "ILI",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "flansmod:stuff_4"
+    },
+    "L": {
+      "item": "minecraft:coal"
+    }
+  },
+  "result": {
+    "item": "flansmod:teblhar"
+  }
+}

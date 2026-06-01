@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SIS",
+    "ILI",
+    "SIS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "I": {
+      "item": "flansmod:stuff_4"
+    },
+    "L": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "result": {
+    "item": "flansmod:an225pant",
+    "count": 8
+  }
+}

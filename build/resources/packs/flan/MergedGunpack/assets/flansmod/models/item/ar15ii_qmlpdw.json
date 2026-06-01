@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/ar15ii_qmlpdw"
+  },
+  "overrides": []
+}

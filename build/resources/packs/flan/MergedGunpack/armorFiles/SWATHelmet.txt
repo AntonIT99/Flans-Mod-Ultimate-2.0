@@ -1,0 +1,9 @@
+Name SWAT Helmet
+ShortName SESWATHelmet
+Icon swathelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.2
+ArmourTexture swat

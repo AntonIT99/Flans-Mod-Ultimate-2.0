@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_vehicle_unu_rs702ltc_2095_emerald_manilla_stripe"
+  },
+  "overrides": []
+}

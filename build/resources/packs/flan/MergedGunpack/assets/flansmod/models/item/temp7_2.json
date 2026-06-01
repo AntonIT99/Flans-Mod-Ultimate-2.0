@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/temp7"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/temp71"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/temp72"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/temp73"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/temp74"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/temp75"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 6
+      },
+      "model": "flansmod:item/temp76"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 7
+      },
+      "model": "flansmod:item/temp77"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 8
+      },
+      "model": "flansmod:item/temp78"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 9
+      },
+      "model": "flansmod:item/temp79"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 10
+      },
+      "model": "flansmod:item/temp710"
+    }
+  ]
+}

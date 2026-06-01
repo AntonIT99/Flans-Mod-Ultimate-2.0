@@ -1,0 +1,61 @@
+Name Upgrade Index
+ShortName UpgradeBox
+TopTexture Stuff_D
+SideTexture Stuff_A
+BottomTexture Stuff_T
+GunBoxID 320
+Recipe I MSHC_3 R workbench C stonebricksmooth B MSHC_5
+CBC
+IRI
+CIC
+////AddGun shortName amountOf item
+////AddAmmo must come immediately after //AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns 1
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 1
+//NumGuns 36
+
+//AddGun TESDOOA2 2 MSHC_2 1 MSHC_3 4 MSHC_19
+//AddGun TESDOOA3 2 MSHC_2 1 MSHC_3 6 MSHC_19
+//AddGun TESDOOA4 2 MSHC_2 1 MSHC_3 8 MSHC_19
+
+//AddGun SMG1 20 MSHC_3 15 MSHC_2 5 MSHC_7
+//AddGun SMG2 20 MSHC_3 5 MSHC_2 5 MSHC_7
+//AddGun TEAG 10 MSHC_3 2 MSHC_2 8 MSHC_7
+
+//AddGun TEAG1 15 MSHC_3 2 MSHC_2 8 MSHC_7
+//AddGun TEAR15II1 15 MSHC_3 5 MSHC_2 10 MSHC_7
+//AddGun TEBL416A2 20 MSHC_3 15 MSHC_2 12 MSHC_7
+//AddGun TEBLLS20YE 10 MSHC_3 15 MSHC_2 10 MSHC_7
+//AddGun REstork1 5 MSHC_3 5 MSHC_2 5 MSHC_7
+//AddGun TE762 15 MSHC_3 10 MSHC_2 4 MSHC_7
+//AddGun TEBLLS20 10 MSHC_3 5 MSHC_7
+//AddGun TEBLLS201 20 MSHC_3 5 MSHC_2 5 MSHC_7
+//AddGun TEHG 10 MSHC_3 15 MSHC_2 10 MSHC_7
+//AddGun TEHGA1 15 MSHC_3 5 MSHC_2 8 MSHC_7
+
+//AddGun TEHGA2 5 MSHC_3 2 MSHC_2 8 MSHC_7
+//AddGun TEHGA3 15 MSHC_3 5 MSHC_2 10 MSHC_7
+//AddGun TEQXEM 10 MSHC_3 10 MSHC_2 5 MSHC_7
+//AddGun TESMP20 10 MSHC_3 15 MSHC_2 10 MSHC_7
+//AddGun TEWP 35 MSHC_3 5 MSHC_2 25 MSHC_7
+//AddGun TEEOTech551 5 MSHC_3 2 MSHC_2 2 MSHC_7
+//AddGun TEEOTech5521 20 MSHC_3 15 MSHC_7
+//AddGun TEEOTech552 10 MSHC_3 5 MSHC_2 2 MSHC_7
+//AddGun TEETR108 15 MSHC_3 15 MSHC_2 10 MSHC_7
+//AddGun TEETRdm970 10 MSHC_3 2 MSHC_7
+
+//AddGun TEFanetA1 5 MSHC_3 2 MSHC_2 12 MSHC_7
+//AddGun TEFanetA2 15 MSHC_3 10 MSHC_2 15 MSHC_7
+//AddGun TEGlock2 20 MSHC_3 5 MSHC_2 15 MSHC_7
+//AddGun TEKHAO 20 MSHC_3 45 MSHC_2 40 MSHC_7
+//AddGun TEM4A5All 35 MSHC_3 15 MSHC_2 20 MSHC_7
+//AddGun TESRAP 15 MSHC_3 12 MSHC_2 22 MSHC_7
+//AddGun TESRQT 10 MSHC_3 4 MSHC_7
+//AddGun TESRWB 10 MSHC_3 5 MSHC_2 2 MSHC_7
+//AddGun D50ALL1 25 MSHC_3 25 MSHC_2 15 MSHC_7
+//AddGun TEBL416A1 15 MSHC_3 24 MSHC_7

@@ -1,0 +1,75 @@
+////名字
+Name MS 阔剑地雷
+ShortName TEM12F
+Icon TEM12F
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEM12F
+Texture TEM12F_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 5
+SmokeTime 5
+SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 80 6
+SmokeEffect 15 20 0
+SpinWhenThrown false
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL2R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 4.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+FlashBang true
+FlashTime 1
+FlashRange 2
+FlashSoundEnable false
+FlashSoundRange 2
+FlashSound ESSS
+FlashDamageEnable true
+FlashDamage 800
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 2.0
+//延时
+Fuse 800
+DetonateWhenShot true
+Remote false
+DespawnTime -1
+PrimeDelay 40
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEC4Shoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 10
+//ShapelessRecipe Stuff_1 Stuff_1 Stuff_1 Stuff_3 Stuff_4 Stuff_3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

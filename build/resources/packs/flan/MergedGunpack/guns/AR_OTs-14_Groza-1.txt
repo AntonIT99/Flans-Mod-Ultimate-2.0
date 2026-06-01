@@ -1,0 +1,82 @@
+Name OTs-14 Groza-1
+
+ShortName mgc.groza
+consumeBulletType 2
+bulletsPerReload 4.6
+Ammo 30AKAmmo
+//Ammo
+
+Icon mgc.icongroza
+
+//ItemID 35405
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 50
+Recoil 3.1
+RandomRecoilRange 1.6
+RandomRecoilYawRange 1.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 8
+//The higher this value, the more the bullets spread
+
+Accuracy 3
+ShootDelay 2
+
+
+ShootSound mgc.grozashoot
+
+
+ReloadSound mgc.akmreload
+
+
+Mode FullAuto
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcgroza
+
+Texture mgc.groza
+
+ModelScale 0.5
+Description ¡ì9[²½Ç¹µ¯Ò©(2)]¡ì7ÏûºÄ£º4.6%_¡ìaÎäÆ÷ÖÖÀà>¡ì7AR-Í»»÷²½Ç¹
+
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.grozasuppressor mgc.grozagrip mgc.barska
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

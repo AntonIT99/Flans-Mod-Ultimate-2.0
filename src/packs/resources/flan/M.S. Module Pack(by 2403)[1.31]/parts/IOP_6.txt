@@ -1,0 +1,6 @@
+Name IOP_6
+ShortName IOP_6
+Icon IOP_6
+
+StackSize 64
+

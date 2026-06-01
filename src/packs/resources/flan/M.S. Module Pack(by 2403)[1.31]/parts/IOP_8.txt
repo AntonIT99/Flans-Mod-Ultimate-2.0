@@ -1,0 +1,6 @@
+Name IOP_8
+ShortName IOP_8
+Icon IOP_8
+
+StackSize 64
+

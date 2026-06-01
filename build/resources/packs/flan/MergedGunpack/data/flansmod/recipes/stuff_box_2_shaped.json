@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CIC",
+    "IRI",
+    "CBC"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:crafting_table"
+    },
+    "B": {
+      "item": "minecraft:glass_pane"
+    },
+    "C": {
+      "item": "flansmod:mshc_2"
+    },
+    "I": {
+      "item": "flansmod:mshc_3"
+    }
+  },
+  "result": {
+    "item": "flansmod:stuff_box_2"
+  }
+}

@@ -1,0 +1,21 @@
+Name Contractor Legs1
+ShortName SE_dwContractorLegs1
+Icon skymareContractorLegs1
+Colour 255 255 255
+Type Legs
+Model dwdefence.ContractorLegs
+Defence 0.05
+//0
+//0.15
+ArmourTexture SkymareContractorUniform1
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe S dwSkymarePolymer W cloth K dwKipliteArmor B dyePowder.4
+SKS
+KBK
+W W

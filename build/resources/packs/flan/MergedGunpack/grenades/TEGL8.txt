@@ -1,0 +1,66 @@
+////名字
+Name 治疗手雷
+ShortName TEGL8
+Icon TEGL4
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEGL2
+Texture TEGL4_2403
+TrailParticles true
+TrailParticleType cloud
+NumExplodeParticles 40
+ExplodeParticles cloud
+SmokeRadius 8
+SmokeTime 80
+SmokeParticles cloud
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 10 200 0
+SmokeEffect 1 20 1
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact true
+//弹跳
+Bounciness 0.7
+////击中实体伤害
+HitEntityDamage 1
+ThrowSpeed 2.8
+FallSpeed 2.3
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 60
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEGL4Shoot
+////Misc
+MeleeDamage 0
+
+//合成表
+//RecipeOutput 6
+//ShapelessRecipe Stuff_1 Stuff_4 Stuff_1 Stuff_1 Stuff_2 Stuff_1

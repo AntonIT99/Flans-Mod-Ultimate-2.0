@@ -1,0 +1,15 @@
+﻿Name EMI_MC
+
+ShortName EMI_MC
+
+Icon EMI_MC
+
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 14004
+
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Fuel, Misc
+Category Misc
+StackSize 64
+
+Description §dMerry Christmas~

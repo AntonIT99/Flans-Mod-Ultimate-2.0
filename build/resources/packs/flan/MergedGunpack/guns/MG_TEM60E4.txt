@@ -1,0 +1,66 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEM60 轻机枪
+ShortName TEM60E4
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 10
+Ammo TEMG4Ammo
+Icon TEM60E4
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 110
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.6
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 80.0
+//杀伤力
+Damage 8.3
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 7
+//循环时间
+ShootDelay 3
+ShootSound TEM60E4Shoot
+ReloadSound TEMGR1
+Mode FullAuto
+BulletSpeed 15
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM60E4
+Texture TEM60E4_2403
+ModelScale 0.45
+MoveSpeedModifier 0.7
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：10%_§a武器种类>§7MG-机枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+MoveSpeedModifier 0.7
+// 6
+//涂装格式“Icon/text”

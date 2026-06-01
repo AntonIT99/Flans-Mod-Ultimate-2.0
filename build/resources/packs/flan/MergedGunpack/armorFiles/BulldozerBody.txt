@@ -1,0 +1,12 @@
+Name Bulldozer Bodyarmour
+ShortName bulldozerBody
+Icon BulldozerBody
+Colour 255 255 255
+Type Chest
+Model mw.SuperHeavyChest
+Defence 0.05
+//0.4
+ArmourTexture Bulldozer
+//MoveSpeedModifier 0.65
+KnockbackModifier 0.0
+//0.25

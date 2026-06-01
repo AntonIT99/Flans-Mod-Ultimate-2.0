@@ -1,0 +1,5 @@
+Name .45ACP SMG
+ShortName KTE020UMP45Ammo
+Icon KTE020UMP45Ammo
+Colour 255 255 255
+StackSize 64

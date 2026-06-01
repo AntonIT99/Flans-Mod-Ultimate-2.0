@@ -1,0 +1,37 @@
+Name YQ_TF
+ShortName YQ_TF1
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 0
+Ammo YQ_TFAmmo
+Icon YQ_TF
+ReloadTime 20
+Recoil 0
+Damage 0.1
+Accuracy 0
+ShootDelay 100
+ShootSound YQ_TF1
+ReloadSound SEReload
+Mode FullAuto
+BulletSpeed 0
+DistortSound False
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+Deployable False
+DeployedModel None
+Model None
+Texture None
+ModelScale 0.45
+//组件设置
+Description §a[豆腐喇叭]§7无消耗_§a武器种类>§7表情/乐器_认真进行一次即兴演奏~
+AllowAllAttachments false
+AllowAttachments 
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 0
+ReloadSoundRange 1
+GunSoundRange 8

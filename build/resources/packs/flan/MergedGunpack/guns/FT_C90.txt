@@ -1,0 +1,69 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name P90
+ShortName FT_C90
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 4.2
+Ammo TEP90Ammo
+Icon FT_C90
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 45
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.2
+RandomRecoilRange 2.3
+RandomRecoilYawRange 2.3
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 80.0
+//杀伤力
+Damage 7.3
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 26
+//循环时间
+ShootDelay 3
+ShootSound FTSMGShoot1
+ReloadSound FTARR
+Mode FullAuto SemiAuto
+BulletSpeed 12.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.FT_C90
+Texture FT_C90_2403
+ModelScale 0.45
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：4.2%_§a武器种类>§7SMG-冲锋枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 5

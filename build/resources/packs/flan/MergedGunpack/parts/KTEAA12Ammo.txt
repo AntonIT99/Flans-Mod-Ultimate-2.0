@@ -1,0 +1,5 @@
+Name MPS #12
+ShortName KTEAA12Ammo
+Icon KTEAA12Ammo
+Colour 255 255 255
+StackSize 64

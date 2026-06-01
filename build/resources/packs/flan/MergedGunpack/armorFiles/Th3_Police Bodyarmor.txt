@@ -1,0 +1,24 @@
+Name Malughistan Police Bodyarmor
+
+ShortName mgc.bodypolice
+
+
+ItemID 36801
+
+
+Icon mgc.iconbodypolice
+
+
+Colour 255 255 255
+
+
+Type Body
+
+
+Defence 0.05
+//0.1
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armorpolice

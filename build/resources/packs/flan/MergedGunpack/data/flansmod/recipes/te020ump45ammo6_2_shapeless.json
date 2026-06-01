@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:kte919ammo"
+    }
+  ],
+  "result": {
+    "item": "flansmod:te020ump45ammo6_2"
+  }
+}

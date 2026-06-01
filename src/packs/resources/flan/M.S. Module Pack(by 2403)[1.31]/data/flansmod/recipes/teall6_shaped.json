@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CDC",
+    " BB"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:stuff_4"
+    },
+    "C": {
+      "item": "flansmod:stuff_1"
+    },
+    "D": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:teall6"
+  }
+}

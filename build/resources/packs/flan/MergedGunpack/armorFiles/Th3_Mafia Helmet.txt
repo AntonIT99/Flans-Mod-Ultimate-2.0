@@ -1,0 +1,24 @@
+Name Mafia Helmet
+
+ShortName mgc.helmetmafia
+
+
+ItemID 36822
+
+
+Icon mgc.iconhelmetmafia
+
+
+Colour 255 255 255
+
+
+Type Hat
+
+
+Defence 0.05
+//0.1
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armormafia

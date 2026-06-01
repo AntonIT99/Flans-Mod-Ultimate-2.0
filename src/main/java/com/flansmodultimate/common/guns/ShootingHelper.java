@@ -6,6 +6,7 @@ import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
@@ -119,6 +120,30 @@ public final class ShootingHelper
             for (int i = 0; i < numBullets; i++)
             {
                 Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
+                level.addFreshEntity(shootable);
+            }
+        }
+
+        handler.onShoot();
+    }
+
+    /** Call this to fire bullets or grenades from a living entity controlling an AA gun (Server side) */
+    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull AAGun aaGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack, @NotNull ShootingHandler handler)
+    {
+        int numBullets = aaGun.getConfigType().getNumBarrels();
+
+        if (shootableType.getThrowSpeed() == 0F && shootableType instanceof BulletType bulletType)
+        {
+            FireableGun fireableGun = new FireableGun(aaGun.getConfigType(), aaGun.getConfigType().getDamage(), aaGun.getConfigType().getAccuracy(), 0F, EnumSpreadPattern.CIRCLE);
+            FiredShot firedShot = new FiredShot(fireableGun, bulletType, aaGun, shooter, shootableStack.getDamageValue());
+            for (int i = 0; i < numBullets; i++)
+                createShot(level, firedShot, aaGun.getShootingOrigin(), aaGun.getShootingDirection());
+        }
+        else
+        {
+            for (int i = 0; i < numBullets; i++)
+            {
+                Shootable shootable = ShootableFactory.createShootable(level, shootableType, aaGun, shooter, shootableStack);
                 level.addFreshEntity(shootable);
             }
         }

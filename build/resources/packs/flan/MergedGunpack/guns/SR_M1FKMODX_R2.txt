@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Win 44
+ShortName TEM1FKMODX_R2
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 4.8
+Ammo TEM1FKAmmo_MX21
+Icon TEM1FKMODX_R2
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 1
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0.4
+RandomRecoilRange 0.1
+RandomRecoilYawRange 0.1
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+//这个值越高，子弹时速的越高
+Accuracy 1.2
+//循环时间
+ShootDelay 3
+ShootSound TEM1FKMOS1
+ReloadSound TEM1FKMODReload
+DistortSound False
+Mode BURST
+NumBurstRounds 7
+BulletSpeed 21
+//12.0
+//机瞄设置
+Scope CEASGO2
+ZoomLevel 1.2
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM1FKMODX_R
+Texture Skin_Gun_TEM1FKMODX_R
+ModelScale 0.45
+//组件设置
+Description §c[不可装填(X)]§7消耗：§c--§7%_§a武器种类>§7RF-步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+LastShootSound TEM1FKMOS2
+EmptyClickSound MS_DWShoot
+// 6
+//涂装格式“Icon/text”
+CasingModel WE_GUN.TEU794dk
+CasingTexture TEU794dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TESG1Flash2

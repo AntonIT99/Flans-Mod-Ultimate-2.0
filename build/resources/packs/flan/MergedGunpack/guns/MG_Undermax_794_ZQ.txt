@@ -1,0 +1,70 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name SAW-5.56 M249
+ShortName TEUndermax_794_ZQ
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 8
+Ammo TEUndermax_794Ammo
+//TEMG4Ammo
+Icon TEUndermax_794_ZQ
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 110
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.5
+RandomRecoilRange 0.8
+RandomRecoilYawRange 0.8
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 9.8
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 6
+//循环时间
+ShootDelay 2
+ShootSound TEU794Shoot
+ReloadSound TEMGR1
+Mode FullAuto
+BulletSpeed 17
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope MGU794S
+ZoomLevel 1.2
+FOVZoomLevel 1.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEUndermax_794
+Texture TEUndermax_794_ZQ_2403
+ModelScale 0.45
+MoveSpeedModifier 0.7
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：8%_§a武器种类>§7MG-机枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 6
+//涂装格式“Icon/text”
+
+CasingModel WE_GUN.TEU794dk
+CasingTexture TEU794dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEM61Flash_5

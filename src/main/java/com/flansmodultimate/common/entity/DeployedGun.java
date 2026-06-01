@@ -25,7 +25,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -44,11 +44,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+
 import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DeployedGun extends Entity implements IFlanEntity<GunType>
+public class DeployedGun extends Entity implements IFlanEntity<GunType>, IEntityWithComplexSpawn
 {
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
@@ -185,7 +187,7 @@ public class DeployedGun extends Entity implements IFlanEntity<GunType>
         builder.define(DATA_GUN_DIRECTION, 0);
     }
 
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
         buf.writeInt(gunDirection);
@@ -195,7 +197,7 @@ public class DeployedGun extends Entity implements IFlanEntity<GunType>
         buf.writeBoolean(!ammo.isEmpty());
     }
 
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         try
         {

@@ -1,0 +1,6 @@
+Name TEHB_OLD_1
+ShortName TEHB_OLD_1
+Icon TEHB_OLD_1
+StackSize 64
+//RecipeOutput 1
+//ShapelessRecipe Stuff_3 Stuff_5 Stuff_3

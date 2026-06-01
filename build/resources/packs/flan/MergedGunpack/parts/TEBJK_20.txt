@@ -1,0 +1,4 @@
+Name AEHC_GTG
+ShortName TEBJK_20
+Icon TEBJK_20
+StackSize 64

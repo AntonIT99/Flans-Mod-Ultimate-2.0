@@ -1,0 +1,15 @@
+Name Exoskeleton Boots
+ShortName exoskeletonBoots
+Icon ExoskeletonBoots
+Colour 255 255 255
+Type Boots
+Model mw.ExoskeletonBoots
+Defence 0.05
+//0.1
+ArmourTexture Exoskeleton
+//MoveSpeedModifier 1.0
+KnockbackModifier 0.0
+//1.0
+//JumpModifier 1.0
+//NegateFallDamage True
+ModelScale 0.25

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:t-hawk_tan"
+    }
+  ],
+  "result": {
+    "item": "flansmod:t-hawk"
+  }
+}

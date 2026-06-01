@@ -1,0 +1,41 @@
+Name 冲击震撼弹
+ShortName NOMAD_DCAmmo
+Model WE_GUN.TENOMAD_SSAmmo
+Texture TENOMAD_SSAmmo_2403
+//Colour of icon and model
+Colour 255 255 255
+ItemID 23838
+Icon NOMAD_DCAmmo
+//How affected by gravity the bullet is
+FallSpeed 0.0
+//The maximum stack size
+MaxStackSize 64
+//The number of rounds each item has. Limited to 32000.
+RoundsPerItem 1
+//The damage multiplier caused by the bullet on hitting an entity
+Damage 1
+//Size of explosion caused
+Explosion 0
+//True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
+ExplodeOnImpact False
+Fuse 0
+FlakParticles 0
+//Amount of fire to spread on exploding; for each increment, it will increase the dimensions of the burning area by 2. i.e. 1 will burn a 3x3 square, 2 will burn a 5x5 square
+Fire 0
+BreaksGlass False
+//Size of box to check for entities to hit / detonate
+HitBoxSize 0.1
+//Whether or not the bullet can travel through an entity having hit it
+Penetrates False
+SmokeTrail False
+PotionEffect 9 100 0
+PotionEffect 2 200 2
+PotionEffect 15 20 0
+PotionEffect 16 20 0
+//Description M.S 武器研发部门仿制旧时代STANAG弹匣生_产的5.56口径步枪弹匣,可完美兼容新旧时_代各类5.56口径突击步枪
+//RecipeOutput 5
+//ShapelessRecipe TESupply26
+HitSound NOMAD_DC_BOOM
+HitSoundRange 60
+HitSoundEnable Flase
+EntityHitSoundEnable True

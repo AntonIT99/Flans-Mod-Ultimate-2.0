@@ -1,0 +1,48 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Win 44
+ShortName TEM1887_BG
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 7
+Ammo 7FSGAmmo
+Icon TEM1887_BG
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 75
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5
+RandomRecoilRange 0.2
+RandomRecoilYawRange 0.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+UseCustomMelee True
+Damage 4
+NumBullets 11
+//这个值越高，子弹时速的越高
+Accuracy 12
+//循环时间
+ShootDelay 11
+ShootSound TEM1887BGShoot
+ReloadSound TEWin44Reload
+Mode SemiAuto
+BulletSpeed 25
+//20.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM1887_BG
+Texture Skin_Gun_TEM1887_BG
+ModelScale 0.5
+//组件设置
+Description §d[特种弹药(3)]§7消耗：7%_§a武器种类>§7PSG-泵动式霰弹枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 6
+//涂装格式“Icon/text”

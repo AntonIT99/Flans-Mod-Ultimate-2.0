@@ -1,0 +1,22 @@
+Name Assault Boots
+ShortName SE_dwAssaultBoots
+Icon lupineAssaultBoots
+Colour 255 255 255
+
+Type Boots
+Model dwdefence.AssaultBoots
+Defence 0.05
+//0
+//0.2
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe L leather K dwKipliteArmor
+   
+L L
+K K

@@ -1,0 +1,86 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//注意：开头打上"//"的内容为注释，不会被游戏及mod读取。你可以在某些数值开头删除或添加"//"来达到启用/禁用某些属性的作用
+//------------------------------------------------------------------------------------------
+
+//Name=显示名称，在合成台及相应部分显示，并不等于zh_cn翻译文件，推荐使用英文
+//ShortName=枪械内部名称(即短名/数字ID)，仅可使用英文、下划线即数字，不允许有空格，不允许数字开头(推荐直接写成你模型导出时的名字)
+Name EM-416
+ShortName CraftFHC
+
+//Ammo=所使用的弹药名称(这里写的是短名)，可添加多个。枪械将会优先使用最靠前的弹匣
+//Icon=枪械图标文件
+Ammo CraftBLZAmmo
+Ammo CraftBLZAmmo1
+Ammo CraftBLZAmmo2
+Ammo CraftBLZAmmo3
+Icon CraftFHC
+
+//图标颜色:红色，绿色，蓝色, 最高填写 255.(此属性用处不大，可以给图标加颜色滤镜当然很难看，至于ID毫无用处,不用改)
+//Colour 255 255 255
+//ItemID 23805
+
+//弹药装填时间, 20=1秒
+ReloadTime 12
+
+//Recoil=武器的后坐力,越低后坐力越小，最低为0（激光枪XD）
+Recoil 5
+
+//Damage=武器杀伤力
+Damage 18
+
+//一次发射的子弹倍数，当武器为霰弹枪时推荐启用此数值
+//NumBullets 8
+
+//近战伤害(从1.7.10开始如果你启用了瞄准则无法近战)
+MeleeDamage 16
+
+//这个值越高，子弹散射越大，打的越不准(最低为0，即无偏移。霰弹枪推荐写15-30)
+Accuracy 1
+OneHanded true
+//射速，数值越低射速越快，最低为1
+ShootDelay 1
+
+//ShootSound=武器射击音效；ReloadSound=武器装填音效（音效需要自行添加）
+ShootSound CraftBLZShoot
+ReloadSound CraftBLZReload
+
+//Mode=开火模式，有四种可供填写:FullAuto=半自动，SemiAuto=全自动，BURST=三连发，还有一种是加特林的转轮射击方法，新手不推荐了解
+Mode FullAuto
+
+//子弹飞行速度，默认为3，支持小数点。注意加快子弹飞行速度会导致渣机变卡以及命中率下降，请仔细考虑是否加快（EMI包反正没用，只有调慢速度的）
+//BulletSpeed 3
+
+//瞄准设置:Scope=瞄准镜贴图(写None关闭),ZoomLevel=第一人称放大倍数,FOVZoomLevel=放大倍数（放大倍数不为1时有机瞄且无法使用近战）
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+Description §b<A.E>_HG-手枪_[Hand Gun]
+//部署固定机枪设置(正常的枪都没有...别看了。除非你想做无法拿在手上发射的鸡肋固定机枪)
+Deployable False
+DeployedModel None
+
+//模型设置:Model=目标模型<模型文件夹.模型名称>，Texture=材质文件名称，ModelScale=模型缩放比例
+Model YE2403.CraftFHC
+Texture CraftFHC_2403
+ModelScale 1
+
+//------------------------------------------------------------------------------------------
+//枪械改装设置:
+
+//当这个项目填写为true时启用兼容全部配件（十分不推荐，开启此选项之后这把枪可以兼容世间全部扩展包的配件，直接崩坏设定，变成玛丽苏枪）
+AllowAllAttachments false
+
+//AllowAttachments=可安装配件(写入可以安装的配件短名，用空格分隔，书写内容无上限)
+AllowAttachments CraftBLZ2
+
+//配件槽启用开关，后面写True为启用，写false为关闭(Barrel=枪管，Scope=瞄准镜，Stock=枪托，Grip=握把)
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+
+//通用改装槽数量(默认为1，推荐要超过8个)
+NumGenericAttachmentSlots 1
+
+//武器涂装，可以写多个。格式为：“Paintjob <图标名称> <材质名称>”

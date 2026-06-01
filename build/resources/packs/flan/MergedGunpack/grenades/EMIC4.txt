@@ -1,0 +1,67 @@
+////名字
+Name EMIC4
+ShortName EMIC4
+Icon EMIC4
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model WE_GUN.EMIC4
+Texture EMIC4_2403
+NumExplodeParticles 20
+ExplodeParticles crit
+SmokeRadius 4
+SmokeTime 20
+SmokeParticles magicCrit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 18 300 4
+SmokeEffect 15 50 1
+SmokeEffect 20 20 4
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound EMITEGL2R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 2.8
+FallSpeed 2.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse -1
+DetonateWhenShot true
+Remote true
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 4.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate TEC4Shoot
+DetonateSound EMIEMPEX1
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 2
+//ShapelessRecipe TEGL1 Stuff_4 TEGL2
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

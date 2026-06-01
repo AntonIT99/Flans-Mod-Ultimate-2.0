@@ -1,0 +1,5 @@
+Name 4.6x30 FA
+ShortName S4633AmmoB
+Icon S4633AmmoB
+Colour 255 255 255
+StackSize 64

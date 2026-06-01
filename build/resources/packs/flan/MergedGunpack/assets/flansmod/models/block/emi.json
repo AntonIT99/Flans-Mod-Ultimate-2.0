@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "flansmod:block/emi_d",
+    "bottom": "flansmod:block/emi_t",
+    "side": "flansmod:block/emi_s"
+  }
+}

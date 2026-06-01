@@ -1,0 +1,5 @@
+Name 5.56 BLK
+ShortName S556AmmoIIB
+Icon S556AmmoIIB
+Colour 255 255 255
+StackSize 64

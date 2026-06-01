@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name EI-T4
+ShortName ZB_FZZ_XB
+//弹药名称(短名)
+consumeBulletType 6
+bulletsPerReload 60
+Ammo ZB_FZZ_XBAmmo
+Icon ZB_FZZ_XB
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 100
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+//NumBullets 6
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 30
+ShootSound TEJSGH1Shoot
+ReloadSound GRM6XL
+Mode SemiAuto
+//机瞄设置
+Scope TEFSQ_1
+ZoomLevel 1.3
+FOVZoomLevel 1.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.ZB_JHZ_XB
+Texture ZB_JHZ_XB_2403
+ModelScale 0.45
+MoveSpeedModifier 0.7
+//组件设置
+Description §i[技能设备(6)]§7消耗：60%_§a装备类型>§7战术技能
+//_覆盖式泡沫装甲
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 0

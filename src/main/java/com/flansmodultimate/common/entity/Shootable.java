@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -28,11 +29,13 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+
 import java.util.List;
 import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Shootable extends Entity
+public abstract class Shootable extends Entity implements IEntityWithComplexSpawn
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
@@ -144,7 +147,7 @@ public abstract class Shootable extends Entity
         return super.getAddEntityPacket(serverEntity);
     }
 
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
         buf.writeFloat(getHitboxSize());
@@ -153,7 +156,7 @@ public abstract class Shootable extends Entity
         buf.writeDouble(velocity.z);
     }
 
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         setShortName(buf.readUtf());
         setHitboxSize(buf.readFloat());

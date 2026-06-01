@@ -1,0 +1,5 @@
+Name 7.62¡Á39 AP
+ShortName S30AKAmmo1B
+Icon S30AKAmmo1B
+Colour 255 255 255
+StackSize 64

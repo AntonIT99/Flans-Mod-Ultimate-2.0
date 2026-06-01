@@ -1,0 +1,69 @@
+////名字
+Name 破片手雷
+ShortName TEGL1
+Icon TEGL1
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 30
+
+////模型
+Model YE2403.TEGL1
+Texture TEGL1_2403
+//TrailParticles true
+//TrailParticleType crit
+//NumExplodeParticles 20
+//ExplodeParticles crit
+//SmokeRadius 3
+//SmokeTime 20
+//SmokeParticles largesmoke
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 18 80 3
+SmokeEffect 2 80 4
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact true
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 1
+ThrowSpeed 3.0
+FallSpeed 2.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky false
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger 3.0
+LivingProximityTrigger 3.0
+//延时
+Fuse 300
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 5
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 2.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEC4Shoot
+////Misc
+MeleeDamage 1
+Description §a<M.S>_投掷武器
+
+RecipeOutput 12
+ShapelessRecipe Stuff_3 Stuff_5 Stuff_3 Stuff_1 Stuff_1 Stuff_1
+//合成表
+//RecipeOutput 1
+//ShapelessRecipe dwXm240Ammo dwGrenadePin

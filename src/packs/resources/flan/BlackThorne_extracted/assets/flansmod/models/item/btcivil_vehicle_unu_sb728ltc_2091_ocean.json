@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_vehicle_unu_sb728ltc_2091_ocean"
+  },
+  "overrides": []
+}

@@ -1,0 +1,5 @@
+Name MTK 7.62x39
+ShortName K75AKAmmo
+Icon K75AKAmmo
+Colour 255 255 255
+StackSize 64

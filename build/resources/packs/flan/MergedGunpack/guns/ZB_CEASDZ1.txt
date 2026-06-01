@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name CEAS
+ShortName TECEASDZ1
+//弹药名称(短名)
+consumeBulletType 4
+bulletsPerReload 30
+Ammo TEECO_DZ
+Icon TECEASDZ
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 50
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+UseCustomMelee True
+//4
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 120
+//ShootSound TECEASShoot//TECEASReload
+ReloadSound TECEASShoot
+Mode SemiAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TECEAS
+Texture TECEASDZ_2403
+ModelScale 0.45
+//组件设置
+Description §f[重型弹药(4)]§7消耗：30%_§a装备类型>§7战术技能
+//_左键装填/使用,需要6秒进行_装填,装填时无法开火
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+// 0
+MoveSpeedModifier 0.9

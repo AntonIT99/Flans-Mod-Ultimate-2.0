@@ -1,0 +1,71 @@
+Name TE_CF447
+ShortName TE_CF4472
+//The ammo this gun uses (shortName)
+consumeBulletType 3
+bulletsPerReload 30
+Ammo TE_CF447Ammo
+Icon TE_CF447
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8.3
+RandomRecoilYawRange 10.0
+DecreaseRecoil 8.0
+DecreaseRecoilYaw 20.0
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 0.5
+//Damage 0.1
+//in half hearts
+Damage 3.5
+minigunStartSpeed 10
+//DistortSound False
+//The higher this value, the more the bullets spread
+Recoil 2.1
+RandomRecoilYawRange 0.8
+DecreaseRecoil 0.41
+DecreaseRecoilYaw 0.4
+//LoadIntoGun 2
+//Time in ticks between rounds
+ShootDelay 2
+//加特林音效设置
+//WarmupSound HE_SHMG41XL
+SpinSound //TEMG13ZL2
+CooldownSound RTEMG13ZL3
+WarmupSoundLength 16
+SpinSoundLength 17
+ShootSound TECF4472
+ReloadSound HJReload
+Mode FullAuto
+//Bullet speed, default 3.0
+BulletSpeed 14.0
+//机瞄设置
+Scope HE_SC20_HUD
+ZoomLevel 1.5
+FOVZoomLevel 1.5
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model WE_GUN.TE_CF447c
+Texture TE_CF447_2403
+ModelScale 0.7
+Description §d[特种弹药(3)]§7消耗：30%_§a武器种类>§7MRAC-实弹速射炮
+//
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+// 1
+//Modifiers
+MoveSpeedModifier 0.7
+
+CasingModel WE_GUN.TEDoom50dk
+CasingTexture TEDoom50dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEARHBFlash_JH

@@ -1,0 +1,41 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-名称、短名-
+Name HK3A/OSS
+ShortName TEBL416A2
+Icon TEBL416A2
+
+//stock=枪托,barrel=枪管,sights=瞄准器,grip=下挂式
+//gadget=侧边导轨,slide=套筒,pump=泵,accessory=附件
+AttachmentType barrel
+//开启/关闭消音
+Silencer false
+//-物理影响值设定-
+//混战伤害倍数
+MeleeDamageMultiplier 0
+//1.0
+//伤害增加
+DamageMultiplier 0
+//1.3
+//扩展倍数
+SpreadMultiplier 1.0
+//0.9
+//后坐力倍数
+RecoilMultiplier 1.0
+//1.1
+//散射倍数
+BulletSpeedMultiplier 1.0
+//1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+//1.0
+//Description §iHK416 OSS 强化枪管「胡狼」_ _§9伤害+15_§9命中+5_§9后坐力+5
+//-机瞄与HUD参数设置-
+ZoomLevel 1
+FOVZoomLevel 1.3
+//机瞄与HUD材质
+ZoomOverlay None
+//-模型与材质设置-
+Model TEBL.TEBL416A2
+Texture TEBL416A2_2403
+ModelScale 0.45

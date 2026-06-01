@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:mshc_20"
+    },
+    {
+      "item": "flansmod:mshc_20"
+    },
+    {
+      "item": "flansmod:mshc_20"
+    }
+  ],
+  "result": {
+    "item": "flansmod:mshc_23"
+  }
+}

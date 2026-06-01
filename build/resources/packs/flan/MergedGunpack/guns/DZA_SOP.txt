@@ -1,0 +1,59 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name DZA_SOP
+ShortName DZA_SOP
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 6
+Ammo DZA_SOP_Ammo
+Icon DZA_SOP
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 25
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.4
+RandomRecoilRange 1
+RandomRecoilYawRange 1
+DecreaseRecoil 0.7
+DecreaseRecoilYaw 60.0
+//杀伤力
+Damage 0.1
+DistortSound False
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 3
+//循环时间
+ShootDelay 2
+ShootSound DZA_SOPShoot
+ReloadSound TELOVACReload
+Mode FullAuto BURST SemiAuto
+BulletSpeed 16.0
+ShowRecoil true
+ShowAccuracy true
+Show//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.DZA_SOP
+Texture DZA_SOP_2403
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：6%_§a武器种类>§7AR-突击步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments DZA_SOP_BARREL DZA_SOP_SCOPE DZA_SOP_GRIP DZ_ALL3 DZ_ALL4 DZALL_D1 DZALL_D2 DZALL_D3 DZALL_D4 DZALL_D5 Only_SP1 Only_SP2 Only_SP3 HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TESDOOA2 TESDOOA3 TEAR15II2 TESDOOA4 GRIFFIN_HD1 GRIFFIN_HD2 GRIFFIN_HD3 GRIFFIN_HD4 GRIFFIN_QX1 GRIFFIN_QX2 GRIFFIN_QX3 GRIFFIN_QX4 GRIFFIN_SP1 GRIFFIN_SP2 GRIFFIN_SP3 GRIFFIN_SP4 GRIFFIN_XY1 GRIFFIN_XY2 GRIFFIN_XY3 GRIFFIN_XY4 Only_AR1 Only_AR2 Only_AR3 Only_AR4 Only_ALL1 Only_ALL2 Only_ALL3 Only_ALL4 Only_ALL5 Only_ALL3D1 Only_ALL3D2 Only_ALL3D3 Only_ALL3D4
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 8
+// 8
+//涂装格式“Icon/text”
+//Paintjob TEAR15II_1 TEAR15II_2403_1

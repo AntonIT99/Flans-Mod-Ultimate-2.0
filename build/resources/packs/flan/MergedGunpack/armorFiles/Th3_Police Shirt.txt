@@ -1,0 +1,24 @@
+Name Malughistan Police Shirt
+
+ShortName mgc.shirtpolice
+
+
+ItemID 36817
+
+
+Icon mgc.iconshirtpolice
+
+
+Colour 255 255 255
+
+
+Type Body
+
+
+Defence 0.05
+//0
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.shirtpolice

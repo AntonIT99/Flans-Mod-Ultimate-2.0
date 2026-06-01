@@ -1,9 +1,13 @@
 package com.flansmodultimate.client.render.item;
 
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.RenderGun;
+import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -146,6 +150,60 @@ public final class CustomItemRenderers
                 return;
             }
             ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+        });
+        register(AAGunItem.class, (stack, ctx, pose, buffer, light, overlay) ->
+        {
+            if (ctx == ItemDisplayContext.GUI)
+            {
+                if (stack.getItem() instanceof AAGunItem aaGunItem)
+                {
+                    ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("flansmod", "textures/item/" + aaGunItem.getConfigType().getIcon() + ".png");
+                    renderFlatGui(texture, 0xFFFFFF, pose, buffer, light, overlay);
+                }
+                return;
+            }
+            if (stack.getItem() instanceof AAGunItem aaGunItem)
+            {
+                IModelBase model = ModelCache.getOrLoadTypeModel(aaGunItem.getConfigType());
+                if (model != null)
+                {
+                    int color = aaGunItem.getConfigType().getColour();
+                    float red = (color >> 16 & 255) / 255F;
+                    float green = (color >> 8 & 255) / 255F;
+                    float blue = (color & 255) / 255F;
+                    ResourceLocation texture = aaGunItem.getConfigType().getTexture();
+                    if (model instanceof ModelAAGun aaModel)
+                    {
+                        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+                        {
+                            if (aaModel.baseModel != null)
+                            {
+                                for (ModelRendererTurbo part : aaModel.baseModel)
+                                {
+                                    if (part != null)
+                                        part.render(pose, buffer.getBuffer(renderPass.getRenderType(texture)), light, overlay, red, green, blue, 1F, 1F, renderPass);
+                                }
+                            }
+                            if (aaModel.seatModel != null)
+                            {
+                                for (ModelRendererTurbo part : aaModel.seatModel)
+                                {
+                                    if (part != null)
+                                        part.render(pose, buffer.getBuffer(renderPass.getRenderType(texture)), light, overlay, red, green, blue, 1F, 1F, renderPass);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LegacyTransformApplier.renderModel(model, aaGunItem.getConfigType(), texture, pose, buffer, light, overlay, red, green, blue, 1F);
+                    }
+                }
+                else
+                {
+                    ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
+                }
+            }
         });
         register(CustomArmorItem.class, (stack, ctx, pose, buffer, light, overlay) ->
         {

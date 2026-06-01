@@ -1,0 +1,49 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEGL4Box
+ShortName TEGL4Box
+//弹药名称(短名)
+consumeBulletType 6
+bulletsPerReload 24
+Ammo TEGL4
+Icon TEGL4
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 20
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 0
+//杀伤力
+Damage 0
+//MeleeDamage 0.1
+//0
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 2
+ShootSound 
+ReloadSound 
+Mode FullAuto
+//机瞄设置
+Scope EMIHUD
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model EMIGUN.TEBLAR16
+Texture TEBLAR15_2403
+ModelScale 1
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments MODWH_ALL1 MODWH_ALL2 MODWH_ALL3 M1887ALL_1 ZSFJ_ALL_1 FG_ALL_1 FG_ALL_2 FG_ALL_3 FG_ALL_4 FG_ALL_5 FG_ALL_6 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+// 0
+Description §f[技能设备(6)]§7消耗：24%_§a武器种类>§7投掷/部署_§a装备类型>§7特殊
+//

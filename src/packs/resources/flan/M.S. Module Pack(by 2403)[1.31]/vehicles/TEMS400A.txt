@@ -1,0 +1,97 @@
+//Naming
+Name MS-400 A
+ShortName TEMS400A
+
+//Visuals
+Icon TEMS400A
+Model YE2403.TEMS400A
+Texture TEMS400A_2403
+RotateWheels true
+
+Description §6使用方法:右键地面部署,坐上操作台按R键,在_§6Gun处装填弹药即可完成发射准备
+
+//Third Person Camera Distance
+CameraDistance 5
+
+//Throttle
+MaxThrottle 0
+MaxNegativeThrottle 0
+//Steering modifiers
+TurnLeftSpeed 0
+TurnRightSpeed 0
+
+//Drag
+Drag 10.0
+
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 0.1
+
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+NumWheels 4
+WheelPosition 0 -15 -10 -14
+WheelPosition 1 -15 -10 14
+WheelPosition 2 23 -10 14
+WheelPosition 3 23 -10 -14
+WheelSpringStrength 0.1
+
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+
+//Tank mode activate
+Tank true
+
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 0
+
+//Inventory Slots
+CargoSlots 0
+ShellSlots 0
+
+//Driver and passenger positions
+Driver -6 1 -33 -70 70 -15 40
+RotatedDriverOffset 0 2 0
+BarrelPosition 0 21 0
+Passengers 1
+Passenger 1 -6 0 36 core
+
+//Secondary gun
+ShootPointSecondary -28 21 11 turret TEMS400A1
+ShootPointSecondary -28 14 11 turret TEMS400A1
+ShootPointSecondary -28 14 -11 turret TEMS400A1
+ShootPointSecondary -28 21 -11 turret TEMS400A1
+
+//Delays are in ticks or 1/20ths of seconds
+
+
+Primary Missile
+Secondary Gun
+ShootDelay 60
+ShellDelay 60
+AllowAllAmmo true
+//AddAmmo dwTankShellHE
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+//Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+ShootSoundPrimary TEBGM71Shoot
+ShootSoundSecondary TEBGM71Shoot
+
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+
+AddDye 10 black
+AddRecipeParts core 20 TEBLCL_1
+AddRecipeParts turret 3 TEBLCL_1
+
+//Health and collision
+SetupPart core 340 -19 -10 -18 46 16 36
+SetupPart turret 200 -19 11 -16 45 12 32
+
+

@@ -1,0 +1,26 @@
+Name §6特化系统：§bSE.技师
+ShortName MODWH_ALL1
+Icon MODWH_ALL1
+AttachmentType generic
+//近战伤害，伤害，散射，后坐力，子弹时速，模式
+MeleeDamageMultiplier 0
+//1.0
+DamageMultiplier 0
+//1.09
+SpreadMultiplier 1.0
+//0.92
+RecoilMultiplier 1.0
+//0.92
+BulletSpeedMultiplier 1.0
+//1.0
+ReloadTimeMultiplier 1.0
+//0.93
+
+//Description §b[特区行动]_§8═══════════════════_§a装备种类>§7通用配件_§a装备类型>§7枪械本体改装_§8═══════════════════_§9命中+8%_§9伤害+9%_§9后坐力-8%_§9装填时间-7%
+
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01

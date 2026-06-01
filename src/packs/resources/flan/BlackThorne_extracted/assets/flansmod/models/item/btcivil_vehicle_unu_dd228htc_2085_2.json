@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_vehicle_unu_dd228htc_2085"
+  },
+  "overrides": []
+}

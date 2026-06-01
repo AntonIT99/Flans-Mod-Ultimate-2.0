@@ -1,0 +1,4 @@
+Name SZitemF_
+ShortName SZitemF_40
+Icon SZitemF_40
+StackSize 64

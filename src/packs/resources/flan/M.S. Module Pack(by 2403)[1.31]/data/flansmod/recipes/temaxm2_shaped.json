@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AA"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:temaxm1"
+    }
+  },
+  "result": {
+    "item": "flansmod:temaxm2"
+  }
+}

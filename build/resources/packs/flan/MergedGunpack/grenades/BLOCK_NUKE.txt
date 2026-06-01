@@ -1,0 +1,82 @@
+////名字
+Name 手雷
+ShortName BLOCK_NUKE
+Icon BLOCK_NUKE
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 1
+
+////模型
+Model WE_GUN.TE_BlockB
+Texture BLOCK_NUKE_2403
+TrailParticles true
+TrailParticleType smoke
+NumExplodeParticles 1
+ExplodeParticles crit
+SmokeRadius 32
+SmokeTime 1
+SmokeParticles hugeexplosion
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+
+SpinWhenThrown false
+////Throwing
+ThrowDelay 600
+ThrowSoundRange 38
+ThrowSound TENKN2
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 1.0
+//弹跳音效BounceSound
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 1.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+FlashBang true
+FlashTime 200
+FlashRange 32
+FlashSoundEnable false
+FlashSoundRange 32
+FlashSound 
+FlashDamageEnable true
+FlashDamage 286700
+
+//MotionSensor true
+//MotionSensorRange 32.0
+//MotionSoundRange 32.0
+//MotionSound TEC4Shoot
+//MotionTime 20
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 600
+DetonateWhenShot false
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound EXBLACShoot
+////Misc
+MeleeDamage 1
+
+//RecipeOutput 4
+//ShapelessRecipe Stuff_3 Stuff_5 Stuff_3
+//合成表
+//RecipeOutput 1
+//ShapelessRecipe dwXm240Ammo dwGrenadePin

@@ -1,0 +1,24 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name TEWZJX_M1
+ShortName TEPC_1_A
+Icon TEzs2GUI_B23
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Head
+Model WE_GUN.TEPC_1
+//防御值
+Defence 0.05
+//0
+//材质
+ArmourTexture TEPC_1_A
+
+//移动速度与击退抗性?还有跳跃提升
+//MoveSpeedModifier 1.0
+KnockbackModifier 0.0
+//JumpModifier 1.0
+
+//喜闻乐见的注释
+Description §6NPC装饰-笔记本电脑
+
+//模型尺寸
+ModelScale 1.0

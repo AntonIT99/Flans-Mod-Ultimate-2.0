@@ -1,0 +1,9 @@
+Name MSHCGUN_5
+ShortName MSHCGUN_5
+Icon MSHCGUN_5
+StackSize 64
+RecipeOutput 1
+Recipe I MSHC_20 S MSHC_3 B MSHC_22 A MSHC_21
+AB 
+SIS
+ SS

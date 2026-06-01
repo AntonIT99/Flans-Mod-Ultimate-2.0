@@ -1,0 +1,5 @@
+Name HK 4.6x30
+ShortName KTEMP7Ammo
+Icon KTEMP7Ammo
+Colour 255 255 255
+StackSize 64

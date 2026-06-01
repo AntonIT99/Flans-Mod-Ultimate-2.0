@@ -1,0 +1,4 @@
+Name TESECL_1
+ShortName TESECL_7
+Icon TESECL_7
+StackSize 64

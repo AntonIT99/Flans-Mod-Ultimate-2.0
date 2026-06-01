@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ILI",
+    "SAS",
+    "ILI"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:furnace"
+    },
+    "S": {
+      "item": "minecraft:gold_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "flansmod:teblhlengine_2"
+  }
+}

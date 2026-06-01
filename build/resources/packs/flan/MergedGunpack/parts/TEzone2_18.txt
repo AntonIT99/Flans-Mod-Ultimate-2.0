@@ -1,0 +1,4 @@
+Name TEzone2_18
+ShortName TEzone2_18
+Icon TEzone2_18
+StackSize 64

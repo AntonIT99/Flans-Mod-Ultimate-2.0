@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:mshc_5"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "flansmod:blazepowder"
+    }
+  ],
+  "result": {
+    "item": "flansmod:mshc_10",
+    "count": 2
+  }
+}

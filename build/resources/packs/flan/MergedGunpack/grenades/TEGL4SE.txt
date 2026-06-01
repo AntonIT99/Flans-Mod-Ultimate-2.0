@@ -1,0 +1,68 @@
+////名字
+Name 毒气手雷
+ShortName TEGL4SE
+Icon TERPG17Ammo3
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEGL2
+Texture TEGL4_2403
+TrailParticles true
+TrailParticleType cloud
+NumExplodeParticles 10
+ExplodeParticles cloud
+SmokeRadius 6
+SmokeTime 120
+SmokeParticles cloud
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 40 1
+SmokeEffect 15 40 1
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.8
+////击中实体伤害
+HitEntityDamage 1
+ThrowSpeed 4
+FallSpeed 1.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky false
+AllowStickSound true
+StickSoundRange 10
+StickSound TEM320Shoot
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 60
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate 
+DetonateSound TEGL4Shoot
+////Misc
+MeleeDamage 0
+
+//合成表
+//RecipeOutput 6
+//ShapelessRecipe Stuff_1 Stuff_4 Stuff_1 Stuff_1 Stuff_2 Stuff_1

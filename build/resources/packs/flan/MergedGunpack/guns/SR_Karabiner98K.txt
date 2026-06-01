@@ -1,0 +1,77 @@
+Name Karabiner 98K
+
+ShortName mgc.k98
+consumeBulletType 3
+bulletsPerReload 6
+Ammo TEM44Ammo
+Icon mgc.iconk98
+
+//ItemID 35423
+//Reload time in ticks, 1/20ths of a second
+
+ReloadTime 55
+Recoil 11
+Damage 14
+//The higher this value, the more the bullets spread
+
+Accuracy 1
+
+ShootDelay 40
+
+
+ShootSound mgc.k98shoot
+
+
+ReloadSound mgc.k98reload
+
+
+Mode SemiAuto
+
+
+//OneHanded 
+//False
+//Bullet speed, default 3.0
+
+
+BulletSpeed 20
+Scope CEASGO
+
+
+ZoomLevel 1.7
+
+FOVZoomLevel 1.3
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgck98
+
+Texture mgc.k98
+
+ModelScale 0.5
+
+Description ¡ìd[ÌØÖÖµ¯Ò©(3)]¡ì7ÏûºÄ£º6%_¡ìaÎäÆ÷ÖÖÀà>¡ì7SR-¾Ñ»÷Ç¹
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.acog mgc.rs27 mgc.pkasscoperail mgc.rs29 mgc.srd762
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+AllowBarrelAttachments true
+
+
+NumGenericAttachmentSlots 0

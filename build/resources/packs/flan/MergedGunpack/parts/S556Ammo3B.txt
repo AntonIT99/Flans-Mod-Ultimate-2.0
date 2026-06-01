@@ -1,0 +1,5 @@
+Name 5.56 HE
+ShortName S556Ammo3B
+Icon S556Ammo3B
+Colour 255 255 255
+StackSize 64

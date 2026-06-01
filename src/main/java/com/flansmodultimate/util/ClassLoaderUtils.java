@@ -135,6 +135,7 @@ public final class ClassLoaderUtils
                 return loadedClass;
 
             String relativeClassPath = fileClassName.replace('.', '/') + FileUtils.CLASS_EXTENSION;
+            FlansMod.log.debug("ClassLoaderUtils: Reading class file: {} for actualClassName: {}", relativeClassPath, actualClassName);
 
             byte[] classData;
 
@@ -151,7 +152,7 @@ public final class ClassLoaderUtils
                 throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
             }
 
-            byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
+            byte[] newClassData = getModifiedClassData(classData, actualClassName);
 
             //In case there is a dependency to a super class which has not been loaded yet
             ClassReader cr = new ClassReader(newClassData);
@@ -194,6 +195,20 @@ public final class ClassLoaderUtils
         ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor);
 
         cr.accept(transformVisitor, 0);
+
+        // Register transform ops under the remapped class name too, since
+        // TransformClassVisitor stored them under the original bytecode name.
+        if (newClassName != null)
+        {
+            String origClassName = cr.getClassName().replace('/', '.');
+            if (!origClassName.equals(newClassName))
+            {
+                List<TransformOp> ops = transforms.get(origClassName);
+                if (ops != null)
+                    transforms.put(newClassName, ops);
+            }
+        }
+
         return cw.toByteArray();
     }
 

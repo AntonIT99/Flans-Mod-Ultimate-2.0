@@ -35,7 +35,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -197,7 +197,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
         buf.writeInt(Optional.ofNullable(thrower).map(Entity::getId).orElse(0));
@@ -206,7 +206,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         try
         {

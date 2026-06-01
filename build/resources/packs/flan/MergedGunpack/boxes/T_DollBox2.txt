@@ -1,0 +1,24 @@
+Name §2工匠作坊进阶武器 建造工作台
+ShortName T_DollBox2
+TopTexture MS_HC2_Ding
+SideTexture MS_HC_Bian
+BottomTexture MS_Di
+
+////AddGun shortName amountOf item
+////AddAmmo must come immediately after //AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns 1
+//NumGuns must come before all the addGun lines and must be correct.
+
+SetPage HG-手枪
+AddGun TEUSP45 30 AEHC_GTG 4 AEHC_T 2 AEHC_TM1
+
+SetPage SMG-冲锋枪
+AddGun TECMS 35 AEHC_GTG 6 AEHC_T 3 AEHC_TM1
+AddGun TE020UMP9 34 AEHC_GTG 5 AEHC_T 5 AEHC_TM1
+
+SetPage SG-霰弹枪
+AddGun TEIZHShot 42 AEHC_GTG 6 AEHC_T
+AddGun TEIZTHA8 45 AEHC_GTG 6 AEHC_T

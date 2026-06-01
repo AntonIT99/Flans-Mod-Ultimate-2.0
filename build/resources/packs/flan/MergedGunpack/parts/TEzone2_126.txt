@@ -1,0 +1,4 @@
+Name TEzone2_1
+ShortName TEzone2_126
+Icon TEzone2_126
+StackSize 64

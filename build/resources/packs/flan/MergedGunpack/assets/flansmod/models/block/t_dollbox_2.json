@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "flansmod:block/ms_hc1_ding",
+    "bottom": "flansmod:block/ms_di",
+    "side": "flansmod:block/ms_hc_bian"
+  }
+}

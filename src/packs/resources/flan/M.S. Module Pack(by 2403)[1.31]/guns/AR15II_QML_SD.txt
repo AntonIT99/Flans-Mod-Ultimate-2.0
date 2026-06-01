@@ -1,0 +1,69 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name AR15 MOD-II
+ShortName AR15II_QML_SD
+Ammo 30RifleAmmoII
+Ammo 30RifleAmmo
+Ammo 30RifleAmmo1
+Ammo 30RifleAmmo2
+Ammo 30RifleAmmo3
+Ammo 30RifleAmmo4
+Ammo 60RifleAmmo
+Ammo CarrieAmmo1
+Ammo CarrieAmmo2
+Ammo CarrieAmmo3
+Ammo CarrieAmmo6
+Ammo TMAG30Ammo
+Ammo TMAG30Ammo4
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Ammo GRIFFIN_HVA1
+Ammo GRIFFIN_HVA2
+Ammo GRIFFIN_HVA3
+Ammo GRIFFIN_HVA4
+Icon AR15II_QML_SD
+//ͼ����ɫ:��ɫ����ɫ����ɫ, �����д 255.
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 45
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.3
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//ɱ����
+Damage 15
+////OneHanded true
+MeleeDamage 4
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 3
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound DZA_AR15Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto
+BulletSpeed 6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TEAR15II_QML
+Texture TEAR15II_QML_2403_SD
+ModelScale 0.45
+//�������
+Description ��a<M.S> | ��d<Ʒ�ʣ��Ƚ�>_AR-ͻ����ǹ_[Assult Rife]
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+//NEW2333
+// 8
+//Ϳװ��ʽ��Icon/text��

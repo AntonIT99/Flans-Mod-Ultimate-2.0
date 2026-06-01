@@ -1,0 +1,43 @@
+//This is a sentry gun, but it uses AA Gun code
+Name SPW A1[ÀŸ…‰–Õ]
+ShortName TESPWPA3
+//The ammo this gun uses (shortName)
+Ammo TESPWPA1Ammo
+Icon TESPWPA3
+Model YE2403.TESPWPA1
+//Place the texture .png in the skins folder
+Texture TESPWPA3_2403
+NumBarrels 8
+Barrel 0 -4 -16 0
+FireAlternately False
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 10
+Health 32767
+//The amount of gun recoil
+Recoil 10
+//Damage in half hearts
+Damage 3
+//The higher this value, the more the bullets spread
+Accuracy 10
+ShareAmmo true
+//Lock on stuff
+TargetMobs true
+TargetPlayers true
+TargetVehicles false
+TargetPlanes false
+TargetMechas true
+TargetRange 20
+//Time in ticks between rounds
+ShootDelay 2
+ShootSound TEXYShoot
+ReloadSound TEAR2Reload
+//The position of the player relative to the pivot
+GunnerPos -4 4 0
+//Degrees above and below level that the gun can work within. 90 degrees is vertical
+TopViewLimit 60
+BottomViewLimit 0
+RecipeOutput 1
+//Recipe I ingotIron B blockIron A aaBarrel L leather
+// AA
+//LAA
+//IBI

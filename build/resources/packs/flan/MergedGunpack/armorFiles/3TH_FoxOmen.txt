@@ -1,0 +1,19 @@
+Name FoxMask
+ShortName FMask
+Icon Armor
+//ItemID 10203
+
+Type Boots
+Model mos.FoxMask1
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture SkinOmen
+ShapelessRecipe FMask2
+//Durability 32000

@@ -1,0 +1,4 @@
+Name TSkin_YD
+ShortName TSkin_YD
+Icon TSkin_YD
+StackSize 64

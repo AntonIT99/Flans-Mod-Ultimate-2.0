@@ -1,0 +1,13 @@
+Name Juggernaut Heavy Helmet (Green)
+ShortName SEjuggernautHelmet
+Icon juggernauthelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.15
+ArmourTexture juggernaut
+//MoveSpeedModifier 0.85
+//KnockbackModifier 0
+//0.25
+//SmokeProtection True

@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MR-15 突击步枪
+ShortName TEAR15_DE
+Ammo 30RifleAmmo
+Icon TEAR15_DE
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.1
+RandomRecoilRange 1.7
+RandomRecoilYawRange 1.7
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 8
+//7.8
+//ShapelessRecipe TEBLAR15
+//MeleeDamage 0
+//4
+//这个值越高，子弹时速的越高
+Accuracy 5
+//循环时间
+ShootDelay 2
+ShootSound TEAR15_DE
+ReloadSound TEAR1Reload
+Mode SemiAuto FullAuto
+BulletSpeed 15
+//6.0
+//机瞄设置
+Scope JACK_HUD2
+ZoomLevel 3.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEAR15_DE
+Texture TEAR15_DE_2403
+ModelScale 0.45
+//组件设置
+Description §a<M.S> | §9<品质：军规>_AR-突击步枪_[Assult Rife]
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+// 2

@@ -1,0 +1,59 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name The Contender
+ShortName TEJZZ
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 2.5
+Ammo TEMODEL586Ammo
+Icon TEJZZ
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 44
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 30
+//杀伤力
+Damage 12
+//MeleeDamage 0.1
+//5
+//这个值越高，子弹时速的越高
+Accuracy 2.3
+//循环时间
+ShootDelay 20
+ShootSound JZZShootNEW
+//TERhinoShoot
+ReloadSound JZZReloadNEW
+Mode SemiAuto
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+BulletSpeed 25.0
+//机瞄设置
+Scope FN509SP
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEJZZ
+Texture TEJZZ_2403
+ModelScale 0.45
+//组件设置
+Description §a[随身弹药(7)]§7消耗：2.5%_§a武器种类>§7TR-折开式步枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 4
+//涂装格式“Icon/text”

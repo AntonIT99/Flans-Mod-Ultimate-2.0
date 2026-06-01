@@ -1,0 +1,4 @@
+Name CAitem_1
+ShortName TEUAV2_10
+Icon TEUAV2_10
+StackSize 64

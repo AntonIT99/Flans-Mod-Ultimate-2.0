@@ -1,0 +1,57 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Colt.45 Casull
+ShortName SHAPCasull
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 7
+Ammo SHAPCasullAmmo1
+Icon SHAPCasull
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 35
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5
+//杀伤力
+Damage 8.2
+//MeleeDamage 0.1
+//3
+//这个值越高，子弹时速的越高
+Accuracy 1
+//OneHanded true
+//循环时间
+ShootDelay 4
+ShootSound SHAPCasullShoot
+ReloadSound TEGlockReload
+Mode SemiAuto
+BulletSpeed 18.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.SHAPCasull
+Texture SHAPCasull_2403
+ModelScale 0.27
+//组件设置
+Description §c[不可装填(X)]§7消耗：§c--§7%_§a武器种类>§7HG-手枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+// 12
+//涂装格式“Icon/text”

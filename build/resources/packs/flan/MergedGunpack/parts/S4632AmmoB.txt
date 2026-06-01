@@ -1,0 +1,5 @@
+Name 4.6x30 JHP
+ShortName S4632AmmoB
+Icon S4632AmmoB
+Colour 255 255 255
+StackSize 64

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CRC",
+    "IAI",
+    "CBC"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:oak_planks"
+    },
+    "R": {
+      "item": "minecraft:crafting_table"
+    },
+    "B": {
+      "item": "minecraft:glass_pane"
+    },
+    "C": {
+      "item": "flansmod:stonebricksmooth"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:emi3"
+  }
+}

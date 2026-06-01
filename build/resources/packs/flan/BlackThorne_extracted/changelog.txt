@@ -1,0 +1,254 @@
+2.2.0 - 2019-09-29
+- Updated to MTS V15
++ Added UNU IM-510-LTC Wagon (8 colors + Police & Medic)
++ Added UNU LZ-131-HTA (Phase I) (Won't work properly without airship physics)
+- Got the Flansmod pack up to date (Minus Planes)
+
+2.1.1 - 2019-08-19
++ Added UNU Short Trailers
++ Added UNU Log Trailer
++ Added UNU Tank Trailer
+- Modified UNU AK-727-HCC Wheels
+- Modified UNU Standard Trailer Wheels (Part, Deco, and Train)
+- Modified UNU Standard Trailer Name (Old one will delete)
+
+2.1.0 - 2019-07-27 - Shipping and Shitboxes!
++ Added UNU TB-313-MCC Container Hauler (BlackThorne and Moonspire)
++ Added UNU AK-727-HCC (BlackThorne and Moonspire)
++ Added UNU AK-727-HCC Trailer (UNU and Moonspire)
++ Added UNU SB-728-LTC (4 Colors + Police)
++ Added UNU AK-727-HCC Trailer Decoration (UNU and Moonspire)
++ Added UNU FB-125-HCR With Trailer
+
+2.0.1 - 2019-07-14
+- Fixed luggage seat placement
+
+2.0.0 - 2019-07-12 - Connecting the World Update
+- IMPORTANT! Changed ModID*
++ Added UNU SL-301-HPR
++ Added UNU OC-307-HPR
++ Added UNU PC-409-HPR
++ Added UNU AT-410-HPR
++ Added UNU SB-423-MTC
++ Added UNU MC-502-LCR
++ Added UNU MC-503-LCR
++ Added UNU BH-505-HCR
++ Added UNU CB-506-HCR
++ Added UNU LC-506-HCR
++ Added UNU IM-510-LTC
++ Added UNU SS-541-HTA
++ Added UNU RS-528-LTR
++ Added RHD UNU CP-497-LTC
++ Added RHD UNU GM-600-LTC
++ Added UNU RT-629-LPR
++ Added UNU RS-702-LTC
++ Added RHD UNU RS-702-LTC
+- Revised Item Names
+- Doors and Hoods are fully functional
+- Added a Mirror to the Bottom Line(TM)
+- Revised Textures
+- Revised Item Icons
+- Fixed DD-228-HTC ID Plate
+- Removed Corvairs and Beetles (now in the Air-Cooled Pack)
+- Removed NR-490-LTG and ZF-174-MCG (and parts) (now in the BlackThorne Military Pack)
+- Removed Secret Cargo (now in the BlackThorne Military Pack)
+- Organized Creative Inventory
+- Updated Steering Wheel Models
+
+*Every item will be reset. If you don't want to lose items, install 'BlackThorne Civilian Pack', 'BlackThorne Civilian Military Pack', 'MTS Air-Cooled Pack', AND 'BlackThorne 2.0 Transition Pack' (On the Civilian Pack page as a beta release).
+
+1.11.2 - 2019-05-15
+- Revised part sizes
+- Updated part custom type to align with conventions
+- Modified jsons to have proper indentations
+- Added taxi sign to taxi model
+
+1.11.1 - 2019-05-05
+- Fixed DD-228-HTC and CP-497-LTC not moving
+
+1.11.0 - 2019-05-01 - V14 and some bugfixes
+- Updated to V14
++ Added Streetcar Sounds (Thanks MCRailRoader)
+- Added Axle Ratios
+- Fixed NY-212-MPR Passenger bogie having a random part
+- Removed Crate storage from UNU CP-497-LTC back seats
+- Added Luggage storage slots to all vehicles
+
+1.10.0 - 2019-03-26
++ Added UNU SV-313-MCC
++ Added UNU TB-313-MCC
++ Added UNU TB-313-MCC (Firetruck)
+- Added UNU SV-313-MCC Liveries (BlackThorne Public Utilities, UNU, MTS Signalling Co., and Gramados Bank)
+- Revised engine naming system for Trin compatibility
+- Modified UNU DG-930-MTC lights
+- Modified UNU DD-228-HTC lights
+- Modified Lightbar placements to mirror UNU pack changes
+
+1.9.3 - 2019-03-03
++ Added 5 Color variants to UNU Trains (Moonspire, Spaghetti, RedSands, Pennsylvania & Ohio, and Elementia)
+- Updated Trin van texture
+
+1.9.2 - 2019-03-02
+- Un-deleted the IR stuff, I hope you didn't break anything
+
+1.9.1 - 2019-03-02
+- Fixed the lang file (thanks Spyeedy)
+- Fixed UNU DD-228-HTC Bumper Stickers
+
+1.9.0 - 2019-03-01
++ Added Cargo Container Receptacle Bed to the UNU ZF-174-MCG
++ Added UNU IM-114-HCR (IR)
+- Updated UNU DG-930-MTC Seats
++ Added UNU DD-228-HTC
+- Updated UNU DG-930-MTC to use text slot for destination
+- Fixed UNU SC-123-MCR ID Tag
+- Fixed UNU ИC-131-MCR ID Tag
+- Still can't get the lang to work :/
+
+1.8.0 - 2019-02-05
+- Updated to MTS V13
++ Added UNU DS-123-MCR (IR)
++ Added UNU Tread-ZF174MCG-2 (From the UNU Parts Pack)
+- Animated UNU Tread-ZF174MCG-2
+- Updated UNU ZF-174-MCG Rear Axle 2 to add the wheels
+- Updated Trains to display pack and modeler
+- Animated UNU ZF-174-MCG Rear Axles
+- Animated UNU ZF-174-MCG Torque Shaft
++ Added UNU ZF-174-MCG Beds for camo variants
+
+1.7.0 - 2018-12-24
++ Added UNU GM-600-LTC
++ Added UNU HC-144-HCR
++ Added UNU TC-154-HCR
+- Fixed UNU DG-930-MTC Seats
+- Added sounds for UNU SC-126-HCR
+
+1.6.1 - 2018-11-25
+- Fixed the modversion
+
+1.6.0 - 2018-11-24
++ Added UNU BC-131_HCR
++ Added UNU FB-125-HCR (With UNU CP-497-LTC)
++ Added UNU RJ-618-LCC Skin (Flowers)
++ Added UNU RJ-618-LCC Skin (Nirt)
++ Added UNU RJ-618-LCC Skin (DVC)
++ Added UNU RJ-618-LCC Skin (UNU Quality Parts)
++ Added UNU CP-497-LTC Skin (Taxi)
+- Fixed UNU DG-930-MTC Windsheild
+- Fixed UNU SC-126-HCR Text Z-Fighting at a distance
+- Fixed some Bumberstickers and Bus Adverts being mirroed
+- Shifted engine position of vehicles that use UNU Engine-H6
+- Added Pushbar to Corvair
+- Revised UNU SC-126-HCR Model
+
+1.5.0 - 2018-11-16
++ Updated to MTS V12
++ Added UNU NY-212-MPR
++ Added UNU UNU RJ-618-LCC Skin (Moonspire)
++ Added UNU CP-497-LTC-P (Sedan and Wagon)
++ Added UNU SC-126-HCR
++ Added UNU UNU FB-125-HCR (Empty, with UNU NR-490-LTG, and with UNU ZF-174-MCG)
++ Added Secret Cargo
+- Fixed UNU IR-113-LPR Couplers
+- Removed IR rollingstock references (Probably caused issues)
+- Fixed the UNU CP-497-LTC not having a gas pedal
+
+1.4.0 - 2018-11-05
++ Added UNU IR-113-LPR (Requires Immersive Railroading)
++ Added UNU ZF-174-MCG Attachments
++ Added UNU ZF-174-MCG Rear Axles
+- Changed modid to blackthorne
+
+1.3.0 - 2018-10-18
++ Added UNU NR-490-LTG
++ Added Forrest, Desert, and Winter Camo variants to UNU NR-490-LTG and UNU ZF-174_MCG
+- Modified UNU ZF-174-MCG to align with UNU engine changes
+- Modified UNU CP-497-LTC and UNU RJ-618-LCC to align with UNU engine changes
+- Added rear window to UNU RJ-618-LCC
+- Added tow hitch to UNU ZF-174-MCG
+- Temporarily revised mini wheel hitboxes (moved up 0.75 blocks to hopefully stop breaking things)
+- Added 7 colors to the UNU CP-497-LTC & UNU RJ-618-LCC
+- Added 3 camo variants to the UNU ZF-174-MCG
+
+1.2.1 - 2018-10-12
+- Changed UNU DG-930-MTC and ZF-174-MCG weight
+- Fixed ZF-174-MCG Not accepting proper wheel
+- Fixed ZF-174-MCG steering visuals
+- Improved Corvair and VW Engine performance
+- Fixed some rotation issues with the corvairs
+
+1.2.0 - 2018
++ Added Bumpersticker Functionality
++ Added 'BlackThorne Public Health Services' skin for UNU RJ-618-LCC
++ Added Secret Cargo
++ Added Wagon variant of UNU CP-497-LTC
++ Added UNU DG-930-MTC
+- Revised Wheel Mounitng Points
+- Added windows to vehicles
+- Revised Engine Mounting Points on non-rear engined vehicles
+- Added wheel mounting hardware to Corvairs and UNU civilian vehicles
+- Made loading the van and truck easier with additionalParts
+- Fixed HUD on UNU civilian vehicles
+
+1.1.3 - 2018-09-22
+- Fixed UNU ZF-174-MCG Bed and Bumper Sticker parts
+- Updated wheel mounitng points
+
+1.1.2 - 2018-09-21
++ Added Bumper Sticker Functionality
+- Revised vehicle descriptions
+- Seperated Emergency Vehicles
+
+1.1.1 - 2018-09-18
++ Added Bumper Sticker Functionality
+- Revised vehicle descriptions
+- Seperated Emergency Vehicles
+- Shifted UNU ZF-174-MCG back 10 pixels (to fix issues with UNU ZF-174-MCG Rear Axles 2 & 3)
+
+1.1.0 - 2018-09-16
++ Added UNU ZF-174-MCG
+- Fixed 1.12.X crash
+
+1.0.1 - 2018-09-06
+- Fixed Texture Alignment
+- Revised Hitboxes
+- Revised Engine Stats
+
+1.0.0 - The Release
+- Updated to MTS V11
++ Revamped 1963 Chevy Corvair (16 Colors)
++ Revamped 1963 Chevy Corvair 95 (2 Colors)
++ Revamped 1963 Chevy Corvair Greenbrier
++ Revamped 1963 Chevy Corvair Rampside
++ Added 2098 UNU CP-497-LTC
++ Added 2098 UNU RJ-618-LCC (Truck and Van)
++ Added 1969 Volkswagen Type 1
++ Added Corvair Super Turbo-Air (Automatic and Standard)
++ Added Volkswagen 1200
++ Added Corvair Greenbrier Ambulance Kit
+
+BETA 1.4.0 - 2018-04-30
++ Added Corvair Greenbrier Ambulance
+
+BETA 1.3.0 - 2018-04-24
+- Remodeled all Corvairs (Added parking brake, Old engine was too big)
+- Updated for MC 1.12.2
+- Tweaked model for VW Beetle (Added parking brake)
+- Modified Police skins
+- Re-implemented sounds (still buggy)
+
+BETA 1.2.0 - 2017-05-20
++ Added Model, Icon, name, and Texture for 1963 Vespa Piaggio (16 Colors)
+- Tweaked Texture for 1963 Chevrolet Corvair (BlackThorne Police Department)
+- Removed all custom sounds (Compatibility issues) (Still included in pack, just not activated)
+
+BETA 1.1.0 - 2017-04-18
+- Updated to 1.8 (1.7.10 Still supported) (This also supports Flansmod Minus for 1.11 and 1.10.2))
+
+BETA 1.0.0 - 2016-08-02
++ Added Model, Icon, name, Texture and Sound for 1963 Chevrolet Corvair (16 Colors)
++ Added Model, Icon, name, Texture and Sound for 1963 Volkswagen Beetle (16 Colors)
++ Added Model, Icon, name, Texture and Sound for 1963 Chevrolet Corvair 95 (BT Movers)
++ Added Model, Icon, name, Texture and Sound for 1963 Chevrolet Corvair 95 (Hazardous Material Transport)
++ Added Model, Icon, name, Texture and Sound for 1963 Chevrolet Corvair (BlackThorne Police Department)
++ Added Model, Icon, name, Texture and Sound for 1963 Chevrolet Corvair 95 (BlackThorne Police Department)

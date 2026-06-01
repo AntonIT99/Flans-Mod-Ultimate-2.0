@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:ktemp7ammo"
+    }
+  ],
+  "result": {
+    "item": "flansmod:temp7ammo_2",
+    "count": 4
+  }
+}

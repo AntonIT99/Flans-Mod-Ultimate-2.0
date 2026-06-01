@@ -1,0 +1,61 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEDeagle
+ShortName TEDeagle
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 10
+Ammo TEWA2000Ammo_FF
+Icon TEDeagle
+ShowCrosshair True
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ReloadTime 40
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 4.2
+//杀伤力
+Damage 15.9
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 4
+ShootSound TEDeagleShoot
+ReloadSound HGNEWReload
+Mode SemiAuto
+BulletSpeed 16
+//6.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEDeagle
+Texture TEDeagle_2403
+ModelScale 0.06
+//组件设置
+Description §d[特种弹药(3)]§7消耗：10%_§a武器种类>§7CMR-强攻射手步枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+EmptyClickSound MS_DWShoot
+aimFixedYOffset 0.269
+//左右微调
+aimSwitchOffset 0
+//前后微调
+aimFixedOffset 0.16
+//瞄准进度（开机瞄多久后呈现自定义的角度，我一般是步枪0.5比较自然）
+aimSwitchProcess 0.5

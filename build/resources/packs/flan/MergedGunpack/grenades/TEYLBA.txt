@@ -1,0 +1,73 @@
+////名字
+Name 部署型医疗物资小
+ShortName TEYLBA
+Icon TEMARROR2
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model WE_GUN.TEYLBA
+Texture TEYLBA_2403
+//TrailParticles true
+//TrailParticleType crit
+//NumExplodeParticles 10
+//ExplodeParticles crit
+//SmokeRadius 8
+//SmokeTime 40
+//SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+//SmokeEffect 10 1200 0
+//SmokeEffect 4 100 1
+//SmokeEffect 18 100 4
+
+SpinWhenThrown false
+////Throwing
+ThrowDelay 20
+ThrowSound TEMARRORRLD
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.3
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 2.8
+FallSpeed 2.3
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 300
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 40
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEMARRORShoot
+////Misc
+MeleeDamage 0
+
+DeployableBag True
+NumUses 40
+HealAmount 10
+
+//RecipeOutput 3
+//ShapelessRecipe Stuff_4 Stuff_1 Stuff_4 Stuff_4 Stuff_1 Stuff_4
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

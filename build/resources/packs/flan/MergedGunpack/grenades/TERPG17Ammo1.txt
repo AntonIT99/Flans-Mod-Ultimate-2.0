@@ -1,0 +1,60 @@
+////Γϋ
+Name ±¬Υ¨Αρµ―
+ShortName TERPG17Ammo1
+Icon TERPG17Ammo1
+////Item and recipe
+StackSize 5
+////Visuals
+Model YE2403.TERPGAMMO
+Texture TERPGAMMO_2403
+TrailParticles true
+TrailParticleType cloud
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeRadius 8
+SmokeTime 15
+SmokeParticles hugeexplosion
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 5
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.0
+HitEntityDamage 1
+ThrowSpeed 4
+FallSpeed 1.5
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 1
+Sticky true
+AllowStickSound true
+StickSoundRange 10
+StickSound TEM320Shoot
+FlashBang true
+FlashTime 1
+FlashRange 8
+FlashSoundEnable true
+FlashSoundRange 8
+FlashSound STEFlashR
+FlashDamageEnable true
+FlashDamage 920
+BounceSound TEM320Shoot
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 120
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEM320EX
+////Misc
+MeleeDamage 10

@@ -1,0 +1,4 @@
+Name TEAN_21
+ShortName TEAN_21
+Icon TEAN_21
+StackSize 64

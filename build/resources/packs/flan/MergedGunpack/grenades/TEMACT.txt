@@ -1,0 +1,67 @@
+////名字
+Name 迎宾踏垫
+ShortName TEMACT
+Icon TEMACT
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEMACT
+Texture TEMACT_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 2
+SmokeTime 10
+SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 600 3
+
+SpinWhenThrown false
+////Throwing
+ThrowDelay 0
+ThrowSound TEMACTReload
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 4.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 1.0
+//延时
+Fuse 1200
+DetonateWhenShot true
+Remote false
+DespawnTime 1200
+PrimeDelay 40
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEMACTShoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 10
+//ShapelessRecipe Stuff_1 Stuff_1 Stuff_1 Stuff_3 Stuff_4 Stuff_3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

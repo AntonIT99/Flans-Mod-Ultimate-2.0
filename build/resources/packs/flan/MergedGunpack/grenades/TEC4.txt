@@ -1,0 +1,73 @@
+////名字
+Name TEC4
+ShortName TEC4
+Icon TEC4
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model YE2403.TEC4
+Texture TEC4_2403
+//NumExplodeParticles 10
+ExplodeParticles hugeexplosion
+SmokeRadius 5
+SmokeTime 15
+SmokeParticles hugeexplosion
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+//SmokeEffect 2 1200 12
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 20
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 2.5
+FallSpeed 3.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+FlashBang true
+FlashTime 1
+FlashRange 6
+FlashSoundEnable false
+FlashSoundRange 2
+FlashSound ESSS
+FlashDamageEnable true
+FlashDamage 1390
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 600
+DetonateWhenShot true
+Remote true
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate TEC4Shoot
+DetonateSound TEC4Shoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 2
+//ShapelessRecipe TEGL1 Stuff_4 TEGL2
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

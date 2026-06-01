@@ -1,0 +1,59 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEMPX
+ShortName TEMPXSHD2
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 3.4
+Ammo TEMP5Ammo
+Icon TEMPXSHD2
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 90
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.3
+RandomRecoilRange 0.6
+RandomRecoilYawRange 0.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 5.4
+//MeleeDamage 0.1
+//5
+//这个值越高，子弹时速的越高
+DistortSound False
+Accuracy 4
+//循环时间
+ShootDelay 2
+ShootSound TEMPX_LRShoot
+ReloadSound TEPP19Reload
+Mode FullAuto SemiAuto
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope TEHD_GUI
+ZoomLevel 1.4
+FOVZoomLevel 1.4
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEMPXSHD2
+Texture Skin_Gun_TEMPXSHD2
+ModelScale 0.45
+Description §a[轻型弹药(1)]§7消耗：3.4%_§a武器种类>§7SMG-冲锋枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+
+UseCustomMelee True
+MoveSpeedModifier 0.7
+// 6

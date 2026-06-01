@@ -1,0 +1,70 @@
+////名字
+Name EMP
+ShortName NOMAD_G_A3
+Icon NOMAD_G_A3
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 64
+
+////模型
+Model WE_GUN.NOMAD_G_A3
+Texture NOMAD_G_A3_2403
+TrailParticles true
+TrailParticleType cloud
+NumExplodeParticles 50
+ExplodeParticles cloud
+SmokeRadius 5
+SmokeTime 20
+SmokeParticles cloud
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 200 1
+SmokeEffect 19 100 3
+SmokeEffect 15 200 0
+SmokeEffect 18 200 100
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound NOMAD_EMP_Shoot
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 5
+FallSpeed 2.1
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 15
+DetonateWhenShot false
+Remote false
+//DespawnTime 0
+PrimeDelay 10
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 1.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound NOMAD_EMP_BOOM
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 10
+//ShapelessRecipe Stuff_1 Stuff_1 Stuff_1 Stuff_3 Stuff_4 Stuff_3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

@@ -1,0 +1,4 @@
+Name AEHC_LT_M4A1
+ShortName AEHC_LT_M4A1
+Icon AEHC_LT
+StackSize 64

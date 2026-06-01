@@ -1,0 +1,5 @@
+Name 5.7¡Á28 JHP
+ShortName S57Ammo2B
+Icon S57Ammo2B
+Colour 255 255 255
+StackSize 64

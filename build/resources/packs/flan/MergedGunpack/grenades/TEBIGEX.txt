@@ -1,0 +1,67 @@
+////名字
+Name TEBIGEX
+ShortName TEBIGEX
+Icon TEBIGEX
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 60
+
+////模型
+Model YE2403.TEBIGEX
+Texture TEBIGEX_2403
+TrailParticles true
+TrailParticleType cloud
+//NumExplodeParticles 10
+ExplodeParticles cloud
+SmokeRadius 10
+SmokeTime 30
+//SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+//SmokeEffect 2 1200 12
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 30
+ThrowSound TEBIGEX
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 1.0
+FallSpeed 3.0
+BreaksGlass true
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 70
+DetonateWhenShot false
+Remote true
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 4.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate TEC4Shoot
+DetonateSound TEBIGEXShoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 2
+//ShapelessRecipe TEGL1 Stuff_4 TEGL2
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

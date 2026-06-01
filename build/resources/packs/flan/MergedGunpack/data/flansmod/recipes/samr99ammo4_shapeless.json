@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:samr99ammo4b"
+    }
+  ],
+  "result": {
+    "item": "flansmod:samr99ammo4",
+    "count": 20
+  }
+}

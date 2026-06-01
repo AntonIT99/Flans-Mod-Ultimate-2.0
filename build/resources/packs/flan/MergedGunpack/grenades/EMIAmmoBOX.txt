@@ -1,0 +1,51 @@
+////Name and icon
+Name EMIAmmoBOX
+ShortName EMIAmmoBOX
+Icon EMIAmmoBOX
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 1
+////Visuals
+Model WE_GUN.EMIAmmoBOX
+Texture EMIAmmoBOX_2403
+TrailParticles false
+//SmokeParticleType <particleType>
+SpinWhenThrown false
+////Throwing
+ThrowDelay 10
+ThrowSound EMITEGL2R
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.0
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 4.0
+BreaksGlass false
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 0
+DetonateWhenShot true
+Remote false
+DespawnTime -1
+PrimeDelay 20
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+DropItemOnDetonate EMIAmmoBOX
+DetonateSound EMITEGL2R
+////Misc
+MeleeDamage 0
+//Deployable Stuff
+DeployableBag True
+NumUses 1
+HealAmount 0
+//PotionEffect ...
+NumClips 4

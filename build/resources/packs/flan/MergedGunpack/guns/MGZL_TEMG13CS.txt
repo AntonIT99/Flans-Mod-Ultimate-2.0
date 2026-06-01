@@ -1,0 +1,77 @@
+Name MG-13 转轮机枪
+ShortName TEMG13CS
+//The ammo this gun uses (shortName)
+consumeBulletType 3
+bulletsPerReload 25
+Ammo 300FMGAmmo
+Icon TEMG13CS
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 240
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8.3
+RandomRecoilYawRange 10.0
+DecreaseRecoil 8.3
+DecreaseRecoilYaw 20.0
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 0.5
+//Damage 0.1
+//in half hearts
+Damage 0.1
+NumBullets 2
+//3.5
+minigunStartSpeed 20
+DistortSound False
+//The higher this value, the more the bullets spread
+Accuracy 30
+//LoadIntoGun 2
+//Time in ticks between rounds
+ShootDelay 2
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+//加特林音效设置
+DistortSound False
+WarmupSound TEa2
+SpinSound TEa1
+CooldownSound TEa3
+WarmupSoundLength 11
+SpinSoundLength 9
+ShootSound MGCS1
+//TEMG13CSShoot
+ReloadSound NewZLMGReload
+Mode Minigun
+//Bullet speed, default 3.0
+BulletSpeed 30.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model WE_GUN.TEMG13CS
+Texture TEMG13CS_2403
+ModelScale 0.45
+Description §d[特种弹药(3)]§7消耗：25%_§a武器种类>§7MG-机枪
+//
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 1
+//Modifiers
+MoveSpeedModifier 0.4
+KnockbackModifier 0
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+//涂装格式“Icon/text”

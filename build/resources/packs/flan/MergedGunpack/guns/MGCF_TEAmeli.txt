@@ -1,0 +1,63 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Ameli 5.56
+ShortName TEAmeli
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 6
+Ammo TEMG4Ammo1
+Icon TEAmeli
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 80
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.7
+RandomRecoilYawRange 1.5
+DecreaseRecoil 0.8
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 8.3
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 12
+//循环时间
+ShootDelay 1
+ShootSound TEAmeliShoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+BulletSpeed 15
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope MSAOCG25
+ZoomLevel 1.5
+FOVZoomLevel 2.0
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEAmeli
+Texture TEAmeli_2403
+ModelScale 0.45
+MoveSpeedModifier 0.8
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：6%_§a武器种类>§7MG-机枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 3
+//涂装格式“Icon/text”

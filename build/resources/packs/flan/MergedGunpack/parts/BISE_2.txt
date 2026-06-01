@@ -1,0 +1,4 @@
+Name BISE_2
+ShortName BISE_2
+Icon BISE_2
+StackSize 64

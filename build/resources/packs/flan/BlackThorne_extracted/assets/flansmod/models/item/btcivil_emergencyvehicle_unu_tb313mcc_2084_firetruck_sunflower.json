@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "flansmod:item/btcivil_emergencyvehicle_unu_tb313mcc_2084_firetruck_sunflower"
+  },
+  "overrides": []
+}

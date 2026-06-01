@@ -1,0 +1,5 @@
+Name 9x19 VA
+ShortName S919Ammo3B
+Icon S919Ammo3B
+Colour 255 255 255
+StackSize 64

@@ -1,0 +1,24 @@
+Name Malughistan Police Beret
+
+ShortName mgc.beretpolice
+
+
+ItemID 36800
+
+
+Icon mgc.iconberetpolice
+
+
+Colour 255 255 255
+
+
+Type Helmet
+
+
+Defence 0.05
+//0
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.shirtpolice

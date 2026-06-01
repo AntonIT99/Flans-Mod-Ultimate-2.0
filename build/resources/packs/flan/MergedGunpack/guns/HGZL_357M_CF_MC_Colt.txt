@@ -1,0 +1,58 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MODEL 586
+ShortName CF_MC_Colt
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 2.4
+Ammo HE_SaulX09AmmoX2
+//X
+Icon CF_MC_Colt
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 50
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5
+RandomRecoilRange 1.3
+RandomRecoilYawRange 1.3
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 4
+ShootSound CF_MCZLShoot
+ReloadSound TEMODEL586Reload
+Mode SemiAuto
+BulletSpeed 9
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.4
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.CF_MC_Colt
+Texture Skin_Gun_CF_MC_Colt
+ModelScale 0.236
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：2.4%_§a武器种类>§7RHG-转轮手枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 4
+//涂装格式“Icon/text”
+
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEARHBFlash_JHG
+
+//上下微调
+aimFixedYOffset 0.24
+//左右微调
+aimSwitchOffset 0.0
+//前后微调
+aimFixedOffset -0.06
+//瞄准进度（开机瞄多久后呈现自定义的角度，我一般是步枪0.5比较自然）
+aimSwitchProcess 0.6

@@ -1,0 +1,47 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS MK-98
+ShortName TEM200S
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 7
+Ammo TEM200Ammo
+Icon TEM200S
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ReloadTime 70
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 7
+//杀伤力
+Damage 0.1
+//ShapelessRecipe TEKar98kEBR
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 47
+ShootSound TEM200Shoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+BulletSpeed 20
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope JACK_HUD2
+ZoomLevel 3
+FOVZoomLevel 3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM200762
+Texture TEM200S_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：7%_§a武器种类>§7ISR-干预狙击步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 3

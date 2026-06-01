@@ -1,0 +1,34 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name GX_YULUO
+ShortName GX_YULUO
+Icon GX_YULUO
+//从古至今没有任何卵用的颜色调节,别改
+Colour 255 255 255
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Boots
+Model WE_GUN.TEEGXAMA3
+//防御值
+Defence 0.05
+//0.3
+//材质
+ArmourTexture GX_YULUO
+
+//移动速度与击退抗性?还有跳跃提升
+//MoveSpeedModifier 1.5
+KnockbackModifier 0.0
+////JumpModifier 1.0
+//SmokeProtection true
+//喜闻乐见的注释
+//Description §a<M.S> 装备组_§6YULUO ONLY_§a装备组类型：轻型护甲_§9护甲+30
+
+//模型尺寸
+ModelScale 1.0
+//夜视
+//NightVision True
+
+//合成表
+//Recipe L leather M dwMidSteelIngot K dwKipliteArmor U dwElectricalUnit
+//KKK
+//MUM
+// L 

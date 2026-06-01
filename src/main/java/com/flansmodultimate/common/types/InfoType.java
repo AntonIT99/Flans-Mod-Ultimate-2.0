@@ -63,6 +63,7 @@ public abstract class InfoType
     protected String icon;
     @Getter
     protected String description = StringUtils.EMPTY;
+    @Getter
     protected String modelName;
     @Getter
     protected String modelClassName;
@@ -147,6 +148,8 @@ public abstract class InfoType
         description = readValues("Description", description, file);
         icon = readResource("Icon", icon, file);
         textureName = readResource("Texture", textureName, file);
+        if (StringUtils.isBlank(textureName))
+            textureName = icon;
         overlayName = readResource("Overlay", overlayName, file);
         modelName = readValue("Model", modelName, file);
         modelScale = readValue("ModelScale", modelScale, file);

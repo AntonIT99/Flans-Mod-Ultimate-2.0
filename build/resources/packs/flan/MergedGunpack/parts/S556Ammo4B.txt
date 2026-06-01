@@ -1,0 +1,5 @@
+Name 5.56 AP
+ShortName S556Ammo4B
+Icon S556Ammo4B
+Colour 255 255 255
+StackSize 64

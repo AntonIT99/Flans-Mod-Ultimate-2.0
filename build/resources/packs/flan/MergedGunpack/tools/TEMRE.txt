@@ -1,0 +1,9 @@
+Name MRE
+ShortName TEMRE
+Icon TEMRE
+Colour 255 255 255
+Food 1
+Foodness 30
+StackSize 64
+RecipeOutput 8
+ShapelessRecipe TEMREBox

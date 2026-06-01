@@ -1,0 +1,47 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Super90 M4
+ShortName TEKSG_FF
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 4.0
+Ammo 14FSGAmmo
+Icon TEKSG_FF
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 52
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 4.2
+//杀伤力
+Damage 6.15
+//ShapelessRecipe TEM870MCS
+NumBullets 5
+//这个值越高，子弹时速的越高
+Accuracy 7.1
+ShootDelay 6
+ShootSound TEKSGFFShoot
+ReloadSound TEKSGFFReload
+Mode FullAuto
+//DistortSound False
+BulletSpeed 15
+//20.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEKSG
+Texture TEKSG_FF_2403
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：4.0%_§a武器种类>§7ASG-突击霰弹枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+ReloadSoundRange 5
+GunSoundRange 40
+EmptyClickSound TESGEND

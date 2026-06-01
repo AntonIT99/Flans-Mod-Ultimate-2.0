@@ -305,6 +305,7 @@ public class ModClient
         isShooting = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
 
         updateRecoil(player);
+        renderTick();
         updateGunAnimations();
         updateScopeState(mc, player);
         updateZoom();

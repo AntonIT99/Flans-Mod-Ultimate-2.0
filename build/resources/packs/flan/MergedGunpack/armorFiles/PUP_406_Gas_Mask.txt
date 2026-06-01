@@ -1,0 +1,24 @@
+Name PUP Gas Mask
+ShortName SE_dwGasMask
+Icon penbarGasMask
+Colour 255 255 255
+
+Type Head
+Model dwdefence.GasMask
+Defence 0.05
+//0
+//0.1
+ArmourTexture Penbar_CasualUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+//SmokeProtection true
+
+ModelScale 0.5
+
+//Recipe G glass M dwMidSteelIngot
+GGG
+GMG
+ M 

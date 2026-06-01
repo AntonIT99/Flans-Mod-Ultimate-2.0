@@ -1,0 +1,4 @@
+Name AEHC_LT_MK20
+ShortName AEHC_LT_MK20
+Icon AEHC_LT
+StackSize 64

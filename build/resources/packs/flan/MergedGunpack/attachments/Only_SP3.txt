@@ -1,0 +1,43 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-名称、短名-
+Name §aVX-980 远程光学瞄具
+ShortName Only_SP3
+Icon Only_SP3
+
+//stock=枪托,barrel=枪管,sights=瞄准器,grip=下挂式
+//gadget=侧边导轨,slide=套筒,pump=泵,accessory=附件
+AttachmentType sights
+//开启/关闭消音
+Silencer true
+//-物理影响值设定-
+//混战伤害倍数
+MeleeDamageMultiplier 0
+//1.0
+//伤害增加
+DamageMultiplier 0
+//1.13
+//扩展倍数
+SpreadMultiplier 1.0
+//0.92
+//后坐力倍数
+RecoilMultiplier 1.0
+//1.2
+//散射倍数
+BulletSpeedMultiplier 1.0
+//1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+//1.08
+//Description §7通用配件_x4 倍数_§9后坐力+20%_§9伤害+13%_§9弹道时速+20%_§9装填时间+8%
+//-机瞄与HUD参数设置-
+ZoomLevel 2.5
+FOVZoomLevel 2.5
+//机瞄与HUD材质
+ZoomOverlay MSGUI_BMG
+//-模型与材质设置-
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01
+   
+   

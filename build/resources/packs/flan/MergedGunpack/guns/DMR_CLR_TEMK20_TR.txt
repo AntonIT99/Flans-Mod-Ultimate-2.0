@@ -1,0 +1,51 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MK20 SSR
+ShortName TEMK20_TR
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 10
+Ammo TETRAmmo
+Icon TEMK20_TR
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8
+//杀伤力
+Damage 0.1
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 2.8
+//循环时间
+ShootDelay 6
+ShootSound MK20TR2
+//TEMK20TRShoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto
+BulletSpeed 30
+//6.0
+//机瞄设置
+Scope HE_MAG2064_HOD2
+ZoomLevel 1.5
+FOVZoomLevel 1.5
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEMK20_TR
+Texture TEMK20_TR_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：10%_§a武器种类>§7CLR-光栅步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+EmptyClickSound MS_DWShoot
+// 2
+CasingModel WE_GUN.TE556dk
+CasingTexture TE556dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEARHBFlash_6

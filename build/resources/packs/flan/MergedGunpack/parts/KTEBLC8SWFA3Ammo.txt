@@ -1,0 +1,5 @@
+Name C-More #12
+ShortName KTEBLC8SWFA3Ammo
+Icon KTEBLC8SWFA3Ammo
+Colour 255 255 255
+StackSize 64

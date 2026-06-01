@@ -1,0 +1,64 @@
+Name MG-13 转轮机枪
+ShortName HE_SHMG416
+//The ammo this gun uses (shortName)
+consumeBulletType 3
+bulletsPerReload 15
+Ammo HE_SHMG41Ammo
+Icon HE_SHMG416
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.3
+RandomRecoilRange 1.3
+RandomRecoilYawRange 1.3
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 0.5
+//Damage 0.1
+//in half hearts
+Damage 3.5
+minigunStartSpeed 10
+DistortSound False
+//The higher this value, the more the bullets spread
+Accuracy 5
+//LoadIntoGun 2
+//Time in ticks between rounds
+ShootDelay 3
+//加特林音效设置
+WarmupSound HE_SHMG41XL
+SpinSound //TEMG13ZL2
+CooldownSound RTEMG13ZL3
+WarmupSoundLength 16
+SpinSoundLength 17
+ShootSound HE_SHMG41Shoot
+ReloadSound HJReload
+Mode Minigun
+//Bullet speed, default 3.0
+BulletSpeed 14.0
+//机瞄设置
+Scope HE_SC20_HUD
+ZoomLevel 1.5
+FOVZoomLevel 1.5
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model WE_GUN.HE_SHMG41
+Texture HE_SHMG41_24036
+ModelScale 0.45
+Description §d[特种弹药(3)]§7消耗：15%_§a武器种类>§7MG-机枪
+//
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+// 1
+//Modifiers
+MoveSpeedModifier 0.8

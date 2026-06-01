@@ -21,11 +21,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Driveable extends Entity implements IFlanEntity<DriveableType>
+public abstract class Driveable extends Entity implements IFlanEntity<DriveableType>, IEntityWithComplexSpawn
 {
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
 
@@ -83,12 +86,12 @@ public abstract class Driveable extends Entity implements IFlanEntity<DriveableT
         builder.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
     }
 
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
     }
 
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         setShortName(buf.readUtf());
     }

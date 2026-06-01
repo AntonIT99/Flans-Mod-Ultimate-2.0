@@ -1,0 +1,62 @@
+Name XM214 Microgun
+ShortName xm214microgun
+//The ammo this gun uses (shortName)
+consumeBulletType 2
+bulletsPerReload 10
+Ammo 100RifleAmmo1
+Icon TE_XM214
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 10348
+ShowCrosshair True
+ReloadTime 93
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.00
+RandomRecoilRange 1.30
+RandomRecoilYawRange 1.30
+DecreaseRecoil 1.00
+DecreaseRecoilYaw 4.00
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+//Damage in half hearts
+Damage 0.1
+IgnoreArmorProbability 0.5
+IgnoreArmorDamageFactor 1.0
+//Modifiers
+MoveSpeedModifier 0.7
+MeleeDamage 0.1
+//The higher this value, the more the bullets spread
+Accuracy 10
+//Time in ticks between rounds
+ShootDelay 1
+//Spin sound plays the whole time the player holds the shoot button, on loop. Warmup plays first, and cooldown plays when they stop firing
+WarmupSound TEa2
+SpinSound TEa1
+CooldownSound TEa3
+WarmupSoundLength 11
+SpinSoundLength 9
+ShootSound mgc.augshoot
+ReloadSound TEMG36Reload
+Mode Minigun
+BulletSpeed 14.5
+ShowRecoil true
+ShowAccuracy true
+Show//ReloadTime true
+Model WE_GUN.TEXM214
+Texture TEXM214_2403
+ModelScale 0.4
+Description §9[步枪弹药(2)]§7消耗：10%_§a武器种类>§7MG-机枪
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+//AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.00
+FOVZoomLevel 1.2
+Deployable False
+DeployedModel None

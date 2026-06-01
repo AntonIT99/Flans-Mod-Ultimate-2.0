@@ -1,0 +1,9 @@
+Name German KSK Helmet
+ShortName SEkskHelmet
+Icon kskhelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.1
+ArmourTexture ksk

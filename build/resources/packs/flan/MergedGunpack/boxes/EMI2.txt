@@ -1,0 +1,27 @@
+Name Resources Index
+ShortName EMI2
+TopTexture EMI3_D
+SideTexture EMI2_B
+BottomTexture EMI_T
+GunBoxID 320
+Recipe I ingotIron R workbench C stonebricksmooth B thinGlass A wood
+ARA
+ICI
+ABA
+//////AddGun shortName amountOf item
+////AddAmmo must come immediately after ////AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 1
+//NumGuns 2
+////AddGun Stuff_7 1 ingotIron
+//AddAmmo Stuff_7 4 goldNugget
+//AddAltAmmo Stuff_7 4 glass 6 yellowDust
+
+////AddGun Stuff_8 1 coal 1 yellowDust
+//AddAmmo Stuff_8 1 coal 2 goldNugget
+//AddAltAmmo Stuff_8 1 coal 1 glass

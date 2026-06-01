@@ -1,0 +1,5 @@
+Name 7.62¡Á51 HE
+ShortName SSUR1AmmoB
+Icon SSURAmmo1B
+Colour 255 255 255
+StackSize 64

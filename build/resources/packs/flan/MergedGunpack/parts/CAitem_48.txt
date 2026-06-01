@@ -1,0 +1,4 @@
+Name CAitem_48
+ShortName CAitem_48
+Icon CAitem_48
+StackSize 64

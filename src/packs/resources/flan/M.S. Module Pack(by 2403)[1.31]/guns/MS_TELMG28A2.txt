@@ -1,0 +1,45 @@
+Name MS LWMMG
+ShortName TELMG28A2
+//The ammo this gun uses (shortName)
+Ammo TELMG28Ammo
+Icon TELMG28
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 28254
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1
+//Damage in half hearts
+Damage 15
+//The higher this value, the more the bullets spread
+Accuracy 1
+//Time in ticks between rounds
+ShootDelay 3
+ShootSound TE6P41Shoot
+//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+//SoundLength 15
+DistortSound False
+ReloadSound TEaReload
+Mode FullAuto
+BulletSpeed 12.0
+Scope None
+Deployable True
+//-----------------------------------------------------------------------------
+//All the following is for deployables only. Other guns do not need any of this
+//-----------------------------------------------------------------------------
+//Place the compiled model class in the models folder
+DeployedModel YE2403.TELMG28
+//Place the texture .png in the skins folder
+DeployedTexture TELMG28A2_2403
+Description §a<M.S> | §9<品质：军规>_MG-机枪_[Machine Gun]_§6固定机枪：右键方块上方架设，不可架设于平地_§6右键使用/离开，左键拆除
+//The length from the bipod to the trigger of the gun. Deployables only.
+StandBackDistance 1.0
+//Degrees above and below level that the gun can work within. 90 degrees is vertical
+TopViewLimit 15
+BottomViewLimit 15
+SideViewLimit 50
+//The height of the pivot above the block the gun is on.
+PivotHeight 0.35
+
+MoveSpeedModifier 0.6

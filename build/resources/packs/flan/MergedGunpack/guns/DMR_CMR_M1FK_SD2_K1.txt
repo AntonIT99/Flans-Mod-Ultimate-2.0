@@ -1,0 +1,49 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Win 44
+ShortName TEM1FK_SD2_K1
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 4.8
+Ammo TEM1FKAmmo_10
+Icon TEM1FK_SD2_K1
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 42
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 4
+RandomRecoilRange 1.7
+RandomRecoilYawRange 1.7
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+//这个值越高，子弹时速的越高
+Accuracy 2
+//循环时间
+ShootDelay 3
+ShootSound TEM1FKShoot
+ReloadSound TEAR4Reload
+DistortSound False
+Mode SemiAuto
+BulletSpeed 16
+//12.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEM1FK
+Texture TEM1FK_K1_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：4.8%_§a武器种类>§7CMR-强攻射手步枪_§7[by 020kun&2403 / 改建]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+LastShootSound TEM1FKShootL
+EmptyClickSound MS_DWShoot
+// 6
+//涂装格式“Icon/text”

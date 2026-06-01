@@ -1,0 +1,18 @@
+Name Diversuet
+ShortName Diversuet
+Icon Armor
+//ItemID 10237
+
+Type Body
+Model mos.diversuet
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture SkindiversuetTemplate
+//Durability 32000

@@ -1,0 +1,5 @@
+Name 44AE M
+ShortName KTED44Ammo
+Icon KTED44Ammo
+Colour 255 255 255
+StackSize 64

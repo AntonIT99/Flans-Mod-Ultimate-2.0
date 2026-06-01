@@ -1,0 +1,12 @@
+Name Juggernaut Heavy Boots (Brown)
+ShortName SEjuggernautBootsBrown
+Icon juggernautbootsbrown
+KnockbackModifier 0
+Type Boots
+Defence 0.05
+//0
+//0.1
+ArmourTexture brownjuggernaut
+//MoveSpeedModifier 0.9
+//KnockbackModifier 0
+//0.25

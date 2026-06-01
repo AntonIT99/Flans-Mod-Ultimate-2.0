@@ -1,0 +1,4 @@
+Name TEHB2_3
+ShortName TEHB2_3
+Icon TEHB2_3
+StackSize 64

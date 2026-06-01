@@ -1,0 +1,5 @@
+Name .50 BMG DR
+ShortName SAMR99Ammo4B
+Icon SAMR99Ammo4B
+Colour 255 255 255
+StackSize 64

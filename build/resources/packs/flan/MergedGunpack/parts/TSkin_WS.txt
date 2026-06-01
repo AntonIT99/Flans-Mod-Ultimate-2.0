@@ -1,0 +1,4 @@
+Name TSkin_WS
+ShortName TSkin_WS
+Icon TSkin_WS
+StackSize 64

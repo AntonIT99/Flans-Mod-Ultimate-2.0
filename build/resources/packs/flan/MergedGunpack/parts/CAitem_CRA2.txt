@@ -1,0 +1,4 @@
+Name CAitem_CRA2
+ShortName CAitem_CRA2
+Icon CAitem_CRA2
+StackSize 1

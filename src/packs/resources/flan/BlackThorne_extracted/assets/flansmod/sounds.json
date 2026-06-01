@@ -1,0 +1,140 @@
+{
+  "sound_vehicle_btcivil_vwbeetle_start": {
+    "category": "player",
+    "sounds": [
+      "flansmod:sound_vehicle_btcivil_vwbeetle_start"
+    ]
+  },
+  "sound_vehicle_btcivil_vwbeetle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:sound_vehicle_btcivil_vwbeetle"
+    ]
+  },
+  "sound_vehicle_btcivil_corvair": {
+    "category": "player",
+    "sounds": [
+      "flansmod:sound_vehicle_btcivil_corvair"
+    ]
+  },
+  "unuparts_part_unu_engine_h6_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_h6_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_h6_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_h6_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i6h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i6h_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_i6h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i6h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i8h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i8h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i10h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i10h_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_i10h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i10h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i12h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i12h_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_i12h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i12h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_v6_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v6_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_v6_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v6_running"
+    ]
+  },
+  "unuparts_part_unu_engine_v8_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v8_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_v8_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v8_running"
+    ]
+  },
+  "unuparts_part_unu_engine_v8h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v8h_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_v8h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v8h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_v10h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v10h_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_v10h_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_v10h_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i2_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i2_cranking"
+    ]
+  },
+  "unuparts_part_unu_engine_i2_running": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i2_running"
+    ]
+  },
+  "unuparts_part_unu_engine_i8h_cranking": {
+    "category": "player",
+    "sounds": [
+      "flansmod:unuparts_part_unu_engine_i8h_cranking"
+    ]
+  }
+}

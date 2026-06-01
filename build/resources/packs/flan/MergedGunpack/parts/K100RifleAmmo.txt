@@ -1,0 +1,5 @@
+Name C-MAG 5.56x45
+ShortName K100RifleAmmo
+Icon K100RifleAmmo
+Colour 255 255 255
+StackSize 64

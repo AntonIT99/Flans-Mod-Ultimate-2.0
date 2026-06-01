@@ -1,0 +1,19 @@
+Name IC Security Head
+ShortName SE_dwSecurityCameraHead
+Icon SecurityCameraHead
+Colour 255 255 255
+
+Type Head
+Model dwdefence.SecurityCameraHead
+Defence 0.05
+//0
+//0.1
+ArmourTexture SecurityCamera
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+Overlay SecurityCamOverlay
+
+ModelScale 0.5

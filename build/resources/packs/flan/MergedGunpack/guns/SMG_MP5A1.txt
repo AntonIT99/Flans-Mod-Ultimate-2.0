@@ -1,0 +1,86 @@
+Name MP5A1
+
+ShortName mgc.mp5
+consumeBulletType 1
+bulletsPerReload 4.2
+Ammo TEMP5Ammo
+Icon mgc.iconmp5
+
+//ItemID 35417
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 46
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.7
+RandomRecoilRange 0.5
+RandomRecoilYawRange 0.5
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 5
+//The higher this value, the more the bullets spread
+
+Accuracy 4
+
+ShootDelay 2
+
+
+ShootSound mgc.mp5shoot
+
+
+ReloadSound MP5NEWReload
+
+Mode FullAuto
+
+
+//OneHanded 
+//True
+//Bullet speed, default 3.0
+
+
+BulletSpeed 14.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcmp5
+
+Texture mgc.mp5
+
+ModelScale 0.5
+
+Description §a[轻型弹药(1)]§7消耗：4.2%_§a武器种类>§7SMG-冲锋枪
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.acog mgc.mp5retractablestock mgc.mshp mgc.rs27 mgc.rs29 mgc.pkasscoperail mgc.mp5fixedstock
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments true
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

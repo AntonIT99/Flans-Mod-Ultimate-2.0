@@ -1,0 +1,4 @@
+Name DZBackPack
+ShortName DZBackPack
+Icon DZBackPack
+StackSize 1

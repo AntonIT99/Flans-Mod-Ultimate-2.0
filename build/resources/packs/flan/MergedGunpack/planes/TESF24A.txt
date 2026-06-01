@@ -1,0 +1,131 @@
+//---Standard-------------------------------------
+// Naming
+Name SF-24A
+ShortName TESF24A
+Description 空中支援火力平台_[重型炮艇]
+
+//Misc
+Mode Vtol
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model WE_GUN.TESF24A
+Texture TESF24A_2403
+Icon TEVM22
+//ModelScale 0.9
+CameraDistance 11.0
+
+//Movement
+MaxThrottle 4.0
+MaxNegativeThrottle 0.0
+Drag 2.1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -37 -11 -21
+WheelPosition 1 -37 -11 21
+WheelPosition 2 66 -11 7
+WheelPosition 3 66 -11 -7
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot 67 12 0
+Passengers 1
+Passenger 1 46 15 0 core
+
+//Inventory Slots
+CargoSlots 96
+BombSlots 0
+MissileSlots 18
+FuelTankSize 5000
+ShootPointSecondary 138 6 0 core TEBLSAR1
+ShootPointSecondary 0 1 -71 core TEBLSAR1
+ShootPointSecondary 0 1 71 core TEBLSAR1
+
+ShootPointPrimary -1 12 33 rightWing
+ShootPointPrimary -1 12 -33 rightWing
+ShootPointPrimary -1 9 -43 leftWing
+ShootPointPrimary -1 9 44 leftWing
+
+HeliPropeller 0 14 0 0 core TEBLCL_1
+HeliPropeller 1 14 0 0 core TEBLCL_1
+
+//Sounds
+StartSound MV22A2Qidong
+StartSoundLength 100
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary TEMG4Shoot
+PropSoundLength 70
+PropSound MV22A2Fei
+
+//Movement
+TurnLeftSpeed 5
+TurnRightSpeed 5
+LookUpSpeed 5
+LookDownSpeed 5
+RollLeftSpeed 5
+RollRightSpeed 5
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 10
+ShootDelaySecondary 4
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+//Propeller 0 54 0 0 core AN225PANT
+//Propeller 0 4 -80 151 rightWing AN225PANT
+//Propeller 1 4 -80 -151 leftWing AN225PANT
+
+Propeller 0 26 -61 0 core AN225PANT
+Propeller 1 26 -57 0 core AN225PANT
+Propeller 2 224 -52 8 core AN225PANT
+Propeller 3 224 -52 6 core AN225PANT
+
+PlaceableOnWater True
+FloatOnWater True
+WheelStepHeight 0
+Buoyancy 0.08
+//0.08
+
+//Health, Collision and Recipe
+SetupPart core 3800 -54 -3 -13 158 14 26
+SetupPart nose 1000 36 13 -13 66 24 26
+SetupPart tail 1000 -217 15 -13 245 17 26
+SetupPart leftWing 1000 -36 4 16 34 14 32
+SetupPart rightWing 1000 -36 4 -47 34 14 32
+SetupPart topWing 1000 -214 21 -43 17 3 86
+SetupPart coreWheel 1000 63 -10 -3 23 7 6
+SetupPart leftWingWheel 1000 -41 -10 -23 23 7 6
+SetupPart rightWingWheel 1000 -41 -10 18 23 7 6
+
+//CollisionPoint 30 -54 0 core
+//CollisionPoint 102 9 20 core
+//CollisionPoint 102 9 -20 core
+//CollisionPoint 102 4 20 core
+//CollisionPoint 102 4 -20 core
+//CollisionPoint -85 9 20 core
+//CollisionPoint -85 9 -20 core
+//CollisionPoint -85 4 20 core
+//CollisionPoint -85 4 -20 core
+
+AddDye 10 black
+AddRecipeParts core 5 TEBLCL_1
+AddRecipeParts nose 5 TEBLCL_1
+AddRecipeParts tail 5 TEBLCL_1
+AddRecipeParts leftWing 5 TEBLCL_1
+AddRecipeParts rightWing 5 TEBLCL_1
+AddRecipeParts topWing 5 TEBLCL_1
+AddRecipeParts coreWheel 5 TEBLCL_1
+AddRecipeParts leftWingWheel 5 TEBLCL_1
+AddRecipeParts rightWingWheel 5 TEBLCL_1

@@ -1,0 +1,9 @@
+Name U.S. Marine Boots
+ShortName SEmarineBoots
+Icon MarineBoots
+KnockbackModifier 0
+Type Boots
+Defence 0.05
+//0
+//0.1
+ArmourTexture Marine

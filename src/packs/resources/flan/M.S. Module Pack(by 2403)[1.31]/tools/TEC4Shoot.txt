@@ -1,0 +1,17 @@
+Name TEC4Shoot
+ShortName TEC4Shoot
+Icon TEC4Shoot
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23855
+Heal false
+Repair false
+ExplosiveRemote true
+HealAmount 0
+ToolLife 0
+StackSize 1
+RecipeOutput 1
+Recipe I Stuff_4 L coal
+ILI
+ILI
+   

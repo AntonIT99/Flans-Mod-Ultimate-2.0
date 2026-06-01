@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:tesupply26"
+    }
+  ],
+  "result": {
+    "item": "flansmod:ba_l85_fswammo"
+  }
+}

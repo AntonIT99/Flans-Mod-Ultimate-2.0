@@ -1,0 +1,65 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name .45 USP
+ShortName TEPloteX2
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 2
+Ammo TEPloteX1Ammo
+Icon TEPloteX2
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 36
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3.3
+//杀伤力
+Damage 7.1
+//OneHanded true
+//ShapelessRecipe TEUSP45
+//MeleeDamage 0.1
+//3
+//这个值越高，子弹时速的越高
+Accuracy 2.1
+RandomRecoilRange 0.6
+RandomRecoilYawRange 0.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//循环时间
+ShootDelay 3
+ShootSound TEPloteX1Shoot
+ReloadSound TEPloteX1Reload
+Mode FullAuto SemiAuto
+BulletSpeed 12.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEPloteX1
+Texture Skin_Gun_TEPloteX2
+ModelScale 0.26
+//组件设置
+Description §a[随身弹药(7)]§7消耗：2%_§a武器种类>§7HG-手枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+//上下微调
+aimFixedYOffset 0.245
+//左右微调
+aimSwitchOffset 0
+//前后微调
+aimFixedOffset 0
+//瞄准进度（开机瞄多久后呈现自定义的角度，我一般是步枪0.5比较自然）
+aimSwitchProcess 0.5

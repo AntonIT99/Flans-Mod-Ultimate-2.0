@@ -1,0 +1,4 @@
+Name TEYJ_1
+ShortName TEYJ_1
+Icon TEYJ_1
+StackSize 8

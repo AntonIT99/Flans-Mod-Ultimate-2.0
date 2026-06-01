@@ -1,0 +1,62 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AK-107 A3
+ShortName SZ_PDW_MS107
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 3.5
+Ammo HE_MS107Ammo
+Icon SZ_PDW_MS107
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 40
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.7
+RandomRecoilRange 1.1
+RandomRecoilYawRange 1.1
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 9.8
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 7.0
+//循环时间
+ShootDelay 2
+ShootSound HE_MS117Shoot
+ReloadSound SZ_PDWReload
+Mode FullAuto SemiAuto
+BulletSpeed 11
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.SZ_PDW_MS107
+Texture Skin_Gun_SZ_PDW_MS107
+ModelScale 0.45
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：3.5%_§a武器种类>§7PDW-个人防卫武器
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 3

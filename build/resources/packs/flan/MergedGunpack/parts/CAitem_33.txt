@@ -1,0 +1,4 @@
+Name CAitem_33
+ShortName CAitem_33
+Icon CAitem_33
+StackSize 64

@@ -1,0 +1,9 @@
+Name Russian Spetsnaz Boots
+ShortName SEspetsnazBoots
+Icon SpetsnazBoots
+KnockbackModifier 0
+Type Boots
+Defence 0.05
+//0
+//0.1
+ArmourTexture Spetsnaz

@@ -1,0 +1,24 @@
+Name Mafia Pants
+
+ShortName mgc.pantsmafia
+
+
+ItemID 36820
+
+
+Icon mgc.iconpantsmafia
+
+
+Colour 255 255 255
+
+
+Type Legs
+
+
+Defence 0.05
+//0
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armormafia

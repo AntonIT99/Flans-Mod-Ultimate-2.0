@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name TEPP19
+ShortName TEPP19
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 4.2
+Ammo TEPP19Ammo
+Icon TEPP19
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 56
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.1
+RandomRecoilRange 0.4
+RandomRecoilYawRange 0.4
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 4
+//循环时间
+ShootDelay 2
+ShootSound TEPP19Shoot
+ReloadSound TEPP19Reload
+Mode FullAuto
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEPP19
+Texture TEPP19_2403
+ModelScale 0.45
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：4.2%_§a武器种类>§7SMG-冲锋枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 3

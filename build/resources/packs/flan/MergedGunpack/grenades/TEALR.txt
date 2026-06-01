@@ -1,0 +1,68 @@
+////名字
+Name TEALR
+ShortName TEALR
+Icon TEALR
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 40
+
+////模型
+Model YE2403.TEALR
+Texture TEALR_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles crit
+SmokeRadius 6
+SmokeTime 5
+SmokeParticles crit
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 9 300 0
+SmokeEffect 2 100 0
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL1R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 3.0
+FallSpeed 2.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 6.0
+//延时
+Fuse 4800
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 120
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+DetonateSound TEALRShoot
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 3
+//ShapelessRecipe TEGL3 Stuff_4 TEGL3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

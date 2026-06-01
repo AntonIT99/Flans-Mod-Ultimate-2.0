@@ -1,0 +1,5 @@
+Name 5.56
+ShortName S556AmmoB
+Icon S556AmmoB
+Colour 255 255 255
+StackSize 64

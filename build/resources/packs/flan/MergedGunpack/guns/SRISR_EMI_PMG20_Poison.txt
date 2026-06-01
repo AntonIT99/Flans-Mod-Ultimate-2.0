@@ -1,0 +1,44 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name §aCharm Poison
+ShortName PMG20_Poison
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 7
+Ammo PMG20Ammo
+Icon PMG20_Poison
+Description §d[特种弹药(3)]§7消耗：7%_§a武器种类>§7ISR-干预狙击步枪
+//弹药装填时间, 1=20/1秒
+ReloadTime 75
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 25
+//杀伤力
+Damage 28
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 30
+ShootSound PMG20Shoot
+ReloadSound SRSReload
+Mode FullAuto
+//机瞄设置
+Scope PMG20
+ZoomLevel 4.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model ATLAS.PMG20
+Texture PMG20_2403_Poison
+ModelScale 0.45
+BulletSpeed 60
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments DZ_ALL1 DZ_ALL2 DZ_ALL3 DZ_ALL4 DZALL_D1 DZALL_D2 DZALL_D3 DZALL_D4 DZALL_D5 DZEMI_D1 DZEMI_D2 DZEMI_D3 DZEMI_D4 DZEMI_D5 Only_ALL3D1 Only_ALL3D2 Only_ALL3D3 Only_ALL3D4 EMIMAXZ5 TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TEALLSP8 TESDOOA2 TESDOOA3 TESDOOA4  EMIGrow EMIReverse HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 6

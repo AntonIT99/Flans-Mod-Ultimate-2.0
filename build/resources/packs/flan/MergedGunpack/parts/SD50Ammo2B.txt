@@ -1,0 +1,5 @@
+Name .50AE
+ShortName SD50Ammo2B
+Icon SD50Ammo2B
+Colour 255 255 255
+StackSize 64

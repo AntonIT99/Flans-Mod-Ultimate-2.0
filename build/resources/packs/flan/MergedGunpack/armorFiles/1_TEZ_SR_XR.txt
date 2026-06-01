@@ -1,0 +1,26 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name 1_TEZ_SR_XR
+ShortName 1_TEZ_SR_XR
+Icon 1_TEZ_SR_XR
+//从古至今没有任何卵用的颜色调节,别改
+Colour 255 255 255
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Head
+Model WE_GUN.TEZ_SR_XR
+//防御值
+Defence 0.05
+//0
+//材质
+ArmourTexture 1_TEZ_SR_XR
+
+//移动速度与击退抗性?还有跳跃提升
+//MoveSpeedModifier 1.0
+KnockbackModifier 0.0
+//JumpModifier 1.0
+
+//喜闻乐见的注释
+//Description §6时装 - 头部
+
+//模型尺寸
+ModelScale 1.0

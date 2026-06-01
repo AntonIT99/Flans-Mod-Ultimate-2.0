@@ -1,0 +1,47 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name SK-12
+ShortName YJD
+//弹药名称(短名)
+Ammo YJDAmmo
+consumeBulletType 2
+bulletsPerReload 5.5
+Icon YJD
+ShowCrosshair True
+//弹药装填时间, 1=20/1秒
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3.2
+//杀伤力
+Damage 10
+MeleeDamage 8
+//这个值越高，子弹时速的越高
+Accuracy 4
+//循环时间
+ShootDelay 2
+ShootSound YJDShoot
+ReloadSound SWRReload
+Mode FullAuto
+//机瞄设置
+Scope YJD
+ZoomLevel 2.0
+FOVZoomLevel 1.2
+Description §9[步枪弹药(2)]§7消耗：5.5%_§a武器种类>§7AR-突击步枪
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model Goth.YJD
+Texture YJD_2403
+ModelScale 0.45
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments TEMAXD4_H1 TEMAXD4_H2 TEMAXD4_H3 TEMAXD4_H4 TEMAXD4_H5 TEMAXD4_H6 TEMAXD4_H7 TEMAXD4_H8 TEMAXD4_H9 TEMAXD4_H10 TEMAXD4_H DZ_ALL1 DZ_ALL2 DZ_ALL3 DZ_ALL4 DZALL_D1 DZALL_D2 DZALL_D3 DZALL_D4 DZALL_D5 DZEMI_D1 DZEMI_D2 DZEMI_D3 DZEMI_D4 DZEMI_D5 Only_ALL3D1 Only_ALL3D2 Only_ALL3D3 Only_ALL3D4 EMIMAXZ5 EMIPlus_MC TEALL1 TEALL2 TEALL3 TEALL4 TEALL5 TEALL6 TEALL7 TEALL8 TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 EMIGrow EMIReverse HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD EMIReform EMIExtend EMIGrowX EMIReverse2X EMISever EMIARHUD EMIPlus1 EMIPlus2 EMIPlus3 EMIPlus4 EMIPlus11 TEALLSP1 TEALLSP2 TEALLSP3 TEALLSP4 TEALLSP5 TEALLSP6 TEALLSP7 TEALLSP8 TESDOOA2 TESDOOA3 TESDOOA4
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 6
+//涂装格式“Icon/text”
+Paintjob YJD_B YJD_2403_B 2

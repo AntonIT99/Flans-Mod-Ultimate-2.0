@@ -1,0 +1,57 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name C8-SFW A2
+ShortName TEC8_JA
+Ammo 30RifleAmmo
+Icon TEC8_JA
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 55
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+//OneHanded true
+Recoil 2
+RandomRecoilRange 1.4
+RandomRecoilYawRange 1.4
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//ɱ����
+Damage 9
+//12.7
+//MeleeDamage 0
+//6
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 3
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound TEC8_JAShoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+BulletSpeed 15
+//6.0
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TEC8_JA
+Texture TEC8_JA_2403
+ModelScale 0.45
+//�������
+Description ��a<M.S> | ��9<Ʒ�ʣ�����>_AR-ͻ����ǹ_[Assult Rife]
+//
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 8
+//NEW2333

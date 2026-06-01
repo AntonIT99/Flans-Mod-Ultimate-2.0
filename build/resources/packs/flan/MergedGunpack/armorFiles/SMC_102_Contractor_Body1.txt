@@ -1,0 +1,22 @@
+Name Contractor Body1
+ShortName SE_dwContractorBody1
+Icon skymareContractorBody1
+Colour 255 255 255
+
+Type Body
+Model dwdefence.ContractorBody
+Defence 0.05
+//0
+//0.2
+ArmourTexture SkymareContractorUniform1
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe S dwSkymarePolymer W cloth K dwKipliteArmor B dyePowder.4
+SBS
+WKW
+WKW

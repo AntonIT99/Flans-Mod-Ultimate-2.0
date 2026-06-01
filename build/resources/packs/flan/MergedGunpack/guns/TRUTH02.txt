@@ -1,0 +1,46 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name Sweep 47X
+ShortName TRUTH02
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 4.8
+Ammo TRUTH02Ammo
+Icon TRUTH02
+//弹药装填时间, 1=20/1秒
+ReloadTime 20
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 6
+//杀伤力
+Damage 0.1
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 6
+//循环时间
+ShowCrosshair True
+ShootDelay 3
+ShootSound TRUTH02Shoot
+ReloadSound TRUTHReload
+Mode FullAuto
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+BulletSpeed 10
+//模型设置(没有模型请无视)
+Model TEBL.TRUTH02
+Texture TRUTH02_2403
+ModelScale 0.45
+Description §9[步枪弹药(2)]§7消耗：4.8%_§a武器种类>§7AR-突击步枪
+//组件设置
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 1

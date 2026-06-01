@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CBC",
+    "IRI",
+    "CIC"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:glass_pane"
+    },
+    "R": {
+      "item": "minecraft:crafting_table"
+    },
+    "C": {
+      "item": "flansmod:stonebricksmooth"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:upgradebox"
+  }
+}

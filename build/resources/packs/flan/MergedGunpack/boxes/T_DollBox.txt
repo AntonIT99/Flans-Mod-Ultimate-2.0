@@ -1,0 +1,29 @@
+Name 黑市制式武器 建造工作台
+ShortName T_DollBox
+TopTexture MS_HC1_Ding
+SideTexture MS_HC_Bian
+BottomTexture MS_Di
+
+////AddGun shortName amountOf item
+////AddAmmo must come immediately after //AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns 1
+//NumGuns must come before all the addGun lines and must be correct.
+//NumGuns 19
+
+SetPage HG-手枪
+AddGun TE1911SOC 18 AEHC_GTG
+AddGun TEP226 14 AEHC_GTG
+
+
+SetPage SMG-冲锋枪
+AddGun TEMAC10 19 AEHC_GTG
+AddGun FMG9 21 AEHC_GTG
+
+SetPage SG-霰弹枪
+AddGun TEITA12S 27 AEHC_GTG
+
+SetPage MC-十字弩
+AddGun TEBHSZN 10 AEHC_GTG

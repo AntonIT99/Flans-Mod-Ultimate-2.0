@@ -1,0 +1,87 @@
+Name AS VAL
+
+ShortName mgc.asval
+consumeBulletType 2
+bulletsPerReload 4.7
+Ammo 30AKAmmo
+//Ammo
+
+Icon mgc.iconasval
+
+//ItemID 35414
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 55
+Recoil 2.0
+RandomRecoilRange 1.4
+RandomRecoilYawRange 1.4
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 7
+//The higher this value, the more the bullets spread
+
+Accuracy 2
+
+ShootDelay 2
+
+
+ShootSound mgc.vssshoot
+
+
+ReloadSound mgc.vssreload
+
+
+Mode FullAuto
+ SemiAuto
+//OneHanded 
+//False
+//Bullet speed, default 3.0
+
+
+BulletSpeed 16.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcasval
+
+Texture mgc.asval
+
+ModelScale 0.5
+
+Description ¡ì9[²½Ç¹µ¯Ò©(2)]¡ì7ÏûºÄ£º4.7%_¡ìaÎäÆ÷ÖÖÀà>¡ì7AR-Í»»÷²½Ç¹
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.psoscopeak mgc.pkasscope
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+AllowBarrelAttachments false
+
+
+NumGenericAttachmentSlots 0

@@ -1,0 +1,9 @@
+Name Russian Spetsnaz Helmet
+ShortName SEspetsnazHelmet
+Icon SpetsnazHelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.1
+ArmourTexture Spetsnaz

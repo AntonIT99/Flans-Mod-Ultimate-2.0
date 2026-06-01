@@ -1,0 +1,36 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name SFA_2
+ShortName SFA_2_B
+Icon SFA_2_B
+//从古至今没有任何卵用的颜色调节,别改
+Colour 255 255 255
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Body
+Model WE_GUN.SFA_2_B
+//防御值5
+Defence 0.05
+//0.25
+//材质
+ArmourTexture Skin_Armor_SFA_2_B
+//Overlay MSAHHUD_1
+//MS_GUI_1
+
+//移动速度与击退抗性?还有跳跃提升
+//MoveSpeedModifier 1.5
+KnockbackModifier 0.0
+////JumpModifier 1.0
+//SmokeProtection true
+//喜闻乐见的注释
+//Description §a私人装备组-需要定制请私聊腐竹
+
+//模型尺寸
+ModelScale 0.5
+//夜视
+//NightVision True
+
+//合成表
+//Recipe L leather M dwMidSteelIngot K dwKipliteArmor U dwElectricalUnit
+//KKK
+//MUM
+// L 

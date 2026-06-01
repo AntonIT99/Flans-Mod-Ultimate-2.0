@@ -1,0 +1,9 @@
+Name French GIGN Boots
+ShortName SEgignBoots
+Icon gignboots
+KnockbackModifier 0
+Type Boots
+Defence 0.05
+//0
+//0.1
+ArmourTexture gign

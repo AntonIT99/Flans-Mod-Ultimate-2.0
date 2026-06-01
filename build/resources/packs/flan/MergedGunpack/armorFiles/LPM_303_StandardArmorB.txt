@@ -1,0 +1,22 @@
+Name Lupinian Beta-A2 Armor
+ShortName SE_dwLupineArmorStandardB
+Icon lupineArmorStandardB
+Colour 255 255 255
+
+Type Body
+Model dwdefence.LupineArmorStandardB
+Defence 0.05
+//0
+//0.15
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 1.0
+
+//Recipe A dwArmorCloth K dwKipliteArmor
+K K
+AAA
+KKK

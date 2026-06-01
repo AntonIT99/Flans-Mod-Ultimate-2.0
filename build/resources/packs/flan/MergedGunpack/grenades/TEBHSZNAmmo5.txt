@@ -1,0 +1,62 @@
+////名字
+Name TEBHSZNAmmo5
+ShortName TEBHSZNAmmo5
+Icon TEBHSZNAmmo5
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 64
+
+////模型
+Model TEBL.TEBLAmmoe
+Texture TEBHSZNAmmo_2403
+TrailParticles true
+TrailParticleType cloud
+NumExplodeParticles 10
+ExplodeParticles cloud
+SmokeRadius 5
+SmokeTime 120
+SmokeParticles cloud
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 20 3
+SpinWhenThrown true
+////Throwing
+CanThrow False
+ThrowDelay 0
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 6
+FallSpeed 1.5
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.5
+//粘性
+Sticky true
+//BounceSound <sound>
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 15
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+DetonateSound TEGL4Shoot
+//DropItemOnDetonate <itemID.damage>
+////Misc
+MeleeDamage 0
+
+//合成表

@@ -1,0 +1,52 @@
+Name DMR_G28E2
+ShortName br_g28e2
+Description §9[步枪弹药(2)]§7消耗：5.5%_§a武器种类>§7DMR-精确射手步枪
+//The ammo this gun uses (shortName)
+consumeBulletType 2
+bulletsPerReload 5.5
+Ammo TEBLSURAmmo
+Icon G28
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 10371
+//Reload time in ticks, 1/20ths of a second
+ShowCrosshair True
+ReloadTime 55
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3.50
+RandomRecoilRange 2.00
+RandomRecoilYawRange 1.25
+DecreaseRecoil 1.75
+DecreaseRecoilYaw 2.00
+//Damage in half hearts
+Damage 0.1
+//Modifiers
+//The higher this value, the more the bullets spread
+Accuracy 1
+//Time in ticks between rounds
+ShootDelay 3
+ShootSound mgc.m14shoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope JACK_HUD2
+ZoomLevel 3.0
+FOVZoomLevel 1.2
+Deployable False
+DeployedModel None
+BulletSpeed 16.0
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+//Model settings
+Model mos.G28E2
+Texture SkinG28E2
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+//AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0

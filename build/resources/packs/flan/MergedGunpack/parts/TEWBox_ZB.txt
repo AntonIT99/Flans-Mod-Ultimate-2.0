@@ -1,0 +1,4 @@
+Name TEWBox_ZB
+ShortName TEWBox_ZB
+Icon TEWBox_ZB
+StackSize 64

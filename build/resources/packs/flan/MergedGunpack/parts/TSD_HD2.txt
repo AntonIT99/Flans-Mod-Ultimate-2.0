@@ -1,0 +1,4 @@
+Name TSD_HD1
+ShortName TSD_HD2
+Icon TSD_HD2
+StackSize 64

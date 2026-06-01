@@ -1,0 +1,4 @@
+Name CAitem_81
+ShortName CAitem_81
+Icon CAitem_81
+StackSize 64

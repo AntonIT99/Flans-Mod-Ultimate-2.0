@@ -1,0 +1,55 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name M21
+ShortName TEWA2000_FF
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 7.2
+Ammo TEWA2000Ammo_FF
+Icon TEWA2000_FF
+//ShowCrosshair True
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ReloadTime 55
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.3
+//杀伤力
+Damage 15.9
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 1.5
+//循环时间
+ShootDelay 3
+ShootSound TEWA2000Shoot
+ReloadSound TEAR1Reload
+Mode SemiAuto
+BulletSpeed 13
+//6.0
+//机瞄设置
+Scope MSGUI_DMR
+ZoomLevel 3.0
+FOVZoomLevel 1.5
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEWA2000
+Texture TEWA2000_FF_2403
+ModelScale 0.4
+//组件设置
+Description §d[特种弹药(3)]§7消耗：7.2%_§a武器种类>§7CMR-强攻射手步枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+AllowGripAttachments True
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+EmptyClickSound MS_DWShoot
+// 2

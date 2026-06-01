@@ -1,0 +1,22 @@
+Name Assault Uniform
+ShortName SE_dwAssaultBody
+Icon lupineAssaultBody
+Colour 255 255 255
+
+Type Body
+Model dwdefence.AssaultBody
+Defence 0.05
+//0
+//0.2
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe W cloth A dwLupineArmorStandardB
+W W
+WAW
+WWW

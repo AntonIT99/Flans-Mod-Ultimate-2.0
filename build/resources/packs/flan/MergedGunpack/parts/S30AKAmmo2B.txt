@@ -1,0 +1,5 @@
+Name 7.62¡Á39 FA
+ShortName S30AKAmmo2B
+Icon S30AKAmmo2B
+Colour 255 255 255
+StackSize 64

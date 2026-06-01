@@ -1,0 +1,4 @@
+Name CAitem_1
+ShortName TEKJ_7
+Icon TEKJ_7
+StackSize 64

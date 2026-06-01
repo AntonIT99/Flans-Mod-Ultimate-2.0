@@ -1,0 +1,64 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name VECTOR.45 速射冲锋枪
+ShortName C_TEVECTOR_YD
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 5.8
+Ammo TE020UMP45AmmoYS
+Icon C_TEVECTOR_YD
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 60
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.6
+RandomRecoilRange 0.7
+RandomRecoilYawRange 0.7
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+//ShapelessRecipe TEVECTOR
+NumBullets 2
+//这个值越高，子弹时速的越高
+Accuracy 4
+////OneHanded true
+//循环时间
+ShootDelay 2
+ShootSound C_VECTORShoot
+ReloadSound TESMGReload_XD
+Mode FullAuto SemiAuto
+BulletSpeed 9.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+UseCustomMelee True
+//机瞄设置
+Scope CEASGO
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.C_TEVECTOR
+Texture C_TEVECTOR_2403_YD
+ModelScale 0.45
+//组件设置
+Description §a[轻型弹药(1)]§7消耗：5.8%_§a武器种类>§7RSMG-速射冲锋枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 3
+//涂装格式“Icon/text”
+Paintjob TEVECTOR_1 TEVECTOR_2403_1
+Paintjob TEVECTOR_2 TEVECTOR_2403_2
+Paintjob TEVECTOR_3 TEVECTOR_2403_3
+Paintjob TEVECTOR_4 TEVECTOR_2403_4
+Paintjob TEVECTOR_5 TEVECTOR_2403_5

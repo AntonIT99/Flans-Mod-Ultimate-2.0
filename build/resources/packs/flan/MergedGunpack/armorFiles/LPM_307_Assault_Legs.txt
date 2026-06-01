@@ -1,0 +1,22 @@
+Name Assault Pants
+ShortName SE_dwAssaultLegs
+Icon lupineAssaultLegs
+Colour 255 255 255
+
+Type Legs
+Model dwdefence.AssaultLegs
+Defence 0.05
+//0
+//0.2
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe W cloth A dwArmorCloth
+WWW
+A A
+W W

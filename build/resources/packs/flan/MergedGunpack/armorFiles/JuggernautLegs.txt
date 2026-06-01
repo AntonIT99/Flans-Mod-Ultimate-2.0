@@ -1,0 +1,12 @@
+Name Juggernaut Heavy Trousers (Green)
+ShortName SEjuggernautPants
+Icon juggernautpants
+KnockbackModifier 0
+Type Legs
+Defence 0.05
+//0
+//0.2
+ArmourTexture juggernaut
+//MoveSpeedModifier 0.75
+//KnockbackModifier 0
+//0.25

@@ -1,0 +1,15 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name TETHA_HAmmer4
+ShortName TETHA_HAmmer4
+Icon TETHA_HAmmer4
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Boots
+Model WE_GUN.TETHA_HAmmer4
+//防御值
+Defence 0.05
+//0
+//材质
+ArmourTexture TETHA_HAmmer
+KnockbackModifier 0.0
+ModelScale 0.5

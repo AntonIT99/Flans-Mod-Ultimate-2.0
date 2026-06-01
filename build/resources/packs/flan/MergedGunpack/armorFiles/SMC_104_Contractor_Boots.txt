@@ -1,0 +1,21 @@
+Name Contractor Boots
+ShortName SE_dwContractorBoots
+Icon skymareContractorBoots
+Colour 255 255 255
+Type Boots
+Model dwdefence.ContractorBoots
+Defence 0.05
+//0
+//0.1
+ArmourTexture SkymareContractorUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe S dwSkymarePolymer W cloth K dwKipliteArmor B dye.4
+   
+S S
+K K

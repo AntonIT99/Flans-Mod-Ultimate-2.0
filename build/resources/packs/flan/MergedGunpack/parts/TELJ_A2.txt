@@ -1,0 +1,4 @@
+Name CAitem_1
+ShortName TELJ_A2
+Icon IOP_30S1
+StackSize 64

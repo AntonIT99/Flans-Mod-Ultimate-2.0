@@ -1,0 +1,4 @@
+Name TSkin_VIP
+ShortName TSkin_VIP
+Icon TSkin_VIP
+StackSize 64

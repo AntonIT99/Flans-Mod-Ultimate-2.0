@@ -1,0 +1,50 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MS AWM1
+ShortName TEQS_762XE
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 5
+Ammo TEL39Hecatia1AmmoXE
+Icon TEQS_762
+//弹药装填时间, 1=20/1秒
+ReloadTime 10
+ShowCrosshair True
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 11
+//杀伤力
+Damage 0.1
+NumBullets 5
+//这个值越高，子弹时速的越高
+Accuracy 19.8
+//循环时间
+ShootDelay 25
+ShootSound EMIYiXinShoot
+ReloadSound TEAWPReload
+Mode SemiAuto
+BulletSpeed 100
+//9
+//8.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+AllowNightVision true
+Scope ACOG_TDRNS
+ZoomLevel 2.5
+FOVZoomLevel 2.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEQS_762
+Texture Skin_Gun_TEQS_762
+ModelScale 0.45
+//组件设置
+Description §c[不可装填(X)]§7消耗：§c--§7%_§a武器种类>§7SR-狙击枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+// 3
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TEM61Flash3_2403

@@ -1,0 +1,70 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AC-43
+ShortName TEAC710SE
+//弹药名称(短名)
+consumeBulletType 5
+bulletsPerReload 8.5
+Ammo TEAC710Ammo1
+Icon SZAC710
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 75
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 8.2
+//杀伤力
+Damage 250.1
+//11.7
+//ShapelessRecipe TEMK14
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+DistortSound False
+Accuracy 4.7
+RandomRecoilRange 2.2
+RandomRecoilYawRange 2.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//循环时间
+ShootDelay 20
+ShootSound AC710APShoot
+ReloadSound TEAC710Reload
+Mode SemiAuto
+BulletSpeed 20.0
+//机瞄设置
+Scope AC_GUI
+ZoomLevel 1.6
+FOVZoomLevel 1.6
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.SZ_AC710X
+Texture Skin_Gun_SZ_AC710X
+ModelScale 0.45
+//组件设置
+Description §4[特化弹药(5)]§7消耗：§c8.5%_§a武器种类>§7AC-自动火炮
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+MoveSpeedModifier 0.6
+//NEW2333
+ReloadSoundRange 7
+GunSoundRange 40
+// 6
+//涂装格式“Icon/text”
+CasingModel WE_GUN.TEU794dk
+CasingTexture TEU794dk_2403
+FlashModel WE_GUN.TEM61Flash
+FlashTexture TESG1Flash2

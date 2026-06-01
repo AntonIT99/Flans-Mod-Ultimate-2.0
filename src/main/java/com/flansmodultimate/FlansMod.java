@@ -5,6 +5,7 @@ import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
@@ -66,6 +67,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.Optional;
@@ -176,6 +178,13 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
     );
+    public static final DeferredHolder<EntityType<?>, EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
+        .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
+        .clientTrackingRange(AAGun.RENDER_DISTANCE)
+        .updateInterval(2)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
+    );
     public static final DeferredHolder<EntityType<?>, EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
         .sized(1F, 1F)
         .clientTrackingRange(16)
@@ -270,7 +279,7 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
-        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
+        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ARMOR_BOX, EnumType.GUN_BOX, EnumType.AAGUN)));
 
         @SuppressWarnings("unchecked")
         List<Supplier<Item>> generalItems = (List<Supplier<Item>>) (List<?>) generalItemList;
@@ -344,7 +353,7 @@ public class FlansMod
 
     public static Optional<DeferredHolder<SoundEvent, SoundEvent>> getSoundEvent(String soundName)
     {
-        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
+        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName.toLowerCase(Locale.ROOT));
         return Optional.ofNullable(sounds.get(rl));
     }
 

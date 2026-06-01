@@ -1,0 +1,30 @@
+Name T-Doll Index
+ShortName MSHCZB_2
+TopTexture MS_ZB2_Ding
+SideTexture MS_ZB_Bian
+BottomTexture MS_Di
+GunBoxID 320
+Recipe I T_DollBox R MSHC_1 C MSHC_19 B MSHC_7
+CBC
+IRI
+CBC
+
+////AddGun shortName amountOf item
+////AddAmmo must come immediately after //AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns 1
+//NumGuns must come before all the addGun lines and must be correct.
+
+NumGuns 1
+//NumGuns 4
+//AddGun TEAmmoBox2 3 MSHC_4 1 MSHC_7
+
+//AddGun TEMARROR2 10 MSHC_4 5 MSHC_7 2 MSHC_6
+
+//AddGun TEJSGH1 1 MSHCGUN_1 4 MSHC_2 2 MSHC_3 1 MSHC_6
+//AddAmmo TEJSGH1Ammo 2 MSHC_4 1 MSHC_7
+
+//AddGun TEJSGH2 1 MSHC_4 1 MSHC_1 1 MSHC_7
+

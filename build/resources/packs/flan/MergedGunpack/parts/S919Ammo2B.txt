@@ -1,0 +1,5 @@
+Name 9x19 JHP
+ShortName S919Ammo2B
+Icon S919Ammo2B
+Colour 255 255 255
+StackSize 64

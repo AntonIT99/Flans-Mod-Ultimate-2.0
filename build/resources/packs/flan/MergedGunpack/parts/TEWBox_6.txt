@@ -1,0 +1,4 @@
+Name TEWBox_6
+ShortName TEWBox_6
+Icon TEWBox_6
+StackSize 1

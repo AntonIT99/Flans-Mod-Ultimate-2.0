@@ -1,0 +1,9 @@
+Name Body Armour
+ShortName SEbodyArmour
+Icon bodyarmour
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.4
+ArmourTexture heavycriminal

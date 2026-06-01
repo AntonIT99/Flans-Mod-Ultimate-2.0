@@ -1,0 +1,64 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AC-43
+ShortName TEAC64
+//弹药名称(短名)
+consumeBulletType 5
+bulletsPerReload 25.5
+Ammo TEAC64Ammo
+Icon TEAC64
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 90
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 6
+//杀伤力
+Damage 11.7
+//ShapelessRecipe TEMK14
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 1
+RandomRecoilRange 1.5
+RandomRecoilYawRange 1.5
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//循环时间
+ShootDelay 3
+ShootSound 20mmJRShoot
+ReloadSound ZDRPGReload2
+Mode FullAuto
+BulletSpeed 16.0
+//机瞄设置
+Scope AC_GUI
+ZoomLevel 1.6
+FOVZoomLevel 1.6
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEAC64
+Texture TEAC64_2403
+ModelScale 0.45
+//组件设置
+Description §4[特化弹药(5)]§7消耗：25.5%_§a武器种类>§7AC-自动火炮
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+MoveSpeedModifier 0.6
+//NEW2333
+ReloadSoundRange 7
+GunSoundRange 40
+// 6
+//涂装格式“Icon/text”

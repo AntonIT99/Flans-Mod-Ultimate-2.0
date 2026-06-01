@@ -1,0 +1,51 @@
+Name SYNAPTIC DISINTEGRATOR
+ShortName synapticdisintegrator
+//The ammo this gun uses (shortName)
+consumeBulletType 3
+bulletsPerReload 3.2
+Ammo synapticdisntegratorAmmo
+Icon SYNAPTICDISINTEGRATOR
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 
+ShowCrosshair True
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 30
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2.4
+//Damage in half hearts
+Damage 0
+//The higher this value, the more the bullets spread
+Accuracy 2.2
+//Time in ticks between rounds
+ShootDelay 3.33
+ShootSound SYNAPTICDISINTEGRATORShoot
+ReloadSound SYNAPTICDISINTEGRATORReload
+Mode FullAuto
+//Bullet speed, default 3.0
+BulletSpeed 64.0
+//Default Scope Settings
+Scope ACOG_SYNAPTICDISINTEGRATOR
+ZoomLevel 2.7
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model Settings
+Model FAM.Canopetk_SYNAPTIC_DISINTEGRATOR
+Texture Skin_Gun_Canopetk_SYNAPTIC_DISINTEGRATOR
+ModelScale 0.2
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments flanMWSilencer flanMWRedDot flanMWACOG flanMW4xScope flanMWSingleFire flanMWBurstFire flanMWAutoFire
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+Paintjob Barrett_Hazard Barrett_Hazard yellow 2
+Description §d[特种弹药]§7消耗：3.2%_§a武器种类>§7SG-强攻特种步枪

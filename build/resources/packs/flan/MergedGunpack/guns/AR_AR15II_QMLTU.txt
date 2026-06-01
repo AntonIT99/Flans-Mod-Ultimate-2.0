@@ -1,0 +1,58 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name AR15 MOD-II
+ShortName AR15II_QMLTU
+consumeBulletType 2
+bulletsPerReload 4.5
+Ammo 30RifleAmmoII
+Icon AR15II_QMLTU
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 50
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 1.3
+RandomRecoilYawRange 1.3
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+////OneHanded true
+MeleeDamage 4
+//这个值越高，子弹时速的越高
+Accuracy 3
+//循环时间
+ShootDelay 2
+ShootSound DZA_AR15Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto SemiAuto BURST
+BulletSpeed 15.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope ARJX_GUI
+ZoomLevel 1.2
+FOVZoomLevel 1.3
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEAR15II_QMLTU
+Texture Skin_Gun_TEAR15II_QMLTU
+ModelScale 0.45
+//组件设置
+Description §9[步枪弹药(2)]§7消耗：4.5%_§a武器种类>§7AR-突击步枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 15
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot
+// 8
+//涂装格式“Icon/text”

@@ -1,0 +1,5 @@
+Name 5.56 SAP
+ShortName S416AmmoB
+Icon S416AmmoB
+Colour 255 255 255
+StackSize 64

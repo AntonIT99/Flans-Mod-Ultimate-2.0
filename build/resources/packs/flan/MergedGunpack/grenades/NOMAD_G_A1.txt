@@ -1,0 +1,67 @@
+////名字
+Name 医疗支持平台
+ShortName NOMAD_G_A1
+Icon NOMAD_G_A1
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 64
+
+////模型
+Model WE_GUN.NOMAD_G_A1
+Texture NOMAD_G_A1_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles suspended
+SmokeRadius 6
+SmokeTime 420
+SmokeParticles suspended
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 10 200 0
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound NOMAD_YL_Shoot
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact false
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 8.0
+FallSpeed 1.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky true
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 1
+DetonateWhenShot false
+Remote false
+//DespawnTime 0
+PrimeDelay 15
+////火焰
+FireRadius 0.0
+//爆炸半径
+ExplosionRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound NOMAD_YL_BOOM
+////Misc
+MeleeDamage 0
+
+//RecipeOutput 10
+//ShapelessRecipe Stuff_1 Stuff_1 Stuff_1 Stuff_3 Stuff_4 Stuff_3
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint

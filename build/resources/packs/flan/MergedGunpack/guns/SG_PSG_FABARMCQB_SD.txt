@@ -1,0 +1,62 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name FABARM-CQB 霰弹枪
+ShortName TEFABARMCQB_SD
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 6.5
+Ammo 7FSGAmmo
+Icon TEFABARMCQB_SD
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 73
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 9
+//杀伤力
+UseCustomMelee True
+Damage 5.7
+//ShapelessRecipe TEFABARMCQB
+NumBullets 10
+//这个值越高，子弹时速的越高
+Accuracy 18
+//LoadIntoGun 7
+//循环时间
+ShootDelay 15
+ShootSound CQBShoot
+ReloadSound CQBReload
+Mode FullAuto
+BulletSpeed 25
+//20.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//UseCustomMelee True
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEFABARMCQB
+Texture TEFABARMCQB_2403_SD
+ModelScale 0.45
+//组件设置
+//Description 使用弹种:#12霰弹_§b<T.E.B.L> | §5<品质：尖端>_SG-霰弹枪_[Shot Gun]
+Description §d[特种弹药(3)]§7消耗：6.5%_§a武器种类>§7PSG-泵动式霰弹枪
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments False
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 3
+//涂装格式“Icon/text”

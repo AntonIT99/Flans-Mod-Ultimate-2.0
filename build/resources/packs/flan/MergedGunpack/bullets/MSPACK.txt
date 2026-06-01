@@ -1,0 +1,31 @@
+Name MSPACK
+ShortName MSPACK
+Model Bullet
+//Colour of icon and model
+Colour 255 255 255
+ItemID 23838
+Icon MSPACK
+//How affected by gravity the bullet is
+FallSpeed 0.0
+//The maximum stack size
+MaxStackSize 64
+//The number of rounds each item has. Limited to 32000.
+RoundsPerItem 1
+//The damage multiplier caused by the bullet on hitting an entity
+Damage 1
+//Size of explosion caused
+Explosion 0
+//True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
+ExplodeOnImpact False
+Fuse 0
+FlakParticles 0
+//Amount of fire to spread on exploding; for each increment, it will increase the dimensions of the burning area by 2. i.e. 1 will burn a 3x3 square, 2 will burn a 5x5 square
+Fire 0
+BreaksGlass False
+//Size of box to check for entities to hit / detonate
+HitBoxSize 0.1
+HitSound bullet
+//Whether or not the bullet can travel through an entity having hit it
+Penetrates False
+SmokeTrail False
+Description §6§l[WE - M.S Pack 使用说明书]_§a<武器包作者 - by 2403>_§7> M.S原先为最后战线-末世边境0地图建设用枪械_§7包,目前已加入W.E枪械包开发计划_§7> M.S武器原型大量采用少女前线、彩虹六号围攻_§7中的武器与各种道具设定来进行制作，并加入许_§7多原创内容_§6游戏说明与建议：_§7> M.S支持单人生存游玩或用于建造单机RPG地图,_§790%的物品支持通过生存模式正常取得_§7> 枪械可通过安装配件进行升级,配件可通过各种_§7途径获取.为了支持地图建设,M.S包增加了大量的_§7创造限定改装配件（如火控芯片与技能芯片）_§7> 如果想通过生存合成武器,可以通过G键合成等_§7途径查找枪械合成台合成公式,并通过合成台进行_§7武器制造

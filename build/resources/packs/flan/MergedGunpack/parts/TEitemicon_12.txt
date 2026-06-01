@@ -1,0 +1,4 @@
+Name TEitemicon_12
+ShortName TEitemicon_12
+Icon TEitemicon_12
+StackSize 64

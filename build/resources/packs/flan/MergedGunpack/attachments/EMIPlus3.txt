@@ -1,0 +1,39 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-----------------名称、短名-----------------
+Name §1Damage MAX
+ShortName EMIPlus3
+Icon EMIPlus3
+ItemID 23861
+//组件类型stock=枪托, barrel=枪管部件, sights=瞄准器, grip=下挂式战术组件
+AttachmentType stock
+//开启/关闭消音
+Silencer false
+//-----------------物理影响值设定-----------------
+//混战伤害倍数
+MeleeDamageMultiplier 1.0
+//伤害增加
+DamageMultiplier 2.5
+//扩展倍数
+SpreadMultiplier 10.0
+//后坐力倍数
+RecoilMultiplier 4.8
+//散射倍数
+BulletSpeedMultiplier 1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+
+//ModeOverride SemiAuto
+Description E.M.I - 后置改良组件_§9伤害 +90_§c命中 -450_§c后坐力 +190
+//-----------------机瞄与HUD参数设置-----------------
+ZoomLevel 1.0
+FOVZoomLevel 2.0
+//机瞄与HUD材质
+ZoomOverlay None
+//-----------------模型与材质设置-----------------
+Model svz.SkeletonStock
+Texture TCPLqt
+ModelScale 0.1
+//-----------------合成方式设置-----------------
+RecipeOutput 1
+Recipe 

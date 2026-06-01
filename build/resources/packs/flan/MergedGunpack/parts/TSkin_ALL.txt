@@ -1,0 +1,4 @@
+Name TSkin_ALL
+ShortName TSkin_ALL
+Icon TSkin_ALL
+StackSize 64

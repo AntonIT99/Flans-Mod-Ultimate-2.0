@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BAB",
+    "ABA",
+    "BAB"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_block"
+    },
+    "B": {
+      "item": "minecraft:coal_block"
+    }
+  },
+  "result": {
+    "item": "flansmod:teblcl_1",
+    "count": 3
+  }
+}

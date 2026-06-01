@@ -1,0 +1,9 @@
+Name Balaclava
+ShortName SEbalaclava
+Icon balaclava
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.1
+ArmourTexture criminal

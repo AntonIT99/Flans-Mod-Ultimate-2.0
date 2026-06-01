@@ -1,0 +1,4 @@
+Name TSkin_SD
+ShortName TSkin_SD
+Icon TSkin_SD
+StackSize 64

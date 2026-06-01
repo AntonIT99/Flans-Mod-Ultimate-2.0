@@ -1,0 +1,18 @@
+Name Ushanka
+ShortName Ushanka
+Icon Armor
+//ItemID 10208
+
+Type Head
+Model mos.Ushanka
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture Ushanka
+//Durability 32000

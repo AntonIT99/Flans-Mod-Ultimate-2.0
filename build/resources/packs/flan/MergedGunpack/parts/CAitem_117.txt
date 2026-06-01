@@ -1,0 +1,4 @@
+Name CAitem_117
+ShortName CAitem_117
+Icon CAitem_117
+StackSize 64

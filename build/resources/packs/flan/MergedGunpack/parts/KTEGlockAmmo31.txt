@@ -1,0 +1,5 @@
+Name P-31 9x19
+ShortName KTEGlockAmmo31
+Icon KTEGlockAmmo31
+Colour 255 255 255
+StackSize 64

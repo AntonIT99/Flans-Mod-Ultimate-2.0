@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IBI",
+    "ILI",
+    "IBI"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:mshc_7"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "flansmod:amocengine_2"
+  }
+}

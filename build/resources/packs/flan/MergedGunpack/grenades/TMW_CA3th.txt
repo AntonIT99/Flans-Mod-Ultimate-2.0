@@ -1,0 +1,35 @@
+////名字
+Name CA3th
+ShortName TMW_CA3th
+Icon CA3th
+StackSize 1
+
+////模型
+Model WE_GUN.CA3th
+Texture Skin_Gun_CA3th
+
+SpinWhenThrown False
+CanThrow False
+ThrowDelay 0
+DetonateOnImpact false
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 0.0
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 0.1
+//粘性
+Sticky false
+//延时
+Fuse 1
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+MeleeDamage 0d

@@ -1,0 +1,57 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name BOSG 12
+ShortName TEBOSG12_K4
+//弹药名称(短名)
+consumeBulletType 2
+bulletsPerReload 2
+Ammo 2DTFSGAmmo
+Icon TEBOSG12_K4
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 40
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 9
+//杀伤力
+Damage 3.75
+//这个值越高，子弹时速的越高
+Accuracy 4.3
+//LoadIntoGun 2
+//循环时间
+ShootDelay 2
+ShootSound TEBOSG12Shoot
+ReloadSound SGTWOReload
+Mode SemiAuto BURST
+BulletSpeed 20.0
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TEBOSG12_N
+Texture TEBOSG12_2403_K4
+ModelScale 0.43
+//组件设置
+//Description 使用弹种:#12霰弹_§b<T.E.B.L> | §5<品质：尖端>_SG-霰弹枪_[Shot Gun]
+Description §9[步枪弹药(2)]§7消耗：2%_§a武器种类>§7SSG-独头霰弹枪_§7[by 020kun&2403 / 改建]
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments False
+AllowScopeAttachments True
+AllowStockAttachments False
+AllowGripAttachments True
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments False
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 3
+//涂装格式“Icon/text”

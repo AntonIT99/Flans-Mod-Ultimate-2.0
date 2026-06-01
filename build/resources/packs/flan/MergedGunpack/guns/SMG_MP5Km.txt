@@ -1,0 +1,87 @@
+Name MP5K
+
+ShortName mgc.mp5k
+consumeBulletType 1
+bulletsPerReload 4.2
+Ammo TEMP5Ammo
+//Ammo
+
+Icon mgc.iconmp5k
+
+//ItemID 35418
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 46
+Recoil 1.6
+RandomRecoilRange 0.5
+RandomRecoilYawRange 0.5
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 5
+//The higher this value, the more the bullets spread
+
+Accuracy 4
+
+ShootDelay 2
+
+
+ShootSound mgc.mp5shoot
+
+
+ReloadSound MP5NEWReload
+
+Mode FullAuto
+
+
+//OneHanded 
+//True
+//Bullet speed, default 3.0
+
+
+BulletSpeed 14.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcmp5k
+
+Texture mgc.mp5k
+
+ModelScale 0.5
+
+Description °Ïa[«·–ÕµØ“©(1)]°Ï7œ˚∫ƒ£∫4.2%_°ÏaŒ‰∆˜÷÷¿‡>°Ï7SMG-≥Â∑Ê«π
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.acog mgc.pkasscoperail mgc.mp5retractablestock mgc.mshp mgc.rs27 mgc.rs29 mgc.mp5fixedstock
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments true
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

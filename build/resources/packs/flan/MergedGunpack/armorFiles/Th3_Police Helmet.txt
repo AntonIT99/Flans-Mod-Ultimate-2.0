@@ -1,0 +1,24 @@
+Name Malughistan Police Helmet
+
+ShortName mgc.helmetpolice
+
+
+ItemID 36816
+
+
+Icon mgc.iconhelmetpolice
+
+
+Colour 255 255 255
+
+
+Type Helmet
+
+
+Defence 0.05
+//0.1
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armorpolice

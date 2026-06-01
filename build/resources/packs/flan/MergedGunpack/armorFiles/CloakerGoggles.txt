@@ -1,0 +1,16 @@
+Name Cloaker Goggles
+ShortName SEcloakerGoggles
+Icon cloakergoggles
+KnockbackModifier 0
+Type Helmet
+Model mw.CloakerGoggles
+Defence 0.05
+//0
+//0.1
+ArmourTexture cloakergoggles
+//MoveSpeedModifier 1.8
+//KnockbackModifier 0
+//0.25
+//NightVision True
+Overlay CloakerGoggles
+//SmokeProtection True

@@ -1,0 +1,5 @@
+Name TEMREBox
+ShortName TEMREBox
+Icon TEMREBox
+Category Misc
+StackSize 4

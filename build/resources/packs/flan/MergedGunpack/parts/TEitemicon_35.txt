@@ -1,0 +1,4 @@
+Name TEitemicon_35
+ShortName TEitemicon_35
+Icon TEitemicon_35
+StackSize 64

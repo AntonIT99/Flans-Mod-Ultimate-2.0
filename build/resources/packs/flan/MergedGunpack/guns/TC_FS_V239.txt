@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name ACS-12
+ShortName TC_FS_V239
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 20
+Ammo TC_FS_V239Ammo
+Icon TC_FS_V239
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 50
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 15.7
+RandomRecoilRange 3.6
+RandomRecoilYawRange 3.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 5.6
+NumBullets 20
+//这个值越高，子弹时速的越高
+Accuracy 25.4
+//LoadIntoGun 32
+//循环时间
+ShootDelay 26
+ShootSound TC_FS_V239Shoot
+ReloadSound TC_FinalAngelReload
+DistortSound False
+Mode SemiAuto
+BulletSpeed 20.0
+//机瞄设置
+Scope HE_SC20_HUD
+ZoomLevel 1.2
+FOVZoomLevel 1.2
+//UseCustomMelee True
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TC_FS_V239
+Texture TC_FS_V239_2403
+ModelScale 0.45
+//组件设置
+Description §d[特种弹药(3)]§7消耗：20%_§a武器种类>§7CLSG-光栅霰弹枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+MoveSpeedModifier 0.8
+AllowAttachments 
+AllowBarrelAttachments true
+AllowScopeAttachments False
+AllowStockAttachments true
+AllowGripAttachments true
+NumGenericAttachmentSlots 0
+// 3

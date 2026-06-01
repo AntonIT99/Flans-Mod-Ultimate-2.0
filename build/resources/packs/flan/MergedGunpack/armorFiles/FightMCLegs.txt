@@ -1,0 +1,10 @@
+Name FightMCLegs
+ShortName FightMCLegs
+ItemID 23887
+Icon FightMCLegs
+Colour 255 255 255
+Type Legs
+Defence 0.05
+KnockbackModifier 0
+RecipeOutput 1
+ArmourTexture 020kunMC

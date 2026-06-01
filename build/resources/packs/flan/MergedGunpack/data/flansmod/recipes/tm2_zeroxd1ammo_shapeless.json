@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:tesupply26"
+    }
+  ],
+  "result": {
+    "item": "flansmod:tm2_zeroxd1ammo",
+    "count": 5
+  }
+}

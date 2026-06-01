@@ -1,0 +1,5 @@
+Name .50 BMG AP
+ShortName SAMR99Ammo1B
+Icon SAMR99Ammo1B
+Colour 255 255 255
+StackSize 64

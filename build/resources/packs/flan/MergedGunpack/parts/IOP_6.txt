@@ -1,0 +1,14 @@
+Name IOP_6
+ShortName IOP_6
+Icon IOP_6
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 14004
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Fuel, Misc
+Category Misc
+StackSize 64
+//RecipeOutput 3
+//Recipe A blockIron B blockCoal
+//BAB
+//ABA
+//BAB

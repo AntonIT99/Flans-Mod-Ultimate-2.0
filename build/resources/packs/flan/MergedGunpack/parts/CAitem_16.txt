@@ -1,0 +1,4 @@
+Name CAitem_16
+ShortName CAitem_16
+Icon CAitem_16
+StackSize 64

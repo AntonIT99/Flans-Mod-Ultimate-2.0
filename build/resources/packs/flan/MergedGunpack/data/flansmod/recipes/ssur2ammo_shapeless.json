@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:ssur2ammob"
+    }
+  ],
+  "result": {
+    "item": "flansmod:ssur2ammo",
+    "count": 30
+  }
+}

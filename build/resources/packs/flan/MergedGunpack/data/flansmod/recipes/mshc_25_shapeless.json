@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:mshc_1"
+    },
+    {
+      "item": "minecraft:obsidian"
+    },
+    {
+      "item": "flansmod:mshc_8"
+    }
+  ],
+  "result": {
+    "item": "flansmod:mshc_25"
+  }
+}

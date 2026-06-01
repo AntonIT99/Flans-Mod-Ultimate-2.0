@@ -1,0 +1,93 @@
+//---Standard-------------------------------------
+// Naming
+Name P-997 C
+ShortName TEBLHL17A
+Description 双人空中载具_[战斗机]
+
+//Misc
+Mode Plane
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model TEBL.TEBLHL17
+Texture TEBLHL17A
+Icon TEBLHL17A
+ModelScale 1.45
+CameraDistance 8.0
+
+//Movement
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+Drag 2.0
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -8 -23 -47
+WheelPosition 1 -8 -23 47
+WheelPosition 2 65 -23 0
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot -15 -4 1
+Passengers 1
+Passenger 1 -35 -7 0 core
+
+//Inventory Slots
+CargoSlots 4
+BombSlots 0
+MissileSlots 1
+FuelTankSize 3000
+
+//Sounds
+StartSound HL17_Start
+StartSoundLength 100
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary HL17_CannonFire
+PropSoundLength 65
+PropSound HL17_Flight
+
+//Movement
+TurnLeftSpeed 4
+TurnRightSpeed 4
+LookUpSpeed 5
+LookDownSpeed 5
+RollLeftSpeed 3
+RollRightSpeed 3
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary Gun
+ShootDelayPrimary 60
+ShootDelaySecondary 1
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo True
+//AddAmmo dwSkyfireClAmmo
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+//ShootPointPrimary 116 -6 0 core 
+ShootPointPrimary 47 3 -20 leftWing 
+ShootPointPrimary 47 3 20 leftWing 
+ShootPointSecondary 23 0 -3 leftWing TEBLSAR
+ShootPointSecondary 23 0 3 rightWing TEBLSAR
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 54 0 0 core TEBLHLPANT
+
+//Health, Collision and Recipe
+SetupPart leftWing 80 -84 -1 13 49 4 49
+SetupPart nose 100 11 -10 -7 17 13 16
+SetupPart tail 80 -125 -9 -7 34 17 16
+SetupPart core 800 -77 -18 -10 87 24 22
+SetupPart rightWing 80 -84 -1 -61 49 4 49
+
+AddRecipeParts leftWingWheel 1 TEBLCL_1
+AddRecipeParts nose 1 TEBLCL_1
+AddRecipeParts tail 1 TEBLCL_1
+AddRecipeParts rightWingWheel 1 TEBLCL_1
+AddRecipeParts core 1 TEBLCL_1

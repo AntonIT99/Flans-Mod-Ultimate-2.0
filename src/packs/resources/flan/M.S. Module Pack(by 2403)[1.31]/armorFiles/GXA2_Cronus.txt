@@ -1,0 +1,32 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name GXA2_Cronus
+ShortName GXA2_Cronus
+Icon GXA2_Cronus
+//从古至今没有任何卵用的颜色调节,别改
+Colour 255 255 255
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Head
+Model YE2403.TEEGXAMA2
+//防御值
+Defence 0.3
+//材质
+ArmourTexture GXA2_Cronus
+
+//移动速度与击退抗性?还有跳跃提升
+MoveSpeedModifier 1.2
+KnockbackModifier 0.5
+
+//喜闻乐见的注释
+Description §6<M.S> 机密装备组_§6Cronus ONLY_§a装备组类型：进阶护甲_§9护甲+30
+
+//模型尺寸
+ModelScale 1.0
+//夜视
+//NightVision True
+
+//合成表
+//Recipe L leather M dwMidSteelIngot K dwKipliteArmor U dwElectricalUnit
+//KKK
+//MUM
+// L 

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CBC",
+    "IRI",
+    "CBC"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:mshc_25"
+    },
+    "R": {
+      "item": "flansmod:mshc_1"
+    },
+    "C": {
+      "item": "flansmod:mshc_24"
+    },
+    "I": {
+      "item": "flansmod:t_dollbox_2"
+    }
+  },
+  "result": {
+    "item": "flansmod:mshczb_1"
+  }
+}

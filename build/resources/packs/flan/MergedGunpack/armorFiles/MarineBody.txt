@@ -1,0 +1,9 @@
+Name U.S. Marine Bodyarmour
+ShortName SEmarineBody
+Icon MarineBody
+KnockbackModifier 0
+Type Chest
+Defence 0.05
+//0
+//0.1
+ArmourTexture Marine

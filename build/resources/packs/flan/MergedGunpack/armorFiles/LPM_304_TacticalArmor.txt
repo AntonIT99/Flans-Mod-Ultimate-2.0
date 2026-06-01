@@ -1,0 +1,22 @@
+Name LMSS Tactical Armor
+ShortName SE_dwLupineArmorTactical
+Icon lupineArmorTactical
+Colour 255 255 255
+
+Type Body
+Model dwdefence.LupineArmorTactical
+Defence 0.05
+//0
+//0.20
+ArmourTexture LupineMilitaryArmor_A
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 1.0
+
+//Recipe A dwArmorCloth K dwKipliteArmor
+K K
+KAK
+AAA

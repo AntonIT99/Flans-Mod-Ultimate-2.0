@@ -1,0 +1,4 @@
+Name AEHC_ISIC
+ShortName AEHC_ISIC
+Icon AEHC_ISIC
+StackSize 64

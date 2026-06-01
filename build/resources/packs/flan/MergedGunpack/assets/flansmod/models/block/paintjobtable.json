@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "flansmod:blocks/paintjobtabletop",
+    "down": "flansmod:blocks/boxbottom",
+    "up": "flansmod:blocks/paintjobtabletop",
+    "north": "flansmod:blocks/planecraftingtableside",
+    "east": "flansmod:blocks/planecraftingtableside",
+    "south": "flansmod:blocks/planecraftingtableside",
+    "west": "flansmod:blocks/planecraftingtableside"
+  }
+}

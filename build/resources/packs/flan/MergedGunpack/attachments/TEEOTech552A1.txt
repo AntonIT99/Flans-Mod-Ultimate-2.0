@@ -1,0 +1,41 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-名称、短名-
+Name EOTech 552 全息瞄具[沙漠涂装]
+ShortName TEEOTech552A1
+Icon TEEOTech552A1
+
+//stock=枪托,barrel=枪管,sights=瞄准器,grip=下挂式
+//gadget=侧边导轨,slide=套筒,pump=泵,accessory=附件
+AttachmentType sights
+//开启/关闭消音
+Silencer false
+//-物理影响值设定-
+//混战伤害倍数
+MeleeDamageMultiplier 0
+//1.0
+//伤害增加
+DamageMultiplier 0
+//1.2
+//扩展倍数
+SpreadMultiplier 1.0
+//0.7
+//后坐力倍数
+RecoilMultiplier 1.0
+//1.0
+//散射倍数
+BulletSpeedMultiplier 1.0
+//1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+//1.0
+//Description  _§9伤害+10_§9命中+15
+//-机瞄与HUD参数设置-
+ZoomLevel 1
+FOVZoomLevel 1.1
+//机瞄与HUD材质
+ZoomOverlay None
+//-模型与材质设置-
+Model TEBL.TEEOTech552
+Texture TEEOTech552A1_2403
+ModelScale 0.45

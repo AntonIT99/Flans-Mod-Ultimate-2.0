@@ -1,0 +1,4 @@
+Name TEAN_8
+ShortName TEAN_8
+Icon TEAN_8
+StackSize 64

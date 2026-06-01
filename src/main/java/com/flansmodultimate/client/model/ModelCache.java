@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
@@ -10,6 +11,7 @@ import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -70,6 +72,12 @@ public final class ModelCache
                 if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
                     getOrLoadMuzzleFlashModel(gunType);
             }
+
+            if (type instanceof AAGunType aaGunType)
+            {
+                if (StringUtils.isNotBlank(aaGunType.getModelName()))
+                    getOrLoadAAGunModel(aaGunType);
+            }
         }
     }
 
@@ -93,6 +101,12 @@ public final class ModelCache
             return modelMG;
         }
         return null;
+    }
+
+    @Nullable
+    public static IModelBase getOrLoadAAGunModel(AAGunType aaGunType)
+    {
+        return getOrLoadModel(new ModelCacheKey(aaGunType.getModelClassName(), aaGunType.getShortName()), aaGunType, null);
     }
 
     @Nullable
@@ -173,6 +187,10 @@ public final class ModelCache
                         else
                             LogUtils.logWithoutStacktrace(e);
                     }
+                }
+                else
+                {
+                    FlansMod.log.error("ModelCache loadModel FAILED: no DynamicReference found for {} in content pack {}", modelClassName, type.getContentPack().getName());
                 }
             }
 

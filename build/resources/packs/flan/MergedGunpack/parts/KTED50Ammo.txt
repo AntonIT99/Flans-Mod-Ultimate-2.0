@@ -1,0 +1,5 @@
+Name 50AE M
+ShortName KTED50Ammo
+Icon KTED50Ammo
+Colour 255 255 255
+StackSize 64

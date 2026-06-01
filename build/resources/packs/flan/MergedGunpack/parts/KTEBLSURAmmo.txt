@@ -1,0 +1,5 @@
+Name NATO 7.62x51
+ShortName KTEBLSURAmmo
+Icon KTEBLSURAmmo
+Colour 255 255 255
+StackSize 64

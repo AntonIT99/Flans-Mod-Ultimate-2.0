@@ -1,0 +1,4 @@
+Name AEHC_GTG
+ShortName TEBJK_8
+Icon TEBJK_8
+StackSize 64

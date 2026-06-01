@@ -1,0 +1,63 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name D-50
+ShortName C_TED50
+//弹药名称(短名)
+consumeBulletType 7
+bulletsPerReload 13.5
+Ammo TED50Ammo
+Icon C_TED50
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 62
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 6
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 16.8
+NumBullets 2
+//LoadIntoGun 2
+MeleeDamage 5
+BulletSpeed 12
+//这个值越高，子弹时速的越高
+Accuracy 6
+//循环时间
+ShootDelay 7
+ShootSound TESD50Shoot
+DistortSound False
+ReloadSound TEHGReload_XD
+Mode FullAuto
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope CEASGO
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.C_TED50
+Texture TED50_2403
+ModelScale 0.5
+//组件设置
+Description §a[随身弹药(7)]§7消耗：13.5%_§a武器种类>§7CHG-重型手炮
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+//涂装格式“Icon/text”
+Paintjob TED50_1 TED50_2403_1
+Paintjob TED50_2 TED50_2403_2
+Paintjob TED50_3 TED50_2403_3
+Paintjob TED50_4 TED50_2403_4
+Paintjob TED50_5 TED50_2403_5
+Paintjob TED50_6 TED50_2403_6
+Paintjob TED50_7 TED50_2403_7
+Paintjob TED50_8 TED50_2403_8
+Paintjob TED50_9 TED50_2403_9
+Paintjob TED50_10 TED50_2403_10

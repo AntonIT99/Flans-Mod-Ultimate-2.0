@@ -1,0 +1,48 @@
+//WE制作组编写，版权所有 翻版必究
+//作者：2403
+Name Heavy Artillery
+ShortName TEM4ONLY
+//弹药名称(短名)
+Ammo TEM4ONLYSEAmmo
+Ammo TEM4ONLYAmmo
+Ammo INFAmmo
+Ammo INFAmmo1
+Ammo INFAmmo2
+Icon TEM4ONLY
+//弹药装填时间, 1=20/1秒
+ReloadTime 65
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 12
+//杀伤力
+Damage 20
+NumBullets 5
+//这个值越高，子弹时速的越高
+Accuracy 6
+//循环时间
+ShootDelay 30
+ShootSound TEM4ONLYShoot
+ReloadSound TEM4ONLYReload
+Mode SemiAuto
+//机瞄设置
+Scope None
+ZoomLevel 0.0
+FOVZoomLevel 1.0
+UseCustomMelee True
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model YE2403.TEM4ONLY
+Texture TEM4ONLY_2403
+ModelScale 0.45
+//组件设置
+Description §a<M.S> | §6<品质：遗迹>_TL-温压弹发射器_[Thermobaric Launcher]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments HUD_FHZB HUD_PMG20 HUD_SRS99 HUD_TCPL HUD_TCPLXD HUD_TCPLZCL HUD_TEBL HUD_void HUD_voidH HUD_voidT HUD_YJD TEMAXD1 TEMAXD2 TEMAXD3 TEMAXD4 TEMAXD5 TEMAXM1 TEMAXM2 TEMAXM3 TEMAXM4 TEMAXM5 TEMAXZ1 TEMAXZ2 TEMAXZ3 TEMAXZ4 TEMAXZ5 TEMAXT1 TEMAXT2 TEMAXT3 TEMAXT4 TEMAXT5 TEMAXF1 TEMAXF2 TEMAXF3 TEMAXF4 TEMAXF5 TESDOOA2 TESDOOA3 TESDOOA4
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 2
+KnockbackModifier 0.6

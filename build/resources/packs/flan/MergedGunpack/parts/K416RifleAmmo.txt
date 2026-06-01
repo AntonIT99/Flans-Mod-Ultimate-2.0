@@ -1,0 +1,5 @@
+Name IOP 5.56x45
+ShortName K416RifleAmmo
+Icon K416RifleAmmo
+Colour 255 255 255
+StackSize 64

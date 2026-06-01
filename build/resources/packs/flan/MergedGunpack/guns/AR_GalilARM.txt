@@ -1,0 +1,88 @@
+Name Galil ARM
+
+ShortName mgc.galil
+consumeBulletType 2
+bulletsPerReload 4.5
+Ammo 30RifleAmmo
+//Ammo
+
+Icon mgc.icongalil
+
+//ItemID 35428
+//Reload time in ticks, 1/20ths of a second
+
+ShowCrosshair True
+ReloadTime 50
+Recoil 2
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+Damage 11
+//The higher this value, the more the bullets spread
+
+Accuracy 2
+
+ShootDelay 2
+
+
+ShootSound mgc.m14shoot
+
+
+ReloadSound mgc.berylreload
+
+
+Mode FullAuto
+
+
+//OneHanded 
+//False
+//Bullet speed, default 3.0
+
+
+BulletSpeed 15.0
+
+
+//
+Scope None
+
+
+ZoomLevel 1.0
+
+FOVZoomLevel 1.25
+
+//Deployable Settings
+
+Deployable False
+
+DeployedModel None
+
+//Model settings
+
+Model malughiconflictpack.mgcgalil
+
+Texture mgc.galil
+
+ModelScale 0.5
+
+Description ¡ì9[²½Ç¹µ¯Ò©(2)]¡ì7ÏûºÄ£º4.5%_¡ìaÎäÆ÷ÖÖÀà>¡ì7AR-Í»»÷²½Ç¹
+//Attachment Settings
+
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+
+
+AllowAttachments 
+//mgc.srd762 mgc.pkasscope mgc.psoscopeak
+
+AllowBarrelAttachments true
+
+AllowScopeAttachments true
+
+AllowStockAttachments false
+
+AllowGripAttachments false
+
+
+NumGenericAttachmentSlots 0

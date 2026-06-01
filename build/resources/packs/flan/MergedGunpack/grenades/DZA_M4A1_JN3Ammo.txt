@@ -1,0 +1,71 @@
+////名字
+Name 坍缩
+ShortName DZA_M4A1_JN3Ammo
+Icon DZA_M4A1_JN3Ammo
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+StackSize 20
+
+////模型
+Model WE.TEGL2
+Texture TEGL6_2403
+//TrailParticles true
+//TrailParticleType crit
+NumExplodeParticles 10
+ExplodeParticles largeexplode
+SmokeRadius 2
+SmokeTime 5
+SmokeParticles explode
+
+//BUFF设置 <ID> <Duration> <Amplifier>
+SmokeEffect 2 20 6
+SmokeEffect 11 20 4
+SmokeEffect 18 20 100
+
+SpinWhenThrown true
+////Throwing
+ThrowDelay 0
+ThrowSound TEGL2R
+//DropItemOnThrow <itemID.damage>
+////冲击手雷设置
+DetonateOnImpact true
+//弹跳
+Bounciness 0.0
+////击中实体伤害
+HitEntityDamage 0
+ThrowSpeed 0.0
+FallSpeed 400
+BreaksGlass false
+PenetratesEntities false
+PenetratesBlocks false
+HitBoxSize 16
+//粘性
+Sticky false
+//BounceSound 
+////引爆条件
+//地雷
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+//延时
+Fuse 0
+DetonateWhenShot false
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////火焰
+FireRadius 0
+//FireRadius 30
+//爆炸半径
+ExplosionRadius 0.0
+//ExplosionRadius 10.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+DetonateSound DZ_Shoot
+////Misc
+MeleeDamage 1
+
+//合成表
+//RecipeOutput 5
+//ShapelessRecipe yellowDust sulphur flint
+//RecipeOutput 1
+//ShapelessRecipe Stuff_1 Stuff_4 Stuff_1 TEC4 Stuff_6 TEC4 Stuff_1 //Stuff_4 Stuff_1

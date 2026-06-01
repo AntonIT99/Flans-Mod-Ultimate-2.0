@@ -1,0 +1,4 @@
+Name item9i_20
+ShortName item9i_20
+Icon item9i_20
+StackSize 64

@@ -1,0 +1,5 @@
+Name 7.62¡Á51 HE
+ShortName TEMODEL586Ammo5B
+Icon TEMODEL586Ammo5B
+Colour 255 255 255
+StackSize 64

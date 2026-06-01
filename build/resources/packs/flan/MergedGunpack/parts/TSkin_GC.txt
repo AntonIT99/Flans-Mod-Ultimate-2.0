@@ -1,0 +1,4 @@
+Name TSkin_GC
+ShortName TSkin_GC
+Icon TSkin_GC
+StackSize 64

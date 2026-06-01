@@ -1,0 +1,9 @@
+Name French GIGN Helmet
+ShortName SEgignHelmet
+Icon gignhelmet
+KnockbackModifier 0
+Type Hat
+Defence 0.05
+//0
+//0.1
+ArmourTexture gign

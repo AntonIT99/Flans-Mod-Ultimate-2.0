@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SIS",
+    "BBB",
+    "SIS"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:mshc_23"
+    },
+    "S": {
+      "item": "flansmod:mshc_12"
+    },
+    "I": {
+      "item": "flansmod:mshc_20"
+    }
+  },
+  "result": {
+    "item": "flansmod:mshcgun_7"
+  }
+}

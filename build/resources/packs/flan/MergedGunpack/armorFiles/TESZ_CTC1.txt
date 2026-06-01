@@ -1,0 +1,15 @@
+//基础三属性，写了那么多年配置文件我相信你会的，零三
+Name TESZ_CTC1
+ShortName TESZ_CTC1
+Icon TESZ_CTC1
+
+//从上到下分别为Head Body Legs Boots，第二个是模型
+Type Head
+Model WE_GUN.TESZ_CTC1
+//防御值
+Defence 0.05
+//0
+//材质
+ArmourTexture TESZ_CTC
+KnockbackModifier 0.0
+ModelScale 0.5

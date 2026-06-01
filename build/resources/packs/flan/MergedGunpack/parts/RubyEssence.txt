@@ -1,0 +1,4 @@
+Name RubyEssence
+ShortName RubyEssence
+Icon RubyEssence
+StackSize 64

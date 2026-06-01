@@ -1,0 +1,9 @@
+Name FightMCHelmet
+ShortName FightMCHelmet
+ItemID 23885
+Icon FightMCHelmet
+Colour 255 255 255
+Type Head
+Defence 0.05
+KnockbackModifier 0
+ArmourTexture 020kunMC

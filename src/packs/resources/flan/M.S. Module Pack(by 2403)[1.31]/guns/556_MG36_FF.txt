@@ -1,0 +1,52 @@
+//���ս���������д����Ȩ���� ����ؾ�
+//���ߣ�2403
+Name TEMG36
+ShortName TEMG36_FF
+Ammo 100RifleAmmoS
+Ammo 100RifleAmmo1
+Ammo 100RifleAmmo2
+Ammo 100RifleAmmo3
+Ammo 100RifleAmmo4
+Icon TEMG36_FF
+//��ҩװ��ʱ��, 1=20/1��
+ShowCrosshair True
+ReloadTime 88
+//���������ĺ���, ���� : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.4
+RandomRecoilRange 1.2
+RandomRecoilYawRange 1.2
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//ɱ����
+Damage 8.8
+MeleeDamage 4
+//���ֵԽ�ߣ��ӵ�ʱ�ٵ�Խ��
+Accuracy 5.5
+//ѭ��ʱ��
+ShootDelay 2
+ShootSound TEMG36NShoot
+ReloadSound TEMG36Reload
+Mode FullAuto
+BulletSpeed 15.0
+//6.0
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+ShowReloadTime true
+//��������
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//��������(������ǹ��û��...)
+Deployable False
+DeployedModel None
+//ģ������(û��ģ��������)
+Model WE_GUN.TEMG36
+Texture TEMG36_FF_2403
+ModelScale 0.45
+//�������
+Description ��a<M.S> | ��9<Ʒ�ʣ�����>_MG-��ǹ_[Machine Gun]
+AllowAllAttachments false
+//�г����еĸ������������ǹʹ�õ���������ÿո�ָ�(��ɥ�������ս��ǹе���)
+//NEW2333
+// 2

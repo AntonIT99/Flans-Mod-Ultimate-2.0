@@ -1,0 +1,24 @@
+Name Mafia Bodyarmor
+
+ShortName mgc.bodymafia
+
+
+ItemID 36823
+
+
+Icon mgc.iconbodymafia
+
+
+Colour 255 255 255
+
+
+Type Chest
+
+
+Defence 0.05
+//0.1
+
+
+
+KnockbackModifier 0.0
+ArmourTexture mgc.armormafia

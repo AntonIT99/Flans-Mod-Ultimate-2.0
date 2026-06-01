@@ -1,0 +1,60 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//注意：开头打上"//"的内容为注释，不会被游戏及mod读取。你可以在某些数值开头删除或添加"//"来达到启用/禁用某些属性的作用
+//------------------------------------------------------------------------------------------
+
+//Name=显示名称，在合成台及相应部分显示，并不等于zh_cn翻译文件，推荐使用英文
+//ShortName=弹药内部名称(即短名/数字ID)，仅可使用英文、下划线即数字，不允许有空格，不允许数字开头(推荐直接写成你模型导出时的名字)
+Name CraftBLZAmmoBox
+ShortName CraftBLZAmmoBox
+
+//子弹模型(不用改，除非你有自己建的子弹模型)
+Model Bullet
+
+//Colour=图标颜色，用处不大的东西。ItemID=已废除的ID数值，完全没必要改
+Colour 255 255 255
+ItemID 23838
+
+//Icon=弹匣图标名称
+Icon CraftBLZAmmoBox
+
+//弹道下坠程度，写0为无弹道下坠
+FallSpeed 0
+
+//弹匣最大堆叠数量，最大为64(超过作死)
+MaxStackSize 12
+
+//弹匣内的子弹容量
+RoundsPerItem 1
+
+//弹匣伤害倍数，1为正常伤害，如果做特殊弹匣可以考虑改(Damage=伤害倍数,DamageVsLiving=对玩家伤害倍数，DamageVsVehicles=对载具伤害倍数)
+Damage 1
+DamageVsLiving 1
+DamageVsVehicles 1.1
+
+//爆炸等级，0为无爆炸(最好不要超过5)
+Explosion 0
+
+//ExplodeOnImpact=意义不明。Fuse=子弹消失时间,0为不消失,FlakParticles=子弹命中时产生的粒子效果大小，0为没有粒子
+ExplodeOnImpact False
+Fuse 0
+FlakParticles 0
+
+//子弹是否在击中方块时燃烧，1=3x3区域，0为关闭
+Fire 0
+
+//子弹是否击碎玻璃，推荐写"False"关闭
+BreaksGlass False
+
+//子弹判定体积，默认0.1
+HitBoxSize 0.1
+
+//子弹命中音效，默认不用改
+HitSound bullet
+
+//子弹穿甲能力，大于1时获得穿透实体能力，0为关闭
+PenetratingPower 0
+
+//是否启用子弹粒子效果
+SmokeTrail True
+TrailParticleType cloud

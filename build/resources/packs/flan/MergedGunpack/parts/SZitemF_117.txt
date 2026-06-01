@@ -1,0 +1,6 @@
+Name SZitemF_1
+ShortName SZitemF_117
+Icon SZitemF_117
+StackSize 64
+Model WE_GUN.TEHX_EX
+Texture Skin_Gun_TEHX_EX

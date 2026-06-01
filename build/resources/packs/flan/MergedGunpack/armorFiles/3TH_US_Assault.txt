@@ -1,0 +1,18 @@
+Name US_Assault
+ShortName US_Assault
+Icon 3TH_US_Assault
+//ItemID 10215
+
+Type Body
+Model mos.US_Assault
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture SkinUS_Assault
+//Durability 32000

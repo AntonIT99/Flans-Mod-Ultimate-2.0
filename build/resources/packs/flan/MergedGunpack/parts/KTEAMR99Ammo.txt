@@ -1,0 +1,5 @@
+Name NATO 12.7¡Á99
+ShortName KTEAMR99Ammo
+Icon KTEAMR99Ammo
+Colour 255 255 255
+StackSize 64

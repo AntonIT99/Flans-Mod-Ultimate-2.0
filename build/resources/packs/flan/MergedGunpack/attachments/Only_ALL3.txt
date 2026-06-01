@@ -1,0 +1,46 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+//-名称、短名-
+Name §a增音制动器
+ShortName Only_ALL3
+Icon Only_ALL3
+
+//stock=枪托,barrel=枪管,sights=瞄准器,grip=下挂式
+//gadget=侧边导轨,slide=套筒,pump=泵,accessory=附件
+AttachmentType barrel
+//开启/关闭消音
+Silencer false
+//-物理影响值设定-
+//混战伤害倍数
+MeleeDamageMultiplier 0
+//1.0
+//伤害增加
+DamageMultiplier 0
+//1.08
+//扩展倍数
+SpreadMultiplier 1.0
+//1.1
+//后坐力倍数
+RecoilMultiplier 1.0
+//1.05
+//散射倍数
+BulletSpeedMultiplier 1.0
+//1.0
+//重载时间倍数
+ReloadTimeMultiplier 1.0
+//1.0
+//Description §8═══════════════════════_§a装备种类>§7通用配件_§a装备类型>§7前端改造_§8═══════════════════════//_§9命中-10%_§9伤害+8%_§9后坐力+5%
+//-机瞄与HUD参数设置-
+ZoomLevel 2
+FOVZoomLevel 8.0
+//机瞄与HUD材质
+ZoomOverlay None
+//-模型与材质设置-
+Model TEBL.TEHAC1
+Texture KB_1
+ModelScale 0.01
+//RecipeOutput 1
+//Recipe A glass B MSHC_7 C MSHC_2 D ingotIron
+CBD
+   
+   

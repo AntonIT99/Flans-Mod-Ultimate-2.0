@@ -1,0 +1,54 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name LHJ_DG
+ShortName LHJ_DG
+//弹药名称(短名)
+Ammo TENDAmmo2123
+Icon TE_UE
+//图标颜色:红色，绿色，蓝色, 最高填写 255.
+Colour 255 255 255
+ItemID 23805
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 40
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2
+//OneHanded true
+//杀伤力
+Damage 15
+//MeleeDamage 0.1
+//4
+//这个值越高，子弹时速的越高
+Accuracy 1
+//循环时间
+ShootDelay 1
+ShootSound TEAGS30Shoot
+ReloadSound TEAR1Reload
+Mode FullAuto
+ShowRecoil true
+ShowAccuracy true
+ShowShowCrosshair True
+//ReloadTime true
+//机瞄设置
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.LHJ_DG
+Texture LHJ_DG
+ModelScale 1.45
+//组件设置
+Description §b<T.E.B.L> | §d<品质：先进>_GL-榴弹发射器_[Grenade Launcher]
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments MODWH_ALL1 MODWH_ALL2 MODWH_ALL3 M1887ALL_1 ZSFJ_ALL_1 FG_ALL_1 FG_ALL_2 FG_ALL_3 FG_ALL_4 FG_ALL_5 FG_ALL_6 TEMAXD_GQ1 TEMAXD_GQ2 TEMAXD_GQ3 TEMAXD_GQ4 TEMAXD_GQ5 TEMAXD_GQ6 TEMAXD_NE3 TEMAXD_NE4 TEMAXD_NE1 TEMAXD_NE2 TEMAXD_ZQ1 TEMAXD_ZQ2 TEMAXD_ZQ3 TEMAXD_ZQ4 MOD_DT6_S MOD_DT9_S TEMAXD4_H8 TEMAXD4_H8_SF TEMAXD4_H8_ZS_S TEMAXD4_H10_S MOD_DS1 MOD_DS2 MOD_DS3 MOD_DS4 MOD_DS5 MOD_DS6 MOD_DS7 MOD_DS8 MOD_DS9 MOD_DS10 MOD_DS11 MOD_DS12 MOD_DS13 MOD_DS14 MOD_DT1 MOD_DT2 MOD_DT3 MOD_DT4 MOD_DT5 MOD_DT6 MOD_DT7 MOD_DT8 MOD_DT9 MOD_DT10 MOD_ALL7 MOD_ALL8 MOD_ALL9 MOD_ALL10 MOD_ALL11 MOD_ALL12 MOD_ALL13 MOD_ALL14 MOD_ALL15 MOD_ALL16 MOD_ALL17 MOD_ALL18 MOD_ALL1 MOD_ALL2 MOD_ALL3 MOD_ALL4 MOD_ALL5 MOD_ALL6  TESDOOA2 TESDOOA3 TESDOOA4
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 0
+// 4
+//涂装格式“Icon/text”

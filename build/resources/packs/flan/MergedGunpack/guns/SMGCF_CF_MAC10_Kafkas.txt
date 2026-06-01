@@ -1,0 +1,58 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MAC10 9mm速射冲锋枪
+ShortName SZ_MAC10_Kafkas
+//弹药名称(短名)
+consumeBulletType 1
+bulletsPerReload 2.8
+Ammo TE919AmmoBZ
+Icon SZ_MAC10_Kafkas
+//弹药装填时间, 1=20/1秒
+ShowCrosshair True
+ReloadTime 35
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1.2
+RandomRecoilRange 0.6
+RandomRecoilYawRange 0.6
+DecreaseRecoil 0.01
+DecreaseRecoilYaw 10.0
+//杀伤力
+Damage 0.1
+//NumBullets 2
+//ShapelessRecipe TEMAC10
+//这个值越高，子弹时速的越高
+Accuracy 4
+//循环时间
+ShootDelay 1
+ShootSound SZMAC10Shoot
+ReloadSound TESMGReload2
+Mode FullAuto
+BulletSpeed 9.0
+UseCustomMelee True
+//机瞄设置
+Scope CEASGO
+ZoomLevel 1.0
+FOVZoomLevel 1.4
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.SZ_MAC10_Kafkas
+Texture Skin_Gun_SZ_MAC10_Kafka
+ModelScale 0.45
+//组件设置
+Description §a[小口径弹药]§7消耗：2.8%_§a武器种类>§7RSMG-速射冲锋枪
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+UseCustomMelee True
+AllowAttachments 
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 0
+//NEW2333
+ReloadSoundRange 4
+GunSoundRange 30
+LastShootSound MS_DWShoot
+EmptyClickSound MS_DWShoot

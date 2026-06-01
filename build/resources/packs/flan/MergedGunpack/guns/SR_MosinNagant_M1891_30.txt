@@ -1,0 +1,59 @@
+Name R_MosinNagant M1891/30
+ShortName r_mosinnagant_m1891_30
+Description ¡ìd[ÌØÖÖµ¯Ò©(3)]¡ì7ÏûºÄ£º6%_¡ìaÎäÆ÷ÖÖÀà>¡ì7SR-¾Ñ»÷Ç¹
+//The ammo this gun uses (shortName)
+consumeBulletType 3
+bulletsPerReload 6
+Ammo TEM1FKAmmo
+Icon TEMosin_Nagant
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 10382
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 55
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 5.00
+RandomRecoilRange 6
+RandomRecoilYawRange 1.00
+DecreaseRecoil 2.00
+DecreaseRecoilYaw 2.00
+//Damage in half hearts
+Damage 0.1
+//Modifiers
+//The higher this value, the more the bullets spread
+Accuracy 0
+//Time in ticks between rounds
+ShootDelay 42
+ShootSound mgc.rpg7reload
+ReloadSound mgc.k98reload
+//MeleeSound bayonet1
+Mode SemiAuto
+//Bullet speed, default 3.0
+BulletSpeed 20.0
+ShowRecoil true
+ShowAccuracy true
+ShowReloadTime true
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope CEASGO
+ZoomLevel 1.7
+FOVZoomLevel 1.3
+//Deployable Settings
+Deployable False
+DeployedModel None
+//MeleeDamage 7
+//Model settings
+Model mos.MosinNagant_M1891_30
+Texture skinMosinNagant
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+//AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+//Paintjob Settings
+//Format is "Paintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+ModelScale 0.33

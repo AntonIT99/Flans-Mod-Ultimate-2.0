@@ -1,0 +1,89 @@
+//---Standard-------------------------------------
+// Naming
+Name TEvista
+ShortName TEvista
+Description TCPL MK-V Vista_[单兵火力攻击平台]
+
+//Misc
+Mode Heli
+RestingPitch 0.0
+HasGear True
+
+// Visuals
+Model YE2403.TEvista
+Texture TEvista_2403
+Icon TEvista
+//ModelScale 0.9
+CameraDistance 8
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -47 -23 -19
+WheelPosition 1 -47 -23 19
+WheelPosition 2 81 -23 0
+WheelSpringStrength 0.125
+
+//Driver and Passengers
+Pilot 0 0 0
+Passengers 0
+
+//Inventory Slots
+CargoSlots 8
+BombSlots 0
+MissileSlots 0
+FuelTankSize 4000
+
+//Sounds
+StartSound VEST_Start
+StartSoundLength 90
+ShootSoundPrimary HL17_RocketFire
+ShootSoundSecondary TRUTH04Shoot
+PropSoundLength 65
+PropSound VEST_Flight
+
+//Movement
+TurnLeftSpeed 3
+TurnRightSpeed 3
+LookUpSpeed 3
+LookDownSpeed 3
+RollLeftSpeed 3
+RollRightSpeed 3
+
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary None
+Secondary None
+ShootDelayPrimary 20
+ShootDelaySecondary 3
+AlternatePrimary True
+AlternateSecondary True
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+AllowAllAmmo False
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+ShootPointSecondary 43 9 13 core TEvistaGUN
+ShootPointSecondary 43 9 -12 core TEvistaGUN
+
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+//HeliPropeller 0 54 0 0 core dwPropeller
+HeliPropeller 0 14 0 0 core TEBLCL_1
+HeliPropeller 1 14 0 0 core TEBLCL_1
+Propeller 0 14 0 0 core TEBLCL_1
+Propeller 1 14 0 0 core TEBLCL_1
+
+//Health, Collision and Recipe
+SetupPart core 3000 -11 -7 -13 50 24 26
+SetupPart nose 1000 -13 1 -14 1 10 28
+SetupPart tail 1000 -17 0 -7 1 4 13
+
+AddDye 5 black
+AddRecipeParts nose 5 TEBLCL_1
+AddRecipeParts tail 5 TEBLCL_1
+AddRecipeParts core 5 TEBLCL_1

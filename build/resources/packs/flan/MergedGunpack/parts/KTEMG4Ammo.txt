@@ -1,0 +1,5 @@
+Name 5.56 MG
+ShortName KTEMG4Ammo
+Icon KTEMG4Ammo
+Colour 255 255 255
+StackSize 64

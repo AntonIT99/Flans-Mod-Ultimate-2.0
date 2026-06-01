@@ -1,0 +1,22 @@
+Name Casual Uniform
+ShortName SE_dwCasualBody
+Icon penbarCasualBody
+Colour 255 255 255
+
+Type Body
+Model dwdefence.CasualBody
+Defence 0.05
+//0
+//0.1
+ArmourTexture Penbar_CasualUniform
+MoveSpeedModifier 1.0
+//1.0
+KnockbackModifier 0.0
+//1.0
+
+ModelScale 0.5
+
+//Recipe A dwArmorCloth W cloth
+W W
+WAW
+WAW

@@ -1,0 +1,52 @@
+//最后战线制作组编写，版权所有 翻版必究
+//作者：2403
+Name MK-2051 天蝎
+ShortName Dark_LNRG
+//弹药名称(短名)
+consumeBulletType 3
+bulletsPerReload 5
+Ammo Dark_LNRGAmmo
+Icon Dark_LNRG
+//弹药装填时间, 1=20/1秒
+ReloadTime 50
+//所有武器的后坐, 例如 : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+ShowCrosshair True
+Recoil 4
+//杀伤力
+Damage 48.5
+//这个值越高，子弹时速的越高
+Accuracy 0
+//循环时间
+ShootDelay 30
+ShootSound LNRGShootcg
+ReloadSound TEAR1Reload
+Mode SemiAuto
+BulletSpeed 12
+//36.0
+//机瞄设置
+Scope CEASGO2
+ZoomLevel 1.5
+FOVZoomLevel 1.2
+//部署设置(正常的枪都没有...)
+Deployable False
+DeployedModel None
+//模型设置(没有模型请无视)
+Model WE_GUN.TELSCK_12
+Texture TELSCK_12_Dark
+ModelScale 0.52
+//组件设置
+Description §d[特种弹药(3)]§7消耗：5%_§a武器种类>§7RG-轨道炮
+//
+AllowAllAttachments false
+//列出所有的附件允许对这把枪使用的配件名，用空格分隔(如丧病的最后战线枪械配件)
+AllowAttachments 
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments True
+AllowSlideAttachments False
+AllowPumpAttachments True
+AllowAccessoryAttachments True
+NumGenericAttachmentSlots 8
+// 3

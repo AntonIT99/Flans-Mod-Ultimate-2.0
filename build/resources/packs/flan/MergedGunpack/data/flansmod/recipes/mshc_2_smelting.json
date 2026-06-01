@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "flansmod:mshc_6"
+  },
+  "result": "flansmod:mshc_2",
+  "experience": 0.0,
+  "cookingtime": 200
+}

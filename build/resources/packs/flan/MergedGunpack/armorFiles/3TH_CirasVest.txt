@@ -1,0 +1,18 @@
+Name CirasVest
+ShortName CirasVest
+Icon 3TH_CirasVest
+//ItemID 10210
+
+Type Body
+Model mos.CirasVest
+Defence 0.05
+//0.0
+//MoveSpeedModifier 1.0
+//JumpModifier 1.0
+KnockbackReduction 0.0
+//NightVision false
+//NegateFallDamage 1.0
+//Overlay 
+//SmokeProtection false
+ArmourTexture SkinCirasVestTemplate
+//Durability 32000
