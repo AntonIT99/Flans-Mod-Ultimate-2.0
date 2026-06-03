@@ -36,7 +36,7 @@
     "RGD-33 Grenade": {
         "properties": {
             "ExplosiveMass": "0.085",
-            "FragType": "STD_FRAG",
+            "FragType": "SLEEVE_FRAG",
             "Fuse": 70
         },
         "items": [
@@ -81,7 +81,7 @@
     "Stielhandgranate 43": {
         "properties": {
             "ExplosiveMass": "0.165",
-            "FragType": "HIGH_FRAG",
+            "FragType": "SLEEVE_FRAG",
             "Fuse": 80
         },
         "items": [

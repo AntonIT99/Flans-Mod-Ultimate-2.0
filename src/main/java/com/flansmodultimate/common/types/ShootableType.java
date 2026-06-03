@@ -44,10 +44,12 @@ public abstract class ShootableType extends InfoType
         LOW_FRAG(22.0f, 6.0f, 0.9f),
         /** Typical fragmentation grenade (e.g., Mills bomb, Mk 2, many “standard” frags). */
         STD_FRAG(35.0f, 10.0f, 2.2f),
-        /** Defensive / prefragmented / scored casing (large danger radius). */
-        HIGH_FRAG(65.0f, 14.0f, 4.5f),
+        /** Defensive sleeve / fragmentation jacket fitted to a grenade body. */
+        SLEEVE_FRAG(42.0f, 11.0f, 2.8f),
+        /** Defensive / prefragmented / scored casing with a larger casualty radius. */
+        HIGH_FRAG(45.0f, 12.0f, 3.0f),
         /** Shrapnel-packed / IED-style (nails, ball bearings, pipe bomb). */
-        IED_SHRAPNEL(90.0f, 18.0f, 7.0f),
+        IED_SHRAPNEL(60.0f, 14.0f, 4.0f),
         /** Artillery / mortar / HE rocket type casing fragments. */
         HE_SHELL(50.0f, 13.0f, 3.8f),
         /** General-purpose aerial bomb fragments (blast dominates, fragments still dangerous). */
@@ -55,7 +57,7 @@ public abstract class ShootableType extends InfoType
         /** Thick-case / penetrator / “earthquake” style (less long-range frag emphasis). */
         THICK_CASE(28.0f, 10.0f, 1.4f),
         /** Airburst / proximity-fused anti-personnel (optimized fragment distribution). */
-        AIRBURST_AP(80.0f, 13.0f, 5.5f);
+        AIRBURST_AP(55.0f, 12.0f, 3.2f);
 
         public final float kFragRadius;
         public final float kFragDamage;
@@ -306,7 +308,7 @@ public abstract class ShootableType extends InfoType
         explosionBlastDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
 
         blastRadius = readValue("BlastRadius", blastRadius, file);
-        fragRadius = readValue("BlastRadius", fragRadius, file);
+        fragRadius = readValue("FragRadius", fragRadius, file);
         fragIntensity = readValue("FragIntensity", fragIntensity, file);
         explosionFragDamage.setDamage(readValue("FragDamage", explosionFragDamage.getDamage(), file));
         explosionFragDamage.setDamage(readValue("FragDamageVsEntity", explosionFragDamage.getDamage(), file));

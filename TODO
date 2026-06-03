@@ -1,6 +1,6 @@
 General:
+- Implement ArmorBoxBuyPacket
 - Fix missing recipes
-- Fix Frag Radius
 - Investigate issue with Oerlikon model
 - Fix particles
 - Team Mod: Commands, Teams, Classes, Stats
@@ -21,7 +21,6 @@ Entities:
 - Vehicle - TODO
 
 Rendering:
-- AAGun - TODO
 - Mecha - TODO
 - Plane - TODO
 - Vehicle - TODO
@@ -45,6 +44,7 @@ TODO Content Packs:
 - Set Penetration?
 
 Feature Ideas:
+- Block with GUI to convert bullets to magazines and vice versa + Mapping for bullets and magazines
 - Render Attachment Item in 3D?
 - Assets/Sounds Priority list?
 - Switching Fire Mode Sound
