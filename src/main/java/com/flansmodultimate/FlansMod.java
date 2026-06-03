@@ -187,7 +187,7 @@ public class FlansMod
     );
     public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(DeployedGun.RENDER_DISTANCE)
+        .clientTrackingRange(ModCommonConfig.deployedGunTrackingRange())
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
@@ -200,7 +200,7 @@ public class FlansMod
     );
     public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(AAGun.RENDER_DISTANCE)
+        .clientTrackingRange(ModCommonConfig.aaGunTrackingRange())
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())

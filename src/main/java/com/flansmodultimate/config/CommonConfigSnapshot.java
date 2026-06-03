@@ -16,6 +16,8 @@ public record CommonConfigSnapshot(
     int bonusRegenAmount,
     int bonusRegenTickDelay,
     int bonusRegenFoodLimit,
+    int deployedGunTrackingRange,
+    int aaGunTrackingRange,
 
     float headshotDamageModifier,
     float chestshotDamageModifier,
@@ -49,6 +51,12 @@ public record CommonConfigSnapshot(
     float newDamageSystemBlastToExplosionRadiusRatio,
     int shootableDefaultRespawnTime,
     boolean shootableProximityTriggerFriendlyFire,
+    double lockOnRange,
+    int flakParticlesRange,
+    double entityHitParticleRange,
+    double blockHitParticleRange,
+    int smokeParticlesCount,
+    double smokeParticlesRange,
 
     float soundRange,
     float gunFireSoundRange,
@@ -70,7 +78,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 5;
+    public static final int CURRENT_VERSION = 7;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -84,6 +92,8 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
         buf.writeVarInt(s.bonusRegenFoodLimit);
+        buf.writeVarInt(s.deployedGunTrackingRange);
+        buf.writeVarInt(s.aaGunTrackingRange);
 
         buf.writeFloat(s.headshotDamageModifier);
         buf.writeFloat(s.chestshotDamageModifier);
@@ -117,6 +127,12 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.newDamageSystemBlastToExplosionRadiusRatio);
         buf.writeVarInt(s.shootableDefaultRespawnTime);
         buf.writeBoolean(s.shootableProximityTriggerFriendlyFire);
+        buf.writeDouble(s.lockOnRange);
+        buf.writeVarInt(s.flakParticlesRange);
+        buf.writeDouble(s.entityHitParticleRange);
+        buf.writeDouble(s.blockHitParticleRange);
+        buf.writeVarInt(s.smokeParticlesCount);
+        buf.writeDouble(s.smokeParticlesRange);
 
         buf.writeFloat(s.soundRange);
         buf.writeFloat(s.gunFireSoundRange);
@@ -155,6 +171,8 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
+            buf.readVarInt(),
+            buf.readVarInt(),
 
             buf.readFloat(),
             buf.readFloat(),
@@ -188,6 +206,12 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
             buf.readBoolean(),
+            buf.readDouble(),
+            buf.readVarInt(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readVarInt(),
+            buf.readDouble(),
 
             buf.readFloat(),
             buf.readFloat(),

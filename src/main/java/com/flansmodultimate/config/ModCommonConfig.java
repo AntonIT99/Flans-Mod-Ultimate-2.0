@@ -26,6 +26,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
+    private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_TRACKING_RANGE;
+    private static final ForgeConfigSpec.IntValue AA_GUN_TRACKING_RANGE;
 
     private static final ForgeConfigSpec.DoubleValue HEADSHOT_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue CHESTSHOT_DAMAGE_MODIFIER;
@@ -59,6 +61,12 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO;
     private static final ForgeConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final ForgeConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
+    private static final ForgeConfigSpec.DoubleValue LOCK_ON_RANGE;
+    private static final ForgeConfigSpec.IntValue FLAK_PARTICLES_RANGE;
+    private static final ForgeConfigSpec.DoubleValue ENTITY_HIT_PARTICLE_RANGE;
+    private static final ForgeConfigSpec.DoubleValue BLOCK_HIT_PARTICLE_RANGE;
+    private static final ForgeConfigSpec.IntValue SMOKE_PARTICLES_COUNT;
+    private static final ForgeConfigSpec.DoubleValue SMOKE_PARTICLES_RANGE;
 
     private static final ForgeConfigSpec.DoubleValue SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
@@ -107,6 +115,15 @@ public final class ModCommonConfig
         BONUS_REGEN_FOOD_LIMIT = builder
             .comment("Amount of food required to activate this regen, vanilla is 18")
             .defineInRange("bonusRegenFoodLimit", 18, 0, 20);
+        builder.pop();
+
+        builder.push("Entity Tracking Settings");
+        DEPLOYED_GUN_TRACKING_RANGE = builder
+            .comment("Server-side tracking range in blocks for deployed guns. Requires restart because entity types are registered during startup.")
+            .defineInRange("deployedGunTrackingRange", 64, 1, 4096);
+        AA_GUN_TRACKING_RANGE = builder
+            .comment("Server-side tracking range in blocks for AA guns. Requires restart because entity types are registered during startup.")
+            .defineInRange("aaGunTrackingRange", 128, 1, 4096);
         builder.pop();
 
         builder.push("Damage Settings");
@@ -207,6 +224,24 @@ public final class ModCommonConfig
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder
             .comment("Max despawn time in ticks (0.05s). 0 means no despawn time.")
             .defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
+        LOCK_ON_RANGE = builder
+            .comment("Range in blocks used by lock-on missiles when searching for targets.")
+            .defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
+        FLAK_PARTICLES_RANGE = builder
+            .comment("Range in blocks for sending flak particle packets to clients.")
+            .defineInRange("flakParticlesRange", 256, 1, 4096);
+        ENTITY_HIT_PARTICLE_RANGE = builder
+            .comment("Range in blocks for sending entity-hit particle packets to clients.")
+            .defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
+        BLOCK_HIT_PARTICLE_RANGE = builder
+            .comment("Range in blocks for sending block-hit particle packets to clients.")
+            .defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
+        SMOKE_PARTICLES_COUNT = builder
+            .comment("Number of smoke particles spawned per smoke packet.")
+            .defineInRange("smokeParticlesCount", 50, 0, 10000);
+        SMOKE_PARTICLES_RANGE = builder
+            .comment("Range in blocks for sending smoke particle packets to clients.")
+            .defineInRange("smokeParticlesRange", 32.0, 1.0, 4096.0);
         builder.pop();
 
         builder.push("Sound Settings");
@@ -286,6 +321,8 @@ public final class ModCommonConfig
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
+            DEPLOYED_GUN_TRACKING_RANGE.get(),
+            AA_GUN_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(),
             CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(),
@@ -319,6 +356,12 @@ public final class ModCommonConfig
             NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO.get().floatValue(),
             SHOOTABLE_DEFAULT_RESPAWN_TIME.get(),
             SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get(),
+            LOCK_ON_RANGE.get(),
+            FLAK_PARTICLES_RANGE.get(),
+            ENTITY_HIT_PARTICLE_RANGE.get(),
+            BLOCK_HIT_PARTICLE_RANGE.get(),
+            SMOKE_PARTICLES_COUNT.get(),
+            SMOKE_PARTICLES_RANGE.get(),
 
             SOUND_RANGE.get().floatValue(),
             GUN_FIRE_SOUND_RANGE.get().floatValue(),
@@ -351,6 +394,52 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceDefenseAsModernArmor();
+    }
+
+    public static int deployedGunTrackingRange()
+    {
+        return DEPLOYED_GUN_TRACKING_RANGE.get();
+    }
+
+    public static int aaGunTrackingRange()
+    {
+        return AA_GUN_TRACKING_RANGE.get();
+    }
+
+    public static double lockOnRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? LOCK_ON_RANGE.get() : config.lockOnRange();
+    }
+
+    public static int flakParticlesRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? FLAK_PARTICLES_RANGE.get() : config.flakParticlesRange();
+    }
+
+    public static double entityHitParticleRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? ENTITY_HIT_PARTICLE_RANGE.get() : config.entityHitParticleRange();
+    }
+
+    public static double blockHitParticleRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? BLOCK_HIT_PARTICLE_RANGE.get() : config.blockHitParticleRange();
+    }
+
+    public static int smokeParticlesCount()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? SMOKE_PARTICLES_COUNT.get() : config.smokeParticlesCount();
+    }
+
+    public static double smokeParticlesRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? SMOKE_PARTICLES_RANGE.get() : config.smokeParticlesRange();
     }
 
     public static void applyServerSnapshot(CommonConfigSnapshot config)

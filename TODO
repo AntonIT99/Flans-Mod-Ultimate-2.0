@@ -3,23 +3,15 @@ General:
 - Investigate issue with Oerlikon model
 - Fix particles
 - Team Mod: Commands, Teams, Classes, Stats
-
-1.12.2 Features:
-- rewardBoxes
-- loadouts
-
-Driveable Features:
-- Vehicles
-- Planes
-- Mechas & Mecha Items
+- 1.12.2 loadouts & rewardBoxes
 
 Entities:
+- Flagpole + Flag - TODO
+- Spawner - TODO
+- Parachute - TODO
+- Wheel - TODO
+- Seat - TODO
 - Driveable - TODO
-- Mecha - TODO
-- Plane - TODO
-- Vehicle - TODO
-
-Rendering:
 - Mecha - TODO
 - Plane - TODO
 - Vehicle - TODO
@@ -28,10 +20,24 @@ Items:
 - GunItem - TODO (WIP)
 - PartItem - TODO (WIP)
 - ToolItem - TODO (WIP)
+- RewardBoxItem (1.12.2) - TODO
+- FlagpoleItem - TODO
+- OpstickItem - TODO
+- MechaItem - TODO
+- VehicleItem - TODO
+- PlaneItem - TODO
+- MechaAddonItem - TODO
 
 Types:
-- DriveableType - TODO
 - InfoType - TODO (WIP)
+- PlayerClassType - TODO
+- TeamType - TODO
+- LoadoutType (1.12.2) - TODO
+- RewardBoxType (1.12.2) - TODO
+- MechaItemType - TODO
+- DriveableType - TODO
+- PlaneType TODO
+- VehicleType TODO
 
 TODO Content Packs:
 - Fix AK47 Paintjobs

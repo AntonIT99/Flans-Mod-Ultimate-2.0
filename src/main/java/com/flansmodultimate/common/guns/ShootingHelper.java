@@ -74,10 +74,6 @@ public final class ShootingHelper
 {
     public static final float ANGULAR_SPREAD_FACTOR = 0.0025F;
 
-    //TODO: make configurable
-    private static final double ENTITY_HIT_PARTICLE_RANGE = 64.0;
-    private static final double BLOCK_HIT_PARTICLE_RANGER = 64.0;
-
     /** Call this to fire bullets or grenades from a living entity holding a gun item (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
     {
@@ -232,7 +228,7 @@ public final class ShootingHelper
 
                 if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
                 {
-                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ENTITY_HIT_PARTICLE_RANGE, level.dimension());
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = living.hurtDuration / 2;
@@ -375,7 +371,7 @@ public final class ShootingHelper
 
         Vec3 hitVec = hitResult.getLocation();
         Direction direction = hitResult.getDirection();
-        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, BLOCK_HIT_PARTICLE_RANGER, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, ModCommonConfig.blockHitParticleRange(), level.dimension());
     }
 
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
@@ -530,7 +526,7 @@ public final class ShootingHelper
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
     {
         if (type.getFlak() > 0)
-            PacketHandler.sendToAllAround(new PacketFlak(position, type.getFlak(), type.getFlakParticles()), position, BulletType.FLAK_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position, type.getFlak(), type.getFlakParticles()), position, ModCommonConfig.flakParticlesRange(), level.dimension());
     }
 
     private static void dropItemsOnDetonate(Level level, String itemName, IContentProvider contentPack, Vec3 position, @Nullable Shootable shootable)

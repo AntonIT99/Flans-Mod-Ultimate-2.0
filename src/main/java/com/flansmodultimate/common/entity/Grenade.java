@@ -7,7 +7,6 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
@@ -23,10 +22,8 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,6 +32,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -50,6 +48,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -472,7 +471,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         // Send flak packet to spawn particles
         if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketFlak(position(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), position(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position(), ModCommonConfig.smokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         // Apply potion effects in smoke radius
         double r = configType.getSmokeRadius();
@@ -829,7 +828,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(position(), GrenadeType.SMOKE_PARTICLES_COUNT, configType.getSmokeParticleType()), position(), GrenadeType.SMOKE_PARTICLES_RANGE, level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), ModCommonConfig.smokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         if (configType.isFlashSoundEnable())
             PacketPlaySound.sendSoundPacket(this, configType.getFlashSoundRange(), configType.getFlashSound(), true);

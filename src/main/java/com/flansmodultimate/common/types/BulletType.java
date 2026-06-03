@@ -24,9 +24,6 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class BulletType extends ShootableType
 {
-    //TODO: make these constants configurable
-    public static final double LOCK_ON_RANGE = 128.0;
-    public static final int FLAK_PARTICLES_RANGE = 256;
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 

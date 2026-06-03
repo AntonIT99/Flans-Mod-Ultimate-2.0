@@ -9,6 +9,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
@@ -53,7 +54,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<AAGunType>
 {
-    public static final int RENDER_DISTANCE = 64;
+    public static final int RENDER_DISTANCE = 128;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
 
     private static final double SENTRY_ORIGIN_Y_OFFSET = 1.5D;
@@ -274,15 +275,22 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        double r = RENDER_DISTANCE;
+        double r = getRenderDistance();
         return distSq < r * r;
+    }
+
+    private static int getRenderDistance()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return config == null ? RENDER_DISTANCE : config.aaGunRenderDistance;
     }
 
     @Override
     @NotNull
     public AABB getBoundingBoxForCulling()
     {
-        return new AABB(getX() - RENDER_DISTANCE, getY() - RENDER_DISTANCE, getZ() - RENDER_DISTANCE, getX() + RENDER_DISTANCE, getY() + RENDER_DISTANCE, getZ() + RENDER_DISTANCE);
+        double r = getRenderDistance();
+        return new AABB(getX() - r, getY() - r, getZ() - r, getX() + r, getY() + r, getZ() + r);
     }
 
     @Override

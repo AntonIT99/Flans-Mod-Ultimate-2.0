@@ -16,6 +16,8 @@ public final class ModClientConfig
     public final boolean loadAllModelsInCache;
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
+    public final int deployedGunRenderDistance;
+    public final int aaGunRenderDistance;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -38,6 +40,8 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
+    private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
 
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -80,6 +84,15 @@ public final class ModClientConfig
         SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder
                 .comment("Show the armor-style HUD bar for legacy armor damage absorption")
                 .define("showArmorDamageAbsorptionBar", true);
+        builder.pop();
+
+        builder.push("Entity Rendering Settings");
+        DEPLOYED_GUN_RENDER_DISTANCE = builder
+            .comment("Client-side render distance in blocks for deployed guns.")
+            .defineInRange("deployedGunRenderDistance", 64, 1, 4096);
+        AA_GUN_RENDER_DISTANCE = builder
+            .comment("Client-side render distance in blocks for AA guns.")
+            .defineInRange("aaGunRenderDistance", 128, 1, 4096);
         builder.pop();
 
         builder.push("Input Settings");
@@ -130,6 +143,8 @@ public final class ModClientConfig
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
+        deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
+        aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();

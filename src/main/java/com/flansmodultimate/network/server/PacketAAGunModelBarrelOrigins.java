@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,7 @@ public class PacketAAGunModelBarrelOrigins implements IServerPacket
         if (!(level.getEntity(aaGunId) instanceof AAGun aaGun))
             return;
 
-        double syncRange = AAGun.RENDER_DISTANCE + 16D;
+        double syncRange = ModCommonConfig.aaGunTrackingRange() + 16D;
         if (player.distanceToSqr(aaGun) > syncRange * syncRange)
             return;
 

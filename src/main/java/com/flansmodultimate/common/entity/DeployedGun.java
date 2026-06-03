@@ -10,6 +10,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -164,8 +165,14 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        double r = RENDER_DISTANCE;
+        double r = getRenderDistance();
         return distSq < r * r;
+    }
+
+    private static int getRenderDistance()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return config == null ? RENDER_DISTANCE : config.deployedGunRenderDistance;
     }
 
     @Override
@@ -173,7 +180,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     public AABB getBoundingBoxForCulling()
     {
         // No frustum-culling within the render distance
-        return new AABB(getX() - RENDER_DISTANCE, getY() - RENDER_DISTANCE, getZ() - RENDER_DISTANCE, getX() + RENDER_DISTANCE, getY() + RENDER_DISTANCE, getZ() + RENDER_DISTANCE);
+        double r = getRenderDistance();
+        return new AABB(getX() - r, getY() - r, getZ() - r, getX() + r, getY() + r, getZ() + r);
     }
 
     @Override
