@@ -2,6 +2,10 @@ package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
+import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.InventoryHelper;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -68,33 +73,42 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /**
-     * DO NOT call this directly from client in 1.20.1.
-     * If a button in your screen triggers buying, send a packet to the server.
-     */
-    /*public void buyArmourServer(String shortName, int piece, ServerPlayer player)
+    public void buyArmorServer(int pageIndex, int pieceIndex, ServerPlayer player)
     {
-        ArmourBoxType.ArmourBoxEntry entryPicked = null;
-        for (var page : type.pages) {
-            if (page.shortName.equals(shortName)) {
-                entryPicked = page;
-                break;
-            }
+        if (pageIndex < 0 || pageIndex >= configType.getPages().size())
+            return;
+        if (pieceIndex < 0 || pieceIndex >= 4)
+            return;
+
+        ArmorBoxType.ArmourBoxEntry entry = configType.getPages().get(pageIndex);
+        InfoType infoType = InfoType.getInfoType(entry.getArmors()[pieceIndex]);
+        if (!(infoType instanceof ArmorType armorType))
+            return;
+
+        ItemStack resultStack = ModUtils.getItemStack(armorType).orElse(ItemStack.EMPTY);
+        if (resultStack.isEmpty())
+            return;
+
+        if (!player.getAbilities().instabuild && !hasRequiredParts(player, entry, pieceIndex))
+            return;
+
+        if (!player.getAbilities().instabuild)
+        {
+            for (ItemStack requiredPart : entry.getRequiredStacks().get(pieceIndex))
+                InventoryHelper.consumeFromInventory(player.getInventory(), requiredPart);
         }
-        if (entryPicked == null) return;
 
-        // 1.20.1 ItemStack construction:
-        ItemStack resultStack = new ItemStack(entryPicked.armours[piece].item);
+        if (!player.getInventory().add(resultStack))
+            player.drop(resultStack, false);
+    }
 
-        // Your CraftingInstance needs a rewrite too:
-        // - InventoryPlayer -> player.getInventory()
-        // - canCraft / craft should be server-side only
-        CraftingInstance crafting = new CraftingInstance(player.getInventory(),
-            entryPicked.requiredStacks[piece],
-            resultStack);
-
-        if (crafting.canCraft(player)) {
-            crafting.craft(player);
+    private boolean hasRequiredParts(ServerPlayer player, ArmorBoxType.ArmourBoxEntry entry, int pieceIndex)
+    {
+        for (ItemStack requiredPart : entry.getRequiredStacks().get(pieceIndex))
+        {
+            if (InventoryHelper.countInInventory(player.getInventory(), requiredPart) < requiredPart.getCount())
+                return false;
         }
-    }*/
+        return true;
+    }
 }

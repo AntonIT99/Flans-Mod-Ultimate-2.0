@@ -20,6 +20,7 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
@@ -102,6 +103,7 @@ public final class PacketHandler {
 
         // Client to Server Packets
         registerC2S(PacketAAGunModelBarrelOrigins.class);
+        registerC2S(ArmorBoxBuyPacket.class);
         registerC2S(PacketDeployedGunInput.class);
         registerC2S(PacketBuyWeapon.class);
         registerC2S(PacketGunFireMode.class);

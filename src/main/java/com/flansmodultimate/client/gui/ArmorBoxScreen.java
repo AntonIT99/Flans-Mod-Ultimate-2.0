@@ -4,6 +4,8 @@ import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -169,9 +171,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                             && n > 42 + 22 * y && n < 62 + 22 * y)
                         {
 
-                            // Send buy request to server (authoritative)
-                            //TODO: implement packet
-                            //PacketHandler.sendToServer(new ArmorBoxBuyPacket(menu.getPos(), page, idx));
+                            PacketHandler.sendToServer(new ArmorBoxBuyPacket(menu.getPos(), page, idx));
                             return true;
                         }
                     }

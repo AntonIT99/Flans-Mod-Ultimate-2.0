@@ -1,5 +1,4 @@
 General:
-- Implement ArmorBoxBuyPacket
 - Fix missing recipes
 - Investigate issue with Oerlikon model
 - Fix particles
