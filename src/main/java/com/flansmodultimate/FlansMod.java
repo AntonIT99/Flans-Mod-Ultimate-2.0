@@ -181,14 +181,14 @@ public class FlansMod
     public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(Grenade.RENDER_DISTANCE)
-        .updateInterval(100)
+        .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
     );
     public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.deployedGunTrackingRange())
-        .updateInterval(2)
+        .updateInterval(5)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
     );
@@ -201,7 +201,7 @@ public class FlansMod
     public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.aaGunTrackingRange())
-        .updateInterval(1)
+        .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
     );
