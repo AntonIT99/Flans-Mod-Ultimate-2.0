@@ -1,5 +1,7 @@
 package com.flansmodultimate.config;
 
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.FileUtils;
 import lombok.AccessLevel;
@@ -7,13 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.loading.FMLPaths;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Properties;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContentLoadingConfig
@@ -26,7 +23,7 @@ public final class ContentLoadingConfig
     private static boolean useDefaultCategories = true;
 
     private static final int CONTENT_LOADING_SYSTEM_VERSION = 3;
-    private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.properties";
+    private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.toml";
 
     static
     {
@@ -38,87 +35,105 @@ public final class ContentLoadingConfig
         Path configDir = FMLPaths.CONFIGDIR.get();
         Path file = configDir.resolve(FILE_NAME);
 
-        Properties props = new Properties();
-
-        if (Files.exists(file))
-        {
-            try (Reader reader = Files.newBufferedReader(file))
-            {
-                props.load(reader);
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.error("Could not read config file {}", FILE_NAME, e);
-            }
-        }
-
-        contentPacksRelativePath = Objects.requireNonNullElse(props.getProperty("contentPacksRelativePath"), contentPacksRelativePath);
-        forceRegenContentPacksAssetsAndIds = parseBoolean(props.getProperty("forceRegenContentPacksAssetsAndIds"), forceRegenContentPacksAssetsAndIds);
-        int lastContentLoadingSystemVersion = parseInt(props.getProperty("contentLoadingSystemVersion"), CONTENT_LOADING_SYSTEM_VERSION);
-        useDefaultCategories = parseBoolean(props.getProperty("useDefaultCategories"), useDefaultCategories);
-        save();
-
-        // when the loader version changes, force regen
-        if (lastContentLoadingSystemVersion < CONTENT_LOADING_SYSTEM_VERSION)
-            forceRegenContentPacksAssetsAndIds = true;
-    }
-
-    private static void save()
-    {
-        Path configDir = FMLPaths.CONFIGDIR.get();
         FileUtils.tryCreateDirectories(configDir);
-
-        Path file = configDir.resolve(FILE_NAME);
-
-        Properties props = new Properties();
-        props.setProperty("contentPacksRelativePath", contentPacksRelativePath);
-        props.setProperty("forceRegenContentPacksAssetsAndIds", Boolean.toString(forceRegenContentPacksAssetsAndIds));
-        props.setProperty("contentLoadingSystemVersion", Integer.toString(CONTENT_LOADING_SYSTEM_VERSION));
-        props.setProperty("useDefaultCategories", Boolean.toString(useDefaultCategories));
-
-        try (Writer writer = Files.newBufferedWriter(file))
+        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
         {
-            props.store(writer, """
-                contentPacksRelativePath:
-                    Path to your content packs, relative to the .minecraft directory.
-                forceRegenContentPacksAssetsAndIds:
-                    Set to true to force asset and ids regeneration. This will increase the startup time significantly.
-                    Only do this once when you modified some of your content packs (new assets or new ids).
-                contentLoadingSystemVersion:
-                    Version of the content loading system.
-                    Will be incremented when the content loading process is undergoing significant changes.
-                    When the version changes, asset and ids regeneration will be automatically performed once.
-                useDefaultCategories:
-                    The new category system allows items to be grouped and modified without modifying their config files in content packs.
-                    Categories can apply or override settings for all items within them.
-                    By default, this mod provides preconfigured categories in .minecraft/config/flansmodultimate/default.
-                    Set this option to false if you want to disable these default categories.
-                """);
+            if (Files.isRegularFile(file))
+                config.load();
+
+            contentPacksRelativePath = readString(config, "contentPacksRelativePath", contentPacksRelativePath);
+            forceRegenContentPacksAssetsAndIds = readBoolean(config, "forceRegenContentPacksAssetsAndIds", forceRegenContentPacksAssetsAndIds);
+            int lastContentLoadingSystemVersion = readInt(config, "contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
+            useDefaultCategories = readBoolean(config, "useDefaultCategories", useDefaultCategories);
+
+            save(config);
+
+            // When the loader version changes, force regen once without persisting the forced value.
+            if (lastContentLoadingSystemVersion < CONTENT_LOADING_SYSTEM_VERSION)
+                forceRegenContentPacksAssetsAndIds = true;
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            FlansMod.log.error("Could not write to config file {}", file, e);
+            FlansMod.log.error("Could not read config file {}", FILE_NAME, e);
+            writeDefaults(file);
         }
     }
 
-    private static boolean parseBoolean(String value, boolean defaultValue)
+    private static void writeDefaults(Path file)
     {
-        if (value == null)
-            return defaultValue;
-        return Boolean.parseBoolean(value.trim());
+        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
+        {
+            save(config);
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.error("Could not write config file {}", FILE_NAME, e);
+        }
     }
 
-    private static int parseInt(String value, int defaultValue)
+    private static void save(CommentedFileConfig config)
     {
+        config.set("contentPacksRelativePath", contentPacksRelativePath);
+        config.setComment("contentPacksRelativePath", "Path to your content packs, relative to the .minecraft directory.");
+
+        config.set("forceRegenContentPacksAssetsAndIds", forceRegenContentPacksAssetsAndIds);
+        config.setComment("forceRegenContentPacksAssetsAndIds", """
+            Set to true to force asset and ids regeneration. This will increase the startup time significantly.
+            Only do this once when you modified some of your content packs (new assets or new ids).""");
+
+        config.set("contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
+        config.setComment("contentLoadingSystemVersion", """
+            Version of the content loading system.
+            Will be incremented when the content loading process is undergoing significant changes.
+            When the version changes, asset and ids regeneration will be automatically performed once.""");
+
+        config.set("useDefaultCategories", useDefaultCategories);
+        config.setComment("useDefaultCategories", """
+            The new category system allows items to be grouped and modified without modifying their config files in content packs.
+            Categories can apply or override settings for all items within them.
+            By default, this mod provides preconfigured categories in .minecraft/config/flansmodultimate/default.
+            Set this option to false if you want to disable these default categories.""");
+
+        config.save();
+    }
+
+    private static String readString(CommentedFileConfig config, String key, String defaultValue)
+    {
+        Object value = config.get(key);
         if (value == null)
             return defaultValue;
-        try
-        {
-            return Integer.parseInt(value.trim());
-        }
-        catch (NumberFormatException e)
-        {
+        if (value instanceof String str)
+            return str;
+
+        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected string.", key, FILE_NAME, value);
+        return defaultValue;
+    }
+
+    private static boolean readBoolean(CommentedFileConfig config, String key, boolean defaultValue)
+    {
+        Object value = config.get(key);
+        if (value == null)
             return defaultValue;
+        if (value instanceof Boolean bool)
+            return bool;
+
+        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected boolean.", key, FILE_NAME, value);
+        return defaultValue;
+    }
+
+    private static int readInt(CommentedFileConfig config, String key, int defaultValue)
+    {
+        Object value = config.get(key);
+        if (value == null)
+            return defaultValue;
+        if (value instanceof Number number)
+        {
+            long longValue = number.longValue();
+            if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE)
+                return (int)longValue;
         }
+
+        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected integer.", key, FILE_NAME, value);
+        return defaultValue;
     }
 }
