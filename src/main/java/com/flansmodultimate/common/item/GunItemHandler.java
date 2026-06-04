@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
@@ -36,10 +35,12 @@ import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -459,11 +460,11 @@ public class GunItemHandler
             return;
         }
 
-        Vector3f nextPosInWorldCoords = new Vector3f(segment.end);
-        Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : Vector3f.sub(nextPosInWorldCoords, data.getLastMeleePositions()[pointIdx], null);
+        Vector3f nextPosInWorldCoords = JomlUtils.fromVec3(segment.end);
+        Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : new Vector3f(nextPosInWorldCoords).sub(data.getLastMeleePositions()[pointIdx]);
 
         if (level.isClientSide)
-            ClientHooks.RENDER.spawnDebugVector(data.getLastMeleePositions()[pointIdx].toVec3(), dPos.toVec3(), 200, 1F, 0F, 0F);
+            ClientHooks.RENDER.spawnDebugVector(JomlUtils.toVec3(data.getLastMeleePositions()[pointIdx]), JomlUtils.toVec3(dPos), 200, 1F, 0F, 0F);
 
         List<BulletHit> hits = collectHits(level, player, data, segment, pointIdx, dPos);
 
@@ -478,15 +479,15 @@ public class GunItemHandler
 
     private Vector3f computeNextDamagePointWorldPos(Player player, PlayerData data, int pointIdx)
     {
-        Vector3f meleeDamagePoint = item.configType.getMeleeDamagePoints().get(pointIdx);
+        Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(item.configType.getMeleeDamagePoints().get(pointIdx));
 
-        Vector3f nextPos = item.configType.getMeleePath().get((data.getMeleeProgress() + 1) % item.configType.getMeleePath().size());
-        Vector3f nextAngles = item.configType.getMeleePathAngles().get((data.getMeleeProgress() + 1) % item.configType.getMeleePathAngles().size());
+        Vector3f nextPos = JomlUtils.fromFlansVector(item.configType.getMeleePath().get((data.getMeleeProgress() + 1) % item.configType.getMeleePath().size()));
+        Vector3f nextAngles = JomlUtils.fromFlansVector(item.configType.getMeleePathAngles().get((data.getMeleeProgress() + 1) % item.configType.getMeleePathAngles().size()));
 
         RotatedAxes nextAxes = new RotatedAxes().rotateGlobalRoll(-nextAngles.x).rotateGlobalPitch(-nextAngles.z).rotateGlobalYaw(-nextAngles.y);
 
         Vector3f nextPosInGunCoords = nextAxes.findLocalVectorGlobally(meleeDamagePoint);
-        Vector3f.add(nextPos, nextPosInGunCoords, nextPosInGunCoords);
+        nextPosInGunCoords.add(nextPos);
 
         Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextPosInGunCoords);
 
@@ -537,7 +538,7 @@ public class GunItemHandler
         PlayerSnapshot snapshot = selectSnapshot(attacker, otherData);
         if (snapshot != null)
         {
-            List<BulletHit> playerHits = snapshot.raytrace(attackerData.getLastMeleePositions()[pointIdx] == null ? new Vector3f(segment.end) : attackerData.getLastMeleePositions()[pointIdx], dPos);
+            List<BulletHit> playerHits = snapshot.raytrace(attackerData.getLastMeleePositions()[pointIdx] == null ? JomlUtils.fromVec3(segment.end) : attackerData.getLastMeleePositions()[pointIdx], dPos);
             outHits.addAll(playerHits);
             return;
         }

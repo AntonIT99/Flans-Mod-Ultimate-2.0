@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
@@ -20,6 +19,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,6 +27,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -561,7 +562,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         prevRotationRoll = axes.getRoll();
 
         if (angularVelocity.lengthSqr() > 0.00000001)
-            axes.rotateLocal((float) angularVelocity.length(), new Vector3f(angularVelocity.normalize()));
+            axes.rotateLocal((float) angularVelocity.length(), JomlUtils.fromVec3(angularVelocity.normalize()));
 
         Vec3 posVec = position(); // current position
         Vec3 nextPosVec = posVec.add(velocity);
@@ -607,26 +608,26 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void handleBounceAndSticky(Vec3 posVec, Vec3 motionVec, BlockHitResult hit)
     {
-        Vector3f posVecF = new Vector3f((float) posVec.x, (float) posVec.y, (float) posVec.z);
-        Vector3f motVecF = new Vector3f((float) motionVec.x, (float) motionVec.y, (float) motionVec.z);
-        Vector3f hitVecF = new Vector3f((float) hit.getLocation().x, (float) hit.getLocation().y, (float) hit.getLocation().z);
+        Vector3f posVecF = JomlUtils.fromVec3(posVec);
+        Vector3f motVecF = JomlUtils.fromVec3(motionVec);
+        Vector3f hitVecF = JomlUtils.fromVec3(hit.getLocation());
 
         // Motion pre- / post-hit
-        Vector3f preHitMotVec = Vector3f.sub(hitVecF, posVecF, null);
-        Vector3f postHitMotVec = Vector3f.sub(motVecF, preHitMotVec, null);
+        Vector3f preHitMotVec = new Vector3f(hitVecF).sub(posVecF);
+        Vector3f postHitMotVec = new Vector3f(motVecF).sub(preHitMotVec);
 
         // Reflect based on side hit
         Direction sideHit = hit.getDirection();
         switch (sideHit)
         {
             case UP, DOWN:
-                postHitMotVec.setY(-postHitMotVec.getY());
+                postHitMotVec.y = -postHitMotVec.y;
                 break;
             case EAST, WEST:
-                postHitMotVec.setX(-postHitMotVec.getX());
+                postHitMotVec.x = -postHitMotVec.x;
                 break;
             case NORTH, SOUTH:
-                postHitMotVec.setZ(-postHitMotVec.getZ());
+                postHitMotVec.z = -postHitMotVec.z;
                 break;
         }
 
@@ -634,7 +635,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         float lambda = Math.abs(motLenSq) < 0.00000001F ? 1F : postHitMotVec.length() / (float) Math.sqrt(motLenSq);
 
         // Scale by bounciness
-        postHitMotVec.scale(configType.getBounciness() / 2F);
+        postHitMotVec.mul(configType.getBounciness() / 2F);
 
         // Move grenade along path including reflection
         setPos(getX() + preHitMotVec.x + postHitMotVec.x, getY() + preHitMotVec.y + postHitMotVec.y, getZ() + preHitMotVec.z + postHitMotVec.z);

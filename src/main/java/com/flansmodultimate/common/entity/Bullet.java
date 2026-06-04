@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -820,7 +819,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 Vec3 playerLook = owner.getLookAngle();
                 Vec3 playerToTarget = new Vec3(dXp, dYp, dZp);
 
-                double angleSaclos = Math.abs(Vector3f.angle(new Vector3f(playerLook), new Vector3f(playerToTarget)));
+                double angleSaclos = Math.abs(angleBetween(playerLook, playerToTarget));
                 if (angleSaclos > Math.toRadians(configType.getMaxDegreeOfSACLOS()))
                     lockedOnTo = null;
             }
@@ -892,7 +891,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         Vec3 currentDirection = velocity.normalize();
 
         // Angle between current and desired directions (radians)
-        float angle = Math.abs(Vector3f.angle(new Vector3f(currentDirection), new Vector3f(desiredDirection)));
+        float angle = (float) Math.abs(angleBetween(currentDirection, desiredDirection));
 
         // FOV / seeker cone: if target too far off boresight, lose lock
         if (angle > Math.toRadians(configType.getMaxDegreeOfMissile()))
@@ -916,6 +915,16 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         Vec3 newDir = currentDirection.scale(1.0 - t).add(desiredDirection.scale(t)).normalize();
         Vec3 newVelocity = newDir.scale(speed);
         setDeltaMovement(newVelocity);
+    }
+
+    private static double angleBetween(Vec3 first, Vec3 second)
+    {
+        double lengthProduct = Math.sqrt(first.lengthSqr() * second.lengthSqr());
+        if (lengthProduct < 1.0e-12)
+            return 0.0;
+
+        double cosine = (first.x * second.x + first.y * second.y + first.z * second.z) / lengthProduct;
+        return Math.acos(Math.max(-1.0, Math.min(1.0, cosine)));
     }
 
     protected void updateShootForSettingPos()

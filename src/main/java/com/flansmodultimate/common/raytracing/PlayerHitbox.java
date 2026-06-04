@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -12,6 +11,7 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -67,9 +67,9 @@ public class PlayerHitbox
     public PlayerBulletHit raytrace(Vector3f origin, Vector3f motion)
     {
         //Move to local coords for this hitbox, but don't modify the original "origin" vector
-        origin = Vector3f.sub(origin, rP, null);
+        origin = new Vector3f(origin).sub(rP);
         origin = axes.findGlobalVectorLocally(origin);
-        motion = axes.findGlobalVectorLocally(Vector3f.sub(motion, vel, null));
+        motion = axes.findGlobalVectorLocally(new Vector3f(motion).sub(vel));
 
         //We now have an AABB starting at o and with dimensions d and our ray in the same coordinate system
         //We are looking for a point at which the ray enters the box, so we need only consider faces that the ray can see. Partition the space into 3 areas in each axis

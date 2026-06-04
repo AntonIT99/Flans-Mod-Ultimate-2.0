@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.util.JomlUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -71,22 +72,28 @@ public class InstantShotTrail
         float parametric = (ticksExisted + partialTicks) * bulletSpeed;
 
         // Direction from origin to hit
-        Vector3f dir = new Vector3f(hitPos.subtract(origin));
+        Vector3f dir = JomlUtils.fromVec3(hitPos.subtract(origin));
         if (dir.lengthSquared() == 0)
             return;
-        dir.normalise();
+        dir.normalize();
 
         float startT = parametric - length * 0.5f;
         float endT = parametric + length * 0.5f;
 
-        Vector3f start = new Vector3f(origin.x + dir.x * startT, origin.y + dir.y * startT, origin.z + dir.z * startT);
-        Vector3f end = new Vector3f(origin.x + dir.x * endT, origin.y + dir.y * endT, origin.z + dir.z * endT);
+        float startX = (float) origin.x + dir.x * startT;
+        float startY = (float) origin.y + dir.y * startT;
+        float startZ = (float) origin.z + dir.z * startT;
+        float endX = (float) origin.x + dir.x * endT;
+        float endY = (float) origin.y + dir.y * endT;
+        float endZ = (float) origin.z + dir.z * endT;
 
         // Build trail frame:
         // tangent is perpendicular to both (dir) and (toCamera)
-        Vector3f toCam = new Vector3f((float) player.getX() - hitPos.x, (float) player.getEyeY() - hitPos.y, (float) player.getZ() - hitPos.z);
-        Vector3f tangent = Vector3f.cross(new Vector3f(dir), toCam, null);
-        tangent.normalise().scale(-width * 0.5f);
+        Vector3f toCam = new Vector3f((float) (player.getX() - hitPos.x), (float) (player.getEyeY() - hitPos.y), (float) (player.getZ() - hitPos.z));
+        Vector3f tangent = dir.cross(toCam, new Vector3f());
+        if (tangent.lengthSquared() == 0)
+            return;
+        tangent.normalize().mul(-width * 0.5f);
 
         Matrix4f pose = poseStack.last().pose();
 
@@ -95,16 +102,16 @@ public class InstantShotTrail
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         // Quad: start+tan, start-tan, end-tan, end+tan
-        putPosUv(buf, pose, Vector3f.add(start, tangent, null), 0.0f, 0.0f);
-        putPosUv(buf, pose, Vector3f.sub(start, tangent, null), 0.0f, 1.0f);
-        putPosUv(buf, pose, Vector3f.sub(end, tangent, null), 1.0f, 1.0f);
-        putPosUv(buf, pose, Vector3f.add(end, tangent, null), 1.0f, 0.0f);
+        putPosUv(buf, pose, startX + tangent.x, startY + tangent.y, startZ + tangent.z, 0.0f, 0.0f);
+        putPosUv(buf, pose, startX - tangent.x, startY - tangent.y, startZ - tangent.z, 0.0f, 1.0f);
+        putPosUv(buf, pose, endX - tangent.x, endY - tangent.y, endZ - tangent.z, 1.0f, 1.0f);
+        putPosUv(buf, pose, endX + tangent.x, endY + tangent.y, endZ + tangent.z, 1.0f, 0.0f);
 
         tess.end();
     }
 
-    private static void putPosUv(BufferBuilder buf, Matrix4f pose, Vector3f p, float u, float v)
+    private static void putPosUv(BufferBuilder buf, Matrix4f pose, float x, float y, float z, float u, float v)
     {
-        buf.vertex(pose, p.x, p.y, p.z).uv(u, v).endVertex();
+        buf.vertex(pose, x, y, z).uv(u, v).endVertex();
     }
 }

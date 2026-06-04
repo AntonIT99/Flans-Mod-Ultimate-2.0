@@ -1,10 +1,11 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.JomlUtils;
+import org.joml.Vector3f;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -38,8 +39,8 @@ public class PlayerSnapshot
     {
         player = p;
         time = p.level().getGameTime();
-        pos = new Vector3f(p.position());
-        vel = new Vector3f(p.getDeltaMovement());
+        pos = JomlUtils.fromVec3(p.position());
+        vel = JomlUtils.fromVec3(p.getDeltaMovement());
 
         RotatedAxes bodyAxes = new RotatedAxes(p.yBodyRot, 0F, 0F);
         RotatedAxes headAxes = new RotatedAxes(p.getYHeadRot() - p.yBodyRot + 90, 0F, p.getXRot());
@@ -96,7 +97,9 @@ public class PlayerSnapshot
             GunType gunType = gunItem.getConfigType();
             if(gunType.isShield())
             {
-                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), vel, EnumHitboxType.RIGHTITEM));
+                com.flansmod.common.vector.Vector3f shieldOrigin = gunType.getShieldOrigin();
+                com.flansmod.common.vector.Vector3f shieldDimensions = gunType.getShieldDimensions();
+                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(shieldOrigin.y, -1.05F + shieldOrigin.x, -1F / 16F + shieldOrigin.z), new Vector3f(shieldDimensions.y, shieldDimensions.x, shieldDimensions.z), vel, EnumHitboxType.RIGHTITEM));
             }
         }
 
@@ -106,7 +109,9 @@ public class PlayerSnapshot
             GunType gunType = gunItem.getConfigType();
             if (gunType.isShield())
             {
-                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(gunType.getShieldOrigin().y, -1.05F + gunType.getShieldOrigin().x, -1F / 16F + gunType.getShieldOrigin().z), new Vector3f(gunType.getShieldDimensions().y, gunType.getShieldDimensions().x, gunType.getShieldDimensions().z), vel, EnumHitboxType.RIGHTITEM));
+                com.flansmod.common.vector.Vector3f shieldOrigin = gunType.getShieldOrigin();
+                com.flansmod.common.vector.Vector3f shieldDimensions = gunType.getShieldDimensions();
+                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(shieldOrigin.y, -1.05F + shieldOrigin.x, -1F / 16F + shieldOrigin.z), new Vector3f(shieldDimensions.y, shieldDimensions.x, shieldDimensions.z), vel, EnumHitboxType.RIGHTITEM));
             }
         }
     }
@@ -118,7 +123,7 @@ public class PlayerSnapshot
 
     public List<BulletHit> raytrace(Vec3 origin, Vec3 motion, float lowerBound, float upperBound)
     {
-        return raytrace(new Vector3f(origin), new Vector3f(motion), lowerBound, upperBound);
+        return raytrace(JomlUtils.fromVec3(origin), JomlUtils.fromVec3(motion), lowerBound, upperBound);
     }
 
     public List<BulletHit> raytrace(Vector3f origin, Vector3f motion, float lowerBound, float upperBound)
@@ -130,7 +135,7 @@ public class PlayerSnapshot
             return hits;
 
         //Get the bullet raytrace vector into local coordinates
-        Vector3f localOrigin = Vector3f.sub(origin, pos, null);
+        Vector3f localOrigin = new Vector3f(origin).sub(pos);
 
         //Check each hitbox for a hit
         for (PlayerHitbox hitbox : hitboxes)

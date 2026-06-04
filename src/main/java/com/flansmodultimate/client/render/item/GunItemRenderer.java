@@ -692,8 +692,8 @@ public final class GunItemRenderer
         {
             poseStack.pushPose();
             poseStack.translate(model.getMinigunBarrelOrigin().x, model.getMinigunBarrelOrigin().y, model.getMinigunBarrelOrigin().z);
-            Vector3f axis = new Vector3f(model.getMinigunBarrelSpinDirection().x, model.getMinigunBarrelSpinDirection().y, model.getMinigunBarrelSpinDirection().z).normalise(null);
-            poseStack.mulPose(Axis.of(new org.joml.Vector3f(axis.x, axis.y, axis.z)).rotationDegrees(animations.getMinigunBarrelRotation() * model.getMinigunBarrelSpinSpeed()));
+            org.joml.Vector3f axis = new org.joml.Vector3f(model.getMinigunBarrelSpinDirection().x, model.getMinigunBarrelSpinDirection().y, model.getMinigunBarrelSpinDirection().z).normalize();
+            poseStack.mulPose(Axis.of(axis).rotationDegrees(animations.getMinigunBarrelRotation() * model.getMinigunBarrelSpinSpeed()));
             poseStack.translate(-model.getMinigunBarrelOrigin().x, -model.getMinigunBarrelOrigin().y, -model.getMinigunBarrelOrigin().z);
             model.render(model.getMinigunBarrelModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();

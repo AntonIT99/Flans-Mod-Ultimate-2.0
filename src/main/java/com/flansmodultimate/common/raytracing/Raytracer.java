@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
@@ -15,6 +14,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;

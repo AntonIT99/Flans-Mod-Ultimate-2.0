@@ -1,6 +1,5 @@
 package com.flansmodultimate.common;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
@@ -8,10 +7,12 @@ import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -299,16 +300,16 @@ public class PlayerData
 
         for(int k = 0; k < type.getMeleeDamagePoints().size(); k++)
         {
-            Vector3f meleeDamagePoint = type.getMeleeDamagePoints().get(k);
+            Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(type.getMeleeDamagePoints().get(k));
             //Do a raytrace from the prev pos to the current pos and attack anything in the way
-            Vector3f nextPos = type.getMeleePath().get(0);
-            Vector3f nextAngles = type.getMeleePathAngles().get(0);
+            Vector3f nextPos = JomlUtils.fromFlansVector(type.getMeleePath().get(0));
+            Vector3f nextAngles = JomlUtils.fromFlansVector(type.getMeleePathAngles().get(0));
             RotatedAxes nextAxes = new RotatedAxes(-nextAngles.y, -nextAngles.z, nextAngles.x);
 
             Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
-            Vector3f.add(nextPos, nextPosInPlayerCoords, nextPosInPlayerCoords);
+            nextPosInPlayerCoords.add(nextPos);
 
-            lastMeleePositions[k] = new Vector3f(player.getX() + nextPosInPlayerCoords.x, player.getEyeY() + nextPosInPlayerCoords.y, player.getZ() + nextPosInPlayerCoords.z);
+            lastMeleePositions[k] = new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y), (float) (player.getZ() + nextPosInPlayerCoords.z));
         }
     }
 
