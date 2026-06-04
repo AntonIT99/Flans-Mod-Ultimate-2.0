@@ -40,7 +40,7 @@ public class PositionTransformVertex extends PositionTextureVertex
     {
         if(transformGroups.isEmpty())
         {
-            vector3D = new Vec3(neutralVector.x, neutralVector.y, neutralVector.z);
+            vector3D = neutralVector;
             return;
         }
         double weight = 0D;
@@ -50,18 +50,24 @@ public class PositionTransformVertex extends PositionTextureVertex
         }
         if(weight == 0D)
         {
-            vector3D = new Vec3(neutralVector.x, neutralVector.y, neutralVector.z);
+            vector3D = neutralVector;
             return;
         }
-        vector3D = new Vec3(0, 0, 0);
 
+        double inverseWeight = 1D / weight;
+        double x = 0D;
+        double y = 0D;
+        double z = 0D;
         for(TransformGroup group : transformGroups)
         {
-            double cWeight = group.getWeight() / weight;
+            double cWeight = group.getWeight() * inverseWeight;
             Vec3 vector = group.doTransformation(this);
 
-            vector3D = new Vec3(vector3D.x + cWeight * vector.x, vector3D.y + cWeight * vector.y, vector3D.z + cWeight * vector.z);
+            x += cWeight * vector.x;
+            y += cWeight * vector.y;
+            z += cWeight * vector.z;
         }
+        vector3D = new Vec3(x, y, z);
     }
 
     public void addGroup(TransformGroup group)

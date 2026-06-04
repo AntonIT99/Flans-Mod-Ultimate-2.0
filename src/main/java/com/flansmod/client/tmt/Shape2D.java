@@ -75,22 +75,22 @@ public class Shape2D
             if(faceLengths != null)
                 totalLength += faceLengths[idx];
             else
-                totalLength += (float) Math.sqrt(Math.pow(curCoord.xCoord - nextCoord.xCoord, 2) + Math.pow(curCoord.yCoord - nextCoord.yCoord, 2));
+                totalLength += getSegmentLength(curCoord, nextCoord);
         }
 
         poly[coords.size()] = new TexturedPolygon(vertsTop);
         poly[coords.size() + 1] = new TexturedPolygon(vertsBottom);
 
         float currentLengthPosition = totalLength;
+        float inverseTotalLength = totalLength == 0F ? 0F : 1F / totalLength;
 
         for(int idx = 0; idx < coords.size(); idx++)
         {
             Coord2D curCoord = coords.get(idx);
             Coord2D nextCoord = coords.get((idx + 1) % coords.size());
-            float currentLength = (float)Math.sqrt(Math.pow(curCoord.xCoord - nextCoord.xCoord, 2) + Math.pow(curCoord.yCoord - nextCoord.yCoord, 2));
+            float currentLength = getSegmentLength(curCoord, nextCoord);
             if(faceLengths != null)
                 currentLength = faceLengths[faceLengths.length - idx - 1];
-            float inverseTotalLength = totalLength == 0F ? 0F : 1F / totalLength;
             float ratioPosition = currentLengthPosition * inverseTotalLength;
             float ratioLength = (currentLengthPosition - currentLength) * inverseTotalLength;
 
@@ -111,6 +111,13 @@ public class Shape2D
         }
 
         return new Shape3D(verts, poly);
+    }
+
+    private static float getSegmentLength(Coord2D current, Coord2D next)
+    {
+        double xDiff = current.xCoord - next.xCoord;
+        double yDiff = current.yCoord - next.yCoord;
+        return (float)Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     }
 
     protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)

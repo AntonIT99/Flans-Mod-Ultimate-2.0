@@ -93,7 +93,8 @@ public class TexturedPolygon
         final Vector3f transformedNormal = new Vector3f();
         final Vector4f transformedPos = new Vector4f();
 
-        // If we DON'T have per-vertex normals, compute one base normal for the whole face
+        transformVertices();
+
         if (!hasPerVertexNormals)
         {
             if (normals.length == 3)
@@ -103,12 +104,7 @@ public class TexturedPolygon
             }
             else if (vertexPositions.length >= 3)
             {
-                Vec3 edgeA = vertexPositions[1].vector3D.subtract(vertexPositions[0].vector3D);
-                Vec3 edgeB = vertexPositions[1].vector3D.subtract(vertexPositions[2].vector3D);
-                Vec3 faceNormal = edgeB.cross(edgeA).normalize();
-
-                transformedNormal.set((float) faceNormal.x * normalSign, (float) faceNormal.y * normalSign, (float) faceNormal.z * normalSign);
-                normalMatrix.transform(transformedNormal);
+                setFaceNormal(transformedNormal, normalMatrix, normalSign);
             }
             else
                 return;
@@ -141,6 +137,45 @@ public class TexturedPolygon
         }
     }
 
+    private void transformVertices()
+    {
+        for (PositionTextureVertex vertex : vertexPositions)
+        {
+            if (vertex instanceof PositionTransformVertex transformVertex)
+                transformVertex.setTransformation();
+        }
+    }
+
+    private void setFaceNormal(Vector3f transformedNormal, Matrix3f normalMatrix, float normalSign)
+    {
+        Vec3 vector0 = vertexPositions[0].vector3D;
+        Vec3 vector1 = vertexPositions[1].vector3D;
+        Vec3 vector2 = vertexPositions[2].vector3D;
+
+        double edgeAX = vector1.x - vector0.x;
+        double edgeAY = vector1.y - vector0.y;
+        double edgeAZ = vector1.z - vector0.z;
+        double edgeBX = vector1.x - vector2.x;
+        double edgeBY = vector1.y - vector2.y;
+        double edgeBZ = vector1.z - vector2.z;
+
+        double normalX = edgeBY * edgeAZ - edgeBZ * edgeAY;
+        double normalY = edgeBZ * edgeAX - edgeBX * edgeAZ;
+        double normalZ = edgeBX * edgeAY - edgeBY * edgeAX;
+        double length = Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
+
+        if (length != 0D)
+        {
+            double inverseLength = normalSign / length;
+            normalX *= inverseLength;
+            normalY *= inverseLength;
+            normalZ *= inverseLength;
+        }
+
+        transformedNormal.set((float)normalX, (float)normalY, (float)normalZ);
+        normalMatrix.transform(transformedNormal);
+    }
+
     private void emitTriangleAsQuad(Matrix4f positionMatrix, Matrix3f normalMatrix,
                                     Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
                                     int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
@@ -168,9 +203,6 @@ public class TexturedPolygon
             int vertexIndex)
     {
         PositionTextureVertex vertex = vertexPositions[vertexIndex];
-
-        if (vertex instanceof PositionTransformVertex transformVertex)
-            transformVertex.setTransformation();
 
         if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
         {

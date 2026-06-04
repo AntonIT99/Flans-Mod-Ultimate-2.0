@@ -69,10 +69,15 @@ public class TransformGroupBone extends TransformGroup
 	@Override
 	public Vec3 doTransformation(PositionTransformVertex vertex)
 	{
-		Vec3 vector = new Vec3(vertex.neutralVector.x, vertex.neutralVector.y, vertex.neutralVector.z);
-		vector = getBaseVector().subtract(vector);
-		Angle3D angle = getTransformAngle();
-		return setVectorRotations(vector, angle.angleX, angle.angleY, angle.angleZ);
+		Vec3 vector = new Vec3(
+				baseVector.x - vertex.neutralVector.x,
+				baseVector.y - vertex.neutralVector.y,
+				baseVector.z - vertex.neutralVector.z);
+		Angle3D angle = attachedBone.absoluteAngles;
+		return setVectorRotations(vector,
+				angle.angleX - baseAngles.angleX,
+				angle.angleY - baseAngles.angleY,
+				angle.angleZ - baseAngles.angleZ);
 	}
 
 	protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
