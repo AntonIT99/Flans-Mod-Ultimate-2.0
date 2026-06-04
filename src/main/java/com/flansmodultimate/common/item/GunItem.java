@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
@@ -612,12 +613,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return emptySlots;
     }
 
-    public float getActualReloadTime(ItemStack gunStack)
+    public float getActualReloadTime(ItemStack gunStack, @Nullable ItemStack otherHand)
     {
-        //TODO: implement Enchantments
-        //reloadTime = EnchantmentModule.ModifyReloadTime(reloadTime, player, otherHand);
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        return (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
+        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
+        return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 
     public void setPreferredAmmo(ItemStack gun, String ammoName)

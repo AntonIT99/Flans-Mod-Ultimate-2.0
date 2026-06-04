@@ -230,7 +230,7 @@ public class GunItemHandler
     {
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
-        float reloadTime = EnchantmentModule.getModifiedReloadTime(item.getActualReloadTime(gunStack), otherHand);
+        float reloadTime = item.getActualReloadTime(gunStack, otherHand);
         if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadTime, reloadSoundUUID))
         {
             EnchantmentModule.damageReloadModifier(player, otherHand);
