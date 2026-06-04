@@ -4,6 +4,7 @@ General:
 - Fix particles
 - Team Mod: Commands, Teams, Classes, Stats
 - 1.12.2 loadouts & rewardBoxes
+- clean up com.flansmod.client.tmt API
 
 Entities:
 - Flagpole + Flag - TODO
