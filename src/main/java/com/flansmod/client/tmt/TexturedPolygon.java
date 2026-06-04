@@ -77,6 +77,9 @@ public class TexturedPolygon
 
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow)
     {
+        if (nVertices < 3)
+            return;
+
         final Matrix4f positionMatrix = pose.pose();
         final Matrix3f normalMatrix = pose.normal();
 
@@ -112,35 +115,83 @@ public class TexturedPolygon
                 return;
         }
 
-        for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+        // Minecraft entity render types are quad buffers; emulate old triangle/polygon modes with degenerate quads.
+        if (nVertices == 3)
         {
-            PositionTextureVertex vertex = vertexPositions[vertexIndex];
-
-            if (vertex instanceof PositionTransformVertex transformVertex)
-                transformVertex.setTransformation();
-
-            // If we have per-vertex normals and we're not glowing, transform the normal for this vertex
-            if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
-            {
-                Vec3 normal = iNormals.get(vertexIndex);
-                transformedNormal.set((float) normal.x * normalSign, (float) normal.y * normalSign, (float) normal.z * normalSign);
-                normalMatrix.transform(transformedNormal);
-            }
-
-            // If glow is on, force a constant normal (as your original code effectively did)
-            final float normalX = glow ? 0F : transformedNormal.x();
-            final float normalY = glow ? 1F : transformedNormal.y();
-            final float normalZ = glow ? 0F : transformedNormal.z();
-
-            final float localX = (float) vertex.vector3D.x() * INV_16;
-            final float localY = (float) vertex.vector3D.y() * INV_16;
-            final float localZ = (float) vertex.vector3D.z() * INV_16;
-
-            transformedPos.set(localX, localY, localZ, 1F);
-            positionMatrix.transform(transformedPos);
-
-            vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
+            emitTriangleAsQuad(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                    packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                    perVertexNormalCount, hasPerVertexNormals, 0, 1, 2);
         }
+        else if (nVertices == 4)
+        {
+            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+            {
+                emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                        perVertexNormalCount, hasPerVertexNormals, vertexIndex);
+            }
+        }
+        else
+        {
+            for (int vertexIndex = 1; vertexIndex < nVertices - 1; vertexIndex++)
+            {
+                emitTriangleAsQuad(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                        perVertexNormalCount, hasPerVertexNormals, 0, vertexIndex, vertexIndex + 1);
+            }
+        }
+    }
+
+    private void emitTriangleAsQuad(Matrix4f positionMatrix, Matrix3f normalMatrix,
+            Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
+            int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
+            boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
+            int vertexIndex0, int vertexIndex1, int vertexIndex2)
+    {
+        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                perVertexNormalCount, hasPerVertexNormals, vertexIndex0);
+        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                perVertexNormalCount, hasPerVertexNormals, vertexIndex1);
+        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                perVertexNormalCount, hasPerVertexNormals, vertexIndex2);
+        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                perVertexNormalCount, hasPerVertexNormals, vertexIndex2);
+    }
+
+    private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix,
+            Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
+            int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
+            boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
+            int vertexIndex)
+    {
+        PositionTextureVertex vertex = vertexPositions[vertexIndex];
+
+        if (vertex instanceof PositionTransformVertex transformVertex)
+            transformVertex.setTransformation();
+
+        if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
+        {
+            Vec3 normal = iNormals.get(vertexIndex);
+            transformedNormal.set((float)normal.x * normalSign, (float)normal.y * normalSign, (float)normal.z * normalSign);
+            normalMatrix.transform(transformedNormal);
+        }
+
+        final float normalX = glow ? 0F : transformedNormal.x();
+        final float normalY = glow ? 1F : transformedNormal.y();
+        final float normalZ = glow ? 0F : transformedNormal.z();
+
+        final float localX = (float)vertex.vector3D.x() * INV_16;
+        final float localY = (float)vertex.vector3D.y() * INV_16;
+        final float localZ = (float)vertex.vector3D.z() * INV_16;
+
+        transformedPos.set(localX, localY, localZ, 1F);
+        positionMatrix.transform(transformedPos);
+
+        vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
     }
 
     @Deprecated
