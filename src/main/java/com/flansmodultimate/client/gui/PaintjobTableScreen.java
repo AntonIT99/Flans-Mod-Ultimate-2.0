@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmod.client.model.RenderGun;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.IPaintableItem;
@@ -162,7 +162,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
 
         //TODO: make 3D item rendering for attachments
         if (stack.getItem() instanceof AttachmentItem attachmentItem)
-            RenderGun.renderAttachment(attachmentItem.getConfigType(), stack, pose, gg.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            GunItemRenderer.renderAttachment(attachmentItem.getConfigType(), stack, pose, gg.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         else
             mc.getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose, gg.bufferSource(), mc.level, 0);
 

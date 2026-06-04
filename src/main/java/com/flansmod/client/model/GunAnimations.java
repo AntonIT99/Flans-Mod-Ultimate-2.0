@@ -5,7 +5,6 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.types.GunType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import net.minecraft.util.RandomSource;
@@ -13,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import java.util.Random;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class GunAnimations
 {

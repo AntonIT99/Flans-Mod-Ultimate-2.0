@@ -15,9 +15,12 @@ import lombok.Setter;
 
 import java.util.Optional;
 
+@Getter
+@Setter
 @NoArgsConstructor
 public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 {
+    @Getter
     protected static final Vector3f invalid = new Vector3f(0F, Float.MAX_VALUE, 0F);
 
     @Getter

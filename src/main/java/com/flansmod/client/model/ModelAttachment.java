@@ -11,6 +11,8 @@ import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 public class ModelAttachment extends ModelBase implements IFlanTypeModel<AttachmentType>
 {
     @Getter @Setter

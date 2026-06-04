@@ -3,13 +3,13 @@ package com.flansmodultimate.client;
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.RenderGun;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Seat;
@@ -715,8 +715,8 @@ public class ModClient
         EnumAnimationType anim = modelGun.getAnimationType();
         if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN || anim == EnumAnimationType.CUSTOMSTRIKER)
         {
-            float clipPosition = RenderGun.getClipPosition(modelGun, stack, animations.getLastReloadAnimationProgress());
-            float maxBullets = RenderGun.getNumBulletsInReload(modelGun, animations);
+            float clipPosition = GunItemRenderer.getClipPosition(modelGun, stack, animations.getLastReloadAnimationProgress());
+            float maxBullets = GunItemRenderer.getNumBulletsInReload(modelGun, animations);
             float ammoPosition = clipPosition * maxBullets;
             int bulletNum = Mth.floor(ammoPosition);
             float bulletProgress = ammoPosition - bulletNum;

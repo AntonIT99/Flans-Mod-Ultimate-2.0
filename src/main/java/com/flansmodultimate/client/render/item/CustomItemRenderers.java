@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.render.item;
 
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.RenderGun;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.item.GrenadeItem;
@@ -29,7 +28,7 @@ public final class CustomItemRenderers
         {
             if (stack.getItem() instanceof GunItem gunItem && gunItem.useCustomRenderer(ctx) && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
             {
-                RenderGun.renderItem(modelGun, stack, ctx, pose, buffer, light, overlay);
+                GunItemRenderer.renderItem(modelGun, stack, ctx, pose, buffer, light, overlay);
                 return;
             }
 
