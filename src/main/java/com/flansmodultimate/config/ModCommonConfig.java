@@ -1,14 +1,19 @@
 package com.flansmodultimate.config;
 
+import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import net.minecraft.resources.ResourceLocation;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -16,6 +21,15 @@ import java.util.concurrent.atomic.AtomicReference;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonConfig
 {
+    public static final int DEFAULT_BULLET_TRACKING_RANGE = 128;
+    public static final int DEFAULT_GRENADE_TRACKING_RANGE = 64;
+    public static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
+    public static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
+
+    private static final int MIN_ENTITY_TRACKING_RANGE = 1;
+    private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
+    private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
+
     public static final ForgeConfigSpec configSpec;
 
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
@@ -26,6 +40,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
     private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
+    private static final ForgeConfigSpec.IntValue BULLET_TRACKING_RANGE;
+    private static final ForgeConfigSpec.IntValue GRENADE_TRACKING_RANGE;
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_TRACKING_RANGE;
     private static final ForgeConfigSpec.IntValue AA_GUN_TRACKING_RANGE;
 
@@ -90,6 +106,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
+    private static final AtomicReference<EntityTrackingRanges> earlyEntityTrackingRanges = new AtomicReference<>();
 
     static
     {
@@ -118,12 +135,18 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Entity Tracking Settings");
+        BULLET_TRACKING_RANGE = builder
+            .comment("Server-side tracking range in blocks for bullets. Requires restart because entity types are registered during startup.")
+            .defineInRange("bulletTrackingRange", DEFAULT_BULLET_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
+        GRENADE_TRACKING_RANGE = builder
+            .comment("Server-side tracking range in blocks for grenades. Requires restart because entity types are registered during startup.")
+            .defineInRange("grenadeTrackingRange", DEFAULT_GRENADE_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
         DEPLOYED_GUN_TRACKING_RANGE = builder
             .comment("Server-side tracking range in blocks for deployed guns. Requires restart because entity types are registered during startup.")
-            .defineInRange("deployedGunTrackingRange", 64, 1, 4096);
+            .defineInRange("deployedGunTrackingRange", DEFAULT_DEPLOYED_GUN_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
         AA_GUN_TRACKING_RANGE = builder
             .comment("Server-side tracking range in blocks for AA guns. Requires restart because entity types are registered during startup.")
-            .defineInRange("aaGunTrackingRange", 128, 1, 4096);
+            .defineInRange("aaGunTrackingRange", DEFAULT_AA_GUN_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
         builder.pop();
 
         builder.push("Damage Settings");
@@ -321,6 +344,8 @@ public final class ModCommonConfig
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
+            BULLET_TRACKING_RANGE.get(),
+            GRENADE_TRACKING_RANGE.get(),
             DEPLOYED_GUN_TRACKING_RANGE.get(),
             AA_GUN_TRACKING_RANGE.get(),
 
@@ -396,14 +421,108 @@ public final class ModCommonConfig
         return config != null && config.forceDefenseAsModernArmor();
     }
 
+    public static int bulletTrackingRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? bulletRegistrationTrackingRange() : config.bulletTrackingRange();
+    }
+
+    public static int grenadeTrackingRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? grenadeRegistrationTrackingRange() : config.grenadeTrackingRange();
+    }
+
     public static int deployedGunTrackingRange()
     {
-        return DEPLOYED_GUN_TRACKING_RANGE.get();
+        CommonConfigSnapshot config = get();
+        return config == null ? deployedGunRegistrationTrackingRange() : config.deployedGunTrackingRange();
     }
 
     public static int aaGunTrackingRange()
     {
-        return AA_GUN_TRACKING_RANGE.get();
+        CommonConfigSnapshot config = get();
+        return config == null ? aaGunRegistrationTrackingRange() : config.aaGunTrackingRange();
+    }
+
+    public static int bulletRegistrationTrackingRange()
+    {
+        return earlyEntityTrackingRanges().bullet();
+    }
+
+    public static int grenadeRegistrationTrackingRange()
+    {
+        return earlyEntityTrackingRanges().grenade();
+    }
+
+    public static int deployedGunRegistrationTrackingRange()
+    {
+        return earlyEntityTrackingRanges().deployedGun();
+    }
+
+    public static int aaGunRegistrationTrackingRange()
+    {
+        return earlyEntityTrackingRanges().aaGun();
+    }
+
+    private static EntityTrackingRanges earlyEntityTrackingRanges()
+    {
+        EntityTrackingRanges cached = earlyEntityTrackingRanges.get();
+        if (cached != null)
+            return cached;
+
+        EntityTrackingRanges loaded = readEarlyEntityTrackingRanges();
+        if (earlyEntityTrackingRanges.compareAndSet(null, loaded))
+            return loaded;
+
+        return earlyEntityTrackingRanges.get();
+    }
+
+    private static EntityTrackingRanges readEarlyEntityTrackingRanges()
+    {
+        EntityTrackingRanges defaults = new EntityTrackingRanges(
+            DEFAULT_BULLET_TRACKING_RANGE,
+            DEFAULT_GRENADE_TRACKING_RANGE,
+            DEFAULT_DEPLOYED_GUN_TRACKING_RANGE,
+            DEFAULT_AA_GUN_TRACKING_RANGE
+        );
+        Path configPath = FMLPaths.CONFIGDIR.get().resolve(FlansMod.MOD_ID + "-common.toml");
+        if (!Files.isRegularFile(configPath))
+            return defaults;
+
+        try (FileConfig config = FileConfig.of(configPath, TomlFormat.instance()))
+        {
+            config.load();
+            return new EntityTrackingRanges(
+                readEarlyEntityTrackingRange(config, configPath, "bulletTrackingRange", DEFAULT_BULLET_TRACKING_RANGE),
+                readEarlyEntityTrackingRange(config, configPath, "grenadeTrackingRange", DEFAULT_GRENADE_TRACKING_RANGE),
+                readEarlyEntityTrackingRange(config, configPath, "deployedGunTrackingRange", DEFAULT_DEPLOYED_GUN_TRACKING_RANGE),
+                readEarlyEntityTrackingRange(config, configPath, "aaGunTrackingRange", DEFAULT_AA_GUN_TRACKING_RANGE)
+            );
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.warn("Unable to read early entity tracking settings from {}. Using defaults: {}", configPath, e.toString());
+            return defaults;
+        }
+    }
+
+    private static int readEarlyEntityTrackingRange(FileConfig config, Path configPath, String key, int defaultValue)
+    {
+        Object raw = config.get(List.of(ENTITY_TRACKING_CONFIG_SECTION, key));
+        if (raw == null)
+            return defaultValue;
+
+        if (raw instanceof Number number)
+        {
+            long value = number.longValue();
+            if (value >= MIN_ENTITY_TRACKING_RANGE && value <= MAX_ENTITY_TRACKING_RANGE)
+                return (int)value;
+        }
+
+        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected integer in range [{}, {}].",
+            key, configPath, raw, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
+        return defaultValue;
     }
 
     public static double lockOnRange()
@@ -497,5 +616,9 @@ public final class ModCommonConfig
                 FlansMod.log.error("Failed to parse line '{}': {}", line, e.getMessage());
             }
         }
+    }
+
+    private record EntityTrackingRanges(int bullet, int grenade, int deployedGun, int aaGun)
+    {
     }
 }

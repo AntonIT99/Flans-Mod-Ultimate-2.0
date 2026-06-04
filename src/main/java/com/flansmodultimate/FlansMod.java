@@ -170,24 +170,24 @@ public class FlansMod
     public static final RegistryObject<SimpleParticleType> smokeBurstParticle = particleRegistry.register("smoke_burst", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
-    // Entities
+    // Entities. Registry suppliers run before Forge loads common config, so use guarded early config reads here.
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(Bullet.RENDER_DISTANCE)
+        .clientTrackingRange(ModCommonConfig.bulletRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString())
     );
     public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(Grenade.RENDER_DISTANCE)
+        .clientTrackingRange(ModCommonConfig.grenadeRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
     );
     public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(ModCommonConfig.deployedGunTrackingRange())
+        .clientTrackingRange(ModCommonConfig.deployedGunRegistrationTrackingRange())
         .updateInterval(5)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
@@ -200,7 +200,7 @@ public class FlansMod
     );
     public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
-        .clientTrackingRange(ModCommonConfig.aaGunTrackingRange())
+        .clientTrackingRange(ModCommonConfig.aaGunRegistrationTrackingRange())
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())

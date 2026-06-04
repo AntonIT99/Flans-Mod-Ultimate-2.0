@@ -12,6 +12,7 @@ import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -155,6 +156,19 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             configType = gType;
         }
         return configType;
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distSq)
+    {
+        double r = getRenderDistance();
+        return distSq < r * r;
+    }
+
+    private static int getRenderDistance()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return config == null ? RENDER_DISTANCE : config.grenadeRenderDistance;
     }
 
     @Override

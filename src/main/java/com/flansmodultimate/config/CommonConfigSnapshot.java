@@ -16,6 +16,8 @@ public record CommonConfigSnapshot(
     int bonusRegenAmount,
     int bonusRegenTickDelay,
     int bonusRegenFoodLimit,
+    int bulletTrackingRange,
+    int grenadeTrackingRange,
     int deployedGunTrackingRange,
     int aaGunTrackingRange,
 
@@ -78,7 +80,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 7;
+    public static final int CURRENT_VERSION = 8;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -92,6 +94,8 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
         buf.writeVarInt(s.bonusRegenFoodLimit);
+        buf.writeVarInt(s.bulletTrackingRange);
+        buf.writeVarInt(s.grenadeTrackingRange);
         buf.writeVarInt(s.deployedGunTrackingRange);
         buf.writeVarInt(s.aaGunTrackingRange);
 
@@ -168,6 +172,8 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readVarInt(),
+            buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),

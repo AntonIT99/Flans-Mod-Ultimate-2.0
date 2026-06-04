@@ -13,6 +13,7 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
@@ -154,8 +155,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        double r = RENDER_DISTANCE;
+        double r = getRenderDistance();
         return distSq < r * r;
+    }
+
+    private static int getRenderDistance()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return config == null ? RENDER_DISTANCE : config.bulletRenderDistance;
     }
 
     public void setArrowHeading(Vec3 direction, float spread, float speed, EnumSpreadPattern spreadPattern)
