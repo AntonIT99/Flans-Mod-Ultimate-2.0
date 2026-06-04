@@ -141,7 +141,7 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
                     float damageVsPlane = configType.getDamageForDisplay(shootableType, Plane.class);
                     final float EPS = 0.0001F;
 
-                    MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(configType.getShortName()), IFlanItem.formatFloat(damage, 1));
+                    MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(damage, 1));
 
                     // vs Living: only show if explicitly configured AND different from base
                     if (shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - damageVsLiving) > EPS)
