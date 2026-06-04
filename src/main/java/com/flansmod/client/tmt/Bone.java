@@ -99,6 +99,7 @@ import java.util.Map;
  *
  * @author GaryCXJk
  */
+@SuppressWarnings({"unused", "java:S1104"})
 public class Bone
 {
     public Angle3D relativeAngles;
@@ -192,7 +193,7 @@ public class Bone
      */
     public void attachBone(Bone parent)
     {
-        if(parentNode != null)
+        if (parentNode != null)
             detachBone();
         parentNode = parent;
         parent.addChildBone(this);
@@ -214,7 +215,7 @@ public class Bone
      */
     public Vec3 setOffset(float x, float y, float z)
     {
-        if(parentNode != null)
+        if (parentNode != null)
         {
             Vec3 vector = parentNode.setOffset(x, y, z);
             offsetX = (float)vector.x;
@@ -239,22 +240,20 @@ public class Bone
 
     /**
      * Resets the offset.
-     *
-     * @param doRecursive
      */
     public void resetOffset(boolean doRecursive)
     {
-        if(parentNode != null)
+        if (parentNode != null)
         {
             positionVector = new Vec3(0, 0, parentNode.length);
-            parentNode.setVectorRotations(positionVector);
+            positionVector = parentNode.setVectorRotations(positionVector);
             positionVector = positionVector.add(parentNode.positionVector);
         }
-        if(doRecursive && !childNodes.isEmpty())
+        if (doRecursive && !childNodes.isEmpty())
         {
-            for(Bone childNode : childNodes)
+            for (Bone childNode : childNodes)
             {
-                childNode.resetOffset(doRecursive);
+                childNode.resetOffset(true);
             }
         }
     }
@@ -281,7 +280,7 @@ public class Bone
      */
     public Bone getRootParent()
     {
-        if(parentNode == null)
+        if (parentNode == null)
             return this;
         else
             return parentNode.getRootParent();
@@ -368,7 +367,7 @@ public class Bone
      */
     public void addModel(ModelRenderer model, float x, float y, float z, boolean inherit, boolean isUpright)
     {
-        if(inherit)
+        if (inherit)
         {
             x += neutralAngles.angleX + (isUpright ? Mth.PI / 2 : 0);
             y += neutralAngles.angleY;
@@ -425,7 +424,7 @@ public class Bone
      */
     public void prepareDraw()
     {
-        if(parentNode != null)
+        if (parentNode != null)
             parentNode.prepareDraw();
         else
         {
@@ -436,10 +435,6 @@ public class Bone
 
     /**
      * Sets the current rotation of the Bone, not calculating any parent bones in.
-     *
-     * @param x
-     * @param y
-     * @param z
      */
     public void setRotations(float x, float y, float z)
     {
@@ -453,7 +448,7 @@ public class Bone
         absoluteAngles.angleX = relativeAngles.angleX;
         absoluteAngles.angleY = relativeAngles.angleY;
         absoluteAngles.angleZ = relativeAngles.angleZ;
-        for(Bone childNode : childNodes)
+        for (Bone childNode : childNodes)
         {
             childNode.setAbsoluteRotations(absoluteAngles.angleX, absoluteAngles.angleY, absoluteAngles.angleZ);
         }
@@ -464,22 +459,21 @@ public class Bone
         absoluteAngles.angleX = relativeAngles.angleX + x;
         absoluteAngles.angleY = relativeAngles.angleY + y;
         absoluteAngles.angleZ = relativeAngles.angleZ + z;
-        for(Bone childNode : childNodes)
+        for (Bone childNode : childNodes)
         {
             childNode.setAbsoluteRotations(absoluteAngles.angleX, absoluteAngles.angleY, absoluteAngles.angleZ);
         }
-
     }
 
-    protected void setVectorRotations(Vec3 vector)
+    protected Vec3 setVectorRotations(Vec3 vector)
     {
         float x = neutralAngles.angleX + absoluteAngles.angleX;
         float y = neutralAngles.angleY + absoluteAngles.angleY;
         float z = neutralAngles.angleZ + absoluteAngles.angleZ;
-        setVectorRotations(vector, x, y, z);
+        return setVectorRotations(vector, x, y, z);
     }
 
-    protected void setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
+    protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
     {
         float xC = Mth.cos(xRot);
         float xS = Mth.sin(xRot);
@@ -506,21 +500,16 @@ public class Bone
         yVec = zy;
         zVec = yz;
 
-        vector = new Vec3(xVec, yVec, zVec);
-    }
-
-    protected void add(Vec3 destVec, Vec3 srcVec)
-    {
-        destVec = destVec.add(srcVec);
+        return new Vec3(xVec, yVec, zVec);
     }
 
     protected void setVectors()
     {
         Vec3 tempVec = new Vec3(0, 0, length);
         positionVector = new Vec3(offsetX, offsetY, offsetZ);
-        add(tempVec, positionVector);
-        setVectorRotations(tempVec);
-        for(Bone childNode : childNodes)
+        tempVec = tempVec.add(positionVector);
+        tempVec = setVectorRotations(tempVec);
+        for (Bone childNode : childNodes)
         {
             childNode.setVectors(tempVec);
         }
@@ -530,13 +519,12 @@ public class Bone
     {
         positionVector = vector;
         Vec3 tempVec = new Vec3(0, 0, length);
-        setVectorRotations(tempVec);
-        add(tempVec, vector);
-        for(Bone childNode : childNodes)
+        tempVec = setVectorRotations(tempVec);
+        tempVec = tempVec.add(vector);
+        for (Bone childNode : childNodes)
         {
             childNode.setVectors(tempVec);
         }
-
     }
 
     /**
@@ -544,7 +532,7 @@ public class Bone
      */
     public void setAnglesToModels()
     {
-        for(ModelRenderer currentModel : models)
+        for (ModelRenderer currentModel : models)
         {
             Angle3D baseAngles = modelBaseRot.get(currentModel);
             currentModel.rotateAngleX = baseAngles.angleX + absoluteAngles.angleX;
@@ -555,7 +543,7 @@ public class Bone
             currentModel.rotationPointZ = (float)positionVector.z;
         }
 
-        for(Bone childNode : childNodes)
+        for (Bone childNode : childNodes)
         {
             childNode.setAnglesToModels();
         }

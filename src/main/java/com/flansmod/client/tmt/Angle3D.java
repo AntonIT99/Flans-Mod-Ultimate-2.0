@@ -6,6 +6,7 @@ package com.flansmod.client.tmt;
  *
  * @author GaryCXJk
  */
+@SuppressWarnings({"unused", "java:S1104"})
 public class Angle3D
 {
     public float angleX;

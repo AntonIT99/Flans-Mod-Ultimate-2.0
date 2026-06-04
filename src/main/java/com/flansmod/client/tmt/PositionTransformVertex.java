@@ -3,11 +3,13 @@ package com.flansmod.client.tmt;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.List;
 
+@SuppressWarnings({"unused", "java:S1104"})
 public class PositionTransformVertex extends PositionTextureVertex
 {
     public Vec3 neutralVector;
-    public ArrayList<TransformGroup> transformGroups = new ArrayList<>();
+    public List<TransformGroup> transformGroups = new ArrayList<>();
 
     public PositionTransformVertex(float x, float y, float z, float u, float v)
     {
@@ -45,6 +47,11 @@ public class PositionTransformVertex extends PositionTextureVertex
         for(TransformGroup transformGroup : transformGroups)
         {
             weight += transformGroup.getWeight();
+        }
+        if(weight == 0D)
+        {
+            vector3D = new Vec3(neutralVector.x, neutralVector.y, neutralVector.z);
+            return;
         }
         vector3D = new Vec3(0, 0, 0);
 

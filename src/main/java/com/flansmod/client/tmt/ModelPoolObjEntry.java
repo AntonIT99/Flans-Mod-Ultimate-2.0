@@ -4,8 +4,11 @@ import net.minecraft.world.phys.Vec3;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ModelPoolObjEntry extends ModelPoolEntry
 {
@@ -17,16 +20,14 @@ public class ModelPoolObjEntry extends ModelPoolEntry
     @Override
     public void getModel(File file)
     {
-        try
+        try(BufferedReader in = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8))
         {
-            BufferedReader in = new BufferedReader(new FileReader(file));
-
             String s;
 
-            ArrayList<PositionTransformVertex> verts = new ArrayList<>();
-            ArrayList<float[]> uvs = new ArrayList<>();
-            ArrayList<float[]> normals = new ArrayList<>();
-            ArrayList<TexturedPolygon> face = new ArrayList<>();
+            List<PositionTransformVertex> verts = new ArrayList<>();
+            List<float[]> uvs = new ArrayList<>();
+            List<float[]> normals = new ArrayList<>();
+            List<TexturedPolygon> face = new ArrayList<>();
 
             while((s = in.readLine()) != null)
             {
@@ -37,7 +38,7 @@ public class ModelPoolObjEntry extends ModelPoolEntry
 
                 s = s.trim();
 
-                if(s.equals(""))
+                if(s.isEmpty())
                     continue;
 
                 if(s.startsWith("g "))
@@ -107,11 +108,11 @@ public class ModelPoolObjEntry extends ModelPoolEntry
                 if(s.startsWith("f "))
                 {
                     s = s.substring(s.indexOf(" ") + 1).trim();
-                    ArrayList<PositionTextureVertex> v = new ArrayList<>();
+                    List<PositionTextureVertex> v = new ArrayList<>();
                     String s1;
                     int finalPhase = 0;
                     float[] normal = new float[]{0F, 0F, 0F};
-                    ArrayList<Vec3> iNormal = new ArrayList<>();
+                    List<Vec3> iNormal = new ArrayList<>();
                     do
                     {
                         int vInt;
@@ -132,7 +133,7 @@ public class ModelPoolObjEntry extends ModelPoolEntry
                                 curUV = uvs.get(vtInt);
                             else
                                 curUV = new float[]{0, 0};
-                            int vnInt = 0;
+                            int vnInt;
                             if(f.length == 3)
                             {
                                 if(f[2].isEmpty())
@@ -167,11 +168,9 @@ public class ModelPoolObjEntry extends ModelPoolEntry
 
                         if(vInt < verts.size())
                         {
-                            v.add(verts.get(vInt).setTexturePosition(curUV[0], curUV[1]));
-                            if(verts.get(vInt) instanceof PositionTransformVertex)
-                            {
-                                verts.get(vInt).addGroup(group);
-                            }
+                            PositionTransformVertex vertex = verts.get(vInt);
+                            v.add(vertex.setTexturePosition(curUV[0], curUV[1]));
+                            vertex.addGroup(group);
                         }
                         if(ind > -1)
                             s = s.substring(s.indexOf(" ") + 1).trim();
@@ -181,16 +180,14 @@ public class ModelPoolObjEntry extends ModelPoolEntry
 
                     float d = (float) Math.sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
 
-                    normal[0] /= d;
-                    normal[1] /= d;
-                    normal[2] /= d;
-
-                    PositionTextureVertex[] vToArr = new PositionTextureVertex[v.size()];
-
-                    for(int i = 0; i < v.size(); i++)
+                    if(d != 0F)
                     {
-                        vToArr[i] = v.get(i);
+                        normal[0] /= d;
+                        normal[1] /= d;
+                        normal[2] /= d;
                     }
+
+                    PositionTextureVertex[] vToArr = v.toArray(new PositionTextureVertex[0]);
 
                     TexturedPolygon poly = new TexturedPolygon(vToArr);
                     poly.setNormals(normal[0], normal[1], normal[2]);
@@ -201,21 +198,12 @@ public class ModelPoolObjEntry extends ModelPoolEntry
                 }
             }
 
-            vertices = new PositionTransformVertex[verts.size()];
-            for(int i = 0; i < verts.size(); i++)
-            {
-                vertices[i] = verts.get(i);
-            }
-            faces = new TexturedPolygon[face.size()];
-            for(int i = 0; i < face.size(); i++)
-            {
-                faces[i] = face.get(i);
-            }
-            in.close();
+            vertices = verts.toArray(new PositionTransformVertex[0]);
+            faces = face.toArray(new TexturedPolygon[0]);
         }
-        catch(Throwable ignored)
+        catch(IOException | RuntimeException ignored)
         {
-
+            // Keep legacy behavior: invalid or unreadable OBJ files are ignored by the model pool.
         }
     }
 }

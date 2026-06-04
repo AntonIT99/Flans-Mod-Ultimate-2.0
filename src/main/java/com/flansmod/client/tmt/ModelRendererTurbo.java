@@ -8,6 +8,7 @@ import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Mth;
@@ -51,6 +52,7 @@ public class ModelRendererTurbo extends ModelRenderer
     private TexturedPolygon[] faces;
     private TransformGroup currentGroup;
     private TextureGroup currentTextureGroup;
+    @Setter
     private String defaultTexture;
 
     private final Map<String, TransformGroup> transformGroup;
@@ -168,10 +170,6 @@ public class ModelRendererTurbo extends ModelRenderer
      * Creates a new polygon with a given UV.
      *
      * @param verts an array of vertices
-     * @param u1
-     * @param v1
-     * @param u2
-     * @param v2
      */
     public void addPolygon(PositionTextureVertex[] verts, int u1, int v1, int u2, int v2)
     {
@@ -2080,19 +2078,6 @@ public class ModelRendererTurbo extends ModelRenderer
     public void setGroupTexture(String s)
     {
         currentTextureGroup.texture = s;
-    }
-
-    /**
-     * Sets the default texture. When left as an empty string,
-     * it will use the texture that has been set previously.
-     * Note that this will also move on to other rendered models
-     * of the same entity.
-     *
-     * @param s the filename
-     */
-    public void setDefaultTexture(String s)
-    {
-        defaultTexture = s;
     }
 
 

@@ -8,6 +8,7 @@ import net.minecraft.util.Mth;
  *
  * @author GaryCXJk
  */
+@SuppressWarnings({"unused", "java:S1104"})
 public class Coord2D
 {
     public double xCoord;

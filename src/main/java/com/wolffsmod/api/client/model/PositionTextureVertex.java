@@ -2,6 +2,7 @@ package com.wolffsmod.api.client.model;
 
 import net.minecraft.world.phys.Vec3;
 
+@SuppressWarnings({"unused", "java:S1104"})
 public class PositionTextureVertex
 {
     public Vec3 vector3D;

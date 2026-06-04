@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings({"unused", "UnusedReturnValue", "BooleanMethodIsAlwaysInverted", "java:S1104"})
 public class ModelRenderer
 {
     /** The size of the texture file's width in pixels. */
@@ -163,7 +164,10 @@ public class ModelRenderer
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void render(float scale) {}
+    public void render(float scale)
+    {
+        // ignore calls to legacy rendering,
+    }
 
     public void translateAndRotate(PoseStack poseStack, float scale)
     {

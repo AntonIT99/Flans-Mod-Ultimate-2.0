@@ -2,9 +2,10 @@ package com.flansmod.client.tmt;
 
 import net.minecraft.world.phys.Vec3;
 
+@SuppressWarnings({"unused", "java:S1104", "java:S1172", "java:S2176"})
 public class PositionTextureVertex extends com.wolffsmod.api.client.model.PositionTextureVertex
 {
-    public float texturePositionW = 1F;
+    public float texturePositionW;
 
     public PositionTextureVertex(float par1, float par2, float par3, float par4, float par5)
     {

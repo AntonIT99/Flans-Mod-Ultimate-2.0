@@ -1,7 +1,5 @@
 package com.flansmod.client.tmt;
 
-import org.lwjgl.opengl.GL11;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Setter;
@@ -16,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"unused", "SameParameterValue", "java:S1104"})
 public class TexturedPolygon
 {
     public PositionTextureVertex[] vertexPositions;
@@ -143,10 +142,10 @@ public class TexturedPolygon
     }
 
     private void emitTriangleAsQuad(Matrix4f positionMatrix, Matrix3f normalMatrix,
-            Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
-            int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
-            boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
-            int vertexIndex0, int vertexIndex1, int vertexIndex2)
+                                    Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
+                                    int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
+                                    boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
+                                    int vertexIndex0, int vertexIndex1, int vertexIndex2)
     {
         emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
                 packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
@@ -192,70 +191,5 @@ public class TexturedPolygon
         positionMatrix.transform(transformedPos);
 
         vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
-    }
-
-    @Deprecated
-    public void draw(TmtTessellator tessellator, float f)
-    {
-        if(nVertices == 3)
-            tessellator.startDrawing(GL11.GL_TRIANGLES);
-        else if(nVertices == 4)
-            tessellator.startDrawingQuads();
-        else
-            tessellator.startDrawing(GL11.GL_POLYGON);
-
-        if(iNormals.isEmpty())
-        {
-            if(normals.length == 3)
-            {
-                if(invertNormal)
-                {
-                    tessellator.setNormal(-normals[0], -normals[1], -normals[2]);
-                }
-                else
-                {
-                    tessellator.setNormal(normals[0], normals[1], normals[2]);
-                }
-            }
-            else if(vertexPositions.length >= 3)
-            {
-                Vec3 vec3d = vertexPositions[1].vector3D.subtract(vertexPositions[0].vector3D);
-                Vec3 vec31 = vertexPositions[1].vector3D.subtract(vertexPositions[2].vector3D);
-                Vec3 vec32 = vec31.cross(vec3d).normalize();
-
-                if(invertNormal)
-                {
-                    tessellator.setNormal(-(float)vec32.x, -(float)vec32.y, -(float)vec32.z);
-                }
-                else
-                {
-                    tessellator.setNormal((float)vec32.x, (float)vec32.y, (float)vec32.z);
-                }
-            }
-            else
-            {
-                return;
-            }
-        }
-        for(int i = 0; i < nVertices; i++)
-        {
-            PositionTextureVertex positionTexturevertex = vertexPositions[i];
-            if(positionTexturevertex instanceof PositionTransformVertex positionTransformVertex)
-                positionTransformVertex.setTransformation();
-            if(i < iNormals.size())
-            {
-                if(invertNormal)
-                {
-                    tessellator.setNormal(-(float)iNormals.get(i).x, -(float)iNormals.get(i).y, -(float)iNormals.get(i).z);
-                }
-                else
-                {
-                    tessellator.setNormal((float)iNormals.get(i).x, (float)iNormals.get(i).y, (float)iNormals.get(i).z);
-                }
-            }
-            tessellator.addVertexWithUVW((float)positionTexturevertex.vector3D.x * f, (float)positionTexturevertex.vector3D.y * f, (float)positionTexturevertex.vector3D.z * f, positionTexturevertex.texturePositionX, positionTexturevertex.texturePositionY, positionTexturevertex.texturePositionW);
-        }
-
-        tessellator.draw();
     }
 }

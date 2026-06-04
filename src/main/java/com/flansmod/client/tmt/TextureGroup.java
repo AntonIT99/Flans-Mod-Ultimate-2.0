@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"unused", "java:S1104"})
 public class TextureGroup
 {
     public List<TexturedPolygon> poly;

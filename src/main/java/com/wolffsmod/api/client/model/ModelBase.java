@@ -18,11 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@SuppressWarnings({"unused", "java:S1104"})
 public abstract class ModelBase extends Model implements IModelBase
 {
-    @SuppressWarnings("java:S1104")
     public int textureWidth = TEXTURE_WIDTH;
-    @SuppressWarnings("java:S1104")
     public int textureHeight = TEXTURE_HEIGHT;
 
     @Getter

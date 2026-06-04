@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@SuppressWarnings("unused")
 public interface IModelBase
 {
     int TEXTURE_WIDTH = 64;

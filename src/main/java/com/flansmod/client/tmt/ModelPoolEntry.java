@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+
 public abstract class ModelPoolEntry
 {
     public String name;
@@ -98,7 +99,7 @@ public abstract class ModelPoolEntry
             int nameIdx = 0;
             String groupKey = groupsItr.next();
             String currentGroup = name + "_" + nameIdx + ":" + groupKey;
-            while(groupsMap.size() > 0 && groupsMap.containsKey(currentGroup))
+            while(!groupsMap.isEmpty() && groupsMap.containsKey(currentGroup))
             {
                 nameIdx++;
                 currentGroup = name + "_" + nameIdx + ":" + groupKey;
@@ -111,7 +112,7 @@ public abstract class ModelPoolEntry
             int nameIdx = 0;
             String groupKey = texturesItr.next();
             String currentGroup = name + "_" + nameIdx + ":" + groupKey;
-            while(groupsMap.size() > 0 && texturesMap.containsKey(currentGroup))
+            while(!groupsMap.isEmpty() && texturesMap.containsKey(currentGroup))
             {
                 nameIdx++;
                 currentGroup = name + "_" + nameIdx + ":" + groupKey;

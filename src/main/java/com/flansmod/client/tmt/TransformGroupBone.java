@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
  * @author GaryCXJk
  *
  */
+@SuppressWarnings("unused")
 public class TransformGroupBone extends TransformGroup
 {
 	protected Angle3D baseAngles;
@@ -71,12 +72,10 @@ public class TransformGroupBone extends TransformGroup
 		Vec3 vector = new Vec3(vertex.neutralVector.x, vertex.neutralVector.y, vertex.neutralVector.z);
 		vector = getBaseVector().subtract(vector);
 		Angle3D angle = getTransformAngle();
-		setVectorRotations(vector, angle.angleX, angle.angleY, angle.angleZ);
-		
-		return vector;
+		return setVectorRotations(vector, angle.angleX, angle.angleY, angle.angleZ);
 	}
 
-	protected void setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
+	protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
 	{
 		float xC = Mth.cos(xRot);
 		float xS = Mth.sin(xRot);
@@ -103,6 +102,6 @@ public class TransformGroupBone extends TransformGroup
 		yVec = zy;
 		zVec = yz;
 
-		vector = new Vec3(xVec, yVec, zVec);
+		return new Vec3(xVec, yVec, zVec);
 	}
 }

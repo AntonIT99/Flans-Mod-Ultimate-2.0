@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings({"unused", "java:S1104"})
 public class Shape2D
 {
     public List<Coord2D> coords;
@@ -18,7 +19,6 @@ public class Shape2D
     public Shape2D(Coord2D[] coordArray)
     {
         coords = new ArrayList<>();
-
         Collections.addAll(coords, coordArray);
     }
 
@@ -29,7 +29,7 @@ public class Shape2D
 
     public Coord2D[] getCoordArray()
     {
-        return (Coord2D[])coords.toArray();
+        return coords.toArray(new Coord2D[0]);
     }
 
     public Shape3D extrude(float x, float y, float z, float rotX, float rotY, float rotZ, float depth, int u, int v, float textureWidth, float textureHeight, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float[] faceLengths)
@@ -75,7 +75,7 @@ public class Shape2D
             if(faceLengths != null)
                 totalLength += faceLengths[idx];
             else
-                totalLength += Math.sqrt(Math.pow(curCoord.xCoord - nextCoord.xCoord, 2) + Math.pow(curCoord.yCoord - nextCoord.yCoord, 2));
+                totalLength += (float) Math.sqrt(Math.pow(curCoord.xCoord - nextCoord.xCoord, 2) + Math.pow(curCoord.yCoord - nextCoord.yCoord, 2));
         }
 
         poly[coords.size()] = new TexturedPolygon(vertsTop);
@@ -90,8 +90,9 @@ public class Shape2D
             float currentLength = (float)Math.sqrt(Math.pow(curCoord.xCoord - nextCoord.xCoord, 2) + Math.pow(curCoord.yCoord - nextCoord.yCoord, 2));
             if(faceLengths != null)
                 currentLength = faceLengths[faceLengths.length - idx - 1];
-            float ratioPosition = currentLengthPosition / totalLength;
-            float ratioLength = (currentLengthPosition - currentLength) / totalLength;
+            float inverseTotalLength = totalLength == 0F ? 0F : 1F / totalLength;
+            float ratioPosition = currentLengthPosition * inverseTotalLength;
+            float ratioLength = (currentLengthPosition - currentLength) * inverseTotalLength;
 
             float texU1 = ((ratioLength * sideTextureWidth + u) / textureWidth);
             float texU2 = ((ratioPosition * sideTextureWidth + u) / textureWidth);
@@ -109,13 +110,7 @@ public class Shape2D
             currentLengthPosition -= currentLength;
         }
 
-        Shape3D shape3D = new Shape3D(verts, poly);
-        for(TexturedPolygon face : shape3D.faces)
-        {
-            face.setInvertNormal(true);
-        }
-
-        return shape3D;
+        return new Shape3D(verts, poly);
     }
 
     protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)
