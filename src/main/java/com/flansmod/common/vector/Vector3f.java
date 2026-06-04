@@ -193,6 +193,31 @@ public class Vector3f implements Serializable
     }
 
     /**
+     * Normalise this vector
+     *
+     * @return this
+     */
+    public Vector3f normalise()
+    {
+        float lenSq = x * x + y * y + z * z;
+        if (lenSq == 0.0f)
+        {
+            x = 0.0f;
+            y = 0.0f;
+            z = 0.0f;
+            return this;
+        }
+        if (lenSq == 1.0f)
+            return this;
+
+        float inverseLength = (float) (1.0 / Math.sqrt(lenSq));
+        x *= inverseLength;
+        y *= inverseLength;
+        z *= inverseLength;
+        return this;
+    }
+
+    /**
      * Normalise this vector and place the result in another vector.
      *
      * @param dest The destination vector, or null if a new vector is to be created
