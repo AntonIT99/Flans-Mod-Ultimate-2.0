@@ -195,7 +195,7 @@ public abstract class InfoType
                 for (int row = 0; row < 3; row++)
                 {
                     String recipeRow = Objects.requireNonNullElse((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY, StringUtils.EMPTY);
-                    if (recipeRow.length() > 3)
+                    if (hasRecipeContentAfterGrid(recipeRow))
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
@@ -233,6 +233,11 @@ public abstract class InfoType
         if (recipeRow.length() >= 3)
             return recipeRow.substring(0, 3);
         return StringUtils.rightPad(recipeRow, 3);
+    }
+
+    private static boolean hasRecipeContentAfterGrid(String recipeRow)
+    {
+        return recipeRow.length() > 3 && StringUtils.isNotBlank(recipeRow.substring(3));
     }
 
     private void addToRecipeGrid(List<String> recipeRows)
