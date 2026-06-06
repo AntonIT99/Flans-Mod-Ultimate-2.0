@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +39,7 @@ public class ArmorBoxType extends BlockType
         {
             try
             {
-                ArmourBoxEntry entry = createArmourBoxEntry(split);
+                ArmourBoxEntry entry = createArmourBoxEntry(split, contentPack);
                 readArmourPieces(entry, file, lineIndex, contentPack);
                 pages.add(entry);
             }
@@ -50,10 +50,10 @@ public class ArmorBoxType extends BlockType
         }
     }
 
-    protected static ArmourBoxEntry createArmourBoxEntry(String[] split)
+    protected static ArmourBoxEntry createArmourBoxEntry(String[] split, @Nullable IContentProvider contentPack)
     {
         String name = String.join(" ", Arrays.copyOfRange(split, 2, split.length));
-        return new ArmourBoxEntry(split[1], name);
+        return new ArmourBoxEntry(split[1], name, contentPack);
     }
 
     protected void readArmourPieces(ArmourBoxEntry entry, TypeFile file, int lineIndex, IContentProvider contentPack)
@@ -80,8 +80,13 @@ public class ArmorBoxType extends BlockType
     {
         String[] lineSplit = line.split("\\s+");
         String armorShortName = ResourceUtils.sanitize(lineSplit[0]);
-        entry.armors[armorSlot] = ContentManager.getShortnameAliasInContentPack(armorShortName, contentPack);
+        entry.setArmor(armorSlot, armorShortName, file, line);
         entry.requiredStackRefs.get(armorSlot).addAll(RecipeParser.parseItemThenAmountReferences(lineSplit, 1, contentPack, file, "armour recipe " + line));
+    }
+
+    public void resolveDeferredReferences()
+    {
+        pages.forEach(ArmourBoxEntry::resolveDeferredReferences);
     }
 
     public ResourceLocation getGuiTexture()
@@ -90,20 +95,78 @@ public class ArmorBoxType extends BlockType
     }
 
     /** Each instance of this class refers to one page full of recipes, that is, one full set of armour */
-    @Getter
     public static class ArmourBoxEntry
     {
+        @Getter
         final String shortName;
+        @Getter
         final String name;
         final String[] armors = new String[4];
+        final ArmorType[] resolvedArmors = new ArmorType[4];
+        final boolean[] armorResolved = new boolean[4];
+        final boolean[] missingArmorLogged = new boolean[4];
+        final TypeFile[] armorSourceFiles = new TypeFile[4];
+        final String[] armorSourceLines = new String[4];
         final List<List<RecipeIngredient>> requiredStackRefs = new ArrayList<>(4);
+        @Nullable
+        final IContentProvider contentPack;
 
-        public ArmourBoxEntry(String s, String s1)
+        public ArmourBoxEntry(String s, String s1, @Nullable IContentProvider contentPack)
         {
             shortName = s;
             name = s1;
+            this.contentPack = contentPack;
             for (int i = 0; i < 4; i++)
                 requiredStackRefs.add(new ArrayList<>());
+        }
+
+        public void setArmor(int armorSlot, String armorShortName, TypeFile file, String sourceLine)
+        {
+            if (armorSlot < 0 || armorSlot >= armors.length)
+                return;
+
+            armors[armorSlot] = armorShortName;
+            armorSourceFiles[armorSlot] = file;
+            armorSourceLines[armorSlot] = sourceLine;
+            armorResolved[armorSlot] = false;
+            resolvedArmors[armorSlot] = null;
+            missingArmorLogged[armorSlot] = false;
+        }
+
+        @Nullable
+        public ArmorType getArmorType(int armorSlot)
+        {
+            if (armorSlot < 0 || armorSlot >= armors.length)
+                return null;
+
+            String armorShortName = armors[armorSlot];
+            if (armorShortName == null || armorShortName.isBlank())
+                return null;
+
+            if (!armorResolved[armorSlot])
+            {
+                InfoType type = InfoType.getInfoType(armorShortName, contentPack);
+                if (type instanceof ArmorType armorType)
+                    resolvedArmors[armorSlot] = armorType;
+                armorResolved[armorSlot] = true;
+            }
+
+            if (resolvedArmors[armorSlot] == null && !missingArmorLogged[armorSlot])
+            {
+                TypeFile sourceFile = armorSourceFiles[armorSlot];
+                String sourceLine = armorSourceLines[armorSlot];
+                if (sourceFile != null)
+                    logError("Unable to find armor item '" + armorShortName + "' for ArmorBox, skipping entry: " + sourceLine, sourceFile);
+                missingArmorLogged[armorSlot] = true;
+            }
+
+            return resolvedArmors[armorSlot];
+        }
+
+        protected void resolveDeferredReferences()
+        {
+            for (int i = 0; i < armors.length; i++)
+                getArmorType(i);
         }
 
         public List<List<ItemStack>> getRequiredStacks()

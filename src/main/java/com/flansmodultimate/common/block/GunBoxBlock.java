@@ -87,11 +87,15 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
         if (!player.getAbilities().instabuild && !hasRequiredParts(player, entry))
             return;
 
-        ItemStack resultStack = ModUtils.getItemStack(entry.getType()).orElse(ItemStack.EMPTY);
+        InfoType entryType = entry.getType();
+        if (entryType == null)
+            return;
+
+        ItemStack resultStack = ModUtils.getItemStack(entryType).orElse(ItemStack.EMPTY);
         if (resultStack.isEmpty())
             return;
 
-        prepareCraftedStack(resultStack, entry.getType());
+        prepareCraftedStack(resultStack, entryType);
 
         if (!player.getAbilities().instabuild)
         {

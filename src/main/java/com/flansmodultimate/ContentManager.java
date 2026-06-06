@@ -4,8 +4,10 @@ import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
+import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
@@ -390,6 +392,8 @@ public class ContentManager
             FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), loadingTimeMs);
         }
 
+        resolveDeferredContentReferences();
+
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
 
@@ -407,6 +411,20 @@ public class ContentManager
         {
             readFiles(provider);
             registerConfigs(provider);
+        }
+    }
+
+    private static void resolveDeferredContentReferences()
+    {
+        for (ArrayList<InfoType> providerConfigs : configs.values())
+        {
+            for (InfoType config : providerConfigs)
+            {
+                if (config instanceof GunBoxType gunBoxType)
+                    gunBoxType.resolveDeferredReferences();
+                else if (config instanceof ArmorBoxType armorBoxType)
+                    armorBoxType.resolveDeferredReferences();
+            }
         }
     }
 

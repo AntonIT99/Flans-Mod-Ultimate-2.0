@@ -506,5 +506,28 @@ public abstract class InfoType
         return infoTypes.get(id);
     }
 
+    @Nullable
+    public static InfoType getInfoType(String id, @Nullable IContentProvider provider)
+    {
+        if (StringUtils.isBlank(id))
+            return null;
+
+        String rawId = id.trim();
+        if (rawId.contains(":"))
+        {
+            String[] split = rawId.split(":", 2);
+            if (!ResourceUtils.sanitize(split[0]).equals(FlansMod.FLANSMOD_ID))
+                return null;
+            rawId = split[1];
+        }
+
+        String sanitizedId = ResourceUtils.sanitize(rawId);
+        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
+        InfoType type = getInfoType(aliasedId);
+        if (type == null && !aliasedId.equals(sanitizedId))
+            type = getInfoType(sanitizedId);
+        return type;
+    }
+
     //TODO: implement addLoot() from 1.12.2 (and also override in PaintableType)
 }

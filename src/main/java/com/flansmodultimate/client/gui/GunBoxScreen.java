@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.types.GunBoxType;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.util.ModUtils;
@@ -229,7 +230,9 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
             if (craftHighlight)
             {
-                getDisplayedCraftEntry().ifPresent(e -> PacketHandler.sendToServer(new PacketBuyWeapon(menu.getPos(), e.getType().getShortName())));
+                getDisplayedCraftEntry()
+                    .map(GunBoxType.GunBoxEntry::getType)
+                    .ifPresent(type -> PacketHandler.sendToServer(new PacketBuyWeapon(menu.getPos(), type.getShortName())));
                 return true;
             }
         }
@@ -354,7 +357,10 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
     private String getDisplayName(GunBoxType.GunBoxEntry entry)
     {
-        return ModUtils.getItemStack(entry.getType()).map(stack -> stack.getHoverName().getString()).orElse(entry.getType().getName());
+        InfoType entryType = entry.getType();
+        return ModUtils.getItemStack(entryType)
+            .map(stack -> stack.getHoverName().getString())
+            .orElseGet(() -> entryType == null ? entry.getItemShortName() : entryType.getName());
     }
 
     private int hexColor(String color)

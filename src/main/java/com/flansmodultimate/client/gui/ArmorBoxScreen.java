@@ -3,7 +3,6 @@ package com.flansmodultimate.client.gui;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
-import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.util.ModUtils;
@@ -117,7 +116,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
             {
                 int idx = i * 2 + j;
 
-                if (!(InfoType.getInfoType(currentPage.getArmors()[idx]) instanceof ArmorType armorType))
+                ArmorType armorType = currentPage.getArmorType(idx);
+                if (armorType == null)
                     continue;
 
                 int ax = leftPos + 9 + 83 * i;
@@ -166,7 +166,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                     for (int y = 0; y < 2; y++)
                     {
                         int idx = x * 2 + y;
-                        if (type.getPages().get(page).getArmors()[idx] != null
+                        if (type.getPages().get(page).getArmorType(idx) != null
                             && m > 7 + 83 * x && m < 27 + 83 * x
                             && n > 42 + 22 * y && n < 62 + 22 * y)
                         {

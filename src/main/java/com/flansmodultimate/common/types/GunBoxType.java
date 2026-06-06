@@ -1,12 +1,13 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
-import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -94,19 +95,16 @@ public class GunBoxType extends BlockType
                     return;
                 }
 
-                InfoType type = resolveInfoType(split[1]);
-                if (type != null)
-                {
-                    if (currentPage.getEntries().size() >= MAX_GUNS_PER_PAGE)
-                        addPage(DEFAULT_PAGE_NAME + " " + (gunPages.size() + 1));
+                if (currentPage.getRawEntryCount() >= MAX_GUNS_PER_PAGE)
+                    addPage(DEFAULT_PAGE_NAME + " " + (gunPages.size() + 1));
 
-                    currentGunEntry = new GunBoxEntry(type, RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)));
-                    currentPage.getEntries().add(currentGunEntry);
-                }
-                else
-                {
-                    logError("Unable to find item '" + split[1] + "' for GunBox, skipping entry: " + String.join(" ", split), file);
-                }
+                currentGunEntry = new GunBoxEntry(split[1],
+                    RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)),
+                    contentPack,
+                    file,
+                    String.join(" ", split),
+                    false);
+                currentPage.addEntry(currentGunEntry);
             }
             catch(Exception ex)
             {
@@ -124,20 +122,18 @@ public class GunBoxType extends BlockType
                     return;
                 }
 
-                InfoType addAmmoType = resolveInfoType(split[1]);
-                if (addAmmoType == null)
-                {
-                    logError("AddAmmo item '" + split[1] + "' not found for GunBox, skipping entry: " + String.join(" ", split), file);
-                    return;
-                }
-
                 if (currentGunEntry == null)
                 {
                     logError("AddAmmo appeared before any AddGun, skipping entry: " + String.join(" ", split), file);
                     return;
                 }
 
-                currentGunEntry.getAmmoEntryList().add(new GunBoxEntry(addAmmoType, RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split))));
+                currentGunEntry.addAmmoEntry(new GunBoxEntry(split[1],
+                    RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)),
+                    contentPack,
+                    file,
+                    String.join(" ", split),
+                    true));
             }
             catch (Exception ex)
             {
@@ -148,7 +144,7 @@ public class GunBoxType extends BlockType
 
     protected void setPage(String pageName)
     {
-        if (currentPage.getEntries().isEmpty())
+        if (!currentPage.hasRawEntries())
         {
             currentPage.setPageName(pageName);
             return;
@@ -164,14 +160,10 @@ public class GunBoxType extends BlockType
         gunPages.add(currentPage);
     }
 
-    protected InfoType resolveInfoType(String id)
+    public void resolveDeferredReferences()
     {
-        String sanitizedId = ResourceUtils.sanitize(id);
-        String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, contentPack);
-        InfoType type = InfoType.getInfoType(aliasedId);
-        if (type == null)
-            type = InfoType.getInfoType(sanitizedId);
-        return type;
+        for (GunBoxPage page : gunPages)
+            page.resolveDeferredReferences();
     }
 
     public GunBoxEntry findEntry(InfoType type)
@@ -181,12 +173,12 @@ public class GunBoxType extends BlockType
 
         for (GunBoxPage page : gunPages)
         {
-            for (GunBoxEntry entry : page.getEntries())
+            for (GunBoxEntry entry : page.getRawEntries())
             {
                 if (entry.getType() == type)
                     return entry;
 
-                for (GunBoxEntry ammoEntry : entry.getAmmoEntryList())
+                for (GunBoxEntry ammoEntry : entry.getRawAmmoEntryList())
                 {
                     if (ammoEntry.getType() == type)
                         return ammoEntry;
@@ -201,9 +193,10 @@ public class GunBoxType extends BlockType
         return loadGuiTextureLocation(guiTexturePath, FlansMod.gunBoxGuiTexture);
     }
 
-    @Getter
     public static class GunBoxPage
     {
+        @Setter
+        @Getter
         protected String pageName;
         protected final List<GunBoxEntry> entries = new ArrayList<>();
 
@@ -212,23 +205,108 @@ public class GunBoxType extends BlockType
             this.pageName = pageName;
         }
 
-        public void setPageName(String pageName)
+        public List<GunBoxEntry> getEntries()
         {
-            this.pageName = pageName;
+            return entries.stream().filter(GunBoxEntry::isResolved).toList();
+        }
+
+        protected List<GunBoxEntry> getRawEntries()
+        {
+            return entries;
+        }
+
+        protected int getRawEntryCount()
+        {
+            return entries.size();
+        }
+
+        protected boolean hasRawEntries()
+        {
+            return !entries.isEmpty();
+        }
+
+        protected void addEntry(GunBoxEntry entry)
+        {
+            entries.add(entry);
+        }
+
+        protected void resolveDeferredReferences()
+        {
+            entries.forEach(GunBoxEntry::resolveDeferredReferences);
         }
     }
 
-    @Getter
     public static class GunBoxEntry
     {
-        final InfoType type;
+        @Getter
+        final String itemShortName;
         final List<RecipeIngredient> requiredPartRefs = new ArrayList<>();
         final List<GunBoxEntry> ammoEntryList = new ArrayList<>();
+        @Nullable
+        final IContentProvider contentPack;
+        final TypeFile sourceFile;
+        final String sourceLine;
+        final boolean ammoEntry;
+        @Nullable
+        InfoType type;
+        boolean typeResolved;
+        boolean missingTypeLogged;
 
-        public GunBoxEntry(InfoType aType, List<RecipeIngredient> aParts)
+        public GunBoxEntry(String itemShortName, List<RecipeIngredient> parts, @Nullable IContentProvider contentPack, TypeFile sourceFile, String sourceLine, boolean ammoEntry)
         {
-            type = aType;
-            requiredPartRefs.addAll(aParts);
+            this.itemShortName = itemShortName;
+            this.contentPack = contentPack;
+            this.sourceFile = sourceFile;
+            this.sourceLine = sourceLine;
+            this.ammoEntry = ammoEntry;
+            requiredPartRefs.addAll(parts);
+        }
+
+        @Nullable
+        public InfoType getType()
+        {
+            if (!typeResolved)
+            {
+                type = InfoType.getInfoType(itemShortName, contentPack);
+                typeResolved = true;
+            }
+
+            if (type == null && !missingTypeLogged)
+            {
+                String message = ammoEntry
+                    ? "AddAmmo item '" + itemShortName + "' not found for GunBox, skipping entry: " + sourceLine
+                    : "Unable to find item '" + itemShortName + "' for GunBox, skipping entry: " + sourceLine;
+                logError(message, sourceFile);
+                missingTypeLogged = true;
+            }
+
+            return type;
+        }
+
+        public boolean isResolved()
+        {
+            return getType() != null;
+        }
+
+        public List<GunBoxEntry> getAmmoEntryList()
+        {
+            return ammoEntryList.stream().filter(GunBoxEntry::isResolved).toList();
+        }
+
+        protected List<GunBoxEntry> getRawAmmoEntryList()
+        {
+            return ammoEntryList;
+        }
+
+        protected void addAmmoEntry(GunBoxEntry entry)
+        {
+            ammoEntryList.add(entry);
+        }
+
+        protected void resolveDeferredReferences()
+        {
+            getType();
+            ammoEntryList.forEach(GunBoxEntry::resolveDeferredReferences);
         }
 
         public List<ItemStack> getRequiredParts()
@@ -245,7 +323,7 @@ public class GunBoxType extends BlockType
 
         public boolean hasAmmoEntries()
         {
-            return !ammoEntryList.isEmpty();
+            return !getAmmoEntryList().isEmpty();
         }
     }
 }

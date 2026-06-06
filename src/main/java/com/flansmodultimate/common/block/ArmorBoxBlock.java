@@ -3,7 +3,6 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
-import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -81,8 +80,8 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
             return;
 
         ArmorBoxType.ArmourBoxEntry entry = configType.getPages().get(pageIndex);
-        InfoType infoType = InfoType.getInfoType(entry.getArmors()[pieceIndex]);
-        if (!(infoType instanceof ArmorType armorType))
+        ArmorType armorType = entry.getArmorType(pieceIndex);
+        if (armorType == null)
             return;
 
         ItemStack resultStack = ModUtils.getItemStack(armorType).orElse(ItemStack.EMPTY);
