@@ -86,6 +86,7 @@ public class FlansMod
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
+    public static final int dungeonLootChance = 500;
 
     // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";

@@ -3,6 +3,7 @@ General:
 - Fix particles
 - Team Mod: Commands, Teams, Classes, Stats
 - 1.12.2 loadouts & rewardBoxes
+- check shoot sound duration AA Guns
 
 Entities:
 - Flagpole + Flag - TODO
@@ -28,7 +29,6 @@ Items:
 - MechaAddonItem - TODO
 
 Types:
-- InfoType - TODO (WIP)
 - PlayerClassType - TODO
 - TeamType - TODO
 - LoadoutType (1.12.2) - TODO

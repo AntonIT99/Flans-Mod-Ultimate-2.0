@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import lombok.Getter;
+import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
 public class DriveableType extends PaintableType
@@ -21,4 +22,10 @@ public class DriveableType extends PaintableType
 
     @Getter
     protected boolean hasFlare;
+
+    @Override
+    public void addLoot(LootTableLoadEvent event)
+    {
+        // keep vehicles out of dungeon chests.
+    }
 }

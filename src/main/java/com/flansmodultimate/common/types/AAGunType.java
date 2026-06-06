@@ -7,6 +7,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -222,5 +223,11 @@ public class AAGunType extends InfoType
     public float getDispersionForDisplay()
     {
         return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
+    }
+
+    @Override
+    public void addLoot(LootTableLoadEvent event)
+    {
+        // keep AA guns out of dungeon chests.
     }
 }

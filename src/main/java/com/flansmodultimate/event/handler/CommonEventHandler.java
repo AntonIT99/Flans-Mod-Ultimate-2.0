@@ -12,12 +12,14 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -29,6 +31,7 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -52,6 +55,16 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CommonEventHandler
 {
+    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
+        net.minecraft.world.level.storage.loot.BuiltInLootTables.ABANDONED_MINESHAFT,
+        net.minecraft.world.level.storage.loot.BuiltInLootTables.VILLAGE_WEAPONSMITH,
+        net.minecraft.world.level.storage.loot.BuiltInLootTables.END_CITY_TREASURE,
+        net.minecraft.world.level.storage.loot.BuiltInLootTables.NETHER_BRIDGE,
+        net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID,
+        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
+        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
+    );
+
     @Getter
     private static long ticker;
     @Getter
@@ -64,6 +77,24 @@ public final class CommonEventHandler
         DigitalAmmoCommand.register(event.getDispatcher());
         DefaultAmmoCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
+    }
+
+    @SubscribeEvent
+    public static void registerLoot(LootTableLoadEvent event)
+    {
+        if (!FLANS_LOOT_TABLES.contains(event.getName()))
+            return;
+
+        InfoType.beginLootTableLoad(event);
+        try
+        {
+            for (InfoType type : InfoType.getInfoTypes().values())
+                type.addLoot(event);
+        }
+        finally
+        {
+            InfoType.finishLootTableLoad(event);
+        }
     }
 
     @SubscribeEvent

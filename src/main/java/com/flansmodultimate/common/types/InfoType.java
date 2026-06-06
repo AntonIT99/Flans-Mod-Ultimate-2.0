@@ -6,6 +6,7 @@ import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.TypeReaderUtils;
 import lombok.AccessLevel;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -21,9 +23,19 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,10 +52,14 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class InfoType
 {
+    private static final String LOOT_POOL_NAME = "FlansMod";
+
     @Getter
     private static final Map<String, InfoType> infoTypes = new HashMap<>();
     @Getter @Setter
     private static int totalDungeonChance = 0;
+    private static final ThreadLocal<LootBuildContext> activeLootBuildContext = new ThreadLocal<>();
+    private static boolean lootReflectionFailureLogged;
 
     @Getter
     protected String fileName;
@@ -500,6 +516,178 @@ public abstract class InfoType
         return RecipeResolver.resolve(id, amount, damage, provider);
     }
 
+    public static void beginLootTableLoad(LootTableLoadEvent event)
+    {
+        activeLootBuildContext.set(new LootBuildContext(event));
+    }
+
+    public static void finishLootTableLoad(LootTableLoadEvent event)
+    {
+        LootBuildContext context = activeLootBuildContext.get();
+        activeLootBuildContext.remove();
+        if (context == null || context.event != event || context.entryCount == 0)
+            return;
+
+        LootPool pool = event.getTable().getPool(LOOT_POOL_NAME);
+        if (pool == null)
+        {
+            event.getTable().addPool(context.builder.build());
+            return;
+        }
+
+        Optional<LootPool> appendedPool = Optional.of(pool);
+        for (LootPoolEntryContainer entry : context.entries)
+        {
+            LootPool poolToAppend = appendedPool.orElse(null);
+            if (poolToAppend == null)
+                return;
+            appendedPool = createAppendedPool(poolToAppend, entry);
+        }
+
+        if (appendedPool.isPresent())
+        {
+            event.getTable().removePool(LOOT_POOL_NAME);
+            event.getTable().addPool(appendedPool.get());
+        }
+    }
+
+    public void addLoot(LootTableLoadEvent event)
+    {
+        if (dungeonChance <= 0 || !type.isHasItem())
+            return;
+
+        ModUtils.getItem(this)
+            .map(item -> createDungeonLootEntry(item, FlansMod.dungeonLootChance * dungeonChance))
+            .ifPresent(entry -> addLootEntry(event, entry));
+    }
+
+    protected LootPoolEntryContainer createDungeonLootEntry(Item item, int weight)
+    {
+        return LootItem.lootTableItem(item)
+            .setWeight(weight)
+            .setQuality(1)
+            .build();
+    }
+
+    protected void addLootEntry(LootTableLoadEvent event, LootPoolEntryContainer entry)
+    {
+        LootBuildContext context = activeLootBuildContext.get();
+        if (context != null && context.event == event)
+        {
+            context.add(entry);
+            return;
+        }
+
+        LootPool pool = event.getTable().getPool(LOOT_POOL_NAME);
+        if (pool == null)
+        {
+            event.getTable().addPool(LootPool.lootPool()
+                .name(LOOT_POOL_NAME)
+                .setRolls(ConstantValue.exactly(1F))
+                .setBonusRolls(ConstantValue.exactly(1F))
+                .add(new ExistingLootEntryBuilder(entry))
+                .build());
+            return;
+        }
+
+        Optional<LootPool> appendedPool = createAppendedPool(pool, entry);
+        if (appendedPool.isPresent())
+        {
+            event.getTable().removePool(LOOT_POOL_NAME);
+            event.getTable().addPool(appendedPool.get());
+        }
+    }
+
+    private static Optional<LootPool> createAppendedPool(LootPool pool, LootPoolEntryContainer entry)
+    {
+        try
+        {
+            Field entriesField = LootPool.class.getDeclaredField("entries");
+            Field conditionsField = LootPool.class.getDeclaredField("conditions");
+            Field functionsField = LootPool.class.getDeclaredField("functions");
+            entriesField.setAccessible(true);
+            conditionsField.setAccessible(true);
+            functionsField.setAccessible(true);
+
+            LootPoolEntryContainer[] oldEntries = (LootPoolEntryContainer[]) entriesField.get(pool);
+            LootPoolEntryContainer[] newEntries = Arrays.copyOf(oldEntries, oldEntries.length + 1);
+            newEntries[oldEntries.length] = entry;
+
+            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(
+                LootPoolEntryContainer[].class,
+                LootItemCondition[].class,
+                LootItemFunction[].class,
+                NumberProvider.class,
+                NumberProvider.class,
+                String.class
+            );
+            constructor.setAccessible(true);
+
+            return Optional.of(constructor.newInstance(
+                newEntries,
+                (LootItemCondition[]) conditionsField.get(pool),
+                (LootItemFunction[]) functionsField.get(pool),
+                pool.getRolls(),
+                pool.getBonusRolls(),
+                LOOT_POOL_NAME
+            ));
+        }
+        catch (Exception ex)
+        {
+            if (!lootReflectionFailureLogged)
+            {
+                FlansMod.log.error("Could not append Flan's Mod dungeon loot entries", ex);
+                lootReflectionFailureLogged = true;
+            }
+            return Optional.empty();
+        }
+    }
+
+    private static class LootBuildContext
+    {
+        private final LootTableLoadEvent event;
+        private final LootPool.Builder builder = LootPool.lootPool()
+            .name(LOOT_POOL_NAME)
+            .setRolls(ConstantValue.exactly(1F))
+            .setBonusRolls(ConstantValue.exactly(1F));
+        private final List<LootPoolEntryContainer> entries = new ArrayList<>();
+        private int entryCount;
+
+        private LootBuildContext(LootTableLoadEvent event)
+        {
+            this.event = event;
+        }
+
+        private void add(LootPoolEntryContainer entry)
+        {
+            entries.add(entry);
+            builder.add(new ExistingLootEntryBuilder(entry));
+            entryCount++;
+        }
+    }
+
+    private static class ExistingLootEntryBuilder extends LootPoolEntryContainer.Builder<ExistingLootEntryBuilder>
+    {
+        private final LootPoolEntryContainer entry;
+
+        private ExistingLootEntryBuilder(LootPoolEntryContainer entry)
+        {
+            this.entry = entry;
+        }
+
+        @Override
+        protected ExistingLootEntryBuilder getThis()
+        {
+            return this;
+        }
+
+        @Override
+        public LootPoolEntryContainer build()
+        {
+            return entry;
+        }
+    }
+
     @Nullable
     public static InfoType getInfoType(String id)
     {
@@ -529,5 +717,4 @@ public abstract class InfoType
         return type;
     }
 
-    //TODO: implement addLoot() from 1.12.2 (and also override in PaintableType)
 }

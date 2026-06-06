@@ -4,13 +4,20 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.functions.SetNbtFunction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,5 +162,29 @@ public abstract class PaintableType extends InfoType
         }
         applicable.sort(Comparator.comparingInt(Paintjob::getId));
         return applicable;
+    }
+
+    @Override
+    public void addLoot(LootTableLoadEvent event)
+    {
+        if (dungeonChance <= 0 || !type.isHasItem() || nonLegendaryPaintjobs.isEmpty())
+            return;
+
+        ModUtils.getItem(this).ifPresent(item -> {
+            int weight = Math.max(1, (FlansMod.dungeonLootChance * dungeonChance) / nonLegendaryPaintjobs.size());
+            for (Paintjob paintjob : nonLegendaryPaintjobs.values())
+                addLootEntry(event, createPaintjobLootEntry(item, weight, paintjob));
+        });
+    }
+
+    private LootPoolEntryContainer createPaintjobLootEntry(Item item, int weight, Paintjob paintjob)
+    {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId());
+        return LootItem.lootTableItem(item)
+            .setWeight(weight)
+            .setQuality(1)
+            .apply(SetNbtFunction.setTag(tag))
+            .build();
     }
 }
