@@ -428,24 +428,6 @@ public final class ModCommonConfig
         return config != null && config.forceDefenseAsModernArmor();
     }
 
-    public static int bulletTrackingRange()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? bulletRegistrationTrackingRange() : config.bulletTrackingRange();
-    }
-
-    public static int grenadeTrackingRange()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? grenadeRegistrationTrackingRange() : config.grenadeTrackingRange();
-    }
-
-    public static int deployedGunTrackingRange()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? deployedGunRegistrationTrackingRange() : config.deployedGunTrackingRange();
-    }
-
     public static int aaGunTrackingRange()
     {
         CommonConfigSnapshot config = get();
