@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:sand" },
+    { "item": "flansmodapocalypse:flansulphur" }
+  ],
+  "result": {
+    "item": "minecraft:gunpowder"
+  }
+}

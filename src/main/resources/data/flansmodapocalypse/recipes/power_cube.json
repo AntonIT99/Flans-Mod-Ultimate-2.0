@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OOO",
+    "OCO",
+    "OOO"
+  ],
+  "key": {
+    "O": { "item": "minecraft:obsidian" },
+    "C": { "item": "minecraft:end_crystal" }
+  },
+  "result": {
+    "item": "flansmodapocalypse:blockpowercube"
+  }
+}

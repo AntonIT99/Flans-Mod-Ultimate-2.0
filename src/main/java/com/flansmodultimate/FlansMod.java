@@ -1,5 +1,6 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
@@ -225,6 +226,8 @@ public class FlansMod
         // Init Configs
         context.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
+
+        ApocalypseContent.register(modEventBus);
 
         // Init Registries
         blockRegistry.register(modEventBus);
