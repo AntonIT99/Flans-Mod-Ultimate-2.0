@@ -454,6 +454,10 @@ public final class RecipeResolver
             case "diode" -> Items.REPEATER;
             case "hellsand" -> Items.SOUL_SAND;
             case "mushroom" -> Items.BROWN_MUSHROOM;
+            case "leaves" -> Items.OAK_LEAVES;
+            case "bucketlava" -> Items.LAVA_BUCKET;
+            case "bucketwater" -> Items.WATER_BUCKET;
+            case "pistonbase" -> Items.PISTON;
             default -> null;
         };
         return Optional.ofNullable(item);

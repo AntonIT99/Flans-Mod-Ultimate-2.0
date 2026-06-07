@@ -251,6 +251,7 @@ public class GunBoxType extends BlockType
         InfoType type;
         boolean typeResolved;
         boolean missingTypeLogged;
+        boolean requiredPartsResolved;
 
         public GunBoxEntry(String itemShortName, List<RecipeIngredient> parts, @Nullable IContentProvider contentPack, TypeFile sourceFile, String sourceLine, boolean ammoEntry)
         {
@@ -306,6 +307,7 @@ public class GunBoxType extends BlockType
         protected void resolveDeferredReferences()
         {
             getType();
+            getRequiredParts();
             ammoEntryList.forEach(GunBoxEntry::resolveDeferredReferences);
         }
 
@@ -316,9 +318,25 @@ public class GunBoxType extends BlockType
             {
                 ItemStack stack = recipeItem.resolve();
                 if (!stack.isEmpty())
+                {
                     requiredParts.add(stack);
+                    continue;
+                }
+
+                if (!requiredPartsResolved)
+                    logMissingRequiredPart(recipeItem);
             }
+            requiredPartsResolved = true;
             return requiredParts;
+        }
+
+        private void logMissingRequiredPart(RecipeIngredient recipeItem)
+        {
+            String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
+            logError("Could not resolve GunBox recipe ingredient '" + recipeItem.getItemName()
+                + "' (amount " + recipeItem.getAmount()
+                + ") for " + entryKind + " '" + itemShortName
+                + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
         }
 
         public boolean hasAmmoEntries()

@@ -105,6 +105,7 @@ public class ArmorBoxType extends BlockType
         final ArmorType[] resolvedArmors = new ArmorType[4];
         final boolean[] armorResolved = new boolean[4];
         final boolean[] missingArmorLogged = new boolean[4];
+        final boolean[] requiredStacksResolved = new boolean[4];
         final TypeFile[] armorSourceFiles = new TypeFile[4];
         final String[] armorSourceLines = new String[4];
         final List<List<RecipeIngredient>> requiredStackRefs = new ArrayList<>(4);
@@ -131,6 +132,7 @@ public class ArmorBoxType extends BlockType
             armorResolved[armorSlot] = false;
             resolvedArmors[armorSlot] = null;
             missingArmorLogged[armorSlot] = false;
+            requiredStacksResolved[armorSlot] = false;
         }
 
         @Nullable
@@ -166,24 +168,54 @@ public class ArmorBoxType extends BlockType
         protected void resolveDeferredReferences()
         {
             for (int i = 0; i < armors.length; i++)
+            {
                 getArmorType(i);
+                resolveRequiredStacks(i);
+            }
         }
 
         public List<List<ItemStack>> getRequiredStacks()
         {
             List<List<ItemStack>> requiredStacks = new ArrayList<>(4);
-            for (List<RecipeIngredient> recipeItems : requiredStackRefs)
-            {
-                List<ItemStack> stacks = new ArrayList<>();
-                for (RecipeIngredient recipeItem : recipeItems)
-                {
-                    ItemStack stack = recipeItem.resolve();
-                    if (!stack.isEmpty())
-                        stacks.add(stack);
-                }
-                requiredStacks.add(stacks);
-            }
+            for (int armorSlot = 0; armorSlot < requiredStackRefs.size(); armorSlot++)
+                requiredStacks.add(resolveRequiredStacks(armorSlot));
             return requiredStacks;
+        }
+
+        private List<ItemStack> resolveRequiredStacks(int armorSlot)
+        {
+            List<ItemStack> stacks = new ArrayList<>();
+            if (armorSlot < 0 || armorSlot >= requiredStackRefs.size())
+                return stacks;
+
+            for (RecipeIngredient recipeItem : requiredStackRefs.get(armorSlot))
+            {
+                ItemStack stack = recipeItem.resolve();
+                if (!stack.isEmpty())
+                {
+                    stacks.add(stack);
+                    continue;
+                }
+
+                if (!requiredStacksResolved[armorSlot])
+                    logMissingRequiredStack(armorSlot, recipeItem);
+            }
+            requiredStacksResolved[armorSlot] = true;
+            return stacks;
+        }
+
+        private void logMissingRequiredStack(int armorSlot, RecipeIngredient recipeItem)
+        {
+            TypeFile sourceFile = armorSourceFiles[armorSlot];
+            if (sourceFile == null)
+                return;
+
+            String armorShortName = armors[armorSlot];
+            String sourceLine = armorSourceLines[armorSlot];
+            logError("Could not resolve ArmorBox recipe ingredient '" + recipeItem.getItemName()
+                + "' (amount " + recipeItem.getAmount()
+                + ") for armor item '" + armorShortName
+                + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
         }
     }
 }
