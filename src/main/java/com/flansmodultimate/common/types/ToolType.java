@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import lombok.Getter;
 
@@ -8,8 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.flansmodultimate.util.TypeReaderUtils.readValue;
-import static com.flansmodultimate.util.TypeReaderUtils.readValues;
+import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 public class ToolType extends InfoType
 {
@@ -28,7 +28,9 @@ public class ToolType extends InfoType
     @Getter
     protected boolean destroyOnEmpty = true;
     /** The items required to be added (shapelessly) to recharge the tool */
-    protected List<ItemStack> rechargeRecipe = new ArrayList<>();
+    protected List<RecipeIngredient> rechargeRecipeRefs = new ArrayList<>();
+    protected boolean rechargeRecipeResolved;
+    protected TypeFile rechargeRecipeSourceFile;
     /** If true, then this tool will deploy a parachute upon use (and consume itself) */
     @Getter
     protected boolean parachute;
@@ -59,6 +61,42 @@ public class ToolType extends InfoType
         destroyOnEmpty = readValue("DestroyOnEmpty", destroyOnEmpty, file);
         foodness = readValue("Food", foodness, file);
         foodness = readValue("Foodness", foodness, file);
-        rechargeRecipe.addAll(RecipeParser.resolveAmountThenItemPairs(readValues("RechargeRecipe", file), 1, contentPack, file, "RechargeRecipe"));
+        rechargeRecipeSourceFile = file;
+        rechargeRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues("RechargeRecipe", file), 1, contentPack, file, "RechargeRecipe"));
+    }
+
+    public void validateRecipeIngredients()
+    {
+        getRechargeRecipe();
+    }
+
+    public List<ItemStack> getRechargeRecipe()
+    {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (RecipeIngredient recipeItem : rechargeRecipeRefs)
+        {
+            ItemStack stack = recipeItem.resolve();
+            if (!stack.isEmpty())
+            {
+                stacks.add(stack);
+                continue;
+            }
+
+            if (!rechargeRecipeResolved)
+                logMissingRechargeRecipeIngredient(recipeItem);
+        }
+        rechargeRecipeResolved = true;
+        return stacks;
+    }
+
+    private void logMissingRechargeRecipeIngredient(RecipeIngredient recipeItem)
+    {
+        if (rechargeRecipeSourceFile == null)
+            return;
+
+        logError("Could not resolve RechargeRecipe ingredient '" + recipeItem.getItemName()
+            + "' (amount " + recipeItem.getAmount()
+            + ") for tool '" + getShortName()
+            + "', skipping ingredient.", rechargeRecipeSourceFile);
     }
 }

@@ -9,6 +9,7 @@ public record CommonConfigSnapshot(
     int version,
 
     boolean addAllPaintjobsToCreative,
+    boolean validateContentReferencesOnWorldLoad,
 
     boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
@@ -80,13 +81,14 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 8;
+    public static final int CURRENT_VERSION = 9;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
         buf.writeVarInt(s.version);
 
         buf.writeBoolean(s.addAllPaintjobsToCreative);
+        buf.writeBoolean(s.validateContentReferencesOnWorldLoad);
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
@@ -167,6 +169,7 @@ public record CommonConfigSnapshot(
         return new CommonConfigSnapshot(
             readVersion(buf),
 
+            buf.readBoolean(),
             buf.readBoolean(),
 
             buf.readBoolean(),

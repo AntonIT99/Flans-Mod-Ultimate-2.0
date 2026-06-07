@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -166,6 +167,12 @@ public class GunBoxType extends BlockType
             page.resolveDeferredReferences();
     }
 
+    public void validateRecipeIngredients()
+    {
+        for (GunBoxPage page : gunPages)
+            page.validateRecipeIngredients();
+    }
+
     public GunBoxEntry findEntry(InfoType type)
     {
         if (type == null)
@@ -234,6 +241,11 @@ public class GunBoxType extends BlockType
         {
             entries.forEach(GunBoxEntry::resolveDeferredReferences);
         }
+
+        protected void validateRecipeIngredients()
+        {
+            entries.forEach(GunBoxEntry::validateRecipeIngredients);
+        }
     }
 
     public static class GunBoxEntry
@@ -251,6 +263,7 @@ public class GunBoxType extends BlockType
         InfoType type;
         boolean typeResolved;
         boolean missingTypeLogged;
+        boolean outputStackValidated;
         boolean requiredPartsResolved;
 
         public GunBoxEntry(String itemShortName, List<RecipeIngredient> parts, @Nullable IContentProvider contentPack, TypeFile sourceFile, String sourceLine, boolean ammoEntry)
@@ -308,6 +321,29 @@ public class GunBoxType extends BlockType
         {
             getType();
             ammoEntryList.forEach(GunBoxEntry::resolveDeferredReferences);
+        }
+
+        protected void validateRecipeIngredients()
+        {
+            validateOutputStack();
+            getRequiredParts();
+            ammoEntryList.forEach(GunBoxEntry::validateRecipeIngredients);
+        }
+
+        protected void validateOutputStack()
+        {
+            if (outputStackValidated)
+                return;
+
+            InfoType entryType = getType();
+            if (entryType != null && ModUtils.getItemStack(entryType).isEmpty())
+            {
+                String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
+                logError("Could not create GunBox output item stack for " + entryKind + " '" + itemShortName
+                    + "' (resolved type '" + entryType.getShortName()
+                    + "'), skipping output. Source line: " + sourceLine, sourceFile);
+            }
+            outputStackValidated = true;
         }
 
         public List<ItemStack> getRequiredParts()

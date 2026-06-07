@@ -33,6 +33,7 @@ public final class ModCommonConfig
     public static final ForgeConfigSpec configSpec;
 
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
+    private static final ForgeConfigSpec.BooleanValue VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
 
     private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
@@ -114,6 +115,11 @@ public final class ModCommonConfig
         ADD_ALL_PAINTJOBS_TO_CREATIVE = builder
             .comment("Whether all paintjobs should appear in creative")
             .define("addAllPaintjobsToCreative", true);
+        VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD = builder
+            .comment("Force selected content references to resolve once when a server world loads.",
+                "Disabled by default because normal gameplay resolves these lazily.",
+                "Enable this while developing content packs or modpacks to log unresolved recipes and Box outputs at startup.")
+            .define("validateContentReferencesOnWorldLoad", false);
         DISABLE_CROSSHAIR_FOR_GUNS = builder
             .comment("Disables crosshair for guns except melee weapons")
             .define("disableCrosshairForGuns", true);
@@ -337,6 +343,7 @@ public final class ModCommonConfig
             CommonConfigSnapshot.CURRENT_VERSION,
 
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(),
+            VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(),
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),

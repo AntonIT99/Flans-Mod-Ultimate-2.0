@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -89,6 +90,11 @@ public class ArmorBoxType extends BlockType
         pages.forEach(ArmourBoxEntry::resolveDeferredReferences);
     }
 
+    public void validateRecipeIngredients()
+    {
+        pages.forEach(ArmourBoxEntry::validateRecipeIngredients);
+    }
+
     public ResourceLocation getGuiTexture()
     {
         return loadGuiTextureLocation(guiTexturePath, FlansMod.armorBoxGuiTexture);
@@ -105,6 +111,7 @@ public class ArmorBoxType extends BlockType
         final ArmorType[] resolvedArmors = new ArmorType[4];
         final boolean[] armorResolved = new boolean[4];
         final boolean[] missingArmorLogged = new boolean[4];
+        final boolean[] outputStacksValidated = new boolean[4];
         final boolean[] requiredStacksResolved = new boolean[4];
         final TypeFile[] armorSourceFiles = new TypeFile[4];
         final String[] armorSourceLines = new String[4];
@@ -132,6 +139,7 @@ public class ArmorBoxType extends BlockType
             armorResolved[armorSlot] = false;
             resolvedArmors[armorSlot] = null;
             missingArmorLogged[armorSlot] = false;
+            outputStacksValidated[armorSlot] = false;
             requiredStacksResolved[armorSlot] = false;
         }
 
@@ -169,6 +177,24 @@ public class ArmorBoxType extends BlockType
         {
             for (int i = 0; i < armors.length; i++)
                 getArmorType(i);
+        }
+
+        protected void validateRecipeIngredients()
+        {
+            for (int i = 0; i < armors.length; i++)
+                validateOutputStack(i);
+            getRequiredStacks();
+        }
+
+        private void validateOutputStack(int armorSlot)
+        {
+            if (armorSlot < 0 || armorSlot >= outputStacksValidated.length || outputStacksValidated[armorSlot])
+                return;
+
+            ArmorType armorType = getArmorType(armorSlot);
+            if (armorType != null && ModUtils.getItemStack(armorType).isEmpty())
+                logMissingOutputStack(armorSlot, armorType);
+            outputStacksValidated[armorSlot] = true;
         }
 
         public List<List<ItemStack>> getRequiredStacks()
@@ -213,6 +239,19 @@ public class ArmorBoxType extends BlockType
                 + "' (amount " + recipeItem.getAmount()
                 + ") for armor item '" + armorShortName
                 + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
+        }
+
+        private void logMissingOutputStack(int armorSlot, ArmorType armorType)
+        {
+            TypeFile sourceFile = armorSourceFiles[armorSlot];
+            if (sourceFile == null)
+                return;
+
+            String armorShortName = armors[armorSlot];
+            String sourceLine = armorSourceLines[armorSlot];
+            logError("Could not create ArmorBox output item stack for armor item '" + armorShortName
+                + "' (resolved type '" + armorType.getShortName()
+                + "'), skipping output. Source line: " + sourceLine, sourceFile);
         }
     }
 }

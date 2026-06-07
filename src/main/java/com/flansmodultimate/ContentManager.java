@@ -11,6 +11,8 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ContentLoadingConfig;
@@ -426,6 +428,43 @@ public class ContentManager
                     armorBoxType.resolveDeferredReferences();
             }
         }
+    }
+
+    public static void validateContentReferences()
+    {
+        int gunBoxes = 0;
+        int armorBoxes = 0;
+        int parts = 0;
+        int tools = 0;
+
+        FlansMod.log.info("Validating content references...");
+        for (ArrayList<InfoType> providerConfigs : configs.values())
+        {
+            for (InfoType config : providerConfigs)
+            {
+                if (config instanceof GunBoxType gunBoxType)
+                {
+                    gunBoxType.validateRecipeIngredients();
+                    gunBoxes++;
+                }
+                else if (config instanceof ArmorBoxType armorBoxType)
+                {
+                    armorBoxType.validateRecipeIngredients();
+                    armorBoxes++;
+                }
+                else if (config instanceof PartType partType)
+                {
+                    partType.validateRecipeIngredients();
+                    parts++;
+                }
+                else if (config instanceof ToolType toolType)
+                {
+                    toolType.validateRecipeIngredients();
+                    tools++;
+                }
+            }
+        }
+        FlansMod.log.info("Validated content references for {} GunBoxes, {} ArmorBoxes, {} parts, and {} tools.", gunBoxes, armorBoxes, parts, tools);
     }
 
     private static void loadFlanFolder()

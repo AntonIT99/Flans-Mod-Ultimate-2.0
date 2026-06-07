@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import lombok.Getter;
 
@@ -50,7 +51,9 @@ public class PartType extends InfoType
     protected List<EnumType> worksWith = new ArrayList<>();
     //TODO: replace by uncommented version
     //protected List<EnumType> worksWith = Arrays.asList(EnumType.mecha, EnumType.plane, EnumType.vehicle);
-    protected List<ItemStack> partBoxRecipe = new ArrayList<>();
+    protected List<RecipeIngredient> partBoxRecipeRefs = new ArrayList<>();
+    protected boolean partBoxRecipeResolved;
+    protected TypeFile partBoxRecipeSourceFile;
     /** If true, then this engine will draw from RedstoneFlux power source items such as power cubes. Otherwise it will draw from Flan's Mod fuel items */
     protected boolean useRFPower = false;
     /** The power draw rate for RF (per tick) */
@@ -86,7 +89,10 @@ public class PartType extends InfoType
 
         //Recipe
         if (hasValueForConfigField("PartBoxRecipe", file))
-            partBoxRecipe.addAll(RecipeParser.resolveAmountThenItemPairs(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
+        {
+            partBoxRecipeSourceFile = file;
+            partBoxRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
+        }
 
         if (category == Category.ENGINE && !useRFPower)
         {
@@ -104,6 +110,41 @@ public class PartType extends InfoType
     public boolean isInferiorEngine(PartType quitePossiblyAnInferiorEngine)
     {
         return engineSpeed > quitePossiblyAnInferiorEngine.engineSpeed;
+    }
+
+    public void validateRecipeIngredients()
+    {
+        getPartBoxRecipe();
+    }
+
+    public List<ItemStack> getPartBoxRecipe()
+    {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (RecipeIngredient recipeItem : partBoxRecipeRefs)
+        {
+            ItemStack stack = recipeItem.resolve();
+            if (!stack.isEmpty())
+            {
+                stacks.add(stack);
+                continue;
+            }
+
+            if (!partBoxRecipeResolved)
+                logMissingPartBoxRecipeIngredient(recipeItem);
+        }
+        partBoxRecipeResolved = true;
+        return stacks;
+    }
+
+    private void logMissingPartBoxRecipeIngredient(RecipeIngredient recipeItem)
+    {
+        if (partBoxRecipeSourceFile == null)
+            return;
+
+        logError("Could not resolve PartBoxRecipe ingredient '" + recipeItem.getItemName()
+            + "' (amount " + recipeItem.getAmount()
+            + ") for part '" + getShortName()
+            + "', skipping ingredient.", partBoxRecipeSourceFile);
     }
 
 }

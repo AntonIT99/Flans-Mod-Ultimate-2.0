@@ -1,5 +1,6 @@
 package com.flansmodultimate.event.handler;
 
+import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
@@ -28,6 +29,8 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -70,6 +73,7 @@ public final class CommonEventHandler
     @Getter
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
+    private static boolean contentReferencesValidated;
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event)
@@ -105,6 +109,22 @@ public final class CommonEventHandler
 
         FlansMod.teamsManager.setExplosionsBreakBlocks(ModCommonConfig.get().explosionsBreakBlocks());
         FlansMod.teamsManager.setCanBreakGlass(ModCommonConfig.get().shootablesCanBreakGlass());
+    }
+
+    @SubscribeEvent
+    public static void onServerStarted(ServerStartedEvent event)
+    {
+        if (contentReferencesValidated || !ModCommonConfig.get().validateContentReferencesOnWorldLoad())
+            return;
+
+        ContentManager.validateContentReferences();
+        contentReferencesValidated = true;
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event)
+    {
+        contentReferencesValidated = false;
     }
 
     @SubscribeEvent
