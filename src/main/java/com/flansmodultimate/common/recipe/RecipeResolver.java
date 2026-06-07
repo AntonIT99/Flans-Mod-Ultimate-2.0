@@ -440,6 +440,8 @@ public final class RecipeResolver
             case "blockdiamond" -> Blocks.DIAMOND_BLOCK;
             case "blockemerald" -> Blocks.EMERALD_BLOCK;
             case "blockredstone" -> Blocks.REDSTONE_BLOCK;
+            case "reddust" -> Items.REDSTONE;
+            case "netherquartz" -> Items.QUARTZ;
             case "boat" -> Items.OAK_BOAT;
             case "log" -> legacyLog(damage);
             case "log2" -> legacyLog2(damage);
