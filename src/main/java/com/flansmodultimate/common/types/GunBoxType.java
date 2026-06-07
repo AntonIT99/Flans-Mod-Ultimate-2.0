@@ -307,7 +307,6 @@ public class GunBoxType extends BlockType
         protected void resolveDeferredReferences()
         {
             getType();
-            getRequiredParts();
             ammoEntryList.forEach(GunBoxEntry::resolveDeferredReferences);
         }
 

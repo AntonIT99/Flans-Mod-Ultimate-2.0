@@ -168,10 +168,7 @@ public class ArmorBoxType extends BlockType
         protected void resolveDeferredReferences()
         {
             for (int i = 0; i < armors.length; i++)
-            {
                 getArmorType(i);
-                resolveRequiredStacks(i);
-            }
         }
 
         public List<List<ItemStack>> getRequiredStacks()
