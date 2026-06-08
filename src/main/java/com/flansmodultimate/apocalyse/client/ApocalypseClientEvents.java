@@ -41,6 +41,7 @@ public final class ApocalypseClientEvents
         event.registerEntityRenderer(ApocalypseContent.NUKE_DROP.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(ApocalypseContent.SULPHURIC_ACID_BUCKET.get()), 1.5F));
         event.registerEntityRenderer(ApocalypseContent.SKULL_DRONE.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(Items.SKELETON_SKULL), 1.8F));
         event.registerEntityRenderer(ApocalypseContent.SKULL_BOSS.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(Items.WITHER_SKELETON_SKULL), 8.0F));
+        event.registerBlockEntityRenderer(ApocalypseContent.POWER_CUBE_BLOCK_ENTITY.get(), PowerCubeRenderer::new);
     }
 
     private static final class SurvivorRenderer extends HumanoidMobRenderer<SurvivorEntity, HumanoidModel<SurvivorEntity>>

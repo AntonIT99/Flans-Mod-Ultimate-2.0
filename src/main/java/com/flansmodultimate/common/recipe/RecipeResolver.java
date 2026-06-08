@@ -3,6 +3,7 @@ package com.flansmodultimate.common.recipe;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
@@ -46,8 +47,8 @@ public final class RecipeResolver
      * <p>
      * Resolution order is:
      * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
-     * registered {@code flansmod:<id>}, registered {@code minecraft:<id>}, legacy item mapping, then vanilla registry
-     * path fallback.
+     * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
+     * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
      * @param id       raw item id or legacy recipe token
      * @param amount   requested stack size
@@ -93,8 +94,8 @@ public final class RecipeResolver
      * <p>
      * Resolution order is:
      * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
-     * registered {@code flansmod:<id>}, registered {@code minecraft:<id>}, legacy item mapping, then vanilla registry
-     * path fallback.
+     * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
+     * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
      * @param id       raw item id or legacy recipe token
      * @param damage   legacy metadata value parsed from tokens like {@code wool.11}
@@ -151,6 +152,10 @@ public final class RecipeResolver
                 return result;
         }
 
+        result = resolution.registered(ApocalypseContent.APOCALYPSE_ID, apocalypseRecipePath(sanitizedId));
+        if (result.isPresent())
+            return result;
+
         result = resolution.registered("minecraft", sanitizedId);
         if (result.isPresent())
             return result;
@@ -184,6 +189,9 @@ public final class RecipeResolver
             return Optional.empty();
         }
 
+        if (namespace.equals(ApocalypseContent.APOCALYPSE_ID))
+            return resolution.registered(namespace, apocalypseRecipePath(path));
+
         if (namespace.equals("minecraft"))
         {
             result = resolution.registered("minecraft", path);
@@ -204,6 +212,15 @@ public final class RecipeResolver
     {
         int separator = id.indexOf(':');
         return separator > 0 && separator < id.length() - 1;
+    }
+
+    private static String apocalypseRecipePath(String path)
+    {
+        return switch (path)
+        {
+            case "sulphuricacidbucket", "bucketsulphuricacid" -> "sulphuric_acid_bucket";
+            default -> path;
+        };
     }
 
     private static Optional<ResourceLocation> resolveRawItemId(String id)
