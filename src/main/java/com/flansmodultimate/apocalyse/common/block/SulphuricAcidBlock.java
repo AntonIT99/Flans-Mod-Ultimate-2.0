@@ -1,6 +1,6 @@
 package com.flansmodultimate.apocalyse.common.block;
 
-import com.flansmodultimate.apocalyse.common.util.ApocalypseDamageSources;
+import com.flansmodultimate.apocalyse.common.ApocalypseDamageSources;
 import com.flansmodultimate.config.ModCommonConfig;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;

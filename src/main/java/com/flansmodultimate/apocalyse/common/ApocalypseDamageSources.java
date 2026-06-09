@@ -1,4 +1,4 @@
-package com.flansmodultimate.apocalyse.common.util;
+package com.flansmodultimate.apocalyse.common;
 
 import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
