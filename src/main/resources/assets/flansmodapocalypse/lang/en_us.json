@@ -11,7 +11,6 @@
   "entity.flansmodapocalypse.survivor": "Survivor",
   "entity.flansmodapocalypse.autodrone": "Skull Drone",
   "entity.flansmodapocalypse.skullboss": "Skull Boss",
-  "creativetab.flansmodultimate.creative_tab_apocalypse": "FMU: Apocalypse",
   "message.flansmodultimate.apocalypse_dimension_unavailable": "The apocalypse dimension is unavailable.",
   "message.flansmodultimate.apocalypse_portal_failed": "The apocalypse portal could not find a safe destination.",
   "message.flansmodultimate.apocalypse_boss_awakened": "The Skull Boss awakens.",

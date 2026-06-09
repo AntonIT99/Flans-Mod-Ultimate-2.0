@@ -1,5 +1,7 @@
 package com.flansmodultimate.apocalyse.common.world;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -75,7 +77,8 @@ public class ApocalypseSavedData extends SavedData
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag)
+    @NotNull
+    public CompoundTag save(@NotNull CompoundTag tag)
     {
         ListTag list = new ListTag();
         for (Map.Entry<UUID, BlockPos> entry : entryPoints.entrySet())

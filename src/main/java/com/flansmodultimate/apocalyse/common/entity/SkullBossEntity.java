@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.config.ModCommonConfig;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -147,6 +148,7 @@ public class SkullBossEntity extends Monster
                     callNukeDrop(target);
             }
             case IDLE -> {
+                // no-op
             }
         }
     }
@@ -170,7 +172,7 @@ public class SkullBossEntity extends Monster
         int count = 1 + random.nextInt(3);
         for (int i = 0; i < count; i++)
         {
-            SkullDroneEntity drone = ApocalypseContent.SKULL_DRONE.get().create(serverLevel);
+            SkullDroneEntity drone = ApocalypseContent.skullDrone.get().create(serverLevel);
             if (drone == null)
                 continue;
             drone.moveTo(getX() + random.nextGaussian() * 4.0D, getY() - 2.0D + random.nextDouble() * 4.0D, getZ() + random.nextGaussian() * 4.0D, random.nextFloat() * 360.0F, 0.0F);
@@ -200,14 +202,14 @@ public class SkullBossEntity extends Monster
     {
         if (!(level() instanceof ServerLevel serverLevel) || !ModCommonConfig.apocalypseNukeDropsEnabled())
             return;
-        NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.NUKE_DROP.get(), serverLevel);
+        NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.nukeDrop.get(), serverLevel);
         nuke.moveTo(target.getX(), Math.min(serverLevel.getMaxBuildHeight() - 4.0D, target.getY() + 48.0D), target.getZ(), 0.0F, 0.0F);
         serverLevel.addFreshEntity(nuke);
     }
 
     private static SoundEvent resolveSound(String name, SoundEvent fallback)
     {
-        return FlansMod.getSoundEvent(name).map(registryObject -> registryObject.get()).orElse(fallback);
+        return FlansMod.getSoundEvent(name).map(RegistryObject::get).orElse(fallback);
     }
 
     @Override

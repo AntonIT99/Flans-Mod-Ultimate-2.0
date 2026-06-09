@@ -3,7 +3,6 @@ package com.flansmodultimate.common.recipe;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
@@ -152,7 +151,7 @@ public final class RecipeResolver
                 return result;
         }
 
-        result = resolution.registered(ApocalypseContent.APOCALYPSE_ID, apocalypseRecipePath(sanitizedId));
+        result = resolution.registered(FlansMod.APOCALYPSE_ID, apocalypseRecipePath(sanitizedId));
         if (result.isPresent())
             return result;
 
@@ -189,7 +188,7 @@ public final class RecipeResolver
             return Optional.empty();
         }
 
-        if (namespace.equals(ApocalypseContent.APOCALYPSE_ID))
+        if (namespace.equals(FlansMod.APOCALYPSE_ID))
             return resolution.registered(namespace, apocalypseRecipePath(path));
 
         if (namespace.equals("minecraft"))

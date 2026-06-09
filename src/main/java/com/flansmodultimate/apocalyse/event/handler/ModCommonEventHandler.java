@@ -1,26 +1,25 @@
-package com.flansmodultimate.apocalyse.common.event;
+package com.flansmodultimate.apocalyse.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
 import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public final class ApocalypseModEvents
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class ModCommonEventHandler
 {
-    private ApocalypseModEvents()
-    {
-    }
-
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event)
     {
-        event.put(ApocalypseContent.SURVIVOR.get(), SurvivorEntity.createAttributes().build());
-        event.put(ApocalypseContent.SKULL_DRONE.get(), SkullDroneEntity.createAttributes().build());
-        event.put(ApocalypseContent.SKULL_BOSS.get(), SkullBossEntity.createAttributes().build());
+        event.put(ApocalypseContent.survivor.get(), SurvivorEntity.createAttributes().build());
+        event.put(ApocalypseContent.skullDrone.get(), SkullDroneEntity.createAttributes().build());
+        event.put(ApocalypseContent.skullBoss.get(), SkullBossEntity.createAttributes().build());
     }
 }

@@ -6,6 +6,8 @@ import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.config.ModCommonConfig;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import net.minecraft.core.BlockPos;
@@ -26,14 +28,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.Optional;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseWorldgen
 {
     private static final int SULPHUR_POOL_RARITY = 8;
     private static final int BOSS_PILLAR_RARITY = 5000;
-
-    private ApocalypseWorldgen()
-    {
-    }
 
     public static void generate(ServerLevel level, ChunkAccess chunk)
     {
@@ -41,7 +40,7 @@ public final class ApocalypseWorldgen
             return;
 
         ChunkPos chunkPos = chunk.getPos();
-        RandomSource random = RandomSource.create(level.getSeed() ^ ((long)chunkPos.x * 341873128712L) ^ ((long)chunkPos.z * 132897987541L));
+        RandomSource random = RandomSource.create(level.getSeed() ^ (chunkPos.x * 341873128712L) ^ (chunkPos.z * 132897987541L));
         boolean apocalypse = level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL);
 
         if (apocalypse)
@@ -88,7 +87,7 @@ public final class ApocalypseWorldgen
     {
         if (!ModCommonConfig.apocalypseMobsEnabled() || !isClear(level, pos))
             return;
-        SurvivorEntity survivor = ApocalypseContent.SURVIVOR.get().create(level);
+        SurvivorEntity survivor = ApocalypseContent.survivor.get().create(level);
         if (survivor == null)
             return;
         survivor.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
@@ -112,11 +111,11 @@ public final class ApocalypseWorldgen
                 BlockPos floor = pos.below();
                 if (!level.getWorldBorder().isWithinBounds(pos))
                     continue;
-                level.setBlock(floor, ApocalypseContent.BLOCK_SULPHUR.get().defaultBlockState(), 2);
+                level.setBlock(floor, ApocalypseContent.blockSulphur.get().defaultBlockState(), 2);
                 if (dist < radius - 1)
-                    level.setBlock(pos, ApocalypseContent.BLOCK_SULPHURIC_ACID.get().defaultBlockState(), 2);
+                    level.setBlock(pos, ApocalypseContent.blockSulphuricAcid.get().defaultBlockState(), 2);
                 else if (level.getBlockState(pos).isAir())
-                    level.setBlock(pos, ApocalypseContent.BLOCK_SULPHUR.get().defaultBlockState(), 2);
+                    level.setBlock(pos, ApocalypseContent.blockSulphur.get().defaultBlockState(), 2);
             }
         }
     }
@@ -155,7 +154,7 @@ public final class ApocalypseWorldgen
 
     private static void generateResearchLab(ServerLevel level, RandomSource random, BlockPos origin)
     {
-        buildRoom(level, origin, 7, 4, 7, ApocalypseContent.BLOCK_LAB_STONE.get().defaultBlockState());
+        buildRoom(level, origin, 7, 4, 7, ApocalypseContent.blockLabStone.get().defaultBlockState());
         placeChest(level, random, origin.offset(2, 1, 2));
         placeChest(level, random, origin.offset(4, 1, 4));
         flanBlock("flangunrack").ifPresent(block -> placeItemHolder(level, random, block, origin.offset(3, 1, 1), Direction.SOUTH, true));

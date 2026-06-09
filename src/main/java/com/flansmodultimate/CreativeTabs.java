@@ -1,5 +1,6 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -31,6 +32,27 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreativeTabs
 {
+    public static void registerApocalypseCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab) {
+        creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
+            .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
+            .icon(() -> new ItemStack(ApocalypseContent.BLOCK_POWER_CUBE_ITEM.get()))
+            .withSearchBar()
+            .withTabsBefore(beforeTab)
+            .withTabsAfter(afterTab)
+            .displayItems((parameters, output) -> {
+                if (!ModCommonConfig.apocalypseShowItemsInCreative())
+                    return;
+
+                output.accept(ApocalypseContent.SULPHUR.get());
+                output.accept(ApocalypseContent.BLOCK_SULPHUR_ITEM.get());
+                output.accept(ApocalypseContent.BLOCK_LAB_STONE_ITEM.get());
+                output.accept(ApocalypseContent.BLOCK_POWER_CUBE_ITEM.get());
+                output.accept(ApocalypseContent.SULPHURIC_ACID_BUCKET.get());
+            })
+            .build()
+        );
+    }
+
     public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()

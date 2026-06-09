@@ -45,6 +45,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -59,11 +60,11 @@ import java.util.UUID;
 public final class CommonEventHandler
 {
     private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.ABANDONED_MINESHAFT,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.VILLAGE_WEAPONSMITH,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.END_CITY_TREASURE,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.NETHER_BRIDGE,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID,
+        BuiltInLootTables.ABANDONED_MINESHAFT,
+        BuiltInLootTables.VILLAGE_WEAPONSMITH,
+        BuiltInLootTables.END_CITY_TREASURE,
+        BuiltInLootTables.NETHER_BRIDGE,
+        BuiltInLootTables.DESERT_PYRAMID,
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
     );

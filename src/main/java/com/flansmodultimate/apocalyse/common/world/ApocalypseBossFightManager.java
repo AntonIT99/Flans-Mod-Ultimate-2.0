@@ -82,7 +82,7 @@ public final class ApocalypseBossFightManager
 
     private static boolean isPowerCubeOnBedrock(Level level, BlockPos pos)
     {
-        return level.getBlockState(pos).is(ApocalypseContent.BLOCK_POWER_CUBE.get()) && level.getBlockState(pos.below()).is(Blocks.BEDROCK);
+        return level.getBlockState(pos).is(ApocalypseContent.blockPowerCube.get()) && level.getBlockState(pos.below()).is(Blocks.BEDROCK);
     }
 
     private static void spawnBoss(ServerLevel level, BlockPos corner, @Nullable LivingEntity placer)
@@ -92,7 +92,7 @@ public final class ApocalypseBossFightManager
         if (!level.getEntitiesOfClass(SkullBossEntity.class, existingBosses).isEmpty())
             return;
 
-        SkullBossEntity boss = ApocalypseContent.SKULL_BOSS.get().create(level);
+        SkullBossEntity boss = ApocalypseContent.skullBoss.get().create(level);
         if (boss == null)
             return;
 

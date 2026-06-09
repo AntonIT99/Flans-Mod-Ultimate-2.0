@@ -10,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -111,7 +110,7 @@ public final class ApocalypsePortalManager
         double x = corner.getX() + 2.0D;
         double y = corner.getY() + 1.0D;
         double z = corner.getZ() + 2.0D;
-        player.teleportTo(targetLevel, x, y, z, Collections.<RelativeMovement>emptySet(), player.getYRot(), player.getXRot());
+        player.teleportTo(targetLevel, x, y, z, Collections.emptySet(), player.getYRot(), player.getXRot());
         player.setPortalCooldown();
     }
 
@@ -141,7 +140,7 @@ public final class ApocalypsePortalManager
             for (int dz = 0; dz < 2; dz++)
             {
                 level.setBlock(lowerLeftCorner.offset(dx * 3, -1, dz * 3), Blocks.OBSIDIAN.defaultBlockState(), 3);
-                level.setBlock(lowerLeftCorner.offset(dx * 3, 0, dz * 3), ApocalypseContent.BLOCK_POWER_CUBE.get().defaultBlockState(), 3);
+                level.setBlock(lowerLeftCorner.offset(dx * 3, 0, dz * 3), ApocalypseContent.blockPowerCube.get().defaultBlockState(), 3);
                 level.setBlock(lowerLeftCorner.offset(1 + dx, -1, 1 + dz), Blocks.OBSIDIAN.defaultBlockState(), 3);
             }
         }
@@ -204,7 +203,7 @@ public final class ApocalypsePortalManager
         if (hasTeleporter(level, lowerLeftCorner))
             return;
 
-        TeleporterEntity entity = new TeleporterEntity(ApocalypseContent.TELEPORTER.get(), level);
+        TeleporterEntity entity = new TeleporterEntity(ApocalypseContent.teleporter.get(), level);
         entity.setPortal(lowerLeftCorner, target);
         level.addFreshEntity(entity);
     }
@@ -217,6 +216,6 @@ public final class ApocalypsePortalManager
 
     private static boolean isPowerCube(Level level, BlockPos pos)
     {
-        return level.getBlockState(pos).is(ApocalypseContent.BLOCK_POWER_CUBE.get());
+        return level.getBlockState(pos).is(ApocalypseContent.blockPowerCube.get());
     }
 }

@@ -2,6 +2,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
 import com.flansmodultimate.config.ModCommonConfig;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 public class TeleporterEntity extends Entity
 {
+    @Getter
     private BlockPos lowerLeftCorner = BlockPos.ZERO;
     @Nullable
     private BlockPos targetTeleporter;
@@ -32,11 +34,6 @@ public class TeleporterEntity extends Entity
         this.lowerLeftCorner = lowerLeftCorner.immutable();
         this.targetTeleporter = targetTeleporter == null ? null : targetTeleporter.immutable();
         setPos(lowerLeftCorner.getX() + 2.0D, lowerLeftCorner.getY() + 0.5D, lowerLeftCorner.getZ() + 2.0D);
-    }
-
-    public BlockPos getLowerLeftCorner()
-    {
-        return lowerLeftCorner;
     }
 
     public Optional<BlockPos> getTargetTeleporter()

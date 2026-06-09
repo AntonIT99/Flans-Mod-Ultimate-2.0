@@ -12,6 +12,8 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.util.ModUtils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.RandomSource;
@@ -23,12 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseGunHelper
 {
-    private ApocalypseGunHelper()
-    {
-    }
-
     public static Optional<ItemStack> randomLoadedGun(RandomSource random, boolean preferSemiAuto)
     {
         Optional<GunType> preferred = randomGun(random, preferSemiAuto);

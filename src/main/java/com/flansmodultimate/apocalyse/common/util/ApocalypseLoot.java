@@ -5,6 +5,8 @@ import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.util.ModUtils;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.ListTag;
@@ -24,19 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String[] JOURNAL_LINES = new String[] {
+    private static final String[] JOURNAL_LINES = new String[]{
         "The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
         "If you find the power cubes, do not stand between them unless you are ready to leave.",
         "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
         "Sulphur pits mark the old roads. Keep water away from the acid and keep moving.",
         "The skull drones patrol at night. Their boss laughs before the nukes fall."
     };
-
-    private ApocalypseLoot()
-    {
-    }
 
     public static ItemStack randomLoot(RandomSource random, boolean gunsOnly)
     {

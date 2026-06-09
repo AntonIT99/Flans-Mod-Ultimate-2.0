@@ -1,4 +1,4 @@
-package com.flansmodultimate.apocalyse.common.event;
+package com.flansmodultimate.apocalyse.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
@@ -6,6 +6,8 @@ import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseSavedData;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseWorldgen;
 import com.flansmodultimate.config.ModCommonConfig;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -16,19 +18,15 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 
 import java.util.Collections;
 
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public final class ApocalypseForgeEvents
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class CommonEventHandler
 {
-    private ApocalypseForgeEvents()
-    {
-    }
-
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event)
     {
@@ -73,10 +71,9 @@ public final class ApocalypseForgeEvents
         if (targetLevel == null)
             return;
 
-        ApocalypseSavedData.get(targetLevel).getDeathPoint(player.getUUID()).ifPresent(deathPoint ->
-            ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModCommonConfig.apocalypseSpawnRadius(), targetLevel.random)
-                .ifPresent(pos -> player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, Collections.<RelativeMovement>emptySet(), player.getYRot(), player.getXRot()))
-        );
+        ApocalypseSavedData.get(targetLevel).getDeathPoint(player.getUUID())
+            .flatMap(deathPoint -> ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModCommonConfig.apocalypseSpawnRadius(), targetLevel.random))
+            .ifPresent(pos -> player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, Collections.emptySet(), player.getYRot(), player.getXRot()));
     }
 
     private static void spawnWanderingSurvivor(ServerPlayer player)
