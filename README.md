@@ -14,7 +14,7 @@ This repository contains the main Forge mod and an optional bundled content-pack
 | Main mod id      | `flansmodultimate`            |
 | Main mod version | `2.0-beta-3`                  |
 | Packs mod id     | `flansmodultimate_packs`      |
-| Packs version    | `1.0-beta-1`                  |
+| Packs version    | `1.0-beta-3`                  |
 | Mappings         | Parchment `2023.09.03-1.20.1` |
 
 The project is still in beta. Some legacy systems are implemented, some are work in progress.
