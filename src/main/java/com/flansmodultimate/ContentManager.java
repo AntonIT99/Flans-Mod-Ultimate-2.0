@@ -318,6 +318,14 @@ public class ContentManager
         FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan content startup", ContentManager::readContentPacksLocked);
     }
 
+    public static Path resolveFlanFolderPath()
+    {
+        if (!Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath))
+            return fallbackFlanPath;
+
+        return defaultFlanPath;
+    }
+
     private static void readContentPacksLocked()
     {
         Path tempRoot = flanFolder.getParent().resolve(".flantemp");
@@ -469,17 +477,11 @@ public class ContentManager
 
     private static void loadFlanFolder()
     {
-        if (!Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath))
-        {
-            flanFolder = fallbackFlanPath;
-        }
-        else
-        {
-            if (!FileUtils.tryCreateDirectories(defaultFlanPath))
-                return;
+        Path resolvedFlanPath = resolveFlanFolderPath();
+        if (!FileUtils.tryCreateDirectories(resolvedFlanPath))
+            return;
 
-            flanFolder = defaultFlanPath;
-        }
+        flanFolder = resolvedFlanPath;
     }
 
     private static Map<String, Path> loadFoldersAndJarZipFiles(Path rootPath) throws IOException

@@ -31,7 +31,6 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -268,7 +267,7 @@ public class FlansMod
             .orElse("unknown");
 
         String safeVersion = version.replaceAll("[^A-Za-z0-9._-]", "_");
-        Path flanDir = FMLPaths.GAMEDIR.get().resolve("flan");
+        Path flanDir = ContentManager.resolveFlanFolderPath();
         Path marker = flanDir.resolve(".extracted_" + PACKS_ID + "_" + safeVersion + ".marker");
 
         long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(120); // 2 min max
