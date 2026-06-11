@@ -677,30 +677,7 @@ public class GunType extends PaintableType implements IScope
         recoilSprintingMultiplierYaw = readValue("RecoilSprintingMultiplierYaw", recoilSprintingMultiplierYaw, file);
         recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
         recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
-        readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil -> {
-            try
-            {
-                recoil.read(fancyRecoil);
-                useFancyRecoil = true;
-            }
-            catch (Exception ex)
-            {
-                useFancyRecoil = false;
-                logError("Failed to read fancy recoil", file);
-            }
-        });
-
-        //TODO: read fancy recoil
-        /*String[] aSplit = ConfigUtils.getSplitFromKey(config, "FancyRecoil");
-        try {
-            if (aSplit != null && aSplit.length > 1) {
-                recoil.read(aSplit);
-                useFancyRecoil = true;
-            }
-        } catch (Exception ex) {
-            useFancyRecoil = false;
-            FlansMod.logPackError(file.name, packName, shortName, "Failed to read fancy recoil", aSplit, ex);
-        }*/
+        readFancyRecoil(file);
 
         //Ammo
         numBullets = readValue("NumBullets", numBullets, file);
@@ -962,6 +939,22 @@ public class GunType extends PaintableType implements IScope
     public float getDistantSoundRange()
     {
         return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange() * 1.5F;
+    }
+
+    private void readFancyRecoil(TypeFile file)
+    {
+        readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil -> {
+            try
+            {
+                recoil.read(fancyRecoil);
+                useFancyRecoil = true;
+            }
+            catch (Exception ex)
+            {
+                useFancyRecoil = false;
+                logError("Failed to read FancyRecoil '" + String.join(StringUtils.SPACE, fancyRecoil) + "'", file, ex);
+            }
+        });
     }
 
     public boolean isAllowAllAttachments()
