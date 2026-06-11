@@ -302,10 +302,16 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
-        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
+        if (ModApocalypseConfig.apocalypseEnabled()) {
+            generalItemList.add(ApocalypseContent.SULPHUR);
+            generalItemList.add(ApocalypseContent.BLOCK_SULPHUR_ITEM);
+            generalItemList.add(ApocalypseContent.BLOCK_LAB_STONE_ITEM);
+            generalItemList.add(ApocalypseContent.BLOCK_POWER_CUBE_ITEM);
+            generalItemList.add(ApocalypseContent.SULPHURIC_ACID_BUCKET);
+        }
+        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ITEM_HOLDER, EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_flansmod", generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerApocalypseCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_apocalypse", creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_armors", FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_attachments", FlansMod.getItems(EnumType.ATTACHMENT), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_guns", FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
@@ -313,7 +319,7 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_tools", FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_vehicles", FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_aaguns", FlansMod.getItems(EnumType.AA_GUN), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumSet.of(EnumType.PART, EnumType.ITEM_HOLDER)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, "creative_tab_parts", FlansMod.getItems(EnumSet.of(EnumType.PART)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
     }
 
     private static Block[] getRegisteredBlocks(EnumType type)

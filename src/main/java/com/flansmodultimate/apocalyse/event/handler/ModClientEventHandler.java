@@ -11,7 +11,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -19,6 +22,15 @@ import net.minecraft.world.item.Items;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModClientEventHandler
 {
+    @SubscribeEvent
+    public static void clientSetup(FMLClientSetupEvent event)
+    {
+        event.enqueueWork(() -> {
+            ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.sulphuricAcid.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.flowingSulphuricAcid.get(), RenderType.translucent());
+        });
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {

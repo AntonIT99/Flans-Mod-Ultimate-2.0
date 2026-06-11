@@ -6,7 +6,6 @@ public record ApocalypseConfigSnapshot(
     int version,
 
     boolean apocalypseEnabled,
-    boolean apocalypseShowItemsInCreative,
     boolean apocalypseDimensionEnabled,
     boolean apocalypsePortalsEnabled,
     boolean apocalypseOverworldPortalGenerationEnabled,
@@ -40,7 +39,6 @@ public record ApocalypseConfigSnapshot(
         buf.writeVarInt(s.version);
 
         buf.writeBoolean(s.apocalypseEnabled);
-        buf.writeBoolean(s.apocalypseShowItemsInCreative);
         buf.writeBoolean(s.apocalypseDimensionEnabled);
         buf.writeBoolean(s.apocalypsePortalsEnabled);
         buf.writeBoolean(s.apocalypseOverworldPortalGenerationEnabled);
@@ -72,7 +70,6 @@ public record ApocalypseConfigSnapshot(
         return new ApocalypseConfigSnapshot(
             readVersion(buf),
 
-            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

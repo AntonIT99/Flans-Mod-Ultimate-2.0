@@ -11,6 +11,7 @@ import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -18,6 +19,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -38,11 +40,16 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
+import java.util.function.Consumer;
+
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class ApocalypseContent
 {
     // Resource Locations
     public static final ResourceLocation survivorTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/entity/survivor.png");
+    private static final ResourceLocation SULPHURIC_ACID_STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill");
+    private static final ResourceLocation SULPHURIC_ACID_FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing");
+    private static final ResourceLocation SULPHURIC_ACID_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
 
     public static final ResourceKey<Level> APOCALYPSE_LEVEL = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "apocalypse"));
 
@@ -62,6 +69,32 @@ public final class ApocalypseContent
             .viscosity(800)
             .density(1200)
         )
+        {
+            @Override
+            public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer)
+            {
+                consumer.accept(new IClientFluidTypeExtensions()
+                {
+                    @Override
+                    public ResourceLocation getStillTexture()
+                    {
+                        return SULPHURIC_ACID_STILL_TEXTURE;
+                    }
+
+                    @Override
+                    public ResourceLocation getFlowingTexture()
+                    {
+                        return SULPHURIC_ACID_FLOWING_TEXTURE;
+                    }
+
+                    @Override
+                    public ResourceLocation getRenderOverlayTexture(Minecraft mc)
+                    {
+                        return SULPHURIC_ACID_OVERLAY_TEXTURE;
+                    }
+                });
+            }
+        }
     );
 
     // Fluids

@@ -26,7 +26,6 @@ public final class ModApocalypseConfig
     private static final AtomicReference<ApocalypseConfigSnapshot> serverOverride = new AtomicReference<>();
 
     private static final ForgeConfigSpec.BooleanValue APOCALYPSE_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_SHOW_ITEMS_IN_CREATIVE;
     private static final ForgeConfigSpec.BooleanValue APOCALYPSE_DIMENSION_ENABLED;
     private static final ForgeConfigSpec.BooleanValue APOCALYPSE_PORTALS_ENABLED;
     private static final ForgeConfigSpec.BooleanValue APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED;
@@ -59,9 +58,6 @@ public final class ModApocalypseConfig
         APOCALYPSE_ENABLED = builder
             .comment("Master switch for integrated Flan's Mod Apocalypse content and server-side behavior.")
             .define("apocalypseEnabled", true);
-        APOCALYPSE_SHOW_ITEMS_IN_CREATIVE = builder
-            .comment("Show apocalypse blocks and items in the apocalypse creative tab. Registry entries still exist for world/save compatibility.")
-            .define("apocalypseShowItemsInCreative", true);
         APOCALYPSE_DIMENSION_ENABLED = builder
             .comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",
                 "Requires a full game/server restart after changing because datapack repositories are built before worlds load.",
@@ -141,6 +137,12 @@ public final class ModApocalypseConfig
         configSpec = builder.build();
     }
 
+    public static boolean apocalypseEnabled()
+    {
+        EarlyApocalypseSettings settings = readEarlyApocalypseSettings();
+        return settings.apocalypseEnabled();
+    }
+
     public static boolean apocalypseDimensionDatapackEnabled()
     {
         EarlyApocalypseSettings settings = readEarlyApocalypseSettings();
@@ -195,7 +197,6 @@ public final class ModApocalypseConfig
             ApocalypseConfigSnapshot.CURRENT_VERSION,
 
             APOCALYPSE_ENABLED.get(),
-            APOCALYPSE_SHOW_ITEMS_IN_CREATIVE.get(),
             APOCALYPSE_DIMENSION_ENABLED.get(),
             APOCALYPSE_PORTALS_ENABLED.get(),
             APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED.get(),
@@ -242,20 +243,6 @@ public final class ModApocalypseConfig
     public static void bake()
     {
         instance.set(readConfig());
-    }
-
-    public static boolean apocalypseEnabled()
-    {
-        ApocalypseConfigSnapshot config = get();
-        return config == null ? APOCALYPSE_ENABLED.get() : config.apocalypseEnabled();
-    }
-
-    public static boolean apocalypseShowItemsInCreative()
-    {
-        ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_SHOW_ITEMS_IN_CREATIVE.get()
-            : config.apocalypseEnabled() && config.apocalypseShowItemsInCreative();
     }
 
     public static boolean apocalypseDimensionEnabled()
@@ -425,7 +412,5 @@ public final class ModApocalypseConfig
         NEARBY_OPT_IN
     }
 
-    private record EarlyApocalypseSettings(boolean apocalypseEnabled, boolean apocalypseDimensionEnabled)
-    {
-    }
+    private record EarlyApocalypseSettings(boolean apocalypseEnabled, boolean apocalypseDimensionEnabled) {}
 }

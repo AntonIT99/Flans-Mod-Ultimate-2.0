@@ -23,7 +23,7 @@ public class SulphuricAcidBlock extends LiquidBlock
     @Override
     public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity)
     {
-        if (!level.isClientSide && ModApocalypseConfig.apocalypseEnabled() && ModApocalypseConfig.apocalypseAcidDamage() > 0.0F)
+        if (!level.isClientSide && ModApocalypseConfig.apocalypseAcidDamage() > 0.0F)
             entity.hurt(ApocalypseDamageSources.sulphuricAcid(level), ModApocalypseConfig.apocalypseAcidDamage());
         super.entityInside(state, level, pos, entity);
     }
