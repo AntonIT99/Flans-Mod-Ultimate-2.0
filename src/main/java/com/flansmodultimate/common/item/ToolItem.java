@@ -143,7 +143,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
 
     protected void spawnHealParticles(Level level, LivingEntity target)
     {
-        Vec3 particlePos = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+        Vec3 particlePos = target.position();
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, "heart"), particlePos, 50.0D, level.dimension());
     }
 

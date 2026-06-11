@@ -160,7 +160,6 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
 
         Lighting.setupFor3DItems();
 
-        //TODO: make 3D item rendering for attachments
         if (stack.getItem() instanceof AttachmentItem attachmentItem)
             GunItemRenderer.renderAttachment(attachmentItem.getConfigType(), stack, pose, gg.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         else
