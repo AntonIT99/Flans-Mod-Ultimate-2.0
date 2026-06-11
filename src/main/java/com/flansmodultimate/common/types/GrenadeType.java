@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -107,6 +108,9 @@ public class GrenadeType extends ShootableType
     /** Particles given off after detonation */
     @Getter
     protected String smokeParticleType = "explode";
+    /** Number of smoke particles given off after detonation */
+    protected int smokeParticlesCount;
+    protected boolean readSmokeParticlesCount;
     /** The effects to be given to people coming too close */
     @Getter
     protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
@@ -183,6 +187,9 @@ public class GrenadeType extends ShootableType
 
         smokeTime = readValue("SmokeTime", smokeTime, file);
         smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);
+        smokeParticleType = readValue("SmokeParticleType", smokeParticleType, file);
+        smokeParticlesCount = readValue("SmokeParticlesCount", smokeParticlesCount, file);
+        readSmokeParticlesCount = hasValueForConfigField("SmokeParticlesCount", file);
         smokeRadius = readValue("SmokeRadius", smokeRadius, file);
         addEffects("SmokeEffect", smokeEffects, file, false, false);
 
@@ -198,5 +205,10 @@ public class GrenadeType extends ShootableType
         addEffects("PotionEffect", potionEffects, file, false, false);
 
         numClips = readValue("NumClips", numClips, file);
+    }
+
+    public int getSmokeParticlesCount()
+    {
+        return readSmokeParticlesCount ? smokeParticlesCount : ModCommonConfig.smokeParticlesCount();
     }
 }

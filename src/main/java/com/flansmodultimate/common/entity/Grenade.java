@@ -486,7 +486,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         // Send flak packet to spawn particles
         if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketFlak(position(), ModCommonConfig.smokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         // Apply potion effects in smoke radius
         double r = configType.getSmokeRadius();
@@ -843,7 +843,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(position(), ModCommonConfig.smokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         if (configType.isFlashSoundEnable())
             PacketPlaySound.sendSoundPacket(this, configType.getFlashSoundRange(), configType.getFlashSound(), true);
