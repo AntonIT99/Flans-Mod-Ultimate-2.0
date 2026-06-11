@@ -3,6 +3,7 @@ package com.flansmodultimate.util;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.BlockType;
+import com.flansmodultimate.common.types.GloveType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
@@ -50,10 +51,21 @@ public final class ResourceUtils
     public static class ModelJson
     {
         String parent;
+        String credit;
         @SerializedName("gui_light")
         String guiLight;
         Map<String, String> textures;
+        List<Element> elements;
+        Map<String, DisplayTransform> display;
         List<Override> overrides;
+
+        public ModelJson(String parent, String guiLight, Map<String, String> textures, List<Override> overrides)
+        {
+            this.parent = parent;
+            this.guiLight = guiLight;
+            this.textures = textures;
+            this.overrides = overrides;
+        }
 
         static class Override
         {
@@ -66,6 +78,39 @@ public final class ResourceUtils
                 predicate.put(namespacedKey, value);
                 model = modelPath;
             }
+        }
+
+        @AllArgsConstructor
+        static class Face
+        {
+            List<Number> uv;
+            String texture;
+        }
+
+        @AllArgsConstructor
+        static class Rotation
+        {
+            Number angle;
+            String axis;
+            List<Number> origin;
+        }
+
+        @AllArgsConstructor
+        static class Element
+        {
+            String name;
+            List<Number> from;
+            List<Number> to;
+            Rotation rotation;
+            Map<String, Face> faces;
+        }
+
+        @AllArgsConstructor
+        static class DisplayTransform
+        {
+            List<Number> rotation;
+            List<Number> translation;
+            List<Number> scale;
         }
 
         public static ModelJson createBlockModel(BlockType config)
@@ -95,6 +140,9 @@ public final class ResourceUtils
 
         public static ModelJson createItemModel(InfoType config)
         {
+            if (config instanceof GloveType)
+                return createGloveItemModel(config);
+
             if (config instanceof ItemHolderType)
             {
                 return new ModelJson("minecraft:item/generated", null,
@@ -121,6 +169,83 @@ public final class ResourceUtils
             }
 
             return new ModelJson(parent, null, textures, overrides);
+        }
+
+        private static ModelJson createGloveItemModel(InfoType config)
+        {
+            Map<String, String> textures = new LinkedHashMap<>();
+            String texture = FlansMod.FLANSMOD_ID + ":item/" + config.getIcon();
+            textures.put("0", texture);
+            textures.put("particle", texture);
+
+            ModelJson model = new ModelJson(null, null, textures, null);
+            model.credit = "Made with Blockbench";
+            model.elements = List.of(
+                element(null, vec(5, 5, 5), vec(11, 11, 11), null, faces(
+                    face(0, 0, 6, 6), face(0, 0, 6, 6), face(0, 0, 6, 6),
+                    face(0, 0, 6, 6), face(0, 0, 6, 6), face(0, 0, 6, 6))),
+                element(null, vec(6, 6, 4), vec(10, 10, 5), rotation(0, "z", vec(8, 8, 4)), faces(
+                    face(0, 8, 4, 12), face(4, 8, 5, 12), face(0, 12, 4, 16),
+                    face(4, 12, 5, 16), face(0, 6, 4, 7), face(0, 7, 4, 8))),
+                element(null, vec(5.5, 5.5, 9), vec(10.5, 10.5, 13), null, faces(
+                    face(0, 0, 5, 5), face(0, 0, 4, 5), face(0, 0, 5, 5),
+                    face(0, 0, 4, 5), face(0, 0, 5, 4), face(0, 0, 5, 4))),
+                element("spike", vec(9.25, 9.75, 6), vec(10.25, 10.75, 10), rotation(-22.5, "x", vec(9, 10, 6)), faces(
+                    face(10, 0, 11, 1), face(12, 1, 16, 2), face(11, 1, 12, 2),
+                    face(12, 0, 16, 1), face(10, 0, 11, 4), face(9, 0, 10, 4))),
+                element("spike", vec(5.75, 9.5, 6), vec(6.75, 10.5, 10), rotation(-22.5, "x", vec(6, 10, 6)), faces(
+                    face(10, 0, 11, 1), face(12, 1, 16, 2), face(11, 1, 12, 2),
+                    face(12, 0, 16, 1), face(10, 0, 11, 4), face(9, 0, 10, 4))),
+                element("spike", vec(7.5, 9.625, 6), vec(8.5, 10.625, 10), rotation(-22.5, "x", vec(8, 10, 6)), faces(
+                    face(10, 0, 11, 1), face(12, 1, 16, 2), face(11, 1, 12, 2),
+                    face(12, 0, 16, 1), face(10, 0, 11, 4), face(9, 0, 10, 4)))
+            );
+
+            Map<String, DisplayTransform> display = new LinkedHashMap<>();
+            display.put("thirdperson_righthand", display(null, vec(0, -2, 0), vec(1, 1, 1)));
+            display.put("thirdperson_lefthand", display(null, vec(0, -2, 0), null));
+            display.put("firstperson_righthand", display(null, null, vec(1, 1, 1)));
+            display.put("gui", display(vec(45, 135, 0), null, vec(1.2, 1.2, 1.2)));
+            display.put("fixed", display(vec(-90, 0, 0), null, null));
+            model.display = display;
+            return model;
+        }
+
+        private static Element element(String name, List<Number> from, List<Number> to, Rotation rotation, Map<String, Face> faces)
+        {
+            return new Element(name, from, to, rotation, faces);
+        }
+
+        private static Face face(Number minU, Number minV, Number maxU, Number maxV)
+        {
+            return new Face(vec(minU, minV, maxU, maxV), "#0");
+        }
+
+        private static Rotation rotation(Number angle, String axis, List<Number> origin)
+        {
+            return new Rotation(angle, axis, origin);
+        }
+
+        private static DisplayTransform display(List<Number> rotation, List<Number> translation, List<Number> scale)
+        {
+            return new DisplayTransform(rotation, translation, scale);
+        }
+
+        private static Map<String, Face> faces(Face north, Face east, Face south, Face west, Face up, Face down)
+        {
+            Map<String, Face> faces = new LinkedHashMap<>();
+            faces.put("north", north);
+            faces.put("east", east);
+            faces.put("south", south);
+            faces.put("west", west);
+            faces.put("up", up);
+            faces.put("down", down);
+            return faces;
+        }
+
+        private static List<Number> vec(Number... values)
+        {
+            return List.of(values);
         }
 
         public static ModelJson createItemModel(InfoType config, Paintjob paintjob)
