@@ -3,6 +3,7 @@ package com.flansmodultimate.packs;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.ModList;
@@ -61,7 +62,7 @@ public class FlanPacksMod
     public static final String MAIN_MOD_ID = "flansmodultimate";
 
     public static final Logger log = LogUtils.getLogger();
-    public static final Gson gson = new Gson();
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /** Content Extraction **/
     private static final int EXTRACTION_STATE_PROTOCOL_VERSION = 1;
