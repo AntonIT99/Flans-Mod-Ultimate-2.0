@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "level=0": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=1": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=2": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=3": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=4": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=5": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=6": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=7": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=8": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=9": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=10": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=11": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=12": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=13": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=14": { "model": "flansmodapocalypse:block/blocksulphuricacid" },
+    "level=15": { "model": "flansmodapocalypse:block/blocksulphuricacid" }
+  }
+}

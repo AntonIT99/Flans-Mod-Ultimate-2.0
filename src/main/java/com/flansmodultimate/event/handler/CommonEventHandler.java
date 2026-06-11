@@ -14,9 +14,9 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketSyncCommonConfig;
+import com.flansmodultimate.config.ModCommonConfigSync;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +45,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -59,11 +60,11 @@ import java.util.UUID;
 public final class CommonEventHandler
 {
     private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.ABANDONED_MINESHAFT,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.VILLAGE_WEAPONSMITH,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.END_CITY_TREASURE,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.NETHER_BRIDGE,
-        net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID,
+        BuiltInLootTables.ABANDONED_MINESHAFT,
+        BuiltInLootTables.VILLAGE_WEAPONSMITH,
+        BuiltInLootTables.END_CITY_TREASURE,
+        BuiltInLootTables.NETHER_BRIDGE,
+        BuiltInLootTables.DESERT_PYRAMID,
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
     );
@@ -193,7 +194,7 @@ public final class CommonEventHandler
     {
         if (e.getEntity() instanceof ServerPlayer sp)
         {
-            PacketHandler.sendTo(new PacketSyncCommonConfig(ModCommonConfig.get()), sp);
+            ModCommonConfigSync.syncClientIfServer(sp);
         }
     }
 
@@ -201,6 +202,7 @@ public final class CommonEventHandler
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event)
     {
         ModCommonConfig.clearServerOverride();
+        ModApocalypseConfig.clearServerOverride();
         regenTimers.remove(event.getEntity().getUUID());
     }
 

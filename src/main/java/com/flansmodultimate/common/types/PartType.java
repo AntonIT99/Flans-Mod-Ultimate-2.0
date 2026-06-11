@@ -58,6 +58,9 @@ public class PartType extends InfoType
     protected boolean useRFPower = false;
     /** The power draw rate for RF (per tick) */
     protected int rfDrawRate = 1;
+    /** Legacy apocalypse AI chip marker. Used by apocalypse integration and content compatibility. */
+    @Getter
+    protected boolean aiChip = false;
 
     @Override
     protected void read(TypeFile file)
@@ -76,6 +79,7 @@ public class PartType extends InfoType
         useRFPower = readValue("UseRF", useRFPower, file);
         useRFPower = readValue("UseRFPower", useRFPower, file);
         rfDrawRate = readValue("RFDrawRate", rfDrawRate, file);
+        aiChip = readValue("IsAIChip", aiChip, file);
 
         // Engine compatibility
         //TODO: Uncomment when Driveables are added

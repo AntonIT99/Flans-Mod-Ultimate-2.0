@@ -610,4 +610,5 @@ public final class ModCommonConfig
     private record EntityTrackingRanges(int bullet, int grenade, int deployedGun, int aaGun)
     {
     }
+
 }

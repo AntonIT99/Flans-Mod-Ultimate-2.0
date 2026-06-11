@@ -8,6 +8,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonConfigSync
@@ -21,7 +22,26 @@ public final class ModCommonConfigSync
         if (server == null)
             return;
 
-        PacketHandler.sendToAll(new PacketSyncCommonConfig(ModCommonConfig.get()));
+        PacketSyncCommonConfig packet = createSyncPacket();
+        if (packet != null)
+            PacketHandler.sendToAll(packet);
+    }
+
+    public static void syncClientIfServer(ServerPlayer player)
+    {
+        PacketSyncCommonConfig packet = createSyncPacket();
+        if (packet != null)
+            PacketHandler.sendTo(packet, player);
+    }
+
+    private static PacketSyncCommonConfig createSyncPacket()
+    {
+        CommonConfigSnapshot commonConfig = ModCommonConfig.get();
+        ApocalypseConfigSnapshot apocalypseConfig = ModApocalypseConfig.get();
+        if (commonConfig == null || apocalypseConfig == null)
+            return null;
+
+        return new PacketSyncCommonConfig(commonConfig, apocalypseConfig);
     }
 }
 

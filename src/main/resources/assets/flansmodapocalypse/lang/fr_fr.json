@@ -1,0 +1,19 @@
+{
+    "block.flansmodapocalypse.blocksulphur": "Bloc de soufre",
+    "block.flansmodapocalypse.blocklabstone": "Pierre de laboratoire",
+    "block.flansmodapocalypse.blockpowercube": "Cube d'énergie",
+    "block.flansmodapocalypse.blocksulphuricacid": "Acide sulfurique",
+    "fluid.flansmodapocalypse.sulphuric_acid": "Acide sulfurique",
+    "item.flansmodapocalypse.flansulphur": "Soufre",
+    "item.flansmodapocalypse.sulphuric_acid_bucket": "Seau d'acide sulfurique",
+    "entity.flansmodapocalypse.teleporter": "Téléporteur de l'apocalypse",
+    "entity.flansmodapocalypse.nukedrop": "Largage nucléaire",
+    "entity.flansmodapocalypse.survivor": "Survivant",
+    "entity.flansmodapocalypse.autodrone": "Drone crâne",
+    "entity.flansmodapocalypse.skullboss": "Boss crâne",
+    "message.flansmodultimate.apocalypse_dimension_unavailable": "La dimension de l'apocalypse est indisponible.",
+    "message.flansmodultimate.apocalypse_portal_failed": "Le portail de l'apocalypse n'a pas pu trouver de destination sûre.",
+    "message.flansmodultimate.apocalypse_boss_awakened": "Le Boss crâne s'éveille.",
+    "death.attack.sulphuric_acid": "%1$s s'est dissous dans l'acide sulfurique",
+    "death.attack.sulphuric_acid.player": "%1$s s'est dissous dans l'acide sulfurique en combattant %2$s"
+}

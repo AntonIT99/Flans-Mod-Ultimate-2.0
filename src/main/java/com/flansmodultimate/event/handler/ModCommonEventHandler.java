@@ -3,6 +3,8 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
+import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
@@ -14,6 +16,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+
+import net.minecraft.server.packs.PackType;
 
 import java.nio.file.Files;
 
@@ -30,6 +34,9 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
     {
+        if (event.getPackType() == PackType.SERVER_DATA && ModApocalypseConfig.apocalypseDimensionDatapackEnabled())
+            event.addRepositorySource(ApocalypseDatapackSource.create());
+
         if (ContentManager.getFlanFolder() != null && Files.exists(ContentManager.getFlanFolder()))
         {
             event.addRepositorySource(new ModRepositorySource(ContentManager.getFlanFolder(), event.getPackType()));
@@ -45,6 +52,12 @@ public final class ModCommonEventHandler
             ModCommonConfigSync.resyncAllClientsIfServer();
         }
 
+        if (event.getConfig().getSpec() == ModApocalypseConfig.configSpec)
+        {
+            ModApocalypseConfig.bake();
+            ModCommonConfigSync.resyncAllClientsIfServer();
+        }
+
         if (event.getConfig().getSpec() == ModClientConfig.configSpec)
             ModClientConfig.bake();
     }
@@ -55,6 +68,12 @@ public final class ModCommonEventHandler
         if (event.getConfig().getSpec() == ModCommonConfig.configSpec)
         {
             ModCommonConfig.bake();
+            ModCommonConfigSync.resyncAllClientsIfServer();
+        }
+
+        if (event.getConfig().getSpec() == ModApocalypseConfig.configSpec)
+        {
+            ModApocalypseConfig.bake();
             ModCommonConfigSync.resyncAllClientsIfServer();
         }
 

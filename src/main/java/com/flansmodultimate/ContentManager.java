@@ -25,6 +25,9 @@ import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundJsonProcessor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -318,6 +321,14 @@ public class ContentManager
         FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan content startup", ContentManager::readContentPacksLocked);
     }
 
+    public static Path resolveFlanFolderPath()
+    {
+        if (!Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath))
+            return fallbackFlanPath;
+
+        return defaultFlanPath;
+    }
+
     private static void readContentPacksLocked()
     {
         Path tempRoot = flanFolder.getParent().resolve(".flantemp");
@@ -469,17 +480,11 @@ public class ContentManager
 
     private static void loadFlanFolder()
     {
-        if (!Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath))
-        {
-            flanFolder = fallbackFlanPath;
-        }
-        else
-        {
-            if (!FileUtils.tryCreateDirectories(defaultFlanPath))
-                return;
+        Path resolvedFlanPath = resolveFlanFolderPath();
+        if (!FileUtils.tryCreateDirectories(resolvedFlanPath))
+            return;
 
-            flanFolder = defaultFlanPath;
-        }
+        flanFolder = resolvedFlanPath;
     }
 
     private static Map<String, Path> loadFoldersAndJarZipFiles(Path rootPath) throws IOException
@@ -1133,7 +1138,6 @@ public class ContentManager
     private static void generateItemModelJson(InfoType config, Path outputFolder)
     {
         ResourceUtils.ModelJson model = ResourceUtils.ModelJson.createItemModel(config);
-        String jsonContent = gson.toJson(model);
         String shortName = config.getShortName();
 
         if (!shortName.equals(config.getOriginalShortName()))
@@ -1143,7 +1147,7 @@ public class ContentManager
         }
 
         Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
-        FileUtils.writeString(outputFile, jsonContent);
+        writeGeneratedItemModelJson(outputFile, model);
 
         if (config instanceof PaintableType paintableType)
         {
@@ -1153,11 +1157,47 @@ public class ContentManager
                 {
                     outputFile = outputFolder.resolve(p.getIcon() + FileUtils.JSON_EXTENSION);
                     model = ResourceUtils.ModelJson.createItemModel(config, p);
-                    jsonContent = gson.toJson(model);
-                    FileUtils.writeString(outputFile, jsonContent);
+                    writeGeneratedItemModelJson(outputFile, model);
                 }
             }
         }
+    }
+
+    private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model)
+    {
+        if (shouldPreserveExistingItemModel(outputFile))
+            return;
+
+        FileUtils.writeString(outputFile, gson.toJson(model));
+    }
+
+    private static boolean shouldPreserveExistingItemModel(Path modelFile)
+    {
+        if (!Files.isRegularFile(modelFile))
+            return false;
+
+        try
+        {
+            JsonObject model = JsonParser.parseString(Files.readString(modelFile, StandardCharsets.UTF_8)).getAsJsonObject();
+            return !isGeneratedSimpleItemModel(model);
+        }
+        catch (IOException | IllegalStateException | JsonSyntaxException e)
+        {
+            return false;
+        }
+    }
+
+    private static boolean isGeneratedSimpleItemModel(JsonObject model)
+    {
+        if (model.has("elements") || model.has("display") || model.has("loader"))
+            return false;
+        if (!model.has("parent") || !model.get("parent").isJsonPrimitive())
+            return false;
+
+        String parent = model.get("parent").getAsString();
+        return parent.equals("minecraft:item/generated")
+            || parent.equals("minecraft:item/handheld")
+            || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
     }
 
     private static void generateBlockModelJson(InfoType config, Path outputFolder)

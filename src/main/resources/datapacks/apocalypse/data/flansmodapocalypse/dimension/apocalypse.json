@@ -1,0 +1,11 @@
+{
+  "type": "flansmodapocalypse:apocalypse",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "flansmodapocalypse:apocalypse"
+    },
+    "settings": "minecraft:overworld"
+  }
+}
