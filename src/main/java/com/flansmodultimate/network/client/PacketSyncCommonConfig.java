@@ -1,6 +1,8 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.config.ApocalypseConfigSnapshot;
 import com.flansmodultimate.config.CommonConfigSnapshot;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
@@ -13,28 +15,33 @@ import net.minecraft.world.level.Level;
 @NoArgsConstructor
 public class PacketSyncCommonConfig implements IClientPacket
 {
-    private CommonConfigSnapshot snapshot;
+    private CommonConfigSnapshot commonSnapshot;
+    private ApocalypseConfigSnapshot apocalypseSnapshot;
 
-    public PacketSyncCommonConfig(CommonConfigSnapshot snapshot)
+    public PacketSyncCommonConfig(CommonConfigSnapshot commonSnapshot, ApocalypseConfigSnapshot apocalypseSnapshot)
     {
-        this.snapshot = snapshot;
+        this.commonSnapshot = commonSnapshot;
+        this.apocalypseSnapshot = apocalypseSnapshot;
     }
 
     @Override
     public void encodeInto(FriendlyByteBuf buf)
     {
-        CommonConfigSnapshot.write(buf, snapshot);
+        CommonConfigSnapshot.write(buf, commonSnapshot);
+        ApocalypseConfigSnapshot.write(buf, apocalypseSnapshot);
     }
 
     @Override
     public void decodeInto(FriendlyByteBuf buf)
     {
-        snapshot = CommonConfigSnapshot.read(buf);
+        commonSnapshot = CommonConfigSnapshot.read(buf);
+        apocalypseSnapshot = ApocalypseConfigSnapshot.read(buf);
     }
 
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        ModCommonConfig.applyServerSnapshot(snapshot);
+        ModCommonConfig.applyServerSnapshot(commonSnapshot);
+        ModApocalypseConfig.applyServerSnapshot(apocalypseSnapshot);
     }
 }

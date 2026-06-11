@@ -2,7 +2,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,7 +77,7 @@ public class SkullBossEntity extends Monster
         super.tick();
         bossEvent.setProgress(getHealth() / getMaxHealth());
 
-        if (level().isClientSide || !ModCommonConfig.apocalypseMobsEnabled())
+        if (level().isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
         actionTicks++;
@@ -114,7 +114,7 @@ public class SkullBossEntity extends Monster
 
     private Action chooseAction()
     {
-        int bound = ModCommonConfig.apocalypseNukeDropsEnabled() ? 4 : 3;
+        int bound = ModApocalypseConfig.apocalypseNukeDropsEnabled() ? 4 : 3;
         return switch (random.nextInt(bound))
         {
             case 0 -> Action.LAUGH;
@@ -200,7 +200,7 @@ public class SkullBossEntity extends Monster
 
     private void callNukeDrop(LivingEntity target)
     {
-        if (!(level() instanceof ServerLevel serverLevel) || !ModCommonConfig.apocalypseNukeDropsEnabled())
+        if (!(level() instanceof ServerLevel serverLevel) || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
             return;
         NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.nukeDrop.get(), serverLevel);
         nuke.moveTo(target.getX(), Math.min(serverLevel.getMaxBuildHeight() - 4.0D, target.getY() + 48.0D), target.getZ(), 0.0F, 0.0F);

@@ -1,7 +1,7 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +56,7 @@ public class TeleporterEntity extends Entity
 
         if (!level().isClientSide)
         {
-            if (!ModCommonConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.isPortalFrame(level(), lowerLeftCorner))
+            if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.isPortalFrame(level(), lowerLeftCorner))
             {
                 discard();
                 return;

@@ -5,7 +5,7 @@ import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseSavedData;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseWorldgen;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.TickEvent;
@@ -39,14 +39,17 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        if (event.phase != TickEvent.Phase.END || event.getServer() == null || !ModCommonConfig.apocalypseMobsEnabled())
+        if (event.phase != TickEvent.Phase.END
+            || event.getServer() == null
+            || !ModApocalypseConfig.apocalypseDimensionEnabled()
+            || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers())
         {
             if (!player.serverLevel().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL) || player.isSpectator())
                 continue;
-            if (player.getRandom().nextInt(ModCommonConfig.apocalypseWanderingSurvivorRarity()) != 0)
+            if (player.getRandom().nextInt(ModApocalypseConfig.apocalypseWanderingSurvivorRarity()) != 0)
                 continue;
             spawnWanderingSurvivor(player);
         }
@@ -55,7 +58,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event)
     {
-        if (!(event.getEntity() instanceof ServerPlayer player))
+        if (!(event.getEntity() instanceof ServerPlayer player) || !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
         if (player.serverLevel().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL))
             ApocalypseSavedData.get(player.serverLevel()).setDeathPoint(player.getUUID(), player.blockPosition());
@@ -64,7 +67,9 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
     {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !ModCommonConfig.apocalypseRespawnInApocalypse())
+        if (!(event.getEntity() instanceof ServerPlayer player)
+            || !ModApocalypseConfig.apocalypseDimensionEnabled()
+            || !ModApocalypseConfig.apocalypseRespawnInApocalypse())
             return;
 
         ServerLevel targetLevel = player.server.getLevel(ApocalypseContent.APOCALYPSE_LEVEL);
@@ -72,7 +77,7 @@ public final class CommonEventHandler
             return;
 
         ApocalypseSavedData.get(targetLevel).getDeathPoint(player.getUUID())
-            .flatMap(deathPoint -> ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModCommonConfig.apocalypseSpawnRadius(), targetLevel.random))
+            .flatMap(deathPoint -> ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModApocalypseConfig.apocalypseSpawnRadius(), targetLevel.random))
             .ifPresent(pos -> player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, Collections.emptySet(), player.getYRot(), player.getXRot()));
     }
 

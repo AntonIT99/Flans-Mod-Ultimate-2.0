@@ -2,7 +2,7 @@ package com.flansmodultimate.apocalyse.common.world;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -30,7 +30,7 @@ public final class ApocalypsePortalManager
 
     public static void tryActivatePortal(Level level, BlockPos placedPos)
     {
-        if (!ModCommonConfig.apocalypsePortalsEnabled())
+        if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
 
         for (int dx = 0; dx <= 3; dx += 3)
@@ -67,7 +67,7 @@ public final class ApocalypsePortalManager
 
     public static void teleportPlayer(ServerPlayer player, TeleporterEntity teleporter)
     {
-        if (!ModCommonConfig.apocalypsePortalsEnabled() || !ModCommonConfig.apocalypseDimensionEnabled())
+        if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
 
         ServerLevel sourceLevel = player.serverLevel();
@@ -116,7 +116,7 @@ public final class ApocalypsePortalManager
 
     public static Optional<BlockPos> findOrCreatePortal(ServerLevel level, BlockPos searchCenter, @Nullable BlockPos reciprocalTarget)
     {
-        int radius = ModCommonConfig.apocalypseReturnRadius();
+        int radius = ModApocalypseConfig.apocalypseReturnRadius();
         for (int attempt = 0; attempt < 300; attempt++)
         {
             double angle = level.random.nextDouble() * Math.PI * 2.0D;

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -40,7 +41,7 @@ public final class CreativeTabs
             .withTabsBefore(beforeTab)
             .withTabsAfter(afterTab)
             .displayItems((parameters, output) -> {
-                if (!ModCommonConfig.apocalypseShowItemsInCreative())
+                if (!ModApocalypseConfig.apocalypseShowItemsInCreative())
                     return;
 
                 output.accept(ApocalypseContent.SULPHUR.get());

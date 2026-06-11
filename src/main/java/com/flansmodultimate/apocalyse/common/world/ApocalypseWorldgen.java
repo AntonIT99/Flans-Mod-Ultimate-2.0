@@ -5,7 +5,7 @@ import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -36,35 +36,42 @@ public final class ApocalypseWorldgen
 
     public static void generate(ServerLevel level, ChunkAccess chunk)
     {
-        if (!ModCommonConfig.apocalypseWorldgenEnabled())
+        if (!ModApocalypseConfig.apocalypseWorldgenEnabled())
             return;
 
         ChunkPos chunkPos = chunk.getPos();
         RandomSource random = RandomSource.create(level.getSeed() ^ (chunkPos.x * 341873128712L) ^ (chunkPos.z * 132897987541L));
         boolean apocalypse = level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL);
+        if (apocalypse && !ModApocalypseConfig.apocalypseDimensionEnabled())
+            return;
 
         if (apocalypse)
         {
             if (random.nextInt(SULPHUR_POOL_RARITY) == 0)
                 generateSulphurPool(level, random, randomSurfacePos(level, chunkPos, random));
-            if (random.nextInt(ModCommonConfig.apocalypseDeadTreeRarity()) == 0)
+            if (random.nextInt(ModApocalypseConfig.apocalypseDeadTreeRarity()) == 0)
                 generateDeadTree(level, randomSurfacePos(level, chunkPos, random));
-            if (random.nextInt(ModCommonConfig.apocalypseSkeletonRarity()) == 0)
+            if (random.nextInt(ModApocalypseConfig.apocalypseSkeletonRarity()) == 0)
                 generateSkeletonDisplay(level, random, randomSurfacePos(level, chunkPos, random));
-            if (random.nextInt(ModCommonConfig.apocalypseAbandonedPortalRarity()) == 0)
+            if (ModApocalypseConfig.apocalypseDimensionEnabled()
+                && ModApocalypseConfig.apocalypsePortalsEnabled()
+                && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalRarity()) == 0)
                 ApocalypsePortalManager.createPortal(level, randomSurfacePos(level, chunkPos, random), null);
-            if (random.nextInt(ModCommonConfig.apocalypseLabRarity()) == 0)
+            if (random.nextInt(ModApocalypseConfig.apocalypseLabRarity()) == 0)
                 generateResearchLab(level, random, randomSurfacePos(level, chunkPos, random));
-            if (random.nextInt(ModCommonConfig.apocalypseDyeFactoryRarity()) == 0)
+            if (random.nextInt(ModApocalypseConfig.apocalypseDyeFactoryRarity()) == 0)
                 generateFactory(level, random, randomSurfacePos(level, chunkPos, random));
-            if (random.nextInt(ModCommonConfig.apocalypseAirportRarity()) == 0)
+            if (random.nextInt(ModApocalypseConfig.apocalypseAirportRarity()) == 0)
                 generateRunway(level, randomSurfacePos(level, chunkPos, random));
             if (random.nextInt(BOSS_PILLAR_RARITY) == 0)
                 generateBossPillar(level, randomSurfacePos(level, chunkPos, random));
-            if (ModCommonConfig.apocalypseMobsEnabled() && random.nextInt(ModCommonConfig.apocalypseSurvivorRarity()) == 0)
+            if (ModApocalypseConfig.apocalypseMobsEnabled() && random.nextInt(ModApocalypseConfig.apocalypseSurvivorRarity()) == 0)
                 spawnSurvivor(level, randomSurfacePos(level, chunkPos, random));
         }
-        else if (ModCommonConfig.apocalypseOverworldPortalGenerationEnabled() && random.nextInt(ModCommonConfig.apocalypseAbandonedPortalOverworldRarity()) == 0)
+        else if (ModApocalypseConfig.apocalypseDimensionEnabled()
+            && ModApocalypseConfig.apocalypsePortalsEnabled()
+            && ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled()
+            && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalOverworldRarity()) == 0)
         {
             ApocalypsePortalManager.createPortal(level, randomSurfacePos(level, chunkPos, random), null);
         }
@@ -85,7 +92,7 @@ public final class ApocalypseWorldgen
 
     public static void spawnSurvivor(ServerLevel level, BlockPos pos)
     {
-        if (!ModCommonConfig.apocalypseMobsEnabled() || !isClear(level, pos))
+        if (!ModApocalypseConfig.apocalypseMobsEnabled() || !isClear(level, pos))
             return;
         SurvivorEntity survivor = ApocalypseContent.survivor.get().create(level);
         if (survivor == null)

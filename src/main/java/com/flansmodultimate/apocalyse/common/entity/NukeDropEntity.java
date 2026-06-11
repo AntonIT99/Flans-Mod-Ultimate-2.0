@@ -1,6 +1,6 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -32,7 +32,7 @@ public class NukeDropEntity extends Entity
         {
             setDeltaMovement(0.0D, 0.0D, 0.0D);
             setExplodedTicks(explodedTicks + 1);
-            if (explodedTicks > ModCommonConfig.apocalypseNukeVisualTicks())
+            if (explodedTicks > ModApocalypseConfig.apocalypseNukeVisualTicks())
                 discard();
             return;
         }
@@ -60,10 +60,10 @@ public class NukeDropEntity extends Entity
     private void impact()
     {
         setExplodedTicks(1);
-        if (level().isClientSide || !ModCommonConfig.apocalypseNukeDropsEnabled())
+        if (level().isClientSide || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
             return;
 
-        float power = ModCommonConfig.apocalypseNukeExplosionPower();
+        float power = ModApocalypseConfig.apocalypseNukeExplosionPower();
         if (power > 0.0F && level() instanceof ServerLevel serverLevel)
             serverLevel.explode(this, getX(), getY(), getZ(), power, false, Level.ExplosionInteraction.MOB);
     }

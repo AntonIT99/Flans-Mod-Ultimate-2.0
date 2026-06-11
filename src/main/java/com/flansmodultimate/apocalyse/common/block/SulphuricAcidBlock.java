@@ -1,7 +1,7 @@
 package com.flansmodultimate.apocalyse.common.block;
 
 import com.flansmodultimate.apocalyse.common.ApocalypseDamageSources;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,8 +23,8 @@ public class SulphuricAcidBlock extends LiquidBlock
     @Override
     public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity)
     {
-        if (!level.isClientSide && ModCommonConfig.apocalypseEnabled() && ModCommonConfig.apocalypseAcidDamage() > 0.0F)
-            entity.hurt(ApocalypseDamageSources.sulphuricAcid(level), ModCommonConfig.apocalypseAcidDamage());
+        if (!level.isClientSide && ModApocalypseConfig.apocalypseEnabled() && ModApocalypseConfig.apocalypseAcidDamage() > 0.0F)
+            entity.hurt(ApocalypseDamageSources.sulphuricAcid(level), ModApocalypseConfig.apocalypseAcidDamage());
         super.entityInside(state, level, pos, entity);
     }
 }

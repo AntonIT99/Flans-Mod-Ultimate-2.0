@@ -1,7 +1,7 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,7 +80,7 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
     @Override
     public void performRangedAttack(@NotNull LivingEntity target, float distanceFactor)
     {
-        if (attackCooldown > 0 || level().isClientSide || !ModCommonConfig.apocalypseMobsEnabled())
+        if (attackCooldown > 0 || level().isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
         getLookControl().setLookAt(target, 30.0F, 30.0F);
         if (ApocalypseGunHelper.shootLoadedGun(this, target))

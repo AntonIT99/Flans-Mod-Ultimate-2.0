@@ -14,9 +14,9 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketSyncCommonConfig;
+import com.flansmodultimate.config.ModCommonConfigSync;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -194,7 +194,7 @@ public final class CommonEventHandler
     {
         if (e.getEntity() instanceof ServerPlayer sp)
         {
-            PacketHandler.sendTo(new PacketSyncCommonConfig(ModCommonConfig.get()), sp);
+            ModCommonConfigSync.syncClientIfServer(sp);
         }
     }
 
@@ -202,6 +202,7 @@ public final class CommonEventHandler
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event)
     {
         ModCommonConfig.clearServerOverride();
+        ModApocalypseConfig.clearServerOverride();
         regenTimers.remove(event.getEntity().getUUID());
     }
 

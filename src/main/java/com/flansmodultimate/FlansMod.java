@@ -20,6 +20,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.logging.LogUtils;
@@ -225,6 +226,7 @@ public class FlansMod
 
         // Init Configs
         context.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
+        context.registerConfig(ModConfig.Type.COMMON, ModApocalypseConfig.configSpec, ModApocalypseConfig.CONFIG_FILE_NAME);
         context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         ApocalypseContent.register(modEventBus);

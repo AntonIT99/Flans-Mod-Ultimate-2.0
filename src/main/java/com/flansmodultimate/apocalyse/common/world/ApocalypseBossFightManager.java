@@ -2,7 +2,7 @@ package com.flansmodultimate.apocalyse.common.world;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModApocalypseConfig;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -27,7 +27,7 @@ public final class ApocalypseBossFightManager
     {
         if (!(level instanceof ServerLevel serverLevel)
             || !level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL)
-            || !ModCommonConfig.apocalypseMobsEnabled()
+            || !ModApocalypseConfig.apocalypseMobsEnabled()
             || !level.getBlockState(placedPos.below()).is(Blocks.BEDROCK))
             return;
 
