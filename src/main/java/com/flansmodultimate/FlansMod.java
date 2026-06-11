@@ -23,6 +23,9 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
@@ -32,6 +35,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -63,6 +68,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -85,6 +92,11 @@ public class FlansMod
     public static final String FLANSMOD_ID = "flansmod";
     public static final String APOCALYPSE_ID = "flansmodapocalypse";
     public static final String PACKS_ID = "flansmodultimate_packs";
+    private static final int PACKS_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
+    private static final String PACKS_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
+    private static final String PACKS_EXTRACTION_STATE_COMPLETE = "complete";
+    private static final String PACKS_EXTRACTION_STATE_FAILED = "failed";
+    private static final int timeoutPacksExtraction = 120;
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
@@ -262,29 +274,81 @@ public class FlansMod
         if (!ModList.get().isLoaded(PACKS_ID))
             return;
 
+        if (!FMLEnvironment.production)
+        {
+            log.info("Flan's Mod Ultimate Packs Extractor found, but extraction is disabled outside production. Continuing without waiting.");
+            return;
+        }
+
         log.info("Flan's Mod Ultimate Packs Extractor found. Waiting for extraction...");
 
-        String version = ModList.get().getModContainerById(PACKS_ID)
-            .map(c -> c.getModInfo().getVersion().toString())
-            .orElse("unknown");
+        Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_EXTRACTION_STATE_FILE_NAME);
 
-        String safeVersion = version.replaceAll("[^A-Za-z0-9._-]", "_");
-        Path flanDir = ContentManager.resolveFlanFolderPath();
-        Path marker = flanDir.resolve(".extracted_" + PACKS_ID + "_" + safeVersion + ".marker");
-
-        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(120); // 2 min max
-        while (!Files.exists(marker))
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutPacksExtraction);
+        while (true)
         {
-            if (System.nanoTime() > deadlineNanos)
+            PacksExtractionWaitState state = readPacksExtractionWaitState(stateFile);
+            if (state == PacksExtractionWaitState.COMPLETE)
             {
-                log.error("Timed out waiting for packs extraction marker: {}", marker);
+                log.info("Packs extraction state is complete.");
                 return;
             }
+            if (state == PacksExtractionWaitState.FAILED)
+            {
+                log.error("Packs extraction failed. Continuing without waiting longer. See the packs extraction state file: {}", stateFile);
+                return;
+            }
+            if (state == PacksExtractionWaitState.UNSUPPORTED)
+            {
+                log.error("Unsupported packs extraction state file protocol. Continuing without waiting longer: {}", stateFile);
+                return;
+            }
+
+            if (System.nanoTime() > deadlineNanos)
+            {
+                log.error("Timed out waiting for packs extraction state to complete: {}", stateFile);
+                return;
+            }
+
             // Light sleep to avoid burning CPU
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(25));
         }
+    }
 
-        log.info("Packs extraction marker found: {}", marker.getFileName());
+    private static PacksExtractionWaitState readPacksExtractionWaitState(Path stateFile)
+    {
+        if (!Files.isRegularFile(stateFile))
+            return PacksExtractionWaitState.WAITING;
+
+        try
+        {
+            JsonObject object = JsonParser.parseString(Files.readString(stateFile, StandardCharsets.UTF_8)).getAsJsonObject();
+            if (!object.has("protocolVersion") || !object.has("state"))
+                return PacksExtractionWaitState.WAITING;
+
+            if (object.get("protocolVersion").getAsInt() != PACKS_EXTRACTION_STATE_PROTOCOL_VERSION)
+                return PacksExtractionWaitState.UNSUPPORTED;
+
+            String state = object.get("state").getAsString();
+            if (PACKS_EXTRACTION_STATE_COMPLETE.equals(state))
+                return PacksExtractionWaitState.COMPLETE;
+            if (PACKS_EXTRACTION_STATE_FAILED.equals(state))
+                return PacksExtractionWaitState.FAILED;
+
+            return PacksExtractionWaitState.WAITING;
+        }
+        catch (IOException | IllegalStateException | JsonSyntaxException e)
+        {
+            return PacksExtractionWaitState.WAITING;
+        }
+    }
+
+    private enum PacksExtractionWaitState
+    {
+        WAITING,
+        COMPLETE,
+        FAILED,
+        UNSUPPORTED
     }
 
     private static void registerCreativeModeTabs()
