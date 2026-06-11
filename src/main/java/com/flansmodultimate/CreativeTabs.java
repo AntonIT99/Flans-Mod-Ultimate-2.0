@@ -31,6 +31,16 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CreativeTabs
 {
+    public static final String TAB_GENERAL = "general";
+    public static final String TAB_ARMORS = "armors";
+    public static final String TAB_ATTACHMENTS = "attachments";
+    public static final String TAB_GUNS = "guns";
+    public static final String TAB_GRENADES = "grenades";
+    public static final String TAB_TOOLS = "tools";
+    public static final String TAB_VEHICLES = "vehicles";
+    public static final String TAB_AA_GUNS = "aaguns";
+    public static final String TAB_PARTS = "parts";
+
     public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
@@ -46,11 +56,11 @@ public final class CreativeTabs
     private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab)
     {
         return () -> {
-            if (tabName.equals("general"))
+            if (tabName.equals(TAB_GENERAL))
                 return new ItemStack(FlansMod.gunWorkbenchItem.get());
 
             List<RegistryObject<Item>> itemsForIcon = itemsForTab;
-            if (tabName.equals("guns"))
+            if (tabName.equals(TAB_GUNS))
                 itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
             //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
             if (tabName.equals("driveables"))
