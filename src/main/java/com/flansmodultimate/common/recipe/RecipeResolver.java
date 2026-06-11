@@ -476,6 +476,7 @@ public final class RecipeResolver
             case "bucketlava" -> Items.LAVA_BUCKET;
             case "bucketwater" -> Items.WATER_BUCKET;
             case "pistonbase" -> Items.PISTON;
+            case "pistonstickybase" -> Items.STICKY_PISTON;
             default -> null;
         };
         return Optional.ofNullable(item);

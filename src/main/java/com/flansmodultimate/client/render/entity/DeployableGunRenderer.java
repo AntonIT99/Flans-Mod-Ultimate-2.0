@@ -33,15 +33,13 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         if (model == null)
             return;
 
-        GunType gunType = deployedGun.getConfigType();
-
-        int color = deployedGun.getConfigType().getColour();
-        float red = (color >> 16 & 255) / 255F;
-        float green = (color >> 8 & 255) / 255F;
-        float blue = (color & 255) / 255F;
+        GunType type = deployedGun.getConfigType();
+        float red = getRed(type);
+        float green = getGreen(type);
+        float blue = getBlue(type);
         float modelScale = deployedGun.getConfigType().getModelScale();
         ResourceLocation texture = deployedGun.getConfigType().getDeployableTexture();
-        boolean translucent = ModClientConfig.get().useTranslucentRendering(gunType);
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
 
         poseStack.pushPose();
 
@@ -49,7 +47,7 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         poseStack.mulPose(Axis.YP.rotationDegrees(180F - baseYaw));
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, false)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         float aimPitch = getAimPitch(deployedGun, partialTicks);
         float aimWorldYaw = getAimWorldYaw(deployedGun, partialTicks, baseYaw);
@@ -58,7 +56,7 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         poseStack.mulPose(Axis.YP.rotationDegrees(-aimLocalYaw));
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, false)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         poseStack.popPose();
     }

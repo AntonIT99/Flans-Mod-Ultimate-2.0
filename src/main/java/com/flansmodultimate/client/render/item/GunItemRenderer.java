@@ -116,7 +116,7 @@ public final class GunItemRenderer
             renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
             boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+                renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, false)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
             if (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
                 renderAnimArm(model, animations, poseStack, buffer, packedLight);
             renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
@@ -1010,7 +1010,7 @@ public final class GunItemRenderer
             {
                 boolean translucent = ModClientConfig.get().useTranslucentRendering(gripAttachment);
                 for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                    gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture, translucent)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
+                    gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture, translucent, false)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
             }
         }
     }
@@ -1033,7 +1033,7 @@ public final class GunItemRenderer
             ResourceLocation casingTexture = model.getType().getCasingTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture, translucent)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
+                casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture, translucent, false)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
             poseStack.popPose();
         }
     }
@@ -1164,7 +1164,7 @@ public final class GunItemRenderer
             ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(modelAttachment.getType());
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+                modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent, false)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }
     }
 

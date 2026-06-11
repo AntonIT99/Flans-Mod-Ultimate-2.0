@@ -28,9 +28,43 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
         if (!(entity instanceof IFlanEntity<?> flanEntity))
             return;
 
-        IModelBase model = ModelCache.getOrLoadTypeModel(flanEntity.getConfigType());
+        renderFlanEntity(entity, flanEntity, entityYaw, partialTick, poseStack, buffer, packedLight);
+    }
+
+    protected void renderFlanEntity(@NotNull T entity, @NotNull IFlanEntity<?> flanEntity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    {
+        InfoType type = flanEntity.getConfigType();
+        if (type == null)
+            return;
+
+        IModelBase model = ModelCache.getOrLoadTypeModel(type);
         if (model != null)
-            LegacyTransformApplier.renderModel(model, flanEntity.getConfigType(), getTextureLocation(entity), poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+            renderFlanModel(model, type, getTextureLocation(entity), poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, getRed(type), getGreen(type), getBlue(type), getAlpha(type));
+    }
+
+    protected void renderFlanModel(@NotNull IModelBase model, @NotNull InfoType type, @NotNull ResourceLocation texture, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    {
+        LegacyTransformApplier.renderModel(model, type, texture, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+
+    protected float getRed(@NotNull InfoType type)
+    {
+        return (type.getColour() >> 16 & 255) / 255F;
+    }
+
+    protected float getGreen(@NotNull InfoType type)
+    {
+        return (type.getColour() >> 8 & 255) / 255F;
+    }
+
+    protected float getBlue(@NotNull InfoType type)
+    {
+        return (type.getColour() & 255) / 255F;
+    }
+
+    protected float getAlpha(@NotNull InfoType type)
+    {
+        return 1F;
     }
 
     @Override

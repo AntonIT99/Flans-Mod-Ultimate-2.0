@@ -14,14 +14,22 @@ public enum EnumRenderPass
 
     public static final List<EnumRenderPass> ORDER = List.of(GLOW_ALPHA_NO_DEPTH_WRITE, GLOW_ALPHA, GLOW_ADDITIVE, DEFAULT);
 
-    public RenderType getRenderType(ResourceLocation texture, boolean translucent)
+    public RenderType getRenderType(ResourceLocation texture, boolean translucent, boolean cull)
     {
         return switch(this)
         {
             case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture);
             case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture);
             case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture);
-            default -> translucent ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture);
+            default ->
+            {
+                if (translucent)
+                    yield RenderType.entityTranslucent(texture);
+                if (cull)
+                    yield RenderType.entityCutout(texture);
+
+                yield RenderType.entityCutoutNoCull(texture);
+            }
         };
     }
 
