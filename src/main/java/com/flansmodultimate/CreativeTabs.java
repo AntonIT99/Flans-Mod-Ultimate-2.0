@@ -46,10 +46,13 @@ public final class CreativeTabs
     private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab)
     {
         return () -> {
-            //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
+            if (tabName.equals("general"))
+                return new ItemStack(FlansMod.gunWorkbenchItem.get());
+
             List<RegistryObject<Item>> itemsForIcon = itemsForTab;
             if (tabName.equals("guns"))
                 itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
+            //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
             if (tabName.equals("driveables"))
                 itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof Item).toList();
 
