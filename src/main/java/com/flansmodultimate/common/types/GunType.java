@@ -568,8 +568,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * If this is true, then all attachments are allowed. Otherwise, the list is checked.
      */
-    @Getter
-    protected boolean allowAllAttachments = true; // TODO: config option to force disable all attachments restrictions
+    protected boolean allowAllAttachments = true;
     /**
      * The list of allowed attachments for this gun
      */
@@ -963,6 +962,11 @@ public class GunType extends PaintableType implements IScope
     public float getDistantSoundRange()
     {
         return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange() * 1.5F;
+    }
+
+    public boolean isAllowAllAttachments()
+    {
+        return allowAllAttachments || ModCommonConfig.forceAllowAllAttachments();
     }
 
     public Optional<ShootableType> getDefaultAmmo()

@@ -58,6 +58,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue FORCE_DEFENSE_AS_MODERN_ARMOR;
 
     private static final ForgeConfigSpec.BooleanValue GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
+    private static final ForgeConfigSpec.BooleanValue FORCE_ALLOW_ALL_ATTACHMENTS;
     private static final ForgeConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue GUN_RECOIL_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue GUN_DISPERSION_MODIFIER;
@@ -193,6 +194,9 @@ public final class ModCommonConfig
         GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE = builder
             .comment("Guns will be always usable by players in creative mode, regardless of the parameter 'UsableByPlayers' in gun configs")
             .define("gunsAlwaysUsableByPlayersInCreativeMode", true);
+        FORCE_ALLOW_ALL_ATTACHMENTS = builder
+            .comment("Always allow all attachments on all guns, regardless of the 'AllowAllAttachments' value in gun configs.")
+            .define("forceAllowAllAttachments", false);
         GUN_DAMAGE_MODIFIER = builder
             .comment("All gun damage will be modified by this amount")
             .defineInRange("gunDamageModifier", 1.0, 0.0, 100.0);
@@ -368,6 +372,7 @@ public final class ModCommonConfig
             FORCE_DEFENSE_AS_MODERN_ARMOR.get(),
 
             GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(),
+            FORCE_ALLOW_ALL_ATTACHMENTS.get(),
             GUN_DAMAGE_MODIFIER.get().floatValue(),
             GUN_RECOIL_MODIFIER.get().floatValue(),
             GUN_DISPERSION_MODIFIER.get().floatValue(),
@@ -426,6 +431,12 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceDefenseAsModernArmor();
+    }
+
+    public static boolean forceAllowAllAttachments()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.forceAllowAllAttachments();
     }
 
     public static int aaGunTrackingRange()
