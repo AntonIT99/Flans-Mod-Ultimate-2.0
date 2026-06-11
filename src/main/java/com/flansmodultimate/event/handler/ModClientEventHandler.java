@@ -28,6 +28,7 @@ import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
+import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -151,6 +152,7 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
         event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
         event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
+        event.registerEntityRenderer(FlansMod.parachuteEntity.get(), ParachuteRenderer::new);
         event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
     }
 

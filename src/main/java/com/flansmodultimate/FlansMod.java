@@ -11,6 +11,7 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
+import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.inventory.GunBoxMenu;
@@ -219,6 +220,13 @@ public class FlansMod
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
+    );
+    public static final RegistryObject<EntityType<Parachute>> parachuteEntity = entityRegistry.register("parachute", () -> EntityType.Builder.<Parachute>of(Parachute::new, MobCategory.MISC)
+        .sized(Parachute.DEFAULT_HITBOX_WIDTH, Parachute.DEFAULT_HITBOX_HEIGHT)
+        .clientTrackingRange(64)
+        .updateInterval(2)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "parachute").toString())
     );
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);

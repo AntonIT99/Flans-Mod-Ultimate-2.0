@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.common.driveables.SeatInfo;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Seat extends Entity
 {
     @Getter

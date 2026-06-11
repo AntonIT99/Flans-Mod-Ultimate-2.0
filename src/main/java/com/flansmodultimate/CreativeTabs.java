@@ -41,6 +41,7 @@ public final class CreativeTabs
     public static final String TAB_AA_GUNS = "aaguns";
     public static final String TAB_PARTS = "parts";
 
+    @SafeVarargs
     public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()

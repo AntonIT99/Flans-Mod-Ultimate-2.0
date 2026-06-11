@@ -1,8 +1,11 @@
 package com.flansmodultimate.common.entity;
 
+import lombok.EqualsAndHashCode;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Mecha extends Driveable
 {
     public Mecha(EntityType<?> entityType, Level level)

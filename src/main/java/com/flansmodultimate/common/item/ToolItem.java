@@ -2,7 +2,10 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketFlak;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,17 +76,15 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         // Parachute
         if (configType.isParachute())
         {
-            if (!level.isClientSide)
+            if (level.isClientSide)
+                return InteractionResultHolder.success(stack);
+
+            if (Parachute.spawnAndMount(level, player, configType) != null)
             {
-                //TODO: implement
-                /*if (ParachuteHooks.canUseParachute(player))
-                {
-                    ParachuteHooks.spawnAndMountParachute(level, player, configType);
-                    consumeUse(stack, player);
-                    return InteractionResultHolder.consume(stack);
-                }*/
+                consumeUse(stack, player);
+                return InteractionResultHolder.consume(stack);
             }
-            return InteractionResultHolder.pass(stack);
+            return InteractionResultHolder.fail(stack);
         }
 
         // Remote detonator
@@ -110,15 +111,14 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             return InteractionResultHolder.pass(stack);
         }
 
-        // Heal players (server)
+        // Heal players
         if (configType.isHealPlayers())
         {
             if (!level.isClientSide)
             {
                 LivingEntity target = pickLivingTarget(level, player, start, end);
                 target.heal(configType.getHealAmount());
-                //TODO: implement
-                //ParticlesHooks.spawnHearts(level, target);
+                spawnHealParticles(level, target);
                 consumeUse(stack, player);
                 return InteractionResultHolder.consume(stack);
             }
@@ -139,6 +139,12 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         }
 
         return InteractionResultHolder.pass(stack);
+    }
+
+    protected void spawnHealParticles(Level level, LivingEntity target)
+    {
+        Vec3 particlePos = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+        PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, "heart"), particlePos, 50.0D, level.dimension());
     }
 
     protected InteractionResultHolder<ItemStack> doDetonateRemoteExplosives(Level level, Player player, ItemStack stack)
