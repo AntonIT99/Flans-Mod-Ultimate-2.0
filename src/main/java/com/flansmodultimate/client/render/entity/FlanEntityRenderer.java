@@ -1,10 +1,15 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmod.client.model.ModelBomb;
+import com.flansmod.client.model.ModelBullet;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,8 +43,29 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
             return;
 
         IModelBase model = ModelCache.getOrLoadTypeModel(type);
-        if (model != null)
-            renderFlanModel(model, type, getTextureLocation(entity), poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, getRed(type), getGreen(type), getBlue(type), getAlpha(type));
+        if (model == null)
+            return;
+
+        ResourceLocation texture = getTextureLocation(entity);
+        float red = getRed(type);
+        float green = getGreen(type);
+        float blue = getBlue(type);
+        float alpha = getAlpha(type);
+
+        if (model instanceof ModelBullet modelBullet)
+        {
+            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), false));
+            modelBullet.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
+            return;
+        }
+        if (model instanceof ModelBomb modelBomb)
+        {
+            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), false));
+            modelBomb.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
+            return;
+        }
+
+        renderFlanModel(model, type, texture, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
     }
 
     protected void renderFlanModel(@NotNull IModelBase model, @NotNull InfoType type, @NotNull ResourceLocation texture, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
