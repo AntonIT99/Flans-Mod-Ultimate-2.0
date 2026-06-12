@@ -9,6 +9,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -20,10 +21,9 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DefaultAmmoCommand
 {
-    private DefaultAmmoCommand() {}
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(Commands.literal("defaultammo")

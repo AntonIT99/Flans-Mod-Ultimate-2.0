@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -107,7 +108,7 @@ public class GrenadeType extends ShootableType
     protected int smokeTime;
     /** Particles given off after detonation */
     @Getter
-    protected String smokeParticleType = "explode";
+    protected String smokeParticleType = FlanParticles.EXPLODE;
     /** Number of smoke particles given off after detonation */
     protected int smokeParticlesCount;
     protected boolean readSmokeParticlesCount;

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Parachute;
@@ -144,7 +145,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     protected void spawnHealParticles(Level level, LivingEntity target)
     {
         Vec3 particlePos = target.position();
-        PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, "heart"), particlePos, 50.0D, level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
     }
 
     protected InteractionResultHolder<ItemStack> doDetonateRemoteExplosives(Level level, Player player, ItemStack stack)

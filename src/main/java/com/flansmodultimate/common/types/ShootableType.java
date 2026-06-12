@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanExplosion;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -194,7 +195,7 @@ public abstract class ShootableType extends InfoType
     protected boolean trailParticles;
     /** Trail particles given off by this while being thrown */
     @Getter
-    protected String trailParticleType = "smoke";
+    protected String trailParticleType = FlanParticles.SMOKE;
     @Getter
     protected int smokeParticleCount;
     @Getter
@@ -203,7 +204,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected int explodeParticles;
     @Getter
-    protected String explodeParticleType = "largesmoke";
+    protected String explodeParticleType = FlanParticles.LARGE_SMOKE;
 
     @Override
     public void onItemRegistration(String registeredItemId)

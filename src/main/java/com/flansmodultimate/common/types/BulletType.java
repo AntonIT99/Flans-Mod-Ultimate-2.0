@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanExplosion;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -46,7 +47,7 @@ public class BulletType extends ShootableType
     protected int flak;
     /** The type of flak particles to spawn */
     @Getter
-    protected String flakParticles = "largesmoke";
+    protected String flakParticles = FlanParticles.LARGE_SMOKE;
 
     /** If true then this bullet will burn entites it hits */
     @Getter

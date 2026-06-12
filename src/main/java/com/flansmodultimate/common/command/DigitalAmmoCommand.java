@@ -8,6 +8,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import lombok.NoArgsConstructor;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -16,10 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collection;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DigitalAmmoCommand
 {
-    private DigitalAmmoCommand() {}
-
     private static boolean isDigitalAmmoEnabled()
     {
         try
