@@ -30,7 +30,10 @@ public final class ParticleHelper
     {
         Optional<ParticleOptions> opt = toOptions(s);
         if (opt.isEmpty())
+        {
+            FlansMod.log.warn("Could not parse particle options from string: '{}'", s);
             return;
+        }
 
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
         if (particle != null && scale != 1.0F)
