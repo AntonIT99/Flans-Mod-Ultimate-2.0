@@ -21,7 +21,8 @@ import java.util.function.Function;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CustomRenderType
 {
-    private record TexDepthKey(ResourceLocation texture, boolean depthWrite) {}
+    private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
+    private record TexCullKey(ResourceLocation texture, boolean cull) {}
 
     /** Standard alpha blending */
     private static final RenderStateShard.TransparencyStateShard EMISSIVE_ALPHA_TRANSPARENCY =
@@ -51,9 +52,10 @@ public class CustomRenderType
             }
         );
 
-    private static final Function<TexDepthKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
-    private static final Function<TexDepthKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
-    private static final Function<ResourceLocation, RenderType> ARMOR_TRANSLUCENT_NO_CULL = Util.memoize(CustomRenderType::createArmorTranslucentNoCull);
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
+    private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key -> createArmorCutout(key.texture(), key.cull()));
+    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull()));
 
     private static final RenderStateShard.LayeringStateShard ARMOR_VIEW_OFFSET_LAYERING =
         new RenderStateShard.LayeringStateShard(
@@ -71,65 +73,109 @@ public class CustomRenderType
             }
         );
 
-    private static RenderType createEntityEmissive(ResourceLocation texture, boolean depthWrite, RenderStateShard.TransparencyStateShard transparency, String debugName)
+    private static RenderType createEntityEmissive(ResourceLocation texture, boolean depthWrite, boolean cull, RenderStateShard.TransparencyStateShard transparency, String debugName)
     {
         RenderStateShard.WriteMaskStateShard writeMask = new RenderStateShard.WriteMaskStateShard(true, depthWrite);
         RenderType.CompositeState state = RenderType.CompositeState.builder()
             .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexLightmapShader))
             .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
             .setTransparencyState(transparency)
-            .setCullState(new RenderStateShard.CullStateShard(false))
+            .setCullState(new RenderStateShard.CullStateShard(cull))
             .setLightmapState(new RenderStateShard.LightmapStateShard(true))
             .setOverlayState(new RenderStateShard.OverlayStateShard(true))
             .setWriteMaskState(writeMask)
             .setDepthTestState(new RenderStateShard.DepthTestStateShard("<=", GL11C.GL_LEQUAL))
             .createCompositeState(true);
 
-        return RenderType.create(debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
+        return RenderType.create(cull ? debugName + "_cull" : debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
     }
 
-    private static RenderType createArmorTranslucentNoCull(ResourceLocation texture)
+    private static RenderType createArmorCutout(ResourceLocation texture, boolean cull)
     {
         RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
+            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeArmorCutoutNoCullShader))
             .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
-            .setCullState(new RenderStateShard.CullStateShard(false))
+            .setCullState(new RenderStateShard.CullStateShard(cull))
             .setLightmapState(new RenderStateShard.LightmapStateShard(true))
             .setOverlayState(new RenderStateShard.OverlayStateShard(true))
             .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
             .createCompositeState(true);
 
-        return RenderType.create("armor_translucent_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true, state);
+        return RenderType.create(cull ? "armor_cutout_cull" : "armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, state);
+    }
+
+    private static RenderType createArmorTranslucent(ResourceLocation texture, boolean cull)
+    {
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
+            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
+            .setCullState(new RenderStateShard.CullStateShard(cull))
+            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+            .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
+            .createCompositeState(true);
+
+        return RenderType.create(cull ? "armor_translucent_cull" : "armor_translucent_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true, state);
     }
 
     /** Emissive alpha-blended layer (writes depth) */
     public static RenderType entityEmissiveAlpha(ResourceLocation tex)
     {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthKey(tex, true));
+        return entityEmissiveAlpha(tex, false);
+    }
+
+    public static RenderType entityEmissiveAlpha(ResourceLocation tex, boolean cull)
+    {
+        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, true, cull));
     }
 
     /** Emissive alpha-blended layer (does NOT write depth) */
     public static RenderType entityEmissiveAlphaNoDepthWrite(ResourceLocation tex)
     {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthKey(tex, false));
+        return entityEmissiveAlphaNoDepthWrite(tex, false);
+    }
+
+    public static RenderType entityEmissiveAlphaNoDepthWrite(ResourceLocation tex, boolean cull)
+    {
+        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, false, cull));
     }
 
     /** Emissive additive layer (writes depth) */
     public static RenderType entityEmissiveAdditive(ResourceLocation tex)
     {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthKey(tex, true));
+        return entityEmissiveAdditive(tex, false);
+    }
+
+    public static RenderType entityEmissiveAdditive(ResourceLocation tex, boolean cull)
+    {
+        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, true, cull));
     }
 
     /** Emissive additive layer (does NOT write depth) */
     public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex)
     {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthKey(tex, false));
+        return entityEmissiveAdditiveNoDepthWrite(tex, false);
+    }
+
+    public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex, boolean cull)
+    {
+        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, false, cull));
+    }
+
+    public static RenderType armorCutout(ResourceLocation tex, boolean cull)
+    {
+        return ARMOR_CUTOUT.apply(new TexCullKey(tex, cull));
+    }
+
+    public static RenderType armorTranslucent(ResourceLocation tex, boolean cull)
+    {
+        return ARMOR_TRANSLUCENT.apply(new TexCullKey(tex, cull));
     }
 
     /** Armor layer render type with armor z-offset and entity-style partial alpha blending */
     public static RenderType armorTranslucentNoCull(ResourceLocation tex)
     {
-        return ARMOR_TRANSLUCENT_NO_CULL.apply(tex);
+        return armorTranslucent(tex, false);
     }
 }

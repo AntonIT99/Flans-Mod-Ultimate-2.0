@@ -56,8 +56,9 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
             setModelPartVisibility(modelCustomArmour, slot, entity);
 
             boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
+            boolean cull = ModClientConfig.get().useCullingRendering(armorType);
             for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                modelCustomArmour.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
+                modelCustomArmour.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent, cull)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
         }
     }
 

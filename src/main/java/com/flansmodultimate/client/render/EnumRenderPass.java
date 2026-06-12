@@ -18,11 +18,13 @@ public enum EnumRenderPass
     {
         return switch(this)
         {
-            case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture);
-            case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture);
-            case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture);
+            case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture, cull);
+            case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture, cull);
+            case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture, cull);
             default ->
             {
+                if (translucent && cull)
+                    yield RenderType.entityTranslucentCull(texture);
                 if (translucent)
                     yield RenderType.entityTranslucent(texture);
                 if (cull)
@@ -33,14 +35,14 @@ public enum EnumRenderPass
         };
     }
 
-    public RenderType getArmorRenderType(ResourceLocation texture, boolean translucent)
+    public RenderType getArmorRenderType(ResourceLocation texture, boolean translucent, boolean cull)
     {
         return switch(this)
         {
-            case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture);
-            case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture);
-            case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture);
-            default -> translucent ? CustomRenderType.armorTranslucentNoCull(texture) : RenderType.armorCutoutNoCull(texture);
+            case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture, cull);
+            case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture, cull);
+            case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture, cull);
+            default -> translucent ? CustomRenderType.armorTranslucent(texture, cull) : CustomRenderType.armorCutout(texture, cull);
         };
     }
 }

@@ -38,6 +38,13 @@ public final class ModClientConfig
     public final boolean alwaysEnableAttachmentTranslucentRenderingByDefault;
     public final boolean alwaysEnableAAGunTranslucentRenderingByDefault;
 
+    public final boolean alwaysEnableArmorCullingByDefault;
+    public final boolean alwaysEnableGunCullingByDefault;
+    public final boolean alwaysEnableGrenadeCullingByDefault;
+    public final boolean alwaysEnableBulletCullingByDefault;
+    public final boolean alwaysEnableAttachmentCullingByDefault;
+    public final boolean alwaysEnableAAGunCullingByDefault;
+
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
@@ -63,6 +70,13 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -144,6 +158,15 @@ public final class ModClientConfig
         ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("aa-guns", "alwaysEnableAAGunsTranslucentRenderingByDefault", false);
         builder.pop();
 
+        builder.push("Culling Defaults");
+        ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT = defineCullingDefault("armors", "alwaysEnableArmorsCullingByDefault", false);
+        ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT = defineCullingDefault("guns", "alwaysEnableGunsCullingByDefault", true);
+        ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT = defineCullingDefault("grenades", "alwaysEnableGrenadesCullingByDefault", true);
+        ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT = defineCullingDefault("bullets", "alwaysEnableBulletsCullingByDefault", true);
+        ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT = defineCullingDefault("attachments", "alwaysEnableAttachmentsCullingByDefault", true);
+        ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT = defineCullingDefault("aa-guns", "alwaysEnableAAGunsCullingByDefault", true);
+        builder.pop();
+
         configSpec = builder.build();
     }
 
@@ -174,6 +197,13 @@ public final class ModClientConfig
         alwaysEnableBulletTranslucentRenderingByDefault = ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAttachmentTranslucentRenderingByDefault = ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAAGunTranslucentRenderingByDefault = ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+
+        alwaysEnableArmorCullingByDefault = ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT.get();
+        alwaysEnableGunCullingByDefault = ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT.get();
+        alwaysEnableGrenadeCullingByDefault = ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT.get();
+        alwaysEnableBulletCullingByDefault = ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT.get();
+        alwaysEnableAttachmentCullingByDefault = ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT.get();
+        alwaysEnableAAGunCullingByDefault = ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT.get();
     }
 
     public static ModClientConfig get()
@@ -198,10 +228,34 @@ public final class ModClientConfig
         };
     }
 
+    public boolean useCullingRendering(InfoType type)
+    {
+        if (type.getRenderOptions().disableCulling())
+            return false;
+
+        return switch (type.getType())
+        {
+            case ARMOR -> alwaysEnableArmorCullingByDefault;
+            case GUN -> alwaysEnableGunCullingByDefault;
+            case GRENADE -> alwaysEnableGrenadeCullingByDefault;
+            case BULLET -> alwaysEnableBulletCullingByDefault;
+            case ATTACHMENT -> alwaysEnableAttachmentCullingByDefault;
+            case AA_GUN -> alwaysEnableAAGunCullingByDefault;
+            default -> true;
+        };
+    }
+
     private static ForgeConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
     {
         return builder
             .comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
+            .define(configName, defaultValue);
+    }
+
+    private static ForgeConfigSpec.BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
+    {
+        return builder
+            .comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.")
             .define(configName, defaultValue);
     }
 

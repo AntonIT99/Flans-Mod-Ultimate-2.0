@@ -54,13 +54,13 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
 
         if (model instanceof ModelBullet modelBullet)
         {
-            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), false));
+            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
             modelBullet.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
             return;
         }
         if (model instanceof ModelBomb modelBomb)
         {
-            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), false));
+            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
             modelBomb.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
             return;
         }

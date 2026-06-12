@@ -2,7 +2,6 @@ package com.flansmodultimate.client.render;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.TransformOp;
@@ -31,7 +30,7 @@ public final class LegacyTransformApplier
             modelBase.setScale(infoType.getModelScale());
 
         boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
-        boolean cull = infoType instanceof ToolType; // Use culling for parachutes
+        boolean cull = ModClientConfig.get().useCullingRendering(infoType);
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
             renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
 

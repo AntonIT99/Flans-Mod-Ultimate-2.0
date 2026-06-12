@@ -39,17 +39,18 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
         float modelScale = type.getModelScale();
         ResourceLocation texture = type.getTexture();
         boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
+        boolean cull = ModClientConfig.get().useCullingRendering(type);
 
         poseStack.pushPose();
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, false)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
         poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
 
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, false)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         poseStack.popPose();
     }

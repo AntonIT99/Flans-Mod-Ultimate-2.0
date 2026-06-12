@@ -112,7 +112,7 @@ public abstract class InfoType
     @Getter
     protected RenderOptions renderOptions;
 
-    public record RenderOptions(boolean translucentRendering, boolean additiveBlending) {}
+    public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling) {}
 
     public String getShortName()
     {
@@ -166,7 +166,8 @@ public abstract class InfoType
         modelScale = readValue("ModelScale", modelScale, file);
         boolean translucentRendering = readValue("TranslucentRendering", false, file);
         boolean additiveBlending = readValue("AdditiveBlending", false, file);
-        renderOptions = new RenderOptions(translucentRendering, additiveBlending);
+        boolean disableCulling = readValue("DisableCulling", false, file);
+        renderOptions = new RenderOptions(translucentRendering, additiveBlending, disableCulling);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
