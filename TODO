@@ -2,7 +2,6 @@ General:
 - Fix particles
 - Team Mod: Commands, Teams, Classes, Stats
 - 1.12.2 loadouts & rewardBoxes
-- check shoot sound duration AA Guns
 
 Entities:
 - Flagpole + Flag - TODO
@@ -39,7 +38,7 @@ Types:
 
 TODO Content Packs:
 - Fix AK47 Paintjobs
-- Fix FlakParticle TaP Guns -> use categories
+- Fix FlakParticle TaP Guns -> use categories (or restore legacy particles)
 - Fix Scope Attachment Points in WW2 Improved Pack
 - Fix Barrel Attachment and Muzzle Flash
 - Remove Minigun Mode in WW2 Improved Pack
