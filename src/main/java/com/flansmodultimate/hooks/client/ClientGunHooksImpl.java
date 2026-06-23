@@ -58,8 +58,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
     {
-        //TODO: compare with clientSideShoot() (Client side)
-
         int pumpDelay = 0;
         int pumpTime = 1;
         int hammerDelay = 0;

@@ -49,7 +49,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -229,7 +232,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
 
             List<ShootableType> ammoTypes = configType.getAmmoTypes();
-            // Stats
             if (configType.isShowDamage() && !ammoTypes.isEmpty())
             {
                 tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
@@ -242,41 +244,22 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                         .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
                 }
 
-                for (ShootableType shootableType : ammoTypes)
+                if (ammoTypes.size() > 10)
                 {
-                    if (shootableType.useKineticDamageSystem())
+                    Map<DamageTooltipValues, List<String>> groupedDamageLines = new LinkedHashMap<>();
+                    for (ShootableType shootableType : ammoTypes)
                     {
-                        tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1)));
+                        DamageTooltipValues damageValues = getDamageTooltipValues(shootableType, stack);
+                        groupedDamageLines.computeIfAbsent(damageValues, ignored -> new ArrayList<>())
+                            .add(ModUtils.getItemLocalizedName(shootableType.getShortName()));
                     }
-                    else
-                    {
-                        float damage = configType.getDamageForDisplay(shootableType, stack);
-                        float damageVsLiving = configType.getDamageForDisplay(shootableType, stack, LivingEntity.class);
-                        float damageVsPlayer = configType.getDamageForDisplay(shootableType, stack, Player.class);
-                        float damageVsVehicle = configType.getDamageForDisplay(shootableType, stack, Vehicle.class);
-                        float damageVsPlane = configType.getDamageForDisplay(shootableType, stack, Plane.class);
-                        final float EPS = 0.0001F;
 
-                        MutableComponent damageComponent = IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(damage, 1));
-
-                        // vs Living: only show if explicitly configured AND different from base
-                        if (shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - damageVsLiving) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsLiving, 1)).withStyle(ChatFormatting.GREEN));
-
-                        // vs Player: inherits from vsLiving
-                        if (shootableType.getDamage().isReadDamageVsPlayer() && Math.abs(damageVsPlayer - damageVsLiving) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsPlayer, 1)).withStyle(ChatFormatting.RED));
-
-                        // vs Vehicle: inherits from base
-                        if (shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(damageVsVehicle - damage) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsVehicle, 1)).withStyle(ChatFormatting.AQUA));
-
-                        // vs Plane: inherits from vsVehicle
-                        if (shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(damageVsPlane - damageVsVehicle) > EPS)
-                            damageComponent.append(Component.literal(" " + IFlanItem.formatFloat(damageVsPlane, 1)).withStyle(ChatFormatting.LIGHT_PURPLE));
-
-                        tooltipComponents.add(damageComponent);
-                    }
+                    groupedDamageLines.forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
+                }
+                else
+                {
+                    for (ShootableType shootableType : ammoTypes)
+                        tooltipComponents.add(createDamageComponent(ModUtils.getItemLocalizedName(shootableType.getShortName()), getDamageTooltipValues(shootableType, stack)));
                 }
             }
 
@@ -328,6 +311,57 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
     }
+
+    private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
+    {
+        if (shootableType.useKineticDamageSystem())
+            return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false, "", false, "");
+
+        float damage = configType.getDamageForDisplay(shootableType, stack);
+        float damageVsLiving = configType.getDamageForDisplay(shootableType, stack, LivingEntity.class);
+        float damageVsPlayer = configType.getDamageForDisplay(shootableType, stack, Player.class);
+        float damageVsVehicle = configType.getDamageForDisplay(shootableType, stack, Vehicle.class);
+        float damageVsPlane = configType.getDamageForDisplay(shootableType, stack, Plane.class);
+        final float EPS = 0.0001F;
+
+        boolean showLiving = shootableType.getDamage().isReadDamageVsLiving() && Math.abs(damage - damageVsLiving) > EPS;
+        boolean showPlayer = shootableType.getDamage().isReadDamageVsPlayer() && Math.abs(damageVsPlayer - damageVsLiving) > EPS;
+        boolean showVehicle = shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(damageVsVehicle - damage) > EPS;
+        boolean showPlane = shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(damageVsPlane - damageVsVehicle) > EPS;
+
+        return new DamageTooltipValues(
+            false,
+            IFlanItem.formatFloat(damage, 1),
+            showLiving, showLiving ? IFlanItem.formatFloat(damageVsLiving, 1) : "",
+            showPlayer, showPlayer ? IFlanItem.formatFloat(damageVsPlayer, 1) : "",
+            showVehicle, showVehicle ? IFlanItem.formatFloat(damageVsVehicle, 1) : "",
+            showPlane, showPlane ? IFlanItem.formatFloat(damageVsPlane, 1) : ""
+        );
+    }
+
+    private static MutableComponent createDamageComponent(String label, DamageTooltipValues damageValues)
+    {
+        MutableComponent damageComponent = IFlanItem.indentedStatLine(label, damageValues.damage());
+
+        if (damageValues.showLiving())
+            damageComponent.append(Component.literal(" " + damageValues.damageVsLiving()).withStyle(ChatFormatting.GREEN));
+        if (damageValues.showPlayer())
+            damageComponent.append(Component.literal(" " + damageValues.damageVsPlayer()).withStyle(ChatFormatting.RED));
+        if (damageValues.showVehicle())
+            damageComponent.append(Component.literal(" " + damageValues.damageVsVehicle()).withStyle(ChatFormatting.AQUA));
+        if (damageValues.showPlane())
+            damageComponent.append(Component.literal(" " + damageValues.damageVsPlane()).withStyle(ChatFormatting.LIGHT_PURPLE));
+
+        return damageComponent;
+    }
+
+    private record DamageTooltipValues(
+        boolean kinetic, String damage,
+        boolean showLiving, String damageVsLiving,
+        boolean showPlayer, String damageVsPlayer,
+        boolean showVehicle, String damageVsVehicle,
+        boolean showPlane, String damageVsPlane
+    ) {}
 
     @Override
     public PaintableType getPaintableType()
