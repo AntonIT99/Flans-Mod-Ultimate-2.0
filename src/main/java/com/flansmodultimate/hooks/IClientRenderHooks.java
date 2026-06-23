@@ -2,8 +2,10 @@ package com.flansmodultimate.hooks;
 
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public interface IClientRenderHooks
@@ -13,6 +15,8 @@ public interface IClientRenderHooks
     void spawnParticle(String s, double x, double y, double z, float scale);
 
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);
+
+    void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);
 
     boolean isDebugMode();
 

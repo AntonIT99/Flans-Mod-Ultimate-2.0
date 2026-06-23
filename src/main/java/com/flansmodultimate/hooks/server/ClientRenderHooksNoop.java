@@ -3,8 +3,10 @@ package com.flansmodultimate.hooks.server;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class ClientRenderHooksNoop implements IClientRenderHooks
@@ -23,6 +25,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
 
     @Override
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter)
     {
         /* no-op */
     }

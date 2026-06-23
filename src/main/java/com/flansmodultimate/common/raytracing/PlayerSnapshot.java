@@ -111,7 +111,7 @@ public class PlayerSnapshot
             {
                 com.flansmod.common.vector.Vector3f shieldOrigin = gunType.getShieldOrigin();
                 com.flansmod.common.vector.Vector3f shieldDimensions = gunType.getShieldDimensions();
-                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(rightArmAxes), new Vector3f(originXRight, 1.3F, originZRight), new Vector3f(shieldOrigin.y, -1.05F + shieldOrigin.x, -1F / 16F + shieldOrigin.z), new Vector3f(shieldDimensions.y, shieldDimensions.x, shieldDimensions.z), vel, EnumHitboxType.RIGHTITEM));
+                hitboxes.add(new PlayerHitbox(player, bodyAxes.findLocalAxesGlobally(leftArmAxes), new Vector3f(originXLeft, 1.3F, originZLeft), new Vector3f(shieldOrigin.y, -1.05F + shieldOrigin.x, -1F / 16F + shieldOrigin.z), new Vector3f(shieldDimensions.y, shieldDimensions.x, shieldDimensions.z), vel, EnumHitboxType.LEFTITEM));
             }
         }
     }

@@ -13,6 +13,7 @@ import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
 import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketGunFireModeClient;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
+import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
@@ -94,6 +95,7 @@ public final class PacketHandler {
         registerS2C(PacketFlashBang.class);
         registerS2C(PacketGunFireModeClient.class);
         registerS2C(PacketGunMeleeClient.class);
+        registerS2C(PacketGunMuzzleFlash.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShootClient.class);
         registerS2C(PacketHitMarker.class);

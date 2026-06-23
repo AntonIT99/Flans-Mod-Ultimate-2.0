@@ -11,6 +11,7 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
@@ -476,6 +477,8 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected ArrayList<Vector3f> meleeDamagePoints = new ArrayList<>();
+    @Getter
+    protected boolean useCustomMeleeWhenShoot;
 
     //Deployable Settings
     /**
@@ -560,8 +563,11 @@ public class GunType extends PaintableType implements IScope
     protected float muzzleFlashParticleSize = 1F;
     protected boolean useMuzzleFlashDefaults = true;
     protected boolean showMuzzleFlashParticles = true;
+    @Getter
     protected boolean showMuzzleFlashParticlesFirstPerson;
+    @Getter
     protected Vector3f muzzleFlashParticlesHandOffset = new Vector3f();
+    @Getter
     protected Vector3f muzzleFlashParticlesShoulderOffset = new Vector3f();
 
     //Attachment settings
@@ -846,7 +852,7 @@ public class GunType extends PaintableType implements IScope
         muzzleFlashParticlesShoulderOffset = readVector("MuzzleFlashParticleShoulderOffset", muzzleFlashParticlesShoulderOffset, file);
         muzzleFlashParticlesHandOffset = readVector("MuzzleFlashParticleHandOffset", muzzleFlashParticlesHandOffset, file);
         showMuzzleFlashParticles = readValue("ShowMuzzleFlashParticle", showMuzzleFlashParticles, file);
-        useMuzzleFlashDefaults = file.hasConfigLine("ShowMuzzleFlashParticle");
+        useMuzzleFlashDefaults = !file.hasConfigLine("ShowMuzzleFlashParticle");
 
         //Attachment settings
         allowAllAttachments = readValue("AllowAllAttachments", allowAllAttachments, file);
@@ -874,7 +880,8 @@ public class GunType extends PaintableType implements IScope
         //Primary Function
         if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
             primaryFunction = EnumFunction.MELEE;
-        if (readValue("UseCustomMeleeWhenShoot", false, file) || (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty()))
+        useCustomMeleeWhenShoot = readValue("UseCustomMeleeWhenShoot", useCustomMeleeWhenShoot, file);
+        if (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty())
             primaryFunction = EnumFunction.CUSTOM_MELEE;
         primaryFunction = EnumFunction.get(readValue("PrimaryFunction", primaryFunction.toString(), file));
 
@@ -939,6 +946,74 @@ public class GunType extends PaintableType implements IScope
     public float getDistantSoundRange()
     {
         return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange() * 1.5F;
+    }
+
+    public boolean canShootUnderwater()
+    {
+        return canShootUnderwater;
+    }
+
+    public boolean shouldShowCrosshair()
+    {
+        return showCrosshair;
+    }
+
+    public UseAnim getItemUseAction()
+    {
+        return itemUseAction;
+    }
+
+    public boolean canHipFireWhileSprinting()
+    {
+        CommonConfigSnapshot config = ModCommonConfig.get();
+        boolean defaultDisabled = config != null && config.disableSprintHipFireByDefault();
+        return hipFireWhileSprinting != 2
+            && !(hipFireWhileSprinting == 0 && defaultDisabled);
+    }
+
+    public String getClickSoundOnEmpty(boolean repeated)
+    {
+        if (repeated && StringUtils.isNotBlank(clickSoundOnEmptyRepeated))
+            return clickSoundOnEmptyRepeated;
+        return clickSoundOnEmpty;
+    }
+
+    public String getShootSound(@Nullable ItemStack stack, boolean lastBullet)
+    {
+        AttachmentType grip = stack == null ? null : getGrip(stack);
+        boolean secondaryFire = stack != null && getSecondaryFire(stack);
+        if (secondaryFire && grip != null && StringUtils.isNotBlank(grip.secondaryShootSound))
+            return grip.secondaryShootSound;
+
+        boolean silenced = isSilencedSound(stack) && !secondaryFire;
+        if (lastBullet && silenced && StringUtils.isNotBlank(lastShootSoundSuppressed))
+            return lastShootSoundSuppressed;
+        if (lastBullet && StringUtils.isNotBlank(lastShootSound))
+            return lastShootSound;
+        if (silenced && StringUtils.isNotBlank(suppressedShootSound))
+            return suppressedShootSound;
+        return shootSound;
+    }
+
+    public boolean shouldShowMuzzleFlashParticles()
+    {
+        CommonConfigSnapshot config = ModCommonConfig.get();
+        return useMuzzleFlashDefaults ? config == null || config.muzzleFlashParticlesDefault() : showMuzzleFlashParticles;
+    }
+
+    public String getMuzzleFlashParticle()
+    {
+        return muzzleFlashParticle;
+    }
+
+    public float getMuzzleFlashParticleSize()
+    {
+        return muzzleFlashParticleSize;
+    }
+
+    public boolean shouldShowMuzzleFlashParticleToShooter()
+    {
+        return StringUtils.isBlank(flashTextureName) && StringUtils.isBlank(muzzleFlashModelName);
     }
 
     private void readFancyRecoil(TypeFile file)
@@ -1328,7 +1403,7 @@ public class GunType extends PaintableType implements IScope
      */
     public float getRecoilPitch(ItemStack stack, EnumMovement enumMovement)
     {
-        float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilYawRange);
+        float stackRecoil = recoilPitch + (rand.nextFloat() * rndRecoilPitchRange);
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;

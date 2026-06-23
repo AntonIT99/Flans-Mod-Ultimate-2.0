@@ -3,6 +3,8 @@ General:
 - Add commands to wiki
 - Team Mod: Commands, Teams, Classes, Stats
 - 1.12.2 loadouts & rewardBoxes
+- check name source for item name in json lang file (prefer .lang file entry over "Name" from config)
+- limit gun item GUI info to 10 ammo lines max
 
 Entities:
 - Flagpole + Flag - TODO
@@ -16,7 +18,6 @@ Entities:
 - Vehicle - TODO
 
 Items:
-- GunItem - TODO (WIP)
 - PartItem - TODO (WIP)
 - ToolItem - TODO (WIP)
 - RewardBoxItem (1.12.2) - TODO

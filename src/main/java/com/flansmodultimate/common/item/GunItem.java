@@ -44,6 +44,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -134,6 +135,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public boolean useAimingAnimation()
     {
         return true;
+    }
+
+    @Override
+    public int getUseDuration(@NotNull ItemStack stack)
+    {
+        return 100;
+    }
+
+    @Override
+    @NotNull
+    public UseAnim getUseAnimation(@NotNull ItemStack stack)
+    {
+        return configType.getItemUseAction();
     }
 
     @Override
@@ -476,7 +490,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         {
             EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
             if (decision == EnumFireDecision.RELOAD)
-                gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
+            {
+                boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
+                if (!reloading)
+                    gunItemHandler.playEmptyClick(level, player, data, gunStack, hand);
+            }
             else if (decision == EnumFireDecision.SHOOT)
                 gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
 

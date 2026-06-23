@@ -11,6 +11,7 @@ import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -25,6 +26,7 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.Team;
+import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -32,6 +34,7 @@ import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
+import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -45,6 +48,7 @@ import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -139,6 +143,8 @@ public class GunItemHandler
 
         if (!actionRequested)
             return EnumFireDecision.NO_ACTION;
+        if (data.getShootTime(hand) > 0F)
+            return EnumFireDecision.NO_ACTION;
         if (emptyAmmo)
             return EnumFireDecision.RELOAD;
         if (mode == EnumFireMode.MINIGUN)
@@ -172,12 +178,18 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        //TODO: compare with tryToShoot() and shoot() (Server side)
-
         if (item.configType.isDeployable() || !gunCanBeHandled(player))
             return;
         if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
+        if (player.getVehicle() instanceof Seat)
+            return;
+        if (!item.configType.canShootUnderwater() && player.isEyeInFluid(FluidTags.WATER))
+            return;
+        if (player.isSprinting() && !data.isScoped() && !item.configType.canHipFireWhileSprinting())
+            return;
+        if (item.configType.isUseCustomMeleeWhenShoot())
+            doCustomMelee(level, player, data, hand);
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);
         MinecraftForge.EVENT_BUS.post(gunFireEvent);
@@ -206,17 +218,12 @@ public class GunItemHandler
             ShootableItem shootableItem = (ShootableItem) ammoSlot.stack().getItem();
             ShootableType shootableType = shootableItem.getConfigType();
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
+            boolean lastBullet = isLastBullet(gunStack);
 
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(), handler);
 
-            if (StringUtils.isNotBlank(item.configType.getShootSound()))
-            {
-                PacketPlaySound.sendSoundPacket(player, item.configType.getGunSoundRange(), item.configType.getShootSound(), item.configType.isDistortSound(), item.configType.isSilencedSound(gunStack));
-                item.soundDelay = item.configType.getShootSoundLength();
-            }
-
-            if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
-                PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
+            playShootSound(level, player, gunStack, lastBullet);
+            spawnMuzzleFlashParticles(level, player, gunStack, hand);
 
             shootTime += shootDelay;
 
@@ -226,12 +233,74 @@ public class GunItemHandler
         data.setShootTime(hand, shootTime);
     }
 
-    public void doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
+    private void playShootSound(Level level, ServerPlayer player, ItemStack gunStack, boolean lastBullet)
+    {
+        if (item.soundDelay > 0)
+            return;
+
+        String soundToPlay = item.configType.getShootSound(gunStack, lastBullet);
+        if (StringUtils.isNotBlank(soundToPlay))
+        {
+            boolean silenced = item.configType.isSilencedSound(gunStack) && !item.configType.getSecondaryFire(gunStack);
+            PacketPlaySound.sendSoundPacket(player, item.configType.getGunSoundRange(), soundToPlay, item.configType.isDistortSound(), silenced);
+            item.soundDelay = item.configType.getShootSoundLength();
+        }
+
+        if (StringUtils.isNotBlank(item.configType.getDistantShootSound()))
+            PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
+    }
+
+    private boolean isLastBullet(ItemStack gunStack)
+    {
+        int slots = item.configType.getNumAmmoItemsInGun(gunStack);
+        for (int i = 0; i < slots; i++)
+        {
+            ItemStack ammoStack = item.getAmmoItemStack(gunStack, i);
+            if (!ammoStack.isEmpty() && ammoStack.getItem() instanceof ShootableItem && ShootableItem.getRoundsRemaining(ammoStack) == 1)
+                return true;
+        }
+        return false;
+    }
+
+    private void spawnMuzzleFlashParticles(Level level, ServerPlayer player, ItemStack gunStack, InteractionHand hand)
+    {
+        AttachmentType barrel = item.configType.getBarrel(gunStack);
+        if (barrel != null && barrel.isDisableMuzzleFlash())
+            return;
+        if (!item.configType.shouldShowMuzzleFlashParticles() || StringUtils.isBlank(item.configType.getMuzzleFlashParticle()))
+            return;
+
+        PacketHandler.sendToAllAround(
+            new PacketGunMuzzleFlash(
+                player.getUUID(),
+                hand,
+                item.configType.getMuzzleFlashParticle(),
+                item.configType.getMuzzleFlashParticleSize(),
+                item.configType.shouldShowMuzzleFlashParticleToShooter()),
+            player.position(),
+            160D,
+            level.dimension());
+    }
+
+    public void playEmptyClick(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        boolean repeated = data.isPrevShootKeyPressed(hand);
+        String clickSound = item.configType.getClickSoundOnEmpty(repeated);
+        if (StringUtils.isBlank(clickSound))
+            return;
+
+        PacketPlaySound.sendSoundPacket(player, item.configType.getReloadSoundRange(), clickSound, true);
+        data.setShootTime(hand, Math.max(data.getShootTime(hand), item.configType.getShootDelay(gunStack)));
+    }
+
+    public boolean doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, otherHand);
-        if (gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().combineAmmoOnReload(), reloadTime, reloadSoundUUID))
+
+        boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().ammoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
+        if (reloaded)
         {
             EnchantmentModule.damageReloadModifier(player, otherHand);
 
@@ -247,6 +316,8 @@ public class GunItemHandler
             if (StringUtils.isNotBlank(reloadSound))
                 PacketPlaySound.sendSoundPacket(player, item.configType.getReloadSoundRange(), reloadSound, false, false, true, reloadSoundUUID);
         }
+
+        return reloaded;
     }
 
     public boolean canReload(Container inventory)
@@ -297,24 +368,34 @@ public class GunItemHandler
 
     private void handleMinigunLoopingSounds(Level level, Player player, PlayerData data, InteractionHand hand)
     {
-        if (data.isReloading(hand) || !item.configType.isUseLoopingSounds() || data.getLoopedSoundDelay() > 0)
+        if (data.isReloading(hand) || !item.configType.isUseLoopingSounds())
+        {
+            data.setLoopingSoundActive(false);
+            return;
+        }
+
+        if (data.getLoopedSoundDelay() > 0)
             return;
 
         if (data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
+            data.setLoopingSoundActive(true);
             if (!level.isClientSide)
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
+            data.setLoopingSoundActive(true);
             if (!level.isClientSide)
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getLoopedSound(), false);
         }
-        else if (!data.isShootKeyPressed(hand) && !level.isClientSide)
+        else if (data.isLoopingSoundActive())
         {
-            PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
+            data.setLoopingSoundActive(false);
+            if (!level.isClientSide)
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
         }
     }
 

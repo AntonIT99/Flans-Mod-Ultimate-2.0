@@ -46,6 +46,8 @@ public record CommonConfigSnapshot(
     boolean ammoToUpperInventoryOnReload,
     boolean realisticRecoil,
     boolean enableSightDownwardMovement,
+    boolean disableSprintHipFireByDefault,
+    boolean muzzleFlashParticlesDefault,
 
     boolean shootablesCanBreakGlass,
     float newDamageSystemDamageReference,
@@ -82,7 +84,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 10;
+    public static final int CURRENT_VERSION = 12;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -126,6 +128,8 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.ammoToUpperInventoryOnReload);
         buf.writeBoolean(s.realisticRecoil);
         buf.writeBoolean(s.enableSightDownwardMovement);
+        buf.writeBoolean(s.disableSprintHipFireByDefault);
+        buf.writeBoolean(s.muzzleFlashParticlesDefault);
 
         buf.writeBoolean(s.shootablesCanBreakGlass);
         buf.writeFloat(s.newDamageSystemDamageReference);
@@ -204,6 +208,8 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readBoolean(),
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

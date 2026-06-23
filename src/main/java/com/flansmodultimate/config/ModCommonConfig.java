@@ -70,6 +70,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
     private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
     private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
+    private static final ForgeConfigSpec.BooleanValue DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue MUZZLE_FLASH_PARTICLES_DEFAULT;
 
     private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
@@ -123,7 +125,7 @@ public final class ModCommonConfig
             .define("validateContentReferencesOnWorldLoad", false);
         DISABLE_CROSSHAIR_FOR_GUNS = builder
             .comment("Disables crosshair for guns except melee weapons")
-            .define("disableCrosshairForGuns", true);
+            .define("disableCrosshairForGuns", false);
         EXPLOSIONS_BREAK_BLOCKS = builder
             .comment("Whether explosions can break blocks")
             .define("explosionBreakBlocks", true);
@@ -230,6 +232,12 @@ public final class ModCommonConfig
         ENABLE_SIGHT_DOWNWARD_MOVEMENT = builder
             .comment("Enable downward movement of the sight after shot")
             .define("enableSightDownwardMovement", true);
+        DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT = builder
+            .comment("Disallow guns from hip-firing while sprinting by default. Gun configs can override this with HipFireWhileSprinting.")
+            .define("disableSprintHipFireByDefault", false);
+        MUZZLE_FLASH_PARTICLES_DEFAULT = builder
+            .comment("Enable muzzle flash particles by default. Gun configs can override this with ShowMuzzleFlashParticle.")
+            .define("muzzleFlashParticlesDefault", true);
         builder.pop();
 
         builder.push("Shootable Settings");
@@ -384,6 +392,8 @@ public final class ModCommonConfig
             AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(),
             REALISTIC_RECOIL.get(),
             ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
+            DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(),
+            MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(),
             NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(),

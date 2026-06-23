@@ -123,9 +123,11 @@ public final class ClientEventHandler
         if (player == null)
             return;
 
-        // Remove crosshairs for config option or if looking down the sights of a gun
+        // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
+        boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
+        boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
-            && (ModClient.getCurrentScope() != null || (ModCommonConfig.get().disableCrosshairForGuns() && ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee()))))
+            && (ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();

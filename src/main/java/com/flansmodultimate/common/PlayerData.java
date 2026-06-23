@@ -56,6 +56,9 @@ public class PlayerData
     /** True if this player is shooting */
     private boolean isShootingRight;
     private boolean isShootingLeft;
+    /** True when the client is currently looking through a gun scope. */
+    @Getter @Setter
+    private boolean scoped;
     /** The speed of the minigun the player is using */
     @Getter @Setter
     private float minigunSpeed;
@@ -68,6 +71,8 @@ public class PlayerData
     /** Sound delay parameters */
     @Getter @Setter
     private int loopedSoundDelay;
+    @Getter @Setter
+    private boolean loopingSoundActive;
     /** Melee weapon custom hit simulation */
     @Getter @Setter
     private int meleeProgress;
