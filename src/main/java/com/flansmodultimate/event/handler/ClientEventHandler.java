@@ -8,6 +8,7 @@ import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
@@ -28,9 +29,12 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
@@ -288,10 +292,23 @@ public final class ClientEventHandler
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
+        TeamsClientState.clear();
     }
 
-    //TODO: Handle player hiding / name tag removal for teams (1.12.2)
-    //renderPlayer()
+    @SubscribeEvent
+    public static void onRenderPlayer(RenderPlayerEvent.Pre event)
+    {
+        if (TeamsClientState.shouldHidePlayer(event.getEntity()))
+            event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onRenderNameTag(RenderNameTagEvent event)
+    {
+        if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
+            event.setResult(Event.Result.DENY);
+    }
+
     //TODO: implement this code from 1.12.2
     //renderHooks.update();
     //RenderFlag.angle += 2F;
