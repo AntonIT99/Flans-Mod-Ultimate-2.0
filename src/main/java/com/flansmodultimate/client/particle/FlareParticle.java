@@ -89,16 +89,12 @@ public class FlareParticle extends ParticleBase
     }
 
     @Override
-    public int getLightColor(float partialTick)
-    {
-        return 0xF000F0;
-    }
-
-    @Override
     @NotNull
     public ParticleRenderType getRenderType()
     {
-        return LegacyParticleRenderTypes.PREMULTIPLIED;
+        // The flare acts only as the moving controller for its fmflame trail.
+        // Its own flare.png quad is intentionally not submitted for rendering.
+        return ParticleRenderType.NO_RENDER;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>

@@ -75,14 +75,11 @@ public final class ParticleHelper
         if (minecraft.level == null)
             return;
 
-        LegacyBlockParticle.Variant variant = request.get().kind() == LegacyResourceKind.BLOCK_DUST
-            ? LegacyBlockParticle.Variant.DUST
-            : LegacyBlockParticle.Variant.CRACK;
+        LegacyBlockParticle.Variant variant = request.get().kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
         addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale);
     }
 
-    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos,
-                                                       double x, double y, double z, double vx, double vy, double vz, float scale)
+    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -104,9 +101,7 @@ public final class ParticleHelper
                 Optional<BlockState> state = ModUtils.getBlockState(request.resourceId());
                 if (state.isEmpty())
                     return false;
-                LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST
-                    ? LegacyBlockParticle.Variant.DUST
-                    : LegacyBlockParticle.Variant.CRACK;
+                LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
                 addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale);
                 return true;
             }
