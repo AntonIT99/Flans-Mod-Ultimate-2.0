@@ -237,7 +237,7 @@ public final class ModCommonConfig
             .define("disableSprintHipFireByDefault", false);
         MUZZLE_FLASH_PARTICLES_DEFAULT = builder
             .comment("Enable muzzle flash particles by default. Gun configs can override this with ShowMuzzleFlashParticle.")
-            .define("muzzleFlashParticlesDefault", true);
+            .define("muzzleFlashParticlesDefault", false);
         builder.pop();
 
         builder.push("Shootable Settings");

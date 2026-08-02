@@ -12,6 +12,7 @@ import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
@@ -78,13 +79,13 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             return;
 
         boolean localShooter = shooter == mc.player;
+        boolean localFirstPerson = localShooter && mc.options.getCameraType() == CameraType.FIRST_PERSON;
         if (localShooter)
         {
-            boolean firstPerson = mc.options.getCameraType() == CameraType.FIRST_PERSON;
             ItemStack localStack = shooter.getItemInHand(hand);
             if (!(localStack.getItem() instanceof GunItem localGunItem))
                 return;
-            if (!showToShooter || (firstPerson && !localGunItem.getConfigType().isShowMuzzleFlashParticlesFirstPerson()))
+            if (!showToShooter || (localFirstPerson && !localGunItem.getConfigType().isShowMuzzleFlashParticlesFirstPerson()))
                 return;
         }
 
@@ -93,17 +94,16 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             return;
 
         GunType gunType = gunItem.getConfigType();
-        Vector3f shoulderOffset = new Vector3f(0F, localShooter ? -22F / 16F : 0F, 0F);
+        Vector3f shoulderOffset = new Vector3f();
         Vector3f.add(shoulderOffset, gunType.getMuzzleFlashParticlesShoulderOffset(), shoulderOffset);
 
         Vector3f handOffset = getMuzzleFlashHandOffset(gunType, gunStack);
-        if (localShooter)
+        if (localFirstPerson)
             Vector3f.add(handOffset, new Vector3f(-0.7F, -0.35F, 0.1F), handOffset);
         Vector3f.add(handOffset, gunType.getMuzzleFlashParticlesHandOffset(), handOffset);
 
-        Vector3f offset = Vector3f.add(shoulderOffset, handOffset, null);
-        Vec3 pos = toWorldOffset(shooter, offset);
-        Vec3 velocity = new Vec3((mc.level.random.nextFloat() * 2F - 1F) * 0.05F, (mc.level.random.nextFloat() * 2F - 1F) * 0.05F, (mc.level.random.nextFloat() * 2F - 1F) * 0.05F);
+        Vec3 pos = getMuzzleFlashPosition(shooter, hand, shoulderOffset, handOffset);
+        Vec3 velocity = getMuzzleFlashVelocity(shooter, mc);
         ParticleHelper.spawnFromString(particleType, pos.x, pos.y, pos.z, velocity.x, velocity.y, velocity.z, scale);
     }
 
@@ -130,21 +130,58 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         return muzzlePoint.scale(gunType.getModelScale());
     }
 
-    private static Vec3 toWorldOffset(Player player, Vector3f offset)
+    /**
+     * Modern port of 1.7.10 PlayerItemPositionUtils.GetPlayerHandPosition.
+     * Gun-model X is the barrel direction; it must be transformed by the arm
+     * axes rather than interpreted as a camera-space sideways offset.
+     */
+    private static Vec3 getMuzzleFlashPosition(Player player, InteractionHand hand, Vector3f shoulderOffset, Vector3f handOffset)
     {
-        Vec3 forward = player.getLookAngle().normalize();
-        Vec3 worldUp = new Vec3(0D, 1D, 0D);
-        Vec3 right = worldUp.cross(forward);
-        if (right.lengthSqr() < 1.0E-6D)
-            right = Vec3.directionFromRotation(0F, player.getYRot() + 90F);
-        else
-            right = right.normalize();
-        Vec3 up = forward.cross(right).normalize();
+        boolean offHand = hand == InteractionHand.OFF_HAND;
+        float side = offHand ? -1.0F : 1.0F;
 
-        return player.getEyePosition()
-            .add(right.scale(offset.x))
-            .add(up.scale(offset.y))
-            .add(forward.scale(offset.z));
+        RotatedAxes bodyAxes = new RotatedAxes(player.yBodyRot + 90.0F, 0.0F, 0.0F);
+        // The legacy shoulder joint was fixed at 22/16 blocks. Deriving it from
+        // eye height keeps the same standing-player placement while following
+        // crouching and entities whose dimensions have been changed.
+        double shoulderHeight = player.getEyeHeight() - (1.62D - 22.0D / 16.0D);
+        Vec3 pos = player.position()
+            .add(toVec3(bodyAxes.getYAxis()).scale(shoulderHeight))
+            .subtract(toVec3(bodyAxes.getZAxis()).scale(side * 6.0D / 16.0D));
+
+        Vector3f adjustedShoulderOffset = new Vector3f(shoulderOffset.x, shoulderOffset.y, shoulderOffset.z * side);
+        pos = pos.add(toVec3(bodyAxes.findLocalVectorGlobally(toJoml(adjustedShoulderOffset))));
+
+        RotatedAxes armAxes = new RotatedAxes(
+            player.getYHeadRot() + 90.0F - 8.0F * side,
+            player.getXRot(),
+            0.0F);
+        pos = pos.add(toVec3(armAxes.getXAxis()).scale(10.0D / 16.0D));
+
+        Vector3f adjustedHandOffset = new Vector3f(handOffset.x, handOffset.y, handOffset.z * side);
+        return pos.add(toVec3(armAxes.findLocalVectorGlobally(toJoml(adjustedHandOffset))));
+    }
+
+    private static Vec3 getMuzzleFlashVelocity(Player player, Minecraft minecraft)
+    {
+        RotatedAxes axes = new RotatedAxes(player.getYHeadRot() + 90.0F, player.getXRot(), 0.0F);
+        org.joml.Vector3f velocity = axes.getXAxis();
+        velocity.add(
+            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
+            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
+            minecraft.level.random.nextFloat() * 2.0F - 1.0F);
+        velocity.mul(0.05F);
+        return toVec3(velocity);
+    }
+
+    private static org.joml.Vector3f toJoml(Vector3f vector)
+    {
+        return new org.joml.Vector3f(vector.x, vector.y, vector.z);
+    }
+
+    private static Vec3 toVec3(org.joml.Vector3f vector)
+    {
+        return new Vec3(vector.x, vector.y, vector.z);
     }
 
     @Override

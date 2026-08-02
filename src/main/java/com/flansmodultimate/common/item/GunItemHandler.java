@@ -41,6 +41,7 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector3f;
@@ -48,7 +49,6 @@ import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -184,7 +184,7 @@ public class GunItemHandler
             return;
         if (player.getVehicle() instanceof Seat)
             return;
-        if (!item.configType.canShootUnderwater() && player.isEyeInFluid(FluidTags.WATER))
+        if (!item.configType.canShootUnderwater() && player.isEyeInFluidType(ForgeMod.WATER_TYPE.get()))
             return;
         if (player.isSprinting() && !data.isScoped() && !item.configType.canHipFireWhileSprinting())
             return;
@@ -271,18 +271,13 @@ public class GunItemHandler
             return;
 
         PacketHandler.sendToAllAround(
-            new PacketGunMuzzleFlash(
-                player.getUUID(),
-                hand,
-                item.configType.getMuzzleFlashParticle(),
-                item.configType.getMuzzleFlashParticleSize(),
-                item.configType.shouldShowMuzzleFlashParticleToShooter()),
+            new PacketGunMuzzleFlash(player.getUUID(), hand, item.configType.getMuzzleFlashParticle(), item.configType.getMuzzleFlashParticleSize(), item.configType.shouldShowMuzzleFlashParticleToShooter()),
             player.position(),
-            160D,
+            128D,
             level.dimension());
     }
 
-    public void playEmptyClick(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    public void playEmptyClick(ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
         boolean repeated = data.isPrevShootKeyPressed(hand);
         String clickSound = item.configType.getClickSoundOnEmpty(repeated);

@@ -527,7 +527,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             {
                 boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
                 if (!reloading)
-                    gunItemHandler.playEmptyClick(level, player, data, gunStack, hand);
+                    gunItemHandler.playEmptyClick(player, data, gunStack, hand);
             }
             else if (decision == EnumFireDecision.SHOOT)
                 gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);

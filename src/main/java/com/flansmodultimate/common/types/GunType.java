@@ -281,6 +281,7 @@ public class GunType extends PaintableType implements IScope
     /**
      * Whether Gun makes players to be UseAnim.BOW
      */
+    @Getter
     protected UseAnim itemUseAction = UseAnim.BOW;
     /* Whether the gun can be hipfired while sprinting */
     /**
@@ -559,7 +560,9 @@ public class GunType extends PaintableType implements IScope
      */
     protected String hitTextureName = StringUtils.EMPTY;
 
+    @Getter
     protected String muzzleFlashParticle = FlanParticles.FM_MUZZLE_FLASH;
+    @Getter
     protected float muzzleFlashParticleSize = 1F;
     protected boolean useMuzzleFlashDefaults = true;
     protected boolean showMuzzleFlashParticles = true;
@@ -958,11 +961,6 @@ public class GunType extends PaintableType implements IScope
         return showCrosshair;
     }
 
-    public UseAnim getItemUseAction()
-    {
-        return itemUseAction;
-    }
-
     public boolean canHipFireWhileSprinting()
     {
         CommonConfigSnapshot config = ModCommonConfig.get();
@@ -999,16 +997,6 @@ public class GunType extends PaintableType implements IScope
     {
         CommonConfigSnapshot config = ModCommonConfig.get();
         return useMuzzleFlashDefaults ? config == null || config.muzzleFlashParticlesDefault() : showMuzzleFlashParticles;
-    }
-
-    public String getMuzzleFlashParticle()
-    {
-        return muzzleFlashParticle;
-    }
-
-    public float getMuzzleFlashParticleSize()
-    {
-        return muzzleFlashParticleSize;
     }
 
     public boolean shouldShowMuzzleFlashParticleToShooter()
