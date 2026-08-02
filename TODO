@@ -2,7 +2,6 @@ General:
 - Check translations in other languages
 - Add commands to wiki
 - 1.12.2 loadouts & rewardBoxes
-- check name source for item name in json lang file (prefer .lang file entry over "Name" from config)
 
 Entities:
 - Wheel - TODO

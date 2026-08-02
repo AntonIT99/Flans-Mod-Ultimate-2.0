@@ -1290,8 +1290,8 @@ public class ContentManager
             {
                 String keyToAdd = generateTranslationKey(shortName, config.getType().isHasBlock());
                 String keyToRemove = generateTranslationKey(config.getOriginalShortName(), config.getType().isHasBlock());
-                translations.putIfAbsent(keyToAdd, config.getName());
-                translations.remove(keyToRemove);
+                String legacyTranslation = translations.remove(keyToRemove);
+                translations.putIfAbsent(keyToAdd, legacyTranslation != null ? legacyTranslation : config.getName());
             }
             else
             {
