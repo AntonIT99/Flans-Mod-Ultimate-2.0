@@ -1,5 +1,5 @@
 {
-  "message_id": "flans_melee",
+  "message_id": "melee",
   "scaling": "never",
   "exhaustion": 0.1,
   "effects": "hurt",

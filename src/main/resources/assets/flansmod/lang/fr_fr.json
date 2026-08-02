@@ -1,5 +1,27 @@
 {
     "item.flansmod.rainbowpaintcan": "Pot de peinture arc-en-ciel",
     "block.flansmod.gunworkbench": "Table de modification d'armes",
-    "block.flansmod.paintjobtable": "Table de peinture"
+    "block.flansmod.paintjobtable": "Table de peinture",
+    "block.flansmod.teams_player_spawner": "Générateur de joueurs",
+    "block.flansmod.teams_item_spawner": "Générateur d'objets",
+    "block.flansmod.teams_vehicle_spawner": "Générateur de véhicules",
+    "item.flansmod.op_stick": "Bâton d'administration des équipes",
+    "item.flansmod.flagpole": "Base de drapeau",
+    "gui.flansmod.teams.choose_team": "Choisir une équipe",
+    "gui.flansmod.teams.choose_class": "Choisir une classe",
+    "gui.flansmod.teams.required_rank": "Rang requis : %s",
+    "gui.flansmod.teams.scores": "Scores des équipes",
+    "gui.flansmod.teams.no_round": "Aucune manche en équipe n'est en cours",
+    "gui.flansmod.teams.score_limit": "Limite de score : %s",
+    "gui.flansmod.teams.time_left": "Temps restant : %s:%s",
+    "gui.flansmod.teams.round_over": "Manche terminée",
+    "gui.flansmod.teams.name": "Nom",
+    "gui.flansmod.teams.score": "Score",
+    "gui.flansmod.teams.kills": "Éliminations",
+    "gui.flansmod.teams.deaths": "Morts",
+    "gui.flansmod.teams.vote_title": "Votez pour la prochaine manche",
+    "gui.flansmod.teams.vote": "Voter",
+    "gui.flansmod.teams.base_settings": "Paramètres de la base",
+    "gui.flansmod.teams.base_name": "Nom de la base :",
+    "gui.flansmod.teams.map": "Carte"
 }

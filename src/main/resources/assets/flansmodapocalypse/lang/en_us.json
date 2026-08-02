@@ -11,9 +11,6 @@
     "entity.flansmodapocalypse.survivor": "Survivor",
     "entity.flansmodapocalypse.autodrone": "Skull Drone",
     "entity.flansmodapocalypse.skullboss": "Skull Boss",
-    "message.flansmodultimate.apocalypse_dimension_unavailable": "The apocalypse dimension is unavailable.",
-    "message.flansmodultimate.apocalypse_portal_failed": "The apocalypse portal could not find a safe destination.",
-    "message.flansmodultimate.apocalypse_boss_awakened": "The Skull Boss awakens.",
     "death.attack.sulphuric_acid": "%1$s dissolved in sulphuric acid",
     "death.attack.sulphuric_acid.player": "%1$s dissolved in sulphuric acid while fighting %2$s"
 }

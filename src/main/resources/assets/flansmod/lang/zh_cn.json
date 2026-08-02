@@ -1,5 +1,27 @@
 {
     "item.flansmod.rainbowpaintcan": "彩虹油漆罐",
     "block.flansmod.gunworkbench": "枪械改装台",
-    "block.flansmod.paintjobtable": "涂装台"
+    "block.flansmod.paintjobtable": "涂装台",
+    "block.flansmod.teams_player_spawner": "士兵生成器",
+    "block.flansmod.teams_item_spawner": "物品生成器",
+    "block.flansmod.teams_vehicle_spawner": "载具生成器",
+    "item.flansmod.op_stick": "队伍管理棒",
+    "item.flansmod.flagpole": "旗杆",
+    "gui.flansmod.teams.choose_team": "选择队伍",
+    "gui.flansmod.teams.choose_class": "选择职业",
+    "gui.flansmod.teams.required_rank": "所需等级：%s",
+    "gui.flansmod.teams.scores": "队伍得分",
+    "gui.flansmod.teams.no_round": "当前没有进行中的队伍回合",
+    "gui.flansmod.teams.score_limit": "分数上限：%s",
+    "gui.flansmod.teams.time_left": "剩余时间：%s:%s",
+    "gui.flansmod.teams.round_over": "回合结束",
+    "gui.flansmod.teams.name": "名称",
+    "gui.flansmod.teams.score": "分数",
+    "gui.flansmod.teams.kills": "击杀",
+    "gui.flansmod.teams.deaths": "死亡",
+    "gui.flansmod.teams.vote_title": "为下一回合投票",
+    "gui.flansmod.teams.vote": "投票",
+    "gui.flansmod.teams.base_settings": "据点设置",
+    "gui.flansmod.teams.base_name": "据点名称：",
+    "gui.flansmod.teams.map": "地图"
 }

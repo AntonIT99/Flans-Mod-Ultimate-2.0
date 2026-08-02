@@ -11,9 +11,6 @@
     "entity.flansmodapocalypse.survivor": "幸存者",
     "entity.flansmodapocalypse.autodrone": "骷髅无人机",
     "entity.flansmodapocalypse.skullboss": "骷髅首领",
-    "message.flansmodultimate.apocalypse_dimension_unavailable": "天启维度不可用。",
-    "message.flansmodultimate.apocalypse_portal_failed": "天启传送门无法找到安全的目的地。",
-    "message.flansmodultimate.apocalypse_boss_awakened": "骷髅首领苏醒了。",
     "death.attack.sulphuric_acid": "%1$s 溶解在硫酸中",
     "death.attack.sulphuric_acid.player": "%1$s 在与 %2$s 战斗时溶解在硫酸中"
 }

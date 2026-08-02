@@ -11,9 +11,6 @@
     "entity.flansmodapocalypse.survivor": "Survivant",
     "entity.flansmodapocalypse.autodrone": "Drone crâne",
     "entity.flansmodapocalypse.skullboss": "Boss crâne",
-    "message.flansmodultimate.apocalypse_dimension_unavailable": "La dimension de l'apocalypse est indisponible.",
-    "message.flansmodultimate.apocalypse_portal_failed": "Le portail de l'apocalypse n'a pas pu trouver de destination sûre.",
-    "message.flansmodultimate.apocalypse_boss_awakened": "Le Boss crâne s'éveille.",
     "death.attack.sulphuric_acid": "%1$s s'est dissous dans l'acide sulfurique",
     "death.attack.sulphuric_acid.player": "%1$s s'est dissous dans l'acide sulfurique en combattant %2$s"
 }

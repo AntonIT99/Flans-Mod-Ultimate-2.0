@@ -11,9 +11,6 @@
     "entity.flansmodapocalypse.survivor": "Überlebender",
     "entity.flansmodapocalypse.autodrone": "Schädeldrohne",
     "entity.flansmodapocalypse.skullboss": "Schädelboss",
-    "message.flansmodultimate.apocalypse_dimension_unavailable": "Die Apokalypse-Dimension ist nicht verfügbar.",
-    "message.flansmodultimate.apocalypse_portal_failed": "Das Apokalypse-Portal konnte kein sicheres Ziel finden.",
-    "message.flansmodultimate.apocalypse_boss_awakened": "Der Schädelboss erwacht.",
     "death.attack.sulphuric_acid": "%1$s wurde in Schwefelsäure aufgelöst",
     "death.attack.sulphuric_acid.player": "%1$s wurde in Schwefelsäure aufgelöst, während er gegen %2$s kämpfte"
 }
