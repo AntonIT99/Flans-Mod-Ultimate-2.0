@@ -2,7 +2,9 @@ package com.flansmodultimate.hooks;
 
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -15,6 +17,8 @@ public interface IClientRenderHooks
     void spawnParticle(String s, double x, double y, double z, float scale);
 
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);
+
+    void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);
 

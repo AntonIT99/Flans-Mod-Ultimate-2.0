@@ -3,7 +3,9 @@ package com.flansmodultimate.hooks.server;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -25,6 +27,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
 
     @Override
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         /* no-op */
     }

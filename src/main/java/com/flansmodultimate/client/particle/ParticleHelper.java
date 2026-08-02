@@ -6,17 +6,19 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -26,50 +28,173 @@ public final class ParticleHelper
 {
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
-        Optional<ParticleOptions> opt = toOptions(s);
+        String normalized = normalize(s);
+        if (normalized == null)
+        {
+            warnCouldNotParse(s);
+            return;
+        }
+
+        Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
+        if (legacyRequest.isPresent())
+        {
+            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale))
+                warnCouldNotParse(s);
+            return;
+        }
+
+        Optional<ParticleOptions> opt = toNamedOptions(normalized);
         if (opt.isEmpty())
         {
-            FlansMod.log.warn("Could not parse particle options from string: '{}'", s);
+            warnCouldNotParse(s);
             return;
         }
 
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
+        scaleParticle(particle, scale);
+    }
+
+    public static void spawnFromString(String s, BlockState state, BlockPos sourcePos,
+                                       double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        String normalized = normalize(s);
+        if (normalized == null)
+        {
+            warnCouldNotParse(s);
+            return;
+        }
+
+        Optional<LegacyResourceRequest> request = LegacyResourceRequest.parse(normalized, true);
+        if (request.isEmpty() || request.get().kind() == LegacyResourceKind.ICON_CRACK)
+        {
+            warnCouldNotParse(s);
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+            return;
+
+        LegacyBlockParticle.Variant variant = request.get().kind() == LegacyResourceKind.BLOCK_DUST
+            ? LegacyBlockParticle.Variant.DUST
+            : LegacyBlockParticle.Variant.CRACK;
+        addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale);
+    }
+
+    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos,
+                                                       double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+            return true;
+
+        ClientLevel level = minecraft.level;
+        switch (request.kind())
+        {
+            case ICON_CRACK:
+            {
+                Optional<ItemStack> stack = getLegacyItemStack(request.resourceId());
+                if (stack.isEmpty())
+                    return false;
+                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale);
+                return true;
+            }
+            case BLOCK_CRACK, BLOCK_DUST:
+            {
+                Optional<BlockState> state = ModUtils.getBlockState(request.resourceId());
+                if (state.isEmpty())
+                    return false;
+                LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST
+                    ? LegacyBlockParticle.Variant.DUST
+                    : LegacyBlockParticle.Variant.CRACK;
+                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void addParticle(Particle particle, float scale)
+    {
+        if (particle == null)
+            return;
+        scaleParticle(particle, scale);
+        Minecraft.getInstance().particleEngine.add(particle);
+    }
+
+    private static void scaleParticle(Particle particle, float scale)
+    {
         if (particle != null && scale != 1.0F)
             particle.scale(scale);
     }
 
-    private static Optional<ParticleOptions> toOptions(String raw)
+    private static Optional<ItemStack> getLegacyItemStack(String resourceId)
     {
-        if (StringUtils.isBlank(raw))
+        Optional<ItemStack> exact = ModUtils.getItemStack(resourceId);
+        if (exact.isPresent())
+            return exact;
+
+        // Legacy syntax optionally appended a numeric damage/metadata value.
+        // Trying the complete ID first keeps modern IDs containing underscores
+        // unambiguous (for example minecraft:iron_sword).
+        int separator = resourceId.lastIndexOf('_');
+        if (separator <= 0 || separator == resourceId.length() - 1)
             return Optional.empty();
 
-        String s = raw.toLowerCase(Locale.ROOT);
-        return toItemBlockParticleOptions(s).or(() -> toNamedOptions(s));
+        try
+        {
+            int damage = Integer.parseInt(resourceId.substring(separator + 1));
+            return ModUtils.getItemStack(resourceId.substring(0, separator)).map(stack ->
+            {
+                stack.setDamageValue(damage);
+                return stack;
+            });
+        }
+        catch (NumberFormatException ignored)
+        {
+            return Optional.empty();
+        }
     }
 
-    private static Optional<ParticleOptions> toItemBlockParticleOptions(String s)
+    private static String normalize(String raw)
     {
-        // Item/Block patterns first: "iconcrack_modid:item", "blockcrack_modid:block", "blockdust_modid:block"
-        if (s.contains(FlanParticles.ICON_CRACK + "_") || s.contains(FlanParticles.BLOCK_CRACK + "_") || s.contains(FlanParticles.BLOCK_DUST + "_"))
+        return raw == null || raw.isBlank() ? null : raw.toLowerCase(Locale.ROOT);
+    }
+
+    private static void warnCouldNotParse(String s)
+    {
+        FlansMod.log.warn("Could not parse particle options from string: '{}'", s);
+    }
+
+    private enum LegacyResourceKind
+    {
+        ICON_CRACK(FlanParticles.ICON_CRACK),
+        BLOCK_CRACK(FlanParticles.BLOCK_CRACK),
+        BLOCK_DUST(FlanParticles.BLOCK_DUST);
+
+        private final String commandName;
+
+        LegacyResourceKind(String commandName)
         {
-            // keep the rest intact so IDs like "mod:item" work
-            String[] split = s.split("_", 2);
-            if (split.length > 1)
-            {
-                String kind = split[0];
-                String id  = split[1];
-
-                return switch (kind)
-                {
-                    case FlanParticles.ICON_CRACK -> ModUtils.getItemStack(id).map(stack -> new ItemParticleOption(ParticleTypes.ITEM, stack));
-                    case FlanParticles.BLOCK_CRACK -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.BLOCK, blockstate));
-                    case FlanParticles.BLOCK_DUST -> ModUtils.getBlockState(id).map(blockstate -> new BlockParticleOption(ParticleTypes.FALLING_DUST, blockstate));
-                    default -> Optional.empty();
-                };
-            }
+            this.commandName = commandName;
         }
+    }
 
-        return Optional.empty();
+    private record LegacyResourceRequest(LegacyResourceKind kind, String resourceId)
+    {
+        private static Optional<LegacyResourceRequest> parse(String s, boolean allowBareName)
+        {
+            for (LegacyResourceKind kind : LegacyResourceKind.values())
+            {
+                if (allowBareName && s.equals(kind.commandName))
+                    return Optional.of(new LegacyResourceRequest(kind, ""));
+
+                String prefix = kind.commandName + "_";
+                if (s.startsWith(prefix) && s.length() > prefix.length())
+                    return Optional.of(new LegacyResourceRequest(kind, s.substring(prefix.length())));
+            }
+            return Optional.empty();
+        }
     }
 
     private static Optional<ParticleOptions> toNamedOptions(String s)

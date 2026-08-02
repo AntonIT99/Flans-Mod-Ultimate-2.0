@@ -21,10 +21,12 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -56,6 +58,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         ParticleHelper.spawnFromString(s, x, y, z, vx, vy, vz, scale);
+    }
+
+    @Override
+    public void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        ParticleHelper.spawnFromString(s, state, sourcePos, x, y, z, vx, vy, vz, scale);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
@@ -7,9 +8,6 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -115,42 +113,32 @@ public class PacketBlockHitEffect implements IClientPacket
 
         BlockPos pos = new BlockPos(blockX, blockY, blockZ);
         BlockState state = level.getBlockState(pos);
-        Vec3i facingDir = facingDirection.getNormal();
         Vec3 motion = new Vec3(motionX, motionY, motionZ);
 
-        double scale = level.random.nextGaussian() * 0.05 + 0.05;
-        double vx = facingDir.getX() * scale + level.random.nextGaussian() * 0.025;
-        double vy = facingDir.getY() * scale + level.random.nextGaussian() * 0.025;
-        double vz = facingDir.getZ() * scale + level.random.nextGaussian() * 0.025;
-
-        level.addParticle(ParticleTypes.CLOUD, x, y, z, vx, vy, vz);
-
-
         double scalingFactor = ClientHooks.RENDER.hasFancyGraphics() ? 10.0 : 2.0;
-        int numBlockParticles = (int) Math.round(Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
+        int numBlockParticles = (int)(Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
         double velocityFactor = Math.sqrt(explosionRadius + 1.0) * blockHitFXScale * 0.5;
 
         for (int i = 0; i < numBlockParticles; i++)
         {
-            double px1 = x + (level.random.nextDouble() - 0.3) * bbWidth * 0.05;
-            double py1 = y + (level.random.nextDouble() - 0.3) * bbWidth * 0.05;
-            double pz1 = z + (level.random.nextDouble() - 0.3) * bbWidth * 0.05;
+            double px1 = x + (level.random.nextFloat() - 0.3) * bbWidth * 0.05;
+            double py1 = y + (level.random.nextFloat() - 0.3) * bbWidth * 0.05;
+            double pz1 = z + (level.random.nextFloat() - 0.3) * bbWidth * 0.05;
 
             double vx1 = -motion.x * (0.0011 + level.random.nextGaussian() * 0.008) * velocityFactor;
             double vy1 = Math.abs(0.305 + level.random.nextDouble() * 0.125) * velocityFactor;
             double vz1 = -motion.z * (0.0011 + level.random.nextGaussian() * 0.008) * velocityFactor;
 
-            double px2 = x + (level.random.nextDouble() - 0.6) * bbWidth * 0.75;
-            double py2 = y + (level.random.nextDouble() - 0.6) * bbWidth * 0.75;
-            double pz2 = z + (level.random.nextDouble() - 0.6) * bbWidth * 0.75;
+            double px2 = x + (level.random.nextFloat() - 0.6) * bbWidth * 0.75;
+            double py2 = y + (level.random.nextFloat() - 0.6) * bbWidth * 0.75;
+            double pz2 = z + (level.random.nextFloat() - 0.6) * bbWidth * 0.75;
 
             double vx2 = -motion.x * (0.415 + level.random.nextGaussian() * 0.1) * velocityFactor;
             double vy2 = -motion.y * (0.425 + Math.abs(level.random.nextGaussian() * 0.1)) * velocityFactor;
             double vz2 = -motion.z * (0.415 + level.random.nextGaussian() * 0.1) * velocityFactor;
 
-            //TODO: implement custom particles with physics from 1.7.10
-            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state), px1, py1, pz1, vx1, vy1, vz1);
-            level.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, state), px2, py2, pz2, vx2, vy2, vz2);
+            ClientHooks.RENDER.spawnParticle(FlanParticles.BLOCK_DUST, state, pos, px1, py1, pz1, vx1, vy1, vz1, 1.0F);
+            ClientHooks.RENDER.spawnParticle(FlanParticles.BLOCK_CRACK, state, pos, px2, py2, pz2, vx2, vy2, vz2, 1.0F);
         }
     }
 }

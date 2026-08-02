@@ -15,6 +15,31 @@ public final class LegacyParticleRenderTypes
 {
     public static final ParticleRenderType TRANSLUCENT = create("FLAN_LEGACY_TRANSLUCENT", false);
     public static final ParticleRenderType PREMULTIPLIED = create("FLAN_LEGACY_PREMULTIPLIED", true);
+    public static final ParticleRenderType TERRAIN = new ParticleRenderType()
+    {
+        @Override
+        public void begin(BufferBuilder builder, TextureManager textureManager)
+        {
+            RenderSystem.depthMask(false);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+        }
+
+        @Override
+        public void end(Tesselator tesselator)
+        {
+            tesselator.end();
+            RenderSystem.depthMask(true);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "FLAN_LEGACY_TERRAIN";
+        }
+    };
 
     private LegacyParticleRenderTypes() {}
 
