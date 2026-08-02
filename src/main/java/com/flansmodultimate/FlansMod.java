@@ -3,12 +3,16 @@ package com.flansmodultimate;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
+import com.flansmodultimate.common.block.TeamSpawnerBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
+import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Parachute;
@@ -17,6 +21,8 @@ import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
+import com.flansmodultimate.common.item.FlagpoleItem;
+import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
@@ -154,15 +160,28 @@ public class FlansMod
         .strength(2F, 4F)
         .sound(SoundType.STONE))
     );
+    public static final RegistryObject<Block> playerSpawner = blockRegistry.register("teams_player_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.PLAYER,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
+    public static final RegistryObject<Block> itemSpawner = blockRegistry.register("teams_item_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
+    public static final RegistryObject<Block> vehicleSpawner = blockRegistry.register("teams_vehicle_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE,
+        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
 
     // Block Entities
     public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
     public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
+    public static final RegistryObject<BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () ->
+        BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
 
     // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
     public static final RegistryObject<Item> paintjobTableItem = itemRegistry.register("paintjobtable", () -> new BlockItem(paintjobTable.get(), new Item.Properties()));
+    public static final RegistryObject<Item> playerSpawnerItem = itemRegistry.register("teams_player_spawner", () -> new BlockItem(playerSpawner.get(), new Item.Properties()));
+    public static final RegistryObject<Item> itemSpawnerItem = itemRegistry.register("teams_item_spawner", () -> new BlockItem(itemSpawner.get(), new Item.Properties()));
+    public static final RegistryObject<Item> vehicleSpawnerItem = itemRegistry.register("teams_vehicle_spawner", () -> new BlockItem(vehicleSpawner.get(), new Item.Properties()));
+    public static final RegistryObject<Item> opStick = itemRegistry.register("op_stick", ItemOpStick::new);
+    public static final RegistryObject<Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
 
     // Menus
     public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
@@ -229,6 +248,12 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "parachute").toString())
     );
+    public static final RegistryObject<EntityType<Flagpole>> flagpoleEntity = entityRegistry.register("flagpole", () -> EntityType.Builder.<Flagpole>of(Flagpole::new, MobCategory.MISC)
+        .sized(0.75F, 2.5F).clientTrackingRange(64).updateInterval(10)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flagpole").toString()));
+    public static final RegistryObject<EntityType<Flag>> flagEntity = entityRegistry.register("flag", () -> EntityType.Builder.<Flag>of(Flag::new, MobCategory.MISC)
+        .sized(0.75F, 0.75F).clientTrackingRange(64).updateInterval(2)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flag").toString()));
 
     private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
     @Getter
@@ -375,6 +400,11 @@ public class FlansMod
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
+        generalItemList.add(FlansMod.flagpoleItem);
+        generalItemList.add(FlansMod.playerSpawnerItem);
+        generalItemList.add(FlansMod.itemSpawnerItem);
+        generalItemList.add(FlansMod.vehicleSpawnerItem);
+        generalItemList.add(FlansMod.opStick);
         if (ModApocalypseConfig.apocalypseEnabled()) {
             generalItemList.add(ApocalypseContent.SULPHUR);
             generalItemList.add(ApocalypseContent.BLOCK_SULPHUR_ITEM);

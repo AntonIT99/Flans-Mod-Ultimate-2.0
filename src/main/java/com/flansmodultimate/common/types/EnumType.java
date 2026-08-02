@@ -41,7 +41,9 @@ public enum EnumType
     GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 11),
     ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
     PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
-    TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6);
+    TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
+    PLAYER_CLASS("player_class", "classes", ContentManager.FOLDER_TEXTURES_SKINS, PlayerClass.class, null, null, false, 12),
+    TEAM("team", "teams", ContentManager.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13);
 
     private final String identifier;
     private final String configFolderName;

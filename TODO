@@ -1,14 +1,10 @@
 General:
 - Add commands to wiki
-- Team Mod: Commands, Teams, Classes, Stats
 - 1.12.2 loadouts & rewardBoxes
 - check name source for item name in json lang file (prefer .lang file entry over "Name" from config)
 - limit gun item GUI info to 10 ammo lines max
 
 Entities:
-- Flagpole + Flag - TODO
-- Spawner - TODO
-- Parachute - TODO
 - Wheel - TODO
 - Seat - TODO
 - Driveable - TODO
@@ -20,16 +16,12 @@ Items:
 - PartItem - TODO (WIP)
 - ToolItem - TODO (WIP)
 - RewardBoxItem (1.12.2) - TODO
-- FlagpoleItem - TODO
-- OpstickItem - TODO
 - MechaItem - TODO
 - VehicleItem - TODO
 - PlaneItem - TODO
 - MechaAddonItem - TODO
 
 Types:
-- PlayerClassType - TODO
-- TeamType - TODO
 - LoadoutType (1.12.2) - TODO
 - RewardBoxType (1.12.2) - TODO
 - MechaItemType - TODO
@@ -39,7 +31,6 @@ Types:
 
 TODO Content Packs:
 - Fix AK47 Paintjobs
-- Fix FlakParticle TaP Guns -> use categories (or restore legacy particles)
 - Fix Scope Attachment Points in WW2 Improved Pack
 - Fix Barrel Attachment and Muzzle Flash
 - Remove Minigun Mode in WW2 Improved Pack

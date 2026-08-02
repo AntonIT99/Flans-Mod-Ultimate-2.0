@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": { "layer0": "flansmod:item/op_stick_ownership" },
+  "overrides": [
+    { "predicate": { "flansmod:teams_mode": 1 }, "model": "flansmod:item/op_stick_connecting" },
+    { "predicate": { "flansmod:teams_mode": 2 }, "model": "flansmod:item/op_stick_mapping" },
+    { "predicate": { "flansmod:teams_mode": 3 }, "model": "flansmod:item/op_stick_destruction" }
+  ]
+}

@@ -7,6 +7,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
 import com.flansmodultimate.common.command.FMParticleCommand;
+import com.flansmodultimate.common.command.TeamsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Driveable;
@@ -28,6 +29,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -83,6 +85,7 @@ public final class CommonEventHandler
         DigitalAmmoCommand.register(event.getDispatcher());
         DefaultAmmoCommand.register(event.getDispatcher());
         FMParticleCommand.register(event.getDispatcher());
+        TeamsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
@@ -117,6 +120,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event)
     {
+        FlansMod.teamsManager.attachServer(event.getServer());
         if (contentReferencesValidated || !ModCommonConfig.get().validateContentReferencesOnWorldLoad())
             return;
 
@@ -127,6 +131,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event)
     {
+        FlansMod.teamsManager.detachServer();
         contentReferencesValidated = false;
     }
 
@@ -144,6 +149,8 @@ public final class CommonEventHandler
         MinecraftServer server = event.getServer();
         if (server == null)
             return;
+
+        FlansMod.teamsManager.tick();
 
         Iterator<UUID> it = nightVisionPlayers.iterator();
         while (it.hasNext())
@@ -188,6 +195,12 @@ public final class CommonEventHandler
                     player.heal(ModCommonConfig.get().bonusRegenAmount());
                 regenTimers.put(player.getUUID(), 0);
             }
+
+            if (FlansMod.teamsManager.isRoundRunning() && FlansMod.teamsManager.isOverrideHunger())
+            {
+                player.getFoodData().setFoodLevel(20);
+                player.getFoodData().setSaturation(20F);
+            }
         }
     }
 
@@ -197,6 +210,7 @@ public final class CommonEventHandler
         if (e.getEntity() instanceof ServerPlayer sp)
         {
             ModCommonConfigSync.syncClientIfServer(sp);
+            FlansMod.teamsManager.playerLoggedIn(sp);
         }
     }
 
@@ -206,6 +220,26 @@ public final class CommonEventHandler
         ModCommonConfig.clearServerOverride();
         ModApocalypseConfig.clearServerOverride();
         regenTimers.remove(event.getEntity().getUUID());
+        if (event.getEntity() instanceof ServerPlayer player)
+            FlansMod.teamsManager.playerLoggedOut(player);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player)
+            FlansMod.teamsManager.respawnPlayer(player, false);
+    }
+
+    @SubscribeEvent
+    public static void onItemPickup(EntityItemPickupEvent event)
+    {
+        if (!(event.getEntity() instanceof ServerPlayer player))
+            return;
+        FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
+            if (!type.canPlayerPickup(FlansMod.teamsManager, player, event.getItem().getItem()))
+                event.setCanceled(true);
+        });
     }
 
     @SubscribeEvent
@@ -237,6 +271,14 @@ public final class CommonEventHandler
         LivingEntity entity = event.getEntity();
         if (entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat)
             event.setCanceled(true);
+
+        if (!entity.level().isClientSide && entity instanceof ServerPlayer player)
+        {
+            FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
+                if (!type.playerAttacked(player, event.getSource()))
+                    event.setCanceled(true);
+            });
+        }
     }
 
     @SubscribeEvent
@@ -313,6 +355,8 @@ public final class CommonEventHandler
     public static void onLivingDeath(LivingDeathEvent event)
     {
         LivingEntity entity = event.getEntity();
+        if (entity instanceof ServerPlayer player)
+            FlansMod.teamsManager.playerDied(player, event.getSource());
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
     }

@@ -30,10 +30,12 @@ import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
+import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
+import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -94,6 +96,8 @@ public final class ModClientEventHandler
                     });
                 }
             }
+            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams_mode"),
+                (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
 
             // Menus registration
             MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
@@ -154,6 +158,8 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
         event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
         event.registerEntityRenderer(FlansMod.parachuteEntity.get(), ParachuteRenderer::new);
+        event.registerEntityRenderer(FlansMod.flagpoleEntity.get(), TeamObjectRenderer::new);
+        event.registerEntityRenderer(FlansMod.flagEntity.get(), TeamObjectRenderer::new);
         event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
     }
 

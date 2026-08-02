@@ -2,6 +2,7 @@ package com.flansmodultimate.network;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.client.PacketAllowDebug;
+import com.flansmodultimate.network.client.PacketBaseEditState;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
@@ -22,8 +23,10 @@ import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
+import com.flansmodultimate.network.server.PacketBaseEditAction;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
@@ -35,6 +38,7 @@ import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
+import com.flansmodultimate.network.server.PacketTeamsAction;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -62,7 +66,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "2";
+    public static final String PROTOCOL = "3";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -84,6 +88,7 @@ public final class PacketHandler {
     {
         // Server to Client Packets
         registerS2C(PacketAllowDebug.class);
+        registerS2C(PacketBaseEditState.class);
         registerS2C(PacketBlockHitEffect.class);
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
@@ -104,9 +109,11 @@ public final class PacketHandler {
         registerS2C(PacketPlaySound.class);
         registerS2C(PacketSyncCommonConfig.class);
         registerS2C(PacketSyncDigitalAmmo.class);
+        registerS2C(PacketTeamsState.class);
 
         // Client to Server Packets
         registerC2S(PacketAAGunModelBarrelOrigins.class);
+        registerC2S(PacketBaseEditAction.class);
         registerC2S(ArmorBoxBuyPacket.class);
         registerC2S(PacketDeployedGunInput.class);
         registerC2S(PacketBuyWeapon.class);
@@ -119,6 +126,7 @@ public final class PacketHandler {
         registerC2S(PacketRequestDebug.class);
         registerC2S(PacketRequestDismount.class);
         registerC2S(PacketSelectPaintjob.class);
+        registerC2S(PacketTeamsAction.class);
 
         initAndRegister();
     }

@@ -5,8 +5,9 @@ import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.teams.Team;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.PlayerClass;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,30 +88,39 @@ public class PlayerData
     @Getter
     private Vector3f[] lastMeleePositions;
 
-    //TODO: implement Teams
     //Teams related fields
     /** Gametype variables */
+    @Getter @Setter
     private int score, kills, deaths;
     /** Zombies variables */
+    @Getter @Setter
     private int zombieScore;
     /** Gametype variable for Nerf */
+    @Getter @Setter
     private boolean out;
     /** The player's vote for the next round from 1 ~ 5. 0 is not yet voted */
+    @Getter @Setter
     private int vote;
     /** The team this player is currently on */
-    @Getter
+    @Getter @Setter
     private Team team;
     /** The team this player will switch to upon respawning */
+    @Getter @Setter
     private Team newTeam;
     /** The class the player is currently using */
-    //private PlayerClass playerClass;
+    @Getter @Setter
+    private PlayerClass playerClass;
     /** The class the player will switch to upon respawning */
-    //private PlayerClass newPlayerClass;
+    @Getter @Setter
+    private PlayerClass newPlayerClass;
     /** Keeps the player out of having to rechose their team each round */
+    @Getter @Setter
     private boolean builder;
     /** e.e */
+    @Getter @Setter
     private boolean playerMovedByAutobalancer;
     /** Save the player's skin here, to replace after having done a swap for a certain class override */
+    @Getter @Setter
     private ResourceLocation skin;
 
     private PlayerData(UUID id)
@@ -279,8 +289,18 @@ public class PlayerData
     {
         score = zombieScore = kills = deaths = 0;
         team = newTeam = null;
-        //TODO: Uncomment for Teams
-        //playerClass = newPlayerClass = null;*/
+        playerClass = newPlayerClass = null;
+    }
+
+    public void applyPendingTeamSelection()
+    {
+        team = newTeam;
+        playerClass = newPlayerClass;
+    }
+
+    public static void removeServerData(UUID playerId)
+    {
+        serverSideData.remove(playerId);
     }
 
     public void playerKilled()

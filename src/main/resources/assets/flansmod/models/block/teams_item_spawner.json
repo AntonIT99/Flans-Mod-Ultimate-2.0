@@ -1,0 +1,10 @@
+{
+  "textures": { "particle": "flansmod:block/teams_item_spawner_1", "base": "flansmod:block/teams_item_spawner_1", "overlay": "flansmod:block/teams_item_spawner_2" },
+  "elements": [
+    { "from": [0, 0, 0], "to": [16, 1, 16], "faces": {
+      "down": { "texture": "#base", "cullface": "down" }, "up": { "texture": "#base" }, "north": { "texture": "#base" },
+      "south": { "texture": "#base" }, "west": { "texture": "#base" }, "east": { "texture": "#base" }
+    }},
+    { "from": [0, 1.01, 0], "to": [16, 1.02, 16], "faces": { "up": { "texture": "#overlay", "tintindex": 0 } } }
+  ]
+}

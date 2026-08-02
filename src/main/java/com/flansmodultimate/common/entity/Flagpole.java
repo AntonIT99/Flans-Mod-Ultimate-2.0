@@ -1,32 +1,211 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.common.teams.ITeamBase;
+import com.flansmodultimate.common.teams.TeamsManager;
+import net.minecraftforge.network.NetworkHooks;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
-public class Flagpole extends Entity
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
+
+public final class Flagpole extends Entity implements ITeamBase
 {
-    public Flagpole(EntityType<?> pEntityType, Level pLevel)
+    private static final EntityDataAccessor<Integer> DATA_DEFAULT_OWNER = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_OWNER = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> DATA_NAME = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> DATA_MAP = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
+
+    @Nullable private UUID flagId;
+    private final Set<UUID> objectIds = new LinkedHashSet<>();
+
+    public Flagpole(EntityType<?> type, Level level)
     {
-        super(pEntityType, pLevel);
+        super(type, level);
+        noPhysics = true;
+    }
+
+    public Flagpole(Level level, Vec3 position)
+    {
+        this(FlansMod.flagpoleEntity.get(), level);
+        setPos(position);
     }
 
     @Override
     protected void defineSynchedData()
     {
-
+        entityData.define(DATA_DEFAULT_OWNER, 0);
+        entityData.define(DATA_OWNER, 0);
+        entityData.define(DATA_NAME, "Default Base");
+        entityData.define(DATA_MAP, "");
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag pCompound)
+    public void tick()
     {
+        super.tick();
+        setDeltaMovement(Vec3.ZERO);
+        if (!(level() instanceof ServerLevel serverLevel) || isRemoved())
+            return;
 
+        // Give all entities from a freshly loaded chunk time to register before
+        // deciding the persisted flag is missing.
+        if (tickCount < 20)
+            return;
+
+        Flag flag = getFlag();
+        if (flag == null)
+        {
+            flag = new Flag(serverLevel, this);
+            flagId = flag.getUUID();
+            objectIds.add(flagId);
+            serverLevel.addFreshEntity(flag);
+        }
+        else if (flag.isHome())
+        {
+            flag.setPos(getX(), getY() + 2D, getZ());
+        }
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag pCompound)
+    public void onAddedToWorld()
     {
+        super.onAddedToWorld();
+        if (!level().isClientSide)
+            TeamsManager.getInstance().registerBase(this);
+    }
 
+    @Override
+    public void remove(@NotNull RemovalReason reason)
+    {
+        if (!level().isClientSide)
+            TeamsManager.getInstance().unregisterBase(getUUID());
+        super.remove(reason);
+    }
+
+    @NotNull
+    @Override
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    {
+        if (level().isClientSide)
+            return InteractionResult.SUCCESS;
+        if (!(player instanceof ServerPlayer serverPlayer))
+            return InteractionResult.PASS;
+        ItemStack held = player.getItemInHand(hand);
+        if (held.getItem() instanceof ItemOpStick stick && serverPlayer.hasPermissions(2))
+        {
+            stick.useOnTeamObject(serverPlayer, this, held);
+            return InteractionResult.CONSUME;
+        }
+        TeamsManager.getInstance().getCurrentGameType().ifPresent(type -> type.baseClicked(TeamsManager.getInstance(), serverPlayer, this));
+        return InteractionResult.CONSUME;
+    }
+
+    @Override public boolean isPickable() { return true; }
+    @Override public boolean isInvulnerableTo(@NotNull net.minecraft.world.damagesource.DamageSource source) { return true; }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        setDefaultOwnerId(tag.getInt("DefaultOwner"));
+        setOwnerId(tag.getInt("Owner"));
+        setBaseName(tag.getString("Name"));
+        setMapId(tag.getString("Map"));
+        flagId = tag.hasUUID("Flag") ? tag.getUUID("Flag") : null;
+        objectIds.clear();
+        for (Tag entry : tag.getList("Objects", Tag.TAG_COMPOUND))
+        {
+            CompoundTag object = (CompoundTag) entry;
+            if (object.hasUUID("Id"))
+                objectIds.add(object.getUUID("Id"));
+        }
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        tag.putInt("DefaultOwner", getDefaultOwnerId());
+        tag.putInt("Owner", getOwnerId());
+        tag.putString("Name", getBaseName());
+        tag.putString("Map", getMapId());
+        if (flagId != null)
+            tag.putUUID("Flag", flagId);
+        ListTag objects = new ListTag();
+        for (UUID id : objectIds)
+        {
+            CompoundTag object = new CompoundTag();
+            object.putUUID("Id", id);
+            objects.add(object);
+        }
+        tag.put("Objects", objects);
+    }
+
+    @NotNull
+    @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    @Override public UUID getObjectId() { return getUUID(); }
+    @Override public ResourceKey<Level> getDimension() { return level().dimension(); }
+    @Override public Vec3 getTeamObjectPosition() { return position(); }
+    @Override public String getBaseName() { return entityData.get(DATA_NAME); }
+    @Override public void setBaseName(String name) { entityData.set(DATA_NAME, StringUtils.defaultIfBlank(name, "Default Base")); }
+    @Override public int getDefaultOwnerId() { return entityData.get(DATA_DEFAULT_OWNER); }
+    @Override public void setDefaultOwnerId(int id) { entityData.set(DATA_DEFAULT_OWNER, Math.max(0, id)); setOwnerId(id); }
+    @Override public int getOwnerId() { return entityData.get(DATA_OWNER); }
+    @Override public void setOwnerId(int id) { entityData.set(DATA_OWNER, Math.max(0, id)); }
+    @Override public String getMapId() { return entityData.get(DATA_MAP); }
+    @Override public void setMapId(String mapId) { entityData.set(DATA_MAP, StringUtils.defaultString(mapId).toLowerCase(java.util.Locale.ROOT)); }
+    @Override public Collection<UUID> getObjectIds() { return Collections.unmodifiableSet(objectIds); }
+    @Override public void addObject(UUID objectId) { objectIds.add(objectId); }
+    @Override public void removeObject(UUID objectId) { objectIds.remove(objectId); }
+    @Override public void startRound() { setOwnerId(getDefaultOwnerId()); Flag flag = getFlag(); if (flag != null) flag.resetToBase(); }
+    @Override public void roundCleanup() { Flag flag = getFlag(); if (flag != null) flag.resetToBase(); }
+
+    @Nullable
+    @Override
+    public Flag getFlag()
+    {
+        if (flagId == null || !(level() instanceof ServerLevel serverLevel))
+            return null;
+        Entity entity = serverLevel.getEntity(flagId);
+        return entity instanceof Flag flag ? flag : null;
+    }
+
+    @Override
+    public void destroyTeamObject()
+    {
+        Flag flag = getFlag();
+        if (flag != null)
+            flag.discard();
+        discard();
     }
 }

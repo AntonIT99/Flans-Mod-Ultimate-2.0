@@ -9,6 +9,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketRequestDebug;
+import com.flansmodultimate.network.server.PacketTeamsAction;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,9 @@ public final class KeyInputHandler
     private static final KeyMapping fireModeKey = new KeyMapping("key." + FlansMod.MOD_ID + ".fireMode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_B, CATEGORY);
     private static final KeyMapping lookAtGunKey = new KeyMapping("key." + FlansMod.MOD_ID + ".lookAtGun", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_M, CATEGORY);
     private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY);
+    private static final KeyMapping teamsMenuKey = new KeyMapping("key." + FlansMod.MOD_ID + ".teams_menu", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_G, CATEGORY);
+    private static final KeyMapping teamsScoresKey = new KeyMapping("key." + FlansMod.MOD_ID + ".teams_scores", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_H, CATEGORY);
+    private static final KeyMapping teamsClassKey = new KeyMapping("key." + FlansMod.MOD_ID + ".teams_class", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_O, CATEGORY);
 
 
     //TODO: implement all key bindings
@@ -44,6 +48,9 @@ public final class KeyInputHandler
         event.register(fireModeKey);
         event.register(lookAtGunKey);
         event.register(debugKey);
+        event.register(teamsMenuKey);
+        event.register(teamsScoresKey);
+        event.register(teamsClassKey);
     }
 
     public static void checkKeys()
@@ -75,6 +82,13 @@ public final class KeyInputHandler
             else
                 PacketHandler.sendToServer(new PacketRequestDebug());
         }
+
+        if (noScreen && teamsMenuKey.consumeClick())
+            PacketHandler.sendToServer(PacketTeamsAction.openTeamMenu());
+        if (noScreen && teamsScoresKey.consumeClick())
+            PacketHandler.sendToServer(PacketTeamsAction.openScoreboard());
+        if (noScreen && teamsClassKey.consumeClick())
+            PacketHandler.sendToServer(PacketTeamsAction.openClassMenu());
     }
 
     private static void doSwitchFireMode()
