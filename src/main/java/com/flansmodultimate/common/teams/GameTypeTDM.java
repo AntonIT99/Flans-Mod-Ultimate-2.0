@@ -6,9 +6,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 
-/** Team deathmatch with optional friendly fire. */
 public class GameTypeTDM extends GameType
 {
+    private static final String NBT_FRIENDLY_FIRE = "tdm_friendly_fire";
+    private static final String NBT_AUTO_BALANCE = "tdm_auto_balance";
+
     private boolean friendlyFire;
     private boolean autoBalance = true;
 
@@ -28,7 +30,9 @@ public class GameTypeTDM extends GameType
         ServerPlayer attacker = getPlayerFromDamageSource(source);
         PlayerData victimData = PlayerData.getInstance(victim);
         victimData.setDeaths(victimData.getDeaths() + 1);
-        manager.getStats(victim).recordDeath();
+        PlayerStats victimStats = manager.getStats(victim);
+        victimStats.recordDeath();
+        manager.getCurrentLoadoutPool().ifPresent(pool -> manager.awardExperience(victim, pool.getExperienceForDeath()));
         if (attacker == null || attacker == victim)
         {
             victimData.setScore(victimData.getScore() - 1);
@@ -47,13 +51,25 @@ public class GameTypeTDM extends GameType
         attackerData.setScore(attackerData.getScore() + 1);
         attackerData.setKills(attackerData.getKills() + 1);
         PlayerStats attackerStats = manager.getStats(attacker);
-        attackerStats.addExperience(manager.getStats(victim).getRank() * 2);
         attackerStats.recordKill(attacker.distanceTo(victim));
+        int xp = manager.getCurrentLoadoutPool()
+            .map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
+            .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
+        manager.awardExperience(attacker, xp);
         manager.addTeamScore(attackerTeam, 1);
     }
 
-    @Override public boolean isFriendlyFireEnabled() { return friendlyFire; }
-    @Override public boolean isAutoBalanceEnabled() { return autoBalance; }
+    @Override
+    public boolean isFriendlyFireEnabled()
+    {
+        return friendlyFire;
+    }
+
+    @Override
+    public boolean isAutoBalanceEnabled()
+    {
+        return autoBalance;
+    }
 
     @Override
     public boolean setVariable(String variable, String value)
@@ -74,14 +90,14 @@ public class GameTypeTDM extends GameType
     @Override
     public void loadSettings(CompoundTag tag)
     {
-        friendlyFire = tag.getBoolean("TdmFriendlyFire");
-        autoBalance = !tag.contains("TdmAutoBalance") || tag.getBoolean("TdmAutoBalance");
+        friendlyFire = tag.getBoolean(NBT_FRIENDLY_FIRE);
+        autoBalance = !tag.contains(NBT_AUTO_BALANCE) || tag.getBoolean(NBT_AUTO_BALANCE);
     }
 
     @Override
     public void saveSettings(CompoundTag tag)
     {
-        tag.putBoolean("TdmFriendlyFire", friendlyFire);
-        tag.putBoolean("TdmAutoBalance", autoBalance);
+        tag.putBoolean(NBT_FRIENDLY_FIRE, friendlyFire);
+        tag.putBoolean(NBT_AUTO_BALANCE, autoBalance);
     }
 }

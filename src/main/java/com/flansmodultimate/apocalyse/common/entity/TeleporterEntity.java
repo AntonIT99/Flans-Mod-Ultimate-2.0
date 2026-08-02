@@ -2,11 +2,13 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -16,8 +18,15 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class TeleporterEntity extends Entity
 {
+    private static final String NBT_X = "x";
+    private static final String NBT_Y = "y";
+    private static final String NBT_Z = "z";
+    private static final String NBT_TARGET_X = "target_x";
+    private static final String NBT_TARGET_Y = "target_y";
+    private static final String NBT_TARGET_Z = "target_z";
     @Getter
     private BlockPos lowerLeftCorner = BlockPos.ZERO;
     @Nullable
@@ -54,7 +63,9 @@ public class TeleporterEntity extends Entity
         if (lowerLeftCorner == null || lowerLeftCorner.equals(BlockPos.ZERO))
             lowerLeftCorner = blockPosition().offset(-2, 0, -2);
 
-        if (!level().isClientSide)
+        Level level = level();
+
+        if (!level.isClientSide)
         {
             if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.isPortalFrame(level(), lowerLeftCorner))
             {
@@ -63,23 +74,23 @@ public class TeleporterEntity extends Entity
             }
 
             AABB touchBox = getBoundingBox().inflate(0.25D, 1.0D, 0.25D);
-            for (ServerPlayer player : level().getEntitiesOfClass(ServerPlayer.class, touchBox, p -> !p.isSpectator() && !p.isOnPortalCooldown()))
+            for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, touchBox, p -> !p.isSpectator() && !p.isOnPortalCooldown()))
                 ApocalypsePortalManager.teleportPlayer(player, this);
         }
         else
         {
-            spawnPortalParticles();
+            spawnPortalParticles(level);
         }
     }
 
-    private void spawnPortalParticles()
+    private void spawnPortalParticles(Level level)
     {
         for (int i = 0; i < 6; i++)
         {
             double dx = random.nextGaussian();
             double dy = random.nextGaussian() * 0.5D;
             double dz = random.nextGaussian();
-            level().addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, getX() + dx, getY() + 1.0D + dy, getZ() + dz, dx, dy, dz);
+            level.addParticle(ParticleTypes.PORTAL, getX() + dx, getY() + 1.0D + dy, getZ() + dz, dx, dy, dz);
         }
     }
 
@@ -92,23 +103,18 @@ public class TeleporterEntity extends Entity
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        lowerLeftCorner = new BlockPos(tag.getInt("X"), tag.getInt("Y"), tag.getInt("Z"));
-        if (tag.contains("TargetX"))
-            targetTeleporter = new BlockPos(tag.getInt("TargetX"), tag.getInt("TargetY"), tag.getInt("TargetZ"));
+        lowerLeftCorner = new BlockPos(tag.getInt(NBT_X), tag.getInt(NBT_Y), tag.getInt(NBT_Z));
+        if (tag.contains(NBT_TARGET_X)) targetTeleporter = new BlockPos(tag.getInt(NBT_TARGET_X), tag.getInt(NBT_TARGET_Y), tag.getInt(NBT_TARGET_Z));
         setPos(lowerLeftCorner.getX() + 2.0D, lowerLeftCorner.getY() + 0.5D, lowerLeftCorner.getZ() + 2.0D);
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putInt("X", lowerLeftCorner.getX());
-        tag.putInt("Y", lowerLeftCorner.getY());
-        tag.putInt("Z", lowerLeftCorner.getZ());
+        tag.putInt(NBT_X, lowerLeftCorner.getX()); tag.putInt(NBT_Y, lowerLeftCorner.getY()); tag.putInt(NBT_Z, lowerLeftCorner.getZ());
         if (targetTeleporter != null)
         {
-            tag.putInt("TargetX", targetTeleporter.getX());
-            tag.putInt("TargetY", targetTeleporter.getY());
-            tag.putInt("TargetZ", targetTeleporter.getZ());
+            tag.putInt(NBT_TARGET_X, targetTeleporter.getX()); tag.putInt(NBT_TARGET_Y, targetTeleporter.getY()); tag.putInt(NBT_TARGET_Z, targetTeleporter.getZ());
         }
     }
 }

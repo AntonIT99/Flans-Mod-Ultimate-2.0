@@ -2,19 +2,24 @@ package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
 public final class DigitalAmmoStorageHandler
 {
-    private static final String TAG_DIGITAL_AMMO = "FlansModDigitalAmmo";
+    private static final String NBT_DIGITAL_AMMO = "flansmod_digital_ammo";
+    private static final String NBT_BULLETS = "bullets";
+    private static final String NBT_NUM_TYPES = "num_types";
+    private static final String NBT_TYPE = "type";
+    private static final String NBT_AMOUNT = "amount";
 
     private DigitalAmmoStorageHandler() {}
 
@@ -33,8 +38,11 @@ public final class DigitalAmmoStorageHandler
 
     public static void savePlayerAmmo(Player player)
     {
-        if (!isDigitalAmmoEnabled()) return;
-        if (player == null || player.level() == null || player.level().isClientSide) return;
+        if (!isDigitalAmmoEnabled())
+            return;
+
+        if (player == null || player.level().isClientSide)
+            return;
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
 
@@ -46,35 +54,38 @@ public final class DigitalAmmoStorageHandler
         for (int i = 0; i < numTypes; i++)
         {
             CompoundTag bulletTag = new CompoundTag();
-            bulletTag.putInt("Type", i + 1);
-            bulletTag.putDouble("Amount", bulletData.getBullets(i + 1));
+            bulletTag.putInt(NBT_TYPE, i + 1);
+            bulletTag.putDouble(NBT_AMOUNT, bulletData.getBullets(i + 1));
             bulletsList.add(bulletTag);
         }
-        ammoTag.put("Bullets", bulletsList);
-        ammoTag.putInt("NumTypes", numTypes);
+        ammoTag.put(NBT_BULLETS, bulletsList);
+        ammoTag.putInt(NBT_NUM_TYPES, numTypes);
 
-        persistentData.put(TAG_DIGITAL_AMMO, ammoTag);
+        persistentData.put(NBT_DIGITAL_AMMO, ammoTag);
     }
 
     public static void loadPlayerAmmo(Player player)
     {
-        if (!isDigitalAmmoEnabled()) return;
-        if (player == null || player.level() == null || player.level().isClientSide) return;
+        if (!isDigitalAmmoEnabled())
+            return;
+
+        if (player == null || player.level().isClientSide)
+            return;
 
         CompoundTag persistentData = player.getPersistentData();
-        if (!persistentData.contains(TAG_DIGITAL_AMMO)) return;
+        if (!persistentData.contains(NBT_DIGITAL_AMMO))
+            return;
 
-        CompoundTag ammoTag = persistentData.getCompound(TAG_DIGITAL_AMMO);
-        if (ammoTag == null) return;
+        CompoundTag ammoTag = persistentData.getCompound(NBT_DIGITAL_AMMO);
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
 
-        ListTag bulletsList = ammoTag.getList("Bullets", Tag.TAG_COMPOUND);
+        ListTag bulletsList = ammoTag.getList(NBT_BULLETS, Tag.TAG_COMPOUND);
         for (int i = 0; i < bulletsList.size(); i++)
         {
             CompoundTag bulletTag = bulletsList.getCompound(i);
-            int type = bulletTag.getInt("Type");
-            double amount = bulletTag.getDouble("Amount");
+            int type = bulletTag.getInt(NBT_TYPE);
+            double amount = bulletTag.getDouble(NBT_AMOUNT);
             bulletData.setBullets(type, amount);
         }
     }
@@ -82,10 +93,12 @@ public final class DigitalAmmoStorageHandler
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
 
         Player player = event.getEntity();
-        if (player == null || player.level() == null || player.level().isClientSide) return;
+        if (player == null || player.level().isClientSide)
+            return;
 
         loadPlayerAmmo(player);
 
@@ -98,10 +111,12 @@ public final class DigitalAmmoStorageHandler
     @SubscribeEvent
     public static void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
 
         Player player = event.getEntity();
-        if (player == null || player.level() == null || player.level().isClientSide) return;
+        if (player == null || player.level().isClientSide)
+            return;
 
         savePlayerAmmo(player);
         PlayerBulletStorage.clearPlayerData(player.getUUID());
@@ -110,14 +125,18 @@ public final class DigitalAmmoStorageHandler
     @SubscribeEvent
     public static void onPlayerSave(PlayerEvent.SaveToFile event)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
+
         savePlayerAmmo(event.getEntity());
     }
 
     @SubscribeEvent
     public static void onPlayerLoad(PlayerEvent.LoadFromFile event)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
+
         loadPlayerAmmo(event.getEntity());
     }
 }

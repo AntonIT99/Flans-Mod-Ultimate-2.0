@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import lombok.EqualsAndHashCode;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,8 +34,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullBossEntity extends Monster
 {
+    private static final String NBT_ACTION = "apocalypse_action";
+    private static final String NBT_ACTION_TICKS = "apocalypse_action_ticks";
     private static final int IDLE_TICKS = 20;
     private static final int ACTION_TICKS = 80;
 
@@ -76,8 +80,9 @@ public class SkullBossEntity extends Monster
         setNoGravity(true);
         super.tick();
         bossEvent.setProgress(getHealth() / getMaxHealth());
+        Level level = level();
 
-        if (level().isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
+        if (level.isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
         actionTicks++;
@@ -107,7 +112,7 @@ public class SkullBossEntity extends Monster
             return;
         }
 
-        tickAction(target);
+        tickAction(level, target);
         if (actionTicks >= ACTION_TICKS)
             switchAction(Action.IDLE);
     }
@@ -130,22 +135,22 @@ public class SkullBossEntity extends Monster
         actionTicks = 0;
     }
 
-    private void tickAction(LivingEntity target)
+    private void tickAction(Level level, LivingEntity target)
     {
         switch (currentAction)
         {
-            case LAUGH -> tickLaugh();
+            case LAUGH -> tickLaugh(level);
             case SPAWN_DRONES -> {
                 if (actionTicks == 2)
-                    spawnDrones();
+                    spawnDrones(level);
             }
             case SHOOT_TNT -> {
                 if (actionTicks % 20 == 0)
-                    shootTnt(target);
+                    shootTnt(level, target);
             }
             case DROP_NUKE -> {
                 if (actionTicks == 2)
-                    callNukeDrop(target);
+                    callNukeDrop(level, target);
             }
             case IDLE -> {
                 // no-op
@@ -153,21 +158,22 @@ public class SkullBossEntity extends Monster
         }
     }
 
-    private void tickLaugh()
+    private void tickLaugh(Level level)
     {
         if (actionTicks == 2)
             playSound(resolveSound("skullboss_laugh", SoundEvents.WITHER_AMBIENT), 8.0F, 0.8F + random.nextFloat() * 0.4F);
 
-        if (actionTicks % 5 == 0 && level() instanceof ServerLevel serverLevel)
+        if (actionTicks % 5 == 0 && level instanceof ServerLevel serverLevel)
         {
             serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D, getZ() + random.nextGaussian() * 10.0D, 2.0F, false, Level.ExplosionInteraction.NONE);
         }
     }
 
-    private void spawnDrones()
+    private void spawnDrones(Level level)
     {
-        if (!(level() instanceof ServerLevel serverLevel))
+        if (!(level instanceof ServerLevel serverLevel))
             return;
+
         playSound(resolveSound("skullboss_spawn", SoundEvents.WITHER_SPAWN), 8.0F, 1.0F);
         int count = 1 + random.nextInt(3);
         for (int i = 0; i < count; i++)
@@ -181,9 +187,9 @@ public class SkullBossEntity extends Monster
         }
     }
 
-    private void shootTnt(LivingEntity target)
+    private void shootTnt(Level level, LivingEntity target)
     {
-        if (!(level() instanceof ServerLevel serverLevel))
+        if (!(level instanceof ServerLevel serverLevel))
             return;
 
         Vec3 direction = target.getEyePosition().subtract(getEyePosition());
@@ -198,10 +204,11 @@ public class SkullBossEntity extends Monster
         playSound(SoundEvents.FLINTANDSTEEL_USE, 6.0F, 1.0F);
     }
 
-    private void callNukeDrop(LivingEntity target)
+    private void callNukeDrop(Level level, LivingEntity target)
     {
-        if (!(level() instanceof ServerLevel serverLevel) || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
+        if (!(level instanceof ServerLevel serverLevel) || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
             return;
+
         NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.nukeDrop.get(), serverLevel);
         nuke.moveTo(target.getX(), Math.min(serverLevel.getMaxBuildHeight() - 4.0D, target.getY() + 48.0D), target.getZ(), 0.0F, 0.0F);
         serverLevel.addFreshEntity(nuke);
@@ -217,6 +224,7 @@ public class SkullBossEntity extends Monster
     {
         if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_FIRE))
             return false;
+
         return super.hurt(source, Math.min(amount, 99.0F));
     }
 
@@ -254,16 +262,16 @@ public class SkullBossEntity extends Monster
     public void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
-        currentAction = Action.byId(tag.getInt("ApocalypseAction"));
-        actionTicks = tag.getInt("ApocalypseActionTicks");
+        currentAction = Action.byId(tag.getInt(NBT_ACTION));
+        actionTicks = tag.getInt(NBT_ACTION_TICKS);
     }
 
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.addAdditionalSaveData(tag);
-        tag.putInt("ApocalypseAction", currentAction.ordinal());
-        tag.putInt("ApocalypseActionTicks", actionTicks);
+        tag.putInt(NBT_ACTION, currentAction.ordinal());
+        tag.putInt(NBT_ACTION_TICKS, actionTicks);
     }
 
     private enum Action

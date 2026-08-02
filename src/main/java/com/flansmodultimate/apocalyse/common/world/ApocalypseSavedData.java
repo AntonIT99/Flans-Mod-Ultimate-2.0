@@ -18,8 +18,12 @@ import java.util.UUID;
 public class ApocalypseSavedData extends SavedData
 {
     private static final String DATA_NAME = "flansmodultimate_apocalypse";
-    private static final String TAG_ENTRY_POINTS = "EntryPoints";
-    private static final String TAG_DEATH_POINTS = "DeathPoints";
+    private static final String NBT_ENTRY_POINTS = "entry_points";
+    private static final String NBT_DEATH_POINTS = "death_points";
+    private static final String NBT_UUID = "uuid";
+    private static final String NBT_X = "x";
+    private static final String NBT_Y = "y";
+    private static final String NBT_Z = "z";
 
     private final Map<UUID, BlockPos> entryPoints = new HashMap<>();
     private final Map<UUID, BlockPos> deathPoints = new HashMap<>();
@@ -34,21 +38,21 @@ public class ApocalypseSavedData extends SavedData
     public static ApocalypseSavedData load(CompoundTag tag)
     {
         ApocalypseSavedData data = new ApocalypseSavedData();
-        ListTag list = tag.getList(TAG_ENTRY_POINTS, Tag.TAG_COMPOUND);
+        ListTag list = tag.getList(NBT_ENTRY_POINTS, Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++)
         {
             CompoundTag entry = list.getCompound(i);
-            UUID uuid = entry.getUUID("UUID");
-            BlockPos pos = new BlockPos(entry.getInt("X"), entry.getInt("Y"), entry.getInt("Z"));
+            UUID uuid = entry.getUUID(NBT_UUID);
+            BlockPos pos = new BlockPos(entry.getInt(NBT_X), entry.getInt(NBT_Y), entry.getInt(NBT_Z));
             data.entryPoints.put(uuid, pos);
         }
 
-        ListTag deaths = tag.getList(TAG_DEATH_POINTS, Tag.TAG_COMPOUND);
+        ListTag deaths = tag.getList(NBT_DEATH_POINTS, Tag.TAG_COMPOUND);
         for (int i = 0; i < deaths.size(); i++)
         {
             CompoundTag entry = deaths.getCompound(i);
-            UUID uuid = entry.getUUID("UUID");
-            BlockPos pos = new BlockPos(entry.getInt("X"), entry.getInt("Y"), entry.getInt("Z"));
+            UUID uuid = entry.getUUID(NBT_UUID);
+            BlockPos pos = new BlockPos(entry.getInt(NBT_X), entry.getInt(NBT_Y), entry.getInt(NBT_Z));
             data.deathPoints.put(uuid, pos);
         }
         return data;
@@ -85,26 +89,22 @@ public class ApocalypseSavedData extends SavedData
         {
             CompoundTag pointTag = new CompoundTag();
             BlockPos pos = entry.getValue();
-            pointTag.putUUID("UUID", entry.getKey());
-            pointTag.putInt("X", pos.getX());
-            pointTag.putInt("Y", pos.getY());
-            pointTag.putInt("Z", pos.getZ());
+            pointTag.putUUID(NBT_UUID, entry.getKey());
+            pointTag.putInt(NBT_X, pos.getX()); pointTag.putInt(NBT_Y, pos.getY()); pointTag.putInt(NBT_Z, pos.getZ());
             list.add(pointTag);
         }
-        tag.put(TAG_ENTRY_POINTS, list);
+        tag.put(NBT_ENTRY_POINTS, list);
 
         ListTag deaths = new ListTag();
         for (Map.Entry<UUID, BlockPos> entry : deathPoints.entrySet())
         {
             CompoundTag pointTag = new CompoundTag();
             BlockPos pos = entry.getValue();
-            pointTag.putUUID("UUID", entry.getKey());
-            pointTag.putInt("X", pos.getX());
-            pointTag.putInt("Y", pos.getY());
-            pointTag.putInt("Z", pos.getZ());
+            pointTag.putUUID(NBT_UUID, entry.getKey());
+            pointTag.putInt(NBT_X, pos.getX()); pointTag.putInt(NBT_Y, pos.getY()); pointTag.putInt(NBT_Z, pos.getZ());
             deaths.add(pointTag);
         }
-        tag.put(TAG_DEATH_POINTS, deaths);
+        tag.put(NBT_DEATH_POINTS, deaths);
         return tag;
     }
 }

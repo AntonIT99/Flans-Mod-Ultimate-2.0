@@ -23,6 +23,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -284,7 +285,7 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onLogout(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event)
+    public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
     }

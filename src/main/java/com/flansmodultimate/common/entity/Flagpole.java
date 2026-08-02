@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
+import lombok.EqualsAndHashCode;
 import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -35,8 +37,17 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public final class Flagpole extends Entity implements ITeamBase
 {
+    private static final String NBT_DEFAULT_OWNER = "default_owner";
+    private static final String NBT_OWNER = "owner";
+    private static final String NBT_NAME = "name";
+    private static final String NBT_MAP = "map";
+    private static final String NBT_FLAG = "flag";
+    private static final String NBT_OBJECTS = "objects";
+    private static final String NBT_ID = "id";
+
     private static final EntityDataAccessor<Integer> DATA_DEFAULT_OWNER = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_OWNER = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> DATA_NAME = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
@@ -127,43 +138,45 @@ public final class Flagpole extends Entity implements ITeamBase
         return InteractionResult.CONSUME;
     }
 
-    @Override public boolean isPickable() { return true; }
-    @Override public boolean isInvulnerableTo(@NotNull net.minecraft.world.damagesource.DamageSource source) { return true; }
+    @Override
+    public boolean isPickable()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean isInvulnerableTo(@NotNull DamageSource source)
+    {
+        return true;
+    }
 
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        setDefaultOwnerId(tag.getInt("DefaultOwner"));
-        setOwnerId(tag.getInt("Owner"));
-        setBaseName(tag.getString("Name"));
-        setMapId(tag.getString("Map"));
-        flagId = tag.hasUUID("Flag") ? tag.getUUID("Flag") : null;
+        setDefaultOwnerId(tag.getInt(NBT_DEFAULT_OWNER)); setOwnerId(tag.getInt(NBT_OWNER)); setBaseName(tag.getString(NBT_NAME)); setMapId(tag.getString(NBT_MAP));
+        flagId = tag.hasUUID(NBT_FLAG) ? tag.getUUID(NBT_FLAG) : null;
         objectIds.clear();
-        for (Tag entry : tag.getList("Objects", Tag.TAG_COMPOUND))
+        for (Tag entry : tag.getList(NBT_OBJECTS, Tag.TAG_COMPOUND))
         {
             CompoundTag object = (CompoundTag) entry;
-            if (object.hasUUID("Id"))
-                objectIds.add(object.getUUID("Id"));
+            if (object.hasUUID(NBT_ID)) objectIds.add(object.getUUID(NBT_ID));
         }
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putInt("DefaultOwner", getDefaultOwnerId());
-        tag.putInt("Owner", getOwnerId());
-        tag.putString("Name", getBaseName());
-        tag.putString("Map", getMapId());
+        tag.putInt(NBT_DEFAULT_OWNER, getDefaultOwnerId()); tag.putInt(NBT_OWNER, getOwnerId()); tag.putString(NBT_NAME, getBaseName()); tag.putString(NBT_MAP, getMapId());
         if (flagId != null)
-            tag.putUUID("Flag", flagId);
+            tag.putUUID(NBT_FLAG, flagId);
         ListTag objects = new ListTag();
         for (UUID id : objectIds)
         {
             CompoundTag object = new CompoundTag();
-            object.putUUID("Id", id);
+            object.putUUID(NBT_ID, id);
             objects.add(object);
         }
-        tag.put("Objects", objects);
+        tag.put(NBT_OBJECTS, objects);
     }
 
     @NotNull
@@ -173,22 +186,107 @@ public final class Flagpole extends Entity implements ITeamBase
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    @Override public UUID getObjectId() { return getUUID(); }
-    @Override public ResourceKey<Level> getDimension() { return level().dimension(); }
-    @Override public Vec3 getTeamObjectPosition() { return position(); }
-    @Override public String getBaseName() { return entityData.get(DATA_NAME); }
-    @Override public void setBaseName(String name) { entityData.set(DATA_NAME, StringUtils.defaultIfBlank(name, "Default Base")); }
-    @Override public int getDefaultOwnerId() { return entityData.get(DATA_DEFAULT_OWNER); }
-    @Override public void setDefaultOwnerId(int id) { entityData.set(DATA_DEFAULT_OWNER, Math.max(0, id)); setOwnerId(id); }
-    @Override public int getOwnerId() { return entityData.get(DATA_OWNER); }
-    @Override public void setOwnerId(int id) { entityData.set(DATA_OWNER, Math.max(0, id)); }
-    @Override public String getMapId() { return entityData.get(DATA_MAP); }
-    @Override public void setMapId(String mapId) { entityData.set(DATA_MAP, StringUtils.defaultString(mapId).toLowerCase(java.util.Locale.ROOT)); }
-    @Override public Collection<UUID> getObjectIds() { return Collections.unmodifiableSet(objectIds); }
-    @Override public void addObject(UUID objectId) { objectIds.add(objectId); }
-    @Override public void removeObject(UUID objectId) { objectIds.remove(objectId); }
-    @Override public void startRound() { setOwnerId(getDefaultOwnerId()); Flag flag = getFlag(); if (flag != null) flag.resetToBase(); }
-    @Override public void roundCleanup() { Flag flag = getFlag(); if (flag != null) flag.resetToBase(); }
+    @Override
+    public UUID getObjectId()
+    {
+        return getUUID();
+    }
+
+    @Override
+    public ResourceKey<Level> getDimension()
+    {
+        return level().dimension();
+    }
+
+    @Override
+    public Vec3 getTeamObjectPosition()
+    {
+        return position();
+    }
+
+    @Override
+    public String getBaseName()
+    {
+        return entityData.get(DATA_NAME);
+    }
+
+    @Override
+    public void setBaseName(String name)
+    {
+        entityData.set(DATA_NAME, StringUtils.defaultIfBlank(name, "Default Base"));
+    }
+
+    @Override
+    public int getDefaultOwnerId()
+    {
+        return entityData.get(DATA_DEFAULT_OWNER);
+    }
+
+    @Override
+    public void setDefaultOwnerId(int id)
+    {
+        entityData.set(DATA_DEFAULT_OWNER, Math.max(0, id));
+        setOwnerId(id);
+    }
+
+    @Override
+    public int getOwnerId()
+    {
+        return entityData.get(DATA_OWNER);
+    }
+
+    @Override
+    public void setOwnerId(int id)
+    {
+        entityData.set(DATA_OWNER, Math.max(0, id));
+    }
+
+    @Override
+    public String getMapId()
+    {
+        return entityData.get(DATA_MAP);
+    }
+
+    @Override
+    public void setMapId(String mapId)
+    {
+        entityData.set(DATA_MAP, StringUtils.defaultString(mapId).toLowerCase(java.util.Locale.ROOT));
+    }
+
+    @Override
+    public Collection<UUID> getObjectIds()
+    {
+        return Collections.unmodifiableSet(objectIds);
+    }
+
+    @Override
+    public void addObject(UUID objectId)
+    {
+        objectIds.add(objectId);
+    }
+
+    @Override
+    public void removeObject(UUID objectId)
+    {
+        objectIds.remove(objectId);
+    }
+
+    @Override
+    public void startRound()
+    {
+        setOwnerId(getDefaultOwnerId());
+        Flag flag = getFlag();
+        if (flag != null)
+            flag.resetToBase();
+    }
+
+    @Override
+    public void roundCleanup()
+    {
+        Flag flag = getFlag();
+        if (flag != null)
+            flag.resetToBase();
+    }
 
     @Nullable
     @Override

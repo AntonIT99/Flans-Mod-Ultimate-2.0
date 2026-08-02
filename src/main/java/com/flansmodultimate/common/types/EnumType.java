@@ -17,6 +17,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.ItemHolderItem;
 import com.flansmodultimate.common.item.PartItem;
+import com.flansmodultimate.common.item.RewardBoxItem;
 import com.flansmodultimate.common.item.ToolItem;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,9 @@ public enum EnumType
     PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
     TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
     PLAYER_CLASS("player_class", "classes", ContentManager.FOLDER_TEXTURES_SKINS, PlayerClass.class, null, null, false, 12),
-    TEAM("team", "teams", ContentManager.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13);
+    TEAM("team", "teams", ContentManager.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13),
+    REWARD_BOX("reward_box", "rewardBoxes", ContentManager.FOLDER_TEXTURES_SKINS, RewardBox.class, RewardBoxItem.class, null, false, 14),
+    LOADOUT_POOL("loadout_pool", "loadouts", ContentManager.FOLDER_TEXTURES_SKINS, LoadoutPool.class, null, null, false, 15);
 
     private final String identifier;
     private final String configFolderName;

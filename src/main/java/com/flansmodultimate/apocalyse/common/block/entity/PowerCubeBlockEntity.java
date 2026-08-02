@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 @Getter
 public class PowerCubeBlockEntity extends BlockEntity
 {
+    private static final String NBT_AGE = "age";
     private int age;
 
     public PowerCubeBlockEntity(BlockPos pos, BlockState state)
@@ -28,13 +29,13 @@ public class PowerCubeBlockEntity extends BlockEntity
     protected void saveAdditional(@NotNull CompoundTag tag)
     {
         super.saveAdditional(tag);
-        tag.putInt("Age", age);
+        tag.putInt(NBT_AGE, age);
     }
 
     @Override
     public void load(@NotNull CompoundTag tag)
     {
         super.load(tag);
-        age = tag.getInt("Age");
+        age = tag.getInt(NBT_AGE);
     }
 }

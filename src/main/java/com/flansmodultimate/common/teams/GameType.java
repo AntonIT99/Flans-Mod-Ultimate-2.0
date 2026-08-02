@@ -4,6 +4,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.types.Team;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** Server-side ruleset contract for a Teams round. */
+@Getter
 public abstract class GameType
 {
     private static final Map<String, GameType> TYPES = new LinkedHashMap<>();
@@ -38,12 +39,10 @@ public abstract class GameType
             throw new IllegalStateException("Duplicate game type: " + id);
     }
 
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public int getRequiredTeams() { return requiredTeams; }
-
     public void roundStarted(TeamsManager manager) {}
+
     public void roundEnded(TeamsManager manager) {}
+
     public void tick(TeamsManager manager) {}
 
     public boolean canPlayerBeAttacked(ServerPlayer victim, ServerPlayer attacker)
@@ -51,7 +50,9 @@ public abstract class GameType
         TeamsManager manager = TeamsManager.getInstance();
         Team victimTeam = manager.getPlayerTeam(victim);
         Team attackerTeam = manager.getPlayerTeam(attacker);
-        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null
+        return victimTeam != Team.SPECTATORS
+            && attackerTeam != null
+            && victimTeam != null
             && (victimTeam != attackerTeam || isFriendlyFireEnabled());
     }
 
@@ -65,7 +66,9 @@ public abstract class GameType
     {
         PlayerData victimData = PlayerData.getInstance(victim);
         victimData.setDeaths(victimData.getDeaths() + 1);
-        manager.getStats(victim).recordDeath();
+        PlayerStats victimStats = manager.getStats(victim);
+        victimStats.recordDeath();
+        manager.getCurrentLoadoutPool().ifPresent(pool -> manager.awardExperience(victim, pool.getExperienceForDeath()));
 
         ServerPlayer attacker = getPlayerFromDamageSource(source);
         if (attacker == null || attacker == victim)
@@ -78,13 +81,21 @@ public abstract class GameType
         attackerData.setScore(attackerData.getScore() + 1);
         attackerData.setKills(attackerData.getKills() + 1);
         PlayerStats attackerStats = manager.getStats(attacker);
-        attackerStats.addExperience(manager.getStats(victim).getRank() * 2);
         attackerStats.recordKill(attacker.distanceTo(victim));
+        int xp = manager.getCurrentLoadoutPool()
+            .map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
+            .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
+        manager.awardExperience(attacker, xp);
     }
 
     public void flagClicked(TeamsManager manager, ServerPlayer player, Flag flag) {}
+
     public void baseClicked(TeamsManager manager, ServerPlayer player, Flagpole base) {}
-    public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack) { return true; }
+
+    public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack)
+    {
+        return true;
+    }
 
     @Nullable
     public Vec3 getSpawnPoint(TeamsManager manager, ServerPlayer player)
@@ -97,12 +108,33 @@ public abstract class GameType
         return manager.getTeamScore(team) >= manager.getCurrentRound().map(TeamsRound::getScoreLimit).orElse(Integer.MAX_VALUE);
     }
 
-    public boolean isFriendlyFireEnabled() { return false; }
-    public boolean isAutoBalanceEnabled() { return true; }
-    public boolean isScoreboardSortedByTeam() { return true; }
-    public boolean showZombieScore() { return false; }
-    public boolean setVariable(String variable, String value) { return false; }
+    public boolean isFriendlyFireEnabled()
+    {
+        return false;
+    }
+
+    public boolean isAutoBalanceEnabled()
+    {
+        return true;
+    }
+
+    public boolean isScoreboardSortedByTeam()
+    {
+        return true;
+    }
+
+    public boolean showZombieScore()
+    {
+        return false;
+    }
+
+    public boolean setVariable(String variable, String value)
+    {
+        return false;
+    }
+
     public void loadSettings(CompoundTag tag) {}
+
     public void saveSettings(CompoundTag tag) {}
 
     @Nullable

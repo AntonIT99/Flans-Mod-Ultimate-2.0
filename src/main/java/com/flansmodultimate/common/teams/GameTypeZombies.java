@@ -11,9 +11,11 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-/** Infection mode: team zero starts human and deaths convert players to team one. */
 public final class GameTypeZombies extends GameType
 {
+    private static final String NBT_PREP_TIME = "zombie_prep_time";
+    private static final String NBT_FRIENDLY_FIRE = "zombie_friendly_fire";
+
     private boolean friendlyFire;
     private int humanPrepTimeTicks = 30 * 20;
     private boolean infectionStarted;
@@ -62,15 +64,29 @@ public final class GameTypeZombies extends GameType
         super.playerKilled(manager, victim, source);
         if (infectionStarted)
         {
-            Team zombies = manager.getCurrentRound().map(round -> round.getTeam(1)).orElse(null);
-            if (zombies != null)
-                manager.selectTeam(victim, zombies, true);
+            manager.getCurrentRound()
+                .map(round -> round.getTeam(1))
+                .ifPresent(zombies -> manager.selectTeam(victim, zombies, true));
         }
     }
 
-    @Override public boolean isFriendlyFireEnabled() { return friendlyFire; }
-    @Override public boolean showZombieScore() { return true; }
-    @Override public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack) { return manager.getRoundTeamIndex(manager.getPlayerTeam(player)) != 1; }
+    @Override
+    public boolean isFriendlyFireEnabled()
+    {
+        return friendlyFire;
+    }
+
+    @Override
+    public boolean showZombieScore()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack)
+    {
+        return manager.getRoundTeamIndex(manager.getPlayerTeam(player)) != 1;
+    }
 
     @Override
     public Vec3 getSpawnPoint(TeamsManager manager, ServerPlayer player)
@@ -103,6 +119,17 @@ public final class GameTypeZombies extends GameType
         return false;
     }
 
-    @Override public void loadSettings(CompoundTag tag) { humanPrepTimeTicks = Math.max(0, tag.getInt("ZombiePrepTime")); friendlyFire = tag.getBoolean("ZombieFriendlyFire"); }
-    @Override public void saveSettings(CompoundTag tag) { tag.putInt("ZombiePrepTime", humanPrepTimeTicks); tag.putBoolean("ZombieFriendlyFire", friendlyFire); }
+    @Override
+    public void loadSettings(CompoundTag tag)
+    {
+        humanPrepTimeTicks = Math.max(0, tag.getInt(NBT_PREP_TIME));
+        friendlyFire = tag.getBoolean(NBT_FRIENDLY_FIRE);
+    }
+
+    @Override
+    public void saveSettings(CompoundTag tag)
+    {
+        tag.putInt(NBT_PREP_TIME, humanPrepTimeTicks);
+        tag.putBoolean(NBT_FRIENDLY_FIRE, friendlyFire);
+    }
 }

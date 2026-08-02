@@ -24,18 +24,25 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.UUID;
 
-/** One modern item replacing the four metadata-based legacy operator sticks. */
 public final class ItemOpStick extends Item
 {
-    private static final String NBT_MODE = "TeamsMode";
-    private static final String NBT_CONNECTION = "TeamsConnection";
-    private static final String NBT_CONNECTION_BASE = "TeamsConnectionIsBase";
+    private static final String NBT_MODE = "teams_mode";
+    private static final String NBT_CONNECTION = "teams_connection";
+    private static final String NBT_CONNECTION_BASE = "teams_connection_is_base";
 
     public enum Mode
     {
-        OWNERSHIP("Ownership"), CONNECTING("Connecting"), MAPPING("Mapping"), DESTRUCTION("Destruction");
+        OWNERSHIP("Ownership"),
+        CONNECTING("Connecting"),
+        MAPPING("Mapping"),
+        DESTRUCTION("Destruction");
+
         private final String displayName;
-        Mode(String displayName) { this.displayName = displayName; }
+
+        Mode(String displayName)
+        {
+            this.displayName = displayName;
+        }
     }
 
     public ItemOpStick()

@@ -136,6 +136,10 @@ public class FlansMod
     public static final ResourceLocation armorBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
     public static final ResourceLocation gunBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
     public static final ResourceLocation ammoGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
+    public static final ResourceLocation teamsLoadoutEditorGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_loadout_editor.png");
+    public static final ResourceLocation teamsLandingPageGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_landing_page.png");
+    public static final ResourceLocation teamsMissionResultsGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_mission_results.png");
+    public static final ResourceLocation teamsOpenCreatesGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_open_crates.png");
 
     // Registries
     private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);

@@ -4,13 +4,16 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.types.Team;
+import lombok.Getter;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-/** Capture the flag. Flags track carriers by UUID instead of legacy riding links. */
+@Getter
 public final class GameTypeCTF extends GameTypeTDM
 {
+    private static final String NBT_FLAG_RETURN_TIME = "ctf_flag_time";
     private int flagReturnTimeSeconds = 30;
 
     GameTypeCTF()
@@ -44,6 +47,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 flag.resetToBase();
                 data.setScore(data.getScore() + 2);
                 manager.getStats(player).recordFlagSave();
+                manager.awardExperience(player, 10);
                 manager.broadcast(Component.literal(player.getScoreboardName() + " returned the " + flagTeam.getName() + " flag"));
                 return;
             }
@@ -56,6 +60,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 manager.addTeamScore(playerTeam, 1);
                 data.setScore(data.getScore() + 10);
                 manager.getStats(player).recordFlagCapture();
+                manager.awardExperience(player, 20);
                 manager.broadcast(Component.literal(player.getScoreboardName() + " captured the " + (captured == null ? "enemy" : captured.getName()) + " flag"));
             }
             return;
@@ -75,8 +80,6 @@ public final class GameTypeCTF extends GameTypeTDM
         }
     }
 
-    public int getFlagReturnTimeSeconds() { return flagReturnTimeSeconds; }
-
     @Override
     public boolean setVariable(String variable, String value)
     {
@@ -88,6 +91,17 @@ public final class GameTypeCTF extends GameTypeTDM
         return super.setVariable(variable, value);
     }
 
-    @Override public void loadSettings(CompoundTag tag) { super.loadSettings(tag); flagReturnTimeSeconds = Math.max(1, tag.getInt("CtfFlagTime")); }
-    @Override public void saveSettings(CompoundTag tag) { super.saveSettings(tag); tag.putInt("CtfFlagTime", flagReturnTimeSeconds); }
+    @Override
+    public void loadSettings(CompoundTag tag)
+    {
+        super.loadSettings(tag);
+        flagReturnTimeSeconds = Math.max(1, tag.getInt(NBT_FLAG_RETURN_TIME));
+    }
+
+    @Override
+    public void saveSettings(CompoundTag tag)
+    {
+        super.saveSettings(tag);
+        tag.putInt(NBT_FLAG_RETURN_TIME, flagReturnTimeSeconds);
+    }
 }

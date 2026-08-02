@@ -18,6 +18,7 @@ import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -34,6 +35,7 @@ import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.network.server.PacketLoadoutAction;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketRequestDismount;
@@ -66,7 +68,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "3";
+    public static final String PROTOCOL = "4";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -110,6 +112,7 @@ public final class PacketHandler {
         registerS2C(PacketSyncCommonConfig.class);
         registerS2C(PacketSyncDigitalAmmo.class);
         registerS2C(PacketTeamsState.class);
+        registerS2C(PacketLoadoutState.class);
 
         // Client to Server Packets
         registerC2S(PacketAAGunModelBarrelOrigins.class);
@@ -127,6 +130,7 @@ public final class PacketHandler {
         registerC2S(PacketRequestDismount.class);
         registerC2S(PacketSelectPaintjob.class);
         registerC2S(PacketTeamsAction.class);
+        registerC2S(PacketLoadoutAction.class);
 
         initAndRegister();
     }

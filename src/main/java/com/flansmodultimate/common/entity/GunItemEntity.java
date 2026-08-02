@@ -36,7 +36,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class GunItemEntity extends ItemEntity
 {
-    protected static final String NBT_AMMO_LIST = "AmmoStacks";
+    protected static final String NBT_AMMO_LIST = "ammo_stacks";
     protected final List<ItemStack> ammoStacks = new ArrayList<>();
 
     public GunItemEntity(EntityType<? extends GunItemEntity> type, Level level)

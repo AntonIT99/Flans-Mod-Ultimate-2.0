@@ -4,9 +4,13 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
+import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.PlayerClass;
+import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +19,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -34,6 +40,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,46 +50,121 @@ import java.util.UUID;
  */
 public final class TeamsManager
 {
-    public enum EnumWeaponDrop { NONE, DROPS, SMART_DROPS }
+    private static final String NBT_ENABLED = "enabled";
+    private static final String NBT_ROUND_RUNNING = "round_running";
+    private static final String NBT_CURRENT_ROUND = "current_round";
+    private static final String NBT_ROTATION_INDEX = "rotation_index";
+    private static final String NBT_TIME_LEFT = "time_left";
+    private static final String NBT_ELAPSED = "elapsed";
+    private static final String NBT_INTERMISSION = "intermission";
+    private static final String NBT_VOTE_OPTIONS = "vote_options";
+    private static final String NBT_ID = "id";
+    private static final String NBT_EXPLOSIONS = "explosions";
+    private static final String NBT_BREAK_GLASS = "break_glass";
+    private static final String NBT_BREAK_GUNS = "break_guns";
+    private static final String NBT_DRIVEABLES_BREAK_BLOCKS = "driveables_break_blocks";
+    private static final String NBT_BOMBS = "bombs";
+    private static final String NBT_SHELLS = "shells";
+    private static final String NBT_BULLETS = "bullets";
+    private static final String NBT_ADVENTURE = "adventure";
+    private static final String NBT_ARMOUR_DROPS = "armour_drops";
+    private static final String NBT_FUEL = "fuel";
+    private static final String NBT_OVERRIDE_HUNGER = "override_hunger";
+    private static final String NBT_BREAK_VEHICLES = "break_vehicles";
+    private static final String NBT_PLACE_VEHICLES = "place_vehicles";
+    private static final String NBT_WEAPON_DROPS = "weapon_drops";
+    private static final String NBT_MG_LIFE = "mg_life";
+    private static final String NBT_PLANE_LIFE = "plane_life";
+    private static final String NBT_VEHICLE_LIFE = "vehicle_life";
+    private static final String NBT_MECHA_LIFE = "mecha_life";
+    private static final String NBT_AA_LIFE = "aa_life";
+    private static final String NBT_VOTING = "voting";
+    private static final String NBT_ROUNDS_GENERATOR = "rounds_generator";
+    private static final String NBT_LOADOUT_POOL = "loadout_pool";
+    private static final String NBT_EXPERIENCE_MULTIPLIER = "experience_multiplier";
+    private static final String NBT_SCORES = "scores";
+    
+    public enum EnumWeaponDrop
+    { 
+        NONE, 
+        DROPS, 
+        SMART_DROPS 
+    }
 
     private static TeamsManager instance;
 
-    @Getter @Setter private boolean explosionsBreakBlocks = true;
-    @Getter @Setter private boolean canBreakGlass = true;
-    @Getter @Setter private boolean canBreakGuns = true;
-    @Getter @Setter private boolean driveablesBreakBlocks = true;
-    @Getter @Setter private boolean bombsEnabled = true;
-    @Getter @Setter private boolean shellsEnabled = true;
-    @Getter @Setter private boolean bulletsEnabled = true;
-    @Getter @Setter private boolean forceAdventureMode = true;
-    @Getter @Setter private boolean armourDrops = true;
-    @Getter @Setter private boolean vehiclesNeedFuel = true;
-    @Getter @Setter private boolean overrideHunger = true;
-    @Getter @Setter private boolean survivalCanBreakVehicles = true;
-    @Getter @Setter private boolean survivalCanPlaceVehicles = true;
-    @Getter @Setter private EnumWeaponDrop weaponDrops = EnumWeaponDrop.DROPS;
-    @Getter @Setter private int mgLife;
-    @Getter @Setter private int planeLife;
-    @Getter @Setter private int vehicleLife;
-    @Getter @Setter private int mechaLife;
-    @Getter @Setter private int aaLife;
-    @Getter @Setter private int bulletSnapshotMin;
-    @Getter @Setter private int bulletSnapshotDivisor = 50;
-    @Getter private boolean voting;
-    @Getter @Setter private boolean roundsGenerator;
+    @Getter @Setter 
+    private boolean explosionsBreakBlocks = true;
+    @Getter @Setter 
+    private boolean canBreakGlass = true;
+    @Getter @Setter 
+    private boolean canBreakGuns = true;
+    @Getter @Setter 
+    private boolean driveablesBreakBlocks = true;
+    @Getter @Setter 
+    private boolean bombsEnabled = true;
+    @Getter @Setter 
+    private boolean shellsEnabled = true;
+    @Getter @Setter 
+    private boolean bulletsEnabled = true;
+    @Getter @Setter 
+    private boolean forceAdventureMode = true;
+    @Getter @Setter 
+    private boolean armourDrops = true;
+    @Getter @Setter 
+    private boolean vehiclesNeedFuel = true;
+    @Getter @Setter 
+    private boolean overrideHunger = true;
+    @Getter @Setter 
+    private boolean survivalCanBreakVehicles = true;
+    @Getter @Setter 
+    private boolean survivalCanPlaceVehicles = true;
+    @Getter @Setter 
+    private EnumWeaponDrop weaponDrops = EnumWeaponDrop.DROPS;
+    @Getter @Setter 
+    private int mgLife;
+    @Getter @Setter 
+    private int planeLife;
+    @Getter @Setter 
+    private int vehicleLife;
+    @Getter @Setter 
+    private int mechaLife;
+    @Getter @Setter 
+    private int aaLife;
+    @Getter @Setter 
+    private int bulletSnapshotMin;
+    @Getter @Setter 
+    private int bulletSnapshotDivisor = 50;
+    @Getter 
+    private boolean voting;
+    @Getter @Setter 
+    private boolean roundsGenerator;
+    @Getter 
+    private String currentLoadoutPoolId = "";
+    @Getter 
+    private float experienceMultiplier = 1F;
 
-    @Nullable private MinecraftServer server;
-    @Nullable private TeamsSavedData savedData;
+    @Nullable 
+    private MinecraftServer server;
+    @Nullable 
+    private TeamsSavedData savedData;
     private final Map<UUID, Flagpole> liveBases = new HashMap<>();
     private final Map<UUID, ITeamObject> liveObjects = new HashMap<>();
     private final Map<String, Integer> teamScores = new LinkedHashMap<>();
+    @Getter
     private final RandomSource random = RandomSource.create();
+    @Getter
     private boolean enabled = true;
+    @Getter
     private boolean roundRunning;
-    @Nullable private UUID currentRoundId;
+    @Nullable 
+    private UUID currentRoundId;
     private int rotationIndex = -1;
+    @Getter
     private int roundTimeLeftTicks;
+    @Getter
     private int roundElapsedTicks;
+    @Getter
     private int intermissionTicks;
     private final List<UUID> voteOptionIds = new ArrayList<>();
 
@@ -103,6 +185,7 @@ public final class TeamsManager
     {
         if (this.server == server && savedData != null)
             return;
+
         this.server = server;
         savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData::load, TeamsSavedData::new, TeamsSavedData.ID);
         loadRuntime(savedData.runtime);
@@ -126,12 +209,6 @@ public final class TeamsManager
         return server;
     }
 
-    public RandomSource getRandom() { return random; }
-    public boolean isEnabled() { return enabled; }
-    public boolean isRoundRunning() { return roundRunning; }
-    public int getRoundTimeLeftTicks() { return roundTimeLeftTicks; }
-    public int getRoundElapsedTicks() { return roundElapsedTicks; }
-    public int getIntermissionTicks() { return intermissionTicks; }
     public List<TeamsRound> getVoteOptions()
     {
         if (savedData == null)
@@ -167,6 +244,32 @@ public final class TeamsManager
         return getCurrentRound().map(TeamsRound::getGametype);
     }
 
+    public Optional<LoadoutPool> getCurrentLoadoutPool()
+    {
+        return Optional.ofNullable(LoadoutPool.get(currentLoadoutPoolId));
+    }
+
+    public boolean setCurrentLoadoutPool(@Nullable String id)
+    {
+        if (id == null || id.isBlank() || "none".equalsIgnoreCase(id))
+        {
+            currentLoadoutPoolId = "";
+            saveRuntime();
+            return true;
+        }
+        LoadoutPool pool = LoadoutPool.get(id);
+        if (pool == null) return false;
+        currentLoadoutPoolId = pool.getOriginalShortName();
+        saveRuntime();
+        return true;
+    }
+
+    public void setExperienceMultiplier(float multiplier)
+    {
+        experienceMultiplier = Math.max(0F, Math.min(100F, multiplier));
+        saveRuntime();
+    }
+
     public Collection<TeamsMap> getMaps()
     {
         return savedData == null ? List.of() : java.util.Collections.unmodifiableCollection(savedData.maps.values());
@@ -186,8 +289,10 @@ public final class TeamsManager
     {
         ensureData();
         TeamsMap map = new TeamsMap(id, name, level.dimension());
-        if (savedData.maps.putIfAbsent(map.getShortName(), map) != null)
+
+        if (savedData != null && savedData.maps.putIfAbsent(map.getShortName(), map) != null)
             throw new IllegalArgumentException("A map named '" + map.getShortName() + "' already exists");
+
         markDirty();
         return map;
     }
@@ -198,9 +303,11 @@ public final class TeamsManager
         String normalizedId = id.toLowerCase(java.util.Locale.ROOT);
         if (getCurrentRound().map(round -> round.getMapId().equals(normalizedId)).orElse(false))
             stopRound();
-        TeamsMap removed = savedData.maps.remove(normalizedId);
+
+        TeamsMap removed = Objects.requireNonNull(savedData).maps.remove(normalizedId);
         if (removed == null)
             return false;
+
         savedData.rounds.removeIf(round -> round.getMapId().equals(removed.getShortName()));
         markDirty();
         return true;
@@ -212,22 +319,26 @@ public final class TeamsManager
         TeamsMap map = getMap(mapId).orElseThrow(() -> new IllegalArgumentException("Unknown map: " + mapId));
         com.flansmodultimate.common.teams.GameType type = Optional.ofNullable(com.flansmodultimate.common.teams.GameType.get(gameTypeId))
             .orElseThrow(() -> new IllegalArgumentException("Unknown game type: " + gameTypeId));
+
         if (teamIds.size() != type.getRequiredTeams())
             throw new IllegalArgumentException(type.getName() + " requires " + type.getRequiredTeams() + " team(s)");
+
         for (String teamId : teamIds)
             if (Team.getTeam(teamId) == null) throw new IllegalArgumentException("Unknown team: " + teamId);
+
         TeamsRound round = new TeamsRound(map.getShortName(), type.getId(), teamIds, minutes, scoreLimit);
-        savedData.rounds.add(round);
+        Objects.requireNonNull(savedData).rounds.add(round);
         markDirty();
+
         return round;
     }
 
     public boolean removeRound(int index)
     {
         ensureData();
-        if (index < 0 || index >= savedData.rounds.size())
+        if (index < 0 || index >= Objects.requireNonNull(savedData).rounds.size())
             return false;
-        TeamsRound removed = savedData.rounds.remove(index);
+        TeamsRound removed = Objects.requireNonNull(savedData).rounds.remove(index);
         if (removed.getId().equals(currentRoundId))
             stopRound();
         rotationIndex = Math.min(rotationIndex, savedData.rounds.size() - 1);
@@ -238,9 +349,9 @@ public final class TeamsManager
     public boolean startRound(int index)
     {
         ensureData();
-        if (!enabled || index < 0 || index >= savedData.rounds.size())
+        if (!enabled || index < 0 || index >= Objects.requireNonNull(savedData).rounds.size())
             return false;
-        TeamsRound next = savedData.rounds.get(index);
+        TeamsRound next = Objects.requireNonNull(savedData).rounds.get(index);
         if (next.getGametype() == null || getMap(next.getMapId()).isEmpty())
             return false;
 
@@ -280,7 +391,7 @@ public final class TeamsManager
     public boolean startNextRound()
     {
         ensureData();
-        if (savedData.rounds.isEmpty())
+        if (Objects.requireNonNull(savedData).rounds.isEmpty())
             return false;
         return startRound((rotationIndex + 1) % savedData.rounds.size());
     }
@@ -365,7 +476,10 @@ public final class TeamsManager
             intermissionTicks = 200;
         }
         saveRuntime();
-        syncAll(voting ? PacketTeamsState.OpenScreen.VOTING : PacketTeamsState.OpenScreen.SCOREBOARD);
+        if (!voting && getCurrentLoadoutPool().isPresent())
+            getServer().getPlayerList().getPlayers().forEach(player -> syncLoadouts(player, PacketLoadoutState.OpenScreen.MISSION_RESULTS, 0, ""));
+        else
+            syncAll(voting ? PacketTeamsState.OpenScreen.VOTING : PacketTeamsState.OpenScreen.SCOREBOARD);
     }
 
     private void pickVoteOptions()
@@ -403,7 +517,7 @@ public final class TeamsManager
             if (votes[i] > votes[winner]) winner = i;
         UUID chosen = voteOptionIds.get(winner);
         voteOptionIds.clear();
-        for (int i = 0; i < savedData.rounds.size(); i++)
+        for (int i = 0; i < Objects.requireNonNull(savedData).rounds.size(); i++)
         {
             if (savedData.rounds.get(i).getId().equals(chosen))
             {
@@ -423,7 +537,7 @@ public final class TeamsManager
             {
                 getPlayersOnTeam(Team.getTeam(id)).stream()
                     .max(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore()))
-                    .ifPresent(player -> getStats(player).recordMvp());
+                    .ifPresent(player -> { getStats(player).recordMvp(); awardExperience(player, 250); });
             }
         });
         markDirty();
@@ -497,14 +611,19 @@ public final class TeamsManager
     {
         if (getCurrentGameType().map(type -> !type.isAutoBalanceEnabled()).orElse(true))
             return;
+
         List<Team> teams = getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream())
             .map(Team::getTeam).filter(java.util.Objects::nonNull).toList();
+
         if (teams.size() < 2)
             return;
+
         Team largest = teams.stream().max(Comparator.comparingInt(team -> getPlayersOnTeam(team).size())).orElse(null);
         Team smallest = teams.stream().min(Comparator.comparingInt(team -> getPlayersOnTeam(team).size())).orElse(null);
-        if (largest == null || smallest == null || getPlayersOnTeam(largest).size() - getPlayersOnTeam(smallest).size() <= 1)
+
+        if (getPlayersOnTeam(largest).size() - getPlayersOnTeam(smallest).size() <= 1)
             return;
+
         getPlayersOnTeam(largest).stream().min(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(player -> {
             selectTeam(player, smallest, true);
             PlayerData.getInstance(player).setPlayerMovedByAutobalancer(true);
@@ -526,8 +645,11 @@ public final class TeamsManager
             data.setPlayerClass(playerClass);
             data.setNewPlayerClass(playerClass);
         }
-        syncPlayer(player, roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS)
-            ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
+        if (roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) && getCurrentLoadoutPool().isPresent())
+            syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
+        else
+            syncPlayer(player, roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS)
+                ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
     }
 
     public void playerLoggedOut(ServerPlayer player)
@@ -578,12 +700,85 @@ public final class TeamsManager
                 stack = team.getArmour(slot);
             player.setItemSlot(slot, stack.copy());
         }
-        if (playerClass != null)
+        LoadoutPool pool = getCurrentLoadoutPool().orElse(null);
+        if (pool != null)
+        {
+            PlayerLoadout loadout = getStats(player).getSelectedLoadout(pool);
+            ItemStack armour = loadout.get(LoadoutSlot.ARMOUR);
+            if (!armour.isEmpty())
+                player.setItemSlot(EquipmentSlot.CHEST, armour.copy());
+            for (LoadoutSlot loadoutSlot : LoadoutSlot.values())
+            {
+                if (loadoutSlot == LoadoutSlot.ARMOUR)
+                    continue;
+                ItemStack stack = loadout.get(loadoutSlot);
+                if (!stack.isEmpty() && !player.getInventory().add(stack.copy()))
+                    player.drop(stack.copy(), false);
+                if (stack.getItem() instanceof IFlanItem<?> flanItem)
+                {
+                    for (ItemStack extra : pool.createExtraItems(loadoutSlot, flanItem.getConfigType()))
+                        if (!player.getInventory().add(extra.copy())) player.drop(extra.copy(), false);
+                }
+            }
+        }
+        else if (playerClass != null)
         {
             for (ItemStack stack : playerClass.createStartingItems())
                 if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false);
         }
         player.getInventory().setChanged();
+    }
+
+    public void awardExperience(ServerPlayer player, int baseAmount)
+    {
+        if (baseAmount <= 0)
+            return;
+
+        PlayerStats stats = getStats(player);
+        LoadoutPool pool = getCurrentLoadoutPool().orElse(null);
+        int amount = Math.round(baseAmount * experienceMultiplier);
+        if (pool == null)
+            stats.addExperience(amount);
+        else
+        {
+            for (int rank : stats.addExperience(amount, pool))
+            {
+                for (String boxId : pool.getRewardsForRank(rank))
+                    stats.addRewardBox(boxId, RewardBoxInstance.Origin.LEVEL_UP);
+                player.sendSystemMessage(Component.literal("Rank up! You reached rank " + rank));
+            }
+        }
+        markDirty();
+    }
+
+    public boolean grantRewardBox(ServerPlayer player, String boxId, RewardBoxInstance.Origin origin)
+    {
+        RewardBox box = RewardBox.get(boxId);
+        if (box == null) return false;
+        getStats(player).addRewardBox(box.getOriginalShortName(), origin);
+        markDirty();
+        return true;
+    }
+
+    @Nullable
+    public RewardBox.Reward openRewardBox(ServerPlayer player, UUID instanceId)
+    {
+        PlayerStats stats = getStats(player);
+
+        RewardBoxInstance rewardBoxInstance = stats.getRewardBox(instanceId).orElse(null);
+        if (rewardBoxInstance == null || rewardBoxInstance.isOpened())
+            return null;
+
+        RewardBox box = RewardBox.get(rewardBoxInstance.boxId());
+        if (box == null)
+            return null;
+
+        RewardBox.Reward reward = box.choose(random, stats::ownsReward);
+        if (reward == null || !stats.markRewardBoxOpened(instanceId, reward.key()))
+            return null;
+
+        markDirty();
+        return reward;
     }
 
     public Optional<Vec3> findSpawnPoint(ServerPlayer player, boolean anyTeam)
@@ -592,7 +787,9 @@ public final class TeamsManager
         TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
         if (map == null)
             return Optional.empty();
+
         int teamId = round.getTeamId(PlayerData.getInstance(player).getNewTeam());
+
         List<ITeamObject> choices = liveObjects.values().stream()
             .filter(ITeamObject::isSpawnPoint)
             .filter(object -> object.getDimension().equals(map.getDimension()))
@@ -600,33 +797,68 @@ public final class TeamsManager
                 Flagpole base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
                 return base != null && base.getMapId().equals(map.getShortName()) && (anyTeam || base.getOwnerId() == teamId);
             }).toList();
+
         if (!choices.isEmpty())
             return Optional.of(choices.get(random.nextInt(choices.size())).getTeamObjectPosition().add(0D, 0.1D, 0D));
 
         List<Flagpole> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName()))
             .filter(base -> anyTeam || base.getOwnerId() == teamId).toList();
+
         return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).position().add(0D, 1D, 0D));
     }
 
-    public Team getPlayerTeam(Player player) { return PlayerData.getInstance(player).getTeam(); }
-    public int getRoundTeamIndex(@Nullable Team team) { return getCurrentRound().map(round -> round.getTeamIds().indexOf(team == null ? "" : team.getOriginalShortName())).orElse(-1); }
-    public List<ServerPlayer> getPlayersOnRoundTeam(int index) { return getCurrentRound().map(round -> getPlayersOnTeam(round.getTeam(index))).orElse(List.of()); }
-    public int countPlayersOnRoundTeam(int index) { return getPlayersOnRoundTeam(index).size(); }
-    public List<ServerPlayer> getPlayersOnTeam(@Nullable Team team) { return server == null || team == null ? List.of() : server.getPlayerList().getPlayers().stream().filter(player -> team.equals(getPlayerTeam(player))).toList(); }
+    public Team getPlayerTeam(Player player)
+    {
+        return PlayerData.getInstance(player).getTeam();
+    }
 
-    public int getTeamScore(@Nullable Team team) { return team == null ? 0 : teamScores.getOrDefault(team.getOriginalShortName(), 0); }
-    public void addTeamScore(Team team, int amount) { teamScores.merge(team.getOriginalShortName(), amount, Integer::sum); saveRuntime(); }
-    public void resetScores() { teamScores.clear(); getCurrentRound().ifPresent(round -> round.getTeamIds().forEach(id -> teamScores.put(id, 0))); }
+    public int getRoundTeamIndex(@Nullable Team team) {
+        return getCurrentRound().map(round -> round.getTeamIds().indexOf(team == null ? "" : team.getOriginalShortName())).orElse(-1);
+    }
+
+    public List<ServerPlayer> getPlayersOnRoundTeam(int index)
+    {
+        return getCurrentRound().map(round -> getPlayersOnTeam(round.getTeam(index))).orElse(List.of());
+    }
+
+    public int countPlayersOnRoundTeam(int index)
+    {
+        return getPlayersOnRoundTeam(index).size();
+    }
+
+    public List<ServerPlayer> getPlayersOnTeam(@Nullable Team team)
+    {
+        return server == null || team == null ? List.of() : server.getPlayerList().getPlayers().stream().filter(player -> team.equals(getPlayerTeam(player))).toList();
+    }
+
+    public int getTeamScore(@Nullable Team team)
+    {
+        return team == null ? 0 : teamScores.getOrDefault(team.getOriginalShortName(), 0);
+    }
+
+    public void addTeamScore(Team team, int amount)
+    {
+        teamScores.merge(team.getOriginalShortName(), amount, Integer::sum);
+        saveRuntime();
+    }
+
+    public void resetScores()
+    {
+        teamScores.clear(); getCurrentRound().ifPresent(round -> round.getTeamIds().forEach(id -> teamScores.put(id, 0)));
+    }
 
     public PlayerStats getStats(ServerPlayer player)
     {
         ensureData();
-        PlayerStats stats = savedData.stats.computeIfAbsent(player.getUUID(), id -> new PlayerStats(id, player.getScoreboardName()));
+        PlayerStats stats = Objects.requireNonNull(savedData).stats.computeIfAbsent(player.getUUID(), id -> new PlayerStats(id, player.getScoreboardName()));
         stats.setLastKnownName(player.getScoreboardName());
         return stats;
     }
 
-    public Collection<PlayerStats> getAllStats() { return savedData == null ? List.of() : savedData.getStats(); }
+    public Collection<PlayerStats> getAllStats()
+    {
+        return savedData == null ? List.of() : savedData.getStats();
+    }
 
     public void registerBase(Flagpole base)
     {
@@ -644,8 +876,11 @@ public final class TeamsManager
     }
 
     public void registerObject(ITeamObject object) { liveObjects.put(object.getObjectId(), object); }
+
     public void unregisterObject(UUID id) { liveObjects.remove(id); }
+
     public Optional<Flagpole> getBase(UUID id) { return Optional.ofNullable(liveBases.get(id)); }
+
     public Optional<ITeamObject> getObject(UUID id) { return Optional.ofNullable(liveObjects.get(id)); }
 
     public void assignBaseToMap(ITeamBase base, TeamsMap map)
@@ -699,8 +934,16 @@ public final class TeamsManager
         markDirty();
     }
 
-    public boolean isBaseInCurrentMap(ITeamBase base) { return getCurrentRound().map(round -> round.getMapId().equals(base.getMapId())).orElse(false); }
-    @Nullable public Team getTeamForBase(@Nullable ITeamBase base) { return base == null ? null : getCurrentRound().map(round -> round.getTeam(base.getOwnerId() - 2)).orElse(null); }
+    public boolean isBaseInCurrentMap(ITeamBase base)
+    {
+        return getCurrentRound().map(round -> round.getMapId().equals(base.getMapId())).orElse(false);
+    }
+
+    @Nullable
+    public Team getTeamForBase(@Nullable ITeamBase base)
+    {
+        return base == null ? null : getCurrentRound().map(round -> round.getTeam(base.getOwnerId() - 2)).orElse(null);
+    }
 
     @Nullable
     public Flag getFlagCarriedBy(ServerPlayer player)
@@ -731,6 +974,17 @@ public final class TeamsManager
         if (server != null && savedData != null)
             PacketHandler.sendTo(PacketTeamsState.create(this, player, openScreen), player);
     }
+
+    public void syncLoadouts(ServerPlayer player, PacketLoadoutState.OpenScreen openScreen, int editLoadout, String revealedReward)
+    {
+        if (server != null && savedData != null)
+        {
+            PacketHandler.sendTo(PacketLoadoutState.create(this, player, openScreen, editLoadout, revealedReward), player);
+            markDirty();
+        }
+    }
+
+    public void markPlayerDataDirty() { markDirty(); }
 
     public void syncAll(PacketTeamsState.OpenScreen openScreen)
     {
@@ -790,46 +1044,64 @@ public final class TeamsManager
     {
         if (tag.isEmpty())
             return;
-        enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
-        roundRunning = tag.getBoolean("RoundRunning");
-        currentRoundId = tag.hasUUID("CurrentRound") ? tag.getUUID("CurrentRound") : null;
-        rotationIndex = tag.getInt("RotationIndex");
-        roundTimeLeftTicks = tag.getInt("TimeLeft");
-        roundElapsedTicks = tag.getInt("Elapsed");
-        intermissionTicks = tag.getInt("Intermission");
+
+        enabled = !tag.contains(NBT_ENABLED) || tag.getBoolean(NBT_ENABLED);
+        roundRunning = tag.getBoolean(NBT_ROUND_RUNNING);
+        currentRoundId = tag.hasUUID(NBT_CURRENT_ROUND) ? tag.getUUID(NBT_CURRENT_ROUND) : null;
+        rotationIndex = tag.getInt(NBT_ROTATION_INDEX);
+        roundTimeLeftTicks = tag.getInt(NBT_TIME_LEFT);
+        roundElapsedTicks = tag.getInt(NBT_ELAPSED);
+        intermissionTicks = tag.getInt(NBT_INTERMISSION);
         voteOptionIds.clear();
-        for (net.minecraft.nbt.Tag value : tag.getList("VoteOptions", net.minecraft.nbt.Tag.TAG_COMPOUND))
+
+        for (Tag value : tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND))
         {
             CompoundTag option = (CompoundTag) value;
-            if (option.hasUUID("Id")) voteOptionIds.add(option.getUUID("Id"));
+            if (option.hasUUID(NBT_ID))
+                voteOptionIds.add(option.getUUID(NBT_ID));
         }
-        if (tag.contains("Explosions")) explosionsBreakBlocks = tag.getBoolean("Explosions");
-        if (tag.contains("BreakGlass")) canBreakGlass = tag.getBoolean("BreakGlass");
-        if (tag.contains("BreakGuns")) canBreakGuns = tag.getBoolean("BreakGuns");
-        if (tag.contains("DriveablesBreakBlocks")) driveablesBreakBlocks = tag.getBoolean("DriveablesBreakBlocks");
-        if (tag.contains("Bombs")) bombsEnabled = tag.getBoolean("Bombs");
-        if (tag.contains("Shells")) shellsEnabled = tag.getBoolean("Shells");
-        if (tag.contains("Bullets")) bulletsEnabled = tag.getBoolean("Bullets");
-        if (tag.contains("Adventure")) forceAdventureMode = tag.getBoolean("Adventure");
-        if (tag.contains("ArmourDrops")) armourDrops = tag.getBoolean("ArmourDrops");
-        if (tag.contains("Fuel")) vehiclesNeedFuel = tag.getBoolean("Fuel");
-        if (tag.contains("OverrideHunger")) overrideHunger = tag.getBoolean("OverrideHunger");
-        if (tag.contains("BreakVehicles")) survivalCanBreakVehicles = tag.getBoolean("BreakVehicles");
-        if (tag.contains("PlaceVehicles")) survivalCanPlaceVehicles = tag.getBoolean("PlaceVehicles");
-        if (tag.contains("WeaponDrops"))
+
+        if (tag.contains(NBT_EXPLOSIONS))
+            explosionsBreakBlocks = tag.getBoolean(NBT_EXPLOSIONS);
+        if (tag.contains(NBT_BREAK_GLASS))
+            canBreakGlass = tag.getBoolean(NBT_BREAK_GLASS);
+        if (tag.contains(NBT_BREAK_GUNS))
+            canBreakGuns = tag.getBoolean(NBT_BREAK_GUNS);
+        if (tag.contains(NBT_DRIVEABLES_BREAK_BLOCKS))
+            driveablesBreakBlocks = tag.getBoolean(NBT_DRIVEABLES_BREAK_BLOCKS);
+        if (tag.contains(NBT_BOMBS))
+            bombsEnabled = tag.getBoolean(NBT_BOMBS);
+        if (tag.contains(NBT_SHELLS))
+            shellsEnabled = tag.getBoolean(NBT_SHELLS);
+        if (tag.contains(NBT_BULLETS))
+            bulletsEnabled = tag.getBoolean(NBT_BULLETS);
+        if (tag.contains(NBT_ADVENTURE))
+            forceAdventureMode = tag.getBoolean(NBT_ADVENTURE);
+        if (tag.contains(NBT_ARMOUR_DROPS))
+            armourDrops = tag.getBoolean(NBT_ARMOUR_DROPS);
+        if (tag.contains(NBT_FUEL))
+            vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
+        if (tag.contains(NBT_OVERRIDE_HUNGER))
+            overrideHunger = tag.getBoolean(NBT_OVERRIDE_HUNGER);
+        if (tag.contains(NBT_BREAK_VEHICLES))
+            survivalCanBreakVehicles = tag.getBoolean(NBT_BREAK_VEHICLES);
+        if (tag.contains(NBT_PLACE_VEHICLES))
+            survivalCanPlaceVehicles = tag.getBoolean(NBT_PLACE_VEHICLES);
+        if (tag.contains(NBT_WEAPON_DROPS))
         {
-            int ordinal = tag.getInt("WeaponDrops");
+            int ordinal = tag.getInt(NBT_WEAPON_DROPS);
             weaponDrops = EnumWeaponDrop.values()[Math.max(0, Math.min(EnumWeaponDrop.values().length - 1, ordinal))];
         }
-        mgLife = tag.contains("MgLife") ? tag.getInt("MgLife") : mgLife;
-        planeLife = tag.contains("PlaneLife") ? tag.getInt("PlaneLife") : planeLife;
-        vehicleLife = tag.contains("VehicleLife") ? tag.getInt("VehicleLife") : vehicleLife;
-        mechaLife = tag.contains("MechaLife") ? tag.getInt("MechaLife") : mechaLife;
-        aaLife = tag.contains("AaLife") ? tag.getInt("AaLife") : aaLife;
-        voting = tag.contains("Voting") && tag.getBoolean("Voting");
-        roundsGenerator = tag.contains("RoundsGenerator") && tag.getBoolean("RoundsGenerator");
-        for (String key : tag.getCompound("Scores").getAllKeys())
-            teamScores.put(key, tag.getCompound("Scores").getInt(key));
+
+        mgLife = tag.contains(NBT_MG_LIFE) ? tag.getInt(NBT_MG_LIFE) : mgLife; planeLife = tag.contains(NBT_PLANE_LIFE) ? tag.getInt(NBT_PLANE_LIFE) : planeLife;
+        vehicleLife = tag.contains(NBT_VEHICLE_LIFE) ? tag.getInt(NBT_VEHICLE_LIFE) : vehicleLife; mechaLife = tag.contains(NBT_MECHA_LIFE) ? tag.getInt(NBT_MECHA_LIFE) : mechaLife;
+        aaLife = tag.contains(NBT_AA_LIFE) ? tag.getInt(NBT_AA_LIFE) : aaLife; voting = tag.contains(NBT_VOTING) && tag.getBoolean(NBT_VOTING);
+        roundsGenerator = tag.contains(NBT_ROUNDS_GENERATOR) && tag.getBoolean(NBT_ROUNDS_GENERATOR); currentLoadoutPoolId = tag.getString(NBT_LOADOUT_POOL);
+        experienceMultiplier = tag.contains(NBT_EXPERIENCE_MULTIPLIER) ? Math.max(0F, tag.getFloat(NBT_EXPERIENCE_MULTIPLIER)) : 1F;
+
+        for (String key : tag.getCompound(NBT_SCORES).getAllKeys())
+            teamScores.put(key, tag.getCompound(NBT_SCORES).getInt(key));
+
         for (com.flansmodultimate.common.teams.GameType type : com.flansmodultimate.common.teams.GameType.values())
             type.loadSettings(tag);
     }
@@ -838,48 +1110,45 @@ public final class TeamsManager
     {
         if (savedData == null)
             return;
+
         CompoundTag tag = savedData.runtime;
-        tag.putBoolean("Enabled", enabled);
-        tag.putBoolean("RoundRunning", roundRunning);
-        if (currentRoundId == null) tag.remove("CurrentRound"); else tag.putUUID("CurrentRound", currentRoundId);
-        tag.putInt("RotationIndex", rotationIndex);
-        tag.putInt("TimeLeft", roundTimeLeftTicks);
-        tag.putInt("Elapsed", roundElapsedTicks);
-        tag.putInt("Intermission", intermissionTicks);
-        net.minecraft.nbt.ListTag voteOptions = new net.minecraft.nbt.ListTag();
+        tag.putBoolean(NBT_ENABLED, enabled); tag.putBoolean(NBT_ROUND_RUNNING, roundRunning);
+
+        if (currentRoundId == null)
+            tag.remove(NBT_CURRENT_ROUND);
+        else
+            tag.putUUID(NBT_CURRENT_ROUND, currentRoundId);
+
+        tag.putInt(NBT_ROTATION_INDEX, rotationIndex);
+        tag.putInt(NBT_TIME_LEFT, roundTimeLeftTicks);
+        tag.putInt(NBT_ELAPSED, roundElapsedTicks);
+        tag.putInt(NBT_INTERMISSION, intermissionTicks);
+        ListTag voteOptions = new ListTag();
+
         for (UUID id : voteOptionIds)
         {
             CompoundTag option = new CompoundTag();
-            option.putUUID("Id", id);
+            option.putUUID(NBT_ID, id);
             voteOptions.add(option);
         }
-        tag.put("VoteOptions", voteOptions);
-        tag.putBoolean("Explosions", explosionsBreakBlocks);
-        tag.putBoolean("BreakGlass", canBreakGlass);
-        tag.putBoolean("BreakGuns", canBreakGuns);
-        tag.putBoolean("DriveablesBreakBlocks", driveablesBreakBlocks);
-        tag.putBoolean("Bombs", bombsEnabled);
-        tag.putBoolean("Shells", shellsEnabled);
-        tag.putBoolean("Bullets", bulletsEnabled);
-        tag.putBoolean("Adventure", forceAdventureMode);
-        tag.putBoolean("ArmourDrops", armourDrops);
-        tag.putBoolean("Fuel", vehiclesNeedFuel);
-        tag.putBoolean("OverrideHunger", overrideHunger);
-        tag.putBoolean("BreakVehicles", survivalCanBreakVehicles);
-        tag.putBoolean("PlaceVehicles", survivalCanPlaceVehicles);
-        tag.putInt("WeaponDrops", weaponDrops.ordinal());
-        tag.putInt("MgLife", mgLife);
-        tag.putInt("PlaneLife", planeLife);
-        tag.putInt("VehicleLife", vehicleLife);
-        tag.putInt("MechaLife", mechaLife);
-        tag.putInt("AaLife", aaLife);
-        tag.putBoolean("Voting", voting);
-        tag.putBoolean("RoundsGenerator", roundsGenerator);
+
+        tag.put(NBT_VOTE_OPTIONS, voteOptions); tag.putBoolean(NBT_EXPLOSIONS, explosionsBreakBlocks); tag.putBoolean(NBT_BREAK_GLASS, canBreakGlass);
+        tag.putBoolean(NBT_BREAK_GUNS, canBreakGuns); tag.putBoolean(NBT_DRIVEABLES_BREAK_BLOCKS, driveablesBreakBlocks); tag.putBoolean(NBT_BOMBS, bombsEnabled);
+        tag.putBoolean(NBT_SHELLS, shellsEnabled); tag.putBoolean(NBT_BULLETS, bulletsEnabled); tag.putBoolean(NBT_ADVENTURE, forceAdventureMode);
+        tag.putBoolean(NBT_ARMOUR_DROPS, armourDrops); tag.putBoolean(NBT_FUEL, vehiclesNeedFuel); tag.putBoolean(NBT_OVERRIDE_HUNGER, overrideHunger);
+        tag.putBoolean(NBT_BREAK_VEHICLES, survivalCanBreakVehicles); tag.putBoolean(NBT_PLACE_VEHICLES, survivalCanPlaceVehicles);
+        tag.putInt(NBT_WEAPON_DROPS, weaponDrops.ordinal()); tag.putInt(NBT_MG_LIFE, mgLife); tag.putInt(NBT_PLANE_LIFE, planeLife);
+        tag.putInt(NBT_VEHICLE_LIFE, vehicleLife); tag.putInt(NBT_MECHA_LIFE, mechaLife); tag.putInt(NBT_AA_LIFE, aaLife);
+        tag.putBoolean(NBT_VOTING, voting); tag.putBoolean(NBT_ROUNDS_GENERATOR, roundsGenerator); tag.putString(NBT_LOADOUT_POOL, currentLoadoutPoolId);
+        tag.putFloat(NBT_EXPERIENCE_MULTIPLIER, experienceMultiplier);
+
         CompoundTag scores = new CompoundTag();
         teamScores.forEach(scores::putInt);
-        tag.put("Scores", scores);
+        tag.put(NBT_SCORES, scores);
+
         for (com.flansmodultimate.common.teams.GameType type : com.flansmodultimate.common.teams.GameType.values())
             type.saveSettings(tag);
+
         markDirty();
     }
 }

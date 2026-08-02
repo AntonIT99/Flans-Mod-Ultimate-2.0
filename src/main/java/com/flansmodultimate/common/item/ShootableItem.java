@@ -20,7 +20,7 @@ import java.util.List;
 public abstract class ShootableItem extends Item
 {
     protected final String shortname;
-    private static final String TAG_ROUNDS = "Rounds";
+    private static final String NBT_ROUNDS = "rounds";
 
     protected ShootableItem(ShootableType configType)
     {
@@ -51,9 +51,9 @@ public abstract class ShootableItem extends Item
         }
 
         CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(TAG_ROUNDS))
+        if (tag != null && tag.contains(NBT_ROUNDS))
         {
-            return tag.getInt(TAG_ROUNDS);
+            return tag.getInt(NBT_ROUNDS);
         }
         return roundsPerItem;
     }
@@ -72,7 +72,7 @@ public abstract class ShootableItem extends Item
             return;
         }
 
-        stack.getOrCreateTag().putInt(TAG_ROUNDS, Math.max(0, Math.min(rounds, roundsPerItem)));
+        stack.getOrCreateTag().putInt(NBT_ROUNDS, Math.max(0, Math.min(rounds, roundsPerItem)));
     }
 
     public static int getMaxRounds(ItemStack stack)

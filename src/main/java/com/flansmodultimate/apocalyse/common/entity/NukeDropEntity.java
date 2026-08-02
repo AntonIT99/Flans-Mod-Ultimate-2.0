@@ -10,10 +10,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 
 public class NukeDropEntity extends Entity
 {
+    private static final String NBT_EXPLODED_TICKS = "exploded_ticks";
     private static final EntityDataAccessor<Integer> DATA_EXPLODED_TICKS = SynchedEntityData.defineId(NukeDropEntity.class, EntityDataSerializers.INT);
 
     public NukeDropEntity(EntityType<? extends NukeDropEntity> type, Level level)
@@ -40,11 +42,11 @@ public class NukeDropEntity extends Entity
         if (!onGround())
         {
             setDeltaMovement(getDeltaMovement().add(0.0D, -0.01D, 0.0D));
-            move(net.minecraft.world.entity.MoverType.SELF, getDeltaMovement());
+            move(MoverType.SELF, getDeltaMovement());
             return;
         }
 
-        impact();
+        impact(level());
     }
 
     public int getExplodedTicks()
@@ -57,14 +59,14 @@ public class NukeDropEntity extends Entity
         entityData.set(DATA_EXPLODED_TICKS, ticks);
     }
 
-    private void impact()
+    private void impact(Level level)
     {
         setExplodedTicks(1);
-        if (level().isClientSide || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
+        if (level.isClientSide || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
             return;
 
         float power = ModApocalypseConfig.apocalypseNukeExplosionPower();
-        if (power > 0.0F && level() instanceof ServerLevel serverLevel)
+        if (power > 0.0F && level instanceof ServerLevel serverLevel)
             serverLevel.explode(this, getX(), getY(), getZ(), power, false, Level.ExplosionInteraction.MOB);
     }
 
@@ -77,12 +79,12 @@ public class NukeDropEntity extends Entity
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        setExplodedTicks(tag.getInt("ExplodedTicks"));
+        setExplodedTicks(tag.getInt(NBT_EXPLODED_TICKS));
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putInt("ExplodedTicks", getExplodedTicks());
+        tag.putInt(NBT_EXPLODED_TICKS, getExplodedTicks());
     }
 }

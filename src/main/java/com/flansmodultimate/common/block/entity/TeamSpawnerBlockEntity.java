@@ -3,6 +3,7 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,12 +28,28 @@ import java.util.UUID;
 
 public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamObject
 {
-    public enum Mode { PLAYER, ITEM, VEHICLE }
+    private static final String NBT_SPAWNER = "teams_spawner";
+    private static final String NBT_OBJECT_ID = "object_id";
+    private static final String NBT_BASE_ID = "base_id";
+    private static final String NBT_MODE = "mode";
+    private static final String NBT_SPAWN_DELAY = "spawn_delay";
+    private static final String NBT_CURRENT_DELAY = "current_delay";
+    private static final String NBT_ITEMS = "items";
+
+    public enum Mode
+    {
+        PLAYER,
+        ITEM,
+        VEHICLE
+    }
 
     private UUID objectId = UUID.randomUUID();
-    @Nullable private UUID baseId;
+    @Nullable
+    private UUID baseId;
+    @Getter
     private Mode mode;
     private final List<ItemStack> templates = new ArrayList<>();
+    @Getter
     private int spawnDelayTicks = 20 * 20;
     private int currentDelay = 10;
 
@@ -46,9 +63,6 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         super(FlansMod.teamSpawnerBlockEntity.get(), pos, state);
         this.mode = mode;
     }
-
-    public Mode getMode() { return mode; }
-    public int getSpawnDelayTicks() { return spawnDelayTicks; }
 
     public void cycleSpawnDelay()
     {
@@ -74,15 +88,15 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         spawner.currentDelay = spawner.spawnDelayTicks;
 
         AABB nearby = new AABB(pos).inflate(1.5D);
-        if (!serverLevel.getEntitiesOfClass(ItemEntity.class, nearby, entity -> entity.getPersistentData().hasUUID("TeamsSpawner")
-            && spawner.objectId.equals(entity.getPersistentData().getUUID("TeamsSpawner"))).isEmpty())
+        if (!serverLevel.getEntitiesOfClass(ItemEntity.class, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER)
+            && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
             return;
 
         for (ItemStack template : spawner.templates)
         {
             ItemEntity item = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.2D, pos.getZ() + 0.5D, template.copy());
             item.setDefaultPickUpDelay();
-            item.getPersistentData().putUUID("TeamsSpawner", spawner.objectId);
+            item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
             level.addFreshEntity(item);
         }
     }
@@ -107,29 +121,35 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     protected void saveAdditional(@NotNull CompoundTag tag)
     {
         super.saveAdditional(tag);
-        tag.putUUID("ObjectId", objectId);
+        tag.putUUID(NBT_OBJECT_ID, objectId);
         if (baseId != null)
-            tag.putUUID("BaseId", baseId);
-        tag.putString("Mode", mode.name());
-        tag.putInt("SpawnDelay", spawnDelayTicks);
-        tag.putInt("CurrentDelay", currentDelay);
+            tag.putUUID(NBT_BASE_ID, baseId);
+        tag.putString(NBT_MODE, mode.name()); tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks); tag.putInt(NBT_CURRENT_DELAY, currentDelay);
         ListTag items = new ListTag();
         templates.forEach(stack -> items.add(stack.save(new CompoundTag())));
-        tag.put("Items", items);
+        tag.put(NBT_ITEMS, items);
     }
 
     @Override
     public void load(@NotNull CompoundTag tag)
     {
         super.load(tag);
-        objectId = tag.hasUUID("ObjectId") ? tag.getUUID("ObjectId") : UUID.randomUUID();
-        baseId = tag.hasUUID("BaseId") ? tag.getUUID("BaseId") : null;
-        try { mode = Mode.valueOf(tag.getString("Mode").toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException ignored) { mode = Mode.PLAYER; }
-        spawnDelayTicks = Math.max(20, tag.getInt("SpawnDelay"));
-        currentDelay = Math.max(0, tag.getInt("CurrentDelay"));
+        objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
+        baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
+
+        try
+        {
+            mode = Mode.valueOf(tag.getString(NBT_MODE).toUpperCase(Locale.ROOT));
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            mode = Mode.PLAYER;
+        }
+
+        spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY)); currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
         templates.clear();
-        for (Tag item : tag.getList("Items", Tag.TAG_COMPOUND))
+
+        for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
             templates.add(ItemStack.of((CompoundTag) item));
     }
 
@@ -140,11 +160,46 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
-    @Override public UUID getObjectId() { return objectId; }
-    @Override public ResourceKey<Level> getDimension() { return level == null ? Level.OVERWORLD : level.dimension(); }
-    @Override public Vec3 getTeamObjectPosition() { return Vec3.atBottomCenterOf(worldPosition); }
-    @Override public @Nullable UUID getBaseId() { return baseId; }
-    @Override public void setBaseId(@Nullable UUID baseId) { this.baseId = baseId; setChangedAndSync(); }
-    @Override public boolean isSpawnPoint() { return mode == Mode.PLAYER; }
-    @Override public void destroyTeamObject() { if (level != null) level.destroyBlock(worldPosition, false); }
+    @Override
+    public UUID getObjectId()
+    {
+        return objectId;
+    }
+
+    @Override
+    public ResourceKey<Level> getDimension()
+    {
+        return level == null ? Level.OVERWORLD : level.dimension();
+    }
+
+    @Override
+    public Vec3 getTeamObjectPosition()
+    {
+        return Vec3.atBottomCenterOf(worldPosition);
+    }
+
+    @Override
+    public @Nullable UUID getBaseId()
+    {
+        return baseId;
+    }
+
+    @Override
+    public void setBaseId(@Nullable UUID baseId)
+    {
+        this.baseId = baseId; setChangedAndSync();
+    }
+
+    @Override
+    public boolean isSpawnPoint()
+    {
+        return mode == Mode.PLAYER;
+    }
+
+    @Override
+    public void destroyTeamObject()
+    {
+        if (level != null)
+            level.destroyBlock(worldPosition, false);
+    }
 }

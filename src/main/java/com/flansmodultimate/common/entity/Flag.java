@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
+import lombok.EqualsAndHashCode;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -29,8 +31,16 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public final class Flag extends Entity implements ITeamObject
 {
+    private static final String NBT_BASE = "base";
+    private static final String NBT_CARRIER = "carrier";
+    private static final String NBT_HOME = "home";
+    private static final String NBT_TEAM = "team";
+    private static final String NBT_COLOUR = "colour";
+    private static final String NBT_RETURN_TICKS = "return_ticks";
+
     private static final EntityDataAccessor<Optional<UUID>> DATA_BASE = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Optional<UUID>> DATA_CARRIER = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> DATA_HOME = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.BOOLEAN);
@@ -138,14 +148,46 @@ public final class Flag extends Entity implements ITeamObject
             setPos(base.getX(), base.getY() + 2D, base.getZ());
     }
 
-    public boolean isHome() { return entityData.get(DATA_HOME); }
-    public boolean hasCarrier() { return getCarrierId() != null; }
-    public boolean isCarriedBy(Player player) { return player.getUUID().equals(getCarrierId()); }
-    @Nullable public UUID getCarrierId() { return entityData.get(DATA_CARRIER).orElse(null); }
-    public int getTeamId() { return entityData.get(DATA_TEAM); }
-    public void setTeamId(int id) { entityData.set(DATA_TEAM, Math.max(0, id)); }
-    public int getColour() { return entityData.get(DATA_COLOUR); }
-    public void setColour(int colour) { entityData.set(DATA_COLOUR, colour & 0xFFFFFF); }
+    public boolean isHome()
+    {
+        return entityData.get(DATA_HOME);
+    }
+
+    public boolean hasCarrier()
+    {
+        return getCarrierId() != null;
+    }
+
+    public boolean isCarriedBy(Player player)
+    {
+        return player.getUUID().equals(getCarrierId());
+    }
+
+    @Nullable
+    public UUID getCarrierId()
+    {
+        return entityData.get(DATA_CARRIER).orElse(null);
+    }
+
+    public int getTeamId()
+    {
+        return entityData.get(DATA_TEAM);
+    }
+
+    public void setTeamId(int id)
+    {
+        entityData.set(DATA_TEAM, Math.max(0, id));
+    }
+
+    public int getColour()
+    {
+        return entityData.get(DATA_COLOUR);
+    }
+
+    public void setColour(int colour)
+    {
+        entityData.set(DATA_COLOUR, colour & 0xFFFFFF);
+    }
 
     @Nullable
     public Flagpole getBase()
@@ -154,36 +196,88 @@ public final class Flag extends Entity implements ITeamObject
         return id == null ? null : TeamsManager.getInstance().getBase(id).orElse(null);
     }
 
-    @Override protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        setBaseId(tag.hasUUID("Base") ? tag.getUUID("Base") : null);
-        entityData.set(DATA_CARRIER, tag.hasUUID("Carrier") ? Optional.of(tag.getUUID("Carrier")) : Optional.empty());
-        entityData.set(DATA_HOME, tag.getBoolean("Home"));
-        setTeamId(tag.getInt("Team"));
-        setColour(tag.contains("Colour") ? tag.getInt("Colour") : 0xFFFFFF);
-        returnTicks = tag.getInt("ReturnTicks");
+        setBaseId(tag.hasUUID(NBT_BASE) ? tag.getUUID(NBT_BASE) : null);
+        entityData.set(DATA_CARRIER, tag.hasUUID(NBT_CARRIER) ? Optional.of(tag.getUUID(NBT_CARRIER)) : Optional.empty());
+        entityData.set(DATA_HOME, tag.getBoolean(NBT_HOME)); setTeamId(tag.getInt(NBT_TEAM));
+        setColour(tag.contains(NBT_COLOUR) ? tag.getInt(NBT_COLOUR) : 0xFFFFFF); returnTicks = tag.getInt(NBT_RETURN_TICKS);
     }
 
-    @Override protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         UUID baseId = getBaseId();
         UUID carrierId = getCarrierId();
-        if (baseId != null) tag.putUUID("Base", baseId);
-        if (carrierId != null) tag.putUUID("Carrier", carrierId);
-        tag.putBoolean("Home", isHome());
-        tag.putInt("Team", getTeamId());
-        tag.putInt("Colour", getColour());
-        tag.putInt("ReturnTicks", returnTicks);
+
+        if (baseId != null)
+            tag.putUUID(NBT_BASE, baseId);
+        if (carrierId != null)
+            tag.putUUID(NBT_CARRIER, carrierId);
+
+        tag.putBoolean(NBT_HOME, isHome()); tag.putInt(NBT_TEAM, getTeamId()); tag.putInt(NBT_COLOUR, getColour()); tag.putInt(NBT_RETURN_TICKS, returnTicks);
     }
 
-    @NotNull @Override public Packet<ClientGamePacketListener> getAddEntityPacket() { return NetworkHooks.getEntitySpawningPacket(this); }
-    @Override public boolean isPickable() { return true; }
-    @Override public boolean isInvulnerableTo(@NotNull net.minecraft.world.damagesource.DamageSource source) { return true; }
-    @Override public UUID getObjectId() { return getUUID(); }
-    @Override public ResourceKey<Level> getDimension() { return level().dimension(); }
-    @Override public Vec3 getTeamObjectPosition() { return position(); }
-    @Override public @Nullable UUID getBaseId() { return entityData.get(DATA_BASE).orElse(null); }
-    @Override public void setBaseId(@Nullable UUID id) { entityData.set(DATA_BASE, Optional.ofNullable(id)); }
-    @Override public boolean isSpawnPoint() { return false; }
-    @Override public void destroyTeamObject() { discard(); }
+    @Override
+    @NotNull
+    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    @Override
+    public boolean isPickable()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean isInvulnerableTo(@NotNull DamageSource source)
+    {
+        return true;
+    }
+
+    @Override
+    public UUID getObjectId()
+    {
+        return getUUID();
+    }
+
+    @Override
+    public ResourceKey<Level> getDimension()
+    {
+        return level().dimension();
+    }
+
+    @Override
+    public Vec3 getTeamObjectPosition()
+    {
+        return position();
+    }
+
+    @Override
+    @Nullable
+    public UUID getBaseId()
+    {
+        return entityData.get(DATA_BASE).orElse(null);
+    }
+
+    @Override
+    public void setBaseId(@Nullable UUID id)
+    {
+        entityData.set(DATA_BASE, Optional.ofNullable(id));
+    }
+
+    @Override
+    public boolean isSpawnPoint()
+    {
+        return false;
+    }
+
+    @Override
+    public void destroyTeamObject()
+    {
+        discard();
+    }
 }
