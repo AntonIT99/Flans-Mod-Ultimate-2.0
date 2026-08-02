@@ -558,7 +558,7 @@ public abstract class InfoType
             return;
 
         ModUtils.getItem(this)
-            .map(item -> createDungeonLootEntry(item, FlansMod.dungeonLootChance * dungeonChance))
+            .map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance))
             .ifPresent(entry -> addLootEntry(event, entry));
     }
 

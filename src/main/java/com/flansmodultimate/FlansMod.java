@@ -103,11 +103,11 @@ public class FlansMod
     private static final String PACKS_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
     private static final String PACKS_EXTRACTION_STATE_COMPLETE = "complete";
     private static final String PACKS_EXTRACTION_STATE_FAILED = "failed";
-    private static final int timeoutPacksExtraction = 120;
+    private static final int TIMEOUT_PACKS_EXTRACTION = 120;
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
-    public static final int dungeonLootChance = 500;
+    public static final int DUNGEON_LOOT_CHANCE = 500;
 
     // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";
@@ -174,8 +174,7 @@ public class FlansMod
     // Block Entities
     public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
     public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
-    public static final RegistryObject<BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () ->
-        BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
+    public static final RegistryObject<BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
 
     // Items
     public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
@@ -322,7 +321,7 @@ public class FlansMod
 
         Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_EXTRACTION_STATE_FILE_NAME);
 
-        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutPacksExtraction);
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_EXTRACTION);
         while (true)
         {
             PacksExtractionWaitState state = readPacksExtractionWaitState(stateFile);
@@ -416,7 +415,12 @@ public class FlansMod
             generalItemList.add(ApocalypseContent.BLOCK_POWER_CUBE_ITEM);
             generalItemList.add(ApocalypseContent.SULPHURIC_ACID_BUCKET);
         }
-        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ITEM_HOLDER, EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
+        generalItemList.addAll(FlansMod.getItems(EnumSet.of(
+            EnumType.ITEM_HOLDER,
+            EnumType.ARMOR_BOX,
+            EnumType.GUN_BOX,
+            EnumType.REWARD_BOX
+        )));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_GENERAL, generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_ARMORS, FlansMod.getItems(EnumType.ARMOR), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);

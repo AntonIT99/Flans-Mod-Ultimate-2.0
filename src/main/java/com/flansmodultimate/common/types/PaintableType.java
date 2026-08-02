@@ -171,7 +171,7 @@ public abstract class PaintableType extends InfoType
             return;
 
         ModUtils.getItem(this).ifPresent(item -> {
-            int weight = Math.max(1, (FlansMod.dungeonLootChance * dungeonChance) / nonLegendaryPaintjobs.size());
+            int weight = Math.max(1, (FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance) / nonLegendaryPaintjobs.size());
             for (Paintjob paintjob : nonLegendaryPaintjobs.values())
                 addLootEntry(event, createPaintjobLootEntry(item, weight, paintjob));
         });

@@ -311,7 +311,6 @@ public final class ClientEventHandler
 
     //TODO: implement this code from 1.12.2
     //renderHooks.update();
-    //RenderFlag.angle += 2F;
     //TODO: implement commented out code for driveables (1.12.2)
     //updatePlayerView();
 }
