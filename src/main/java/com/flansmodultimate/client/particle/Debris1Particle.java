@@ -5,17 +5,25 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
-public class Debris1Particle extends ParticleBase
+/**
+ * Reimplementation of Flan's Mod 1.7.10's EntityDebris1.
+ */
+public final class Debris1Particle extends TextureSheetParticle
 {
-    protected Debris1Particle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
+    private Debris1Particle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
-        super(level, x, y, z, vx, vy, vz, sprites);
+        super(level, x, y, z, vx, vy, vz);
 
-        lifetime = 80;
+        // Both the 1.7.10 EntityFX constructor and the modern Particle
+        // constructor choose the same randomized base lifetime. The legacy
+        // debris particle multiplies that value by five.
+        lifetime *= 5;
 
         gravity = 1.0F;
 
@@ -23,14 +31,9 @@ public class Debris1Particle extends ParticleBase
         yd = vy;
         zd = vz;
 
-        quadSize = 0.2F;
-
-        rCol = 1.0F;
-        gCol = 1.0F;
-        bCol = 1.0F;
-        alpha = 1.0F;
-
-        setSpriteFromAge(sprites);
+        // EntityDebris1 never changed EntityFX's default texture index, so it
+        // always rendered legacy particles.png tile 0 (modern generic_0).
+        pickSprite(sprites);
     }
 
     @Override
@@ -41,10 +44,7 @@ public class Debris1Particle extends ParticleBase
         zo = z;
 
         if (age++ >= lifetime)
-        {
             remove();
-            return;
-        }
 
         yd -= 0.04D * gravity;
 
@@ -55,10 +55,7 @@ public class Debris1Particle extends ParticleBase
         zd *= 0.99D;
 
         if (y < 0.0D)
-        {
             remove();
-            return;
-        }
 
         final int NUM = 5;
         double dx = (x - xo) / NUM;
@@ -82,17 +79,13 @@ public class Debris1Particle extends ParticleBase
 
         if (onGround)
             remove();
-
-        updateVisuals();
     }
 
     @Override
-    protected void updateVisuals()
+    @NotNull
+    public ParticleRenderType getRenderType()
     {
-        quadSize = scaleMultiplier * 0.2F;
-        alpha = 1.0F;
-
-        setSpriteFromAge(sprites);
+        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
@@ -100,7 +93,7 @@ public class Debris1Particle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new Debris1Particle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }
