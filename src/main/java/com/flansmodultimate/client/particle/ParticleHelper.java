@@ -92,9 +92,10 @@ public final class ParticleHelper
             case FlanParticles.FM_SMOKE -> Optional.of(FlansMod.fmSmokeParticle.get());
             case FlanParticles.FM_SMOKE_BURST -> Optional.of(FlansMod.smokeBurstParticle.get());
             case FlanParticles.FM_SMOKER -> Optional.of(FlansMod.smokeGrenadeParticle.get());
+            case FlanParticles.EXPLODE -> Optional.of(FlansMod.explodeParticle.get());
             case FlanParticles.RED_DUST -> Optional.of(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F));
             case FlanParticles.HUGE_EXPLOSION -> Optional.of(ParticleTypes.EXPLOSION_EMITTER);
-            case FlanParticles.LARGE_EXPLODE, FlanParticles.EXPLODE -> Optional.of(ParticleTypes.EXPLOSION);
+            case FlanParticles.LARGE_EXPLODE -> Optional.of(ParticleTypes.EXPLOSION);
             case FlanParticles.FIREWORKS_SPARK -> Optional.of(ParticleTypes.FIREWORK);
             case FlanParticles.BUBBLE -> Optional.of(ParticleTypes.BUBBLE);
             case FlanParticles.SPLASH -> Optional.of(ParticleTypes.SPLASH);

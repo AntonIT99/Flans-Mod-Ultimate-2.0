@@ -18,6 +18,7 @@ import com.flansmodultimate.client.particle.FmFlameParticle;
 import com.flansmodultimate.client.particle.FmMuzzleFlashParticle;
 import com.flansmodultimate.client.particle.FmSmokeParticle;
 import com.flansmodultimate.client.particle.FmTracerParticle;
+import com.flansmodultimate.client.particle.LegacyExplodeParticle;
 import com.flansmodultimate.client.particle.RocketExhaustParticle;
 import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
@@ -171,6 +172,7 @@ public final class ModClientEventHandler
         event.registerSpriteSet(FlansMod.afterburnParticle.get(), AfterburnParticle.Provider::new);
         event.registerSpriteSet(FlansMod.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
         event.registerSpriteSet(FlansMod.debris1Particle.get(), Debris1Particle.Provider::new);
+        event.registerSpriteSet(FlansMod.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
         event.registerSpriteSet(FlansMod.flareParticle.get(), FlareParticle.Provider::new);
         event.registerSpriteSet(FlansMod.flashParticle.get(), FlashParticle.Provider::new);
         event.registerSpriteSet(FlansMod.fmFlameParticle.get(), FmFlameParticle.Provider::new);

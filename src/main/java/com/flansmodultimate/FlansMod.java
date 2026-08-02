@@ -174,6 +174,7 @@ public class FlansMod
     public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> bigSmokeParticle = particleRegistry.register("big_smoke", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> debris1Particle = particleRegistry.register("debris_1", () -> new SimpleParticleType(false));
+    public static final RegistryObject<SimpleParticleType> explodeParticle = particleRegistry.register("explode", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> flareParticle = particleRegistry.register("flare", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> flashParticle = particleRegistry.register("flash", () -> new SimpleParticleType(false));
     public static final RegistryObject<SimpleParticleType> fmFlameParticle = particleRegistry.register("fm_flame", () -> new SimpleParticleType(false));
