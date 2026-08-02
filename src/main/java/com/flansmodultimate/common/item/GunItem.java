@@ -231,7 +231,26 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
 
-            List<ShootableType> ammoTypes = configType.getAmmoTypes();
+            List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
+            getBulletItemStackList(stack).stream()
+                .map(ItemStack::getItem)
+                .filter(ShootableItem.class::isInstance)
+                .map(ShootableItem.class::cast)
+                .map(ShootableItem::getConfigType)
+                .findFirst()
+                .ifPresent(loadedAmmoType ->
+                {
+                    for (int i = 0; i < ammoTypes.size(); i++)
+                    {
+                        ShootableType ammoType = ammoTypes.get(i);
+                        if (ammoType.getShortName().equals(loadedAmmoType.getShortName()))
+                        {
+                            ammoTypes.remove(i);
+                            ammoTypes.add(0, ammoType);
+                            break;
+                        }
+                    }
+                });
             if (configType.isShowDamage() && !ammoTypes.isEmpty())
             {
                 tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
