@@ -33,7 +33,9 @@ public class FmTracerParticle extends ParticleBase
 
         setSpriteFromAge(sprites);
 
-        level.addParticle(FlansMod.fmSmokeParticle.get(), x, y, z, 0.0D, 0.0D, 0.0D);
+        // Only EntityFMTracer spawned smoke. The legacy green/red constructors
+        // attempted differently-cased self names which the case-sensitive
+        // 1.7.10 dispatcher did not recognize.
     }
 
     @Override
@@ -52,12 +54,20 @@ public class FmTracerParticle extends ParticleBase
         setSpriteFromAge(sprites);
     }
 
+    @Override
+    public int getLightColor(float partialTick)
+    {
+        return 0xF000F0;
+    }
+
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            if (type == FlansMod.fmTracerParticle.get())
+                level.addParticle(FlansMod.fmSmokeParticle.get(), x, y, z, 0.0D, 0.0D, 0.0D);
+            return new FmTracerParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

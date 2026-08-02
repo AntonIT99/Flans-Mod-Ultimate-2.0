@@ -6,9 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class SmokeGrenadeParticle extends ParticleBase
@@ -19,15 +19,13 @@ public class SmokeGrenadeParticle extends ParticleBase
     {
         super(level, x, y, z, vx, vy, vz, sprites);
         
-        lifetime = 16 * 20;
+        lifetime *= 20;
         
         gravity = 1.0F;
         
         xd = vx;
         yd = vy;
         zd = vz;
-        
-        quadSize = 0.1F;
         
         rCol = 1.0F;
         gCol = 1.0F;
@@ -47,10 +45,7 @@ public class SmokeGrenadeParticle extends ParticleBase
         zo = z;
 
         if (age++ >= lifetime)
-        {
             remove();
-            return;
-        }
         
         yd -= 0.04D * gravity;
         
@@ -83,7 +78,7 @@ public class SmokeGrenadeParticle extends ParticleBase
             double py = yo + dy * i;
             double pz = zo + dz * i;
 
-            level.addParticle(ParticleTypes.EXPLOSION, px, py, pz, 0.0D, 0.0D, 0.0D);
+            level.addParticle(FlansMod.explodeParticle.get(), px, py, pz, 0.0D, 0.0D, 0.0D);
         }
 
         if (onGround)
@@ -95,10 +90,22 @@ public class SmokeGrenadeParticle extends ParticleBase
     @Override
     protected void updateVisuals()
     {
-        quadSize = scaleMultiplier * 0.1F;
         alpha = 1.0F;
 
         setSpriteFromAge(sprites);
+    }
+
+    @Override
+    public Particle scale(float factor)
+    {
+        return applyScale(factor);
+    }
+
+    @Override
+    @NotNull
+    public ParticleRenderType getRenderType()
+    {
+        return LegacyParticleRenderTypes.PREMULTIPLIED;
     }
 
     private boolean isInLiquid()
@@ -112,7 +119,7 @@ public class SmokeGrenadeParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new SmokeGrenadeParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

@@ -24,8 +24,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
-    //TODO: reimplement legacy particles and physics from 1.7.10 when it is necessary
-
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         Optional<ParticleOptions> opt = toOptions(s);

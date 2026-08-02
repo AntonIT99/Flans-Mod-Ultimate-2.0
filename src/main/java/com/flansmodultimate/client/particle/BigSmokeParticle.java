@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -29,6 +30,7 @@ public class BigSmokeParticle extends ParticleBase
 
         quadSize = 0.0F;
         alpha = 0.0F;
+        pickSprite(sprites);
 
         disperseTimer = 10;
     }
@@ -41,10 +43,7 @@ public class BigSmokeParticle extends ParticleBase
         zo = z;
 
         if (age++ >= lifetime)
-        {
             remove();
-            return;
-        }
 
         yd -= 0.04D * gravity;
 
@@ -86,6 +85,15 @@ public class BigSmokeParticle extends ParticleBase
         alpha = 0.0F;
     }
 
+    @Override
+    @NotNull
+    public ParticleRenderType getRenderType()
+    {
+        // EntityBigSmoke's legacy renderParticle method was empty: this
+        // particle is only a timed controller that emits rocket exhaust.
+        return ParticleRenderType.NO_RENDER;
+    }
+
     private boolean isInWater()
     {
         return level.getFluidState(BlockPos.containing(x, y, z)).is(FluidTags.WATER);
@@ -96,7 +104,7 @@ public class BigSmokeParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new BigSmokeParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

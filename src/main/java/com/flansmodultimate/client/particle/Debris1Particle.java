@@ -85,7 +85,7 @@ public final class Debris1Particle extends TextureSheetParticle
     @NotNull
     public ParticleRenderType getRenderType()
     {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        return LegacyParticleRenderTypes.TRANSLUCENT;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>

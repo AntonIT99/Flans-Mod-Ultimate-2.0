@@ -14,7 +14,7 @@ public class FmMuzzleFlashParticle extends ParticleBase
     {
         super(level, x, y, z, vx, vy, vz, sprites);
         
-        lifetime = 4;
+        lifetime = (int)(lifetime * 0.25D);
 
         gravity = 0.0F;
 
@@ -22,14 +22,12 @@ public class FmMuzzleFlashParticle extends ParticleBase
         yd = vy;
         zd = vz;
 
-        quadSize = 0.1F;
-        
         rCol = 1.0F;
         gCol = 1.0F;
         bCol = 1.0F;
         alpha = 1.0F;
         
-        setSpriteFromAge(sprites);
+        updateVisuals();
     }
 
     @Override
@@ -52,7 +50,6 @@ public class FmMuzzleFlashParticle extends ParticleBase
         if (onGround || age++ >= lifetime)
         {
             remove();
-            return;
         }
 
         updateVisuals();
@@ -61,7 +58,6 @@ public class FmMuzzleFlashParticle extends ParticleBase
     @Override
     protected void updateVisuals()
     {
-        quadSize = scaleMultiplier * 0.1F;
         alpha = 1.0F;
         
         double progress = (double)age / (double)lifetime;
@@ -76,7 +72,24 @@ public class FmMuzzleFlashParticle extends ParticleBase
         else
             frameIndex = 3;
         
-        setSprite(sprites.get(frameIndex, 4));
+        setSprite(sprites.get(frameIndex, 3));
+    }
+
+    @Override
+    public Particle scale(float factor)
+    {
+        // ClientProxy applied multipleParticleScaleBy once in the muzzle-flash
+        // branch and once again in its common tail. particleScale was therefore
+        // multiplied twice, while setSize was assigned the same value twice.
+        quadSize *= factor * factor;
+        setSize(0.2F * factor, 0.2F * factor);
+        return this;
+    }
+
+    @Override
+    public int getLightColor(float partialTick)
+    {
+        return 0xF000F0;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
@@ -84,7 +97,7 @@ public class FmMuzzleFlashParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new FmMuzzleFlashParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

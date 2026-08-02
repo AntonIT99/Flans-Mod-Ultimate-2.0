@@ -34,10 +34,26 @@ public class FmSmokeParticle extends ParticleBase
     }
 
     @Override
+    public void tick()
+    {
+        xo = x;
+        yo = y;
+        zo = z;
+
+        if (age++ >= lifetime)
+            remove();
+
+        yd += 0.01D;
+        move(xd, yd, zd);
+        if (onGround)
+            remove();
+
+        updateVisuals();
+    }
+
+    @Override
     protected void updateVisuals()
     {
-        yd += 0.01F;
-        
         quadSize = scaleMultiplier * (0.1F + age * 0.05F);
         
         float intensity = 0.5F;
@@ -55,7 +71,7 @@ public class FmSmokeParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new FmSmokeParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

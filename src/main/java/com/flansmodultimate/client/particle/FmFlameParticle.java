@@ -52,12 +52,18 @@ public class FmFlameParticle extends ParticleBase
         setSpriteFromAge(sprites);
     }
 
+    @Override
+    public int getLightColor(float partialTick)
+    {
+        return 0xF000F0;
+    }
+
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new FmFlameParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

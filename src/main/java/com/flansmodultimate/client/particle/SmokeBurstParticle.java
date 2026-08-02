@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -17,13 +18,41 @@ public class SmokeBurstParticle extends ParticleBase
         gravity = 0.0F;
         quadSize = 5.0F;
         rCol = gCol = bCol = 1.0F;
-        setSpriteFromAge(sprites);
+        setFrame(0);
+    }
+
+    @Override
+    public void tick()
+    {
+        xo = x;
+        yo = y;
+        zo = z;
+
+        if (age++ >= lifetime)
+            remove();
+
+        if (onGround)
+            remove();
+
+        updateVisuals();
     }
 
     @Override
     protected void updateVisuals()
     {
-        setSpriteFromAge(sprites);
+        setFrame(Math.min(age, 5));
+    }
+
+    private void setFrame(int frame)
+    {
+        setSprite(sprites.get(frame, 5));
+    }
+
+    @Override
+    @NotNull
+    public ParticleRenderType getRenderType()
+    {
+        return LegacyParticleRenderTypes.PREMULTIPLIED;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>

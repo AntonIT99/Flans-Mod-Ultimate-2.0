@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -29,7 +30,23 @@ public class FlashParticle extends ParticleBase
         bCol = 1.0F;
         alpha = 1.0F;
 
-        setSpriteFromAge(sprites);
+        setFrame(0);
+    }
+
+    @Override
+    public void tick()
+    {
+        xo = x;
+        yo = y;
+        zo = z;
+
+        if (age++ >= lifetime)
+            remove();
+
+        if (onGround)
+            remove();
+
+        updateVisuals();
     }
 
     @Override
@@ -38,7 +55,25 @@ public class FlashParticle extends ParticleBase
         quadSize = scaleMultiplier;
         alpha = 1.0F;
         
-        setSpriteFromAge(sprites);
+        setFrame(Math.min(age, 5));
+    }
+
+    private void setFrame(int frame)
+    {
+        setSprite(sprites.get(frame, 5));
+    }
+
+    @Override
+    public int getLightColor(float partialTick)
+    {
+        return 0xF000F0;
+    }
+
+    @Override
+    @NotNull
+    public ParticleRenderType getRenderType()
+    {
+        return LegacyParticleRenderTypes.PREMULTIPLIED;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
@@ -46,7 +81,7 @@ public class FlashParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new FlashParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

@@ -34,13 +34,29 @@ public class RocketExhaustParticle extends ParticleBase
     }
 
     @Override
+    public void tick()
+    {
+        xo = x;
+        yo = y;
+        zo = z;
+
+        if (age++ >= lifetime)
+            remove();
+
+        yd += 0.01D;
+        move(xd, yd, zd);
+        if (onGround)
+            remove();
+
+        updateVisuals();
+    }
+
+    @Override
     protected void updateVisuals()
     {
         quadSize = scaleMultiplier * (10.0F + age * 0.05F);
         
         alpha = Mth.clamp(1.0F - age * 0.1F, 0.0F, 1.0F);
-        
-        yd += 0.01F;
         
         setSpriteFromAge(sprites);
     }
@@ -50,7 +66,7 @@ public class RocketExhaustParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
+            return new RocketExhaustParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }
 }

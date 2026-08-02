@@ -20,17 +20,10 @@ public abstract class ParticleBase extends TextureSheetParticle
     }
 
     @Override
-    public int getLightColor(float partialTick)
-    {
-        // fullbright by default, override if needed
-        return 0xF000F0;
-    }
-
-    @Override
     @NotNull
     public ParticleRenderType getRenderType()
     {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        return LegacyParticleRenderTypes.TRANSLUCENT;
     }
 
     @Override
@@ -41,14 +34,9 @@ public abstract class ParticleBase extends TextureSheetParticle
         zo = z;
 
         if (age++ >= lifetime)
-        {
             remove();
-            return;
-        }
 
-        x += xd;
-        y += yd;
-        z += zd;
+        move(xd, yd, zd);
 
         if (onGround)
             remove();
@@ -60,7 +48,16 @@ public abstract class ParticleBase extends TextureSheetParticle
     @Override
     public Particle scale(float factor)
     {
-        scaleMultiplier = factor;
+        // Most legacy layer-3 renderers used a hard-coded quad size and
+        // ignored EntityFX.particleScale. multipleParticleScaleBy still
+        // changed their collision box, however.
+        setSize(0.2F * factor, 0.2F * factor);
+        return this;
+    }
+
+    protected Particle applyScale(float factor)
+    {
+        scaleMultiplier *= factor;
         return super.scale(factor);
     }
 
