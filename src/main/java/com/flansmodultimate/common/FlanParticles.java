@@ -18,7 +18,7 @@ public final class FlanParticles
     public static final String FM_TRACER_RED = "flansmod.fmtracerred";
     public static final String FM_MUZZLE_FLASH = "flansmod.muzzleflash";
     public static final String FM_ROCKET_EXHAUST = "flansmod.rocketexhaust";
-    public static final String FM_SMOKE = "flansmod.smoke";
+    public static final String FM_SMOKE = "flansmod.fmsmoke";
     public static final String FM_SMOKE_BURST = "flansmod.smokeburst";
     public static final String FM_SMOKER = "flansmod.smoker";
 
