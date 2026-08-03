@@ -93,7 +93,7 @@ public final class TeamsManager
 
     private static TeamsManager instance;
 
-    @Getter @Setter 
+    @Getter
     private boolean explosionsBreakBlocks = true;
     @Getter @Setter 
     private boolean canBreakGlass = true;
@@ -107,11 +107,11 @@ public final class TeamsManager
     private boolean shellsEnabled = true;
     @Getter @Setter 
     private boolean bulletsEnabled = true;
-    @Getter @Setter 
+    @Getter
     private boolean forceAdventureMode = true;
     @Getter @Setter 
     private boolean armourDrops = true;
-    @Getter @Setter 
+    @Getter
     private boolean vehiclesNeedFuel = true;
     @Getter @Setter 
     private boolean overrideHunger = true;
@@ -229,6 +229,24 @@ public final class TeamsManager
     public void setVoting(boolean voting)
     {
         this.voting = voting;
+        saveRuntime();
+    }
+
+    public void setExplosionsBreakBlocks(boolean explosionsBreakBlocks)
+    {
+        this.explosionsBreakBlocks = explosionsBreakBlocks;
+        saveRuntime();
+    }
+
+    public void setForceAdventureMode(boolean forceAdventureMode)
+    {
+        this.forceAdventureMode = forceAdventureMode;
+        saveRuntime();
+    }
+
+    public void setVehiclesNeedFuel(boolean vehiclesNeedFuel)
+    {
+        this.vehiclesNeedFuel = vehiclesNeedFuel;
         saveRuntime();
     }
 

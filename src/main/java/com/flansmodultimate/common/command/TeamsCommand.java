@@ -71,6 +71,10 @@ public final class TeamsCommand
             .then(Commands.literal("listAllTeams").executes(TeamsCommand::listTeams))
             .then(Commands.literal("on").requires(source -> source.hasPermission(2)).executes(context -> { manager(context).setEnabled(true); return success(context, "Teams enabled"); }))
             .then(Commands.literal("off").requires(source -> source.hasPermission(2)).executes(context -> { manager(context).setEnabled(false); return success(context, "Teams disabled"); }))
+            .then(booleanSetting("explosions", TeamsCommand::setExplosions))
+            .then(booleanSetting("forceAdventure", TeamsCommand::setForceAdventure))
+            .then(booleanSetting("forceAdventureMode", TeamsCommand::setForceAdventure))
+            .then(booleanSetting("fuelNeeded", TeamsCommand::setFuelNeeded))
             .then(Commands.literal("start").requires(source -> source.hasPermission(2)).executes(context -> manager(context).startNextRound() ? success(context, "Round started") : failure(context, "No valid round is configured")))
             .then(Commands.literal("nextRound").requires(source -> source.hasPermission(2)).executes(context -> manager(context).startNextRound() ? success(context, "Advanced to the next round") : failure(context, "No valid round is configured")))
             .then(Commands.literal("getOpKit").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
@@ -165,8 +169,36 @@ public final class TeamsCommand
     {
         context.getSource().sendSuccess(() -> Component.literal("/teams loadouts, /teams join <team>, /teams class <class>, /teams vote <number>, /teams score, /teams stats, /teams list <gametypes|teams|classes|loadouts|rewardboxes|maps|rounds>"), false);
         if (context.getSource().hasPermission(2))
-            context.getSource().sendSuccess(() -> Component.literal("Administration: /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|start|next|stop|arena|survival|kit|map|round|setvariable>"), false);
+            context.getSource().sendSuccess(() -> Component.literal("Administration: /teams <explosions|forceAdventure|fuelNeeded> <true|false>, /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|start|next|stop|arena|survival|kit|map|round|setvariable>"), false);
         return 1;
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> booleanSetting(
+        String name, java.util.function.ToIntFunction<CommandContext<CommandSourceStack>> handler)
+    {
+        return Commands.literal(name).requires(source -> source.hasPermission(2))
+            .then(Commands.argument("value", BoolArgumentType.bool()).executes(handler::applyAsInt));
+    }
+
+    private static int setExplosions(CommandContext<CommandSourceStack> context)
+    {
+        boolean enabled = BoolArgumentType.getBool(context, "value");
+        manager(context).setExplosionsBreakBlocks(enabled);
+        return success(context, "Terrain damage from explosions " + (enabled ? "enabled" : "disabled"));
+    }
+
+    private static int setForceAdventure(CommandContext<CommandSourceStack> context)
+    {
+        boolean enabled = BoolArgumentType.getBool(context, "value");
+        manager(context).setForceAdventureMode(enabled);
+        return success(context, "Adventure mode will " + (enabled ? "now" : "no longer") + " be forced on respawn");
+    }
+
+    private static int setFuelNeeded(CommandContext<CommandSourceStack> context)
+    {
+        boolean enabled = BoolArgumentType.getBool(context, "value");
+        manager(context).setVehiclesNeedFuel(enabled);
+        return success(context, "Vehicles will " + (enabled ? "now" : "no longer") + " require fuel");
     }
 
     private static int openLoadouts(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
