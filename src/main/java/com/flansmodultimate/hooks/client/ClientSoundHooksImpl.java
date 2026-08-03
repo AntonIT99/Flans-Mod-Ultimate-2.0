@@ -14,7 +14,7 @@ public class ClientSoundHooksImpl implements IClientSoundHooks
 {
     public void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Player player)
     {
-        SoundHelper.playSound(sound, pos, range, distort, silenced, cancellable, instanceUUID, player == null || player != Minecraft.getInstance().player);
+        SoundHelper.playSound(sound, pos, range, distort, silenced, cancellable, instanceUUID, player != null && player == Minecraft.getInstance().player);
     }
 
     public void cancelSound(UUID instanceUUID)

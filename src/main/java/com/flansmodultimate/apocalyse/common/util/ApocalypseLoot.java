@@ -29,9 +29,10 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String TAG_BOOK_TITLE = "title";
-    private static final String TAG_BOOK_AUTHOR = "author";
-    private static final String TAG_BOOK_PAGES = "pages";
+    private static final String NBT_BOOK_TITLE = "title";
+    private static final String NBT_BOOK_AUTHOR = "author";
+    private static final String NBT_BOOK_PAGES = "pages";
+
     private static final String[] JOURNAL_LINES = new String[] {
         "The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
         "If you find the power cubes, do not stand between them unless you are ready to leave.",
@@ -109,12 +110,12 @@ public final class ApocalypseLoot
     public static ItemStack survivorJournal(RandomSource random)
     {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.getOrCreateTag().putString(TAG_BOOK_TITLE, "Survivor Journal");
-        book.getOrCreateTag().putString(TAG_BOOK_AUTHOR, "Unknown Survivor");
+        book.getOrCreateTag().putString(NBT_BOOK_TITLE, "Survivor Journal");
+        book.getOrCreateTag().putString(NBT_BOOK_AUTHOR, "Unknown Survivor");
         ListTag pages = new ListTag();
         String text = JOURNAL_LINES[random.nextInt(JOURNAL_LINES.length)];
         pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY))));
-        book.getOrCreateTag().put(TAG_BOOK_PAGES, pages);
+        book.getOrCreateTag().put(NBT_BOOK_PAGES, pages);
         return book;
     }
 
