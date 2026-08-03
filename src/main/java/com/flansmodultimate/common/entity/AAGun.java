@@ -25,6 +25,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -78,10 +79,11 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     protected static final EntityDataAccessor<Integer> DATA_AMMO_MASK = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_CURRENT_BARREL = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_HEALTH = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Component> DATA_CURRENT_AMMO_NAME = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.COMPONENT);
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
-    protected int health;
     protected int shootDelay;
     protected int soundTimer;
     protected int currentBarrel;
@@ -143,7 +145,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         if (configType == null)
             return;
 
-        health = configType.getHealth();
+        setHealth(configType.getHealth());
         barrelRecoil = new float[configType.getNumBarrels()];
 
         ItemStack[] previousAmmo = ammo;
@@ -227,6 +229,21 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         entityData.set(DATA_RELOAD_TIMER, v);
     }
 
+    public int getHealth()
+    {
+        return entityData.get(DATA_HEALTH);
+    }
+
+    public void setHealth(int value)
+    {
+        entityData.set(DATA_HEALTH, value);
+    }
+
+    public Component getCurrentAmmoName()
+    {
+        return entityData.get(DATA_CURRENT_AMMO_NAME);
+    }
+
     public void setCurrentBarrel(int barrel)
     {
         AAGunType type = getConfigType();
@@ -258,12 +275,18 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     private void updateAmmoMask()
     {
         int mask = 0;
+        Component currentAmmoName = Component.empty();
         for (int i = 0; i < Math.min(ammo.length, Integer.SIZE); i++)
         {
             if (!ammo[i].isEmpty())
+            {
                 mask |= (1 << i);
+                if (currentAmmoName.getString().isEmpty())
+                    currentAmmoName = ammo[i].getHoverName();
+            }
         }
         setAmmoMask(mask);
+        entityData.set(DATA_CURRENT_AMMO_NAME, currentAmmoName);
     }
 
     @Override
@@ -308,6 +331,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         entityData.define(DATA_AMMO_MASK, 0);
         entityData.define(DATA_RELOAD_TIMER, 0);
         entityData.define(DATA_CURRENT_BARREL, 0);
+        entityData.define(DATA_HEALTH, 0);
+        entityData.define(DATA_CURRENT_AMMO_NAME, Component.empty());
     }
 
     @Override
@@ -319,6 +344,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         buf.writeInt(getAmmoMask());
         buf.writeInt(getReloadTimer());
         buf.writeInt(getCurrentBarrelIndex());
+        buf.writeInt(getHealth());
+        buf.writeComponent(getCurrentAmmoName());
     }
 
     @Override
@@ -341,6 +368,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             setAmmoMask(buf.readInt());
             setReloadTimer(buf.readInt());
             setCurrentBarrel(buf.readInt());
+            setHealth(buf.readInt());
+            entityData.set(DATA_CURRENT_AMMO_NAME, buf.readComponent());
         }
         catch (Exception e)
         {
@@ -363,7 +392,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         }
 
         initType();
-        health = tag.contains(NBT_HEALTH, Tag.TAG_INT) ? tag.getInt(NBT_HEALTH) : configType.getHealth();
+        setHealth(tag.contains(NBT_HEALTH, Tag.TAG_INT) ? tag.getInt(NBT_HEALTH) : configType.getHealth());
         setGunYaw(tag.getFloat(NBT_GUN_YAW));
         setGunPitch(tag.getFloat(NBT_GUN_PITCH));
         setReloadTimer(tag.getInt(NBT_RELOAD_TIMER));
@@ -394,7 +423,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return;
 
         tag.putString(NBT_TYPE_NAME, getShortName());
-        tag.putInt(NBT_HEALTH, health);
+        tag.putInt(NBT_HEALTH, getHealth());
         tag.putFloat(NBT_GUN_YAW, getGunYaw());
         tag.putFloat(NBT_GUN_PITCH, getGunPitch());
         tag.putInt(NBT_RELOAD_TIMER, getReloadTimer());
@@ -463,8 +492,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return true;
         }
 
-        health -= (int) amount;
-        if (health <= 0)
+        setHealth(getHealth() - (int) amount);
+        if (getHealth() <= 0)
             discard();
 
         return true;

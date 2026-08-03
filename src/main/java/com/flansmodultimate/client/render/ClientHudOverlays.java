@@ -3,10 +3,12 @@ package com.flansmodultimate.client.render;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -21,6 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -28,6 +31,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Locale;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
@@ -48,6 +52,15 @@ public final class ClientHudOverlays
     private static final int TEXTURE_HEIGHT = 64;
     private static final double BAR_MAX_WIDTH = 14.5;
     private static final int BAR_HEIGHT = 3;
+    private static final int LEGACY_HUD_LEFT = 2;
+    private static final int LEGACY_HUD_RIGHT = 172;
+    private static final int LEGACY_HUD_TOP = 2;
+    private static final int LEGACY_HUD_LINE_HEIGHT = 10;
+    private static final int HUD_WHITE = 0xFFFFFF;
+    private static final int HUD_GREEN = 0x00FF00;
+    private static final int HUD_AMMO_GREEN = 0x24FF62;
+    private static final int HUD_GOLD = 0xDAA520;
+    private static final int HUD_RED = 0xFF0000;
     private static final double[] BAR_X_OFFSETS = {
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
@@ -99,12 +112,78 @@ public final class ClientHudOverlays
     };
 
     public static final IGuiOverlay HUD = (gui, g, partialTick, sw, sh) -> {
+        renderAAGunHud(g, partialTick, sw);
         renderPlayerAmmo(g, sw, sh);
         renderDigitalAmmo(g, sw, sh);
         renderTeamInfo(g, sw, sh);
         renderKillMessages(g, sw, sh);
         renderVehicleDebug(g, sw, sh);
     };
+
+    public static void renderAAGunHud(GuiGraphics g, float partialTick, int sw)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof AAGun aaGun))
+            return;
+
+        AAGunType type = aaGun.getConfigType();
+        if (type == null)
+            return;
+
+        Font font = mc.font;
+        int healthPercent = type.getHealth() <= 0
+            ? 0
+            : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
+        Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent);
+        g.drawString(font, health, LEGACY_HUD_LEFT, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
+
+        float yaw = Mth.rotLerp(partialTick, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
+        float pitch = Mth.lerp(partialTick, aaGun.getPrevGunPitch(), aaGun.getGunPitch());
+        Component yawText = Component.translatable("hud.flansmodultimate.aa_gun.yaw", Math.round(yaw));
+        Component pitchText = Component.translatable("hud.flansmodultimate.aa_gun.gun_pitch", Math.round(-pitch));
+
+        Component currentAmmoName = aaGun.getCurrentAmmoName();
+        boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
+        Component reloadText = aaGun.getReloadTimer() > 0
+            ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", aaGun.getReloadTimer() / 20F))
+            : Component.translatable("hud.flansmodultimate.aa_gun.ready");
+        Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
+
+        int rightX = Math.min(LEGACY_HUD_RIGHT, sw - 2 - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
+            currentAmmoName));
+        rightX = Math.max(LEGACY_HUD_LEFT, rightX);
+
+        g.drawString(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
+        g.drawString(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
+        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2,
+            aaGun.getReloadTimer() > 0 ? HUD_RED : HUD_GREEN, false);
+
+        if (hasCurrentAmmo)
+        {
+            g.drawString(font, ammoHeading, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
+            g.drawString(font, currentAmmoName, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
+        }
+    }
+
+    private static int healthColor(int healthPercent)
+    {
+        if (healthPercent >= 75)
+            return HUD_WHITE;
+        if (healthPercent >= 50)
+            return HUD_GREEN;
+        if (healthPercent >= 25)
+            return HUD_GOLD;
+        return HUD_RED;
+    }
+
+    private static int maxWidth(Font font, Component... lines)
+    {
+        int width = 0;
+        for (Component line : lines)
+            width = Math.max(width, font.width(line));
+        return width;
+    }
 
     public static final IGuiOverlay DAMAGE_ABSORPTION = (gui, g, partialTick, sw, sh) -> {
         if (!ModClientConfig.get().showArmorDamageAbsorptionBar || gui.getMinecraft().options.hideGui || !gui.shouldDrawSurvivalElements())
