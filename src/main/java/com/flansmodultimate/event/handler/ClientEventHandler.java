@@ -10,6 +10,7 @@ import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
@@ -245,6 +246,15 @@ public final class ClientEventHandler
         Player player = mc.player;
         if (player == null)
             return;
+
+        // AA guns read the fire button directly in ClientGunHooksImpl, so canceling the
+        // vanilla attack here only suppresses the player's hand swing and melee attack.
+        if (player.getVehicle() instanceof AAGun && event.isAttack())
+        {
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            return;
+        }
 
         // Block all interactions unless it is 'use item' to dismount deployable guns
         if (player.getVehicle() instanceof DeployedGun)
