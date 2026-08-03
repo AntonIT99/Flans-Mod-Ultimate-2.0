@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -102,8 +103,9 @@ public final class RewardBox extends InfoType
     @Nullable
     public static Paintjob findPaintjob(PaintableType type, String name)
     {
+        String sanitizedName = ResourceUtils.sanitize(name);
         for (Paintjob paintjob : type.getPaintjobs().values())
-            if (name.equalsIgnoreCase(paintjob.getTextureName()) || name.equalsIgnoreCase(paintjob.getIcon())) return paintjob;
+            if (sanitizedName.equals(paintjob.getTextureName()) || sanitizedName.equals(paintjob.getIcon())) return paintjob;
         return null;
     }
 
