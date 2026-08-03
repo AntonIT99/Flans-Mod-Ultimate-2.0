@@ -418,8 +418,7 @@ public class FlansMod
         generalItemList.addAll(FlansMod.getItems(EnumSet.of(
             EnumType.ITEM_HOLDER,
             EnumType.ARMOR_BOX,
-            EnumType.GUN_BOX,
-            EnumType.REWARD_BOX
+            EnumType.GUN_BOX
         )));
 
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_GENERAL, generalItemList, false, false, CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
