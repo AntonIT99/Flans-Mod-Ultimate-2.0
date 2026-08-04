@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InventoryHelper
 {
@@ -44,6 +47,60 @@ public final class InventoryHelper
             }
         }
         inv.setChanged();
+    }
+
+    /**
+     * Checks a complete legacy recipe against one snapshot of an inventory. This
+     * matters when a recipe contains the same item more than once: checking every
+     * ingredient independently would allow both entries to count the same stack.
+     */
+    public static boolean canConsumeAll(Container inv, List<ItemStack> required)
+    {
+        List<ItemStack> available = new ArrayList<>(inv.getContainerSize());
+        for (int slot = 0; slot < inv.getContainerSize(); slot++)
+            available.add(inv.getItem(slot).copy());
+
+        for (ItemStack want : required)
+        {
+            if (want == null || want.isEmpty())
+                continue;
+
+            int remaining = want.getCount();
+            for (ItemStack have : available)
+            {
+                if (have.isEmpty() || !ItemStack.isSameItemSameTags(have, want))
+                    continue;
+
+                int taken = Math.min(remaining, have.getCount());
+                have.shrink(taken);
+                remaining -= taken;
+                if (remaining == 0)
+                    break;
+            }
+
+            if (remaining > 0)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Atomically consumes a list of ingredients. The inventory is left untouched
+     * when any ingredient is missing.
+     */
+    public static boolean tryConsumeAll(Container inv, List<ItemStack> required, boolean creative)
+    {
+        if (creative)
+            return true;
+        if (!canConsumeAll(inv, required))
+            return false;
+
+        for (ItemStack want : required)
+        {
+            if (want != null && !want.isEmpty())
+                consumeFromInventory(inv, want);
+        }
+        return true;
     }
 
     /**

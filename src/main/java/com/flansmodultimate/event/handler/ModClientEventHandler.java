@@ -3,6 +3,8 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.gui.ArmorBoxScreen;
+import com.flansmodultimate.client.gui.DriveableCraftingScreen;
+import com.flansmodultimate.client.gui.DriveableInventoryScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
@@ -28,7 +30,9 @@ import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
 import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
+import com.flansmodultimate.client.render.entity.DriveableRenderer;
 import com.flansmodultimate.client.render.entity.GrenadeRenderer;
+import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
@@ -101,6 +105,8 @@ public final class ModClientEventHandler
 
             // Menus registration
             MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
+            MenuScreens.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
+            MenuScreens.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
             MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
             MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
             MenuScreens.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
@@ -158,6 +164,11 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
         event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
         event.registerEntityRenderer(FlansMod.parachuteEntity.get(), ParachuteRenderer::new);
+        event.registerEntityRenderer(FlansMod.planeEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansMod.vehicleEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansMod.mechaEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansMod.seatEntity.get(), InvisibleEntityRenderer::new);
+        event.registerEntityRenderer(FlansMod.wheelEntity.get(), InvisibleEntityRenderer::new);
         event.registerEntityRenderer(FlansMod.flagpoleEntity.get(), TeamObjectRenderer::new);
         event.registerEntityRenderer(FlansMod.flagEntity.get(), TeamObjectRenderer::new);
         event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);

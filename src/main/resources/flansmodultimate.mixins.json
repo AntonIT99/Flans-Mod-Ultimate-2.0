@@ -7,7 +7,9 @@
   "mixins": [
   ],
   "client": [
-    "HumanoidArmorLayerMixin"
+      "DriveableCameraMixin",
+      "ForceDarkLightMixin",
+      "HumanoidArmorLayerMixin"
   ],
   "server": [
   ],

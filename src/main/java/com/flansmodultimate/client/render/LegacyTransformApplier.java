@@ -25,9 +25,7 @@ public final class LegacyTransformApplier
     public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
-        applyForClass(poseStack, model.getClass().getName());
-        if (model instanceof ModelBase modelBase)
-            modelBase.setScale(infoType.getModelScale());
+        applyModelTransform(model, infoType, poseStack);
 
         boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
         boolean cull = ModClientConfig.get().useCullingRendering(infoType);
@@ -35,6 +33,18 @@ public final class LegacyTransformApplier
             renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
 
         poseStack.popPose();
+    }
+
+    /**
+     * Apply constructor-time OpenGL transforms captured from a legacy model.
+     * Animated renderers use this entry point before drawing selected model
+     * parts instead of asking {@link #renderModel} to draw the entire model.
+     */
+    public static void applyModelTransform(IModelBase model, InfoType infoType, PoseStack poseStack)
+    {
+        applyForClass(poseStack, model.getClass().getName());
+        if (model instanceof ModelBase modelBase)
+            modelBase.setScale(infoType.getModelScale());
     }
 
     private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)

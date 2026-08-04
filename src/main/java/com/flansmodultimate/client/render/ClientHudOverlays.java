@@ -3,7 +3,12 @@ package com.flansmodultimate.client.render;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
+import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -434,5 +439,79 @@ public final class ClientHudOverlays
     //TODO: implement these methods
     public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
     public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
-    public static void renderVehicleDebug(GuiGraphics g, int sw, int sh) {}
+
+    public static void renderVehicleDebug(GuiGraphics g, int sw, int sh)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui)
+            return;
+
+        Driveable driveable = KeyInputHandler.resolveDriveable(player);
+        if (driveable == null || driveable.getConfigType() == null)
+            return;
+
+        Font font = mc.font;
+        int y = LEGACY_HUD_TOP;
+        g.drawString(font, Component.literal(driveable.getConfigType().getName()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        y += LEGACY_HUD_LINE_HEIGHT;
+
+        DriveableData data = driveable.getDriveableData();
+        if (data != null)
+        {
+            DriveablePart core = data.getPart(EnumDriveablePart.CORE);
+            if (core != null && core.getMaxHealth() > 0F)
+            {
+                int healthPercent = Mth.clamp(Math.round(core.getHealth() * 100F / core.getMaxHealth()), 0, 100);
+                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent),
+                    LEGACY_HUD_LEFT, y, healthColor(healthPercent), false);
+                y += LEGACY_HUD_LINE_HEIGHT;
+            }
+
+            float tankSize = driveable.getConfigType().getFuelTankSize();
+            if (tankSize > 0F)
+            {
+                int fuelPercent = Mth.clamp(Math.round(driveable.getFuel() * 100F / tankSize), 0, 100);
+                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.fuel", fuelPercent),
+                    LEGACY_HUD_LEFT, y, healthColor(fuelPercent), false);
+                y += LEGACY_HUD_LINE_HEIGHT;
+            }
+        }
+
+        int throttlePercent = Math.round(driveable.getThrottle() * 100F);
+        double speed = driveable.getDeltaMovement().length() * 20D;
+        g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.throttle", throttlePercent),
+            LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        y += LEGACY_HUD_LINE_HEIGHT;
+        g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.speed",
+            String.format(Locale.ROOT, "%.1f", speed)), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        y += LEGACY_HUD_LINE_HEIGHT;
+
+        Component gear = Component.translatable(driveable.isGearDeployed()
+            ? "hud.flansmodultimate.driveable.gear.down" : "hud.flansmodultimate.driveable.gear.up");
+        Component door = Component.translatable(driveable.isDoorOpen()
+            ? "hud.flansmodultimate.driveable.door.open" : "hud.flansmodultimate.driveable.door.closed");
+        Component status = Component.translatable("hud.flansmodultimate.driveable.status", gear, door,
+            driveable.getDriveableMode());
+        g.drawString(font, status, LEGACY_HUD_LEFT, y, driveable.isVarFlare() ? HUD_GOLD : HUD_WHITE, false);
+
+        if (!ModClient.isDebug())
+            return;
+
+        Component id = Component.literal("Driveable #" + driveable.getId() + " / " + driveable.getShortName());
+        Component position = Component.literal(String.format(Locale.ROOT, "XYZ %.2f / %.2f / %.2f",
+            driveable.getX(), driveable.getY(), driveable.getZ()));
+        Component rotation = Component.literal(String.format(Locale.ROOT, "YPR %.1f / %.1f / %.1f",
+            driveable.getYaw(), driveable.getPitch(), driveable.getRoll()));
+        Component turret = Component.literal(String.format(Locale.ROOT, "Turret %.1f / %.1f",
+            driveable.getTurretYaw(), driveable.getTurretPitch()));
+        Component input = Component.literal(String.format(Locale.ROOT, "Input 0x%05X", driveable.getInputMask()));
+        int rightX = Math.max(LEGACY_HUD_LEFT, sw - 2 - maxWidth(font, id, position, rotation, turret, input));
+        int debugY = LEGACY_HUD_TOP;
+        for (Component line : List.of(id, position, rotation, turret, input))
+        {
+            g.drawString(font, line, rightX, debugY, HUD_GREEN, false);
+            debugY += LEGACY_HUD_LINE_HEIGHT;
+        }
+    }
 }

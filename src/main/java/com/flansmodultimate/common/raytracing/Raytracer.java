@@ -74,7 +74,7 @@ public class Raytracer
 
     private static void checkDriveableHit(Driveable driveable, Vec3 origin, Vec3 motion, @Nullable LivingEntity owner, List<BulletHit> hits)
     {
-        if (owner != null && driveable.isPartOfThis(owner))
+        if (driveable.getConfigType() == null || owner != null && driveable.isPartOfThis(owner))
             return;
 
         double speed = motion.length();

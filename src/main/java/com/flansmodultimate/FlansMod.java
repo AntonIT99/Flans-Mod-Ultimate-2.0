@@ -15,9 +15,16 @@ import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
+import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Parachute;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
+import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
+import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
@@ -188,6 +195,8 @@ public class FlansMod
 
     // Menus
     public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
+    public static final RegistryObject<MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
+    public static final RegistryObject<MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> IForgeMenuType.create(DriveableInventoryMenu::createFromNetwork));
     public static final RegistryObject<MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> IForgeMenuType.create(PaintjobTableMenu::createFromNetwork));
     public static final RegistryObject<MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> IForgeMenuType.create(ArmorBoxMenu::createFromNetwork));
     public static final RegistryObject<MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create(GunBoxMenu::createFromNetwork));
@@ -250,6 +259,45 @@ public class FlansMod
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "parachute").toString())
+    );
+    public static final RegistryObject<EntityType<Plane>> planeEntity = entityRegistry.register("plane", () -> EntityType.Builder.<Plane>of(Plane::new, MobCategory.MISC)
+        .sized(3F, 2F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "plane").toString())
+    );
+    public static final RegistryObject<EntityType<Vehicle>> vehicleEntity = entityRegistry.register("vehicle", () -> EntityType.Builder.<Vehicle>of(Vehicle::new, MobCategory.MISC)
+        .sized(2.5F, 2F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "vehicle").toString())
+    );
+    public static final RegistryObject<EntityType<Mecha>> mechaEntity = entityRegistry.register("mecha", () -> EntityType.Builder.<Mecha>of(Mecha::new, MobCategory.MISC)
+        .sized(2F, 4F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "mecha").toString())
+    );
+    public static final RegistryObject<EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
+        .sized(0.6F, 0.6F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(false)
+        .noSave()
+        .noSummon()
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_seat").toString())
+    );
+    public static final RegistryObject<EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
+        .sized(0.75F, 0.75F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(false)
+        .noSave()
+        .noSummon()
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_wheel").toString())
     );
     public static final RegistryObject<EntityType<Flagpole>> flagpoleEntity = entityRegistry.register("flagpole", () -> EntityType.Builder.<Flagpole>of(Flagpole::new, MobCategory.MISC)
         .sized(0.75F, 2.5F).clientTrackingRange(64).updateInterval(10)
@@ -427,7 +475,9 @@ public class FlansMod
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_GUNS, FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), true, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_GRENADES, FlansMod.getItems(EnumType.GRENADE), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_TOOLS, FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_VEHICLES, FlansMod.getItems(EnumType.BULLET), false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_VEHICLES,
+            FlansMod.getItems(EnumSet.of(EnumType.VEHICLE, EnumType.PLANE, EnumType.MECHA, EnumType.MECHA_ITEM, EnumType.BULLET)),
+            false, true, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_AA_GUNS, FlansMod.getItems(EnumType.AA_GUN), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(FlansMod.creativeModeTabRegistry, CreativeTabs.TAB_PARTS, FlansMod.getItems(EnumSet.of(EnumType.PART)), false, false, creativeTabMainKey, creativeTabsFlansModReloadedKey);
     }

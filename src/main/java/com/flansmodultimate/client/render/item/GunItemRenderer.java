@@ -71,13 +71,6 @@ public final class GunItemRenderer
 
         if (shouldRenderGun(model, ctx, stack))
         {
-            int color = model.getType().getColour();
-            float red = (color >> 16 & 255) / 255F;
-            float green = (color >> 8 & 255) / 255F;
-            float blue = (color & 255) / 255F;
-            float modelScale = model.getType().getModelScale();
-            ResourceLocation gunTexture = model.getType().getPaintjob(stack).getTexture();
-
             switch (ctx)
             {
                 case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> applyFirstPersonAdjustments(model, animations, stack, poseStack, ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
@@ -89,45 +82,87 @@ public final class GunItemRenderer
                     // no-op
                 }
             }
-
-            final int numRounds = countRoundsInGun(stack);
-            if (model.isSlideLockOnEmpty())
-            {
-                if (numRounds == 0)
-                    animations.onGunEmpty(true);
-                else if (!animations.isReloading())
-                    animations.onGunEmpty(false);
-            }
-
-            poseStack.pushPose();
-            if (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-            {
-                handleGunRecoil(model, animations, stack, poseStack);
-
-                if (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-                    renderFirstPersonArm(model, animations, poseStack, buffer, packedLight);
-
-                //This allows you to offset your gun with a sight attached to properly align the aiming reticle
-                AttachmentType scopeAttachment = model.getType().getScope(stack);
-                if (model.getGunOffset() != 0 && ModClient.getZoomProgress() >= 0.5F && scopeAttachment != null && ModelCache.getOrLoadTypeModel(scopeAttachment) instanceof ModelAttachment scopeModel)
-                    poseStack.translate(0F, -scopeModel.getRenderOffset() + model.getGunOffset() / 16F, 0F);
-            }
-            poseStack.scale(modelScale, modelScale, modelScale);
-            renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
-            boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
-            boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
-            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                renderGunAndComponents(model, stack, animations, numRounds, poseStack, buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
-            if (ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-                renderAnimArm(model, animations, poseStack, buffer, packedLight);
-            renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
-            renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
-            poseStack.popPose();
-
-            renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
-            renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
+            renderGunContents(model, stack, animations, ctx, poseStack, buffer, packedLight, packedOverlay);
         }
         poseStack.popPose();
+    }
+
+    /**
+     * Render a gun inside another model's transform hierarchy. Unlike normal
+     * item rendering, this deliberately applies no player, GUI or dropped-item
+     * transform, while retaining paintjobs, attachments and animated model parts.
+     */
+    public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations,
+                                      PoseStack poseStack, MultiBufferSource buffer,
+                                      int packedLight, int packedOverlay)
+    {
+        if (model == null || stack.isEmpty() || !(stack.getItem() instanceof GunItem))
+            return;
+
+        poseStack.pushPose();
+        model.setReloadRotate(0F);
+        renderGunContents(model, stack, animations == null ? new GunAnimations() : animations,
+            null, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
+    }
+
+    private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations,
+                                          @Nullable ItemDisplayContext ctx, PoseStack poseStack,
+                                          MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        int color = model.getType().getColour();
+        float red = (color >> 16 & 255) / 255F;
+        float green = (color >> 8 & 255) / 255F;
+        float blue = (color & 255) / 255F;
+        float modelScale = model.getType().getModelScale();
+        ResourceLocation gunTexture = model.getType().getPaintjob(stack).getTexture();
+
+        final int numRounds = countRoundsInGun(stack);
+        if (model.isSlideLockOnEmpty())
+        {
+            if (numRounds == 0)
+                animations.onGunEmpty(true);
+            else if (!animations.isReloading())
+                animations.onGunEmpty(false);
+        }
+
+        boolean firstPerson = ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+            || ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        boolean firstPersonRight = ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        poseStack.pushPose();
+        if (firstPerson)
+        {
+            handleGunRecoil(model, animations, stack, poseStack);
+
+            if (firstPersonRight)
+                renderFirstPersonArm(model, animations, poseStack, buffer, packedLight);
+
+            //This allows you to offset your gun with a sight attached to properly align the aiming reticle
+            AttachmentType scopeAttachment = model.getType().getScope(stack);
+            if (model.getGunOffset() != 0 && ModClient.getZoomProgress() >= 0.5F && scopeAttachment != null
+                && ModelCache.getOrLoadTypeModel(scopeAttachment) instanceof ModelAttachment scopeModel)
+            {
+                poseStack.translate(0F, -scopeModel.getRenderOffset() + model.getGunOffset() / 16F, 0F);
+            }
+        }
+        poseStack.scale(modelScale, modelScale, modelScale);
+        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
+        boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
+        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        {
+            renderGunAndComponents(model, stack, animations, numRounds, poseStack,
+                buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, cull)),
+                packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+        }
+        if (firstPersonRight)
+            renderAnimArm(model, animations, poseStack, buffer, packedLight);
+        renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
+        renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
+
+        renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+        renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
     }
 
     private static boolean shouldRenderGun(ModelGun model, ItemDisplayContext itemDisplayContext, ItemStack item)

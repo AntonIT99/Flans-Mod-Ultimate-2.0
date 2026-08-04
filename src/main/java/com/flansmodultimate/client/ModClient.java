@@ -11,7 +11,9 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.guns.GunRecoil;
@@ -26,6 +28,9 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.util.ModUtils;
+import it.unimi.dsi.fastutil.longs.Long2ByteMap;
+import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -169,6 +174,8 @@ public class ModClient
 
     /** Lighting */
     private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
+    /** Immutable-after-publication lookup read by the render/light threads. */
+    private static volatile Long2ByteMap forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
     private static int lightOverrideRefreshRate = 5;
 
     // Gun animations
@@ -182,6 +189,39 @@ public class ModClient
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null)
             mc.gui.getChat().addMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
+    }
+
+    public static boolean isMouseControlEnabled()
+    {
+        return controlModeMouse;
+    }
+
+    /** Switches between the virtual mouse flight stick and keyboard/free-look controls. */
+    public static boolean tryToggleDriveableControlMode(LocalPlayer player, Driveable driveable)
+    {
+        if (!(driveable instanceof Plane) || controlModeSwitchTimer > 0)
+            return false;
+
+        controlModeMouse = !controlModeMouse;
+        controlModeSwitchTimer = 10;
+        MouseInputHandler.resetFlightControls();
+        if (player.getVehicle() instanceof Seat seat)
+            seat.resetClientAim();
+        player.setYRot(driveable.getYaw());
+        player.setXRot(driveable.getPitch());
+        player.displayClientMessage(Component.translatable(controlModeMouse
+            ? "message.flansmodultimate.driveable_control.mouse"
+            : "message.flansmodultimate.driveable_control.keyboard"), true);
+        return true;
+    }
+
+    public static void showDriveableTutorial(LocalPlayer player, Component inventoryKey, Component exitKey, Component controlKey)
+    {
+        if (doneTutorial)
+            return;
+        doneTutorial = true;
+        player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable_tutorial",
+            inventoryKey, exitKey, controlKey), false);
     }
 
     @NotNull
@@ -328,15 +368,32 @@ public class ModClient
             changedCameraEntity = false;
         }
 
-        KeyInputHandler.checkKeys();
+        MouseInputHandler.beginTick(player);
         double dx = Minecraft.getInstance().mouseHandler.getXVelocity();
         double dy = Minecraft.getInstance().mouseHandler.getYVelocity();
 
         // Only handle if the velocity vector is not too small
         if (dx * dx + dy * dy > 0.001)
             MouseInputHandler.handleMouseMove(dx, dy);
+        KeyInputHandler.checkKeys();
+        updateMountedPlayerView(player);
 
         DebugHelper.getActiveDebugEntities().forEach(DebugColor::tick);
+    }
+
+    private static void updateMountedPlayerView(LocalPlayer player)
+    {
+        Driveable driveable = KeyInputHandler.resolveDriveable(player);
+        if (driveable == null || !(player.getVehicle() instanceof Seat seat))
+            return;
+
+        boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
+        float yaw = Mth.wrapDegrees(driveable.getYaw() + (fixedPlaneView ? 0F : seat.getAimYaw()));
+        float pitch = Mth.clamp(driveable.getPitch() + (fixedPlaneView ? 0F : seat.getAimPitch()), -89.9F, 89.9F);
+        player.setYRot(yaw);
+        player.setXRot(pitch);
+        player.yHeadRot = yaw;
+        player.yBodyRot = yaw;
     }
 
     /** Handle flashlight block light override */
@@ -348,7 +405,9 @@ public class ModClient
         updateRefreshRate();
         clearOldLightBlocks(level);
         handlePlayerFlashlights(level);
-        handleDynamicEntityLights(level);
+        Long2ByteOpenHashMap darkSkyLight = new Long2ByteOpenHashMap();
+        handleDynamicEntityLights(level, darkSkyLight);
+        forceDarkSkyLight = darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight);
     }
 
     private static boolean shouldRunFlashlightUpdate(Minecraft mc)
@@ -389,7 +448,7 @@ public class ModClient
     }
 
     /** Handle lights from bullets and mechas. */
-    private static void handleDynamicEntityLights(ClientLevel level)
+    private static void handleDynamicEntityLights(ClientLevel level, Long2ByteOpenHashMap darkSkyLight)
     {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         if (localPlayer == null)
@@ -404,7 +463,7 @@ public class ModClient
             if (entity instanceof Shootable shootable)
                 handleShootableLight(level, shootable);
             else if (entity instanceof Mecha mecha)
-                handleMechaLight(level, mecha);
+                handleMechaLight(level, mecha, darkSkyLight);
         }
     }
 
@@ -448,7 +507,7 @@ public class ModClient
         placeLightIfAir(level, pos, 15);
     }
 
-    private static void handleMechaLight(ClientLevel level, Mecha mecha)
+    private static void handleMechaLight(ClientLevel level, Mecha mecha, Long2ByteOpenHashMap darkSkyLight)
     {
         BlockPos mechaPos = mecha.blockPosition();
 
@@ -462,7 +521,7 @@ public class ModClient
         }
 
         if (mecha.forceDark())
-            applyForceDarkApproximation(mechaPos);
+            addForceDarkOverrides(mechaPos, darkSkyLight);
     }
 
     private static void placeLightIfAir(ClientLevel level, BlockPos pos, int lightLevel)
@@ -476,12 +535,7 @@ public class ModClient
         blockLightOverrides.add(pos.immutable());
     }
 
-    /**
-     * Placeholder for the old EnumSkyBlock.SKY "dark bubble" behavior.
-     * 1.20.1 does not expose a simple setSkyLight API, so this is just
-     * a hook where you can implement mixin/light-engine logic if needed.
-     */
-    private static void applyForceDarkApproximation(BlockPos center)
+    private static void addForceDarkOverrides(BlockPos center, Long2ByteOpenHashMap overrides)
     {
         for (int i = -3; i <= 3; i++)
         {
@@ -490,12 +544,27 @@ public class ModClient
                 for (int k = -3; k <= 3; k++)
                 {
                     BlockPos pos = center.offset(i, j, k);
-                    blockLightOverrides.add(pos.immutable());
-                    // TODO: Mecha forceDark(): sky light override has no clean public API in 1.20.1
-                    //mc.world.setLightFor(EnumSkyBlock.SKY, blockPos, Math.abs(i) + Math.abs(j) + Math.abs(k));
+                    byte light = (byte) Mth.clamp(Math.abs(i) + Math.abs(j) + Math.abs(k), 0, 15);
+                    long key = pos.asLong();
+                    if (!overrides.containsKey(key) || light < overrides.get(key))
+                        overrides.put(key, light);
                 }
             }
         }
+    }
+
+    /** Called by the client-only light-engine mixin for sky-light samples. */
+    public static int applyForceDarkSkyLight(BlockPos pos, int vanillaLight)
+    {
+        Long2ByteMap overrides = forceDarkSkyLight;
+        long key = pos.asLong();
+        return overrides.containsKey(key) ? Math.min(vanillaLight, Byte.toUnsignedInt(overrides.get(key))) : vanillaLight;
+    }
+
+    public static void clearTransientLighting()
+    {
+        forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
+        blockLightOverrides.clear();
     }
 
     private static void updateTimers()
@@ -552,18 +621,7 @@ public class ModClient
 
         if (player.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null)
         {
-            //TODO: uncomment for Seats
-            /*EntitySeat s = (EntitySeat) p.ridingEntity;
-            float newPlayerPitch = s.playerLooking.getPitch() + recoilToAdd;
-            float horizontal = playerRecoil.horizontal;
-            float newPlayerYaw = s.playerLooking.getYaw() + horizontal;
-            if (newPlayerPitch > -s.seatInfo.minPitch) {
-                newPlayerPitch = -s.seatInfo.minPitch;
-            }
-            if (newPlayerPitch < -s.seatInfo.maxPitch) {
-                newPlayerPitch = -s.seatInfo.maxPitch;
-            }
-            s.playerLooking.setAngles(newPlayerYaw, newPlayerPitch, 0);*/
+            seat.applyClientAimDelta(playerRecoil.getHorizontal(), recoilToAdd);
             impulsePitch = 0.0F;
             impulseYaw = 0.0F;
             return;

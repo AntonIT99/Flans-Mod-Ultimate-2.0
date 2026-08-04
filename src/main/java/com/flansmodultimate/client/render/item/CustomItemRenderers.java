@@ -6,6 +6,10 @@ import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
+import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.item.MechaItem;
+import com.flansmodultimate.common.item.PlaneItem;
+import com.flansmodultimate.common.item.VehicleItem;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -52,6 +56,10 @@ public final class CustomItemRenderers
 
             ICustomItemRenderer.renderItemFallback(stack, ctx, pose, buffer, light, overlay);
         });
+        register(PlaneItem.class, DriveableItemRenderer::renderItem);
+        register(VehicleItem.class, DriveableItemRenderer::renderItem);
+        register(MechaItem.class, DriveableItemRenderer::renderItem);
+        register(MechaAddonItem.class, MechaAddonItemRenderer::renderItem);
     }
 
     public static void register(Class<? extends ICustomRendereredItem<?>> itemClass, ICustomItemRenderer renderer)

@@ -16,9 +16,13 @@ import com.flansmodultimate.common.item.GunBoxItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.ItemHolderItem;
+import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.item.MechaItem;
 import com.flansmodultimate.common.item.PartItem;
+import com.flansmodultimate.common.item.PlaneItem;
 import com.flansmodultimate.common.item.RewardBoxItem;
 import com.flansmodultimate.common.item.ToolItem;
+import com.flansmodultimate.common.item.VehicleItem;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +30,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Getter
@@ -43,6 +48,10 @@ public enum EnumType
     ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
     PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
     TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
+    MECHA_ITEM("mecha_item", "mechaItems", ContentManager.FOLDER_TEXTURES_SKINS, MechaItemType.class, MechaAddonItem.class, null, false, 7),
+    VEHICLE("vehicle", "vehicles", ContentManager.FOLDER_TEXTURES_SKINS, VehicleType.class, VehicleItem.class, null, false, 8),
+    PLANE("plane", "planes", ContentManager.FOLDER_TEXTURES_SKINS, PlaneType.class, PlaneItem.class, null, false, 9),
+    MECHA("mecha", "mechas", ContentManager.FOLDER_TEXTURES_SKINS, MechaType.class, MechaItem.class, null, false, 10),
     PLAYER_CLASS("player_class", "classes", ContentManager.FOLDER_TEXTURES_SKINS, PlayerClass.class, null, null, false, 12),
     TEAM("team", "teams", ContentManager.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13),
     REWARD_BOX("reward_box", "rewardBoxes", ContentManager.FOLDER_TEXTURES_SKINS, RewardBox.class, RewardBoxItem.class, null, false, 14),
@@ -81,7 +90,26 @@ public enum EnumType
 
     public static Optional<EnumType> getType(String folderName)
     {
-        return Arrays.stream(EnumType.values()).filter(type -> StringUtils.equals(type.getConfigFolderName(), folderName)).findFirst();
+        if (StringUtils.isBlank(folderName))
+            return Optional.empty();
+        String requested = normalize(folderName);
+        String singular = requested.endsWith("s") ? requested.substring(0, requested.length() - 1) : requested;
+        return Arrays.stream(EnumType.values()).filter(type -> {
+            String folder = normalize(type.getConfigFolderName());
+            String identifier = normalize(type.getIdentifier());
+            String enumName = normalize(type.name());
+            return requested.equals(folder) || requested.equals(identifier) || requested.equals(enumName)
+                || singular.equals(identifier) || singular.equals(enumName)
+                || (requested.equals("armour") && type == ARMOR)
+                || (requested.equals("armourbox") && type == ARMOR_BOX)
+                || (requested.equals("aa") && type == AA_GUN)
+                || (requested.equals("box") && type == GUN_BOX);
+        }).findFirst();
+    }
+
+    private static String normalize(String value)
+    {
+        return value.toLowerCase(Locale.ROOT).replace("_", "").replace("-", "").replace(" ", "");
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
@@ -30,6 +31,7 @@ import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
+import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunReload;
@@ -68,7 +70,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "4";
+    public static final String PROTOCOL = "6";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -95,6 +97,7 @@ public final class PacketHandler {
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
+        registerS2C(PacketDriveableDamage.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketFlanExplosionBlockParticles.class);
@@ -119,6 +122,7 @@ public final class PacketHandler {
         registerC2S(PacketBaseEditAction.class);
         registerC2S(ArmorBoxBuyPacket.class);
         registerC2S(PacketDeployedGunInput.class);
+        registerC2S(PacketDriveableInput.class);
         registerC2S(PacketBuyWeapon.class);
         registerC2S(PacketGunFireMode.class);
         registerC2S(PacketGunInput.class);

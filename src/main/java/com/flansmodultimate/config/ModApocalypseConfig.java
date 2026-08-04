@@ -94,7 +94,7 @@ public final class ModApocalypseConfig
             .comment("Chunk generation rarity for dead trees.")
             .defineInRange("apocalypseDeadTreeRarity", 100, 1, Integer.MAX_VALUE);
         APOCALYPSE_VEHICLE_RARITY = builder
-            .comment("Legacy vehicle generation rarity. Currently reserved until 1.20.1 driveables are complete.")
+            .comment("Chunk generation rarity for damaged, empty-fuel vehicles supplied by installed content packs.")
             .defineInRange("apocalypseVehicleRarity", 2000, 1, Integer.MAX_VALUE);
         APOCALYPSE_AIRPORT_RARITY = builder
             .comment("Chunk generation rarity for simple runway/airport structures.")

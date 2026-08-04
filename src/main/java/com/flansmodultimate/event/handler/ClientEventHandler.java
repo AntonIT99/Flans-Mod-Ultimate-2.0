@@ -6,12 +6,15 @@ import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
+import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.EnumHitboxType;
@@ -32,6 +35,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
@@ -42,7 +46,9 @@ import net.minecraftforge.fml.common.Mod;
 import org.joml.Vector3f;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -58,6 +64,34 @@ public final class ClientEventHandler
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
         ModClient.updateCameraZoom(event);
+    }
+
+    @SubscribeEvent
+    public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
+    {
+        Player player = Minecraft.getInstance().player;
+        if (player == null)
+            return;
+
+        var controllable = KeyInputHandler.resolveControllable(player);
+        if (controllable == null)
+            return;
+
+        float partialTick = (float) event.getPartialTick();
+        var driveable = KeyInputHandler.resolveDriveable(player);
+        if (driveable != null && player.getVehicle() instanceof Seat seat)
+        {
+            float craftYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
+            float craftPitch = Mth.lerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
+            boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
+            float aimYaw = fixedPlaneView ? 0F : Mth.rotLerp(partialTick, seat.getPrevAimYaw(), seat.getAimYaw());
+            float aimPitch = fixedPlaneView ? 0F : Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
+            event.setYaw(Mth.wrapDegrees(craftYaw + aimYaw));
+            event.setPitch(Mth.clamp(craftPitch + aimPitch, -89.9F, 89.9F));
+        }
+
+        float roll = Mth.rotLerp(partialTick, controllable.getPrevPlayerRoll(), controllable.getPlayerRoll());
+        event.setRoll(event.getRoll() + roll);
     }
 
     @SubscribeEvent
@@ -247,6 +281,15 @@ public final class ClientEventHandler
         if (player == null)
             return;
 
+        // Driveable actions are sampled into one compact, server-validated input
+        // packet. Prevent vanilla attack/use/pick handling from firing in parallel.
+        if (KeyInputHandler.resolveDriveable(player) != null)
+        {
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            return;
+        }
+
         // AA guns read the fire button directly in ClientGunHooksImpl, so canceling the
         // vanilla attack here only suppresses the player's hand swing and melee attack.
         if (player.getVehicle() instanceof AAGun && event.isAttack())
@@ -299,8 +342,21 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
+    public static void onScreenOpening(ScreenEvent.Opening event)
+    {
+        Player player = Minecraft.getInstance().player;
+        if (player != null && event.getNewScreen() instanceof InventoryScreen
+            && KeyInputHandler.resolveDriveable(player) != null)
+        {
+            KeyInputHandler.queueDriveableInventoryAction();
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
+        ModClient.clearTransientLighting();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
     }
@@ -319,8 +375,4 @@ public final class ClientEventHandler
             event.setResult(Event.Result.DENY);
     }
 
-    //TODO: implement this code from 1.12.2
-    //renderHooks.update();
-    //TODO: implement commented out code for driveables (1.12.2)
-    //updatePlayerView();
 }

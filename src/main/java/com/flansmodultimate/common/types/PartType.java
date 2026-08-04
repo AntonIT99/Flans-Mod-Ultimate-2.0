@@ -8,11 +8,14 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
+@Getter
 public class PartType extends InfoType
 {
     public enum Category
@@ -31,13 +34,13 @@ public class PartType extends InfoType
     }
 
     /** The default engine (normally the first one read by the type loader) for driveables with corrupt nbt or those spawned in creative */
-    protected static Map<EnumType, PartType> defaultEngines = new EnumMap<>(EnumType.class);
+    protected static final Map<EnumType, PartType> defaultEngines = new EnumMap<>(EnumType.class);
 
     /** Category */
     @Getter
     protected Category category = Category.COCKPIT;
     /** Max stack size of item */
-    protected int stackSize = 0;
+    protected int stackSize = 1;
     /** (Engine) Multiplier applied to the thrust of the driveable */
     protected float engineSpeed = 1.0F;
     /** (Engine) Rate at which this engine consumes fuel */
@@ -48,9 +51,7 @@ public class PartType extends InfoType
     @Getter
     protected int fuel = 0;
     /** The types of driveables that this engine works with. Used to designate some engines as mecha CPUs and what not*/
-    protected List<EnumType> worksWith = new ArrayList<>();
-    //TODO: replace by uncommented version
-    //protected List<EnumType> worksWith = Arrays.asList(EnumType.mecha, EnumType.plane, EnumType.vehicle);
+    protected Set<EnumType> worksWith = EnumSet.of(EnumType.MECHA, EnumType.PLANE, EnumType.VEHICLE);
     protected List<RecipeIngredient> partBoxRecipeRefs = new ArrayList<>();
     protected boolean partBoxRecipeResolved;
     protected TypeFile partBoxRecipeSourceFile;
@@ -68,25 +69,29 @@ public class PartType extends InfoType
         super.read(file);
         // Generic
         category = readValue("Category", category, Category.class, file);
-        stackSize = readValue("StackSize", stackSize, file);
+        stackSize = Math.max(1, Math.min(64, readValue("StackSize", stackSize, file)));
 
         // Engine
-        fuelConsumption = readValue("FuelConsumption", engineSpeed, file);
+        fuelConsumption = Math.max(0F, readValue("FuelConsumption", fuelConsumption, file));
         engineSpeed = readValue("EngineSpeed", engineSpeed, file);
-        enginePower = readValue("EnginePower", enginePower, file);
+        enginePower = Math.max(0F, readValue("EnginePower", enginePower, file));
 
         //RedstoneFlux, for engines
         useRFPower = readValue("UseRF", useRFPower, file);
         useRFPower = readValue("UseRFPower", useRFPower, file);
-        rfDrawRate = readValue("RFDrawRate", rfDrawRate, file);
+        rfDrawRate = Math.max(1, readValue("RFDrawRate", rfDrawRate, file));
         aiChip = readValue("IsAIChip", aiChip, file);
 
         // Engine compatibility
-        //TODO: Uncomment when Driveables are added
-        /*readValuesInLines("WorksWith", file).ifPresentOrElse(lines -> lines.forEach(split -> {
-            for (String rawType : split)
-                EnumType.getType(rawType).ifPresentOrElse(type -> worksWith.add(type), () -> logError("type not found for part WorksWith", file));
-        }), () -> worksWith = new ArrayList<>());*/
+        if (file.hasConfigLine("WorksWith"))
+        {
+            EnumSet<EnumType> configuredTypes = EnumSet.noneOf(EnumType.class);
+            readValuesInLines("WorksWith", file).ifPresent(lines -> lines.forEach(split -> {
+                for (String rawType : split)
+                    EnumType.getType(rawType).ifPresentOrElse(configuredTypes::add, () -> logError("Unknown type '" + rawType + "' in WorksWith", file));
+            }));
+            worksWith = configuredTypes;
+        }
 
         // Fuel cans
         fuel = readValue("Fuel", fuel, file);
@@ -114,6 +119,16 @@ public class PartType extends InfoType
     public boolean isInferiorEngine(PartType quitePossiblyAnInferiorEngine)
     {
         return engineSpeed > quitePossiblyAnInferiorEngine.engineSpeed;
+    }
+
+    public boolean worksWith(EnumType type)
+    {
+        return type != null && worksWith.contains(type);
+    }
+
+    public static PartType getDefaultEngine(EnumType type)
+    {
+        return defaultEngines.get(type);
     }
 
     public void validateRecipeIngredients()

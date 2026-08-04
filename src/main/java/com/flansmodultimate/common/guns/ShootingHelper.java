@@ -24,6 +24,7 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
@@ -166,13 +167,21 @@ public final class ShootingHelper
 
             playerOwner.ifPresent(serverPlayer ->
                 FlansMod.teamsManager.getCurrentRound().ifPresent(round -> {
-                    for (Seat seat : driveableHit.getDriveable().getSeats())
+                    Seat[] seats = driveableHit.getDriveable().getSeats();
+                    if (seats == null)
+                        return;
+
+                    for (Seat seat : seats)
                     {
+                        if (seat == null)
+                            continue;
                         if (seat.getRiddenByEntity() instanceof Player controllingPlayer)
                         {
                             PlayerData dataDriver = PlayerData.getInstance(controllingPlayer);
                             PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
-                            if (dataDriver.getTeam().getShortName().equals(dataAttacker.getTeam().getShortName()))
+                            Team driverTeam = dataDriver.getTeam();
+                            Team attackerTeam = dataAttacker.getTeam();
+                            if (driverTeam != null && driverTeam.equals(attackerTeam))
                                 isFriendly.set(true);
                         }
                     }

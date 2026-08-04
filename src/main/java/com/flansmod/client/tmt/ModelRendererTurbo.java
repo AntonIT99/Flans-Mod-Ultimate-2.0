@@ -2105,12 +2105,18 @@ public class ModelRendererTurbo extends ModelRenderer
     @Override
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
+        render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, false);
+    }
+
+    private void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                        float red, float green, float blue, float alpha, float scale, boolean oldRotateOrder)
+    {
         if (!isVisible())
             return;
 
         poseStack.pushPose();
         poseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(poseStack, scale);
+        translateAndRotate(poseStack, scale, oldRotateOrder);
         compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
@@ -2123,12 +2129,23 @@ public class ModelRendererTurbo extends ModelRenderer
 
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
+        render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, false);
+    }
+
+    /**
+     * Pass-aware renderer retaining the alternate rotation convention used by a
+     * subset of legacy driveable models.
+     */
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                       float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass,
+                       boolean oldRotateOrder)
+    {
         if ((renderPass == EnumRenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
             || (renderPass == EnumRenderPass.GLOW_ALPHA && glow)
             || (renderPass == EnumRenderPass.GLOW_ADDITIVE && glowAdditive)
             || (renderPass == EnumRenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
         {
-            render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
+            render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, oldRotateOrder);
         }
     }
     
@@ -2150,12 +2167,19 @@ public class ModelRendererTurbo extends ModelRenderer
     @Override
     public void translateAndRotate(PoseStack poseStack, float scale)
     {
+        translateAndRotate(poseStack, scale, false);
+    }
+
+    private void translateAndRotate(PoseStack poseStack, float scale, boolean oldRotateOrder)
+    {
         poseStack.translate(rotationPointX * 0.0625F * scale, rotationPointY * 0.0625F * scale, rotationPointZ * 0.0625F * scale);
 
-        if (rotateAngleY != 0F)
+        if (!oldRotateOrder && rotateAngleY != 0F)
             poseStack.mulPose(Axis.YP.rotation(rotateAngleY));
         if (rotateAngleZ != 0F)
-            poseStack.mulPose(Axis.ZP.rotation(rotateAngleZ));
+            poseStack.mulPose(Axis.ZP.rotation(oldRotateOrder ? -rotateAngleZ : rotateAngleZ));
+        if (oldRotateOrder && rotateAngleY != 0F)
+            poseStack.mulPose(Axis.YP.rotation(-rotateAngleY));
         if (rotateAngleX != 0F)
             poseStack.mulPose(Axis.XP.rotation(rotateAngleX));
 

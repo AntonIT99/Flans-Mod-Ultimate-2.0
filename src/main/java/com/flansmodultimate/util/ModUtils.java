@@ -3,10 +3,11 @@ package com.flansmodultimate.util;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -49,6 +50,9 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModUtils
 {
+    private static final GameProfile BLOCK_BREAK_FAKE_PLAYER = new GameProfile(
+        UUID.fromString("8b90a6f3-93ce-4a42-bd86-88ec5eb17b5d"), "[FlansMod]");
+
     public static boolean isVehicleLike(Entity entity)
     {
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))
@@ -90,10 +94,11 @@ public final class ModUtils
         return list;
     }
 
-    //TODO: add exceptions for other entities of this mod that should not be hit by bullets
     public static boolean canEntityBeHitByBullets(Entity entity)
     {
         return !(entity instanceof Bullet)
+            && !(entity instanceof Seat)
+            && !(entity instanceof Wheel)
             && !(entity instanceof ItemEntity)
             && !(entity instanceof Projectile)
             && !(entity instanceof ExperienceOrb)
@@ -270,7 +275,12 @@ public final class ModUtils
         return state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
     }
 
-    public static void destroyBlock(ServerLevel level, BlockPos pos, @Nullable Entity cause, boolean dropBlock)
+    /**
+     * Destroys a block through Forge's cancellable break-event path.
+     *
+     * @return {@code true} only when the event was accepted and the block was removed
+     */
+    public static boolean destroyBlock(ServerLevel level, BlockPos pos, @Nullable Entity cause, boolean dropBlock)
     {
         Player player;
 
@@ -281,20 +291,22 @@ public final class ModUtils
         }
         else
         {
-            // fake player (Forge helper)
-            GameProfile profile = new GameProfile(UUID.randomUUID(), "fakePlayer");
-            player = FakePlayerFactory.get(level, profile);
+            // Reuse one stable identity so protection mods can configure this
+            // actor and Forge does not allocate a fake player per broken block.
+            player = FakePlayerFactory.get(level, BLOCK_BREAK_FAKE_PLAYER);
         }
 
         BlockState state = level.getBlockState(pos);
+        if (state.isAir())
+            return false;
 
         BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
         MinecraftForge.EVENT_BUS.post(breakEvent);
 
         if (breakEvent.isCanceled())
-            return;
+            return false;
 
-        level.destroyBlock(pos, dropBlock);
+        return level.destroyBlock(pos, dropBlock, cause == null ? player : cause);
     }
 
     /**

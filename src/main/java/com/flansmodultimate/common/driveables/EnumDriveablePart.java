@@ -3,7 +3,11 @@ package com.flansmodultimate.common.driveables;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Getter
 public enum EnumDriveablePart
@@ -182,6 +186,49 @@ public enum EnumDriveablePart
     private final String name;
     private final EnumDriveablePart[] children;
 
+    private static final Map<String, EnumDriveablePart> BY_NAME;
+    private static final List<EnumDriveablePart> ENGINE_ROOMS = List.of(ENGINE_ROOM_1, ENGINE_ROOM_2, ENGINE_ROOM_3, ENGINE_ROOM_4, ENGINE_ROOM_5, ENGINE_ROOM_6, ENGINE_ROOM_7, ENGINE_ROOM_8);
+    private static final List<EnumDriveablePart> BOILER_ROOMS = List.of(BOILER_ROOM_1, BOILER_ROOM_2, BOILER_ROOM_3, BOILER_ROOM_4, BOILER_ROOM_5, BOILER_ROOM_6, BOILER_ROOM_7, BOILER_ROOM_8);
+
+    static
+    {
+        Map<String, EnumDriveablePart> parts = new HashMap<>();
+        for (EnumDriveablePart part : values())
+        {
+            parts.put(part.shortName.toLowerCase(Locale.ROOT), part);
+            parts.put(part.name().toLowerCase(Locale.ROOT), part);
+        }
+        // Common community-pack names and historical misspellings.
+        parts.put("deck1", DECK);
+        parts.put("superstucture", SUPERSTRUCTURE);
+        parts.put("engine", ENGINE_ROOM_1);
+        parts.put("engine1", ENGINE_ROOM_1);
+        parts.put("engine2", ENGINE_ROOM_2);
+        parts.put("engine3", ENGINE_ROOM_3);
+        parts.put("engine4", ENGINE_ROOM_4);
+        parts.put("engine5", ENGINE_ROOM_5);
+        parts.put("engine6", ENGINE_ROOM_6);
+        parts.put("engine7", ENGINE_ROOM_7);
+        parts.put("engine8", ENGINE_ROOM_8);
+        parts.put("bulgel", TORPEDO_BULGE);
+        parts.put("bulger", TORPEDO_BULGE_2);
+        parts.put("left", PORT);
+        parts.put("right", STARBOARD);
+        parts.put("gasbag", FLOATS);
+        parts.put("buoyancy", FLOATS);
+        parts.put("midsection", CORE);
+        parts.put("shield", ADDITIONAL_ARMOR);
+        parts.put("spaced", ADDITIONAL_ARMOR);
+        parts.put("turretarmor", ADDITIONAL_ARMOR);
+        parts.put("weakspot", ADDITIONAL_ARMOR);
+        parts.put("weakspot2", ERA);
+        parts.put("weaktrt", APS);
+        parts.put("generic0", CORE);
+        parts.put("generic1", CORE);
+        parts.put("generic2", CORE);
+        BY_NAME = Collections.unmodifiableMap(parts);
+    }
+
     EnumDriveablePart(EnumDriveablePart[] parts, String s, String s2)
     {
         children = parts;
@@ -207,46 +254,23 @@ public enum EnumDriveablePart
     /** For reading parts from driveable files */
     public static EnumDriveablePart getPart(String s)
     {
-        for(EnumDriveablePart part : values())
-            if(part.getShortName().equals(s))
-                return part;
-        return null;
+        return s == null ? null : BY_NAME.get(s.trim().toLowerCase(Locale.ROOT));
     }
 
     public static List<EnumDriveablePart> getEngineRooms()
     {
-        List<EnumDriveablePart> engineRooms = new ArrayList<>();
-
-        engineRooms.add(ENGINE_ROOM_1);
-        engineRooms.add(ENGINE_ROOM_2);
-        engineRooms.add(ENGINE_ROOM_3);
-        engineRooms.add(ENGINE_ROOM_4);
-        engineRooms.add(ENGINE_ROOM_5);
-        engineRooms.add(ENGINE_ROOM_6);
-        engineRooms.add(ENGINE_ROOM_7);
-        engineRooms.add(ENGINE_ROOM_8);
-
-        return engineRooms;
+        return ENGINE_ROOMS;
     }
 
     public static List<EnumDriveablePart> getBoilerRooms()
     {
-        List<EnumDriveablePart> boilerRooms = new ArrayList<>();
-
-        boilerRooms.add(BOILER_ROOM_1);
-        boilerRooms.add(BOILER_ROOM_2);
-        boilerRooms.add(BOILER_ROOM_3);
-        boilerRooms.add(BOILER_ROOM_4);
-        boilerRooms.add(BOILER_ROOM_5);
-        boilerRooms.add(BOILER_ROOM_6);
-        boilerRooms.add(BOILER_ROOM_7);
-        boilerRooms.add(BOILER_ROOM_8);
-
-        return boilerRooms;
+        return BOILER_ROOMS;
     }
 
     public static boolean isWheel(EnumDriveablePart part)
     {
-        return part == CORE_WHEEL || part == TAIL_WHEEL || part == LEFT_WING_WHEEL || part == RIGHT_WING_WHEEL;
+        return part == CORE_WHEEL || part == TAIL_WHEEL || part == LEFT_WING_WHEEL || part == RIGHT_WING_WHEEL
+            || part == FRONT_WHEEL || part == BACK_WHEEL || part == FRONT_LEFT_WHEEL || part == FRONT_RIGHT_WHEEL
+            || part == BACK_LEFT_WHEEL || part == BACK_RIGHT_WHEEL;
     }
 }

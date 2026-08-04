@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -58,12 +59,16 @@ public class TypeReaderUtils
                 String line = lastNonNull(lines);
                 if (line != null)
                 {
-                    // Priority to the last line
-                    String[] split = line.split("\\s+");
-                    if (split[0].equals("=") && split.length > 1)
-                        return split[1];
-                    else
-                        return split[0];
+                    String[] split = splitValues(line);
+                    if (split.length == 0)
+                    {
+                        logError(incorrectFormat(key, "<single value>"), file);
+                        return defaultValue;
+                    }
+                    if (split.length > 1)
+                        logError("Incorrect format for '" + key + "': expected one value but found " + split.length
+                            + "; using '" + split[0] + "'", file);
+                    return split[0];
                 }
                 else
                 {
@@ -241,21 +246,12 @@ public class TypeReaderUtils
 
     public static Vector3f readVector(String key, Vector3f defaultValue, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
+        String strValue = readValues(key, null, file);
         if (strValue != null)
         {
             try
             {
-                if (strValue.contains("["))
-                {
-                    return new Vector3f(strValue);
-                }
-                else
-                {
-                    String[] split = strValue.split("\\s+");
-                    return new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
-                }
-
+                return parseVectorValue(strValue);
             }
             catch (Exception ex)
             {
@@ -268,21 +264,12 @@ public class TypeReaderUtils
     @Nullable
     public static Vector3f readVector(String key, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
+        String strValue = readValues(key, null, file);
         if (strValue != null)
         {
             try
             {
-                if (strValue.contains("["))
-                {
-                    return new Vector3f(strValue);
-                }
-                else
-                {
-                    String[] split = strValue.split("\\s+");
-                    return new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
-                }
-
+                return parseVectorValue(strValue);
             }
             catch (Exception ex)
             {
@@ -290,6 +277,37 @@ public class TypeReaderUtils
             }
         }
         return null;
+    }
+
+    private static Vector3f parseVectorValue(String raw)
+    {
+        String value = raw.trim();
+        int comment = value.indexOf("//");
+        if (comment >= 0)
+            value = value.substring(0, comment).trim();
+        if (value.startsWith("="))
+            value = value.substring(1).trim();
+        value = value.replace('[', ' ').replace(']', ' ').replace('(', ' ').replace(')', ' ').trim();
+
+        String[] split = value.split("\\s+");
+        if (split.length == 3)
+            return new Vector3f(parseVectorComponent(split[0]), parseVectorComponent(split[1]), parseVectorComponent(split[2]));
+
+        // Compact legacy vectors commonly use commas as separators, e.g.
+        // "1,2,3". Decimal commas remain supported when whitespace already
+        // made the three components unambiguous.
+        split = value.replace(',', ' ').trim().split("\\s+");
+        if (split.length != 3)
+            throw new IllegalArgumentException("Expected exactly three vector components");
+        return new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+    }
+
+    private static float parseVectorComponent(String raw)
+    {
+        String value = raw.trim().replaceAll("^,+|,+$", "");
+        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
+            value = value.replace(',', '.');
+        return Float.parseFloat(value);
     }
 
     public static String readValues(String key, String defaultValue, TypeFile file)
@@ -314,7 +332,7 @@ public class TypeReaderUtils
 
     public static String[] readValues(String key, TypeFile file)
     {
-        return Optional.ofNullable(readValues(key, null, file)).map(values -> values.split("\\s+")).orElse(new String[0]);
+        return Optional.ofNullable(readValues(key, null, file)).map(TypeReaderUtils::splitValues).orElse(new String[0]);
     }
 
     public static Optional<String[]> readValues(String key, TypeFile file, int minNumExpectedValues)
@@ -432,12 +450,12 @@ public class TypeReaderUtils
 
     public static Optional<List<String[]>> readValuesInLines(String key, TypeFile file)
     {
-        return readLines(key, file).map(lines -> lines.stream().map(s -> s.split("\\s+")).toList());
+        return readLines(key, file).map(lines -> lines.stream().map(TypeReaderUtils::splitValues).toList());
     }
 
     public static Optional<List<String[]>> readValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readLines(key, file).map(lines -> lines.stream().map(s -> s.split("\\s+")).filter(split -> {
+        return readLines(key, file).map(lines -> lines.stream().map(TypeReaderUtils::splitValues).filter(split -> {
             if (split.length < minNumExpectedValues)
             {
                 logError(incorrectFormatWrongNumberOfValues(key, split, minNumExpectedValues), file);
@@ -445,6 +463,74 @@ public class TypeReaderUtils
             }
             return true;
         }).toList());
+    }
+
+    /**
+     * Tokenizes a legacy config value while preserving bracketed vectors and
+     * discarding inline comments. Type files historically mix "[x y z]" and
+     * "x y z" syntax, so a plain whitespace split is not sufficient.
+     */
+    private static String[] splitValues(@Nullable String raw)
+    {
+        if (StringUtils.isBlank(raw))
+            return new String[0];
+
+        String value = raw.trim();
+        if (value.startsWith("="))
+            value = value.substring(1).trim();
+
+        List<String> tokens = new ArrayList<>();
+        StringBuilder token = new StringBuilder();
+        int bracketDepth = 0;
+        char quote = 0;
+        for (int i = 0; i < value.length(); i++)
+        {
+            char c = value.charAt(i);
+            if (quote != 0)
+            {
+                if (c == quote)
+                    quote = 0;
+                else
+                    token.append(c);
+                continue;
+            }
+            if ((c == '\'' || c == '"') && bracketDepth == 0)
+            {
+                quote = c;
+                continue;
+            }
+            if (c == '/' && i + 1 < value.length() && value.charAt(i + 1) == '/' && bracketDepth == 0)
+                break;
+            // Some long-lived content packs omit the closing ']' before the
+            // next vector. Legacy tokenization still treated those as separate
+            // comma vectors, so recover that unambiguous form here as well.
+            if (c == '[' && bracketDepth > 0)
+            {
+                String completedToken = token.toString().trim();
+                if (!completedToken.isEmpty())
+                    tokens.add(completedToken);
+                token.setLength(0);
+                bracketDepth = 0;
+            }
+            if (c == '[' || c == '(' || c == '{')
+                bracketDepth++;
+            else if (c == ']' || c == ')' || c == '}')
+                bracketDepth = Math.max(0, bracketDepth - 1);
+
+            if (Character.isWhitespace(c) && bracketDepth == 0)
+            {
+                if (!token.isEmpty())
+                {
+                    tokens.add(token.toString());
+                    token.setLength(0);
+                }
+            }
+            else
+                token.append(c);
+        }
+        if (!token.isEmpty())
+            tokens.add(token.toString());
+        return tokens.toArray(String[]::new);
     }
 
     public static Optional<List<int[]>> readIntValuesInLines(String key, TypeFile file, int minNumExpectedValues)

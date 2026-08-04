@@ -12,9 +12,9 @@ This repository contains the main Forge mod and an optional bundled content-pack
 | Forge            | 47.4.10                       |
 | Java             | 17                            |
 | Main mod id      | `flansmodultimate`            |
-| Main mod version | `2.0-beta-4`                  |
+| Main mod version | `2.0-beta-5`                  |
 | Packs mod id     | `flansmodultimate_packs`      |
-| Packs version    | `1.0-beta-4`                  |
+| Packs version    | `1.0-beta-5`                  |
 | Mappings         | Parchment `2023.09.03-1.20.1` |
 
 The project is still in beta. Some legacy systems are implemented, some are work in progress.

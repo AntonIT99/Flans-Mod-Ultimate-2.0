@@ -54,8 +54,8 @@ public class ToolType extends InfoType
         healPlayers = readValue("HealPlayers", healPlayers, file);
         healDriveables = readValue("Repair", healDriveables, file);
         healDriveables = readValue("RepairVehicles", healDriveables, file);
-        healAmount = readValue("HealAmount", toolLife, file);
-        healAmount = readValue("RepairAmount", toolLife, file);
+        healAmount = readValue("HealAmount", healAmount, file);
+        healAmount = readValue("RepairAmount", healAmount, file);
         toolLife = readValue("ToolLife", toolLife, file);
         toolLife = readValue("ToolUes", toolLife, file);
         destroyOnEmpty = readValue("DestroyOnEmpty", destroyOnEmpty, file);

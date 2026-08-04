@@ -289,12 +289,69 @@ public abstract class InfoType
         return ResourceUtils.sanitizeFileNameStem(readValue(key, defaultValue, file));
     }
 
+    /**
+     * Legacy packs commonly leave optional scalar fields present but empty.
+     * For those explicitly optional call sites, an empty field is equivalent
+     * to omitting it and must not be reported as corrupt data.
+     */
+    protected static String readOptionalValue(String key, String defaultValue, TypeFile file)
+    {
+        return hasValueForConfigField(key, file) ? readValue(key, defaultValue, file) : defaultValue;
+    }
+
+    protected static int readOptionalValue(String key, int defaultValue, TypeFile file)
+    {
+        return hasValueForConfigField(key, file) ? readValue(key, defaultValue, file) : defaultValue;
+    }
+
+    protected static float readOptionalValue(String key, float defaultValue, TypeFile file)
+    {
+        return hasValueForConfigField(key, file) ? readValue(key, defaultValue, file) : defaultValue;
+    }
+
     protected static String readSound(String key, String defaultValue, TypeFile file)
     {
-        String sound = readResource(key, defaultValue, file);
+        if (!file.hasConfigLine(key))
+            return defaultValue;
+
+        // A number of established content packs use a key without a value, or
+        // the literal "None", to explicitly disable a sound. Treat both forms
+        // as valid legacy syntax instead of emitting a misleading parse error
+        // or attempting to register a resource named "none".
+        if (!hasValueForConfigField(key, file))
+            return StringUtils.EMPTY;
+
+        String configuredSound = readValue(key, defaultValue, file);
+        if (StringUtils.equalsIgnoreCase(configuredSound, "none"))
+            return StringUtils.EMPTY;
+
+        String sound = ResourceUtils.sanitize(configuredSound);
         if (StringUtils.isNotBlank(sound))
             FlansMod.registerSound(sound, file);
         return sound;
+    }
+
+    /** Reads legacy sound timer fields, where blank and {@code None} mean disabled. */
+    protected static int readSoundLength(String key, int defaultValue, TypeFile file)
+    {
+        if (!file.hasConfigLine(key))
+            return defaultValue;
+        if (!hasValueForConfigField(key, file))
+            return 0;
+
+        String configuredLength = readValue(key, (String)null, file);
+        if (StringUtils.equalsIgnoreCase(configuredLength, "none"))
+            return 0;
+        try
+        {
+            return Integer.parseInt(configuredLength);
+        }
+        catch (NumberFormatException exception)
+        {
+            TypeReaderUtils.logError("Incorrect format for '" + key + "': expected an integer but found '"
+                + configuredLength + "'", file);
+            return defaultValue;
+        }
     }
 
     protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible)

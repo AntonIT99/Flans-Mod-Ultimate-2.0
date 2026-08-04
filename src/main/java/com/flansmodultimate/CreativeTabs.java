@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -63,9 +64,10 @@ public final class CreativeTabs
             List<RegistryObject<Item>> itemsForIcon = itemsForTab;
             if (tabName.equals(TAB_GUNS))
                 itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
-            //TODO: only display planes and vehicles for the icon: replace instanceof Item by corresponding Item class
-            if (tabName.equals("driveables"))
-                itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof Item).toList();
+            if (tabName.equals(TAB_VEHICLES))
+                itemsForIcon = itemsForTab.stream()
+                    .filter(ro -> ro.get() instanceof IFlanItem<?> flanItem && flanItem.getConfigType() instanceof DriveableType)
+                    .toList();
 
             if (itemsForIcon.isEmpty())
                 return new ItemStack(Items.WHITE_WOOL);

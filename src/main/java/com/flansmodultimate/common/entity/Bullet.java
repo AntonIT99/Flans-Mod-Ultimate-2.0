@@ -139,6 +139,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         penetratingPower = firedShot.getBulletType().getPenetratingPower();
         setPos(origin);
         setArrowHeading(direction, firedShot.getSpread(), firedShot.getFireableGun().getBulletSpeed(), firedShot.getFireableGun().getSpreadPattern());
+        useDesignatedDriveableTarget();
     }
 
     @Override
@@ -221,11 +222,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
         for (Entity entity : ModUtils.queryEntitiesInRange(level, this, ModCommonConfig.lockOnRange(), null))
         {
-            if (lockMechas && entity instanceof Mecha
-                || lockVehicles && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
-                || lockPlanes && (entity instanceof Plane || ModUtils.isPlaneLike(entity))
-                || lockPlayers && entity instanceof Player
-                || lockLivings && entity instanceof LivingEntity)
+            if (canLockOnEntity(entity) && isUsableLockOnTarget(entity))
             {
                 Vec3 relDir = entity.position().subtract(position()).normalize();
                 double cos = motionDir.dot(relDir);
@@ -245,6 +242,39 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             if (!bulletLockOnEvent.isCanceled())
                 lockedOnTo = bulletLockOnEvent.getLockedOnTo();
         }
+    }
+
+    private void useDesignatedDriveableTarget()
+    {
+        Entity shooter = firedShot == null ? null : firedShot.getCausingEntity().orElse(null);
+        if (!(shooter instanceof Driveable driveable))
+            return;
+        Entity designated = driveable.getLockOnTarget();
+        if (designated == null || !canLockOnEntity(designated) || !isUsableLockOnTarget(designated))
+            return;
+        BulletLockOnEvent event = new BulletLockOnEvent(this, designated);
+        MinecraftForge.EVENT_BUS.post(event);
+        if (!event.isCanceled())
+            lockedOnTo = event.getLockedOnTo();
+    }
+
+    private boolean canLockOnEntity(Entity entity)
+    {
+        return configType != null && (configType.isLockOnToMechas() && entity instanceof Mecha
+            || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
+            || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity))
+            || configType.isLockOnToPlayers() && entity instanceof Player
+            || configType.isLockOnToLivings() && entity instanceof LivingEntity);
+    }
+
+    private boolean isUsableLockOnTarget(Entity entity)
+    {
+        if (!entity.isAlive() || entity == this || firedShot != null
+            && (entity == firedShot.getCausingEntity().orElse(null) || entity == firedShot.getAttacker().orElse(null)))
+            return false;
+        if (entity instanceof Player player && player.isSpectator())
+            return false;
+        return !(entity instanceof Driveable driveable) || !driveable.isVarFlare() && driveable.getTicksFlareUsing() <= 0;
     }
 
     @Override
@@ -780,8 +810,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
         }
 
+        if (!isUsableLockOnTarget(lockedOnTo))
+        {
+            lockedOnTo = null;
+            return;
+        }
+
         // Target present: sound & tracking
-        if (lockedOnTo instanceof Driveable driveable)
+        if (lockedOnTo instanceof Driveable driveable && driveable.getConfigType() != null)
         {
             String lockedOnSound = driveable.getConfigType().getLockedOnSound();
             if (StringUtils.isNotBlank(lockedOnSound) && soundTime <= 0 && !level.isClientSide)
@@ -847,11 +883,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             prevDistanceToEntity = dXYZ;
         }
 
-        // Flare / countermeasure check
-        if (lockedOnTo instanceof Driveable driveable && (driveable.isVarFlare() || driveable.getTicksFlareUsing() > 0))
-        {
-            lockedOnTo = null;
-        }
     }
 
     protected void applyLaserGuidance(Vec3 targetPos)

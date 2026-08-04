@@ -6,6 +6,7 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.BlockType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.InfoType;
@@ -445,6 +446,7 @@ public class ContentManager
     {
         int gunBoxes = 0;
         int armorBoxes = 0;
+        int driveables = 0;
         int parts = 0;
         int tools = 0;
 
@@ -468,6 +470,11 @@ public class ContentManager
                     partType.validateRecipeIngredients();
                     parts++;
                 }
+                else if (config instanceof DriveableType driveableType)
+                {
+                    driveableType.validateRecipeIngredients();
+                    driveables++;
+                }
                 else if (config instanceof ToolType toolType)
                 {
                     toolType.validateRecipeIngredients();
@@ -475,7 +482,7 @@ public class ContentManager
                 }
             }
         }
-        FlansMod.log.info("Validated content references for {} GunBoxes, {} ArmorBoxes, {} parts, and {} tools.", gunBoxes, armorBoxes, parts, tools);
+        FlansMod.log.info("Validated content references for {} GunBoxes, {} ArmorBoxes, {} driveables, {} parts, and {} tools.", gunBoxes, armorBoxes, driveables, parts, tools);
     }
 
     private static void loadFlanFolder()

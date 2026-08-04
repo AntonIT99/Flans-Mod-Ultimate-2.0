@@ -1,6 +1,9 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.item.AAGunItem;
+import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
 import lombok.Getter;
@@ -13,6 +16,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -87,13 +91,30 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
             return;
         spawner.currentDelay = spawner.spawnDelayTicks;
 
-        AABB nearby = new AABB(pos).inflate(1.5D);
-        if (!serverLevel.getEntitiesOfClass(ItemEntity.class, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER)
+        AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
+        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER)
             && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
             return;
 
         for (ItemStack template : spawner.templates)
         {
+            if (spawner.mode == Mode.VEHICLE)
+            {
+                Entity spawned = null;
+                if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
+                {
+                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D,
+                        pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D,
+                        0F, null, template.copyWithCount(1));
+                    spawned = driveable;
+                }
+                else if (template.getItem() instanceof AAGunItem aaGunItem)
+                    spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null);
+                if (spawned != null)
+                    spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
+                continue;
+            }
+
             ItemEntity item = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.2D, pos.getZ() + 0.5D, template.copy());
             item.setDefaultPickUpDelay();
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);

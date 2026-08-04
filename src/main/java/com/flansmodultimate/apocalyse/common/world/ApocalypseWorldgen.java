@@ -5,6 +5,10 @@ import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
+import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -26,6 +30,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -63,6 +69,8 @@ public final class ApocalypseWorldgen
                 generateFactory(level, random, randomSurfacePos(level, chunkPos, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseAirportRarity()) == 0)
                 generateRunway(level, randomSurfacePos(level, chunkPos, random));
+            if (random.nextInt(ModApocalypseConfig.apocalypseVehicleRarity()) == 0)
+                generateAbandonedVehicle(level, random, randomSurfacePos(level, chunkPos, random));
             if (random.nextInt(BOSS_PILLAR_RARITY) == 0)
                 generateBossPillar(level, randomSurfacePos(level, chunkPos, random));
             if (ModApocalypseConfig.apocalypseMobsEnabled() && random.nextInt(ModApocalypseConfig.apocalypseSurvivorRarity()) == 0)
@@ -100,6 +108,45 @@ public final class ApocalypseWorldgen
         survivor.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
         survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION, null, null);
         level.addFreshEntity(survivor);
+    }
+
+    /** Generates a pack-provided, recoverable vehicle instead of a decorative placeholder. */
+    private static void generateAbandonedVehicle(ServerLevel level, RandomSource random, BlockPos pos)
+    {
+        if (!isClear(level, pos) || !level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP))
+            return;
+
+        // Info types are backed by a HashMap, so sort before using the worldgen RNG.
+        // This keeps the selected vehicle stable for a given seed and installed pack set.
+        List<VehicleType> candidates = InfoType.getInfoTypes().values().stream()
+            .filter(VehicleType.class::isInstance)
+            .map(VehicleType.class::cast)
+            .filter(VehicleType::isPlaceableOnLand)
+            .distinct()
+            .sorted(Comparator.comparing(VehicleType::getShortName, String.CASE_INSENSITIVE_ORDER))
+            .toList();
+        if (candidates.isEmpty())
+            return;
+
+        VehicleType type = candidates.get(random.nextInt(candidates.size()));
+        float yaw = random.nextFloat() * 360F;
+        Driveable.spawn(level, type, pos.getX() + 0.5D, pos.getY() + type.getYOffset(), pos.getZ() + 0.5D,
+            yaw, null, null).ifPresent(vehicle -> {
+            vehicle.getPersistentData().putBoolean("flansmodultimate:apocalypse_abandoned", true);
+            vehicle.getDriveableData().setFuelInTank(0F);
+
+            // Leave the vehicle repairable and usable while making the generated
+            // state visibly abandoned. Never destroy a part here because doing so
+            // would trigger normal combat drops and chained part destruction.
+            for (DriveablePart part : vehicle.getDriveableData().getParts().values())
+            {
+                if (part.getMaxHealth() <= 0F || random.nextFloat() >= 0.65F)
+                    continue;
+                float damageFraction = 0.15F + random.nextFloat() * 0.40F;
+                part.damage(part.getMaxHealth() * damageFraction, false);
+            }
+            vehicle.getDriveableData().setChanged();
+        });
     }
 
     private static void generateSulphurPool(ServerLevel level, RandomSource random, BlockPos center)

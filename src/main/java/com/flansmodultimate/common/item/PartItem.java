@@ -21,9 +21,16 @@ public class PartItem extends Item implements IFlanItem<PartType>
 
     public PartItem(PartType configType)
     {
-        super(new Properties().stacksTo(1));
+        super(createProperties(configType));
         this.configType = configType;
         shortname = configType.getShortName();
+    }
+
+    private static Properties createProperties(PartType type)
+    {
+        if (type.getCategory() == PartType.Category.FUEL && type.getFuel() > 0)
+            return new Properties().durability(type.getFuel());
+        return new Properties().stacksTo(type.getStackSize());
     }
 
     @Override

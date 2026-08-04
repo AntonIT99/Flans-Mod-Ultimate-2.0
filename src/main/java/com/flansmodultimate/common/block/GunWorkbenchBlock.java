@@ -1,10 +1,12 @@
 package com.flansmodultimate.common.block;
 
+import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,12 +36,12 @@ public class GunWorkbenchBlock extends Block
     @NotNull
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
-        if (player.isShiftKeyDown())
-            return InteractionResult.PASS;
-
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
-            MenuProvider provider = getMenuProvider(state, level, pos);
+            MenuProvider provider = player.isShiftKeyDown()
+                ? new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableCraftingMenu(containerId, inventory, pos),
+                    Component.translatable("gui.flansmodultimate.driveable.crafting"))
+                : getMenuProvider(state, level, pos);
             NetworkHooks.openScreen(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

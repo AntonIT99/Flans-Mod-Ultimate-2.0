@@ -195,8 +195,15 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2'
     compileOnly 'org.projectlombok:lombok:1.18.42'
 
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
     implementation fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260227')
     implementation fg.deobf('libs:flansmod:1.20.1-0.4.316')
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
 }
 
 shadowJar {

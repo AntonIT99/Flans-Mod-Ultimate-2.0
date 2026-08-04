@@ -2,8 +2,12 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Parachute;
+import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Wheel;
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
@@ -16,6 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -39,9 +44,17 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
 
     public ToolItem(ToolType configType)
     {
-        super(new Properties().stacksTo(1));
+        super(createProperties(configType));
         this.configType = configType;
         shortname = configType.getShortName();
+    }
+
+    private static Properties createProperties(ToolType type)
+    {
+        Properties properties = new Properties().stacksTo(1);
+        if (type.getToolLife() > 0)
+            properties.durability(type.getToolLife());
+        return properties;
     }
 
     @Override
@@ -100,14 +113,15 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         // Heal driveables
         if (configType.isHealDriveables())
         {
-            if (!level.isClientSide)
+            if (level.isClientSide)
+                return InteractionResultHolder.success(stack);
+
+            Driveable driveable = pickDriveableTarget(level, player, start, end);
+            if (driveable != null && driveable.repairFromTool(player, configType.getHealAmount()))
             {
-                //TODO: implement
-                /*boolean healed = DriveableHooks.tryHealDriveableAlongRay(level, start, end, configType.getHealAmount(), () -> isDepleted(stack));
-                if (healed) {
-                    consumeUse(stack, player);
-                    return InteractionResultHolder.consume(stack);
-                }*/
+                spawnRepairParticles(level, driveable);
+                consumeUse(stack, player);
+                return InteractionResultHolder.consume(stack);
             }
             return InteractionResultHolder.pass(stack);
         }
@@ -126,13 +140,15 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             return InteractionResultHolder.pass(stack);
         }
 
-        // Key behavior placeholder
+        // Vehicle key binding / access check
         if (configType.isKey())
         {
-            if (!level.isClientSide)
+            if (level.isClientSide)
+                return InteractionResultHolder.success(stack);
+
+            Driveable driveable = pickDriveableTarget(level, player, start, end);
+            if (driveable != null && driveable.bindOrCheckKey(player, stack))
             {
-                //TODO: implement
-                //KeyHooks.onKeyUsed(level, player, start, end, stack, configType);
                 consumeUse(stack, player);
                 return InteractionResultHolder.consume(stack);
             }
@@ -145,6 +161,12 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     protected void spawnHealParticles(Level level, LivingEntity target)
     {
         Vec3 particlePos = target.position();
+        PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
+    }
+
+    protected void spawnRepairParticles(Level level, Driveable target)
+    {
+        Vec3 particlePos = target.position().add(0D, target.getBbHeight() * 0.5D, 0D);
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
     }
 
@@ -165,7 +187,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         if (!player.getAbilities().instabuild && configType.getToolLife() > 0)
             stack.setDamageValue(stack.getDamageValue() + 1);
 
-        if (configType.getToolLife() > 0 && configType.isDestroyOnEmpty() && stack.getDamageValue() == stack.getMaxDamage())
+        if (configType.getToolLife() > 0 && configType.isDestroyOnEmpty() && stack.getDamageValue() >= configType.getToolLife())
         {
             stack.shrink(1);
             return InteractionResultHolder.consume(stack);
@@ -210,5 +232,52 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             chosen = living;
 
         return chosen;
+    }
+
+    @Nullable
+    protected Driveable pickDriveableTarget(Level level, Player user, Vec3 start, Vec3 end)
+    {
+        Vec3 motion = end.subtract(start);
+        AABB broadPhase = new AABB(start, end).inflate(64D);
+        Driveable best = null;
+        float bestTime = Float.POSITIVE_INFINITY;
+
+        for (Driveable candidate : level.getEntitiesOfClass(Driveable.class, broadPhase, Entity::isAlive))
+        {
+            for (BulletHit hit : candidate.attackFromBullet(start, motion))
+            {
+                float time = hit.getIntersectTime();
+                if (time >= 0F && time <= 1F && time < bestTime)
+                {
+                    best = candidate;
+                    bestTime = time;
+                }
+            }
+        }
+
+        AABB proxySearch = new AABB(start, end).inflate(1D);
+        EntityHitResult fallback = ProjectileUtil.getEntityHitResult(level, user, start, end, proxySearch,
+            entity -> entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel);
+        if (fallback == null)
+            return best;
+
+        Driveable fallbackDriveable = getDriveable(fallback.getEntity());
+        if (fallbackDriveable == null)
+            return best;
+        float fallbackTime = motion.lengthSqr() <= 1.0E-8D ? 0F
+            : (float) (start.distanceTo(fallback.getLocation()) / motion.length());
+        return fallbackTime < bestTime ? fallbackDriveable : best;
+    }
+
+    @Nullable
+    private static Driveable getDriveable(Entity entity)
+    {
+        if (entity instanceof Driveable driveable)
+            return driveable;
+        if (entity instanceof Seat seat)
+            return seat.getDriveable();
+        if (entity instanceof Wheel wheel)
+            return wheel.getDriveable();
+        return null;
     }
 }
