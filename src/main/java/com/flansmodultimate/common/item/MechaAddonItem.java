@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.MechaItemType;
 import lombok.Getter;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,6 +13,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class MechaAddonItem extends Item implements ICustomRendereredItem<MechaItemType>
 {
@@ -22,6 +24,12 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     {
         super(new Properties().stacksTo(1));
         this.configType = configType;
+    }
+
+    @Override
+    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
+    {
+        ICustomRendereredItem.super.initializeClient(consumer);
     }
 
     @Override

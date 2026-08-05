@@ -17,21 +17,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-/** Standalone renderer for mecha tools and upgrade models. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MechaAddonItemRenderer
 {
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
-                                  MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!(stack.getItem() instanceof MechaAddonItem addon)
-            || !(ModelCache.getOrLoadTypeModel(addon.getConfigType()) instanceof ModelMechaTool model))
+        if (!(stack.getItem() instanceof MechaAddonItem mechaAddonItem)
+            || !mechaAddonItem.useCustomRenderer(context)
+            || !(ModelCache.getOrLoadTypeModel(mechaAddonItem.getConfigType()) instanceof ModelMechaTool model))
         {
             ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
             return;
         }
 
-        MechaItemType type = addon.getConfigType();
+        MechaItemType type = mechaAddonItem.getConfigType();
         ResourceLocation texture = type.getTexture();
         int color = type.getColour();
         float red = (color >> 16 & 255) / 255F;

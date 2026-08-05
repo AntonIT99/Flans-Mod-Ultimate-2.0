@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import lombok.Getter;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +30,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Common, server-authoritative placement item for every driveable family. */
 public abstract class DriveableItem<T extends DriveableType, D extends Driveable> extends Item implements IPaintableItem<T>, ICustomRendereredItem<T>
@@ -99,8 +101,13 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         return level.addFreshEntity(driveable) ? driveable : null;
     }
 
-    protected abstract D createDriveable(Level level, double x, double y, double z, float yaw,
-                                         @Nullable Player placer, ItemStack sourceStack);
+    protected abstract D createDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack);
+
+    @Override
+    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
+    {
+        ICustomRendereredItem.super.initializeClient(consumer);
+    }
 
     @Override
     public boolean useCustomRendererInHand()
@@ -123,12 +130,11 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     @Override
     public boolean useCustomRendererInGui()
     {
-        return true;
+        return false;
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
-                                @NotNull TooltipFlag advanced)
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
         DriveableData data = DriveableData.fromStack(configType, stack);

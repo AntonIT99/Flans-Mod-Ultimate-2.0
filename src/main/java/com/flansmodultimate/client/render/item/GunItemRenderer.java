@@ -63,6 +63,17 @@ public final class GunItemRenderer
     private static final Vector3f VEC3_LOOK1_ANGLES = new Vector3f(0.0f, 70.0f, 0.0f);
     private static final Vector3f VEC3_LOOK2_ANGLES = new Vector3f(0.0f, -60.0f, 60.0f);
 
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        if (stack.getItem() instanceof GunItem gunItem && gunItem.useCustomRenderer(context) && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
+        {
+            GunItemRenderer.renderItem(modelGun, stack, context, poseStack, buffer, packedLight, packedOverlay);
+            return;
+        }
+
+        ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
+    }
+
     public static void renderItem(ModelGun model, ItemStack stack, ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         poseStack.pushPose();

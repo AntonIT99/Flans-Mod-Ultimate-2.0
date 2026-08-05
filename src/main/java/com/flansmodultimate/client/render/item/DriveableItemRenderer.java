@@ -22,14 +22,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-/** Item, GUI and item-frame renderer shared by every driveable family. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DriveableItemRenderer
 {
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
-                                  MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem))
+        if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem)
+            || !(driveableItem.useCustomRenderer(context)))
         {
             ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
             return;
@@ -43,8 +42,7 @@ public final class DriveableItemRenderer
         }
 
         Paintjob paintjob = type.getPaintjob(stack);
-        ResourceLocation texture = paintjob != null && paintjob.getTexture() != null
-            ? paintjob.getTexture() : type.getTexture();
+        ResourceLocation texture = paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
         int color = type.getColour();
         float red = (color >> 16 & 255) / 255F;
         float green = (color >> 8 & 255) / 255F;
@@ -57,9 +55,7 @@ public final class DriveableItemRenderer
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
         {
-            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay,
-                red, green, blue, 1F, type.getModelScale(), renderPass);
+            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red, green, blue, 1F, type.getModelScale(), renderPass);
         }
         poseStack.popPose();
     }
@@ -109,7 +105,7 @@ public final class DriveableItemRenderer
             }
             default ->
             {
-                // NONE and HEAD are not routed here by ICustomRendereredItem.
+                // no-op
             }
         }
 
