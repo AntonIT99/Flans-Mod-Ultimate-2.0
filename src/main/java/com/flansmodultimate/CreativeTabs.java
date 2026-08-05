@@ -2,11 +2,9 @@ package com.flansmodultimate;
 
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.item.BulletItem;
-import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -38,36 +36,41 @@ public final class CreativeTabs
     public static final String TAB_GUNS = "guns";
     public static final String TAB_GRENADES = "grenades";
     public static final String TAB_TOOLS = "tools";
-    public static final String TAB_VEHICLES = "vehicles";
+    public static final String TAB_BOMBS_AND_SHELLS = "bombs_and_shells";
     public static final String TAB_AA_GUNS = "aaguns";
+    public static final String TAB_MECHAS = "mechas";
+    public static final String TAB_PLANES = "planes";
+    public static final String TAB_VEHICLES = "vehicles";
     public static final String TAB_PARTS = "parts";
 
     @SafeVarargs
-    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
+    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
-            .icon(createIcon(tabName, itemsForTab))
+            .icon(createIcon(tabName, itemsForTab, typesForIcon))
             .withSearchBar()
             .withTabsBefore(beforeTab)
             .withTabsAfter(afterTab)
-            .displayItems(displayItemsWithPaintjobsGenerator(itemsForTab, onlyGunAmmo, onlyVehicleAmmo))
+            .displayItems(displayItemsWithPaintjobsGenerator(tabName, itemsForTab))
             .build());
     }
 
-    private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab)
+    private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab, List<EnumType> typesForIcons)
     {
         return () -> {
             if (tabName.equals(TAB_GENERAL))
                 return new ItemStack(FlansMod.gunWorkbenchItem.get());
 
-            List<RegistryObject<Item>> itemsForIcon = itemsForTab;
-            if (tabName.equals(TAB_GUNS))
-                itemsForIcon = itemsForTab.stream().filter(ro -> ro.get() instanceof GunItem).toList();
-            if (tabName.equals(TAB_VEHICLES))
-                itemsForIcon = itemsForTab.stream()
-                    .filter(ro -> ro.get() instanceof IFlanItem<?> flanItem && flanItem.getConfigType() instanceof DriveableType)
-                    .toList();
+            List<RegistryObject<Item>> itemsForIcon = itemsForTab.stream()
+                .filter(ro -> {
+                    for (EnumType type: typesForIcons) {
+                        Class<?> itemClass = type.getItemClass();
+                        if (itemClass != null && itemClass.isInstance(ro.get()))
+                            return true;
+                    }
+                    return false;
+                }).toList();
 
             if (itemsForIcon.isEmpty())
                 return new ItemStack(Items.WHITE_WOOL);
@@ -76,18 +79,20 @@ public final class CreativeTabs
         };
     }
 
-    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(List<RegistryObject<Item>> itemsForTab, boolean onlyGunAmmo, boolean onlyVehicleAmmo)
+    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<RegistryObject<Item>> itemsForTab)
     {
+        boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
+        boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
+
         return (parameters, output) -> {
             for (RegistryObject<Item> ro : sortForCreativeTab(itemsForTab))
             {
                 Item item = ro.get();
 
-                if (item instanceof BulletItem bi
-                    && (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
+                if (item instanceof BulletItem bi &&
+                    (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
                     || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
                         continue;
-
 
                 output.accept(item);
 
