@@ -1,32 +1,7 @@
 General:
 - Check translations in other languages
 - Add commands to wiki
-- 1.12.2 loadouts & rewardBoxes
-
-Entities:
-- Wheel - TODO
-- Seat - TODO
-- Driveable - TODO
-- Mecha - TODO
-- Plane - TODO
-- Vehicle - TODO
-
-Items:
-- PartItem - TODO (WIP)
-- ToolItem - TODO (WIP)
-- RewardBoxItem (1.12.2) - TODO
-- MechaItem - TODO
-- VehicleItem - TODO
-- PlaneItem - TODO
-- MechaAddonItem - TODO
-
-Types:
-- LoadoutType (1.12.2) - TODO
-- RewardBoxType (1.12.2) - TODO
-- MechaItemType - TODO
-- DriveableType - TODO
-- PlaneType TODO
-- VehicleType TODO
+- Flansmod-Log
 
 TODO Content Packs:
 - Fix AK47 Paintjobs
