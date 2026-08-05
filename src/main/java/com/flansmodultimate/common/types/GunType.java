@@ -195,7 +195,11 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected EnumFireMode mode = EnumFireMode.SEMIAUTO;
-    protected EnumFireMode[] submode = new EnumFireMode[]{EnumFireMode.FULLAUTO};
+    /**
+     * Fire modes selectable on this gun, in the order declared by the content
+     * pack. A missing {@code Mode} entry must remain a semi-automatic gun.
+     */
+    protected EnumFireMode[] submode = new EnumFireMode[]{EnumFireMode.SEMIAUTO};
     protected EnumFireMode defaultmode = mode;
     /**
      * The number of bullets to fire per burst in burst mode
@@ -808,20 +812,22 @@ public class GunType extends PaintableType implements IScope
         distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
         useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
-        //Mode
-        mode = readValue("Mode", mode, EnumFireMode.class, file);
-        defaultmode = mode;
+        // Mode. Legacy content permits multiple values here (for example
+        // "Mode FullAuto Burst SemiAuto"). Do not use readValue: it correctly
+        // warns about additional values for scalar fields, but Mode is a list.
         String[] submodeSplit = readValues("Mode", file);
-        if (submodeSplit.length > 1)
+        if (submodeSplit.length > 0)
         {
-            submode = new EnumFireMode[submodeSplit.length];
-            for (int i = 0; i < submode.length; i++)
-                submode[i] = EnumFireMode.getFireMode(submodeSplit[i]);
+            // A LinkedHashSet preserves the author-defined cycle order while
+            // keeping duplicate entries from producing a no-op key press.
+            Set<EnumFireMode> configuredModes = new LinkedHashSet<>();
+            for (String configuredMode : submodeSplit)
+                configuredModes.add(EnumFireMode.getFireMode(configuredMode));
+
+            submode = configuredModes.toArray(EnumFireMode[]::new);
+            mode = submode[0];
         }
-        else if (submodeSplit.length == 1)
-        {
-            submode = new EnumFireMode[]{mode};
-        }
+        defaultmode = mode;
 
         //Overlay and zoom settings
         overlayName = readResource("Scope", overlayName, file);
