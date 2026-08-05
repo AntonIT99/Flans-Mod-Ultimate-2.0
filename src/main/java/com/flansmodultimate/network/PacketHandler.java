@@ -8,6 +8,7 @@ import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
@@ -59,6 +60,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -70,7 +72,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "6";
+    public static final String PROTOCOL = "7";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -98,6 +100,7 @@ public final class PacketHandler {
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
         registerS2C(PacketDriveableDamage.class);
+        registerS2C(PacketDriveableRenderState.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);
         registerS2C(PacketFlanExplosionBlockParticles.class);
@@ -233,6 +236,12 @@ public final class PacketHandler {
     public static void sendToAll(IClientPacket msg)
     {
         CHANNEL.send(PacketDistributor.ALL.noArg(), msg);
+    }
+
+    /** server -> players currently tracking an entity (and the entity itself, if it is a player) */
+    public static void sendToTracking(IClientPacket msg, Entity entity)
+    {
+        CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity), msg);
     }
 
     /** server -> all in a dimension */

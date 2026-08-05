@@ -38,6 +38,8 @@ import java.util.Map;
  */
 public final class DriveableData implements Container
 {
+    /** Hard packet bound; mecha slots are always preferred over decorative missile rows. */
+    public static final int MAX_RENDER_SYNC_SLOTS = 256;
     public static final String NBT_DATA = "driveable_data";
     private static final String NBT_TYPE = "type";
     private static final String NBT_ENGINE = "engine";
@@ -127,6 +129,32 @@ public final class DriveableData implements Container
     public int getCargoInventoryStart() { return numAmmoSlots + numBombSlots + numMissileSlots; }
     public int getMechaInventoryStart() { return numAmmoSlots + numBombSlots + numMissileSlots + numCargoSlots; }
     public int getFuelSlot() { return getMechaInventoryStart() + numMechaSlots; }
+
+    public int getRenderSlotCount()
+    {
+        int mechaSlots = Math.min(numMechaSlots, MAX_RENDER_SYNC_SLOTS);
+        return mechaSlots + Math.min(numMissileSlots, MAX_RENDER_SYNC_SLOTS - mechaSlots);
+    }
+
+    /** Maps a compact render-state index to the real container slot. */
+    public int getRenderSlotIndex(int renderIndex)
+    {
+        int mechaSlots = Math.min(numMechaSlots, MAX_RENDER_SYNC_SLOTS);
+        int missileSlots = Math.min(numMissileSlots, MAX_RENDER_SYNC_SLOTS - mechaSlots);
+        if (renderIndex < 0 || renderIndex >= missileSlots + mechaSlots)
+            return -1;
+        return renderIndex < missileSlots
+            ? getMissileInventoryStart() + renderIndex
+            : getMechaInventoryStart() + renderIndex - missileSlots;
+    }
+
+    public boolean isRenderSlot(int slot)
+    {
+        int mechaSlots = Math.min(numMechaSlots, MAX_RENDER_SYNC_SLOTS);
+        int missileSlots = Math.min(numMissileSlots, MAX_RENDER_SYNC_SLOTS - mechaSlots);
+        return slot >= getMissileInventoryStart() && slot < getMissileInventoryStart() + missileSlots
+            || slot >= getMechaInventoryStart() && slot < getMechaInventoryStart() + mechaSlots;
+    }
 
     public ItemStack getAmmo(int index) { return getTypedSlot(index, numAmmoSlots, getAmmoInventoryStart()); }
     public ItemStack getBomb(int index) { return getTypedSlot(index, numBombSlots, getBombInventoryStart()); }
@@ -275,6 +303,7 @@ public final class DriveableData implements Container
     {
         CompoundTag output = destination == null ? new CompoundTag() : destination;
         CompoundTag data = preservedTag.copy();
+        removeSerializedState(data);
         data.putString(NBT_TYPE, getType());
         data.putString(NBT_ENGINE, engineShortName);
         data.putFloat(NBT_FUEL, fuelInTank);
@@ -302,12 +331,99 @@ public final class DriveableData implements Container
         }
         data.put(NBT_PARTS, partTags);
 
-        // Legacy names allow old worlds and third-party integrations to round-trip.
-        writeLegacyState(data);
+        // Keep one root-level legacy mirror for old worlds and integrations. Writing it
+        // inside the canonical payload as well needlessly tripled occupied slot data.
         writeLegacyState(output);
         output.put(NBT_DATA, data);
         output.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjobID);
         return output;
+    }
+
+    /**
+     * Writes only state needed by remote renderers. This deliberately excludes cargo,
+     * fuel items and weapon banks from entity spawn packets.
+     */
+    public CompoundTag saveRenderState(@Nullable CompoundTag destination)
+    {
+        CompoundTag output = destination == null ? new CompoundTag() : destination;
+        CompoundTag data = new CompoundTag();
+        data.putString(NBT_TYPE, getType());
+        data.putString(NBT_ENGINE, engineShortName);
+        data.putFloat(NBT_FUEL, fuelInTank);
+        data.putInt(NBT_PAINT, paintjobID);
+
+        ListTag itemTags = new ListTag();
+        for (int index = 0; index < getRenderSlotCount(); index++)
+        {
+            int slot = getRenderSlotIndex(index);
+            ItemStack stack = getItem(slot);
+            if (stack.isEmpty())
+                continue;
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("slot", slot);
+            stack.save(entry);
+            itemTags.add(entry);
+        }
+        data.put(NBT_ITEMS, itemTags);
+
+        ListTag partTags = new ListTag();
+        for (DriveablePart part : parts.values())
+        {
+            CompoundTag entry = new CompoundTag();
+            part.save(entry);
+            partTags.add(entry);
+        }
+        data.put(NBT_PARTS, partTags);
+        output.put(NBT_DATA, data);
+        output.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjobID);
+        return output;
+    }
+
+    /** Applies a trusted, bounded S2C render slot without dirtying server inventory state. */
+    public void applyRenderSlot(int slot, @Nullable ItemStack stack)
+    {
+        if (!isRenderSlot(slot))
+            return;
+        putLoadedStack(slot, stack == null ? ItemStack.EMPTY : stack.copy());
+    }
+
+    /** Removes inventory/damage payloads while retaining unrelated item metadata and capabilities. */
+    public void removeSerializedState(@Nullable CompoundTag tag)
+    {
+        if (tag == null)
+            return;
+        boolean canonicalAtRoot = !tag.contains(NBT_DATA, Tag.TAG_COMPOUND)
+            && (tag.contains(NBT_ITEMS, Tag.TAG_LIST) || tag.contains(NBT_PARTS, Tag.TAG_LIST)
+                || getType().equalsIgnoreCase(tag.getString(NBT_TYPE)));
+        tag.remove(NBT_DATA);
+        if (canonicalAtRoot)
+        {
+            tag.remove(NBT_TYPE);
+            tag.remove(NBT_ENGINE);
+            tag.remove(NBT_FUEL);
+            tag.remove(NBT_PAINT);
+            tag.remove(NBT_ITEMS);
+            tag.remove(NBT_PARTS);
+        }
+        tag.remove(IPaintableItem.NBT_PAINTJOB_ID);
+        tag.remove("Type");
+        tag.remove("Engine");
+        tag.remove("FuelInTank");
+        tag.remove("Paint");
+        tag.remove("Fuel");
+        for (String key : new ArrayList<>(tag.getAllKeys()))
+        {
+            if (isLegacyIndexedKey(key, "Ammo ") || isLegacyIndexedKey(key, "Bombs ")
+                || isLegacyIndexedKey(key, "Missiles ") || isLegacyIndexedKey(key, "Cargo "))
+                tag.remove(key);
+        }
+        for (EnumMechaSlotType slot : EnumMechaSlotType.values())
+            tag.remove(legacyMechaSlotName(slot));
+        for (EnumDriveablePart part : EnumDriveablePart.values())
+        {
+            tag.remove(part.getShortName() + "_Health");
+            tag.remove(part.getShortName() + "_Fire");
+        }
     }
 
     public ItemStack copyToStack(ItemStack stack)

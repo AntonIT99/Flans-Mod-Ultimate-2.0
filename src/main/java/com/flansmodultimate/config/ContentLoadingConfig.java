@@ -22,7 +22,7 @@ public final class ContentLoadingConfig
     @Getter
     private static boolean useDefaultCategories = true;
 
-    private static final int CONTENT_LOADING_SYSTEM_VERSION = 5;
+    private static final int CONTENT_LOADING_SYSTEM_VERSION = 6;
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.toml";
 
     static

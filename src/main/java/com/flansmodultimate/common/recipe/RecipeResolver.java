@@ -11,6 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +46,7 @@ public final class RecipeResolver
      * Resolves a recipe item id to an item stack for runtime recipe displays and legacy recipe consumers.
      * <p>
      * Resolution order is:
-     * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
+     * namespaced raw registered item id, reserved legacy equipment name, content-pack short name alias as {@code flansmod:<alias>},
      * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
      * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
@@ -92,7 +93,7 @@ public final class RecipeResolver
      * Resolves a recipe item id to the item id that should be written into generated recipe JSON.
      * <p>
      * Resolution order is:
-     * namespaced raw registered item id, content-pack short name alias as {@code flansmod:<alias>},
+     * namespaced raw registered item id, reserved legacy equipment name, content-pack short name alias as {@code flansmod:<alias>},
      * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
      * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
@@ -140,7 +141,18 @@ public final class RecipeResolver
         String sanitizedId = ResourceUtils.sanitize(rawId);
         String aliasedId = ContentManager.getShortnameAliasInContentPack(sanitizedId, provider);
 
-        Optional<T> result = resolution.flansmod(aliasedId);
+        // 1.7 resolved vanilla unlocalized names (item.pickaxeDiamond, item.bootsIron,
+        // etc.) before Flan short names. Preserve that precedence for this reserved
+        // vocabulary so a pending content registration cannot capture the token.
+        Optional<T> result = Optional.empty();
+        if (isLegacyEquipmentId(sanitizedId))
+        {
+            result = resolution.legacy(sanitizedId, damage);
+            if (result.isPresent())
+                return result;
+        }
+
+        result = resolution.flansmod(aliasedId);
         if (result.isPresent())
             return result;
 
@@ -164,6 +176,25 @@ public final class RecipeResolver
             return result;
 
         return resolution.vanillaPath(sanitizedId);
+    }
+
+    private static boolean isLegacyEquipmentId(String id)
+    {
+        String[] prefixes = {"sword", "pickaxe", "hatchet", "axe", "shovel", "hoe",
+            "helmet", "chestplate", "leggings", "boots"};
+        String[] materials = {"wood", "stone", "iron", "steel", "gold", "diamond"};
+        for (String prefix : prefixes)
+        {
+            if (!id.startsWith(prefix))
+                continue;
+            String material = id.substring(prefix.length());
+            for (String candidate : materials)
+            {
+                if (candidate.equals(material))
+                    return true;
+            }
+        }
+        return false;
     }
 
     private static <T> Optional<T> resolveNamespacedRecipeItem(String rawId, int damage, @Nullable IContentProvider provider, RecipeItemResolution<T> resolution)
@@ -384,7 +415,55 @@ public final class RecipeResolver
 
     private static Optional<ResourceLocation> getLegacyRecipeItemId(String id, int damage)
     {
+        String equipmentPath = legacyEquipmentPath(id);
+        if (equipmentPath != null)
+            return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", equipmentPath));
         return getLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
+    }
+
+    @Nullable
+    private static String legacyEquipmentPath(String id)
+    {
+        String tool = null;
+        String material = null;
+        String[] toolPrefixes = {"pickaxe", "hatchet", "shovel", "sword", "axe", "hoe"};
+        for (String prefix : toolPrefixes)
+        {
+            if (id.startsWith(prefix))
+            {
+                tool = prefix.equals("hatchet") ? "axe" : prefix;
+                material = id.substring(prefix.length());
+                break;
+            }
+        }
+        if (tool != null)
+        {
+            String modernMaterial = switch (material)
+            {
+                case "wood" -> "wooden";
+                case "gold" -> "golden";
+                case "steel" -> "iron";
+                case "stone", "iron", "diamond" -> material;
+                default -> null;
+            };
+            return modernMaterial == null ? null : modernMaterial + "_" + tool;
+        }
+
+        String[] armourSlots = {"helmet", "chestplate", "leggings", "boots"};
+        for (String slot : armourSlots)
+        {
+            if (!id.startsWith(slot))
+                continue;
+            String armourMaterial = switch (id.substring(slot.length()))
+            {
+                case "steel" -> "iron";
+                case "gold" -> "golden";
+                case "iron", "diamond" -> id.substring(slot.length());
+                default -> null;
+            };
+            return armourMaterial == null ? null : armourMaterial + "_" + slot;
+        }
+        return null;
     }
 
     private static Optional<ItemStack> getVanillaRegistryPathRecipeElement(String id, int amount)
@@ -433,7 +512,43 @@ public final class RecipeResolver
             case "blockcoal" -> Items.COAL_BLOCK;
             case "button" -> Items.STONE_BUTTON;
             case "netherstar" -> Items.NETHER_STAR;
+            case "swordwood" -> Items.WOODEN_SWORD;
+            case "swordstone" -> Items.STONE_SWORD;
+            case "swordiron", "swordsteel" -> Items.IRON_SWORD;
+            case "swordgold" -> Items.GOLDEN_SWORD;
+            case "sworddiamond" -> Items.DIAMOND_SWORD;
+            case "pickaxewood" -> Items.WOODEN_PICKAXE;
+            case "pickaxestone" -> Items.STONE_PICKAXE;
+            case "pickaxeiron", "pickaxesteel" -> Items.IRON_PICKAXE;
+            case "pickaxegold" -> Items.GOLDEN_PICKAXE;
+            case "pickaxediamond" -> Items.DIAMOND_PICKAXE;
+            case "hatchetwood", "axewood" -> Items.WOODEN_AXE;
+            case "hatchetstone", "axestone" -> Items.STONE_AXE;
+            case "hatchetiron", "axeiron", "hatchetsteel", "axesteel" -> Items.IRON_AXE;
+            case "hatchetgold", "axegold" -> Items.GOLDEN_AXE;
+            case "hatchetdiamond", "axediamond" -> Items.DIAMOND_AXE;
+            case "shovelwood" -> Items.WOODEN_SHOVEL;
+            case "shovelstone" -> Items.STONE_SHOVEL;
+            case "shoveliron", "shovelsteel" -> Items.IRON_SHOVEL;
+            case "shovelgold" -> Items.GOLDEN_SHOVEL;
+            case "shoveldiamond" -> Items.DIAMOND_SHOVEL;
+            case "hoewood" -> Items.WOODEN_HOE;
+            case "hoestone" -> Items.STONE_HOE;
+            case "hoeiron", "hoesteel" -> Items.IRON_HOE;
+            case "hoegold" -> Items.GOLDEN_HOE;
+            case "hoediamond" -> Items.DIAMOND_HOE;
+            case "helmetiron", "helmetsteel" -> Items.IRON_HELMET;
+            case "chestplateiron", "chestplatesteel" -> Items.IRON_CHESTPLATE;
+            case "leggingsiron", "leggingssteel" -> Items.IRON_LEGGINGS;
+            case "bootsiron", "bootssteel" -> Items.IRON_BOOTS;
+            case "helmetgold" -> Items.GOLDEN_HELMET;
+            case "chestplategold" -> Items.GOLDEN_CHESTPLATE;
+            case "leggingsgold" -> Items.GOLDEN_LEGGINGS;
+            case "bootsgold" -> Items.GOLDEN_BOOTS;
             case "helmetdiamond" -> Items.DIAMOND_HELMET;
+            case "chestplatediamond" -> Items.DIAMOND_CHESTPLATE;
+            case "leggingsdiamond" -> Items.DIAMOND_LEGGINGS;
+            case "bootsdiamond" -> Items.DIAMOND_BOOTS;
             case "beefraw" -> Items.BEEF;
             case "stonebrick" -> Items.STONE_BRICKS;
             case "flintandsteel" -> Items.FLINT_AND_STEEL;
@@ -489,7 +604,10 @@ public final class RecipeResolver
 
     private static Optional<ResourceLocation> id(ItemLike item)
     {
-        return Optional.ofNullable(ForgeRegistries.ITEMS.getKey(item.asItem()));
+        ResourceLocation location = ForgeRegistries.ITEMS.getKey(item.asItem());
+        if (location == null)
+            location = BuiltInRegistries.ITEM.getKey(item.asItem());
+        return Optional.ofNullable(location);
     }
 
     private static ItemLike legacyLog(int damage)

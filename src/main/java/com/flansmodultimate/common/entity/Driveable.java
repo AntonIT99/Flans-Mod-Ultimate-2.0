@@ -41,6 +41,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
@@ -135,6 +136,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public static final String NBT_IT1_DOOR_ANGLE = "it1_door_angle";
     public static final String NBT_IT1_ARM_ANGLE = "it1_arm_angle";
     public static final String NBT_IT1_RAIL_ANGLE = "it1_rail_angle";
+    public static final String NBT_SOURCE_STACK = "source_stack";
     public static final String NBT_KEY_ID = "key";
 
     protected static final int FLAG_GEAR = 1;
@@ -210,6 +212,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected int[] passengerHeldTicks = new int[0];
     protected int weaponInventoryFingerprint;
     protected boolean weaponInventoryFingerprintInitialized;
+    protected int renderInventoryFingerprint;
+    protected boolean renderInventoryFingerprintInitialized;
     protected int flareDelay;
     @Getter protected int ticksFlareUsing;
     protected int ticksSinceUsed;
@@ -290,8 +294,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         sourceStack = stack.copy();
         sourceStack.setCount(sourceStack.isEmpty() ? 0 : 1);
         driveableData = stack.isEmpty() ? new DriveableData(type) : DriveableData.fromStack(type, stack);
+        if (!sourceStack.isEmpty())
+            driveableData.removeSerializedState(sourceStack.getTag());
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
+        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprintInitialized = true;
         driveableData.setInventoryChanged(false);
         resizeProxyArrays();
         destroyedParts.clear();
@@ -508,7 +516,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public void writeSpawnData(FriendlyByteBuf buffer)
     {
         CompoundTag state = new CompoundTag();
-        addAdditionalSaveData(state);
+        writeRuntimeState(state);
+        if (driveableData != null)
+            driveableData.saveRenderState(state);
         buffer.writeUtf(getShortName(), 256);
         buffer.writeNbt(state);
     }
@@ -543,10 +553,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         }
 
-        initialize(type, ItemStack.EMPTY);
+        ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND)
+            ? ItemStack.of(tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
+        initialize(type, savedSource);
         driveableData = new DriveableData(type, tag);
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
+        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprintInitialized = true;
         driveableData.setInventoryChanged(false);
         setFuel(driveableData.getFuelInTank());
         setOrientation(tag.getFloat(NBT_YAW), tag.getFloat(NBT_PITCH), tag.getFloat(NBT_ROLL));
@@ -588,6 +602,18 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         DriveableType type = getConfigType();
         if (type == null || driveableData == null)
             return;
+        writeRuntimeState(tag);
+        if (!sourceStack.isEmpty())
+        {
+            CompoundTag sourceTag = new CompoundTag();
+            sourceStack.save(sourceTag);
+            tag.put(NBT_SOURCE_STACK, sourceTag);
+        }
+        driveableData.save(tag);
+    }
+
+    private void writeRuntimeState(@NotNull CompoundTag tag)
+    {
         tag.putString(NBT_TYPE, getShortName());
         tag.putString("Type", getShortName());
         tag.putFloat(NBT_YAW, getYaw());
@@ -613,7 +639,6 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         tag.putFloat(NBT_IT1_DOOR_ANGLE, getIT1DoorAngle());
         tag.putFloat(NBT_IT1_ARM_ANGLE, getIT1ArmAngle());
         tag.putFloat(NBT_IT1_RAIL_ANGLE, getIT1RailAngle());
-        driveableData.save(tag);
     }
 
     @Override
@@ -706,6 +731,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         emitConfiguredParticles();
         updateProxyPositions();
         syncChangedPartState();
+        syncRenderInventoryState();
         updateLifetime();
     }
 
@@ -1059,6 +1085,44 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
         }
         return result;
+    }
+
+    protected int renderInventoryFingerprint()
+    {
+        if (driveableData == null)
+            return 0;
+        int result = 31 + driveableData.getPaintjobID();
+        for (int index = 0; index < driveableData.getRenderSlotCount(); index++)
+        {
+            ItemStack stack = driveableData.getItem(driveableData.getRenderSlotIndex(index));
+            result = 31 * result + (stack.isEmpty() ? 0 : stack.getItem().hashCode());
+            result = 31 * result + stack.getCount();
+            result = 31 * result + stack.getDamageValue();
+            result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+        }
+        return result;
+    }
+
+    private void syncRenderInventoryState()
+    {
+        int fingerprint = renderInventoryFingerprint();
+        if (renderInventoryFingerprintInitialized && fingerprint == renderInventoryFingerprint)
+            return;
+        renderInventoryFingerprint = fingerprint;
+        renderInventoryFingerprintInitialized = true;
+        PacketHandler.sendToTracking(new PacketDriveableRenderState(this), this);
+    }
+
+    public void applyRenderInventoryNetworkState(int paintjobId, int[] slots, ItemStack[] stacks)
+    {
+        if (!level().isClientSide || driveableData == null || slots == null || stacks == null
+            || slots.length != stacks.length || slots.length > DriveableData.MAX_RENDER_SYNC_SLOTS)
+            return;
+        driveableData.setPaintjobID(paintjobId);
+        for (int index = 0; index < slots.length; index++)
+            driveableData.applyRenderSlot(slots[index], stacks[index]);
+        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprintInitialized = true;
     }
 
     protected void acknowledgeInternalWeaponInventoryChange()

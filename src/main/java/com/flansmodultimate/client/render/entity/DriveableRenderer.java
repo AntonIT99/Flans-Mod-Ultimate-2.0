@@ -1,11 +1,14 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
+import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -14,7 +17,9 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.MechaItemType;
@@ -115,7 +120,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, scale, renderPass);
         }
         if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
-            renderMechaAddons(driveable, mechaType, mechaModel, state, poseStack, buffer, packedLight);
+            renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
         poseStack.popPose();
     }
 
@@ -139,7 +144,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     }
 
     private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel,
-                                          ModelDriveable.RenderState state, PoseStack poseStack,
+                                          ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack,
                                           MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
@@ -160,16 +165,16 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true,
             driveable.isPartIntact(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.PRIMARY_FIRE), state.animationTime(),
-            poseStack, buffer, packedLight);
+            history.leftGunAnimations, poseStack, buffer, packedLight);
         renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false,
             driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.SECONDARY_FIRE), state.animationTime(),
-            poseStack, buffer, packedLight);
+            history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 
     private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType,
-                                        float armPitch, boolean active, float animationTime, PoseStack poseStack,
-                                        MultiBufferSource buffer, int packedLight)
+                                        float armPitch, boolean active, float animationTime, GunAnimations gunAnimations,
+                                        PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!armIntact || stack.isEmpty())
             return;
@@ -187,7 +192,12 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             mechaType.getModelScale() * mechaType.getHeldItemScale(),
             mechaType.getModelScale() * mechaType.getHeldItemScale());
         poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
-        renderMechaAddon(stack, active ? animationTime * 25F : 0F, poseStack, buffer, packedLight);
+        if (stack.getItem() instanceof GunItem gunItem
+            && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun gunModel)
+            GunItemRenderer.renderEmbedded(gunModel, stack, gunAnimations, poseStack, buffer,
+                packedLight, OverlayTexture.NO_OVERLAY);
+        else
+            renderMechaAddon(stack, active ? animationTime * 25F : 0F, poseStack, buffer, packedLight);
         poseStack.popPose();
     }
 
@@ -268,6 +278,12 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private final ModelDriveable.AnimatedTransform doorTransform = new ModelDriveable.AnimatedTransform();
         private final ModelDriveable.AnimatedTransform door2Transform = new ModelDriveable.AnimatedTransform();
         private final ModelDriveable.LegAnimation legAnimation = new ModelDriveable.LegAnimation();
+        private final GunAnimations leftGunAnimations = new GunAnimations();
+        private final GunAnimations rightGunAnimations = new GunAnimations();
+        private GunItem leftGunItem;
+        private GunItem rightGunItem;
+        private int leftGunRounds = -1;
+        private int rightGunRounds = -1;
 
         private void advance(Driveable driveable, DriveableType type)
         {
@@ -295,6 +311,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                     updateLegTargets(type, legSwing, 1);
                 }
                 snapTransforms(driveable, type);
+                updateHandGunAnimations(driveable, 1);
                 lastTick = driveable.tickCount;
                 return;
             }
@@ -329,7 +346,55 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 updateLegTargets(type, legSwing, elapsed);
             }
             advanceTransforms(driveable, type, elapsed);
+            updateHandGunAnimations(driveable, elapsed);
         }
+
+        private void updateHandGunAnimations(Driveable driveable, int elapsed)
+        {
+            DriveableData data = driveable.getDriveableData();
+            if (data == null)
+                return;
+            HandAnimationState left = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL),
+                leftGunItem, leftGunRounds, leftGunAnimations,
+                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.PRIMARY_FIRE), elapsed);
+            leftGunItem = left.item();
+            leftGunRounds = left.rounds();
+            HandAnimationState right = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL),
+                rightGunItem, rightGunRounds, rightGunAnimations,
+                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.SECONDARY_FIRE), elapsed);
+            rightGunItem = right.item();
+            rightGunRounds = right.rounds();
+        }
+
+        private static HandAnimationState updateHandGunAnimation(ItemStack stack, GunItem previousItem,
+                                                                  int previousRounds, GunAnimations animations,
+                                                                  boolean active, int elapsed)
+        {
+            for (int tick = 0; tick < elapsed; tick++)
+                animations.update();
+            if (!(stack.getItem() instanceof GunItem gunItem))
+                return new HandAnimationState(null, -1);
+
+            int rounds = 0;
+            for (int slot = 0; slot < gunItem.getConfigType().getNumAmmoItemsInGun(stack); slot++)
+                rounds += ShootableItem.getRoundsRemaining(gunItem.getAmmoItemStack(stack, slot));
+            if (previousItem == gunItem && previousRounds >= 0
+                && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun model)
+            {
+                if (rounds < previousRounds)
+                    animations.doShoot(model.getPumpDelay(), model.getPumpTime(), model.getHammerDelay(),
+                        model.getHammerAngle(), model.getAlthammerAngle(), model.getCasingDelay());
+                else if (rounds > previousRounds)
+                    animations.doReload(Math.max(1F, gunItem.getActualReloadTime(stack, ItemStack.EMPTY)),
+                        model.getPumpDelayAfterReload(), model.getPumpTime(), model.getChargeDelayAfterReload(),
+                        model.getChargeTime(), 1, false);
+            }
+            if (active)
+                animations.addMinigunBarrelRotationSpeed(0.2F * elapsed);
+            return new HandAnimationState(gunItem, rounds);
+        }
+
+        private record HandAnimationState(GunItem item, int rounds) {}
 
         private void snapTransforms(Driveable driveable, DriveableType type)
         {
