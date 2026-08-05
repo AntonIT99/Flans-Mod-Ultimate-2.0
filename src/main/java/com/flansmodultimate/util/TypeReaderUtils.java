@@ -470,7 +470,7 @@ public class TypeReaderUtils
      * discarding inline comments. Type files historically mix "[x y z]" and
      * "x y z" syntax, so a plain whitespace split is not sufficient.
      */
-    private static String[] splitValues(@Nullable String raw)
+    static String[] splitValues(@Nullable String raw)
     {
         if (StringUtils.isBlank(raw))
             return new String[0];
@@ -494,7 +494,10 @@ public class TypeReaderUtils
                     token.append(c);
                 continue;
             }
-            if ((c == '\'' || c == '"') && bracketDepth == 0)
+            // Apostrophes are common inside legacy projectile names such as
+            // Pzgr.L'Spur. They are only quoting delimiters when they begin a
+            // value, not when they occur inside an unquoted token.
+            if ((c == '\'' || c == '"') && bracketDepth == 0 && token.isEmpty())
             {
                 quote = c;
                 continue;
