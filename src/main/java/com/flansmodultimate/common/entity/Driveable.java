@@ -1879,12 +1879,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return position().add(0D, getBbHeight() * 0.5D, 0D);
         Vec3 localPosition = rotateLegacyModelVector(
             new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
+        if (info.isDriver())
+            localPosition = mirrorAroundLocalZAxis(localPosition);
         Vec3 worldPosition = isTurretMountedPart(info.getPart())
             ? turretPointToWorld(localPosition, getTurretYaw(), info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F)
             : localToWorld(localPosition.x, localPosition.y, localPosition.z);
 
         Vec3 rotatedOffset = rotateLegacyModelVector(
             new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
+        if (info.isDriver())
+            rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
             float pitch = info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
@@ -2453,6 +2457,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static Vec3 rotateLegacyModelVector(@NotNull Vec3 vector)
     {
         return new Vec3(vector.z, vector.y, -vector.x);
+    }
+
+    /** Mirrors a legacy-derived seat point across the driveable's local Z axis. */
+    private static Vec3 mirrorAroundLocalZAxis(@NotNull Vec3 vector)
+    {
+        return new Vec3(-vector.x, vector.y, vector.z);
     }
 
     public boolean bindOrCheckKey(@NotNull Player player, @NotNull ItemStack keyStack)

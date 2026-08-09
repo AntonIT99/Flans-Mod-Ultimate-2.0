@@ -37,13 +37,16 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     public static final int SCROLL_DOWN_BUTTON = 21;
     public static final int REPAIR_BUTTON_BASE = 100;
 
+    private static final int GUI_X_OFFSET = 13;
     private static final int COLUMN_COUNT = 8;
     private static final int VISIBLE_ROWS = 3;
-    private static final int VISIBLE_SLOTS = COLUMN_COUNT * VISIBLE_ROWS;
+    private static final int GRID_SLOT_COUNT = COLUMN_COUNT * VISIBLE_ROWS;
+    private static final int GUN_SLOT_COUNT = 3;
     private static final int SLOT_SIZE = 18;
 
     public enum Page
     {
+        MENU("Menu"),
         GUNS("Guns"),
         BOMBS("Bombs"),
         MISSILES("Missiles"),
@@ -63,9 +66,12 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     @Nullable @Getter private final Driveable driveable;
     private final Inventory playerInventory;
     private final Container driveableInventory;
-    private final DriveableMappedSlot[] mappedSlots = new DriveableMappedSlot[VISIBLE_SLOTS];
-    @Getter private Page page = Page.GUNS;
+    private final DriveableMappedSlot[] gridSlots = new DriveableMappedSlot[GRID_SLOT_COUNT];
+    private final DriveableMappedSlot[] gunSlots = new DriveableMappedSlot[GUN_SLOT_COUNT];
+    private final DriveableMappedSlot fuelSlot;
+    @Getter private Page page = Page.MENU;
     @Getter private int scrollRow;
+    private final int driveableSlotEnd;
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
 
@@ -83,29 +89,38 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         driveableInventory = driveable == null || driveable.getDriveableData() == null
             ? new SimpleContainer(1) : driveable.getDriveableData();
 
+        for (int row = 0; row < GUN_SLOT_COUNT; row++)
+        {
+            DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory,
+                GUI_X_OFFSET + 29, 25 + row * 19, this::mayPlaceOnCurrentPage);
+            gunSlots[row] = slot;
+            addSlot(slot);
+        }
         for (int row = 0; row < VISIBLE_ROWS; row++)
         {
             for (int column = 0; column < COLUMN_COUNT; column++)
             {
                 int visibleIndex = row * COLUMN_COUNT + column;
                 DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory,
-                    8 + column * SLOT_SIZE, 31 + row * SLOT_SIZE, this::mayPlaceOnCurrentPage);
-                mappedSlots[visibleIndex] = slot;
+                    GUI_X_OFFSET + 10 + column * SLOT_SIZE, 25 + row * 19, this::mayPlaceOnCurrentPage);
+                gridSlots[visibleIndex] = slot;
                 addSlot(slot);
             }
         }
+        fuelSlot = new DriveableMappedSlot(driveableInventory, GUI_X_OFFSET + 35, 63, this::mayPlaceOnCurrentPage);
+        addSlot(fuelSlot);
+        driveableSlotEnd = slots.size();
 
         playerInventoryStart = slots.size();
         for (int row = 0; row < 3; row++)
         {
             for (int column = 0; column < 9; column++)
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * SLOT_SIZE, 103 + row * SLOT_SIZE));
+                addSlot(new PageAwarePlayerSlot(playerInventory, column + row * 9 + 9,
+                    GUI_X_OFFSET + 8 + column * SLOT_SIZE, 98 + row * SLOT_SIZE));
         }
         for (int column = 0; column < 9; column++)
-            addSlot(new Slot(playerInventory, column, 8 + column * SLOT_SIZE, 161));
+            addSlot(new PageAwarePlayerSlot(playerInventory, column, GUI_X_OFFSET + 8 + column * SLOT_SIZE, 156));
         playerInventoryEnd = slots.size();
-        if (!hasPage(page))
-            page = Arrays.stream(Page.values()).filter(this::hasPage).findFirst().orElse(Page.CARGO);
         remapVisibleSlots();
     }
 
@@ -120,6 +135,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             return false;
         return switch (candidate)
         {
+            case MENU -> true;
             case GUNS -> data.getNumAmmoSlots() > 0;
             case BOMBS -> data.getNumBombSlots() > 0;
             case MISSILES -> data.getNumMissileSlots() > 0;
@@ -132,6 +148,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
 
     public int getMaxScrollRow()
     {
+        if (page == Page.GUNS)
+            return Math.max(0, getPageItemCount() - GUN_SLOT_COUNT);
         int rows = (getPageItemCount() + COLUMN_COUNT - 1) / COLUMN_COUNT;
         return Math.max(0, rows - VISIBLE_ROWS);
     }
@@ -207,6 +225,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             return 0;
         return switch (page)
         {
+            case MENU -> 0;
             case GUNS -> data.getNumAmmoSlots();
             case BOMBS -> data.getNumBombSlots();
             case MISSILES -> data.getNumMissileSlots();
@@ -223,6 +242,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             return -1;
         return switch (page)
         {
+            case MENU -> -1;
             case GUNS -> data.getAmmoInventoryStart();
             case BOMBS -> data.getBombInventoryStart();
             case MISSILES -> data.getMissileInventoryStart();
@@ -235,13 +255,35 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
 
     private void remapVisibleSlots()
     {
+        for (DriveableMappedSlot slot : gunSlots)
+            slot.mapTo(-1);
+        for (DriveableMappedSlot slot : gridSlots)
+            slot.mapTo(-1);
+        fuelSlot.mapTo(-1);
+
         int start = getPageStart();
         int count = getPageItemCount();
+        if (start < 0 || count <= 0)
+            return;
+        if (page == Page.GUNS)
+        {
+            for (int visible = 0; visible < gunSlots.length; visible++)
+            {
+                int relative = scrollRow + visible;
+                gunSlots[visible].mapTo(relative < count ? start + relative : -1);
+            }
+            return;
+        }
+        if (page == Page.FUEL)
+        {
+            fuelSlot.mapTo(start);
+            return;
+        }
         int offset = scrollRow * COLUMN_COUNT;
-        for (int visible = 0; visible < mappedSlots.length; visible++)
+        for (int visible = 0; visible < gridSlots.length; visible++)
         {
             int relative = offset + visible;
-            mappedSlots[visible].mapTo(start >= 0 && relative < count ? start + relative : -1);
+            gridSlots[visible].mapTo(relative < count ? start + relative : -1);
         }
     }
 
@@ -251,6 +293,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             return false;
         return switch (page)
         {
+            case MENU -> false;
             case GUNS -> isAmmo(stack, EnumWeaponType.GUN);
             case BOMBS -> isAmmo(stack, EnumWeaponType.BOMB) || isAmmo(stack, EnumWeaponType.MINE);
             case MISSILES -> isAmmo(stack, EnumWeaponType.MISSILE) || isAmmo(stack, EnumWeaponType.SHELL);
@@ -291,12 +334,12 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         ItemStack sourceStack = source.getItem();
         ItemStack copy = sourceStack.copy();
 
-        if (index < VISIBLE_SLOTS)
+        if (index < driveableSlotEnd)
         {
             if (!moveItemStackTo(sourceStack, playerInventoryStart, playerInventoryEnd, true))
                 return ItemStack.EMPTY;
         }
-        else if (!moveItemStackTo(sourceStack, 0, VISIBLE_SLOTS, false))
+        else if (!moveItemStackTo(sourceStack, 0, driveableSlotEnd, false))
         {
             int hotbarStart = playerInventoryEnd - 9;
             if (index < hotbarStart)
@@ -316,5 +359,19 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             return ItemStack.EMPTY;
         source.onTake(player, sourceStack);
         return copy;
+    }
+
+    private final class PageAwarePlayerSlot extends Slot
+    {
+        private PageAwarePlayerSlot(Container container, int index, int x, int y)
+        {
+            super(container, index, x, y);
+        }
+
+        @Override
+        public boolean isActive()
+        {
+            return page != Page.REPAIR;
+        }
     }
 }
