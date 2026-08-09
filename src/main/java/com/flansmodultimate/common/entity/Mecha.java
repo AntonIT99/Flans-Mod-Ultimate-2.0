@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
 import com.flansmodultimate.common.driveables.EnumMechaToolType;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -513,9 +514,12 @@ public class Mecha extends Driveable
     private Vec3 handGunOrigin(MechaType type, boolean left)
     {
         com.flansmod.common.vector.Vector3f arm = left ? type.getLeftArmOrigin() : type.getRightArmOrigin();
-        Vec3 extension = rotateTurretLocalDirection(new Vec3(type.getArmLength() + 1.2F * type.getHeldItemScale(),
-            0.5F * type.getHeldItemScale(), 0D), getTurretYaw(), getTurretPitch());
-        return localToWorld(arm.x + extension.x, arm.y + extension.y, arm.z + extension.z);
+        Vec3 localArm = LegacyDriveableCoordinates.toLocal(arm);
+        Vec3 legacyExtension = new Vec3(type.getArmLength() + 1.2F * type.getHeldItemScale(),
+            0.5F * type.getHeldItemScale(), 0D);
+        Vec3 extension = rotateTurretLocalDirection(LegacyDriveableCoordinates.toLocal(legacyExtension),
+            getTurretYaw(), getTurretPitch());
+        return localToWorld(localArm.x + extension.x, localArm.y + extension.y, localArm.z + extension.z);
     }
 
     private static boolean shouldFireHandGun(EnumFireMode mode, boolean held, boolean rising, int heldTicks, int burstRemaining)

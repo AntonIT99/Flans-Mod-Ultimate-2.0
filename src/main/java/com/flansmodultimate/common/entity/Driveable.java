@@ -13,6 +13,7 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
@@ -1295,8 +1296,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected Vec3 getShootOrigin(ShootPoint point)
     {
-        Vec3 root = new Vec3(point.getRootPos().getPosition().x, point.getRootPos().getPosition().y, point.getRootPos().getPosition().z);
-        Vec3 offset = new Vec3(point.getOffPos().x, point.getOffPos().y, point.getOffPos().z);
+        Vec3 root = LegacyDriveableCoordinates.toLocal(point.getRootPos().getPosition());
+        Vec3 offset = LegacyDriveableCoordinates.toLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
             return localToWorld(root.x, root.y, root.z).add(localDirectionToWorld(offset));
@@ -1315,9 +1316,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         EnumDriveablePart part = point.getRootPos().getPart();
         if (fixed)
         {
-            Vec3 localDirection = new Vec3(fixedAngle.x, fixedAngle.y, fixedAngle.z);
+            Vec3 localDirection = LegacyDriveableCoordinates.toLocal(fixedAngle);
             if (localDirection.lengthSqr() < 1.0E-8D)
-                localDirection = new Vec3(1D, 0D, 0D);
+                localDirection = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
             if (isTurretMountedPart(part))
             {
                 float pitch = part == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
@@ -1327,7 +1328,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
         if (isTurretMountedPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
-        return getForwardVector();
+        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
 
     protected static boolean isTurretMountedPart(@Nullable EnumDriveablePart part)
@@ -1356,18 +1357,18 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (configType == null)
             return localToWorld(point.x, point.y, point.z);
-        com.flansmod.common.vector.Vector3f configuredOrigin = configType.getTurretOrigin();
-        Vec3 pivot = new Vec3(configuredOrigin.x, configuredOrigin.y, configuredOrigin.z);
+        Vec3 pivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
         Vec3 rotated = rotateTurretLocalDirection(point.subtract(pivot), yaw, pitch).add(pivot);
-        com.flansmod.common.vector.Vector3f configuredOffset = configType.getTurretOriginOffset();
-        Vec3 originOffset = rotateTurretLocalDirection(new Vec3(configuredOffset.x, configuredOffset.y, configuredOffset.z), yaw, 0F);
+        Vec3 configuredOffset = LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+        Vec3 originOffset = rotateTurretLocalDirection(configuredOffset, yaw, 0F);
         Vec3 local = rotated.add(originOffset);
         return localToWorld(local.x, local.y, local.z);
     }
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
-        return localDirectionToWorld(rotateTurretLocalDirection(new Vec3(1D, 0D, 0D), yaw, pitch)).normalize();
+        Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        return localDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
     }
 
     protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
@@ -1382,7 +1383,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
-                Vec3 localDirection = new Vec3(particle.x(), particle.y(), particle.z());
+                Vec3 localDirection = LegacyDriveableCoordinates.toLocal(
+                    new Vec3(particle.x(), particle.y(), particle.z()));
                 if (isTurretMountedPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
                 Vec3 direction = localDirectionToWorld(localDirection);
@@ -1423,7 +1425,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
             FireableGun fireable = new FireableGun(gun, ammo);
             LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 gunOrigin = new Vec3(info.getGunOrigin().x, info.getGunOrigin().y, info.getGunOrigin().z);
+            Vec3 gunOrigin = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
             Vec3 origin = isTurretMountedPart(info.getPart())
                 ? turretPointToWorld(gunOrigin, seat.getAimYaw(), info.getPart() == EnumDriveablePart.BARREL ? seat.getAimPitch() : 0F)
                 : localToWorld(gunOrigin.x, gunOrigin.y, gunOrigin.z);
@@ -1903,7 +1905,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         DriveablePosition wheel = configType == null ? null : configType.getWheelPosition(index);
         if (wheel == null)
             return position();
-        return localToWorld(wheel.getPosition().x, wheel.getPosition().y, wheel.getPosition().z);
+        Vec3 local = LegacyDriveableCoordinates.toLocal(wheel.getPosition());
+        return localToWorld(local.x, local.y, local.z);
     }
 
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
@@ -2456,7 +2459,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     /** Convert legacy model X/Z coordinates to the modern driveable basis. */
     protected static Vec3 rotateLegacyModelVector(@NotNull Vec3 vector)
     {
-        return new Vec3(vector.z, vector.y, -vector.x);
+        return LegacyDriveableCoordinates.toLocal(vector);
     }
 
     /** Mirrors a legacy-derived seat point across the driveable's local Z axis. */
@@ -2809,11 +2812,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             verticalCorrection += Mth.clamp(error * spring, -0.2D, Math.max(0.2D, step));
             ++contacts;
 
-            com.flansmod.common.vector.Vector3f local = definition.getPosition();
-            if (local.x >= 0F) { frontHeight += surface; frontX += local.x; ++frontCount; }
-            else { backHeight += surface; backX += local.x; ++backCount; }
-            if (local.z >= 0F) { rightHeight += surface; rightZ += local.z; ++rightCount; }
-            else { leftHeight += surface; leftZ += local.z; ++leftCount; }
+            Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
+            double forwardPosition = -local.z;
+            double rightPosition = local.x;
+            if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
+            else { backHeight += surface; backX += forwardPosition; ++backCount; }
+            if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }
+            else { leftHeight += surface; leftZ += rightPosition; ++leftCount; }
         }
         if (contacts == 0)
             return velocity.add(0D, stepCorrection, 0D);
@@ -2893,7 +2898,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             {
                 if (point == null)
                     continue;
-                Vec3 world = localToWorld(point.getPosition().x, point.getPosition().y, point.getPosition().z)
+                Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
+                Vec3 world = localToWorld(local.x, local.y, local.z)
                     .add(requestedVelocity.normalize().scale(0.2D));
                 BlockPos blockPos = BlockPos.containing(world);
                 if (level().getBlockState(blockPos).blocksMotion())
@@ -2914,12 +2920,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
         com.flansmod.common.vector.Vector3f size = configType.getHarvestBoxSize();
         com.flansmod.common.vector.Vector3f offset = configType.getHarvestBoxPos();
-        double sx = Math.min(8D, Math.abs(size.x));
+        double sx = Math.min(8D, Math.abs(size.z));
         double sy = Math.min(8D, Math.abs(size.y));
-        double sz = Math.min(8D, Math.abs(size.z));
+        double sz = Math.min(8D, Math.abs(size.x));
         if (sx < 0.01D || sy < 0.01D || sz < 0.01D)
             return;
-        Vec3 centre = localToWorld(offset.x + size.x * 0.5D, offset.y + size.y * 0.5D, offset.z + size.z * 0.5D);
+        Vec3 localCentre = LegacyDriveableCoordinates.toLocal(new Vec3(
+            offset.x + size.x * 0.5D, offset.y + size.y * 0.5D, offset.z + size.z * 0.5D));
+        Vec3 centre = localToWorld(localCentre.x, localCentre.y, localCentre.z);
         Vec3 extent = new Vec3(Math.abs(getForwardVector().x) * sx + Math.abs(getUpVector().x) * sy + Math.abs(getRightVector().x) * sz,
             Math.abs(getForwardVector().y) * sx + Math.abs(getUpVector().y) * sy + Math.abs(getRightVector().y) * sz,
             Math.abs(getForwardVector().z) * sx + Math.abs(getUpVector().z) * sy + Math.abs(getRightVector().z) * sz).scale(0.5D);

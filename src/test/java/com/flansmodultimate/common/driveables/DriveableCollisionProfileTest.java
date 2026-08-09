@@ -19,10 +19,10 @@ class DriveableCollisionProfileTest
         DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(mesh);
 
         assertNotNull(shape);
-        assertVertex(shape, 0, 1D, -2D, 3D);
-        assertVertex(shape, 2, 5D, -2D, 9D);
-        assertVertex(shape, 4, 1D, -7D, 3D);
-        assertVertex(shape, 6, 5D, -7D, 9D);
+        assertVertex(shape, 0, 3D, -2D, -1D);
+        assertVertex(shape, 2, 9D, -2D, -5D);
+        assertVertex(shape, 4, 3D, -7D, -1D);
+        assertVertex(shape, 6, 9D, -7D, -5D);
         assertTrue(shape.isConvex());
     }
 
@@ -36,8 +36,8 @@ class DriveableCollisionProfileTest
             mesh(new Vector3f(2F, 3F, 4F), new Vector3f(5F, 6F, 7F), modifiers));
 
         assertNotNull(shape);
-        assertVertex(shape, 0, 1.75D, -2.5D, 3.25D);
-        assertVertex(shape, 6, 8D, -10.25D, 12.5D);
+        assertVertex(shape, 0, 3.25D, -2.5D, -1.75D);
+        assertVertex(shape, 6, 12.5D, -10.25D, -8D);
     }
 
     @Test
@@ -73,9 +73,33 @@ class DriveableCollisionProfileTest
         double[] weights = new double[3];
         int[] triangle = DriveableCollisionProfile.TOP_TRIANGLES[0];
 
-        assertTrue(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, 3D, 1D, weights));
+        assertTrue(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, 1D, -3D, weights));
         assertEquals(1D, weights[0] + weights[1] + weights[2], EPSILON);
-        assertFalse(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, -1D, 1D, weights));
+        assertFalse(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, 1D, 1D, weights));
+
+    }
+
+    @Test
+    void rotatesLegacyPartBoxesIntoTheModernDriveableBasis()
+    {
+        CollisionBox box = new CollisionBox(100F, 16F, 32F, 48F, 64F, 80F, 96F);
+
+        assertEquals(3D, box.getX(), EPSILON);
+        assertEquals(2D, box.getY(), EPSILON);
+        assertEquals(-5D, box.getZ(), EPSILON);
+        assertEquals(6D, box.getWidth(), EPSILON);
+        assertEquals(5D, box.getHeight(), EPSILON);
+        assertEquals(4D, box.getDepth(), EPSILON);
+    }
+
+    @Test
+    void convertsLegacyPointsAndDirectionsConsistently()
+    {
+        var converted = LegacyDriveableCoordinates.toLocal(new Vector3f(2F, 3F, 5F));
+
+        assertEquals(5D, converted.x, EPSILON);
+        assertEquals(3D, converted.y, EPSILON);
+        assertEquals(-2D, converted.z, EPSILON);
     }
 
     private static CollisionMesh mesh(Vector3f position, Vector3f size, List<Vector3f> modifiers)

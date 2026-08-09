@@ -2,9 +2,18 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu.Page;
+import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.util.InventoryHelper;
+import com.flansmodultimate.util.ModUtils;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -15,9 +24,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** 1.7.10-style driveable hub, inventory, fuel and repair interface. */
 public final class DriveableInventoryScreen extends AbstractContainerScreen<DriveableInventoryMenu>
@@ -30,11 +43,12 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private static final int LEGACY_WIDTH = 176;
     private static final int LEGACY_HEIGHT = 180;
     private static final int LEGACY_X_OFFSET = 13;
-    private static final int REPAIR_ROWS = 3;
-
+    private static final int VISIBLE_INVENTORY_ROWS = 3;
     private final Map<Page, Button> pageButtons = new EnumMap<>(Page.class);
-    private final Button[] repairButtons = new Button[REPAIR_ROWS];
+    private final List<Button> repairButtons = new ArrayList<>();
     private int repairOffset;
+
+    private record GunRow(String name, GunType type) {}
 
     public DriveableInventoryScreen(DriveableInventoryMenu menu, Inventory inventory, Component title)
     {
@@ -64,7 +78,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         addPageButton(Page.CARGO, x, y, "Cargo");
         addPageButton(Page.GUNS, x + 62, y, "Guns");
         addPageButton(Page.FUEL, x, y + 22, "Fuel");
-        addPageButton(Page.MISSILES, x + 62, y + 22, "Missiles");
+        addPageButton(Page.MISSILES, x + 62, y + 22, missilePageName());
         addPageButton(Page.REPAIR, x, y + 44, "Repair");
         addPageButton(Page.BOMBS, x + 62, y + 44, "Bombs");
 
@@ -72,13 +86,14 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         // reachable without changing the six-button vehicle layout.
         addPageButton(Page.ADDONS, legacyLeft() + LEGACY_WIDTH + 4, y, "Addons");
 
-        for (int row = 0; row < REPAIR_ROWS; row++)
+        List<DriveablePart> repairParts = menu.getRepairParts();
+        for (int index = 0; index < repairParts.size(); index++)
         {
-            int capturedRow = row;
-            repairButtons[row] = addRenderableWidget(Button.builder(
+            int capturedIndex = index;
+            repairButtons.add(addRenderableWidget(Button.builder(
                     Component.translatable("gui.flansmodultimate.driveable.repair"),
-                    ignored -> repairVisiblePart(capturedRow))
-                .bounds(leftPos + 9, topPos + 23, 45, 20).build());
+                    ignored -> repairPart(capturedIndex))
+                .bounds(repairLeft() + 9, repairTop() + 23, 45, 20).build()));
         }
         refreshButtons();
     }
@@ -90,12 +105,19 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         pageButtons.put(page, addRenderableWidget(button));
     }
 
+    private String missilePageName()
+    {
+        return menu.getDriveable() != null && menu.getDriveable().getConfigType() instanceof PlaneType
+            ? "Missiles" : "Shells";
+    }
+
     private void selectPage(Page page)
     {
         if (!menu.hasPage(page))
             return;
         sendMenuButton(DriveableInventoryMenu.PAGE_BUTTON_BASE + page.ordinal());
         repairOffset = 0;
+        clearButtonFocus();
         refreshButtons();
     }
 
@@ -124,19 +146,19 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             entry.getValue().active = menu.hasPage(entry.getKey());
         }
 
+        for (Button button : repairButtons)
+            button.visible = false;
+        if (menu.getPage() != Page.REPAIR)
+            return;
+
         List<DriveablePart> parts = menu.getRepairParts();
-        int y = topPos + 23;
-        for (int row = 0; row < repairButtons.length; row++)
+        int end = visibleRepairEnd(parts);
+        int y = repairTop() + 23;
+        for (int index = repairOffset; index < end; index++)
         {
-            int index = repairOffset + row;
-            Button button = repairButtons[row];
-            if (menu.getPage() != Page.REPAIR || index >= parts.size())
-            {
-                button.visible = false;
-                continue;
-            }
+            Button button = repairButtons.get(index);
             DriveablePart part = parts.get(index);
-            button.setX(leftPos + 9);
+            button.setX(repairLeft() + 9);
             button.setY(y);
             button.visible = part.isDestroyed();
             button.active = button.visible && canAffordRepair(part);
@@ -154,12 +176,52 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             .getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine()));
     }
 
-    private void repairVisiblePart(int row)
+    private void repairPart(int index)
     {
         List<DriveablePart> parts = menu.getRepairParts();
-        int index = repairOffset + row;
         if (index >= 0 && index < parts.size() && parts.get(index).isDestroyed())
             sendMenuButton(DriveableInventoryMenu.REPAIR_BUTTON_BASE + parts.get(index).getType().ordinal());
+    }
+
+    private void clearButtonFocus()
+    {
+        setFocused(null);
+        pageButtons.values().forEach(button -> button.setFocused(false));
+    }
+
+    private int repairLeft()
+    {
+        return (width - 202) / 2;
+    }
+
+    private int repairTop()
+    {
+        return (height - repairPanelHeight(menu.getRepairParts())) / 2;
+    }
+
+    private int repairPanelHeight(List<DriveablePart> parts)
+    {
+        int y = 23;
+        int end = visibleRepairEnd(parts);
+        for (int index = repairOffset; index < end; index++)
+            y += parts.get(index).isDestroyed() ? 40 : 20;
+        return y + 8;
+    }
+
+    private int visibleRepairEnd(List<DriveablePart> parts)
+    {
+        int maximumHeight = Math.max(31, height - 20);
+        int used = 23;
+        int index = Mth.clamp(repairOffset, 0, parts.size());
+        while (index < parts.size())
+        {
+            int rowHeight = parts.get(index).isDestroyed() ? 40 : 20;
+            if (used + rowHeight + 8 > maximumHeight && index > repairOffset)
+                break;
+            used += rowHeight;
+            ++index;
+        }
+        return index;
     }
 
     @Override
@@ -168,6 +230,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        renderLegacyTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
@@ -191,12 +254,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         if (menu.getPage() == Page.GUNS)
         {
             int visible = Math.max(0, count - menu.getScrollRow());
-            for (int row = 0; row < Math.min(REPAIR_ROWS, visible); row++)
+            for (int row = 0; row < Math.min(VISIBLE_INVENTORY_ROWS, visible); row++)
                 graphics.blit(INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 176, 0, 37, 18);
+            renderGunRows(graphics, x, y);
         }
         else
         {
-            int rows = Math.min(REPAIR_ROWS, (count + 7) / 8);
+            int rows = Math.min(VISIBLE_INVENTORY_ROWS, (count + 7) / 8);
             for (int row = 0; row < rows; row++)
             {
                 int remaining = count - (menu.getScrollRow() + row) * 8;
@@ -227,6 +291,112 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         };
     }
 
+    private List<GunRow> gunRows()
+    {
+        if (menu.getDriveable() == null || menu.getDriveable().getConfigType() == null)
+            return List.of();
+        DriveableType type = menu.getDriveable().getConfigType();
+        List<GunRow> rows = new ArrayList<>();
+        for (int index = 0; index < type.getPilotGuns().size(); index++)
+        {
+            GunType gun = type.getPilotGuns().get(index).getType();
+            if (gun != null)
+                rows.add(new GunRow("Driver's gun " + (index + 1), gun));
+        }
+        type.getSeats().stream()
+            .filter(seat -> seat != null && seat.getGunType() != null && seat.getGunnerID() >= 0)
+            .sorted(Comparator.comparingInt(SeatInfo::getGunnerID))
+            .forEach(seat -> {
+                String name = seat.getGunName().isBlank() ? "Passenger gun " + (seat.getId() + 1) : seat.getGunName();
+                rows.add(new GunRow(name, seat.getGunType()));
+            });
+        return rows;
+    }
+
+    private void renderGunRows(GuiGraphics graphics, int x, int y)
+    {
+        List<GunRow> rows = gunRows();
+        for (int visible = 0; visible < VISIBLE_INVENTORY_ROWS; visible++)
+        {
+            int index = menu.getScrollRow() + visible;
+            if (index >= rows.size())
+                break;
+            GunRow row = rows.get(index);
+            int itemY = y + 25 + visible * 19;
+            ItemStack gunStack = ModUtils.getItemStack(row.type()).orElse(ItemStack.EMPTY);
+            if (!gunStack.isEmpty())
+                graphics.renderItem(gunStack, x + 10, itemY);
+            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(row.name(), 55)),
+                x + 53, y + 29 + visible * 19, 0x000000, false);
+
+            List<ShootableType> ammo = row.type().getAmmoTypes();
+            for (int ammoIndex = 0; ammoIndex < Math.min(3, ammo.size()); ammoIndex++)
+            {
+                ItemStack ammoStack = ModUtils.getItemStack(ammo.get(ammoIndex)).orElse(ItemStack.EMPTY);
+                if (!ammoStack.isEmpty())
+                    graphics.renderItem(ammoStack, x + 110 + ammoIndex * 16, itemY);
+            }
+        }
+    }
+
+    private List<BulletType> acceptedVehicleAmmo(EnumSet<EnumWeaponType> weaponTypes)
+    {
+        if (menu.getDriveable() == null || menu.getDriveable().getConfigType() == null)
+            return List.of();
+        DriveableType type = menu.getDriveable().getConfigType();
+        List<BulletType> candidates = type.isAcceptAllAmmo()
+            ? InfoType.getInfoTypes().values().stream().filter(BulletType.class::isInstance).map(BulletType.class::cast).toList()
+            : type.getAmmoTypes();
+        return candidates.stream()
+            .filter(type::isValidAmmo)
+            .filter(ammo -> weaponTypes.contains(ammo.getWeaponType()))
+            .distinct()
+            .sorted(Comparator.comparing(InfoType::getName, String.CASE_INSENSITIVE_ORDER))
+            .toList();
+    }
+
+    private void renderLegacyTooltip(GuiGraphics graphics, int mouseX, int mouseY)
+    {
+        if (hoveredSlot != null && hoveredSlot.hasItem())
+            return;
+        int x = legacyLeft();
+        int y = topPos;
+        List<Component> lines = new ArrayList<>();
+        if (menu.getPage() == Page.MISSILES && mouseX >= x + 10 && mouseX < x + 166
+            && mouseY >= y + 20 && mouseY < y + 90)
+        {
+            lines.add(Component.literal("[" + missilePageName() + "]"));
+            acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.MISSILE, EnumWeaponType.SHELL)).stream()
+                .map(ammo -> Component.literal("> " + ammo.getName())).forEach(lines::add);
+        }
+        else if (menu.getPage() == Page.BOMBS && mouseX >= x + 10 && mouseX < x + 166
+            && mouseY >= y + 20 && mouseY < y + 90)
+        {
+            lines.add(Component.literal("[Bombs / Mines]"));
+            acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.BOMB, EnumWeaponType.MINE)).stream()
+                .map(ammo -> Component.literal("> " + ammo.getName())).forEach(lines::add);
+        }
+        else if (menu.getPage() == Page.GUNS)
+        {
+            int row = (mouseY - (y + 25)) / 19;
+            List<GunRow> rows = gunRows();
+            int index = menu.getScrollRow() + row;
+            if (row >= 0 && row < VISIBLE_INVENTORY_ROWS && index < rows.size())
+            {
+                GunRow gun = rows.get(index);
+                if (mouseX >= x + 10 && mouseX < x + 27)
+                    lines.add(Component.literal(gun.type().getName()));
+                else if (mouseX >= x + 28 && mouseX < x + 46)
+                {
+                    lines.add(Component.literal("[Ammo]"));
+                    gun.type().getAmmoTypes().stream().map(ammo -> Component.literal("> " + ammo.getName())).forEach(lines::add);
+                }
+            }
+        }
+        if (!lines.isEmpty())
+            graphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+    }
+
     private void renderFuel(GuiGraphics graphics, int x, int y)
     {
         y += 19;
@@ -235,6 +405,12 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             return;
         float capacity = menu.getDriveable().getConfigType().getFuelTankSize();
         float fraction = capacity <= 0F ? 0F : Mth.clamp(menu.getDriveable().getFuel() / capacity, 0F, 1F);
+        int frame = menu.getDriveable().level() == null ? 0 : (int) (menu.getDriveable().level().getGameTime() / 5L % 4L);
+        ItemStack fuelStack = menu.getDriveable().getDriveableData().getFuelStack();
+        if (!fuelStack.isEmpty())
+            graphics.blit(FUEL_TEXTURE, x + 15, y + 44, 176 + 15 * frame, 0, 15, 16);
+        if (capacity > 0F && menu.getDriveable().getFuel() < capacity / 8F && frame > 1)
+            graphics.blit(FUEL_TEXTURE, x + 16, y + 25, 176, 16, 6, 6);
         int width = Math.round(129F * fraction);
         if (width > 0)
             graphics.blit(FUEL_TEXTURE, x + 26, y + 21, 0, 161, width, 15);
@@ -243,27 +419,30 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private void renderRepair(GuiGraphics graphics)
     {
         List<DriveablePart> parts = menu.getRepairParts();
-        graphics.blit(REPAIR_TEXTURE, leftPos, topPos, 0, 0, 202, 23);
+        int left = repairLeft();
+        int top = repairTop();
+        int end = visibleRepairEnd(parts);
+        graphics.blit(REPAIR_TEXTURE, left, top, 0, 0, 202, 23);
+        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
+            ? title.getString() : menu.getDriveable().getConfigType().getName();
+        graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
         int y = 23;
-        for (int row = 0; row < REPAIR_ROWS; row++)
+        for (int index = repairOffset; index < end; index++)
         {
-            int index = repairOffset + row;
-            if (index >= parts.size())
-                break;
             DriveablePart part = parts.get(index);
             boolean broken = part.isDestroyed();
             int height = broken ? 40 : 20;
-            graphics.blit(REPAIR_TEXTURE, leftPos, topPos + y, 0, 24, 202, height);
+            graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 24, 202, height);
 
             float health = part.getMaxHealth() <= 0F ? 0F : Mth.clamp(part.getHealth() / part.getMaxHealth(), 0F, 1F);
             graphics.setColor(1F - health, health, 0F, 1F);
-            graphics.blit(REPAIR_TEXTURE, leftPos + 111, topPos + y + 2, 0, 73, Math.round(70F * health), 16);
+            graphics.blit(REPAIR_TEXTURE, left + 111, top + y + 2, 0, 73, Math.round(70F * health), 16);
             graphics.setColor(1F, 1F, 1F, 1F);
 
             int nameX = broken ? 60 : 10;
             graphics.drawString(font, Component.literal(font.plainSubstrByWidth(part.getType().getName(), broken ? 48 : 95)),
-                leftPos + nameX, topPos + y + 6, 0xFFFFFF, false);
-            graphics.drawCenteredString(font, Math.round(health * 100F) + "%", leftPos + 148, topPos + y + 6, 0xFFFFFF);
+                left + nameX, top + y + 6, 0xFFFFFF, false);
+            graphics.drawCenteredString(font, Math.round(health * 100F) + "%", left + 148, top + y + 6, 0xFFFFFF);
 
             if (broken && menu.getDriveable() != null)
             {
@@ -271,15 +450,15 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                     menu.getDriveable().getDriveableData().getEngine());
                 for (int item = 0; item < Math.min(7, required.size()); item++)
                 {
-                    int itemX = leftPos + 57 + item * 18;
-                    int itemY = topPos + y + 22;
+                    int itemX = left + 57 + item * 18;
+                    int itemY = top + y + 22;
                     graphics.renderItem(required.get(item), itemX, itemY);
                     graphics.renderItemDecorations(font, required.get(item), itemX, itemY);
                 }
             }
             y += height;
         }
-        graphics.blit(REPAIR_TEXTURE, leftPos, topPos + y, 0, 65, 202, 8);
+        graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 65, 202, 8);
     }
 
     @Override
@@ -288,12 +467,10 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
             ? title.getString() : menu.getDriveable().getConfigType().getName();
         if (menu.getPage() == Page.REPAIR)
-        {
-            graphics.drawString(font, vehicleName + " - Repair", 7, 7, 0xFFFFFF, false);
             return;
-        }
 
-        String suffix = menu.getPage() == Page.MENU ? "" : " - " + menu.getPage().getDisplayName();
+        String pageName = menu.getPage() == Page.MISSILES ? missilePageName() : menu.getPage().getDisplayName();
+        String suffix = menu.getPage() == Page.MENU ? "" : " - " + pageName;
         int titleY = menu.getPage() == Page.FUEL ? 25 : 6;
         graphics.drawString(font, Component.literal(font.plainSubstrByWidth(vehicleName + suffix, 155)),
             LEGACY_X_OFFSET + 6, titleY, 0x404040, false);
@@ -327,13 +504,16 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 return true;
             }
         }
-        if (menu.getPage() == Page.REPAIR && mouseX > leftPos + 185 && mouseX < leftPos + 195
-            && mouseY > topPos + 5 && mouseY < topPos + 15)
+        if (menu.getPage() == Page.REPAIR && mouseX > repairLeft() + 185 && mouseX < repairLeft() + 195
+            && mouseY > repairTop() + 5 && mouseY < repairTop() + 15)
         {
             selectPage(Page.MENU);
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        if (handled && menu.getPage() != Page.MENU)
+            clearButtonFocus();
+        return handled;
     }
 
     @Override
@@ -341,8 +521,11 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     {
         if (menu.getPage() == Page.REPAIR)
         {
-            int max = Math.max(0, menu.getRepairParts().size() - REPAIR_ROWS);
-            repairOffset = Mth.clamp(repairOffset + (delta < 0D ? 1 : -1), 0, max);
+            List<DriveablePart> parts = menu.getRepairParts();
+            if (delta < 0D && visibleRepairEnd(parts) < parts.size())
+                ++repairOffset;
+            else if (delta > 0D && repairOffset > 0)
+                --repairOffset;
             refreshButtons();
             return true;
         }

@@ -44,12 +44,12 @@ public final class CollisionBox
     {
         float scale = modelUnits ? 1F / 16F : 1F;
         this.health = Math.max(0F, health);
-        this.x = x * scale;
+        this.x = (modelUnits ? z : x) * scale;
         this.y = y * scale;
-        this.z = z * scale;
-        this.width = Math.max(0F, width * scale);
+        this.z = (modelUnits ? -(x + width) : z) * scale;
+        this.width = Math.max(0F, (modelUnits ? depth : width) * scale);
         this.height = Math.max(0F, height * scale);
-        this.depth = Math.max(0F, depth * scale);
+        this.depth = Math.max(0F, (modelUnits ? width : depth) * scale);
         this.penetrationResistance = Math.max(0F, penetrationResistance);
         this.crewDamageMultiplier = Math.max(0F, crewDamageMultiplier);
     }

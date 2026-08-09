@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
@@ -83,14 +82,16 @@ public final class DriveableCollisionHelper
         if (discontinuity)
             previousPose.copyFrom(currentPose);
 
-        Vector3f pivot = type.getTurretOrigin();
-        Vector3f offset = type.getTurretOriginOffset();
-        double pivotX = pivot == null ? 0D : pivot.x;
-        double pivotY = pivot == null ? 0D : pivot.y;
-        double pivotZ = pivot == null ? 0D : pivot.z;
-        double offsetX = offset == null ? 0D : offset.x;
-        double offsetY = offset == null ? 0D : offset.y;
-        double offsetZ = offset == null ? 0D : offset.z;
+        Vec3 pivot = type.getTurretOrigin() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(type.getTurretOrigin());
+        Vec3 offset = type.getTurretOriginOffset() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset());
+        double pivotX = pivot.x;
+        double pivotY = pivot.y;
+        double pivotZ = pivot.z;
+        double offsetX = offset.x;
+        double offsetY = offset.y;
+        double offsetZ = offset.z;
 
         double queryMinX = Double.POSITIVE_INFINITY;
         double queryMinY = Double.POSITIVE_INFINITY;

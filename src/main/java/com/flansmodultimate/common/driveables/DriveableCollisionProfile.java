@@ -97,6 +97,8 @@ public final class DriveableCollisionProfile
         set(points, 7, pos.x - modifier.get(7).x, -pos.y - size.y - modifier.get(7).y,
             pos.z + size.z + modifier.get(7).z);
 
+        LegacyDriveableCoordinates.toLocalVertices(points);
+
         return allFinite(points) ? new Shape(mesh.part(), points) : null;
     }
 

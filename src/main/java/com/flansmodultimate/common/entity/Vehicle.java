@@ -5,6 +5,7 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketParticle;
@@ -83,17 +84,22 @@ public class Vehicle extends Driveable
         if (!isEngineActive())
             effectiveThrottle = 0F;
         double targetSpeed = effectiveThrottle * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
-        float steeringSign = wheelYaw == 0F ? 1F : Math.signum(wheelYaw);
-        float steeringModifier = steeringSign > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier();
-        double movingSign = Math.abs(effectiveThrottle) < 0.01F ? 1D : Math.signum(effectiveThrottle);
-        double turnScale = !isEngineActive() ? 0D : tracked ? 0.12D : Math.min(1D, Math.abs(targetSpeed) * 2.5D);
-        float yawDelta = (float) (wheelYaw * 0.045D * steeringModifier * turnScale * movingSign);
+        float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
+        float directionalThrottle = effectiveThrottle > 0F ? type.getMaxThrottle() : type.getMaxNegativeThrottle();
+        double throttleModifier = tracked ? 1D : legacyThrottleCurve(effectiveThrottle);
+        double velocityScale = (tracked ? 0.04D : 0.1D) * throttleModifier
+            * Math.max(0F, directionalThrottle) * getEngineSpeed();
+        double steeringScale = 0.1D * Math.max(0F, steeringModifier);
+        float yawDelta = isEngineActive()
+            ? (float) Math.toDegrees(wheelYaw * steeringScale * velocityScale) : 0F;
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         setOrientation(getYaw() + yawDelta, approach(getPitch(), 0F, 0.8F),
             type.isCanRoll() ? approach(getRoll(), 0F, 1F) : 0F);
 
-        Vec3 forward = new Vec3(getForwardVector().x, 0D, getForwardVector().z);
+        Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        Vec3 transformedForward = localDirectionToWorld(legacyForward);
+        Vec3 forward = new Vec3(transformedForward.x, 0D, transformedForward.z);
         if (forward.lengthSqr() > 1.0E-8D)
             forward = forward.normalize();
         Vec3 current = getDeltaMovement();
@@ -251,8 +257,10 @@ public class Vehicle extends Driveable
         {
             if (smoker == null || !isPartIntact(smoker.part()))
                 continue;
-            Vec3 origin = localToWorld(smoker.position().x, smoker.position().y, smoker.position().z);
-            Vec3 direction = localDirectionToWorld(new Vec3(smoker.direction().x, smoker.direction().y, smoker.direction().z));
+            Vec3 localOrigin = LegacyDriveableCoordinates.toLocal(smoker.position());
+            Vec3 localDirection = LegacyDriveableCoordinates.toLocal(smoker.direction());
+            Vec3 origin = localToWorld(localOrigin.x, localOrigin.y, localOrigin.z);
+            Vec3 direction = localDirectionToWorld(localDirection);
             int detonation = Mth.clamp(smoker.detonationTime(), 1, 20 * 60);
             if (detonation == 20)
                 PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKER, origin.x, origin.y, origin.z,
@@ -316,6 +324,13 @@ public class Vehicle extends Driveable
     private static float axis(int mask, int positive, int negative)
     {
         return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
+    }
+
+    private static double legacyThrottleCurve(float throttle)
+    {
+        double absolute = Math.abs(throttle);
+        return (2.4D * absolute - 2.5D * throttle * throttle + 0.5D * absolute * absolute * absolute)
+            * Math.signum(throttle);
     }
 
     private static float approach(float value, float target, float amount)
