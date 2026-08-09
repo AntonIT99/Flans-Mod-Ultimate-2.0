@@ -113,12 +113,18 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
+        // Legacy driveable renderers applied ModelScale to the complete model
+        // hierarchy. Keep pivots, attachment points and procedural track paths
+        // under the same transform instead of scaling every mesh independently.
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
         for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
         {
             model.render(driveable, state, poseStack,
                 buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, scale, renderPass);
+                packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
         }
+        poseStack.popPose();
         if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
             renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
         poseStack.popPose();

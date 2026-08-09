@@ -1160,15 +1160,20 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             selected = points;
 
         boolean fired = false;
+        List<ShootPoint> firedPoints = new ArrayList<>();
         for (ShootPoint point : selected)
         {
             if (point == null || !isPartIntact(point.getRootPos().getPart()))
                 continue;
-            fired |= fireFromPoint(point, weapon, secondary, getControllingEntity() instanceof LivingEntity living ? living : null);
+            boolean pointFired = fireFromPoint(point, weapon, secondary,
+                getControllingEntity() instanceof LivingEntity living ? living : null);
+            fired |= pointFired;
+            if (pointFired)
+                firedPoints.add(point);
         }
         if (fired)
         {
-            playBankEffects(secondary);
+            playBankEffects(secondary, firedPoints);
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
             if (configType.isIT1() && weapon == EnumWeaponType.MISSILE)
@@ -1365,17 +1370,25 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return localDirectionToWorld(rotateTurretLocalDirection(new Vec3(1D, 0D, 0D), yaw, pitch)).normalize();
     }
 
-    protected void playBankEffects(boolean secondary)
+    protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
     {
         String sound = secondary ? configType.getShootSoundSecondary() : configType.getShootSoundPrimary();
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
-        for (DriveableType.ShootParticle particle : particles)
+        for (ShootPoint point : firedPoints)
         {
-            Vec3 direction = localDirectionToWorld(new Vec3(particle.x(), particle.y(), particle.z()));
-            PacketHandler.sendToAllAround(new PacketParticle(particle.name(), getX(), getY() + getBbHeight() * 0.5D, getZ(),
-                direction.x, direction.y, direction.z), position(), 128D, level().dimension());
+            Vec3 origin = getShootOrigin(point);
+            EnumDriveablePart part = point.getRootPos().getPart();
+            for (DriveableType.ShootParticle particle : particles)
+            {
+                Vec3 localDirection = new Vec3(particle.x(), particle.y(), particle.z());
+                if (isTurretMountedPart(part))
+                    localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
+                Vec3 direction = localDirectionToWorld(localDirection);
+                PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z,
+                    direction.x, direction.y, direction.z), origin, 128D, level().dimension());
+            }
         }
     }
 
@@ -2391,19 +2404,53 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void emitConfiguredParticles()
     {
-        if (configType == null || tickCount % 2 != 0)
+        if (configType == null)
             return;
         configType.getEmitters().forEach(emitter -> {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
                 return;
-            float throttlePercent = getThrottle() * 100F;
-            if (throttlePercent < emitter.getMinThrottle() || throttlePercent > emitter.getMaxThrottle())
+            float throttle = getThrottle();
+            if (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle())
                 return;
-            Vec3 origin = localToWorld(emitter.getOrigin().x, emitter.getOrigin().y, emitter.getOrigin().z);
-            Vec3 direction = localDirectionToWorld(new Vec3(emitter.getDirection().x, emitter.getDirection().y, emitter.getDirection().z)).scale(emitter.getVelocity());
+
+            DriveablePart partState = driveableData == null ? null : driveableData.getPart(emitter.getPart());
+            if (partState == null || partState.getMaxHealth() <= 0F)
+                return;
+            float health = partState.getHealth() / partState.getMaxHealth();
+            if (health < emitter.getMinHealth() || health > emitter.getMaxHealth())
+                return;
+
+            Vec3 localOrigin = new Vec3(
+                emitter.getOrigin().x + (random.nextFloat() - 0.5F) * emitter.getExtents().x,
+                emitter.getOrigin().y + (random.nextFloat() - 0.5F) * emitter.getExtents().y,
+                emitter.getOrigin().z + (random.nextFloat() - 0.5F) * emitter.getExtents().z);
+            Vec3 localVelocity = new Vec3(emitter.getVelocityVector().x,
+                emitter.getVelocityVector().y, emitter.getVelocityVector().z);
+            localOrigin = rotateLegacyEmitterVector(localOrigin);
+            localVelocity = rotateLegacyEmitterVector(localVelocity);
+
+            Vec3 origin;
+            Vec3 direction;
+            if (isTurretMountedPart(emitter.getPart()))
+            {
+                float pitch = emitter.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
+                origin = turretPointToWorld(localOrigin, getTurretYaw(), pitch);
+                direction = localDirectionToWorld(rotateTurretLocalDirection(localVelocity, getTurretYaw(), pitch));
+            }
+            else
+            {
+                origin = localToWorld(localOrigin.x, localOrigin.y, localOrigin.z);
+                direction = localDirectionToWorld(localVelocity);
+            }
             PacketHandler.sendToAllAround(new PacketParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
                 direction.x, direction.y, direction.z), origin, 128D, level().dimension());
         });
+    }
+
+    /** Convert legacy model X/Z emitter coordinates to the modern driveable basis. */
+    protected static Vec3 rotateLegacyEmitterVector(@NotNull Vec3 vector)
+    {
+        return new Vec3(vector.z, vector.y, -vector.x);
     }
 
     public boolean bindOrCheckKey(@NotNull Player player, @NotNull ItemStack keyStack)
