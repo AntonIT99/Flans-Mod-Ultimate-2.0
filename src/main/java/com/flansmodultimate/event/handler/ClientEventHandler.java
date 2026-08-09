@@ -84,9 +84,9 @@ public final class ClientEventHandler
             float craftYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
             float craftPitch = Mth.lerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
             boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
-            float aimYaw = fixedPlaneView ? 0F : Mth.rotLerp(partialTick, seat.getPrevAimYaw(), seat.getAimYaw());
-            float aimPitch = fixedPlaneView ? 0F : Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
-            event.setYaw(Mth.wrapDegrees(craftYaw + aimYaw));
+            float aimYaw = fixedPlaneView ? 0F : seat.getViewAimYaw();
+            float aimPitch = fixedPlaneView ? 0F : seat.getViewAimPitch();
+            event.setYaw(Mth.wrapDegrees(craftYaw + 90F + aimYaw));
             event.setPitch(Mth.clamp(craftPitch + aimPitch, -89.9F, 89.9F));
         }
 

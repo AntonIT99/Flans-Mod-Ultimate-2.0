@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -22,7 +23,10 @@ public final class MouseInputHandler
     private static final float CONTROL_DEADZONE = 0.002F;
 
     private static int flightDriveableId = -1;
+    private static int viewSeatId = -1;
+    @Getter
     private static float flightPitchControl;
+    @Getter
     private static float flightRollControl;
 
     /** Recentres the virtual flight stick and validates its current mount once per client tick. */
@@ -33,8 +37,11 @@ public final class MouseInputHandler
         if (!isMouseFlightActive(player, driveable))
         {
             resetFlightControls();
+            captureMountedSeatView(player, driveable);
             return;
         }
+
+        viewSeatId = -1;
 
         if (flightDriveableId != driveable.getId())
         {
@@ -66,19 +73,15 @@ public final class MouseInputHandler
             return;
         }
 
+        // Vanilla has already applied mouse sensitivity to the mounted player's
+        // view. Vehicle seats consume that view delta in beginTick instead of
+        // relying on MouseHandler velocity, which may already have been reset.
+        if (player.getVehicle() instanceof Seat)
+            return;
+
         IControllable controllable = KeyInputHandler.resolveControllable(player);
         if (controllable != null)
             controllable.onMouseMoved(dx, dy);
-    }
-
-    public static float getFlightPitchControl()
-    {
-        return flightPitchControl;
-    }
-
-    public static float getFlightRollControl()
-    {
-        return flightRollControl;
     }
 
     public static void resetFlightControls()
@@ -86,6 +89,28 @@ public final class MouseInputHandler
         flightDriveableId = -1;
         flightPitchControl = 0F;
         flightRollControl = 0F;
+    }
+
+    private static void captureMountedSeatView(Player player, Driveable driveable)
+    {
+        if (!(player.getVehicle() instanceof Seat seat) || driveable == null
+            || seat.getDriveable() != driveable || seat.getRiddenByEntity() != player)
+        {
+            viewSeatId = -1;
+            return;
+        }
+
+        if (viewSeatId != seat.getId())
+        {
+            viewSeatId = seat.getId();
+            seat.synchronizeClientViewWithAim();
+            return;
+        }
+
+        float yawDelta = Mth.wrapDegrees(player.getYRot() - seat.getMountedViewYaw());
+        float pitchDelta = player.getXRot() - seat.getMountedViewPitch();
+        if (Math.abs(yawDelta) > 1.0E-4F || Math.abs(pitchDelta) > 1.0E-4F)
+            seat.applyClientAimDelta(yawDelta, pitchDelta);
     }
 
     private static boolean isMouseFlightActive(Player player, Driveable driveable)

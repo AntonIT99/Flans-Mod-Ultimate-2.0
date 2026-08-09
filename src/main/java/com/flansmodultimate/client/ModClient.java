@@ -284,7 +284,7 @@ public class ModClient
         if (!canUseScope(player))
             return;
 
-        if (currentScope == null)
+        if (currentScope == null && desiredScope != null)
         {
             // entering scope
             currentScope = desiredScope;
@@ -388,8 +388,8 @@ public class ModClient
             return;
 
         boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
-        float yaw = Mth.wrapDegrees(driveable.getYaw() + (fixedPlaneView ? 0F : seat.getAimYaw()));
-        float pitch = Mth.clamp(driveable.getPitch() + (fixedPlaneView ? 0F : seat.getAimPitch()), -89.9F, 89.9F);
+        float yaw = fixedPlaneView ? Mth.wrapDegrees(driveable.getYaw() - 90F) : seat.getMountedViewYaw();
+        float pitch = fixedPlaneView ? Mth.clamp(driveable.getPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);
         player.yHeadRot = yaw;
@@ -454,7 +454,7 @@ public class ModClient
         if (localPlayer == null)
             return;
 
-        double maxDistanceSq = 64 * 64;
+        double maxDistanceSq = 64D * 64D;
         for (Entity entity : level.entitiesForRendering())
         {
             if (entity.distanceToSqr(localPlayer) > maxDistanceSq)

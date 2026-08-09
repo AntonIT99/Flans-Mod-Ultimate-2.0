@@ -211,8 +211,8 @@ public final class KeyInputHandler
         float aimPitch;
         if (mount instanceof Seat seat)
         {
-            aimYaw = seat.getAimYaw();
-            aimPitch = seat.getAimPitch();
+            aimYaw = seat.getRequestedAimYaw();
+            aimPitch = seat.getRequestedAimPitch();
         }
         else
         {
@@ -228,11 +228,12 @@ public final class KeyInputHandler
         boolean changedMask = mask != lastInputMask;
         boolean changedAim = Math.abs(Mth.wrapDegrees(aimYaw - lastAimYaw)) >= AIM_CHANGE_EPSILON
             || Math.abs(aimPitch - lastAimPitch) >= AIM_CHANGE_EPSILON;
+        boolean pendingAim = mount instanceof Seat seat && seat.isAimRequestPending(AIM_CHANGE_EPSILON);
         boolean changedFlightControl = Math.abs(flightPitch - lastFlightPitch) >= FLIGHT_CONTROL_EPSILON
             || Math.abs(flightRoll - lastFlightRoll) >= FLIGHT_CONTROL_EPSILON || mouseControl != lastMouseControl;
         boolean keepAlive = ++ticksSinceInputPacket >= INPUT_KEEPALIVE_TICKS;
 
-        if (changedMount || changedMask || changedAim || changedFlightControl || keepAlive)
+        if (changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
         {
             PacketDriveableInput packet = mount instanceof Seat seat
                 ? new PacketDriveableInput(seat, mask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, ++inputSequence)

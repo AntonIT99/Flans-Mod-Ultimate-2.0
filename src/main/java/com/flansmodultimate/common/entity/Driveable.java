@@ -1877,12 +1877,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         SeatInfo info = configType == null ? null : configType.getSeat(index);
         if (info == null)
             return position().add(0D, getBbHeight() * 0.5D, 0D);
-        Vec3 localPosition = new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z);
+        Vec3 localPosition = rotateLegacyModelVector(
+            new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
         Vec3 worldPosition = isTurretMountedPart(info.getPart())
             ? turretPointToWorld(localPosition, getTurretYaw(), info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F)
             : localToWorld(localPosition.x, localPosition.y, localPosition.z);
 
-        Vec3 rotatedOffset = new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z);
+        Vec3 rotatedOffset = rotateLegacyModelVector(
+            new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
             float pitch = info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
@@ -2426,8 +2428,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 emitter.getOrigin().z + (random.nextFloat() - 0.5F) * emitter.getExtents().z);
             Vec3 localVelocity = new Vec3(emitter.getVelocityVector().x,
                 emitter.getVelocityVector().y, emitter.getVelocityVector().z);
-            localOrigin = rotateLegacyEmitterVector(localOrigin);
-            localVelocity = rotateLegacyEmitterVector(localVelocity);
+            localOrigin = rotateLegacyModelVector(localOrigin);
+            localVelocity = rotateLegacyModelVector(localVelocity);
 
             Vec3 origin;
             Vec3 direction;
@@ -2447,8 +2449,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         });
     }
 
-    /** Convert legacy model X/Z emitter coordinates to the modern driveable basis. */
-    protected static Vec3 rotateLegacyEmitterVector(@NotNull Vec3 vector)
+    /** Convert legacy model X/Z coordinates to the modern driveable basis. */
+    protected static Vec3 rotateLegacyModelVector(@NotNull Vec3 vector)
     {
         return new Vec3(vector.z, vector.y, -vector.x);
     }

@@ -43,6 +43,7 @@ public class Seat extends Entity implements IControllable
     private static final EntityDataAccessor<Integer> DATA_INPUT_MASK = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
 
     private static final int MAX_ORPHAN_TICKS = 100;
+    private static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -52,6 +53,10 @@ public class Seat extends Entity implements IControllable
     protected float prevAimYaw;
     @Getter
     protected float prevAimPitch;
+
+    private boolean clientViewAimInitialized;
+    private float clientViewAimYaw;
+    private float clientViewAimPitch;
 
     private int orphanTicks;
     private int localInputMask;
@@ -101,6 +106,43 @@ public class Seat extends Entity implements IControllable
     public float getAimPitch()
     {
         return entityData.get(DATA_AIM_PITCH);
+    }
+
+    public float getViewAimYaw()
+    {
+        return clientViewAimInitialized ? clientViewAimYaw : getAimYaw();
+    }
+
+    public float getViewAimPitch()
+    {
+        return clientViewAimInitialized ? clientViewAimPitch : getAimPitch();
+    }
+
+    public float getRequestedAimYaw()
+    {
+        return getViewAimYaw();
+    }
+
+    public float getRequestedAimPitch()
+    {
+        return getViewAimPitch();
+    }
+
+    public boolean isAimRequestPending(float epsilon)
+    {
+        return Math.abs(Mth.wrapDegrees(getRequestedAimYaw() - getAimYaw())) >= epsilon
+            || Math.abs(getRequestedAimPitch() - getAimPitch()) >= epsilon;
+    }
+
+    public float getMountedViewYaw()
+    {
+        return driveable == null ? getYRot() : Mth.wrapDegrees(driveable.getYaw() + 90F + getViewAimYaw());
+    }
+
+    public float getMountedViewPitch()
+    {
+        return driveable == null ? getXRot()
+            : Mth.clamp(driveable.getPitch() + getViewAimPitch(), -89.9F, 89.9F);
     }
 
     public int getInputMask()
@@ -197,6 +239,8 @@ public class Seat extends Entity implements IControllable
         {
             entityData.set(DATA_INPUT_MASK, 0);
         }
+        if (passenger == null && level().isClientSide)
+            clientViewAimInitialized = false;
     }
 
     private boolean resolveParent()
@@ -221,7 +265,7 @@ public class Seat extends Entity implements IControllable
         Vec3 position = driveable.getSeatWorldPosition(getSeatIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(Vec3.ZERO);
-        setYRot(driveable.getYaw() + getAimYaw());
+        setYRot(Mth.wrapDegrees(driveable.getYaw() + 90F + getAimYaw()));
         setXRot(getAimPitch());
     }
 
@@ -272,7 +316,11 @@ public class Seat extends Entity implements IControllable
     {
         if (!hasPassenger(passenger))
             return;
-        move.accept(passenger, getX(), getY() + getPassengersRidingOffset(), getZ());
+        // Legacy driveable seat coordinates already describe the rider anchor.
+        // EntityPlayer 1.7.10 contributed a -0.35 Y offset here, whereas the
+        // modern default mount offset raises the player by about 0.45 blocks.
+        double ridingOffset = passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
+        move.accept(passenger, getX(), getY() + ridingOffset, getZ());
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
     }
@@ -349,9 +397,10 @@ public class Seat extends Entity implements IControllable
         if (!Float.isFinite(yawDelta) || !Float.isFinite(pitchDelta))
             return;
 
+        initializeClientViewAim();
         SeatInfo info = seatInfo;
-        float yaw = getAimYaw() + yawDelta;
-        float pitch = getAimPitch() + pitchDelta;
+        float yaw = clientViewAimYaw + yawDelta;
+        float pitch = clientViewAimPitch + pitchDelta;
         if (info != null)
         {
             if (info.getMinYaw() <= -359.9F && info.getMaxYaw() >= 359.9F)
@@ -360,15 +409,29 @@ public class Seat extends Entity implements IControllable
                 yaw = Mth.clamp(Mth.wrapDegrees(yaw), info.getMinYaw(), info.getMaxYaw());
             pitch = Mth.clamp(pitch, info.getMinPitch(), info.getMaxPitch());
         }
-        entityData.set(DATA_AIM_YAW, yaw);
-        entityData.set(DATA_AIM_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
+        clientViewAimYaw = yaw;
+        clientViewAimPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+    }
+
+    public void synchronizeClientViewWithAim()
+    {
+        clientViewAimYaw = getAimYaw();
+        clientViewAimPitch = getAimPitch();
+        clientViewAimInitialized = true;
+    }
+
+    private void initializeClientViewAim()
+    {
+        if (!clientViewAimInitialized)
+            synchronizeClientViewWithAim();
     }
 
     /** Recentres the local view when entering mouse-flight mode. */
     public void resetClientAim()
     {
-        entityData.set(DATA_AIM_YAW, 0F);
-        entityData.set(DATA_AIM_PITCH, 0F);
+        clientViewAimYaw = 0F;
+        clientViewAimPitch = 0F;
+        clientViewAimInitialized = true;
     }
 
     @Override
