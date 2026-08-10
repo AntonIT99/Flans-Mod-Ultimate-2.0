@@ -10,6 +10,7 @@ import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -36,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
 {
+    private record ModelClassLocation(IContentProvider contentPack, String fileClassName, String actualClassName) {}
+
     public record ModelCacheKey(String modelClassName, @Nullable String typeShortName)
     {
         public ModelCacheKey
@@ -157,12 +160,14 @@ public final class ModelCache
                 model = new ModelDefaultArmor(armorType.getArmorItemType());
             else
             {
-                DynamicReference actualClassName = ContentManager.getModelReferences().get(type.getContentPack()).get(modelClassName);
-                if (actualClassName != null)
+                ModelClassLocation modelLocation = findModelClass(type.getContentPack(), modelClassName);
+                if (modelLocation != null)
                 {
                     try
                     {
-                        model = (IModelBase) ClassLoaderUtils.loadAndModifyClass(type.getContentPack(), modelClassName, actualClassName.get()).getConstructor().newInstance();
+                        model = (IModelBase) ClassLoaderUtils.loadAndModifyClass(modelLocation.contentPack(), modelLocation.fileClassName(), modelLocation.actualClassName()).getConstructor().newInstance();
+                        if (!modelLocation.contentPack().equals(type.getContentPack()))
+                            FlansMod.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelClassName, type, modelLocation.contentPack().getName());
                     }
                     catch (Exception | NoClassDefFoundError | ClassFormatError e)
                     {
@@ -196,5 +201,49 @@ public final class ModelCache
         }
 
         return model;
+    }
+
+    @Nullable
+    private static ModelClassLocation findModelClass(IContentProvider preferredContentPack, String modelClassName)
+    {
+        Map<String, DynamicReference> preferredReferences = ContentManager.getModelReferences().get(preferredContentPack);
+        DynamicReference preferredActualClassName = preferredReferences == null ? null : preferredReferences.get(modelClassName);
+        if (preferredActualClassName == null)
+            return null;
+
+        if (ClassLoaderUtils.hasClassFile(preferredContentPack, modelClassName))
+            return new ModelClassLocation(preferredContentPack, modelClassName, preferredActualClassName.get());
+
+        if (!ModClientConfig.get().searchModelsInOtherContentPacks)
+            return new ModelClassLocation(preferredContentPack, modelClassName, preferredActualClassName.get());
+
+        String legacyClassName = getLegacyClassName(modelClassName);
+
+        return ContentManager.getModelReferences().entrySet().stream()
+            .filter(entry -> !entry.getKey().equals(preferredContentPack))
+            .filter(entry -> ClassLoaderUtils.hasClassFile(entry.getKey(), modelClassName)
+                || legacyClassName != null && ClassLoaderUtils.hasClassFile(entry.getKey(), legacyClassName))
+            .sorted(Map.Entry.comparingByKey((left, right) -> left.getName().compareToIgnoreCase(right.getName())))
+            .map(entry -> new ModelClassLocation(entry.getKey(),
+                ClassLoaderUtils.hasClassFile(entry.getKey(), modelClassName) ? modelClassName : legacyClassName,
+                preferredActualClassName.get()))
+            .findFirst()
+            .orElse(new ModelClassLocation(preferredContentPack, modelClassName, preferredActualClassName.get()));
+    }
+
+    @Nullable
+    private static String getLegacyClassName(String modelClassName)
+    {
+        String prefix = "com.flansmod.client.model.";
+        if (!modelClassName.startsWith(prefix))
+            return null;
+
+        int packageEnd = modelClassName.indexOf('.', prefix.length());
+        if (packageEnd < 0)
+            return null;
+
+        String packPackage = modelClassName.substring(prefix.length(), packageEnd);
+        String simpleClassName = modelClassName.substring(packageEnd + 1);
+        return "com.flansmod." + packPackage + ".client.model." + simpleClassName;
     }
 }

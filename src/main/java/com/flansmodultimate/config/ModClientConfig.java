@@ -14,6 +14,7 @@ public final class ModClientConfig
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean loadAllModelsInCache;
+    public final boolean searchModelsInOtherContentPacks;
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
     public final int bulletRenderDistance;
@@ -47,6 +48,7 @@ public final class ModClientConfig
 
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
+    private static final ForgeConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
@@ -96,6 +98,9 @@ public final class ModClientConfig
                     Recommended: leave this OFF and let models load on-demand.
                     """)
                 .define("loadAllModelsInCache", false);
+        SEARCH_MODELS_IN_OTHER_CONTENT_PACKS = builder
+                .comment("When a model class is missing from its content pack, search for it in other loaded content packs")
+                .define("searchModelsInOtherContentPacks", true);
         SHOW_SHOOTABLE_DURABILITY_BARS = builder
                 .comment("Show a durability-style bar for shootable items when their current round item is not full")
                 .define("showShootableDurabilityBars", true);
@@ -174,6 +179,7 @@ public final class ModClientConfig
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
+        searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
@@ -267,7 +273,8 @@ public final class ModClientConfig
         if (old == null)
             return;
 
-        if (old.loadAllModelsInCache != get().loadAllModelsInCache && get().loadAllModelsInCache)
+        if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
+            || old.loadAllModelsInCache != get().loadAllModelsInCache && get().loadAllModelsInCache)
             ModelCache.reload();
     }
 }

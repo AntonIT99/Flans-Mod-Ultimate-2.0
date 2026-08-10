@@ -187,6 +187,28 @@ public final class ClassLoaderUtils
         }
     }
 
+    public static boolean hasClassFile(IContentProvider contentProvider, String className)
+    {
+        String relativeClassPath = className.replace('.', '/') + FileUtils.CLASS_EXTENSION;
+
+        if (contentProvider.isDirectory())
+            return Files.isRegularFile(contentProvider.getPath().resolve(relativeClassPath));
+
+        if (contentProvider.isArchive())
+        {
+            try (FileSystem fs = FileSystems.newFileSystem(contentProvider.getPath()))
+            {
+                return Files.isRegularFile(fs.getPath(relativeClassPath));
+            }
+            catch (IOException e)
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     public static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)
     {
         ClassReader cr = new ClassReader(classData);
