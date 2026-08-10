@@ -63,7 +63,7 @@ public final class TeamsLoadoutHubScreen extends Screen
 
     @Override public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
 
         if (state == null)

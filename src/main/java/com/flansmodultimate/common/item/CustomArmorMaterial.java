@@ -2,9 +2,8 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
-import net.minecraftforge.registries.RegistryObject;
-import org.jetbrains.annotations.NotNull;
-
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
@@ -12,63 +11,34 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import java.util.function.Supplier;
+import java.util.EnumMap;
+import java.util.List;
 
-public record CustomArmorMaterial(String name, int durability, int defense, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance, Supplier<Ingredient> repairMaterial) implements ArmorMaterial
+final class CustomArmorMaterial
 {
-    CustomArmorMaterial(ArmorType type)
+    private CustomArmorMaterial()
     {
-        this(type.getShortName(), type.getDurability(), type.getDefaultMinecraftArmorPoints(), type.getEnchantability(), FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryObject::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
     }
 
-    @Override
-    public int getDurabilityForType(@NotNull ArmorItem.Type slot)
+    static Holder<ArmorMaterial> create(ArmorType type)
     {
-        return durability;
-    }
+        EnumMap<ArmorItem.Type, Integer> defense = new EnumMap<>(ArmorItem.Type.class);
+        for (ArmorItem.Type armorType : ArmorItem.Type.values())
+            defense.put(armorType, type.getDefaultMinecraftArmorPoints());
 
-    @Override
-    public int getDefenseForType(@NotNull ArmorItem.Type slot)
-    {
-        return defense;
-    }
+        Holder<SoundEvent> equipSound = FlansMod.getSoundEvent(type.getEquipSound())
+            .<Holder<SoundEvent>>map(holder -> holder)
+            .orElse(SoundEvents.ARMOR_EQUIP_GENERIC);
 
-    @Override
-    public int getEnchantmentValue()
-    {
-        return enchantability;
-    }
-
-    @Override
-    @NotNull
-    public SoundEvent getEquipSound()
-    {
-        return equipSound;
-    }
-
-    @Override
-    @NotNull
-    public Ingredient getRepairIngredient()
-    {
-        return repairMaterial.get();
-    }
-
-    @Override
-    @NotNull
-    public String getName()
-    {
-        return name;
-    }
-
-    @Override
-    public float getToughness()
-    {
-        return toughness;
-    }
-
-    @Override
-    public float getKnockbackResistance()
-    {
-        return knockbackResistance;
+        ArmorMaterial material = new ArmorMaterial(
+            defense,
+            type.getEnchantability(),
+            equipSound,
+            () -> Ingredient.of(Items.IRON_INGOT),
+            List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, type.getShortName()))),
+            type.getToughness(),
+            0.0F
+        );
+        return Holder.direct(material);
     }
 }

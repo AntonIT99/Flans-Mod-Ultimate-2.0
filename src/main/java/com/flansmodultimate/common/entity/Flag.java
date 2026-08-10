@@ -5,7 +5,6 @@ import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,13 +62,13 @@ public final class Flag extends Entity implements ITeamObject
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_BASE, Optional.empty());
-        entityData.define(DATA_CARRIER, Optional.empty());
-        entityData.define(DATA_HOME, true);
-        entityData.define(DATA_TEAM, 0);
-        entityData.define(DATA_COLOUR, 0xFFFFFF);
+        builder.define(DATA_BASE, Optional.empty());
+        builder.define(DATA_CARRIER, Optional.empty());
+        builder.define(DATA_HOME, true);
+        builder.define(DATA_TEAM, 0);
+        builder.define(DATA_COLOUR, 0xFFFFFF);
     }
 
     @Override
@@ -221,9 +220,9 @@ public final class Flag extends Entity implements ITeamObject
 
     @Override
     @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
     {
-        return NetworkHooks.getEntitySpawningPacket(this);
+        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

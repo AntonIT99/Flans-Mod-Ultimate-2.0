@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -53,7 +53,7 @@ public class GunBoxMenu extends AbstractContainerMenu
         }
     }
 
-    public static GunBoxMenu createFromNetwork(int id, Inventory playerInv, FriendlyByteBuf buf)
+    public static GunBoxMenu createFromNetwork(int id, Inventory playerInv, RegistryFriendlyByteBuf buf)
     {
         Level level = playerInv.player.level();
         BlockPos pos = buf.readBlockPos();

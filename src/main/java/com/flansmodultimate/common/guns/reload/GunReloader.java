@@ -12,10 +12,11 @@ import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -53,7 +54,7 @@ public record GunReloader(GunItem item)
 
         // Pre-reload event (cancelable + can override needsAmmo)
         GunReloadEvent evt = new GunReloadEvent(player, gunStack);
-        MinecraftForge.EVENT_BUS.post(evt);
+        NeoForge.EVENT_BUS.post(evt);
         if (evt.isCanceled())
             return false;
 
@@ -71,7 +72,7 @@ public record GunReloader(GunItem item)
 
         // Compute plans
         String preferredAmmo = item.getPreferredAmmo(gunStack);
-        List<ReloadPlan> plans = computePlans(gunStack, player.getInventory(), allowed, preferredAmmo, forceReload);
+        List<ReloadPlan> plans = computePlans(gunStack, player.getInventory(), allowed, preferredAmmo, forceReload, level.registryAccess());
 
         if (plans.isEmpty())
             return false;
@@ -157,7 +158,7 @@ public record GunReloader(GunItem item)
         if (allowed == null || !allowed.contains(newShootable.getConfigType()))
             return;
 
-        ItemStack oldMag = gunItem.getAmmoItemStack(actualGunStack, ammoIndex);
+        ItemStack oldMag = gunItem.getAmmoItemStack(actualGunStack, ammoIndex, level.registryAccess());
 
         // Drop-on-reload when old mag is empty (null-safe)
         if (!pending.creative()
@@ -183,7 +184,7 @@ public record GunReloader(GunItem item)
         // Load new mag into gun
         ItemStack stackToLoad = newMag.copy();
         stackToLoad.setCount(1);
-        gunItem.setBulletItemStack(actualGunStack, stackToLoad, ammoIndex);
+        gunItem.setBulletItemStack(actualGunStack, stackToLoad, ammoIndex, level.registryAccess());
 
         // Consume inventory mag
         if (!pending.creative())
@@ -201,14 +202,14 @@ public record GunReloader(GunItem item)
         DigitalAmmoHelper.tryReloadFromDigitalAmmo(player, gunItem, actualGunStack, ammoSlots);
     }
 
-    private List<ReloadPlan> computeDigitalAmmoPlans(ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload)
+    private List<ReloadPlan> computeDigitalAmmoPlans(ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload, HolderLookup.Provider registries)
     {
         int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
         List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
 
         for (int i = 0; i < ammoSlots; i++)
         {
-            ItemStack current = item.getAmmoItemStack(gunStack, i);
+            ItemStack current = item.getAmmoItemStack(gunStack, i, registries);
             if (!needsSwap(current, forceReload))
                 continue;
 
@@ -225,7 +226,7 @@ public record GunReloader(GunItem item)
 
         for (int i = 0; i < ammoSlots; i++)
         {
-            ItemStack current = item.getAmmoItemStack(gunStack, i);
+            ItemStack current = item.getAmmoItemStack(gunStack, i, level.registryAccess());
             if (needsSwap(current, forceReload))
             {
                 plans.add(new ReloadPlan(i, -1));
@@ -241,7 +242,7 @@ public record GunReloader(GunItem item)
         return plans;
     }
 
-    private List<ReloadPlan> computePlans(ItemStack gunStack, Container inventory, List<ShootableType> allowedAmmoTypes, String preferredAmmo, boolean forceReload)
+    private List<ReloadPlan> computePlans(ItemStack gunStack, Container inventory, List<ShootableType> allowedAmmoTypes, String preferredAmmo, boolean forceReload, HolderLookup.Provider registries)
     {
         int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
         List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
@@ -260,7 +261,7 @@ public record GunReloader(GunItem item)
 
         for (int i = 0; i < ammoSlots; i++)
         {
-            ItemStack current = item.getAmmoItemStack(gunStack, i);
+            ItemStack current = item.getAmmoItemStack(gunStack, i, registries);
             if (!needsSwap(current, forceReload))
                 continue;
 

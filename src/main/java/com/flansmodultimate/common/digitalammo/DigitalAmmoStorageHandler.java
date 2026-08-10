@@ -2,9 +2,10 @@ package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,7 +13,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public final class DigitalAmmoStorageHandler
 {
     private static final String NBT_DIGITAL_AMMO = "flansmod_digital_ammo";

@@ -29,8 +29,15 @@ sourceSets.main.resources {
 
 sourceSets {
     packs {
-        java.srcDir('src/packs/java')
-        resources.srcDir('src/packs/resources')
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+    test {
+        // ModDevGradle attaches the remapped Minecraft/NeoForge artifacts to
+        // the main source set. Unit tests exercise classes with Minecraft API
+        // signatures, so they need the same remapped classpaths as main.
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
     }
 }
 
@@ -126,7 +133,6 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'org.spongepowered:mixin:0.8.6:processor'
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
@@ -134,9 +140,12 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // Local NeoForge build used by the development runs and compilation.
-    implementation files('libs/CustomNPCs-Unofficial-NeoForge-1.21.1.20251230.jar')
+    // Optional compatibility mod used only in local development runs. Keeping
+    // it off the published/compile API prevents unrelated consumers from
+    // inheriting this local file dependency.
+    localRuntime files('libs/CustomNPCs-Unofficial-NeoForge-1.21.1.20251230.jar')
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -177,6 +186,9 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+            mod_id_packs           : mod_id_packs,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -189,6 +201,27 @@ sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
 
+var generatePacksModMetadata = tasks.register("generatePacksModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_id_packs           : mod_id_packs,
+            mod_name_packs         : mod_name_packs,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            packs_version          : packs_version,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/packs/templates"
+    into "build/generated/sources/packsModMetadata"
+}
+sourceSets.packs.resources.srcDir generatePacksModMetadata
+neoForge.ideSyncTask generatePacksModMetadata
+
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
@@ -198,13 +231,14 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url = uri("${project.projectDir}/repo")
         }
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.compilerArgs.addAll(['-Xlint:deprecation', '-Xlint:unchecked'])
 }
 
 tasks.named('jar', Jar).configure {
@@ -216,8 +250,7 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                'MixinConfigs'            : "${mod_id}.mixins.json"
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }

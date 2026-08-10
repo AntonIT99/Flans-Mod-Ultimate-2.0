@@ -3,16 +3,13 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -28,7 +25,6 @@ public class ItemHolderBlockEntity extends BlockEntity
     public static final String NBT_ITEMS = "items";
     public static final String NBT_TYPE = "type";
 
-    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
     private ItemHolderType type;
 
     private final ItemStackHandler items = new ItemStackHandler(1)
@@ -47,44 +43,27 @@ public class ItemHolderBlockEntity extends BlockEntity
             type = itemHolderBlock.getConfigType();
     }
 
-    @Override
-    public void onLoad()
-    {
-        super.onLoad();
-        itemCap = LazyOptional.of(() -> items);
-    }
-
-    @Override
-    public void invalidateCaps()
-    {
-        super.invalidateCaps();
-        itemCap.invalidate();
-    }
-
-    @Override
     @NotNull
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side)
+    public IItemHandler getItemHandler()
     {
-        if (cap == ForgeCapabilities.ITEM_HANDLER)
-            return itemCap.cast();
-        return super.getCapability(cap, side);
+        return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
-        tag.put(NBT_ITEMS, items.serializeNBT());
+        super.saveAdditional(tag, registries);
+        tag.put(NBT_ITEMS, items.serializeNBT(registries));
         ItemHolderType holderType = getItemHolderType();
         if (holderType != null)
             tag.putString(NBT_TYPE, holderType.getShortName());
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.load(tag);
-        items.deserializeNBT(tag.getCompound(NBT_ITEMS));
+        super.loadAdditional(tag, registries);
+        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
         if (tag.contains(NBT_TYPE))
             type = ItemHolderType.getItemHolder(tag.getString(NBT_TYPE));
     }
@@ -119,17 +98,17 @@ public class ItemHolderBlockEntity extends BlockEntity
 
     @Override
     @NotNull
-    public CompoundTag getUpdateTag()
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag);
+        saveAdditional(tag, registries);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag)
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries)
     {
-        load(tag);
+        loadAdditional(tag, registries);
     }
 
     @Nullable
@@ -140,11 +119,11 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet)
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries)
     {
         CompoundTag tag = packet.getTag();
         if (tag != null)
-            load(tag);
+            loadAdditional(tag, registries);
     }
 
     private void setChangedAndSync()

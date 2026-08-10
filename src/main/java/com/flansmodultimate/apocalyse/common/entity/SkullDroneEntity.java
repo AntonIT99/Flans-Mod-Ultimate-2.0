@@ -89,9 +89,10 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    @SuppressWarnings("deprecation") // NeoForge marks this as override-only; external callers use EventHooks.
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData)
     {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         equipDefault(level.getRandom());
         return result;
     }

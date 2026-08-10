@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.block;
 import com.flansmodultimate.apocalyse.common.block.entity.PowerCubeBlockEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseBossFightManager;
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
+import com.mojang.serialization.MapCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,11 +28,18 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PowerCubeBlock extends BaseEntityBlock
 {
+    public static final MapCodec<PowerCubeBlock> CODEC = simpleCodec(PowerCubeBlock::new);
     private static final VoxelShape SHAPE = box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 
     public PowerCubeBlock(BlockBehaviour.Properties properties)
     {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec()
+    {
+        return CODEC;
     }
 
     @Nullable

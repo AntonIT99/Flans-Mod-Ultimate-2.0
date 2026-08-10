@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.world;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -17,6 +18,8 @@ import java.util.UUID;
 
 public class ApocalypseSavedData extends SavedData
 {
+    private static final Factory<ApocalypseSavedData> FACTORY =
+        new Factory<>(ApocalypseSavedData::new, ApocalypseSavedData::load);
     private static final String DATA_NAME = "flansmodultimate_apocalypse";
     private static final String NBT_ENTRY_POINTS = "entry_points";
     private static final String NBT_DEATH_POINTS = "death_points";
@@ -32,10 +35,10 @@ public class ApocalypseSavedData extends SavedData
     {
         ServerLevel overworld = level.getServer().getLevel(Level.OVERWORLD);
         ServerLevel storageLevel = overworld != null ? overworld : level;
-        return storageLevel.getDataStorage().computeIfAbsent(ApocalypseSavedData::load, ApocalypseSavedData::new, DATA_NAME);
+        return storageLevel.getDataStorage().computeIfAbsent(FACTORY, DATA_NAME);
     }
 
-    public static ApocalypseSavedData load(CompoundTag tag)
+    public static ApocalypseSavedData load(CompoundTag tag, HolderLookup.Provider registries)
     {
         ApocalypseSavedData data = new ApocalypseSavedData();
         ListTag list = tag.getList(NBT_ENTRY_POINTS, Tag.TAG_COMPOUND);
@@ -82,7 +85,7 @@ public class ApocalypseSavedData extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         ListTag list = new ListTag();
         for (Map.Entry<UUID, BlockPos> entry : entryPoints.entrySet())

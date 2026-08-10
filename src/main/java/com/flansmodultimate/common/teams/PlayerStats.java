@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
@@ -257,7 +258,7 @@ public final class PlayerStats
         rewardBoxes.clear();
     }
 
-    public CompoundTag save()
+    public CompoundTag save(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
         tag.putUUID(NBT_ID, playerId); tag.putString(NBT_NAME, lastKnownName); tag.putInt(NBT_KILLS, kills); tag.putInt(NBT_DEATHS, deaths);
@@ -272,7 +273,7 @@ public final class PlayerStats
             CompoundTag profile = new CompoundTag();
             profile.putString(NBT_POOL, pool);
             ListTag values = new ListTag();
-            loadouts.forEach(loadout -> values.add(loadout.save()));
+            loadouts.forEach(loadout -> values.add(loadout.save(registries)));
             profile.put(NBT_LOADOUTS, values);
             profiles.add(profile);
         });
@@ -284,7 +285,7 @@ public final class PlayerStats
         return tag;
     }
 
-    public static PlayerStats load(CompoundTag tag)
+    public static PlayerStats load(CompoundTag tag, HolderLookup.Provider registries)
     {
         PlayerStats result = new PlayerStats(tag.getUUID(NBT_ID), tag.getString(NBT_NAME));
         result.kills = tag.getInt(NBT_KILLS); result.deaths = tag.getInt(NBT_DEATHS); result.experience = tag.getInt(NBT_EXPERIENCE);
@@ -298,7 +299,8 @@ public final class PlayerStats
         {
             CompoundTag profile = (CompoundTag) rawProfile;
             List<PlayerLoadout> loadouts = new ArrayList<>();
-            for (Tag rawLoadout : profile.getList(NBT_LOADOUTS, Tag.TAG_COMPOUND)) loadouts.add(PlayerLoadout.load((CompoundTag) rawLoadout));
+            for (Tag rawLoadout : profile.getList(NBT_LOADOUTS, Tag.TAG_COMPOUND))
+                loadouts.add(PlayerLoadout.load((CompoundTag) rawLoadout, registries));
             while (loadouts.size() < LoadoutPool.LOADOUT_COUNT) loadouts.add(new PlayerLoadout());
             result.loadoutProfiles.put(profile.getString(NBT_POOL), new ArrayList<>(loadouts.subList(0, LoadoutPool.LOADOUT_COUNT)));
         }

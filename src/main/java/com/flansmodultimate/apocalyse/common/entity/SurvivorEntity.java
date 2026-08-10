@@ -83,9 +83,10 @@ public class SurvivorEntity extends PathfinderMob implements RangedAttackMob
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    @SuppressWarnings("deprecation") // NeoForge marks this as override-only; external callers use EventHooks.
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData)
     {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
+        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         equipDefault(level.getRandom());
         return result;
     }
@@ -98,11 +99,10 @@ public class SurvivorEntity extends PathfinderMob implements RangedAttackMob
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull DamageSource source, int looting, boolean recentlyHit)
+    protected void dropCustomDeathLoot(@NotNull net.minecraft.server.level.ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
     {
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
-        if (!level().isClientSide)
-            ApocalypseLoot.dropSurvivorLoot(this);
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        ApocalypseLoot.dropSurvivorLoot(this);
     }
 
     @Override

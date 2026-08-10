@@ -21,12 +21,11 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -70,7 +69,9 @@ public final class ClientHudOverlays
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
 
-    public static final IGuiOverlay SCOPE = (gui, g, partialTick, sw, sh) -> {
+    public static final LayeredDraw.Layer SCOPE = (g, deltaTracker) -> {
+        int sw = g.guiWidth();
+        int sh = g.guiHeight();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
@@ -88,7 +89,9 @@ public final class ClientHudOverlays
             renderScopeOverlay(g, scopeTexture, sw, sh);
     };
 
-    public static final IGuiOverlay ARMOR = (gui, g, partialTick, sw, sh) -> {
+    public static final LayeredDraw.Layer ARMOR = (g, deltaTracker) -> {
+        int sw = g.guiWidth();
+        int sh = g.guiHeight();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
@@ -116,7 +119,10 @@ public final class ClientHudOverlays
         RenderSystem.enableCull();
     };
 
-    public static final IGuiOverlay HUD = (gui, g, partialTick, sw, sh) -> {
+    public static final LayeredDraw.Layer HUD = (g, deltaTracker) -> {
+        int sw = g.guiWidth();
+        int sh = g.guiHeight();
+        float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
         renderAAGunHud(g, partialTick, sw);
         renderPlayerAmmo(g, sw, sh);
         renderDigitalAmmo(g, sw, sh);
@@ -190,15 +196,18 @@ public final class ClientHudOverlays
         return width;
     }
 
-    public static final IGuiOverlay DAMAGE_ABSORPTION = (gui, g, partialTick, sw, sh) -> {
-        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || gui.getMinecraft().options.hideGui || !gui.shouldDrawSurvivalElements())
+    public static final LayeredDraw.Layer DAMAGE_ABSORPTION = (g, deltaTracker) -> {
+        Minecraft minecraft = Minecraft.getInstance();
+            if (!ModClientConfig.get().showArmorDamageAbsorptionBar || minecraft.options.hideGui
+                || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer())
             return;
 
-        LocalPlayer player = gui.getMinecraft().player;
+        int sw = g.guiWidth();
+        int sh = g.guiHeight();
+        LocalPlayer player = minecraft.player;
         boolean vanillaArmorVisible = player != null && player.getArmorValue() > 0;
-        int top = sh - gui.leftHeight + (vanillaArmorVisible ? 0 : 10);
-        if (renderDamageAbsorptionArmorBar(player, g, sw / 2 - 91, top) && vanillaArmorVisible)
-            gui.leftHeight += 10;
+        int top = sh - (vanillaArmorVisible ? 59 : 49);
+        renderDamageAbsorptionArmorBar(player, g, sw / 2 - 91, top);
     };
 
     //TODO: FMU Style hit marker
@@ -313,7 +322,7 @@ public final class ClientHudOverlays
 
             int xAccum = 0;
 
-            List<ItemStack> bulletStacks = gunItem.getBulletItemStackList(stack);
+            List<ItemStack> bulletStacks = gunItem.getBulletItemStackList(stack, Minecraft.getInstance().level.registryAccess());
 
             java.util.Map<ShootableItem, Integer> simpleAmmoTotals = new java.util.LinkedHashMap<>();
             java.util.Map<ShootableItem, ItemStack> simpleAmmoSamples = new java.util.LinkedHashMap<>();

@@ -4,7 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -182,7 +182,7 @@ public class SkullBossEntity extends Monster
             if (drone == null)
                 continue;
             drone.moveTo(getX() + random.nextGaussian() * 4.0D, getY() - 2.0D + random.nextDouble() * 4.0D, getZ() + random.nextGaussian() * 4.0D, random.nextFloat() * 360.0F, 0.0F);
-            drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null, null);
+            drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
             serverLevel.addFreshEntity(drone);
         }
     }
@@ -216,7 +216,7 @@ public class SkullBossEntity extends Monster
 
     private static SoundEvent resolveSound(String name, SoundEvent fallback)
     {
-        return FlansMod.getSoundEvent(name).map(RegistryObject::get).orElse(fallback);
+        return FlansMod.getSoundEvent(name).map(DeferredHolder::get).orElse(fallback);
     }
 
     @Override
@@ -229,9 +229,9 @@ public class SkullBossEntity extends Monster
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull DamageSource source, int looting, boolean recentlyHit)
+    protected void dropCustomDeathLoot(@NotNull net.minecraft.server.level.ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
     {
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        super.dropCustomDeathLoot(level, source, recentlyHit);
         spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(3)));
         spawnAtLocation(new ItemStack(Items.GUNPOWDER, 16 + random.nextInt(16)));
         if (random.nextBoolean())

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.block;
 
+import com.mojang.serialization.MapCodec;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
@@ -11,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,6 +38,9 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
         super(properties);
         this.mode = mode;
     }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(this); }
 
     @Nullable
     @Override
@@ -76,8 +81,23 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
 
     @NotNull
     @Override
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                 @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                                               @NotNull Player player, @NotNull BlockHitResult hit)
+    {
+        return interact(level, pos, player, InteractionHand.MAIN_HAND);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+                                               @NotNull BlockPos pos, @NotNull Player player,
+                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    {
+        InteractionResult result = interact(level, pos, player, hand);
+        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult interact(Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!(level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner))
             return InteractionResult.PASS;

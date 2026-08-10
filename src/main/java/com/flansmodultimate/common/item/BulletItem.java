@@ -31,7 +31,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
@@ -43,7 +43,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         }
         else
         {
-            super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+            super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
 
             if (configType.hasDifferentRounds())
             {

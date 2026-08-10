@@ -94,4 +94,14 @@ public abstract class ModelBase extends Model implements IModelBase
             modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
     }
+
+    @Override
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int packedColor)
+    {
+        float alpha = ((packedColor >>> 24) & 0xFF) / 255F;
+        float red = ((packedColor >>> 16) & 0xFF) / 255F;
+        float green = ((packedColor >>> 8) & 0xFF) / 255F;
+        float blue = (packedColor & 0xFF) / 255F;
+        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
 }

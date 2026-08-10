@@ -11,11 +11,12 @@ import com.flansmodultimate.common.types.InfoType;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +59,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))
             return true;
 
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -71,7 +72,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("plane"))
             return true;
 
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -180,7 +181,7 @@ public final class ModUtils
     {
         if (infoType != null && infoType.getType().isHasItem())
         {
-            return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
+            return Optional.ofNullable(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
         }
         return Optional.empty();
     }
@@ -226,7 +227,7 @@ public final class ModUtils
         if (rl == null)
             return Optional.empty();
 
-        return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl));
+        return Optional.ofNullable(BuiltInRegistries.ITEM.get(rl));
     }
 
     private static boolean isInteger(String s)
@@ -253,7 +254,7 @@ public final class ModUtils
         }
         else
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.BLOCKS::getValue).map(Block::defaultBlockState);
+            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
         }
     }
 
@@ -266,13 +267,13 @@ public final class ModUtils
         }
         else
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.ITEMS::getValue).map(ItemStack::new);
+            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.ITEM::get).map(ItemStack::new);
         }
     }
 
     public static boolean isGlass(BlockState state)
     {
-        return state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
+        return state.is(Tags.Blocks.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
     }
 
     /**
@@ -301,7 +302,7 @@ public final class ModUtils
             return false;
 
         BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
-        MinecraftForge.EVENT_BUS.post(breakEvent);
+        NeoForge.EVENT_BUS.post(breakEvent);
 
         if (breakEvent.isCanceled())
             return false;
@@ -323,7 +324,7 @@ public final class ModUtils
 
     public static String getItemLocalizedName(String itemId)
     {
-        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
         if (item != null)
             return item.getDescription().getString();
         return itemId;

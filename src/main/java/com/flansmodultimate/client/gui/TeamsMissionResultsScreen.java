@@ -30,7 +30,7 @@ public final class TeamsMissionResultsScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics); int left = width / 2 - 128;
+        renderBackground(graphics, mouseX, mouseY, partialTick); int left = width / 2 - 128;
 
         int top = height / 2 - 100;
         graphics.blit(FlansMod.teamsMissionResultsGuiTexture, left, top, 0, 0, 256, 200, 512, 256);

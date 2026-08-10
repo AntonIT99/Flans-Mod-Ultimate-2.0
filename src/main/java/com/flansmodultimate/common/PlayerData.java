@@ -11,7 +11,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 

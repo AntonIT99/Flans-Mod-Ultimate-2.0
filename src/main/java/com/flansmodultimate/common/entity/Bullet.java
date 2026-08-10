@@ -24,7 +24,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -238,7 +238,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (closestEntity != null)
         {
             BulletLockOnEvent bulletLockOnEvent = new BulletLockOnEvent(this, closestEntity);
-            MinecraftForge.EVENT_BUS.post(bulletLockOnEvent);
+            NeoForge.EVENT_BUS.post(bulletLockOnEvent);
             if (!bulletLockOnEvent.isCanceled())
                 lockedOnTo = bulletLockOnEvent.getLockedOnTo();
         }
@@ -253,7 +253,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         if (designated == null || !canLockOnEntity(designated) || !isUsableLockOnTarget(designated))
             return;
         BulletLockOnEvent event = new BulletLockOnEvent(this, designated);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         if (!event.isCanceled())
             lockedOnTo = event.getLockedOnTo();
     }
@@ -296,7 +296,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
         buf.writeInt(firedShot.getShot());
@@ -309,7 +309,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         try
         {
@@ -510,7 +510,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     protected void updatePingOfShooter(Level level)
     {
         if (!level.isClientSide)
-            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = player.latency);
+            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = player.connection.latency());
     }
 
     protected void handleSubmunitionsTimers()
@@ -653,7 +653,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         for (BulletHit bulletHit : hits)
         {
             BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
-            MinecraftForge.EVENT_BUS.post(bulletHitEvent);
+            NeoForge.EVENT_BUS.post(bulletHitEvent);
             if (bulletHitEvent.isCanceled())
                 continue;
 

@@ -13,7 +13,7 @@ import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -122,7 +123,7 @@ public class FlanExplosion extends Explosion
         affectedBlockPositions = Lists.newArrayList();
         damageCalculator = (explosive == null) ? new ExplosionDamageCalculator() : new EntityBasedExplosionDamageCalculator(explosive);
 
-        if (!ForgeEventFactory.onExplosionStart(level, this))
+        if (!EventHooks.onExplosionStart(level, this))
         {
             explode();
             finalizeExplosion(true);
@@ -312,8 +313,8 @@ public class FlanExplosion extends Explosion
     {
         hitPlayers.clear();
 
-        List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !e.ignoreExplosion());
-        ForgeEventFactory.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
+        List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !e.ignoreExplosion(this));
+        EventHooks.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
 
         for (Entity e : entities)
         {
@@ -469,7 +470,11 @@ public class FlanExplosion extends Explosion
         // Knockback: also scaled-distance based
         double kb = falloff * seen * KNOCKBACK_MULTIPLAYER;
         if (e instanceof LivingEntity living)
-            kb = ProtectionEnchantment.getExplosionKnockbackAfterDampener(living, kb);
+        {
+            int blastProtectionLevel = EnchantmentHelper.getEnchantmentLevel(
+                level.registryAccess().holderOrThrow(Enchantments.BLAST_PROTECTION), living);
+            kb *= Math.max(0.0, 1.0 - blastProtectionLevel * 0.15);
+        }
 
         // Knockback vector
         Vec3 kbVec = direction.scale(kb);

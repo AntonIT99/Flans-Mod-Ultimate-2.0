@@ -1,7 +1,7 @@
 package com.flansmod.client.tmt;
 
 import com.flansmodultimate.FlansMod;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

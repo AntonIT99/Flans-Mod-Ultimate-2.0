@@ -8,12 +8,13 @@ import com.flansmodultimate.apocalyse.common.world.ApocalypseWorldgen;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.Collections;
 
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = FlansMod.MOD_ID)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonEventHandler
 {
@@ -37,10 +38,9 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event)
+    public static void onServerTick(ServerTickEvent.Post event)
     {
-        if (event.phase != TickEvent.Phase.END
-            || event.getServer() == null
+        if (event.getServer() == null
             || !ModApocalypseConfig.apocalypseDimensionEnabled()
             || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;

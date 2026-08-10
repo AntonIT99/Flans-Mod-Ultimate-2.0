@@ -7,11 +7,12 @@ import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = FlansMod.MOD_ID)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonEventHandler
 {

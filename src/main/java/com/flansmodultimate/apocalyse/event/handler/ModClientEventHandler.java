@@ -7,21 +7,55 @@ import com.flansmodultimate.apocalyse.client.render.PowerCubeRenderer;
 import com.flansmodultimate.apocalyse.client.render.SurvivorRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModClientEventHandler
 {
+    private static final ResourceLocation SULPHURIC_ACID_STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill");
+    private static final ResourceLocation SULPHURIC_ACID_FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing");
+    private static final ResourceLocation SULPHURIC_ACID_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
+
+    @SubscribeEvent
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event)
+    {
+        event.registerFluidType(new IClientFluidTypeExtensions()
+        {
+            @Override
+            public ResourceLocation getStillTexture()
+            {
+                return SULPHURIC_ACID_STILL_TEXTURE;
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture()
+            {
+                return SULPHURIC_ACID_FLOWING_TEXTURE;
+            }
+
+            @Override
+            public ResourceLocation getRenderOverlayTexture(Minecraft minecraft)
+            {
+                return SULPHURIC_ACID_OVERLAY_TEXTURE;
+            }
+        }, ApocalypseContent.sulphuricAcidFluidType.get());
+    }
+
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {

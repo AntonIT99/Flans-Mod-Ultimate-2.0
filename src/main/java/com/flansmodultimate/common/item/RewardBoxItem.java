@@ -25,7 +25,7 @@ public final class RewardBoxItem extends Item implements IFlanItem<RewardBox>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
     }

@@ -86,7 +86,7 @@ public final class DigitalAmmoHelper
         {
             if (ammoSlot < 0)
                 continue;
-            gunItem.setBulletItemStack(gunStack, ammoStack.copy(), ammoSlot);
+            gunItem.setBulletItemStack(gunStack, ammoStack.copy(), ammoSlot, player.level().registryAccess());
             loadedAny = true;
         }
 

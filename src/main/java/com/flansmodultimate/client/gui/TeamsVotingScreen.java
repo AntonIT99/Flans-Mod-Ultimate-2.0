@@ -44,7 +44,7 @@ public final class TeamsVotingScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketTeamsState state = TeamsClientState.get();
         if (state == null)
             return;

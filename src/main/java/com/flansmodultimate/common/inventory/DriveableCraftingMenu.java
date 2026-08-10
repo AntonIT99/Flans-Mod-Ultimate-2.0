@@ -111,7 +111,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         if (!InventoryHelper.tryConsumeAll(player.getInventory(), completeRecipe, creative))
             return;
 
-        DriveableData data = new DriveableData(type);
+        DriveableData data = new DriveableData(type, player.level().registryAccess());
         data.setEngineShortName(engine == null ? "" : engine.getShortName());
         data.copyToStack(output);
 

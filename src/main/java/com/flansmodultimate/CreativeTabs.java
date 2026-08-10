@@ -9,9 +9,9 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -44,7 +44,7 @@ public final class CreativeTabs
     public static final String TAB_PARTS = "parts";
 
     @SafeVarargs
-    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<RegistryObject<Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
+    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
@@ -56,13 +56,13 @@ public final class CreativeTabs
             .build());
     }
 
-    private static Supplier<ItemStack> createIcon(String tabName, List<RegistryObject<Item>> itemsForTab, List<EnumType> typesForIcons)
+    private static Supplier<ItemStack> createIcon(String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab, List<EnumType> typesForIcons)
     {
         return () -> {
             if (tabName.equals(TAB_GENERAL))
                 return new ItemStack(FlansMod.gunWorkbenchItem.get());
 
-            List<RegistryObject<Item>> itemsForIcon = itemsForTab.stream()
+            List<DeferredHolder<Item, ? extends Item>> itemsForIcon = itemsForTab.stream()
                 .filter(ro -> {
                     for (EnumType type: typesForIcons) {
                         Class<?> itemClass = type.getItemClass();
@@ -79,13 +79,13 @@ public final class CreativeTabs
         };
     }
 
-    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<RegistryObject<Item>> itemsForTab)
+    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab)
     {
         boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
         boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
 
         return (parameters, output) -> {
-            for (RegistryObject<Item> ro : sortForCreativeTab(itemsForTab))
+            for (DeferredHolder<Item, ? extends Item> ro : sortForCreativeTab(itemsForTab))
             {
                 Item item = ro.get();
 
@@ -106,12 +106,12 @@ public final class CreativeTabs
         };
     }
 
-    private static List<RegistryObject<Item>> sortForCreativeTab(List<RegistryObject<Item>> itemsForTab)
+    private static List<DeferredHolder<Item, ? extends Item>> sortForCreativeTab(List<DeferredHolder<Item, ? extends Item>> itemsForTab)
     {
-        List<RegistryObject<Item>> sorted = new ArrayList<>(itemsForTab);
-        Comparator<RegistryObject<Item>> cmp = Comparator
+        List<DeferredHolder<Item, ? extends Item>> sorted = new ArrayList<>(itemsForTab);
+        Comparator<DeferredHolder<Item, ? extends Item>> cmp = Comparator
             // 1) content pack name (case-insensitive)
-            .comparing((RegistryObject<Item> ro) -> getPackName(ro.get()), Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
+            .comparing((DeferredHolder<Item, ? extends Item> ro) -> getPackName(ro.get()), Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
             // 2) item type (EnumType)
             .thenComparing(ro -> getPackType(ro.get()), Comparator.nullsFirst(Comparator.naturalOrder()))
             // 3) registry name (alphabetical)
@@ -140,7 +140,7 @@ public final class CreativeTabs
 
     private static String getRegistryName(Item item)
     {
-        ResourceLocation key = ForgeRegistries.ITEMS.getKey(item);
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
         return key != null ? key.toString() : null;
     }
 }

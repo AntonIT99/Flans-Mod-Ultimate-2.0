@@ -2,7 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.MechaItemType;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,12 +24,6 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     {
         super(new Properties().stacksTo(1));
         this.configType = configType;
-    }
-
-    @Override
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
-    {
-        ICustomRendereredItem.super.initializeClient(consumer);
     }
 
     @Override
@@ -57,7 +51,7 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);

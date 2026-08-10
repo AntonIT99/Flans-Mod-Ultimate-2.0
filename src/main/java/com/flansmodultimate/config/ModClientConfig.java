@@ -4,13 +4,13 @@ import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.InfoType;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModClientConfig
 {
-    public static final ForgeConfigSpec configSpec;
+    public static final ModConfigSpec configSpec;
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean loadAllModelsInCache;
@@ -45,40 +45,40 @@ public final class ModClientConfig
     public final boolean alwaysEnableAttachmentCullingByDefault;
     public final boolean alwaysEnableAAGunCullingByDefault;
 
-    private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
-    private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
-    private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
-    private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
-    private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final ModConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    private static final ModConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
+    private static final ModConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
+    private static final ModConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    private static final ModConfigSpec.IntValue BULLET_RENDER_DISTANCE;
+    private static final ModConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
+    private static final ModConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
+    private static final ModConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
 
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
-    private static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+    private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
+    private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
+    private static final ModConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
+    private static final ModConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
 
-    private static final ForgeConfigSpec.BooleanValue ENABLE_ARMS;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
+    private static final ModConfigSpec.BooleanValue ENABLE_ARMS;
+    private static final ModConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    private static final ModConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
+    private static final ModConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
 
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
 
-    private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
 
     static
@@ -245,14 +245,14 @@ public final class ModClientConfig
         };
     }
 
-    private static ForgeConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
+    private static ModConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
     {
         return builder
             .comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
             .define(configName, defaultValue);
     }
 
-    private static ForgeConfigSpec.BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
+    private static ModConfigSpec.BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
     {
         return builder
             .comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.")

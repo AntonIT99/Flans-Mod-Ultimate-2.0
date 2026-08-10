@@ -12,7 +12,8 @@ import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -106,7 +107,7 @@ public final class ApocalypseWorldgen
         if (survivor == null)
             return;
         survivor.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
-        survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION, null, null);
+        survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION, null);
         level.addFreshEntity(survivor);
     }
 
@@ -311,7 +312,7 @@ public final class ApocalypseWorldgen
 
     private static Optional<Block> flanBlock(String path)
     {
-        Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
+        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
         if (block == null || block == Blocks.AIR)
             return Optional.empty();
         return Optional.of(block);

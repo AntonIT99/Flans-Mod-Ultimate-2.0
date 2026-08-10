@@ -2,7 +2,6 @@ package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -10,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +35,22 @@ public class GunWorkbenchBlock extends Block
 
     @Override
     @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                                               @NotNull Player player, @NotNull BlockHitResult hit)
+    {
+        return open(state, level, pos, player);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+                                               @NotNull BlockPos pos, @NotNull Player player,
+                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    {
+        open(state, level, pos, player);
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
     {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
@@ -42,7 +58,7 @@ public class GunWorkbenchBlock extends Block
                 ? new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableCraftingMenu(containerId, inventory, pos),
                     Component.translatable("gui.flansmodultimate.driveable.crafting"))
                 : getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen(serverPlayer, provider, pos);
+            serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

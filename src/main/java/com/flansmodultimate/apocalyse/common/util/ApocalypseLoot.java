@@ -9,9 +9,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
@@ -20,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -29,10 +30,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String NBT_BOOK_TITLE = "title";
-    private static final String NBT_BOOK_AUTHOR = "author";
-    private static final String NBT_BOOK_PAGES = "pages";
-
     private static final String[] JOURNAL_LINES = new String[] {
         "The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
         "If you find the power cubes, do not stand between them unless you are ready to leave.",
@@ -110,12 +107,10 @@ public final class ApocalypseLoot
     public static ItemStack survivorJournal(RandomSource random)
     {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.getOrCreateTag().putString(NBT_BOOK_TITLE, "Survivor Journal");
-        book.getOrCreateTag().putString(NBT_BOOK_AUTHOR, "Unknown Survivor");
-        ListTag pages = new ListTag();
         String text = JOURNAL_LINES[random.nextInt(JOURNAL_LINES.length)];
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY))));
-        book.getOrCreateTag().put(NBT_BOOK_PAGES, pages);
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
+            Filterable.passThrough("Survivor Journal"), "Unknown Survivor", 0,
+            List.of(Filterable.passThrough(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY))), true));
         return book;
     }
 

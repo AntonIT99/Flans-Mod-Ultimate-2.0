@@ -72,7 +72,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         hoveredStack = ItemStack.EMPTY;
         clampSelection();
         updateButtons();
@@ -201,16 +201,16 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
     {
         DriveableType selected = getSelectedBlueprint();
         if (selected != null && isInside(mouseX, mouseY, leftPos + 7, topPos + 121, imageWidth - 14, 56))
         {
             int maxOffset = Math.max(0, menu.getDisplayRecipe(selected).size() - RECIPE_ITEMS_PER_PAGE);
-            recipeOffset = Mth.clamp(recipeOffset + (delta < 0D ? 1 : -1), 0, maxOffset);
+            recipeOffset = Mth.clamp(recipeOffset + (scrollY < 0D ? 1 : -1), 0, maxOffset);
             return true;
         }
-        changeBlueprintPage(delta < 0D ? 1 : -1);
+        changeBlueprintPage(scrollY < 0D ? 1 : -1);
         return true;
     }
 

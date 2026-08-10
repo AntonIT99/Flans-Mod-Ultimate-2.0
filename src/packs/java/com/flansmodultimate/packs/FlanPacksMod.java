@@ -6,11 +6,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -32,7 +31,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Forge companion mod that ships bundled Flan content packs and extracts them into the configured flan folder.
+ * NeoForge companion mod that ships bundled Flan content packs and extracts them into the configured flan folder.
  * <p>
  * Extraction only runs in production. The target folder is resolved from the main mod's content loading config,
  * falling back to {@code flan} and then to an existing legacy {@code Flan} folder. The game directory itself is
@@ -78,7 +77,7 @@ public class FlanPacksMod
     private static final String CONTENT_LOADING_CONFIG_FILE_NAME = MAIN_MOD_ID + "-content-loading.toml";
     private static final String CONTENT_PACKS_RELATIVE_PATH_KEY = "contentPacksRelativePath";
 
-    public FlanPacksMod(FMLJavaModLoadingContext context)
+    public FlanPacksMod()
     {
         if (!FMLEnvironment.production)
             return;

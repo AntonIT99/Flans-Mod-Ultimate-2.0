@@ -5,11 +5,12 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.FlansMod;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,6 +28,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
@@ -43,12 +47,6 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     {
         super(configType);
         this.configType = configType;
-    }
-
-    @Override
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
-    {
-        ICustomRendereredItem.super.initializeClient(consumer);
     }
 
     @Override
@@ -76,7 +74,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
@@ -88,24 +86,27 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         }
         else
         {
-            super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+            super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
         }
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
     {
-        if (slot != EquipmentSlot.MAINHAND)
-            return super.getAttributeModifiers(slot, stack);
+        if (stack.getEquipmentSlot() != EquipmentSlot.MAINHAND)
+            return super.getDefaultAttributeModifiers(stack);
 
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.putAll(super.getAttributeModifiers(slot, stack));
-        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(), AttributeModifier.Operation.ADDITION));
+        ItemAttributeModifiers.Builder b = ItemAttributeModifiers.builder();
+        for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
+            b.add(entry.attribute(), entry.modifier(), entry.slot());
+        b.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(
+            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "grenade_attack_damage"),
+            configType.getMeleeDamage(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         return b.build();
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
     {
         return configType.getMeleeDamage() == 0;
     }

@@ -11,15 +11,14 @@ import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -40,80 +39,48 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
-import java.util.function.Consumer;
-
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class ApocalypseContent
 {
     // Resource Locations
     public static final ResourceLocation survivorTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/entity/survivor.png");
-    private static final ResourceLocation SULPHURIC_ACID_STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill");
-    private static final ResourceLocation SULPHURIC_ACID_FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing");
-    private static final ResourceLocation SULPHURIC_ACID_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
-
     public static final ResourceKey<Level> APOCALYPSE_LEVEL = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "apocalypse"));
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(ForgeRegistries.FLUIDS, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<FluidType> fluidTypeRegistry = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(BuiltInRegistries.ITEM, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(BuiltInRegistries.FLUID, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<FluidType> fluidTypeRegistry = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
 
     // Fluid Types
-    public static final RegistryObject<FluidType> sulphuricAcidFluidType = fluidTypeRegistry.register("sulphuric_acid", () ->
+    public static final DeferredHolder<FluidType, FluidType> sulphuricAcidFluidType = fluidTypeRegistry.register("sulphuric_acid", () ->
         new FluidType(FluidType.Properties.create()
             .descriptionId("fluid." + FlansMod.APOCALYPSE_ID + ".sulphuric_acid")
             .temperature(300)
             .viscosity(800)
             .density(1200)
         )
-        {
-            @Override
-            public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer)
-            {
-                consumer.accept(new IClientFluidTypeExtensions()
-                {
-                    @Override
-                    public ResourceLocation getStillTexture()
-                    {
-                        return SULPHURIC_ACID_STILL_TEXTURE;
-                    }
-
-                    @Override
-                    public ResourceLocation getFlowingTexture()
-                    {
-                        return SULPHURIC_ACID_FLOWING_TEXTURE;
-                    }
-
-                    @Override
-                    public ResourceLocation getRenderOverlayTexture(Minecraft mc)
-                    {
-                        return SULPHURIC_ACID_OVERLAY_TEXTURE;
-                    }
-                });
-            }
-        }
     );
 
     // Fluids
-    public static final RegistryObject<FlowingFluid> sulphuricAcid = fluidRegistry.register("sulphuric_acid", () -> new ForgeFlowingFluid.Source(sulphuricAcidProperties()));
-    public static final RegistryObject<FlowingFluid> flowingSulphuricAcid = fluidRegistry.register("flowing_sulphuric_acid", () -> new ForgeFlowingFluid.Flowing(sulphuricAcidProperties()));
+    public static final DeferredHolder<Fluid, FlowingFluid> sulphuricAcid = fluidRegistry.register("sulphuric_acid", () -> new BaseFlowingFluid.Source(sulphuricAcidProperties()));
+    public static final DeferredHolder<Fluid, FlowingFluid> flowingSulphuricAcid = fluidRegistry.register("flowing_sulphuric_acid", () -> new BaseFlowingFluid.Flowing(sulphuricAcidProperties()));
 
     // Blocks
-    public static final RegistryObject<Block> blockSulphur = blockRegistry.register("blocksulphur", () -> new SulphurBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> blockSulphur = blockRegistry.register("blocksulphur", () -> new SulphurBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.SAND)
         .strength(0.5F)
         .sound(SoundType.SAND))
     );
-    public static final RegistryObject<Block> blockLabStone = blockRegistry.register("blocklabstone", () -> new Block(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> blockLabStone = blockRegistry.register("blocklabstone", () -> new Block(BlockBehaviour.Properties.of()
         .mapColor(MapColor.STONE)
         .strength(3.0F, 5.0F)
         .sound(SoundType.STONE)
         .requiresCorrectToolForDrops())
     );
-    public static final RegistryObject<Block> blockPowerCube = blockRegistry.register("blockpowercube", () -> new PowerCubeBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> blockPowerCube = blockRegistry.register("blockpowercube", () -> new PowerCubeBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(3.0F, 5.0F)
         .sound(SoundType.METAL)
@@ -122,52 +89,52 @@ public final class ApocalypseContent
         .requiresCorrectToolForDrops()
         .pushReaction(PushReaction.BLOCK))
     );
-    public static final RegistryObject<SulphuricAcidBlock> blockSulphuricAcid = blockRegistry.register("blocksulphuricacid", () -> new SulphuricAcidBlock(sulphuricAcid, BlockBehaviour.Properties.copy(Blocks.WATER)
+    public static final DeferredHolder<Block, SulphuricAcidBlock> blockSulphuricAcid = blockRegistry.register("blocksulphuricacid", () -> new SulphuricAcidBlock(sulphuricAcid, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)
         .mapColor(MapColor.COLOR_YELLOW)
         .noLootTable())
     );
 
     // Items
-    public static final RegistryObject<Item> SULPHUR = itemRegistry.register("flansulphur", () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> BLOCK_SULPHUR_ITEM = itemRegistry.register("blocksulphur", () -> new BlockItem(blockSulphur.get(), new Item.Properties()));
-    public static final RegistryObject<Item> BLOCK_LAB_STONE_ITEM = itemRegistry.register("blocklabstone", () -> new BlockItem(blockLabStone.get(), new Item.Properties()));
-    public static final RegistryObject<Item> BLOCK_POWER_CUBE_ITEM = itemRegistry.register("blockpowercube", () -> new BlockItem(blockPowerCube.get(), new Item.Properties()));
-    public static final RegistryObject<Item> SULPHURIC_ACID_BUCKET = itemRegistry.register("sulphuric_acid_bucket", () -> new BucketItem(sulphuricAcid, new Item.Properties()
+    public static final DeferredHolder<Item, ? extends Item> SULPHUR = itemRegistry.register("flansulphur", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> BLOCK_SULPHUR_ITEM = itemRegistry.register("blocksulphur", () -> new BlockItem(blockSulphur.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> BLOCK_LAB_STONE_ITEM = itemRegistry.register("blocklabstone", () -> new BlockItem(blockLabStone.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> BLOCK_POWER_CUBE_ITEM = itemRegistry.register("blockpowercube", () -> new BlockItem(blockPowerCube.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> SULPHURIC_ACID_BUCKET = itemRegistry.register("sulphuric_acid_bucket", () -> new BucketItem(sulphuricAcid.get(), new Item.Properties()
         .craftRemainder(Items.BUCKET)
         .stacksTo(1))
     );
 
     // Block Entities
-    public static final RegistryObject<BlockEntityType<PowerCubeBlockEntity>> powerCubeBlockEntity = blockEntityRegistry.register("powercube", () ->
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PowerCubeBlockEntity>> powerCubeBlockEntity = blockEntityRegistry.register("powercube", () ->
         BlockEntityType.Builder.of(PowerCubeBlockEntity::new, blockPowerCube.get()).build(null)
     );
 
     // Entities
-    public static final RegistryObject<EntityType<TeleporterEntity>> teleporter = entityRegistry.register("teleporter", () -> EntityType.Builder.of(TeleporterEntity::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<TeleporterEntity>> teleporter = entityRegistry.register("teleporter", () -> EntityType.Builder.of(TeleporterEntity::new, MobCategory.MISC)
         .sized(4.0F, 3.0F)
         .clientTrackingRange(64)
         .updateInterval(10)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "teleporter").toString())
     );
-    public static final RegistryObject<EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop", () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop", () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC)
         .sized(1.0F, 1.0F)
         .clientTrackingRange(256)
         .updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "nukedrop").toString())
     );
-    public static final RegistryObject<EntityType<SurvivorEntity>> survivor = entityRegistry.register("survivor", () -> EntityType.Builder.of(SurvivorEntity::new, MobCategory.CREATURE)
+    public static final DeferredHolder<EntityType<?>, EntityType<SurvivorEntity>> survivor = entityRegistry.register("survivor", () -> EntityType.Builder.of(SurvivorEntity::new, MobCategory.CREATURE)
         .sized(0.6F, 1.95F)
         .clientTrackingRange(80)
         .updateInterval(3)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "survivor").toString())
     );
-    public static final RegistryObject<EntityType<SkullDroneEntity>> skullDrone = entityRegistry.register("autodrone", () -> EntityType.Builder.of(SkullDroneEntity::new, MobCategory.MONSTER)
+    public static final DeferredHolder<EntityType<?>, EntityType<SkullDroneEntity>> skullDrone = entityRegistry.register("autodrone", () -> EntityType.Builder.of(SkullDroneEntity::new, MobCategory.MONSTER)
         .sized(1.6F, 1.0F)
         .clientTrackingRange(128)
         .updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString())
     );
-    public static final RegistryObject<EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss", () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER)
+    public static final DeferredHolder<EntityType<?>, EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss", () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER)
         .sized(8.0F, 8.0F)
         .clientTrackingRange(256)
         .updateInterval(2)
@@ -185,9 +152,9 @@ public final class ApocalypseContent
         entityRegistry.register(modEventBus);
     }
 
-    private static ForgeFlowingFluid.Properties sulphuricAcidProperties()
+    private static BaseFlowingFluid.Properties sulphuricAcidProperties()
     {
-        return new ForgeFlowingFluid.Properties(sulphuricAcidFluidType, sulphuricAcid, flowingSulphuricAcid)
+        return new BaseFlowingFluid.Properties(sulphuricAcidFluidType, sulphuricAcid, flowingSulphuricAcid)
             .slopeFindDistance(2)
             .levelDecreasePerBlock(2)
             .block(blockSulphuricAcid)

@@ -25,7 +25,7 @@ import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.util.ModUtils;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

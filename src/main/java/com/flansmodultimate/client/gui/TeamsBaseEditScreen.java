@@ -105,7 +105,7 @@ public final class TeamsBaseEditScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         int left = width / 2 - 128;
         int top = height / 2 - 94;
         graphics.blit(TEXTURE, left, top, 0, 0, 256, 189, 256, 256);

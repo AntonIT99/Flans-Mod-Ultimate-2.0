@@ -63,10 +63,10 @@ public class Wheel extends Entity
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_PARENT_ID, -1);
-        entityData.define(DATA_WHEEL_INDEX, -1);
+        builder.define(DATA_PARENT_ID, -1);
+        builder.define(DATA_WHEEL_INDEX, -1);
     }
 
     @Override

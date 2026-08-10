@@ -35,10 +35,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,15 +81,7 @@ public class ModClient
 {
     public static final ThreadLocal<LivingEntity> entityRenderContext = new ThreadLocal<>();
 
-    public static final HumanoidModel.ArmPose bothArmsAim = HumanoidModel.ArmPose.create("both_arms_aim", true,
-        (model, entity, arm) -> {
-            model.rightArm.xRot = -Mth.PI / 2F;
-            model.rightArm.yRot = -0.05F;
-            model.rightArm.zRot = 0F;
-            model.leftArm.xRot = -Mth.PI / 2F;
-            model.leftArm.yRot = 0.05F;
-            model.leftArm.zRot = 0F;
-        });
+    public static final HumanoidModel.ArmPose bothArmsAim = HumanoidModel.ArmPose.BOW_AND_ARROW;
 
     @Getter
     private static boolean isDebug;
@@ -834,7 +826,7 @@ public class ModClient
             return;
 
         // Frame delta in seconds (approx). getDeltaFrameTime() is in ticks.
-        float dtTicks = mc.getDeltaFrameTime();
+        float dtTicks = mc.getTimer().getRealtimeDeltaTicks();
         float dtSeconds = dtTicks / 20.0F;
 
         // frame-rate independent smoothing

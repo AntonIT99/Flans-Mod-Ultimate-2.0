@@ -21,7 +21,7 @@ public final class InventoryHelper
         for (int i = 0; i < inv.getContainerSize(); i++)
         {
             ItemStack s = inv.getItem(i);
-            if (!s.isEmpty() && ItemStack.isSameItemSameTags(s, needle))
+            if (!s.isEmpty() && ItemStack.isSameItemSameComponents(s, needle))
                 total += s.getCount();
         }
         return total;
@@ -39,7 +39,7 @@ public final class InventoryHelper
             if (have.isEmpty())
                 continue;
 
-            if (ItemStack.isSameItemSameTags(have, want))
+            if (ItemStack.isSameItemSameComponents(have, want))
             {
                 int take = Math.min(remaining, have.getCount());
                 have.shrink(take);
@@ -68,7 +68,7 @@ public final class InventoryHelper
             int remaining = want.getCount();
             for (ItemStack have : available)
             {
-                if (have.isEmpty() || !ItemStack.isSameItemSameTags(have, want))
+                if (have.isEmpty() || !ItemStack.isSameItemSameComponents(have, want))
                     continue;
 
                 int taken = Math.min(remaining, have.getCount());
@@ -156,7 +156,7 @@ public final class InventoryHelper
         for (int i = start; i < end && !stack.isEmpty(); i++)
         {
             ItemStack slot = inv.getItem(i);
-            if (slot.isEmpty() || !ItemStack.isSameItemSameTags(slot, stack) || !slot.isStackable())
+            if (slot.isEmpty() || !ItemStack.isSameItemSameComponents(slot, stack) || !slot.isStackable())
                 continue;
 
             int max = Math.min(slot.getMaxStackSize(), inv.getMaxStackSize());

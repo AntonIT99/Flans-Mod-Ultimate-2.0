@@ -19,9 +19,9 @@ import com.flansmodultimate.network.server.PacketTeamsAction;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
@@ -356,8 +356,8 @@ public final class KeyInputHandler
             {
                 if (offhandGunItem.getGunItemHandler().canReload(player.getInventory())
                     && (!mainHandGunItem.getGunItemHandler().canReload(player.getInventory())
-                    || (!mainHandGunItem.getGunItemHandler().hasEmptyAmmo(mainHandStack)
-                    && offhandGunItem.getGunItemHandler().hasEmptyAmmo(offhandStack))))
+                    || (!mainHandGunItem.getGunItemHandler().hasEmptyAmmo(mainHandStack, player.level().registryAccess())
+                    && offhandGunItem.getGunItemHandler().hasEmptyAmmo(offhandStack, player.level().registryAccess()))))
                 {
                     PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
                 }

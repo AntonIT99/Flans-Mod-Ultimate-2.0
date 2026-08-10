@@ -5,7 +5,6 @@ import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,12 +68,12 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_DEFAULT_OWNER, 0);
-        entityData.define(DATA_OWNER, 0);
-        entityData.define(DATA_NAME, "Default Base");
-        entityData.define(DATA_MAP, "");
+        builder.define(DATA_DEFAULT_OWNER, 0);
+        builder.define(DATA_OWNER, 0);
+        builder.define(DATA_NAME, "Default Base");
+        builder.define(DATA_MAP, "");
     }
 
     @Override
@@ -105,9 +104,9 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    public void onAddedToWorld()
+    public void onAddedToLevel()
     {
-        super.onAddedToWorld();
+        super.onAddedToLevel();
         if (!level().isClientSide)
             TeamsManager.getInstance().registerBase(this);
     }
@@ -181,9 +180,9 @@ public final class Flagpole extends Entity implements ITeamBase
 
     @NotNull
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
     {
-        return NetworkHooks.getEntitySpawningPacket(this);
+        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

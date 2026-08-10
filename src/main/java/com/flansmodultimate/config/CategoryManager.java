@@ -11,7 +11,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;

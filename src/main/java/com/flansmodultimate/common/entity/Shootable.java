@@ -8,13 +8,12 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -33,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData
+public abstract class Shootable extends Entity implements IEntityWithComplexSpawn
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
@@ -124,10 +123,10 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
-        entityData.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
+        builder.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
+        builder.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
     }
 
     @Override
@@ -140,13 +139,13 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
 
     @Override
     @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
     {
-        return NetworkHooks.getEntitySpawningPacket(this);
+        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         buf.writeUtf(shortname);
         buf.writeFloat(getHitboxSize());
@@ -156,7 +155,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         setShortName(buf.readUtf());
         setHitboxSize(buf.readFloat());

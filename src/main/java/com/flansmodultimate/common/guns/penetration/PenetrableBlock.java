@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns.penetration;
 
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +17,7 @@ public record PenetrableBlock(double hardness, boolean breaksOnPenetration)
     @Nullable
     public static PenetrableBlock get(BlockState state)
     {
-        return penetrableBlocks.get(ForgeRegistries.BLOCKS.getKey(state.getBlock()));
+        return penetrableBlocks.get(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
     public static PenetrableBlock put(ResourceLocation rl, PenetrableBlock penetrableBlock)

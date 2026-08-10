@@ -13,16 +13,17 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -366,10 +367,10 @@ public abstract class InfoType
                     int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : 0;
                     boolean isAmbient = (effectValues.length > 3) ? Boolean.parseBoolean(effectValues[3]) : ambient;
                     boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
-                    MobEffect effect = MobEffect.byId(effectId);
-                    if (effect != null)
+                    var effect = BuiltInRegistries.MOB_EFFECT.getHolder(effectId);
+                    if (effect.isPresent())
                     {
-                        effects.add(new MobEffectInstance(effect,  duration, amplifier, isAmbient, isVisible));
+                        effects.add(new MobEffectInstance(effect.get(), duration, amplifier, isAmbient, isVisible));
                     }
                     else
                     {
@@ -511,7 +512,7 @@ public abstract class InfoType
     @OnlyIn(Dist.CLIENT)
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
-        ResourceLocation texture = ResourceLocation.parse("");
+        ResourceLocation texture = FlansMod.defaultFallbackTexture;
         if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;

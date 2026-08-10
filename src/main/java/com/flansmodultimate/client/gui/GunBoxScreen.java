@@ -65,7 +65,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg);
+        renderBackground(gg, mouseX, mouseY, partialTick);
         updateHoverState(mouseX, mouseY);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);

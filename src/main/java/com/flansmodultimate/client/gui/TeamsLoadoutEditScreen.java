@@ -111,7 +111,7 @@ public final class TeamsLoadoutEditScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;

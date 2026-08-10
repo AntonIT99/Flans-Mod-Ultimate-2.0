@@ -148,7 +148,7 @@ public class PlayerHitbox
 
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
-            player.setSecondsOnFire(20);
+            player.igniteForSeconds(20);
 
         bulletType.getHitEffects().forEach(effect -> player.addEffect(new MobEffectInstance(effect)));
 

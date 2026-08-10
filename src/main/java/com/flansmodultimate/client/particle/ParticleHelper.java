@@ -5,13 +5,15 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -229,8 +231,8 @@ public final class ParticleHelper
             case FlanParticles.LARGE_SMOKE -> Optional.of(ParticleTypes.LARGE_SMOKE);
             case FlanParticles.SPELL -> Optional.of(ParticleTypes.EFFECT);
             case FlanParticles.INSTANT_SPELL -> Optional.of(ParticleTypes.INSTANT_EFFECT);
-            case FlanParticles.MOB_SPELL -> Optional.of(ParticleTypes.ENTITY_EFFECT);
-            case FlanParticles.MOB_SPELL_AMBIENT -> Optional.of(ParticleTypes.AMBIENT_ENTITY_EFFECT);
+            case FlanParticles.MOB_SPELL -> Optional.of(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 1F, 1F, 1F));
+            case FlanParticles.MOB_SPELL_AMBIENT -> Optional.of(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.5F, 0.5F, 0.5F));
             case FlanParticles.WITCH_MAGIC -> Optional.of(ParticleTypes.WITCH);
             case FlanParticles.DRIP_LAVA -> Optional.of(ParticleTypes.DRIPPING_LAVA);
             case FlanParticles.ANGRY_VILLAGER -> Optional.of(ParticleTypes.ANGRY_VILLAGER);
@@ -265,13 +267,13 @@ public final class ParticleHelper
         if (s.contains(":"))
         {
             return Optional.ofNullable(ResourceLocation.tryParse(s))
-                .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+                .map(BuiltInRegistries.PARTICLE_TYPE::get)
                 .filter(ParticleOptions.class::isInstance)
                 .map(ParticleOptions.class::cast);
         }
 
         return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s))
-            .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+            .map(BuiltInRegistries.PARTICLE_TYPE::get)
             .filter(ParticleOptions.class::isInstance)
             .map(ParticleOptions.class::cast);
     }

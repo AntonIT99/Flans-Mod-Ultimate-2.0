@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.block;
 
+import com.mojang.serialization.MapCodec;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.types.ItemHolderType;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -50,6 +52,9 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
         configType = type;
         registerDefaultState(stateDefinition.any().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
     }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(this); }
 
     @Override
     @NotNull
@@ -110,7 +115,23 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
 
     @Override
     @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                                               @NotNull Player player, @NotNull BlockHitResult hit)
+    {
+        return interact(state, level, pos, player, InteractionHand.MAIN_HAND);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+                                               @NotNull BlockPos pos, @NotNull Player player,
+                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    {
+        InteractionResult result = interact(state, level, pos, player, hand);
+        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!(level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder))
             return InteractionResult.PASS;

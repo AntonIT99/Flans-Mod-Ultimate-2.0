@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -61,14 +60,14 @@ public class CustomRenderType
         new RenderStateShard.LayeringStateShard(
             "armor_view_offset_layering",
             () -> {
-                PoseStack poseStack = RenderSystem.getModelViewStack();
-                poseStack.pushPose();
+                var poseStack = RenderSystem.getModelViewStack();
+                poseStack.pushMatrix();
                 poseStack.scale(0.99975586F, 0.99975586F, 0.99975586F);
                 RenderSystem.applyModelViewMatrix();
             },
             () -> {
-                PoseStack poseStack = RenderSystem.getModelViewStack();
-                poseStack.popPose();
+                var poseStack = RenderSystem.getModelViewStack();
+                poseStack.popMatrix();
                 RenderSystem.applyModelViewMatrix();
             }
         );

@@ -7,7 +7,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 

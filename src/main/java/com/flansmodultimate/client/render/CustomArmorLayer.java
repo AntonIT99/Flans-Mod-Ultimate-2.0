@@ -6,8 +6,8 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;

@@ -123,7 +123,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg);
+        renderBackground(gg, mouseX, mouseY, partialTick);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);
         renderDyeRequirementStrip(gg, mouseX, mouseY, hoveringPaintjob);
@@ -260,7 +260,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
                 if (inv.isEmpty())
                     continue;
 
-                if (ItemStack.isSameItemSameTags(inv, req))
+                if (ItemStack.isSameItemSameComponents(inv, req))
                 {
                     needed -= inv.getCount();
                     if (needed <= 0)

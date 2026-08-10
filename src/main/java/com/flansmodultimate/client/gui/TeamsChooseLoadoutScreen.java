@@ -38,7 +38,7 @@ public final class TeamsChooseLoadoutScreen extends Screen
     }
     @Override public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
         graphics.drawCenteredString(font, title, width / 2, height / 2 - 92, 0xFFFFFF);
         if (state != null)

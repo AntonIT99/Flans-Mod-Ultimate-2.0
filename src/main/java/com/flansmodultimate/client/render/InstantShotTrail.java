@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render;
 import com.flansmodultimate.util.JomlUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -98,8 +99,7 @@ public class InstantShotTrail
         Matrix4f pose = poseStack.last().pose();
 
         Tesselator tess = Tesselator.getInstance();
-        BufferBuilder buf = tess.getBuilder();
-        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        BufferBuilder buf = tess.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         // Quad: start+tan, start-tan, end-tan, end+tan
         putPosUv(buf, pose, startX + tangent.x, startY + tangent.y, startZ + tangent.z, 0.0f, 0.0f);
@@ -107,11 +107,11 @@ public class InstantShotTrail
         putPosUv(buf, pose, endX - tangent.x, endY - tangent.y, endZ - tangent.z, 1.0f, 1.0f);
         putPosUv(buf, pose, endX + tangent.x, endY + tangent.y, endZ + tangent.z, 1.0f, 0.0f);
 
-        tess.end();
+        BufferUploader.drawWithShader(buf.buildOrThrow());
     }
 
     private static void putPosUv(BufferBuilder buf, Matrix4f pose, float x, float y, float z, float u, float v)
     {
-        buf.vertex(pose, x, y, z).uv(u, v).endVertex();
+        buf.addVertex(pose, x, y, z).setUv(u, v);
     }
 }

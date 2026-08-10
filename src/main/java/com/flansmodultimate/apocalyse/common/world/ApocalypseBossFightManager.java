@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.neoforged.neoforge.event.EventHooks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -99,7 +100,7 @@ public final class ApocalypseBossFightManager
         boss.moveTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
         if (placer != null)
             boss.setTarget(placer);
-        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED, null, null);
+        EventHooks.finalizeMobSpawn(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED, null);
         level.addFreshEntity(boss);
         level.players().stream()
             .filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)

@@ -1,7 +1,7 @@
 package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.hooks.IClientRenderHooks;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -9,14 +9,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Consumer;
-
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
-    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer)
+    public IClientItemExtensions customItemExtensions()
     {
-        /* no-op */
+        return IClientItemExtensions.DEFAULT;
     }
 
     @Override

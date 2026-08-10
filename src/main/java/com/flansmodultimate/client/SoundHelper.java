@@ -5,7 +5,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestPlaySound;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -122,7 +122,7 @@ public final class SoundHelper
         if (StringUtils.isBlank(sound))
             return Optional.empty();
 
-        RegistryObject<SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
+        DeferredHolder<SoundEvent, SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
         if (soundEvent == null || soundEvent.getId() == null)
         {
             FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));

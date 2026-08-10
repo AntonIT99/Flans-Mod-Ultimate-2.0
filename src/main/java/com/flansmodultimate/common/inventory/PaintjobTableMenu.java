@@ -2,12 +2,11 @@ package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,11 +36,8 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         super(FlansMod.paintjobTableMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
-        // TE slots via capability
-        table.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            addSlot(new SlotItemHandler(handler, 0, 187, GUI_TOP_H + 17));
-            addSlot(new SlotItemHandler(handler, 1, 187, GUI_TOP_H + 71));
-        });
+        addSlot(new SlotItemHandler(table.getItemHandler(), 0, 187, GUI_TOP_H + 17));
+        addSlot(new SlotItemHandler(table.getItemHandler(), 1, 187, GUI_TOP_H + 71));
 
         // Player inventory
         for (int row = 0; row < 3; row++)
@@ -58,7 +54,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         }
     }
 
-    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, FriendlyByteBuf buf)
+    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, RegistryFriendlyByteBuf buf)
     {
         Level level = playerInv.player.level();
         BlockPos pos = buf.readBlockPos();

@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,16 +27,16 @@ public class PowerCubeBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
+        super.saveAdditional(tag, registries);
         tag.putInt(NBT_AGE, age);
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.load(tag);
+        super.loadAdditional(tag, registries);
         age = tag.getInt(NBT_AGE);
     }
 }

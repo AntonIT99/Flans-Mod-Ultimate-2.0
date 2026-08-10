@@ -285,7 +285,7 @@ public class Raytracer
         //Ray trace the bullet by comparing its next position to its current position
         Vec3 nextPosVec = posVec.add(motion);
 
-        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
+        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
 
         if (hit.getType() == HitResult.Type.BLOCK)
         {

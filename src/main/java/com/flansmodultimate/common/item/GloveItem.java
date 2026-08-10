@@ -36,7 +36,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     }
 
     @Override
-    public int getEnchantmentValue()
+    public int getEnchantmentValue(ItemStack stack)
     {
         return configType.getEnchantability();
     }
@@ -54,7 +54,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.literal("Improves gun, sword or axe handling when enchanted and held in off hand").withStyle(ChatFormatting.DARK_AQUA));

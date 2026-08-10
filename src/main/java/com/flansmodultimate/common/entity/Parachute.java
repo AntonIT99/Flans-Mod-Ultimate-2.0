@@ -5,14 +5,13 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -32,7 +31,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Parachute extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<ToolType>
+public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanEntity<ToolType>
 {
     public static final float DEFAULT_HITBOX_WIDTH = 1.0F;
     public static final float DEFAULT_HITBOX_HEIGHT = 0.5F;
@@ -96,19 +95,19 @@ public class Parachute extends Entity implements IEntityAdditionalSpawnData, IFl
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_TOOL_TYPE, StringUtils.EMPTY);
+        builder.define(DATA_TOOL_TYPE, StringUtils.EMPTY);
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         buf.writeUtf(getShortName());
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         setShortName(buf.readUtf());
         resolveTypeOrDiscard();
@@ -220,9 +219,9 @@ public class Parachute extends Entity implements IEntityAdditionalSpawnData, IFl
 
     @Override
     @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
     {
-        return NetworkHooks.getEntitySpawningPacket(this);
+        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

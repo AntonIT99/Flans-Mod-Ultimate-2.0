@@ -1,8 +1,9 @@
 {
   "pack": {
     "description": {
-      "text": "${mod_id} resources"
+      "text": "Flan's Mod Ultimate resources"
     },
-    "pack_format": 15
+    "pack_format": 48,
+    "supported_formats": [34, 48]
   }
 }

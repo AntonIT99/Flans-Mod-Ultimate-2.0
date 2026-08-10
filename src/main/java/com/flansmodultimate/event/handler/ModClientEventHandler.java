@@ -41,23 +41,29 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
@@ -76,9 +82,11 @@ import net.minecraft.world.item.Item;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 public final class ModClientEventHandler
 {
     private static boolean isSoundEngineInitialized;
@@ -90,61 +98,77 @@ public final class ModClientEventHandler
             CustomItemRenderers.registerAll();
 
             // Paintjob registrations
-            for (RegistryObject<Item> item : FlansMod.getItems())
+            for (DeferredHolder<Item, ? extends Item> item : FlansMod.getItems())
             {
                 if (item.get() instanceof IPaintableItem<?>)
                 {
                     ItemProperties.register(item.get(), FlansMod.paintjob, (stack, level, entity, seed) -> {
-                        CompoundTag tag = stack.getTag();
-                        return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
+                        CompoundTag tag = ItemStackData.copy(stack);
+                        return tag.contains(IPaintableItem.NBT_PAINTJOB_ID) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
                     });
                 }
             }
             ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
 
-            // Menus registration
-            MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
-            MenuScreens.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
-            MenuScreens.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
-            MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
-            MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
-            MenuScreens.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
         });
+    }
+
+    @SubscribeEvent
+    public static void registerMenuScreens(RegisterMenuScreensEvent event)
+    {
+        event.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
+        event.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
+        event.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
+        event.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
+        event.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
+        event.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event)
+    {
+        Item[] customRenderedItems = FlansMod.getItems().stream()
+            .map(DeferredHolder::get)
+            .filter(ICustomRendereredItem.class::isInstance)
+            .toArray(Item[]::new);
+        if (customRenderedItems.length > 0)
+            event.registerItem(ClientHooks.RENDER.customItemExtensions(), customRenderedItems);
     }
 
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
-        FlansMod.getItems().stream()
+        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream()
             .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .forEach(itemRegistryObject -> {
-                ResourceLocation id = itemRegistryObject.getId();
-                // Wrap ALL baked model variants belonging to this item
-                event.getModels().replaceAll((loc, original) -> {
-                    if (id != null && loc.getNamespace().equals(id.getNamespace()) && loc.getPath().equals(id.getPath()) && !(original instanceof BewlrRoutingModel))
-                    {
-                        return new BewlrRoutingModel(original);
-                    }
-                    return original;
-                });
-            });
+            .map(DeferredHolder::getId)
+            .filter(java.util.Objects::nonNull)
+            .collect(Collectors.toUnmodifiableSet());
+
+        // Wrap all variants in one pass. Large legacy installations can have
+        // thousands of registered Flan items, so one full map scan per item is
+        // prohibitively expensive during every resource reload.
+        event.getModels().replaceAll((location, original) -> {
+            if (customRenderedItemIds.contains(location.id()) && !(original instanceof BewlrRoutingModel))
+                return new BewlrRoutingModel(original);
+            return original;
+        });
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SubscribeEvent
     public static void registerArmorLayer(EntityRenderersEvent.AddLayers event)
     {
-        for (String skin : event.getSkins())
+        for (var skin : event.getSkins())
         {
-            LivingEntityRenderer<?, ?> renderer = event.getSkin(skin);
+            var renderer = event.getSkin(skin);
             if (renderer instanceof PlayerRenderer playerRenderer)
             {
                 playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
             }
         }
 
-        for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES.getValues())
+        for (EntityType<?> entityType : event.getEntityTypes())
         {
             EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
             EntityRenderer<? extends LivingEntity> renderer = event.getRenderer(livingType);
@@ -175,12 +199,12 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void registerOverlays(RegisterGuiOverlaysEvent event)
+    public static void registerOverlays(RegisterGuiLayersEvent event)
     {
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
-        event.registerAbove(VanillaGuiOverlay.ARMOR_LEVEL.id(), "damage_absorption", ClientHudOverlays.DAMAGE_ABSORPTION);
-        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "scope"), ClientHudOverlays.SCOPE);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "armor"), ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiLayers.ARMOR_LEVEL, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "damage_absorption"), ClientHudOverlays.DAMAGE_ABSORPTION);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "hud"), ClientHudOverlays.HUD);
     }
 
     @SubscribeEvent
@@ -209,11 +233,15 @@ public final class ModClientEventHandler
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
-                return flanItem.getConfigType().getColour();
+                // Legacy content packs store colours as 24-bit RGB. Since
+                // 1.21 the item renderer consumes ARGB and therefore treated
+                // the missing high byte as alpha=0, making every tinted Flan
+                // item completely transparent in every render context.
+                return 0xFF000000 | flanItem.getConfigType().getColour();
             return 0xFFFFFFFF;
         },
         FlansMod.getItems().stream()
-            .map(RegistryObject::get)
+            .map(DeferredHolder::get)
             .toArray(Item[]::new)
         );
     }

@@ -19,7 +19,7 @@ import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 

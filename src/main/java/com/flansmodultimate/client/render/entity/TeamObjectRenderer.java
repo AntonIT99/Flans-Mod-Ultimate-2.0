@@ -70,8 +70,8 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float z,
                                float u, float v, float red, float green, float blue, int light)
     {
-        vertices.vertex(pose.pose(), x, y, z).color(red, green, blue, 1F).uv(u, v)
-            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(pose.normal(), 0F, 0F, 1F).endVertex();
+        vertices.addVertex(pose.pose(), x, y, z).setColor(red, green, blue, 1F).setUv(u, v)
+            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0F, 0F, 1F);
     }
 
     @NotNull

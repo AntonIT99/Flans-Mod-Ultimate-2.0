@@ -3,6 +3,7 @@ package com.flansmodultimate.common.teams;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -18,6 +19,7 @@ import java.util.UUID;
 /** The single SavedData payload for maps, rotations, runtime state and player stats. */
 public final class TeamsSavedData extends SavedData
 {
+    public static final Factory<TeamsSavedData> FACTORY = new Factory<>(TeamsSavedData::new, TeamsSavedData::load);
     public static final String ID = "flansmodultimate_teams";
     private static final String NBT_MAPS = "maps";
     private static final String NBT_ROUNDS = "rounds";
@@ -36,7 +38,7 @@ public final class TeamsSavedData extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(CompoundTag tag)
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries)
     {
         ListTag mapList = new ListTag();
         maps.values().forEach(map -> mapList.add(map.save()));
@@ -47,13 +49,13 @@ public final class TeamsSavedData extends SavedData
         tag.put(NBT_ROUNDS, roundList);
 
         ListTag statList = new ListTag();
-        stats.values().forEach(stat -> statList.add(stat.save()));
+        stats.values().forEach(stat -> statList.add(stat.save(registries)));
         tag.put(NBT_STATS, statList);
         tag.put(NBT_RUNTIME, runtime.copy());
         return tag;
     }
 
-    public static TeamsSavedData load(CompoundTag tag)
+    public static TeamsSavedData load(CompoundTag tag, HolderLookup.Provider registries)
     {
         TeamsSavedData result = new TeamsSavedData();
         for (Tag entry : tag.getList(NBT_MAPS, Tag.TAG_COMPOUND))
@@ -65,7 +67,7 @@ public final class TeamsSavedData extends SavedData
             result.rounds.add(TeamsRound.load((CompoundTag) entry));
         for (Tag entry : tag.getList(NBT_STATS, Tag.TAG_COMPOUND))
         {
-            PlayerStats stats = PlayerStats.load((CompoundTag) entry);
+            PlayerStats stats = PlayerStats.load((CompoundTag) entry, registries);
             result.stats.put(stats.getPlayerId(), stats);
         }
         if (tag.contains(NBT_RUNTIME, Tag.TAG_COMPOUND))

@@ -17,7 +17,7 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.util.FileUtils;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -31,14 +31,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
-import java.util.function.Consumer;
-
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
     @Override
-    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer)
+    public IClientItemExtensions customItemExtensions()
     {
-        consumer.accept(new IClientItemExtensions()
+        return new IClientItemExtensions()
         {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer()
@@ -46,7 +44,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
                 Minecraft mc = Minecraft.getInstance();
                 return new CustomBewlr(mc.getBlockEntityRenderDispatcher(), mc.getEntityModels());
             }
-        });
+        };
     }
 
     @Override

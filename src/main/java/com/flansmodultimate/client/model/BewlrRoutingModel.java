@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import org.jetbrains.annotations.NotNull;
@@ -16,10 +17,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.List;
 
+@SuppressWarnings("deprecation") // BakedModel still requires its legacy bridge methods in 1.21.1.
 public class BewlrRoutingModel implements BakedModel
 {
     private final BakedModel delegate;
@@ -41,7 +45,8 @@ public class BewlrRoutingModel implements BakedModel
                 if (resolved == null)
                     return BewlrRoutingModel.this.delegate;
 
-                BewlrRoutingModel routingModel = (resolved instanceof BewlrRoutingModel brm) ? brm : new BewlrRoutingModel(resolved);
+                BewlrRoutingModel routingModel = resolved instanceof BewlrRoutingModel brm
+                    ? brm : new BewlrRoutingModel(resolved);
                 routingModel.hasCustomModel = stack.getItem() instanceof ICustomRendereredItem<?>;
                 return routingModel;
             }
@@ -52,6 +57,13 @@ public class BewlrRoutingModel implements BakedModel
     public List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pDirection, @NotNull RandomSource pRandom)
     {
         return delegate.getQuads(pState, pDirection, pRandom);
+    }
+
+    @Override
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, @NotNull RandomSource random,
+                                    @NotNull ModelData modelData, @Nullable RenderType renderType)
+    {
+        return delegate.getQuads(state, direction, random, modelData, renderType);
     }
 
     @Override
@@ -87,6 +99,13 @@ public class BewlrRoutingModel implements BakedModel
 
     @Override
     @NotNull
+    public TextureAtlasSprite getParticleIcon(@NotNull ModelData modelData)
+    {
+        return delegate.getParticleIcon(modelData);
+    }
+
+    @Override
+    @NotNull
     public ItemOverrides getOverrides()
     {
         return wrappedOverrides;
@@ -96,10 +115,19 @@ public class BewlrRoutingModel implements BakedModel
     @NotNull
     public ItemTransforms getTransforms()
     {
-        if (!hasCustomModel)
+        if (!hasCustomModel || CustomItemRenderers.SKIP_BEWLR.get())
             return delegate.getTransforms();
         else
             return ItemTransforms.NO_TRANSFORMS;
+    }
+
+    @Override
+    @NotNull
+    public BakedModel applyTransform(@NotNull ItemDisplayContext displayContext, @NotNull PoseStack poseStack, boolean leftHand)
+    {
+        return hasCustomModel && !CustomItemRenderers.SKIP_BEWLR.get()
+            ? this
+            : delegate.applyTransform(displayContext, poseStack, leftHand);
     }
 
     @Override

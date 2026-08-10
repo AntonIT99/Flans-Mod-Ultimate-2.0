@@ -31,13 +31,16 @@ public class TextureGroup
 
     public void loadTexture(int defaultTexture)
     {
-        if(!texture.isEmpty())
+        ResourceLocation textureLocation = ResourceLocation.tryParse(texture.trim().replace('\\', '/'));
+        if (textureLocation != null && !textureLocation.getPath().isEmpty())
         {
-            RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath("", texture));
+            RenderSystem.setShaderTexture(0, textureLocation);
         }
-        else if(defaultTexture > -1)
+        else if (defaultTexture > -1)
         {
-            RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath("", ""));
+            // The legacy fallback is an already allocated OpenGL texture id,
+            // not a resource path. 1.21 rejects the former "minecraft:" shim.
+            RenderSystem.setShaderTexture(0, defaultTexture);
         }
     }
 }

@@ -71,9 +71,9 @@ public class NukeDropEntity extends Entity
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_EXPLODED_TICKS, 0);
+        builder.define(DATA_EXPLODED_TICKS, 0);
     }
 
     @Override

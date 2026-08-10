@@ -27,22 +27,25 @@ import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.RenderNameTagEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import org.joml.Vector3f;
 
 import net.minecraft.client.Minecraft;
@@ -57,9 +60,24 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 public final class ClientEventHandler
 {
+    @SubscribeEvent
+    public static void onDetachedCameraDistance(CalculateDetachedCameraDistanceEvent event)
+    {
+        if (!(event.getCamera().getEntity() instanceof Player player))
+            return;
+
+        var controllable = KeyInputHandler.resolveControllable(player);
+        if (controllable == null)
+            return;
+
+        float requestedDistance = controllable.getCameraDistance();
+        if (Float.isFinite(requestedDistance))
+            event.setDistance(Mth.clamp(requestedDistance, 1F, 64F));
+    }
+
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
@@ -95,21 +113,15 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event)
+    public static void onClientTick(ClientTickEvent.Post event)
     {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
         GunInputState.tick();
         ModClient.tick();
     }
 
     @SubscribeEvent
-    public static void onRenderTick(TickEvent.RenderTickEvent event)
+    public static void onRenderTick(RenderFrameEvent.Post event)
     {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
         ModClient.renderTick();
     }
 
@@ -126,7 +138,7 @@ public final class ClientEventHandler
         {
             boolean isOneHanded = gunItem.getConfigType().isOneHanded();
             boolean isSneakingKeyDown = Minecraft.getInstance().options.keyShift.isDown();
-            double scrollDelta = event.getScrollDelta();
+            double scrollDelta = event.getScrollDeltaY();
 
             if (isOneHanded && isSneakingKeyDown && Math.abs(scrollDelta) > 0.0D)
             {
@@ -142,7 +154,7 @@ public final class ClientEventHandler
     {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
-        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
+        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getCamera());
 
         if (ModClient.isDebug())
         {
@@ -156,7 +168,7 @@ public final class ClientEventHandler
 
     /** CROSSHAIR: pre = we can cancel vanilla*/
     @SubscribeEvent
-    public static void onPreRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
+    public static void onPreRenderGuiOverlay(RenderGuiLayerEvent.Pre event)
     {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -166,27 +178,27 @@ public final class ClientEventHandler
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
+        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)
             && (ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
+            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(true), w, h);
             event.setCanceled(true);
         }
     }
 
     /** CROSSHAIR: post = draw hit marker overlay */
     @SubscribeEvent
-    public static void onPostRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
+    public static void onPostRenderGuiOverlay(RenderGuiLayerEvent.Post event)
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
+        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
+            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(true), w, h);
         }
     }
 
@@ -372,7 +384,7 @@ public final class ClientEventHandler
     public static void onRenderNameTag(RenderNameTagEvent event)
     {
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
-            event.setResult(Event.Result.DENY);
+            event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
     }
 
 }

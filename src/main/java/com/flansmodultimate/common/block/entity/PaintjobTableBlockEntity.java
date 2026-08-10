@@ -2,16 +2,13 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +27,6 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
 {
     public static final String NBT_ITEMS = "items";
 
-    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
     private final BlockState blockState;
 
     private final ItemStackHandler items = new ItemStackHandler(2)
@@ -48,41 +44,24 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
         blockState = state;
     }
 
-    @Override
-    public void onLoad()
-    {
-        super.onLoad();
-        itemCap = LazyOptional.of(() -> items);
-    }
-
-    @Override
-    public void invalidateCaps()
-    {
-        super.invalidateCaps();
-        itemCap.invalidate();
-    }
-
-    @Override
     @NotNull
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side)
+    public IItemHandler getItemHandler()
     {
-        if (cap == ForgeCapabilities.ITEM_HANDLER)
-            return itemCap.cast();
-        return super.getCapability(cap, side);
+        return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
-        tag.put(NBT_ITEMS, items.serializeNBT());
+        super.saveAdditional(tag, registries);
+        tag.put(NBT_ITEMS, items.serializeNBT(registries));
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.load(tag);
-        items.deserializeNBT(tag.getCompound(NBT_ITEMS));
+        super.loadAdditional(tag, registries);
+        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
     }
 
     @Override

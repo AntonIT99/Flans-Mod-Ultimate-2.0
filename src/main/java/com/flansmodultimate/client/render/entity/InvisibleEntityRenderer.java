@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmodultimate.FlansMod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.Entity;
 /** Renderer for logical seat/wheel proxies whose visuals belong to the root model. */
 public final class InvisibleEntityRenderer<T extends Entity> extends EntityRenderer<T>
 {
-    private static final ResourceLocation EMPTY = ResourceLocation.parse("");
+    private static final ResourceLocation EMPTY = FlansMod.defaultFallbackTexture;
 
     public InvisibleEntityRenderer(EntityRendererProvider.Context context)
     {

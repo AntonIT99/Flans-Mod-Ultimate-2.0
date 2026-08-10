@@ -2,8 +2,8 @@ package com.wolffsmod.api.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -188,7 +188,11 @@ public class ModelRenderer
     {
         for (ModelPart.Cube cube : cubeList)
         {
-            cube.compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+            int packedColor = ((int)(alpha * 255F) & 0xFF) << 24
+                | ((int)(red * 255F) & 0xFF) << 16
+                | ((int)(green * 255F) & 0xFF) << 8
+                | ((int)(blue * 255F) & 0xFF);
+            cube.compile(pose, vertexConsumer, packedLight, packedOverlay, packedColor);
         }
     }
 

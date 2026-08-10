@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.particle;
 
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;

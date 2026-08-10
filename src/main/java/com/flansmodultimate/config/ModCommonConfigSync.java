@@ -4,8 +4,8 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;

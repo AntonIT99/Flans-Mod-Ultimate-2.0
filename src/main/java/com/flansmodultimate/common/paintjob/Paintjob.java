@@ -4,8 +4,8 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.resources.ResourceLocation;

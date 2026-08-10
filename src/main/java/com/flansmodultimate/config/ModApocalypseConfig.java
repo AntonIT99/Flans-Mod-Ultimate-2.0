@@ -5,8 +5,8 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,39 +21,39 @@ public final class ModApocalypseConfig
     private static final String APOCALYPSE_CONFIG_SECTION = "Apocalypse Settings";
     private static final String LEGACY_COMMON_CONFIG_FILE_NAME = FlansMod.MOD_ID + "-common.toml";
 
-    public static final ForgeConfigSpec configSpec;
+    public static final ModConfigSpec configSpec;
     private static final AtomicReference<ApocalypseConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<ApocalypseConfigSnapshot> serverOverride = new AtomicReference<>();
 
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_DIMENSION_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_PORTALS_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_WORLDGEN_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_MOBS_ENABLED;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_NUKE_DROPS_ENABLED;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_COUNTDOWN_LENGTH;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_SURVIVOR_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_WANDERING_SURVIVOR_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_SKELETON_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_DEAD_TREE_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_VEHICLE_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_AIRPORT_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_DYE_FACTORY_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_LAB_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_RETURN_RADIUS;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_SPAWN_RADIUS;
-    private static final ForgeConfigSpec.BooleanValue APOCALYPSE_RESPAWN_IN_APOCALYPSE;
-    private static final ForgeConfigSpec.EnumValue<ApocalypseTeleportOption> APOCALYPSE_TELEPORT_OPTION;
-    private static final ForgeConfigSpec.DoubleValue APOCALYPSE_ACID_DAMAGE;
-    private static final ForgeConfigSpec.DoubleValue APOCALYPSE_NUKE_EXPLOSION_POWER;
-    private static final ForgeConfigSpec.IntValue APOCALYPSE_NUKE_VISUAL_TICKS;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_DIMENSION_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_PORTALS_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_WORLDGEN_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_MOBS_ENABLED;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_NUKE_DROPS_ENABLED;
+    private static final ModConfigSpec.IntValue APOCALYPSE_COUNTDOWN_LENGTH;
+    private static final ModConfigSpec.IntValue APOCALYPSE_SURVIVOR_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_WANDERING_SURVIVOR_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_SKELETON_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_DEAD_TREE_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_VEHICLE_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_AIRPORT_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_DYE_FACTORY_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_LAB_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_RETURN_RADIUS;
+    private static final ModConfigSpec.IntValue APOCALYPSE_SPAWN_RADIUS;
+    private static final ModConfigSpec.BooleanValue APOCALYPSE_RESPAWN_IN_APOCALYPSE;
+    private static final ModConfigSpec.EnumValue<ApocalypseTeleportOption> APOCALYPSE_TELEPORT_OPTION;
+    private static final ModConfigSpec.DoubleValue APOCALYPSE_ACID_DAMAGE;
+    private static final ModConfigSpec.DoubleValue APOCALYPSE_NUKE_EXPLOSION_POWER;
+    private static final ModConfigSpec.IntValue APOCALYPSE_NUKE_VISUAL_TICKS;
 
     static
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push(APOCALYPSE_CONFIG_SECTION);
         APOCALYPSE_ENABLED = builder
             .comment("Master switch for integrated Flan's Mod Apocalypse content and server-side behavior.")
@@ -121,7 +121,7 @@ public final class ModApocalypseConfig
             .comment("If true, players who die in the apocalypse dimension respawn near their death point instead of normal overworld spawn behavior.")
             .define("apocalypseRespawnInApocalypse", false);
         APOCALYPSE_TELEPORT_OPTION = builder
-            .comment("Who is sent by legacy AI-chip apocalypse triggers. Reserved until 1.20.1 mecha trigger support is complete.")
+            .comment("Who is sent by legacy AI-chip apocalypse triggers. Reserved until mecha trigger support is complete.")
             .defineEnum("apocalypseTeleportOption", ApocalypseTeleportOption.PLACER_ONLY);
         APOCALYPSE_ACID_DAMAGE = builder
             .comment("Damage per tick from sulphuric acid.")

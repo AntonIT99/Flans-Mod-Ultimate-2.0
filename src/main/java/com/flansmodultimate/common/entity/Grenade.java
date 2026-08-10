@@ -23,8 +23,9 @@ import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -33,7 +34,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -208,7 +209,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(RegistryFriendlyByteBuf buf)
     {
         super.writeSpawnData(buf);
         buf.writeInt(Optional.ofNullable(thrower).map(Entity::getId).orElse(0));
@@ -217,7 +218,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(RegistryFriendlyByteBuf buf)
     {
         try
         {
@@ -361,7 +362,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     if (!ammoTypes.isEmpty())
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
-                        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
+                        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
                         if (item != null && item != Items.AIR)
                         {
                             int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
@@ -523,7 +524,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
     {
         GrenadeProximityEvent event = new GrenadeProximityEvent(this, entity);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         if (event.isCanceled())
             return false;
 
@@ -835,9 +836,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             {
                 if (configType.isFlashEffects())
                 {
-                    MobEffect effect = MobEffect.byId(configType.getFlashEffectsId());
-                    if (effect != null)
-                        entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel()));
+                    BuiltInRegistries.MOB_EFFECT.getHolder(configType.getFlashEffectsId()).ifPresent(effect ->
+                        entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel())));
                 }
                 entity.hurt(getDamageSource(), configType.getFlashDamage());
             }

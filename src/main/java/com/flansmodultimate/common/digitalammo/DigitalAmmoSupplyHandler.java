@@ -4,22 +4,24 @@ import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public final class DigitalAmmoSupplyHandler
 {
     private static final Set<ResourceLocation> supplyBlocks = new HashSet<>();
@@ -96,12 +98,12 @@ public final class DigitalAmmoSupplyHandler
 
         if (event.getEntity() instanceof ServerPlayer player)
         {
-            if (event.getUseBlock() == Event.Result.DENY) return;
+            if (event.getUseBlock().isFalse()) return;
 
             Level level = event.getLevel();
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
-            ResourceLocation blockId = state.getBlock().builtInRegistryHolder().key().location();
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
             if (!isSupplyBlock(blockId)) return;
 

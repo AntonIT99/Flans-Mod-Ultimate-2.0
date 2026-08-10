@@ -65,12 +65,12 @@ public final class PlayerShootingHandler implements ShootingHandler
 
         ShootableItem.consumeRound(bulletStack);
 
-        gunItem.setBulletItemStack(gunStack, bulletStack, ammoIndex);
+        gunItem.setBulletItemStack(gunStack, bulletStack, ammoIndex, level.registryAccess());
 
         if (gunType.isConsumeGunUponUse())
             player.setItemInHand(hand, ItemStack.EMPTY);
 
-        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? net.minecraftforge.fml.LogicalSide.CLIENT : net.minecraftforge.fml.LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? net.neoforged.fml.LogicalSide.CLIENT : net.neoforged.fml.LogicalSide.SERVER);
         EnumFireMode mode = gunType.getFireMode(gunStack);
         
         if (mode == EnumFireMode.BURST)

@@ -6,13 +6,13 @@ import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -59,7 +59,23 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
 
     @Override
     @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                                               Player player, @NotNull BlockHitResult hit)
+    {
+        return open(state, level, pos, player);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+                                               @NotNull BlockPos pos, @NotNull Player player,
+                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    {
+        InteractionResult result = open(state, level, pos, player);
+        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
@@ -67,7 +83,7 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen(serverPlayer, provider, pos);
+            serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

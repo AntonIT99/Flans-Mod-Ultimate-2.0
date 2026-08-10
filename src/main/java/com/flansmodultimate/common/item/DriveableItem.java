@@ -5,7 +5,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,12 +104,6 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     protected abstract D createDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack);
 
     @Override
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
-    {
-        ICustomRendereredItem.super.initializeClient(consumer);
-    }
-
-    @Override
     public boolean useCustomRendererInHand()
     {
         return true;
@@ -134,10 +128,10 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
-        DriveableData data = DriveableData.fromStack(configType, stack);
+        DriveableData data = DriveableData.fromStack(configType, stack, context.registries());
         if (data.getEngine() != null)
             tooltip.add(IFlanItem.statLine("Engine", data.getEngine().getName()));
         if (configType.getFuelTankSize() > 0)

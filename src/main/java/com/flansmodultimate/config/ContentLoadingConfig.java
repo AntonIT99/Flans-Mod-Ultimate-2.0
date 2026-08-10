@@ -7,7 +7,7 @@ import com.flansmodultimate.util.FileUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

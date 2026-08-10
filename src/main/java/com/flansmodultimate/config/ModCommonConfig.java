@@ -7,8 +7,8 @@ import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.loading.FMLPaths;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -30,84 +30,84 @@ public final class ModCommonConfig
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
 
-    public static final ForgeConfigSpec configSpec;
+    public static final ModConfigSpec configSpec;
 
-    private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
-    private static final ForgeConfigSpec.BooleanValue VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
+    private static final ModConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
+    private static final ModConfigSpec.BooleanValue VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
 
-    private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
-    private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
-    private static final ForgeConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
-    private static final ForgeConfigSpec.IntValue BONUS_REGEN_AMOUNT;
-    private static final ForgeConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
-    private static final ForgeConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
-    private static final ForgeConfigSpec.IntValue BULLET_TRACKING_RANGE;
-    private static final ForgeConfigSpec.IntValue GRENADE_TRACKING_RANGE;
-    private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_TRACKING_RANGE;
-    private static final ForgeConfigSpec.IntValue AA_GUN_TRACKING_RANGE;
+    private static final ModConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
+    private static final ModConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
+    private static final ModConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
+    private static final ModConfigSpec.IntValue BONUS_REGEN_AMOUNT;
+    private static final ModConfigSpec.IntValue BONUS_REGEN_TICK_DELAY;
+    private static final ModConfigSpec.IntValue BONUS_REGEN_FOOD_LIMIT;
+    private static final ModConfigSpec.IntValue BULLET_TRACKING_RANGE;
+    private static final ModConfigSpec.IntValue GRENADE_TRACKING_RANGE;
+    private static final ModConfigSpec.IntValue DEPLOYED_GUN_TRACKING_RANGE;
+    private static final ModConfigSpec.IntValue AA_GUN_TRACKING_RANGE;
 
-    private static final ForgeConfigSpec.DoubleValue HEADSHOT_DAMAGE_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue CHESTSHOT_DAMAGE_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue ARMSHOT_DAMAGE_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue LEGSHOT_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER;
+    private static final ModConfigSpec.DoubleValue HEADSHOT_DAMAGE_MODIFIER;
+    private static final ModConfigSpec.DoubleValue CHESTSHOT_DAMAGE_MODIFIER;
+    private static final ModConfigSpec.DoubleValue ARMSHOT_DAMAGE_MODIFIER;
+    private static final ModConfigSpec.DoubleValue LEGSHOT_MODIFIER;
+    private static final ModConfigSpec.DoubleValue VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER;
 
-    private static final ForgeConfigSpec.IntValue BREAKABLE_ARMOR;
-    private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_DURABILITY;
-    private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_ENCHANTABILITY;
-    private static final ForgeConfigSpec.BooleanValue FORCE_DEFENSE_AS_MODERN_ARMOR;
+    private static final ModConfigSpec.IntValue BREAKABLE_ARMOR;
+    private static final ModConfigSpec.IntValue DEFAULT_ARMOR_DURABILITY;
+    private static final ModConfigSpec.IntValue DEFAULT_ARMOR_ENCHANTABILITY;
+    private static final ModConfigSpec.BooleanValue FORCE_DEFENSE_AS_MODERN_ARMOR;
 
-    private static final ForgeConfigSpec.BooleanValue GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
-    private static final ForgeConfigSpec.BooleanValue FORCE_ALLOW_ALL_ATTACHMENTS;
-    private static final ForgeConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue GUN_RECOIL_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue GUN_DISPERSION_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue GUN_ACCURACY_SPREAD_MODIFIER;
-    private static final ForgeConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER;
-    private static final ForgeConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN;
-    private static final ForgeConfigSpec.BooleanValue CANCEL_RELOAD_ON_WEAPON_SWITCH;
-    private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
-    private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
-    private static final ForgeConfigSpec.BooleanValue REALISTIC_RECOIL;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
-    private static final ForgeConfigSpec.BooleanValue DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue MUZZLE_FLASH_PARTICLES_DEFAULT;
+    private static final ModConfigSpec.BooleanValue GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
+    private static final ModConfigSpec.BooleanValue FORCE_ALLOW_ALL_ATTACHMENTS;
+    private static final ModConfigSpec.DoubleValue GUN_DAMAGE_MODIFIER;
+    private static final ModConfigSpec.DoubleValue GUN_RECOIL_MODIFIER;
+    private static final ModConfigSpec.DoubleValue GUN_DISPERSION_MODIFIER;
+    private static final ModConfigSpec.DoubleValue GUN_ACCURACY_SPREAD_MODIFIER;
+    private static final ModConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER;
+    private static final ModConfigSpec.DoubleValue DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN;
+    private static final ModConfigSpec.BooleanValue CANCEL_RELOAD_ON_WEAPON_SWITCH;
+    private static final ModConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
+    private static final ModConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final ModConfigSpec.BooleanValue REALISTIC_RECOIL;
+    private static final ModConfigSpec.BooleanValue ENABLE_SIGHT_DOWNWARD_MOVEMENT;
+    private static final ModConfigSpec.BooleanValue DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue MUZZLE_FLASH_PARTICLES_DEFAULT;
 
-    private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO;
-    private static final ForgeConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
-    private static final ForgeConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
-    private static final ForgeConfigSpec.DoubleValue LOCK_ON_RANGE;
-    private static final ForgeConfigSpec.IntValue FLAK_PARTICLES_RANGE;
-    private static final ForgeConfigSpec.DoubleValue ENTITY_HIT_PARTICLE_RANGE;
-    private static final ForgeConfigSpec.DoubleValue BLOCK_HIT_PARTICLE_RANGE;
-    private static final ForgeConfigSpec.IntValue SMOKE_PARTICLES_COUNT;
-    private static final ForgeConfigSpec.DoubleValue SMOKE_PARTICLES_RANGE;
+    private static final ModConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
+    private static final ModConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
+    private static final ModConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
+    private static final ModConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
+    private static final ModConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
+    private static final ModConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO;
+    private static final ModConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
+    private static final ModConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
+    private static final ModConfigSpec.DoubleValue LOCK_ON_RANGE;
+    private static final ModConfigSpec.IntValue FLAK_PARTICLES_RANGE;
+    private static final ModConfigSpec.DoubleValue ENTITY_HIT_PARTICLE_RANGE;
+    private static final ModConfigSpec.DoubleValue BLOCK_HIT_PARTICLE_RANGE;
+    private static final ModConfigSpec.IntValue SMOKE_PARTICLES_COUNT;
+    private static final ModConfigSpec.DoubleValue SMOKE_PARTICLES_RANGE;
 
-    private static final ForgeConfigSpec.DoubleValue SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue EXPLOSION_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue EXPLOSION_SOUND_RANGE;
 
-    private static final ForgeConfigSpec.BooleanValue USE_NEW_PENETRATION_SYSTEM;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_BLOCK_PENETRATION;
-    private static final ForgeConfigSpec.DoubleValue BLOCK_PENETRATION_MODIFIER;
+    private static final ModConfigSpec.BooleanValue USE_NEW_PENETRATION_SYSTEM;
+    private static final ModConfigSpec.BooleanValue ENABLE_BLOCK_PENETRATION;
+    private static final ModConfigSpec.DoubleValue BLOCK_PENETRATION_MODIFIER;
 
-    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
 
-    private static final ForgeConfigSpec.BooleanValue ENABLE_DIGITAL_AMMO_SYSTEM;
-    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_DEFAULT_AMOUNT;
-    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_MAX_AMOUNT;
-    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_NUM_TYPES;
-    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
-    private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
+    private static final ModConfigSpec.BooleanValue ENABLE_DIGITAL_AMMO_SYSTEM;
+    private static final ModConfigSpec.IntValue DIGITAL_AMMO_DEFAULT_AMOUNT;
+    private static final ModConfigSpec.IntValue DIGITAL_AMMO_MAX_AMOUNT;
+    private static final ModConfigSpec.IntValue DIGITAL_AMMO_NUM_TYPES;
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
+    private static final ModConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
 
-    private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
+    private static final ModConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
 
-    private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
     private static final AtomicReference<EntityTrackingRanges> earlyEntityTrackingRanges = new AtomicReference<>();
@@ -311,7 +311,7 @@ public final class ModCommonConfig
             .comment("Per-block penetration data.",
                 "Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>",
                 "Example: minecraft:stone; 3.0; false")
-            .defineList("blocks", Collections.emptyList(), String.class::isInstance);
+            .defineListAllowEmpty("blocks", Collections.emptyList(), () -> "", String.class::isInstance);
         builder.pop();
 
         builder.push("Digital Ammo System Settings");
@@ -333,7 +333,7 @@ public final class ModCommonConfig
             .comment("List of block IDs that act as supply blocks for digital ammo.",
                 "When a player right-clicks these blocks, their digital ammo is replenished.",
                 "Format: namespace:block (e.g., minecraft:iron_block)")
-            .defineList("digitalAmmoSupplyBlocks", Collections.emptyList(), String.class::isInstance);
+            .defineListAllowEmpty("digitalAmmoSupplyBlocks", Collections.emptyList(), () -> "", String.class::isInstance);
         DIGITAL_AMMO_SUPPLY_AMOUNT = builder
             .comment("Amount of ammo to restore for each type when using supply blocks")
             .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);

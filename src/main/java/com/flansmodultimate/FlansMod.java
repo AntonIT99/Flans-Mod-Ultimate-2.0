@@ -7,7 +7,6 @@ import com.flansmodultimate.common.block.TeamSpawnerBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -37,32 +36,33 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.network.IContainerFactory;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Mixins;
 
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -74,7 +74,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -138,6 +138,8 @@ public class FlansMod
     // Resource Locations
     public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
     public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
+    /** Valid fallback for render APIs which no longer accept an empty resource path. */
+    public static final ResourceLocation defaultFallbackTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
     public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
     public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
@@ -150,139 +152,138 @@ public class FlansMod
     public static final ResourceLocation teamsOpenCreatesGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_open_crates.png");
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(BuiltInRegistries.ITEM, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(BuiltInRegistries.MENU, FlansMod.MOD_ID);
+    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, FlansMod.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FlansMod.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FlansMod.MOD_ID);
 
     // Blocks
-    public static final RegistryObject<Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(3F, 6F)
         .sound(SoundType.METAL)
         .requiresCorrectToolForDrops()
         .pushReaction(PushReaction.BLOCK))
     );
-    public static final RegistryObject<Block> paintjobTable = blockRegistry.register("paintjobtable", () -> new PaintjobTableBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> paintjobTable = blockRegistry.register("paintjobtable", () -> new PaintjobTableBlock(BlockBehaviour.Properties.of()
         .strength(2F, 4F)
         .sound(SoundType.STONE))
     );
-    public static final RegistryObject<Block> playerSpawner = blockRegistry.register("teams_player_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.PLAYER,
+    public static final DeferredHolder<Block, ? extends Block> playerSpawner = blockRegistry.register("teams_player_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.PLAYER,
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
-    public static final RegistryObject<Block> itemSpawner = blockRegistry.register("teams_item_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM,
+    public static final DeferredHolder<Block, ? extends Block> itemSpawner = blockRegistry.register("teams_item_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM,
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
-    public static final RegistryObject<Block> vehicleSpawner = blockRegistry.register("teams_vehicle_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE,
+    public static final DeferredHolder<Block, ? extends Block> vehicleSpawner = blockRegistry.register("teams_vehicle_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE,
         BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
 
     // Block Entities
-    public static final RegistryObject<BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
-    public static final RegistryObject<BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
-    public static final RegistryObject<BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
 
     // Items
-    public static final RegistryObject<Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
-    public static final RegistryObject<Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
-    public static final RegistryObject<Item> paintjobTableItem = itemRegistry.register("paintjobtable", () -> new BlockItem(paintjobTable.get(), new Item.Properties()));
-    public static final RegistryObject<Item> playerSpawnerItem = itemRegistry.register("teams_player_spawner", () -> new BlockItem(playerSpawner.get(), new Item.Properties()));
-    public static final RegistryObject<Item> itemSpawnerItem = itemRegistry.register("teams_item_spawner", () -> new BlockItem(itemSpawner.get(), new Item.Properties()));
-    public static final RegistryObject<Item> vehicleSpawnerItem = itemRegistry.register("teams_vehicle_spawner", () -> new BlockItem(vehicleSpawner.get(), new Item.Properties()));
-    public static final RegistryObject<Item> opStick = itemRegistry.register("op_stick", ItemOpStick::new);
-    public static final RegistryObject<Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
+    public static final DeferredHolder<Item, ? extends Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> paintjobTableItem = itemRegistry.register("paintjobtable", () -> new BlockItem(paintjobTable.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> playerSpawnerItem = itemRegistry.register("teams_player_spawner", () -> new BlockItem(playerSpawner.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> itemSpawnerItem = itemRegistry.register("teams_item_spawner", () -> new BlockItem(itemSpawner.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> vehicleSpawnerItem = itemRegistry.register("teams_vehicle_spawner", () -> new BlockItem(vehicleSpawner.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> opStick = itemRegistry.register("op_stick", ItemOpStick::new);
+    public static final DeferredHolder<Item, ? extends Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
 
     // Menus
-    public static final RegistryObject<MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
-    public static final RegistryObject<MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
-    public static final RegistryObject<MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> IForgeMenuType.create(DriveableInventoryMenu::createFromNetwork));
-    public static final RegistryObject<MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> IForgeMenuType.create(PaintjobTableMenu::createFromNetwork));
-    public static final RegistryObject<MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> IForgeMenuType.create(ArmorBoxMenu::createFromNetwork));
-    public static final RegistryObject<MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create(GunBoxMenu::createFromNetwork));
+    public static final DeferredHolder<MenuType<?>, MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
+    public static final DeferredHolder<MenuType<?>, MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> menuType((windowId, inv, buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
+    public static final DeferredHolder<MenuType<?>, MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> menuType(DriveableInventoryMenu::createFromNetwork));
+    public static final DeferredHolder<MenuType<?>, MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> menuType(PaintjobTableMenu::createFromNetwork));
+    public static final DeferredHolder<MenuType<?>, MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> menuType(ArmorBoxMenu::createFromNetwork));
+    public static final DeferredHolder<MenuType<?>, MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> menuType(GunBoxMenu::createFromNetwork));
 
     // Particles
-    public static final RegistryObject<SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> bigSmokeParticle = particleRegistry.register("big_smoke", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> debris1Particle = particleRegistry.register("debris_1", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> explodeParticle = particleRegistry.register("explode", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> flareParticle = particleRegistry.register("flare", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> flashParticle = particleRegistry.register("flash", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmFlameParticle = particleRegistry.register("fm_flame", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmMuzzleFlashParticle = particleRegistry.register("fm_muzzle_flash", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmSmokeParticle = particleRegistry.register("fm_smoke", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmTracerParticle = particleRegistry.register("fm_tracer", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmTracerGreenParticle = particleRegistry.register("fm_tracer_green", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> fmTracerRedParticle = particleRegistry.register("fm_tracer_red", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> rocketExhaustParticle = particleRegistry.register("rocket_exhaust", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> smokeBurstParticle = particleRegistry.register("smoke_burst", () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> bigSmokeParticle = particleRegistry.register("big_smoke", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> debris1Particle = particleRegistry.register("debris_1", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> explodeParticle = particleRegistry.register("explode", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> flareParticle = particleRegistry.register("flare", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> flashParticle = particleRegistry.register("flash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmFlameParticle = particleRegistry.register("fm_flame", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmMuzzleFlashParticle = particleRegistry.register("fm_muzzle_flash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmSmokeParticle = particleRegistry.register("fm_smoke", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmTracerParticle = particleRegistry.register("fm_tracer", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmTracerGreenParticle = particleRegistry.register("fm_tracer_green", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> fmTracerRedParticle = particleRegistry.register("fm_tracer_red", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> rocketExhaustParticle = particleRegistry.register("rocket_exhaust", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> smokeBurstParticle = particleRegistry.register("smoke_burst", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
     // Entities
-    public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.bulletRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString())
     );
-    public static final RegistryObject<EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.grenadeRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
     );
-    public static final RegistryObject<EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.deployedGunRegistrationTrackingRange())
         .updateInterval(5)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
     );
-    public static final RegistryObject<EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
         .sized(1F, 1F)
         .clientTrackingRange(16)
         .updateInterval(20)
         .build("gun_item")
     );
-    public static final RegistryObject<EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.aaGunRegistrationTrackingRange())
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
     );
-    public static final RegistryObject<EntityType<Parachute>> parachuteEntity = entityRegistry.register("parachute", () -> EntityType.Builder.<Parachute>of(Parachute::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Parachute>> parachuteEntity = entityRegistry.register("parachute", () -> EntityType.Builder.<Parachute>of(Parachute::new, MobCategory.MISC)
         .sized(Parachute.DEFAULT_HITBOX_WIDTH, Parachute.DEFAULT_HITBOX_HEIGHT)
         .clientTrackingRange(64)
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "parachute").toString())
     );
-    public static final RegistryObject<EntityType<Plane>> planeEntity = entityRegistry.register("plane", () -> EntityType.Builder.<Plane>of(Plane::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Plane>> planeEntity = entityRegistry.register("plane", () -> EntityType.Builder.<Plane>of(Plane::new, MobCategory.MISC)
         .sized(3F, 2F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "plane").toString())
     );
-    public static final RegistryObject<EntityType<Vehicle>> vehicleEntity = entityRegistry.register("vehicle", () -> EntityType.Builder.<Vehicle>of(Vehicle::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Vehicle>> vehicleEntity = entityRegistry.register("vehicle", () -> EntityType.Builder.<Vehicle>of(Vehicle::new, MobCategory.MISC)
         .sized(2.5F, 2F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "vehicle").toString())
     );
-    public static final RegistryObject<EntityType<Mecha>> mechaEntity = entityRegistry.register("mecha", () -> EntityType.Builder.<Mecha>of(Mecha::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Mecha>> mechaEntity = entityRegistry.register("mecha", () -> EntityType.Builder.<Mecha>of(Mecha::new, MobCategory.MISC)
         .sized(2F, 4F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "mecha").toString())
     );
-    public static final RegistryObject<EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
         .sized(0.6F, 0.6F)
         .clientTrackingRange(128)
         .updateInterval(1)
@@ -291,7 +292,7 @@ public class FlansMod
         .noSummon()
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_seat").toString())
     );
-    public static final RegistryObject<EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
         .sized(0.75F, 0.75F)
         .clientTrackingRange(128)
         .updateInterval(1)
@@ -300,32 +301,30 @@ public class FlansMod
         .noSummon()
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_wheel").toString())
     );
-    public static final RegistryObject<EntityType<Flagpole>> flagpoleEntity = entityRegistry.register("flagpole", () -> EntityType.Builder.<Flagpole>of(Flagpole::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Flagpole>> flagpoleEntity = entityRegistry.register("flagpole", () -> EntityType.Builder.<Flagpole>of(Flagpole::new, MobCategory.MISC)
         .sized(0.75F, 2.5F).clientTrackingRange(64).updateInterval(10)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flagpole").toString()));
-    public static final RegistryObject<EntityType<Flag>> flagEntity = entityRegistry.register("flag", () -> EntityType.Builder.<Flag>of(Flag::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<Flag>> flagEntity = entityRegistry.register("flag", () -> EntityType.Builder.<Flag>of(Flag::new, MobCategory.MISC)
         .sized(0.75F, 0.75F).clientTrackingRange(64).updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flag").toString()));
 
-    private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+    private static final Map<EnumType, List<DeferredHolder<Item, ? extends Item>>> items = new EnumMap<>(EnumType.class);
     @Getter
-    private static final Map<EnumType, Map<String, RegistryObject<Block>>> blocks = new EnumMap<>(EnumType.class);
-    private static final Map<ResourceLocation, RegistryObject<SoundEvent>> sounds = new HashMap<>();
+    private static final Map<EnumType, Map<String, DeferredHolder<Block, ? extends Block>>> blocks = new EnumMap<>(EnumType.class);
+    private static final Map<ResourceLocation, DeferredHolder<SoundEvent, SoundEvent>> sounds = new HashMap<>();
     @Getter
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
-    public FlansMod(FMLJavaModLoadingContext context)
+    public FlansMod(IEventBus modEventBus, ModContainer modContainer)
     {
+        modEventBus.addListener(PacketHandler::register);
+        modEventBus.addListener(NeoForgeChunkTickets::register);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
         Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));
-        Mixins.addConfiguration(MOD_ID + ".mixins.json");
-
-        IEventBus modEventBus = context.getModEventBus();
-
         // Init Configs
-        context.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
-        context.registerConfig(ModConfig.Type.COMMON, ModApocalypseConfig.configSpec, ModApocalypseConfig.CONFIG_FILE_NAME);
-        context.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
+        modContainer.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
+        modContainer.registerConfig(ModConfig.Type.COMMON, ModApocalypseConfig.configSpec, ModApocalypseConfig.CONFIG_FILE_NAME);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
 
         ApocalypseContent.register(modEventBus);
 
@@ -338,9 +337,6 @@ public class FlansMod
         creativeModeTabRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
         menuRegistry.register(modEventBus);
-        enchantmentRegistry.register(modEventBus);
-
-        EnchantmentModule.register(enchantmentRegistry);
 
         waitForPacksExtractionIfPresent();
 
@@ -351,8 +347,11 @@ public class FlansMod
         ContentManager.readContentPacks();
         registerSounds();
         registerCreativeModeTabs();
+    }
 
-        MinecraftForge.EVENT_BUS.register(this);
+    private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> menuType(IContainerFactory<T> factory)
+    {
+        return new MenuType<>(factory, FeatureFlags.DEFAULT_FLAGS);
     }
 
     private static void waitForPacksExtractionIfPresent()
@@ -437,6 +436,7 @@ public class FlansMod
         UNSUPPORTED
     }
 
+    @SuppressWarnings("unchecked") // Java cannot create a generic ResourceKey varargs array directly.
     private static void registerCreativeModeTabs()
     {
         ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MOD_ID, CreativeTabs.TAB_GENERAL));
@@ -448,7 +448,7 @@ public class FlansMod
             ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_bullets"))
         };
 
-        List<RegistryObject<Item>> generalItemList = new ArrayList<>();
+        List<DeferredHolder<Item, ? extends Item>> generalItemList = new ArrayList<>();
         generalItemList.add(FlansMod.gunWorkbenchItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
@@ -486,10 +486,10 @@ public class FlansMod
 
     private static Block[] getRegisteredBlocks(EnumType type)
     {
-        Map<String, RegistryObject<Block>> registeredBlocks = blocks.get(type);
+        Map<String, DeferredHolder<Block, ? extends Block>> registeredBlocks = blocks.get(type);
         if (registeredBlocks == null)
             return new Block[0];
-        return registeredBlocks.values().stream().map(RegistryObject::get).toArray(Block[]::new);
+        return registeredBlocks.values().stream().map(DeferredHolder::get).toArray(Block[]::new);
     }
 
     private static void registerSounds()
@@ -526,30 +526,30 @@ public class FlansMod
         if (sounds.containsKey(rl))
             return;
 
-        RegistryObject<SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl));
+        DeferredHolder<SoundEvent, SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl));
         sounds.put(rl, soundEvent);
         if (typeFile != null)
             soundsOrigins.put(rl, typeFile);
     }
 
     @Unmodifiable
-    public static List<RegistryObject<Item>> getItems()
+    public static List<DeferredHolder<Item, ? extends Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
     }
 
-    public static List<RegistryObject<Item>> getItems(EnumType type)
+    public static List<DeferredHolder<Item, ? extends Item>> getItems(EnumType type)
     {
         return items.get(type);
     }
 
     @Unmodifiable
-    public static List<RegistryObject<Item>> getItems(Set<EnumType> types)
+    public static List<DeferredHolder<Item, ? extends Item>> getItems(Set<EnumType> types)
     {
         return types.stream().map(items::get).flatMap(List::stream).toList();
     }
 
-    public static Optional<RegistryObject<SoundEvent>> getSoundEvent(String soundName)
+    public static Optional<DeferredHolder<SoundEvent, SoundEvent>> getSoundEvent(String soundName)
     {
         ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
         return Optional.ofNullable(sounds.get(rl));

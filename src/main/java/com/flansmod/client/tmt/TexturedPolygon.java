@@ -219,9 +219,11 @@ public class TexturedPolygon
         final float localY = (float)vertex.vector3D.y() * INV_16;
         final float localZ = (float)vertex.vector3D.z() * INV_16;
 
-        transformedPos.set(localX, localY, localZ, 1F);
-        positionMatrix.transform(transformedPos);
-
-        vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
+        vertexConsumer.addVertex(positionMatrix, localX, localY, localZ)
+            .setColor(red, green, blue, alpha)
+            .setUv(vertex.texturePositionX, vertex.texturePositionY)
+            .setOverlay(packedOverlay)
+            .setLight(finalLight)
+            .setNormal(normalX, normalY, normalZ);
     }
 }
