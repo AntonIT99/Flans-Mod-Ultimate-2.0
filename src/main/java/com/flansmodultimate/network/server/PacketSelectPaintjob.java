@@ -12,7 +12,7 @@ import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -31,13 +31,13 @@ public class PacketSelectPaintjob implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeInt(paintjobId);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         paintjobId = data.readInt();
     }
@@ -178,7 +178,7 @@ public class PacketSelectPaintjob implements IServerPacket
             int required = want.getCount();
 
             int fromCans = 0;
-            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameTags(cansSlot, want))
+            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameComponents(cansSlot, want))
                 fromCans = cansSlot.getCount();
 
             int fromInv = InventoryHelper.countInInventory(inv, want);
@@ -204,7 +204,7 @@ public class PacketSelectPaintjob implements IServerPacket
             int remaining = want.getCount();
 
             // 1) Consume from slot 1 first (if it matches)
-            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameTags(cansSlot, want))
+            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameComponents(cansSlot, want))
             {
                 int take = Math.min(remaining, cansSlot.getCount());
                 cansSlot.shrink(take);

@@ -5,7 +5,7 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -22,13 +22,13 @@ public class PacketCancelSound implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeUUID(instanceUUID);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         instanceUUID = data.readUUID();
     }

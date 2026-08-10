@@ -10,12 +10,13 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketIO;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -100,42 +101,59 @@ public final class PacketLoadoutState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeByte(openScreen.ordinal());
         data.writeUtf(poolId); data.writeUtf(poolName);
         data.writeVarInt(rank); data.writeVarInt(experience); data.writeVarInt(experienceForNextRank);
         data.writeVarInt(selectedLoadout); data.writeVarInt(editLoadout); data.writeUtf(revealedReward);
-        data.writeCollection(loadouts, (buf, loadout) -> loadout.write(buf));
-        data.writeCollection(loadoutUnlockRanks, FriendlyByteBuf::writeVarInt);
-        data.writeCollection(entries, (buf, entry) -> {
-            buf.writeByte(entry.slot().ordinal()); buf.writeUtf(entry.typeId()); buf.writeUtf(entry.name());
-            buf.writeVarInt(entry.unlockRank()); buf.writeItem(entry.preview());
-        });
-        data.writeCollection(boxes, (buf, box) -> {
-            buf.writeUUID(box.id()); buf.writeUtf(box.boxId()); buf.writeUtf(box.name()); buf.writeBoolean(box.opened());
-            buf.writeUtf(box.rewardKey()); buf.writeItem(box.preview());
-        });
+        data.writeVarInt(loadouts.size());
+        for (PlayerLoadout loadout : loadouts) loadout.write(data);
+        data.writeVarInt(loadoutUnlockRanks.size());
+        for (int unlockRank : loadoutUnlockRanks) data.writeVarInt(unlockRank);
+        data.writeVarInt(entries.size());
+        for (Entry entry : entries)
+        {
+            data.writeByte(entry.slot().ordinal()); data.writeUtf(entry.typeId()); data.writeUtf(entry.name());
+            data.writeVarInt(entry.unlockRank()); PacketIO.writeItem(data, entry.preview());
+        }
+        data.writeVarInt(boxes.size());
+        for (BoxView box : boxes)
+        {
+            data.writeUUID(box.id()); data.writeUtf(box.boxId()); data.writeUtf(box.name()); data.writeBoolean(box.opened());
+            data.writeUtf(box.rewardKey()); PacketIO.writeItem(data, box.preview());
+        }
         data.writeCollection(rewards, (buf, reward) -> {
             buf.writeUtf(reward.key()); buf.writeUtf(reward.typeId()); buf.writeUtf(reward.name()); buf.writeVarInt(reward.rarity());
         });
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         poolId = data.readUtf(); poolName = data.readUtf();
         rank = data.readVarInt(); experience = data.readVarInt(); experienceForNextRank = data.readVarInt();
         selectedLoadout = data.readVarInt(); editLoadout = data.readVarInt(); revealedReward = data.readUtf();
-        loadouts = data.readList(PlayerLoadout::read);
-        loadoutUnlockRanks = data.readList(FriendlyByteBuf::readVarInt);
-        entries = data.readList(buf -> {
-            int slot = buf.readUnsignedByte();
-            return new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], buf.readUtf(), buf.readUtf(), buf.readVarInt(), buf.readItem());
-        });
-        boxes = data.readList(buf -> new BoxView(buf.readUUID(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readUtf(), buf.readItem()));
+        int loadoutCount = data.readVarInt();
+        loadouts = new ArrayList<>(loadoutCount);
+        for (int i = 0; i < loadoutCount; i++) loadouts.add(PlayerLoadout.read(data));
+        int unlockCount = data.readVarInt();
+        loadoutUnlockRanks = new ArrayList<>(unlockCount);
+        for (int i = 0; i < unlockCount; i++) loadoutUnlockRanks.add(data.readVarInt());
+        int entryCount = data.readVarInt();
+        entries = new ArrayList<>(entryCount);
+        for (int i = 0; i < entryCount; i++)
+        {
+            int slot = data.readUnsignedByte();
+            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)],
+                data.readUtf(), data.readUtf(), data.readVarInt(), PacketIO.readItem(data)));
+        }
+        int boxCount = data.readVarInt();
+        boxes = new ArrayList<>(boxCount);
+        for (int i = 0; i < boxCount; i++)
+            boxes.add(new BoxView(data.readUUID(), data.readUtf(), data.readUtf(), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
         rewards = data.readList(buf -> new RewardView(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
     }
 

@@ -6,7 +6,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -43,7 +43,7 @@ public final class PacketDriveableDamage implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buffer)
+    public void encodeInto(RegistryFriendlyByteBuf buffer)
     {
         buffer.writeVarInt(driveableId);
         buffer.writeVarInt(partOrdinals.length);
@@ -57,7 +57,7 @@ public final class PacketDriveableDamage implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buffer)
+    public void decodeInto(RegistryFriendlyByteBuf buffer)
     {
         driveableId = buffer.readVarInt();
         int count = buffer.readVarInt();

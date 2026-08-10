@@ -6,10 +6,10 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -27,13 +27,13 @@ public class PacketGunScopedState implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeBoolean(isScoped);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         isScoped = data.readBoolean();
     }

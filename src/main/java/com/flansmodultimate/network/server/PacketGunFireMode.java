@@ -10,7 +10,7 @@ import com.flansmodultimate.network.client.PacketGunFireModeClient;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -27,13 +27,13 @@ public class PacketGunFireMode implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeEnum(hand);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         hand = data.readEnum(InteractionHand.class);
     }

@@ -19,23 +19,28 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.neoforge.NeoForgeDamageContext;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -59,15 +64,15 @@ import java.util.Set;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = FlansMod.MOD_ID)
 public final class CommonEventHandler
 {
     private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        BuiltInLootTables.ABANDONED_MINESHAFT,
-        BuiltInLootTables.VILLAGE_WEAPONSMITH,
-        BuiltInLootTables.END_CITY_TREASURE,
-        BuiltInLootTables.NETHER_BRIDGE,
-        BuiltInLootTables.DESERT_PYRAMID,
+        BuiltInLootTables.ABANDONED_MINESHAFT.location(),
+        BuiltInLootTables.VILLAGE_WEAPONSMITH.location(),
+        BuiltInLootTables.END_CITY_TREASURE.location(),
+        BuiltInLootTables.NETHER_BRIDGE.location(),
+        BuiltInLootTables.DESERT_PYRAMID.location(),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
     );
@@ -136,11 +141,8 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event)
+    public static void onServerTick(ServerTickEvent.Post event)
     {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
         if (ticker == Long.MAX_VALUE)
             ticker = 0;
         else
@@ -178,12 +180,9 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event)
+    public static void onPlayerTick(PlayerTickEvent.Post event)
     {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
-        Player player = event.player;
+        Player player = event.getEntity();
         PlayerData.getInstance(player).tick(player);
 
         if (!player.level().isClientSide)
@@ -232,26 +231,26 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public static void onItemPickup(EntityItemPickupEvent event)
+    public static void onItemPickup(ItemEntityPickupEvent.Pre event)
     {
-        if (!(event.getEntity() instanceof ServerPlayer player))
+        if (!(event.getPlayer() instanceof ServerPlayer player))
             return;
         FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
-            if (!type.canPlayerPickup(FlansMod.teamsManager, player, event.getItem().getItem()))
-                event.setCanceled(true);
+            if (!type.canPlayerPickup(FlansMod.teamsManager, player, event.getItemEntity().getItem()))
+                event.setCanPickup(TriState.FALSE);
         });
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event)
+    public static void onLivingTick(EntityTickEvent.Post event)
     {
-        if (event.getEntity().level().isClientSide)
+        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide)
             return;
 
-        if (event.getEntity() instanceof Player || event.getEntity() instanceof Mob)
+        if (living instanceof Player || living instanceof Mob)
         {
-            CustomArmorItem.handleSpecialEffects(event.getEntity());
-            CustomArmorItem.handleMobEffects(event.getEntity());
+            CustomArmorItem.handleSpecialEffects(living);
+            CustomArmorItem.handleMobEffects(living);
         }
     }
 
@@ -266,7 +265,7 @@ public final class CommonEventHandler
     }
 
     @SubscribeEvent
-    public static void onLivingAttack(LivingAttackEvent event)
+    public static void onLivingDamage(LivingIncomingDamageEvent event)
     {
         LivingEntity entity = event.getEntity();
         if (entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat)
@@ -279,26 +278,25 @@ public final class CommonEventHandler
                     event.setCanceled(true);
             });
         }
-    }
 
-    @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event)
-    {
-        LivingEntity entity = event.getEntity();
-        DamageSource source = event.getSource();
+        if (event.isCanceled())
+            return;
+
+        MutableDamageContext damage = new NeoForgeDamageContext(event);
+        DamageSource source = damage.source();
 
         if (entity.level().isClientSide)
             return;
 
-        EnchantmentModule.applyOffHandWeaponDamage(event);
-        EnchantmentModule.applyJuggernaut(event);
+        EnchantmentModule.applyOffHandWeaponDamage(damage);
+        EnchantmentModule.applyJuggernaut(damage);
 
         if (entity instanceof Player player)
         {
             float absorption = getShieldAbsorption(player);
             if (absorption > 0F && !FlanDamageSources.isShootableDamage(source) && isAttackFromFront(player, source))
             {
-                event.setAmount(event.getAmount() * (1F - absorption));
+                damage.setAmount(damage.amount() * (1F - absorption));
             }
         }
 
@@ -306,14 +304,14 @@ public final class CommonEventHandler
         {
             if (FlanDamageSources.isShootableDamage(source))
             {
-                if (CustomArmorItem.tryApplyIgnoreArmorShot(event, entity, source))
+                if (CustomArmorItem.tryApplyIgnoreArmorShot(damage, entity, source))
                     return;
             }
 
-            CustomArmorItem.applyOldArmorRatioSystem(event, entity);
+            CustomArmorItem.applyOldArmorRatioSystem(damage, entity);
 
             if (FlanDamageSources.isShootableDamage(source))
-                CustomArmorItem.applyArmorBulletDefense(event, entity);
+                CustomArmorItem.applyArmorBulletDefense(damage, entity);
         }
     }
 

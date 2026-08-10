@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import com.flansmodultimate.platform.item.ItemStackData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -139,22 +141,22 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
+        super.saveAdditional(tag, registries);
         tag.putUUID(NBT_OBJECT_ID, objectId);
         if (baseId != null)
             tag.putUUID(NBT_BASE_ID, baseId);
         tag.putString(NBT_MODE, mode.name()); tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks); tag.putInt(NBT_CURRENT_DELAY, currentDelay);
         ListTag items = new ListTag();
-        templates.forEach(stack -> items.add(stack.save(new CompoundTag())));
+        templates.forEach(stack -> items.add(ItemStackData.save(stack, registries)));
         tag.put(NBT_ITEMS, items);
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        super.load(tag);
+        super.loadAdditional(tag, registries);
         objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
         baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
 
@@ -171,7 +173,7 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         templates.clear();
 
         for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
-            templates.add(ItemStack.of((CompoundTag) item));
+            templates.add(ItemStackData.parse(registries, (CompoundTag) item));
     }
 
     private void setChangedAndSync()

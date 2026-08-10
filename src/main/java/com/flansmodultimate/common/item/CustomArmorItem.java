@@ -1,17 +1,19 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -19,6 +21,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,6 +29,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,7 +48,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     private static final int EFFECT_CHECK_PERIOD = 40; // every 2 seconds
     protected static final int EFFECT_DURATION = 600; // 30 seconds
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
-    protected static final Map<UUID, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
+    protected static final Map<UUID, Set<Holder<MobEffect>>> LAST_ARMOR_EFFECTS = new HashMap<>();
 
     protected static final UUID[] armor_uuid = new UUID[] {
         UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"),
@@ -60,17 +65,17 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public CustomArmorItem(ArmorType configType)
     {
-        super(new CustomArmorMaterial(configType), configType.getArmorItemType(), new Properties());
+        super(CustomArmorMaterial.create(configType), configType.getArmorItemType(), new Properties().durability(configType.getDurability()));
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
     @Override
-    public int getEnchantmentValue()
+    public int getEnchantmentValue(ItemStack stack)
     {
         if (!configType.isReadEnchantability())
             return ModCommonConfig.get().defaultArmorEnchantability();
-        return material.getEnchantmentValue();
+        return material.value().enchantmentValue();
     }
 
     @Override
@@ -92,7 +97,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
@@ -111,7 +116,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (configType.getDurability() > 0F)
             tooltipComponents.add(IFlanItem.statLine("Durability", IFlanItem.formatDouble(configType.getDurability())));
         if (configType.getEnchantability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(getEnchantmentValue())));
+            tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(getEnchantmentValue(stack))));
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0F)
             tooltipComponents.add(IFlanItem.modifierLine("Jump Height", configType.getJumpModifier(), false));
@@ -137,29 +142,37 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     @Override
     @NotNull
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-        Multimap<Attribute, AttributeModifier> vanilla = super.getDefaultAttributeModifiers(slot);
+    public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack) {
+        ItemAttributeModifiers vanilla = super.getDefaultAttributeModifiers(stack);
+        EquipmentSlot slot = stack.getEquipmentSlot();
 
         if (slot == configType.getArmorItemType().getSlot())
         {
-            ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+            ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 
-            for (var entry : vanilla.entries())
+            for (ItemAttributeModifiers.Entry entry : vanilla.modifiers())
             {
-                Attribute attr = entry.getKey();
-                if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == null || entry.getValue() == null)
+                var attr = entry.attribute();
+                if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == Attributes.MOVEMENT_SPEED)
                     continue;
-                builder.put(attr, entry.getValue());
+                builder.add(attr, entry.modifier(), entry.slot());
             }
 
-            builder.put(Attributes.ARMOR, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor modifier", getDefense(), AttributeModifier.Operation.ADDITION));
-            builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor toughness", getToughness(), AttributeModifier.Operation.ADDITION));
-            builder.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(speed_uuid[configType.getArmorItemType().getSlot().getIndex()], "Movement Speed", configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
-            builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(kb_uuid[configType.getArmorItemType().getSlot().getIndex()], "Knockback Resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.MULTIPLY_TOTAL));
+            EquipmentSlotGroup group = EquipmentSlotGroup.bySlot(slot);
+            String slotName = slot.getName();
+            builder.add(Attributes.ARMOR, modifier("armor/" + slotName, getDefense(), AttributeModifier.Operation.ADD_VALUE), group);
+            builder.add(Attributes.ARMOR_TOUGHNESS, modifier("armor_toughness/" + slotName, getToughness(), AttributeModifier.Operation.ADD_VALUE), group);
+            builder.add(Attributes.MOVEMENT_SPEED, modifier("movement_speed/" + slotName, configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
+            builder.add(Attributes.KNOCKBACK_RESISTANCE, modifier("knockback_resistance/" + slotName, configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
             return builder.build();
         }
 
         return vanilla;
+    }
+
+    private static AttributeModifier modifier(String path, double amount, AttributeModifier.Operation operation)
+    {
+        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, path), amount, operation);
     }
 
     @Override
@@ -204,7 +217,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         int water = 0;
         int hunger = 0;
         int regen = 0;
-        Map<MobEffect, MobEffectInstance> desiredExtra = new HashMap<>();
+        Map<Holder<MobEffect>, MobEffectInstance> desiredExtra = new HashMap<>();
 
         for (ItemStack armor : entity.getArmorSlots())
         {
@@ -234,14 +247,14 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
                 {
                     if (mobEffectInstance == null)
                         continue;
-                    MobEffect eff = mobEffectInstance.getEffect();
+                    Holder<MobEffect> eff = mobEffectInstance.getEffect();
                     MobEffectInstance normalized = new MobEffectInstance(eff, EFFECT_DURATION, mobEffectInstance.getAmplifier(), true, mobEffectInstance.isVisible(), mobEffectInstance.showIcon());
                     mergeBestOf(desiredExtra, normalized);
                 }
             }
         }
 
-        Set<MobEffect> desiredNow = new HashSet<>(desiredExtra.keySet());
+        Set<Holder<MobEffect>> desiredNow = new HashSet<>(desiredExtra.keySet());
 
         if (nv > 0)
             desiredNow.add(MobEffects.NIGHT_VISION);
@@ -269,7 +282,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     /**
      * Best-of merge: choose higher amplifier; if tie, prefer longer duration (mostly irrelevant since we normalize).
      */
-    private static void mergeBestOf(Map<MobEffect, MobEffectInstance> out, MobEffectInstance incoming)
+    private static void mergeBestOf(Map<Holder<MobEffect>, MobEffectInstance> out, MobEffectInstance incoming)
     {
         out.merge(incoming.getEffect(), incoming, (cur, inc) -> {
             if (inc.getAmplifier() > cur.getAmplifier())
@@ -280,7 +293,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         });
     }
 
-    private static void ensureEffectLevel(LivingEntity entity, MobEffect effect, int piecesGivingIt)
+    private static void ensureEffectLevel(LivingEntity entity, Holder<MobEffect> effect, int piecesGivingIt)
     {
         if (piecesGivingIt <= 0)
         {
@@ -304,11 +317,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     /**
      * Applies desired extra effects and removes extra effects we previously applied but are no longer desired.
      */
-    private static void applyDesiredExtraEffects(LivingEntity entity, Map<MobEffect, MobEffectInstance> desiredExtra, Set<MobEffect> desiredNow)
+    private static void applyDesiredExtraEffects(LivingEntity entity, Map<Holder<MobEffect>, MobEffectInstance> desiredExtra, Set<Holder<MobEffect>> desiredNow)
     {
         for (MobEffectInstance desiredInst : desiredExtra.values())
         {
-            MobEffect eff = desiredInst.getEffect();
+            Holder<MobEffect> eff = desiredInst.getEffect();
             MobEffectInstance cur = entity.getEffect(eff);
 
             if (cur == null
@@ -328,18 +341,18 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
      * Removes effects that our armor system applied previously but are not desired anymore.
      * Uses "ambient" as a heuristic marker to avoid removing potion/beacon effects.
      */
-    private static void removeNoLongerDesiredArmorEffects(LivingEntity entity, Set<MobEffect> desiredNow)
+    private static void removeNoLongerDesiredArmorEffects(LivingEntity entity, Set<Holder<MobEffect>> desiredNow)
     {
         UUID uuid = entity.getUUID();
-        Set<MobEffect> last = LAST_ARMOR_EFFECTS.get(uuid);
+        Set<Holder<MobEffect>> last = LAST_ARMOR_EFFECTS.get(uuid);
         if (last == null || last.isEmpty())
             return;
 
         // Copy to avoid concurrent modification
-        Set<MobEffect> toRemove = new HashSet<>(last);
+        Set<Holder<MobEffect>> toRemove = new HashSet<>(last);
         toRemove.removeAll(desiredNow);
 
-        for (MobEffect eff : toRemove)
+        for (Holder<MobEffect> eff : toRemove)
         {
             MobEffectInstance cur = entity.getEffect(eff);
             if (cur != null && cur.isAmbient())
@@ -356,7 +369,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
      * Tracks which effects were applied by armor system.
      * We add/remove from LAST_ARMOR_EFFECTS based on whether we're actively applying it.
      */
-    private static void rememberAppliedEffect(LivingEntity entity, MobEffect effect, boolean applied)
+    private static void rememberAppliedEffect(LivingEntity entity, Holder<MobEffect> effect, boolean applied)
     {
         UUID uuid = entity.getUUID();
         if (applied) {
@@ -364,7 +377,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
         else
         {
-            Set<MobEffect> set = LAST_ARMOR_EFFECTS.get(uuid);
+            Set<Holder<MobEffect>> set = LAST_ARMOR_EFFECTS.get(uuid);
             if (set != null)
             {
                 set.remove(effect);
@@ -416,9 +429,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         entity.hurtMarked = true;
     }
 
-    public static void applyOldArmorRatioSystem(LivingHurtEvent event, LivingEntity entity)
+    public static void applyOldArmorRatioSystem(MutableDamageContext event, LivingEntity entity)
     {
-        float incoming = event.getAmount();
+        float incoming = event.amount();
         if (incoming <= 0F)
             return;
 
@@ -446,9 +459,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         event.setAmount(remaining);
     }
 
-    public static boolean tryApplyIgnoreArmorShot(LivingHurtEvent event, LivingEntity entity, DamageSource source)
+    public static boolean tryApplyIgnoreArmorShot(MutableDamageContext event, LivingEntity entity, DamageSource source)
     {
-        float damage = event.getAmount();
+        float damage = event.amount();
         if (damage <= 0.0F)
             return false;
 
@@ -489,11 +502,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
 
         //  Cancel the event so vanilla damage and your armor scaling don't run
-        event.setCanceled(true);
+        event.cancel();
         return true;
     }
 
-    public static void applyArmorBulletDefense(LivingHurtEvent event, LivingEntity entity)
+    public static void applyArmorBulletDefense(MutableDamageContext event, LivingEntity entity)
     {
         float totalNormalDef = 0.0F;
         float totalBulletDef = 0.0F;
@@ -510,7 +523,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         totalNormalDef = Mth.clamp(totalNormalDef, 0F, 1F);
         totalBulletDef = Mth.clamp(totalBulletDef, 0F, 1F);
 
-        float current = event.getAmount();
+        float current = event.amount();
         float denom = 1.0F - totalNormalDef;
         float target = 1.0F - totalBulletDef;
 

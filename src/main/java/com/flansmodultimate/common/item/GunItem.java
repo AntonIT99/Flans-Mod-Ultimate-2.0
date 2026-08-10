@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Plane;
@@ -14,11 +15,12 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,16 +28,19 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -43,6 +48,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
@@ -106,12 +112,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
-    {
-        ICustomRendereredItem.super.initializeClient(consumer);
-    }
-
-    @Override
     public boolean useCustomRendererInHand()
     {
         return true;
@@ -141,7 +141,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public int getUseDuration(@NotNull ItemStack stack)
+    public int getUseDuration(@NotNull ItemStack stack, @NotNull LivingEntity entity)
     {
         return 100;
     }
@@ -154,14 +154,15 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         // Legendary crafter tag
-        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
+        CompoundTag customTag = ItemStackData.copy(stack);
+        if (customTag.contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
-            String crafter = stack.getTag().getString(NBT_LEGENDARY_CRAFTER);
+            String crafter = customTag.getString(NBT_LEGENDARY_CRAFTER);
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
@@ -184,7 +185,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
 
             // Ammo info
-            for (ItemStack bulletStack : getBulletItemStackList(stack))
+            for (ItemStack bulletStack : getBulletItemStackList(stack, context.registries()))
             {
                 if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
                 {
@@ -232,7 +233,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
-            getBulletItemStackList(stack).stream()
+            getBulletItemStackList(stack, context.registries()).stream()
                 .map(ItemStack::getItem)
                 .filter(ShootableItem.class::isInstance)
                 .map(ShootableItem.class::cast)
@@ -403,7 +404,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      * Return true to cancel further processing (and client-side breaking animation).
      * We bounce a block update on the server to ensure proper visuals in creative.
      */
-    @Override
     public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player)
     {
         Level level = player.level();
@@ -472,21 +472,25 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
     {
-        if (slot != EquipmentSlot.MAINHAND)
-            return super.getAttributeModifiers(slot, stack);
+        if (stack.getEquipmentSlot() != EquipmentSlot.MAINHAND)
+            return super.getDefaultAttributeModifiers(stack);
 
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.putAll(super.getAttributeModifiers(slot, stack));
-        b.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.ADDITION));
-        b.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
-        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADDITION));
+        ItemAttributeModifiers.Builder b = ItemAttributeModifiers.builder();
+        for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
+            b.add(entry.attribute(), entry.modifier(), entry.slot());
+        b.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(
+            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "knockback_resistance"), configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        b.add(Attributes.MOVEMENT_SPEED, new AttributeModifier(
+            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "movement_speed"), configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), EquipmentSlotGroup.MAINHAND);
+        b.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(
+            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "attack_damage"), configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         return b.build();
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
     {
         if (StringUtils.isNotBlank(configType.getMeleeSound()))
             PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), true);
@@ -541,7 +545,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
         {
-            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
+            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
             if (decision == EnumFireDecision.RELOAD)
             {
                 boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
@@ -576,7 +580,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     private void ensureGunTags(ItemStack stack)
     {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(stack);
+        boolean dirty = false;
 
         if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
         {
@@ -585,10 +590,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 ammoList.add(new CompoundTag());
 
             tag.put(NBT_AMMO, ammoList);
+            dirty = true;
         }
 
         if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
+        {
             tag.putInt(NBT_PAINTJOB_ID, configType.getDefaultPaintjob().getId());
+            dirty = true;
+        }
+
+        if (dirty)
+            ItemStackData.set(stack, tag);
 
         configType.checkForTags(stack);
     }
@@ -597,16 +609,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      * Get the ammo item stack stored in the gun's NBT data (the loaded magazine / bullets).
      * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public ItemStack getAmmoItemStack(ItemStack gun, int id) {
+    public ItemStack getAmmoItemStack(ItemStack gun, int id, HolderLookup.Provider registries) {
         if (gun.isEmpty())
             return ItemStack.EMPTY;
 
-        CompoundTag tag = gun.getTag();
-        if (tag == null)
-        {
-            gun.setTag(new CompoundTag());
-            return ItemStack.EMPTY;
-        }
+        CompoundTag tag = ItemStackData.copy(gun);
 
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
@@ -615,7 +622,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             ListTag list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(nbt, list);
             return ItemStack.EMPTY;
         }
 
@@ -624,19 +630,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return ItemStack.EMPTY;
 
         CompoundTag slotTag = list.getCompound(id);
-        return ItemStack.of(slotTag);
+        return ItemStackData.parse(registries, slotTag);
     }
 
     /**
      * Set the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
      * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id) {
+    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id, HolderLookup.Provider registries) {
         if (gun.isEmpty() || id < 0)
             return;
 
         ListTag list;
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
         if (tag.contains(nbt, Tag.TAG_LIST))
@@ -654,22 +660,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         while (id >= list.size())
             list.add(new CompoundTag());
 
-        CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : bullet.save(new CompoundTag());
+        CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : ItemStackData.save(bullet, registries);
 
         list.set(id, slotTag);
         tag.put(nbt, list);
+        ItemStackData.set(gun, tag);
     }
 
     @Unmodifiable
-    public List<ItemStack> getBulletItemStackList(ItemStack gun)
+    public List<ItemStack> getBulletItemStackList(ItemStack gun, HolderLookup.Provider registries)
     {
         return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
-            .mapToObj(i -> getAmmoItemStack(gun, i))
+            .mapToObj(i -> getAmmoItemStack(gun, i, registries))
             .filter(s -> s != null && s.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(s))
             .toList();
     }
 
-    public int getReloadCount(ItemStack gunStack)
+    public int getReloadCount(ItemStack gunStack, HolderLookup.Provider registries)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
         if (maxAmmo <= 1)
@@ -677,29 +684,28 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         int emptySlots = 0;
         for (int i = 0; i < maxAmmo; i++)
         {
-            ItemStack bulletStack = getAmmoItemStack(gunStack, i);
+            ItemStack bulletStack = getAmmoItemStack(gunStack, i, registries);
             if (bulletStack == null || bulletStack.isEmpty() || !ShootableItem.hasRoundsLeft(bulletStack))
                 emptySlots++;
         }
         return emptySlots;
     }
 
-    public float getActualReloadTime(ItemStack gunStack, @Nullable ItemStack otherHand)
+    public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
+        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 
     public void setPreferredAmmo(ItemStack gun, String ammoName)
     {
-        CompoundTag tag = gun.getOrCreateTag();
-        tag.putString(NBT_PREFERRED_AMMO, ammoName);
+        ItemStackData.update(gun, tag -> tag.putString(NBT_PREFERRED_AMMO, ammoName));
     }
 
     public String getPreferredAmmo(ItemStack gun)
     {
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
         if (!tag.contains(NBT_PREFERRED_AMMO))
             setPreferredAmmo(gun, configType.getAmmo().iterator().next());
 

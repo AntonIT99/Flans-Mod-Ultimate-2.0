@@ -8,9 +8,11 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -145,7 +147,7 @@ public final class PacketTeamsState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeByte(openScreen.ordinal());
         data.writeBoolean(enabled);
@@ -165,10 +167,12 @@ public final class PacketTeamsState implements IClientPacket
         data.writeCollection(teamChoices, (buf, choice) -> {
             buf.writeUtf(choice.id()); buf.writeUtf(choice.name()); buf.writeInt(choice.colour());
         });
-        data.writeCollection(classChoices, (buf, choice) -> {
-            buf.writeUtf(choice.id()); buf.writeUtf(choice.name()); buf.writeVarInt(choice.unlockLevel());
-            buf.writeCollection(choice.loadout(), FriendlyByteBuf::writeItem);
-        });
+        data.writeVarInt(classChoices.size());
+        for (ClassChoice choice : classChoices)
+        {
+            data.writeUtf(choice.id()); data.writeUtf(choice.name()); data.writeVarInt(choice.unlockLevel());
+            PacketIO.writeItems(data, choice.loadout());
+        }
         data.writeCollection(teamScores, (buf, team) -> {
             buf.writeUtf(team.id()); buf.writeUtf(team.name()); buf.writeInt(team.colour()); buf.writeVarInt(team.score());
             buf.writeCollection(team.players(), PacketTeamsState::writePlayer);
@@ -185,7 +189,7 @@ public final class PacketTeamsState implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
@@ -203,7 +207,10 @@ public final class PacketTeamsState implements IClientPacket
         selectedTeam = data.readUtf();
         selectedClass = data.readUtf();
         teamChoices = data.readList(buf -> new TeamChoice(buf.readUtf(), buf.readUtf(), buf.readInt()));
-        classChoices = data.readList(buf -> new ClassChoice(buf.readUtf(), buf.readUtf(), buf.readVarInt(), buf.readList(FriendlyByteBuf::readItem)));
+        int classCount = data.readVarInt();
+        classChoices = new ArrayList<>(classCount);
+        for (int i = 0; i < classCount; i++)
+            classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), PacketIO.readItems(data)));
         teamScores = data.readList(buf -> new TeamScore(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readVarInt(), buf.readList(PacketTeamsState::readPlayer)));
         voteOptions = data.readList(buf -> new VoteOption(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
     }

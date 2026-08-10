@@ -8,7 +8,7 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -25,14 +25,14 @@ public class PacketSyncCommonConfig implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buf)
+    public void encodeInto(RegistryFriendlyByteBuf buf)
     {
         CommonConfigSnapshot.write(buf, commonSnapshot);
         ApocalypseConfigSnapshot.write(buf, apocalypseSnapshot);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buf)
+    public void decodeInto(RegistryFriendlyByteBuf buf)
     {
         commonSnapshot = CommonConfigSnapshot.read(buf);
         apocalypseSnapshot = ApocalypseConfigSnapshot.read(buf);

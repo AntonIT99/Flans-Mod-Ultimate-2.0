@@ -6,6 +6,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.teams.TeamsMap;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBaseEditState;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,7 +61,7 @@ public final class ItemOpStick extends Item
         if (!level.isClientSide)
         {
             Mode next = Mode.values()[(getMode(stack).ordinal() + 1) % Mode.values().length];
-            stack.getOrCreateTag().putInt(NBT_MODE, next.ordinal());
+            ItemStackData.update(stack, tag -> tag.putInt(NBT_MODE, next.ordinal()));
             clearConnection(stack);
             player.displayClientMessage(Component.literal("Operator stick: " + next.displayName).withStyle(ChatFormatting.YELLOW), true);
         }
@@ -95,11 +96,12 @@ public final class ItemOpStick extends Item
 
     private void connect(ServerPlayer player, ITeamObject object, ItemStack stack)
     {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(stack);
         if (!tag.hasUUID(NBT_CONNECTION))
         {
             tag.putUUID(NBT_CONNECTION, object.getObjectId());
             tag.putBoolean(NBT_CONNECTION_BASE, object instanceof ITeamBase);
+            ItemStackData.set(stack, tag);
             player.displayClientMessage(Component.literal("First endpoint selected"), false);
             return;
         }
@@ -160,23 +162,21 @@ public final class ItemOpStick extends Item
 
     public static Mode getMode(ItemStack stack)
     {
-        CompoundTag tag = stack.getTag();
-        int value = tag == null ? 0 : tag.getInt(NBT_MODE);
+        CompoundTag tag = ItemStackData.copy(stack);
+        int value = tag.getInt(NBT_MODE);
         return Mode.values()[Math.floorMod(value, Mode.values().length)];
     }
 
     private static void clearConnection(ItemStack stack)
     {
-        CompoundTag tag = stack.getTag();
-        if (tag != null)
-        {
+        ItemStackData.update(stack, tag -> {
             tag.remove(NBT_CONNECTION);
             tag.remove(NBT_CONNECTION_BASE);
-        }
+        });
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag)
     {
         tooltip.add(Component.literal("Mode: " + getMode(stack).displayName).withStyle(ChatFormatting.YELLOW));

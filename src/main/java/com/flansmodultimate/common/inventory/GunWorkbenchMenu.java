@@ -3,10 +3,12 @@ package com.flansmodultimate.common.inventory;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,6 +31,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     @Getter
     private final GunWorkbenchContainer gunInv;
     private final ContainerLevelAccess access;
+    private final HolderLookup.Provider registries;
 
     // layout constants
     private static final int GUN_SLOT_X = 184;
@@ -61,6 +64,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     {
         super(FlansMod.gunWorkbenchMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
+        this.registries = playerInv.player.level().registryAccess();
 
         // 1 gun + 8 specific + 8 generic = 17 slots
         gunInv = new GunWorkbenchContainer(this, 1 + SPECIFIC_ATTACHMENT_SLOTS + GENERIC_ATTACHMENT_SLOTS);
@@ -259,7 +263,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
         // Detect gun change (replacement)
         boolean gunChanged = lastGunStack.isEmpty()
-            || !ItemStack.isSameItemSameTags(gunStack, lastGunStack);
+            || !ItemStack.isSameItemSameComponents(gunStack, lastGunStack);
 
         if (gunChanged)
         {
@@ -279,14 +283,14 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private void loadAttachmentsFromGunIntoSlots(ItemStack gunStack)
     {
-        CompoundTag gunTag = gunStack.getOrCreateTag();
+        CompoundTag gunTag = ItemStackData.copy(gunStack);
         CompoundTag attachments = gunTag.getCompound(GunItem.NBT_ATTACHMENTS);
 
         // specific 1..8
         for (int i = 0; i < SPECIFIC_ATTACHMENT_SLOTS; i++)
         {
             CompoundTag attTag = attachments.getCompound(SPECIFIC_TAGS[i]);
-            ItemStack att = attTag.isEmpty() ? ItemStack.EMPTY : ItemStack.of(attTag);
+            ItemStack att = ItemStackData.parse(registries, attTag);
             gunInv.setItem(SLOT_SPECIFIC_START + i, att);
         }
 
@@ -294,7 +298,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         for (int i = 0; i < GENERIC_ATTACHMENT_SLOTS; i++)
         {
             CompoundTag attTag = attachments.getCompound(GunItem.NBT_GENERIC + i);
-            ItemStack att = attTag.isEmpty() ? ItemStack.EMPTY : ItemStack.of(attTag);
+            ItemStack att = ItemStackData.parse(registries, attTag);
             gunInv.setItem(SLOT_GENERIC_START + i, att);
         }
 
@@ -303,7 +307,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     private void writeSlotsIntoGunNbt(ItemStack gunStack)
     {
-        CompoundTag gunTag = gunStack.getOrCreateTag();
+        CompoundTag gunTag = ItemStackData.copy(gunStack);
         CompoundTag attachments = new CompoundTag();
 
         // specific
@@ -319,14 +323,14 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         }
 
         gunTag.put(GunItem.NBT_ATTACHMENTS, attachments);
-        gunStack.setTag(gunTag);
+        ItemStackData.set(gunStack, gunTag);
     }
 
-    private static void writeAttachmentTag(CompoundTag attachments, ItemStack stack, String name)
+    private void writeAttachmentTag(CompoundTag attachments, ItemStack stack, String name)
     {
         CompoundTag t = new CompoundTag();
         if (!stack.isEmpty())
-            stack.save(t);
+            ItemStackData.save(stack, registries, t);
         attachments.put(name, t);
     }
 

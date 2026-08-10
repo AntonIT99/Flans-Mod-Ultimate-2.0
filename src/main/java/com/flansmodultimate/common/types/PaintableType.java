@@ -4,20 +4,23 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.SetNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,12 +141,12 @@ public abstract class PaintableType extends InfoType
 
     public void applyPaintjobToStack(ItemStack stack, Paintjob paintjob)
     {
-        stack.getOrCreateTag().putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId());
+        ItemStackData.update(stack, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId()));
     }
 
     public int getPaintjobId(ItemStack stack)
     {
-        return stack.getOrCreateTag().getInt(IPaintableItem.NBT_PAINTJOB_ID);
+        return ItemStackData.copy(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID);
     }
 
     public Paintjob getPaintjob(ItemStack stack)
@@ -184,7 +187,7 @@ public abstract class PaintableType extends InfoType
         return LootItem.lootTableItem(item)
             .setWeight(weight)
             .setQuality(1)
-            .apply(SetNbtFunction.setTag(tag))
+            .apply(SetComponentsFunction.setComponent(DataComponents.CUSTOM_DATA, CustomData.of(tag)))
             .build();
     }
 }

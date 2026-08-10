@@ -45,14 +45,14 @@ import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +61,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -93,6 +93,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +113,7 @@ import java.util.UUID;
  * transforms, fuel, inventory, weapon delays and damage are owned by the
  * server and replicated through normal entity data/position tracking.</p>
  */
-public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<DriveableType>, IControllable
+public abstract class Driveable extends Entity implements IEntityWithComplexSpawn, IFlanEntity<DriveableType>, IControllable
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -294,9 +295,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         setShortName(type.getShortName());
         sourceStack = stack.copy();
         sourceStack.setCount(sourceStack.isEmpty() ? 0 : 1);
-        driveableData = stack.isEmpty() ? new DriveableData(type) : DriveableData.fromStack(type, stack);
+        driveableData = stack.isEmpty() ? new DriveableData(type, level().registryAccess()) : DriveableData.fromStack(type, stack, level().registryAccess());
         if (!sourceStack.isEmpty())
-            driveableData.removeSerializedState(sourceStack.getTag());
+            driveableData.removeSerializedState(ItemStackData.copy(sourceStack));
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
         renderInventoryFingerprint = renderInventoryFingerprint();
@@ -487,34 +488,34 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        entityData.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
-        entityData.define(DATA_YAW, 0F);
-        entityData.define(DATA_PITCH, 0F);
-        entityData.define(DATA_ROLL, 0F);
-        entityData.define(DATA_THROTTLE, 0F);
-        entityData.define(DATA_TURRET_YAW, 0F);
-        entityData.define(DATA_TURRET_PITCH, 0F);
-        entityData.define(DATA_FLIGHT_PITCH, 0F);
-        entityData.define(DATA_FLIGHT_ROLL, 0F);
-        entityData.define(DATA_MOUSE_CONTROL, false);
-        entityData.define(DATA_RECOIL_PROGRESS, 0F);
-        entityData.define(DATA_IT1_DOOR_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
-        entityData.define(DATA_IT1_ARM_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
-        entityData.define(DATA_IT1_RAIL_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
-        entityData.define(DATA_INPUT_MASK, 0);
-        entityData.define(DATA_FLAGS, FLAG_GEAR);
-        entityData.define(DATA_MODE, 0);
-        entityData.define(DATA_FUEL, 0F);
-        entityData.define(DATA_LOCK_TARGET, -1);
+        builder.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
+        builder.define(DATA_YAW, 0F);
+        builder.define(DATA_PITCH, 0F);
+        builder.define(DATA_ROLL, 0F);
+        builder.define(DATA_THROTTLE, 0F);
+        builder.define(DATA_TURRET_YAW, 0F);
+        builder.define(DATA_TURRET_PITCH, 0F);
+        builder.define(DATA_FLIGHT_PITCH, 0F);
+        builder.define(DATA_FLIGHT_ROLL, 0F);
+        builder.define(DATA_MOUSE_CONTROL, false);
+        builder.define(DATA_RECOIL_PROGRESS, 0F);
+        builder.define(DATA_IT1_DOOR_ANGLE, 0F);
+        builder.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
+        builder.define(DATA_IT1_ARM_ANGLE, 0F);
+        builder.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
+        builder.define(DATA_IT1_RAIL_ANGLE, 0F);
+        builder.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
+        builder.define(DATA_INPUT_MASK, 0);
+        builder.define(DATA_FLAGS, FLAG_GEAR);
+        builder.define(DATA_MODE, 0);
+        builder.define(DATA_FUEL, 0F);
+        builder.define(DATA_LOCK_TARGET, -1);
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer)
     {
         CompoundTag state = new CompoundTag();
         writeRuntimeState(state);
@@ -525,7 +526,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(RegistryFriendlyByteBuf buffer)
     {
         try
         {
@@ -555,9 +556,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
 
         ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND)
-            ? ItemStack.of(tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
+            ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
-        driveableData = new DriveableData(type, tag);
+        driveableData = new DriveableData(type, tag, level().registryAccess());
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
         renderInventoryFingerprint = renderInventoryFingerprint();
@@ -607,7 +608,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!sourceStack.isEmpty())
         {
             CompoundTag sourceTag = new CompoundTag();
-            sourceStack.save(sourceTag);
+            ItemStackData.save(sourceStack, level().registryAccess(), sourceTag);
             tag.put(NBT_SOURCE_STACK, sourceTag);
         }
         driveableData.save(tag);
@@ -1034,7 +1035,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 for (int blockZ = minZ; blockZ <= maxZ; blockZ++)
                 {
                     cursor.set(blockX, blockY, blockZ);
-                    if (level().hasChunkAt(cursor) && !level().getFluidState(cursor).isEmpty())
+                    if (level().hasChunk(cursor.getX() >> 4, cursor.getZ() >> 4) && !level().getFluidState(cursor).isEmpty())
                     {
                         liquid = true;
                         break outer;
@@ -1083,7 +1084,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             result = 31 * result + (stack.isEmpty() ? 0 : stack.getItem().hashCode());
             result = 31 * result + stack.getCount();
             result = 31 * result + stack.getDamageValue();
-            result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+            result = 31 * result + ItemStackData.copy(stack).hashCode();
         }
         return result;
     }
@@ -1099,7 +1100,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             result = 31 * result + (stack.isEmpty() ? 0 : stack.getItem().hashCode());
             result = 31 * result + stack.getCount();
             result = 31 * result + stack.getDamageValue();
-            result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+            result = 31 * result + ItemStackData.copy(stack).hashCode();
         }
         return result;
     }
@@ -1144,7 +1145,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         List<ShootPoint> points = configType.shootPoints(secondary);
         if (points.isEmpty())
             return false;
-        if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+        if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
             return false;
         List<ShootPoint> selected;
         if (configType.alternate(secondary))
@@ -1420,7 +1421,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (!validAmmo(ammo, EnumWeaponType.GUN) || !(ammo.getItem() instanceof ShootableItem shootable)
                 || !(shootable.getConfigType() instanceof BulletType bulletType))
                 continue;
-            if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+            if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
                 continue;
 
             FireableGun fireable = new FireableGun(gun, ammo);
@@ -2395,7 +2396,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ItemStack stack = driveableData.getItem(slot);
             if (stack.isEmpty())
                 continue;
-            IEnergyStorage energy = stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+            IEnergyStorage energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
             if (energy == null || !energy.canExtract())
                 continue;
 
@@ -2473,12 +2474,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!(keyStack.getItem() instanceof ToolItem tool) || !tool.getConfigType().isKey())
             return false;
         String expected = getUUID().toString();
-        String key = keyStack.getOrCreateTag().getString(NBT_KEY_ID);
+        String key = ItemStackData.copy(keyStack).getString(NBT_KEY_ID);
         if (StringUtils.isBlank(key))
         {
             if (locked && ownerId != null && !ownerId.equals(player.getUUID()) && !player.getAbilities().instabuild)
                 return false;
-            keyStack.getOrCreateTag().putString(NBT_KEY_ID, expected);
+            ItemStackData.update(keyStack, tag -> tag.putString(NBT_KEY_ID, expected));
             locked = true;
             if (ownerId == null)
                 ownerId = player.getUUID();
@@ -2513,7 +2514,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
-        NetworkHooks.openScreen(player,
+        player.openMenu(
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this),
                 Component.literal(configType.getName())),
             buffer -> buffer.writeVarInt(getId()));
@@ -2785,12 +2786,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (step > 0F)
             {
                 BlockPos obstacle = BlockPos.containing(wheel.add(0D, 0.1D, 0D));
-                if (level().getBlockState(obstacle).blocksMotion())
+                if (hasCollisionAt(obstacle))
                 {
                     int maximumStep = Math.max(1, Mth.ceil(step));
                     for (int rise = 1; rise <= maximumStep; rise++)
                     {
-                        if (!level().getBlockState(obstacle.above(rise)).blocksMotion())
+                        if (!hasCollisionAt(obstacle.above(rise)))
                         {
                             stepCorrection = Math.max(stepCorrection, Math.min(step, rise + 0.05D));
                             break;
@@ -2856,10 +2857,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         for (int offset = 0; offset <= depth; offset++)
         {
             cursor.set(getBlockX(), Mth.floor(getBoundingBox().minY) - offset, getBlockZ());
-            if (level().getBlockState(cursor).blocksMotion())
+            if (hasCollisionAt(cursor))
                 return true;
         }
         return false;
+    }
+
+    /** Uses the actual entity collision shape instead of the removed legacy material-solid flag. */
+    private boolean hasCollisionAt(BlockPos pos)
+    {
+        return !level().getBlockState(pos).getCollisionShape(level(), pos, CollisionContext.of(this)).isEmpty();
     }
 
     protected boolean shouldSquashEntities()
@@ -2902,7 +2909,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 Vec3 world = localToWorld(local.x, local.y, local.z)
                     .add(requestedVelocity.normalize().scale(0.2D));
                 BlockPos blockPos = BlockPos.containing(world);
-                if (level().getBlockState(blockPos).blocksMotion())
+                if (hasCollisionAt(blockPos))
                     damagePart(point.getPart(), (float) Math.min(20D, horizontalSpeed * 5D), level().damageSources().flyIntoWall());
             }
         }
@@ -2997,7 +3004,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 driveableData.setCargo(slot, placed);
                 incoming.shrink(moved);
             }
-            else if (ItemStack.isSameItemSameTags(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
+            else if (ItemStack.isSameItemSameComponents(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
             {
                 int moved = Math.min(incoming.getCount(), existing.getMaxStackSize() - existing.getCount());
                 existing.grow(moved);

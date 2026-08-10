@@ -4,6 +4,7 @@ import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -159,9 +160,12 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)
     {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(stack);
         if (!tag.hasUUID(key))
+        {
             tag.putUUID(key, UUID.randomUUID());
+            ItemStackData.set(stack, tag);
+        }
         return tag.getUUID(key);
     }
 }

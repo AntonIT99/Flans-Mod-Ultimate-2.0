@@ -14,7 +14,7 @@ import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.world.ForgeChunkManager;
+import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -187,7 +187,7 @@ public final class TeamsManager
             return;
 
         this.server = server;
-        savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData::load, TeamsSavedData::new, TeamsSavedData.ID);
+        savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData.FACTORY, TeamsSavedData.ID);
         loadRuntime(savedData.runtime);
         if (roundRunning)
             updateActiveChunkTickets(true);
@@ -932,7 +932,7 @@ public final class TeamsManager
                     if (level != null)
                     {
                         ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
-                        ForgeChunkManager.forceChunk(level, FlansMod.MOD_ID, base.getObjectId(), chunk.x, chunk.z, false, true);
+                        NeoForgeChunkTickets.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
                     }
                 }
                 map.removeBase(base.getObjectId());
@@ -1022,7 +1022,7 @@ public final class TeamsManager
             return;
         map.getBasePositions().forEach((owner, position) -> {
             ChunkPos chunk = new ChunkPos(position);
-            ForgeChunkManager.forceChunk(level, FlansMod.MOD_ID, owner, chunk.x, chunk.z, add, true);
+            NeoForgeChunkTickets.force(level, owner, chunk.x, chunk.z, add, true);
         });
     }
 

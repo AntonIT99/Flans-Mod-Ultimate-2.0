@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -54,7 +54,7 @@ public class PacketPlaySound implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeFloat(posX);
         data.writeFloat(posY);
@@ -65,11 +65,11 @@ public class PacketPlaySound implements IClientPacket
         data.writeBoolean(silenced);
         data.writeBoolean(cancellable);
         data.writeUUID(instanceUUID);
-        data.writeOptional(Optional.ofNullable(playerUUID), FriendlyByteBuf::writeUUID);
+        data.writeOptional(Optional.ofNullable(playerUUID), RegistryFriendlyByteBuf::writeUUID);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         posX = data.readFloat();
         posY = data.readFloat();
@@ -80,7 +80,7 @@ public class PacketPlaySound implements IClientPacket
         silenced = data.readBoolean();
         cancellable = data.readBoolean();
         instanceUUID = data.readUUID();
-        playerUUID = data.readOptional(FriendlyByteBuf::readUUID).orElse(null);
+        playerUUID = data.readOptional(RegistryFriendlyByteBuf::readUUID).orElse(null);
     }
 
     @Override

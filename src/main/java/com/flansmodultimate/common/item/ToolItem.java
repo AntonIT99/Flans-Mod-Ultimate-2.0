@@ -11,6 +11,7 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,21 +59,15 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(NBT_KEY_STRING))
+        CompoundTag tag = ItemStackData.copy(stack);
+        if (tag.contains(NBT_KEY_STRING))
         {
             tooltipComponents.add(Component.literal(tag.getString(NBT_KEY_STRING)).withStyle(ChatFormatting.AQUA));
         }
-    }
-
-    @Override
-    public void onCraftedBy(ItemStack stack, @NotNull Level level, @NotNull Player player)
-    {
-        stack.getOrCreateTag();
     }
 
     @Override

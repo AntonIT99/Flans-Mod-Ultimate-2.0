@@ -17,11 +17,12 @@ import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -95,7 +96,7 @@ public final class PacketLoadoutAction implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeByte(action.ordinal());
         data.writeVarInt(index);
@@ -104,7 +105,7 @@ public final class PacketLoadoutAction implements IServerPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         int actionId = data.readUnsignedByte(); action = actionId < Action.values().length ? Action.values()[actionId] : Action.OPEN_HUB;
         index = data.readVarInt(); int slotId = data.readUnsignedByte(); slot = LoadoutSlot.values()[Math.min(slotId, LoadoutSlot.values().length - 1)]; value = data.readUtf(256);
@@ -160,12 +161,14 @@ public final class PacketLoadoutAction implements IServerPacket
             {
                 ItemStack gun = edited.get(slot);
                 if (!(gun.getItem() instanceof GunItem gunItem) || !accepts(gunItem.getConfigType(), attachment)) return;
-                CompoundTag attachments = gun.getOrCreateTag().getCompound(GunItem.NBT_ATTACHMENTS);
+                CompoundTag gunData = ItemStackData.copy(gun);
+                CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
                 String attachmentSlot = attachmentSlot(attachment.getEnumAttachmentType());
                 ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
                 if (attachmentStack.isEmpty()) return;
-                attachments.put(attachmentSlot, attachmentStack.save(new CompoundTag()));
-                gun.getOrCreateTag().put(GunItem.NBT_ATTACHMENTS, attachments);
+                attachments.put(attachmentSlot, ItemStackData.save(attachmentStack, player.level().registryAccess()));
+                gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
+                ItemStackData.set(gun, gunData);
                 edited.set(slot, gun);
             }
             else

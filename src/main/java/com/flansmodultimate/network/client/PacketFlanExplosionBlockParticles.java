@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +31,7 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeDouble(center.x);
         data.writeDouble(center.y);
@@ -44,7 +44,7 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         center = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         radius = data.readFloat();

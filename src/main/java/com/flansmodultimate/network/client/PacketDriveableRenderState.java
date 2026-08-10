@@ -3,9 +3,10 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketIO;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +40,7 @@ public final class PacketDriveableRenderState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buffer)
+    public void encodeInto(RegistryFriendlyByteBuf buffer)
     {
         buffer.writeVarInt(driveableId);
         buffer.writeVarInt(paintjobId);
@@ -47,12 +48,12 @@ public final class PacketDriveableRenderState implements IClientPacket
         for (int index = 0; index < slots.length; index++)
         {
             buffer.writeVarInt(slots[index]);
-            buffer.writeItem(stacks[index]);
+            PacketIO.writeItem(buffer, stacks[index]);
         }
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buffer)
+    public void decodeInto(RegistryFriendlyByteBuf buffer)
     {
         driveableId = buffer.readVarInt();
         paintjobId = buffer.readVarInt();
@@ -64,7 +65,7 @@ public final class PacketDriveableRenderState implements IClientPacket
         for (int index = 0; index < count; index++)
         {
             slots[index] = buffer.readVarInt();
-            stacks[index] = buffer.readItem();
+            stacks[index] = PacketIO.readItem(buffer);
         }
     }
 

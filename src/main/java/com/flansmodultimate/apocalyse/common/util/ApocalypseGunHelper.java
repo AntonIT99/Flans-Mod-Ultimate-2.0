@@ -81,7 +81,8 @@ public final class ApocalypseGunHelper
             ModUtils.getItemStack(ammoType).ifPresent(ammoStack -> {
                 int rounds = Math.max(1, ammoType.getRoundsPerItem());
                 ShootableItem.setRoundsRemaining(ammoStack, rounds);
-                gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot);
+                gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot,
+                    com.flansmodultimate.platform.item.ItemStackData.builtInRegistries());
             });
         }
         return Optional.of(gunStack);
@@ -114,7 +115,7 @@ public final class ApocalypseGunHelper
             return false;
 
         GunType gunType = gunItem.getConfigType();
-        LoadedAmmo loaded = firstLoadedBullet(gunItem, gunStack);
+        LoadedAmmo loaded = firstLoadedBullet(gunItem, gunStack, shooter.level().registryAccess());
         if (loaded == null)
             return false;
 
@@ -129,7 +130,7 @@ public final class ApocalypseGunHelper
         BulletType bulletType = loaded.type();
         ShootingHandler handler = () -> {
             ShootableItem.consumeRound(ammoStack);
-            gunItem.setBulletItemStack(gunStack, ammoStack, loaded.slot());
+            gunItem.setBulletItemStack(gunStack, ammoStack, loaded.slot(), shooter.level().registryAccess());
         };
         FiredShot firedShot = new FiredShot(gunType, bulletType, gunStack, ammoStack, ItemStack.EMPTY, shooter);
         ShootingHelper.fireGun(shooter.level(), firedShot, gunType.getNumBullets(gunStack, bulletType), origin, direction, handler);
@@ -137,12 +138,13 @@ public final class ApocalypseGunHelper
     }
 
     @Nullable
-    private static LoadedAmmo firstLoadedBullet(GunItem gunItem, ItemStack gunStack)
+    private static LoadedAmmo firstLoadedBullet(GunItem gunItem, ItemStack gunStack,
+                                                 net.minecraft.core.HolderLookup.Provider registries)
     {
         int slots = gunItem.getConfigType().getNumAmmoItemsInGun(gunStack);
         for (int slot = 0; slot < slots; slot++)
         {
-            ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot);
+            ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot, registries);
             if (!ShootableItem.hasRoundsLeft(ammoStack) || !(ammoStack.getItem() instanceof ShootableItem shootableItem))
                 continue;
             if (shootableItem.getConfigType() instanceof BulletType bulletType)

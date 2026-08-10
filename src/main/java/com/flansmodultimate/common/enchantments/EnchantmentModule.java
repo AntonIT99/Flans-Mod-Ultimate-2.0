@@ -5,14 +5,15 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.damage.MutableDamageContext;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,17 +24,16 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class EnchantmentModule
 {
-    static RegistryObject<Enchantment> steadyEnchant;
-    static RegistryObject<Enchantment> nimbleEnchant;
-    static RegistryObject<Enchantment> lumberjackEnchant;
-    static RegistryObject<Enchantment> duelistEnchant;
-    static RegistryObject<Enchantment> sharpshooterEnchant;
-    static RegistryObject<Enchantment> juggernautEnchant;
+    static final ResourceKey<Enchantment> steadyEnchant = key("steady");
+    static final ResourceKey<Enchantment> nimbleEnchant = key("nimble");
+    static final ResourceKey<Enchantment> lumberjackEnchant = key("lumberjack");
+    static final ResourceKey<Enchantment> duelistEnchant = key("duelist");
+    static final ResourceKey<Enchantment> sharpshooterEnchant = key("sharpshooter");
+    static final ResourceKey<Enchantment> juggernautEnchant = key("juggernaut");
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
         EquipmentSlot.HEAD,
@@ -42,19 +42,9 @@ public final class EnchantmentModule
         EquipmentSlot.FEET
     };
 
-    public static void register(DeferredRegister<Enchantment> registry)
+    private static ResourceKey<Enchantment> key(String name)
     {
-        steadyEnchant = register(registry, "steady", EnchantmentSteady::new);
-        nimbleEnchant = register(registry, "nimble", EnchantmentNimble::new);
-        lumberjackEnchant = register(registry, "lumberjack", EnchantmentLumberjack::new);
-        duelistEnchant = register(registry, "duelist", EnchantmentDuelist::new);
-        sharpshooterEnchant = register(registry, "sharpshooter", EnchantmentSharpshooter::new);
-        juggernautEnchant = register(registry, "juggernaut", EnchantmentJuggernaut::new);
-    }
-
-    private static RegistryObject<Enchantment> register(DeferredRegister<Enchantment> registry, String name, Supplier<Enchantment> supplier)
-    {
-        return registry.register(name, supplier);
+        return ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, name));
     }
 
     public static void modifyGun(@NotNull FireableGun fireableGun, @Nullable LivingEntity entity, @Nullable ItemStack otherHand)
@@ -102,16 +92,16 @@ public final class EnchantmentModule
             damageEquipment(otherHand, entity, EquipmentSlot.OFFHAND, 1);
     }
 
-    public static void applyOffHandWeaponDamage(LivingHurtEvent event)
+    public static void applyOffHandWeaponDamage(MutableDamageContext event)
     {
-        if (!isEnabled() || event.getEntity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide)
             return;
 
-        Entity sourceEntity = event.getSource().getEntity();
+        Entity sourceEntity = event.source().getEntity();
         if (!(sourceEntity instanceof LivingEntity attacker))
             return;
 
-        Entity directEntity = event.getSource().getDirectEntity();
+        Entity directEntity = event.source().getDirectEntity();
         if (directEntity != null && directEntity != attacker)
             return;
 
@@ -130,16 +120,16 @@ public final class EnchantmentModule
         if (level <= 0)
             return;
 
-        event.setAmount(event.getAmount() * (float) Math.pow(1.10F, level));
+        event.setAmount(event.amount() * (float) Math.pow(1.10F, level));
         damageEquipment(offHandStack, attacker, EquipmentSlot.OFFHAND, 1);
     }
 
-    public static void applyJuggernaut(LivingHurtEvent event)
+    public static void applyJuggernaut(MutableDamageContext event)
     {
-        if (!isEnabled() || event.getEntity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide)
             return;
 
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = event.entity();
         int juggernautLevel = 0;
 
         for (EquipmentSlot slot : ARMOR_SLOTS)
@@ -154,10 +144,10 @@ public final class EnchantmentModule
         float maxHealthWithArmor = entity.getMaxHealth() + entity.getArmorValue();
         float threshold = maxHealthWithArmor * maxDamagePercent;
 
-        if (event.getAmount() <= threshold)
+        if (event.amount() <= threshold)
             return;
 
-        float absorbedDamage = Math.min(event.getAmount() - threshold, 256.0F);
+        float absorbedDamage = Math.min(event.amount() - threshold, 256.0F);
         int armorDamage = Mth.floor(absorbedDamage);
 
         if (armorDamage > 0)
@@ -170,15 +160,19 @@ public final class EnchantmentModule
             }
         }
 
-        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.getAmount(), threshold);
+        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
         event.setAmount(threshold);
     }
 
-    private static int getLevel(@Nullable RegistryObject<Enchantment> enchantment, ItemStack stack)
+    private static int getLevel(ResourceKey<Enchantment> enchantment, ItemStack stack)
     {
-        if (enchantment == null || stack.isEmpty())
+        if (stack.isEmpty())
             return 0;
-        return stack.getEnchantmentLevel(enchantment.get());
+        return stack.getTagEnchantments().entrySet().stream()
+            .filter(entry -> entry.getKey().is(enchantment))
+            .mapToInt(entry -> entry.getIntValue())
+            .findFirst()
+            .orElse(0);
     }
 
     private static void damageEquipment(ItemStack stack, @Nullable LivingEntity entity, EquipmentSlot slot, int amount)
@@ -186,7 +180,7 @@ public final class EnchantmentModule
         if (amount <= 0 || entity == null || entity.level().isClientSide || stack.isEmpty() || !stack.isDamageableItem())
             return;
 
-        stack.hurtAndBreak(amount, entity, owner -> Optional.ofNullable(owner).ifPresent(o -> o.broadcastBreakEvent(slot)));
+        stack.hurtAndBreak(amount, entity, slot);
     }
 
     private static boolean isEnabled()

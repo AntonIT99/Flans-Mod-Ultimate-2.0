@@ -7,7 +7,7 @@ import com.flansmodultimate.network.IServerPacket;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -62,7 +62,7 @@ public final class PacketDriveableInput implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeVarInt(driveableId);
         data.writeVarInt(DriveableInput.sanitize(inputMask));
@@ -75,7 +75,7 @@ public final class PacketDriveableInput implements IServerPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         driveableId = data.readVarInt();
         inputMask = DriveableInput.sanitize(data.readVarInt());

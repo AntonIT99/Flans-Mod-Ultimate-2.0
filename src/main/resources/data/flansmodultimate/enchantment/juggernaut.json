@@ -1,0 +1,11 @@
+{
+  "anvil_cost": 8,
+  "description": { "translate": "enchantment.flansmodultimate.juggernaut" },
+  "effects": {},
+  "max_cost": { "base": 75, "per_level_above_first": 25 },
+  "max_level": 1,
+  "min_cost": { "base": 25, "per_level_above_first": 25 },
+  "slots": ["armor"],
+  "supported_items": "#minecraft:enchantable/armor",
+  "weight": 1
+}

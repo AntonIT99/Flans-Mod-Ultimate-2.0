@@ -1,0 +1,12 @@
+{
+  "anvil_cost": 1,
+  "description": { "translate": "enchantment.flansmodultimate.lumberjack" },
+  "effects": {},
+  "exclusive_set": "#flansmodultimate:exclusive_set/offhand_damage",
+  "max_cost": { "base": 15, "per_level_above_first": 10 },
+  "max_level": 3,
+  "min_cost": { "base": 5, "per_level_above_first": 10 },
+  "slots": ["offhand"],
+  "supported_items": "#minecraft:enchantable/durability",
+  "weight": 10
+}

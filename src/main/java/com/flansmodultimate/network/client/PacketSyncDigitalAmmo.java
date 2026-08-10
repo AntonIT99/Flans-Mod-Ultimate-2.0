@@ -4,7 +4,7 @@ import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.common.digitalammo.PlayerBulletStorage;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -35,7 +35,7 @@ public class PacketSyncDigitalAmmo implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buf)
+    public void encodeInto(RegistryFriendlyByteBuf buf)
     {
         if (bullets == null)
         {
@@ -50,7 +50,7 @@ public class PacketSyncDigitalAmmo implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buf)
+    public void decodeInto(RegistryFriendlyByteBuf buf)
     {
         int length = buf.readVarInt();
         bullets = new double[length];

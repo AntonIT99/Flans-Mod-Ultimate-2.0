@@ -1,9 +1,11 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.AttachmentItem;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -207,12 +209,12 @@ public class AttachmentType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(ResourceLocation.parse(""));
+        return Optional.ofNullable(overlay).orElse(FlansMod.defaultFallbackTexture);
     }
 
     @Nullable
     public static AttachmentType getFromNBT(CompoundTag tags) {
-        ItemStack stack = ItemStack.of(tags);
+        ItemStack stack = ItemStackData.parseBuiltIn(tags);
         if (!stack.isEmpty() && stack.getItem() instanceof AttachmentItem attachment) {
             return attachment.getConfigType();
         }

@@ -6,7 +6,7 @@ import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -26,14 +26,14 @@ public class PacketAAGunModelBarrelOrigins implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeInt(aaGunId);
         PacketDeployedGunInput.writeBarrelOriginData(data, barrelPivots, barrelMuzzles);
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         aaGunId = data.readInt();
         Vec3[][] barrelOriginData = PacketDeployedGunInput.readBarrelOriginData(data);

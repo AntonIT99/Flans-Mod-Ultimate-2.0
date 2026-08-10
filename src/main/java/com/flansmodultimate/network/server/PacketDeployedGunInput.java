@@ -6,7 +6,7 @@ import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -44,7 +44,7 @@ public class PacketDeployedGunInput implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeInt(deployedGunId);
         data.writeBoolean(shootKeyPressed);
@@ -53,7 +53,7 @@ public class PacketDeployedGunInput implements IServerPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         deployedGunId = data.readInt();
         shootKeyPressed = data.readBoolean();
@@ -98,7 +98,7 @@ public class PacketDeployedGunInput implements IServerPacket
         aaGunBarrelMuzzles = barrelMuzzles.clone();
     }
 
-    static void writeBarrelOriginData(FriendlyByteBuf data, Vec3[] barrelPivots, Vec3[] barrelMuzzles)
+    static void writeBarrelOriginData(RegistryFriendlyByteBuf data, Vec3[] barrelPivots, Vec3[] barrelMuzzles)
     {
         if (barrelPivots == null || barrelMuzzles == null || barrelPivots.length == 0 || barrelPivots.length != barrelMuzzles.length || barrelPivots.length > MAX_SYNCED_BARRELS)
         {
@@ -115,7 +115,7 @@ public class PacketDeployedGunInput implements IServerPacket
         }
     }
 
-    static Vec3[][] readBarrelOriginData(FriendlyByteBuf data)
+    static Vec3[][] readBarrelOriginData(RegistryFriendlyByteBuf data)
     {
         if (!data.readBoolean())
             return new Vec3[][] { EMPTY_BARREL_DATA, EMPTY_BARREL_DATA };
@@ -134,14 +134,14 @@ public class PacketDeployedGunInput implements IServerPacket
         return new Vec3[][] { barrelPivots, barrelMuzzles };
     }
 
-    private static void writeVec3(FriendlyByteBuf data, Vec3 vector)
+    private static void writeVec3(RegistryFriendlyByteBuf data, Vec3 vector)
     {
         data.writeDouble(vector.x);
         data.writeDouble(vector.y);
         data.writeDouble(vector.z);
     }
 
-    private static Vec3 readVec3(FriendlyByteBuf data)
+    private static Vec3 readVec3(RegistryFriendlyByteBuf data)
     {
         return new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
     }

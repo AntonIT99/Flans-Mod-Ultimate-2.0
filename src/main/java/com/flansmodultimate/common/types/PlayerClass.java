@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -109,7 +110,8 @@ public class PlayerClass extends InfoType
         if (stack.getItem() instanceof GunItem gunItem && parts.length > 1)
         {
             gunItem.getConfigType().checkForTags(stack);
-            CompoundTag attachments = stack.getOrCreateTag().getCompound(GunItem.NBT_ATTACHMENTS);
+            CompoundTag gunData = ItemStackData.copy(stack);
+            CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
             int generic = 0;
             for (int i = 1; i < parts.length; i++)
             {
@@ -122,11 +124,12 @@ public class PlayerClass extends InfoType
                 String slot = attachmentSlot(attachment.getEnumAttachmentType(), generic);
                 if (attachment.getEnumAttachmentType() == EnumAttachmentType.GENERIC)
                     generic++;
-                attachments.put(slot, attachmentStack.save(new CompoundTag()));
+                attachments.put(slot, ItemStackData.saveBuiltIn(attachmentStack));
             }
-            stack.getOrCreateTag().put(GunItem.NBT_ATTACHMENTS, attachments);
+            gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
+            ItemStackData.set(stack, gunData);
             gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack)
-                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0));
+                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
         return stack;
     }

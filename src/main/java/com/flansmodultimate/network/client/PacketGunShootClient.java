@@ -3,10 +3,10 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -28,7 +28,7 @@ public class PacketGunShootClient implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeUUID(playerUUID);
         data.writeEnum(hand);
@@ -36,7 +36,7 @@ public class PacketGunShootClient implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         playerUUID = data.readUUID();
         hand = data.readEnum(InteractionHand.class);

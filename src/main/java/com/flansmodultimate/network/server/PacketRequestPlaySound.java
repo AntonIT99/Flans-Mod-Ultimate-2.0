@@ -3,12 +3,12 @@ package com.flansmodultimate.network.server;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,7 +37,7 @@ public class PacketRequestPlaySound implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeFloat(posX);
         data.writeFloat(posY);
@@ -47,7 +47,7 @@ public class PacketRequestPlaySound implements IServerPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(RegistryFriendlyByteBuf data)
     {
         posX = data.readFloat();
         posY = data.readFloat();
@@ -62,7 +62,7 @@ public class PacketRequestPlaySound implements IServerPacket
         if (sound.isBlank())
             return;
 
-        RegistryObject<SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
+        DeferredHolder<SoundEvent, SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
         if (event == null || event.getId() == null)
         {
             FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));

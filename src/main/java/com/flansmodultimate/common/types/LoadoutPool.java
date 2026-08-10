@@ -4,6 +4,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.common.teams.PlayerLoadout;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -181,7 +182,7 @@ public final class LoadoutPool extends InfoType
         {
             gunItem.getConfigType().checkForTags(stack);
             gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack)
-                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0));
+                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
         return stack;
     }
