@@ -32,9 +32,9 @@ import com.google.gson.JsonSyntaxException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -125,9 +125,16 @@ public class ContentManager
     private static final String ID_ALIAS_FILE = "id_alias.json";
     private static final String ARMOR_TEXTURES_ALIAS_FILE = "armor_textures_alias.json";
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
+    private static final String GENERATED_ASSETS_VERSION_FILE = ".flans_generated_assets_version";
+    private static final String GENERATED_ASSETS_VERSION = "1";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
     private static final String GENERATED_TEXTURES_MANIFEST_FILE = ".flansmod_generated_textures.json";
     private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
+    // 1.20.1 accepts format 15 and ignores the newer supported_formats field;
+    // 1.21.1 recognises the full range. This keeps newly generated content-pack
+    // metadata portable without changing it when switching development branches.
+    private static final int LEGACY_RESOURCE_PACK_FORMAT = 15;
+    private static final int CURRENT_RESOURCE_PACK_FORMAT = 34;
 
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
@@ -172,7 +179,7 @@ public class ContentManager
     }
 
     /**
-     * Scan the Forge mods folder for misplaced Flan content packs and move them to flanFolder.
+     * Scan the mod-loader mods folder for misplaced Flan content packs and move them to flanFolder.
      * - If destination already exists: do NOT move, log a warning.
      * - Any IOExceptions are handled internally (won't crash startup).
      */
@@ -263,14 +270,14 @@ public class ContentManager
     /**
      * Identification rules:
      *  - Must contain at least one entry under assets/flansmod/
-     *  - Must NOT contain META-INF/mods.toml
+     *  - Must not contain Forge or NeoForge mod metadata
      */
     private static boolean looksLikeContentPack(Path jarOrZip) throws IOException
     {
         try (ZipFile zip = new ZipFile(jarOrZip.toFile()))
         {
-            // Fast exact lookup: if mods.toml exists -> it's a Forge mod -> not a pack
-            if (zip.getEntry("META-INF/mods.toml") != null)
+            // A real loader mod can also contain legacy Flan assets; never relocate it as a content pack.
+            if (zip.getEntry("META-INF/mods.toml") != null || zip.getEntry("META-INF/neoforge.mods.toml") != null)
                 return false;
 
             // Prefix scan with early exit
@@ -393,6 +400,7 @@ public class ContentManager
                     copyTextures(provider, FOLDER_TEXTURES_GUI, guiTextureReferences.get(provider));
                     copyTextures(provider, FOLDER_TEXTURES_SKINS, skinsTextureReferences.get(provider));
                     createSounds(provider);
+                    writeGeneratedAssetsVersion(provider);
                 }
             }
 
@@ -713,12 +721,8 @@ public class ContentManager
         if (config.getType().isHasItem())
             registerModelTextureOrigin(FOLDER_TEXTURES_ITEM, config.getIcon(), origin);
 
-        if (config instanceof PaintableType paintableType)
-        {
-            paintableType.getPaintjobs().values().stream()
-                .filter(paintjob -> !paintjob.equals(paintableType.getDefaultPaintjob()))
-                .forEach(paintjob -> registerModelTextureOrigin(FOLDER_TEXTURES_ITEM, paintjob.getIcon(), origin));
-        }
+        // Optional paintjob icons may legitimately be absent in legacy packs;
+        // their generated item models fall back to the base item icon.
     }
 
     private static void registerModelTextureOrigin(String textureFolder, @Nullable String textureName, TextureOrigin origin)
@@ -936,6 +940,7 @@ public class ContentManager
         FileSystem fs = FileUtils.createFileSystem(provider);
 
         boolean missingAssets = !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_BLOCKSTATES))
+            || isGeneratedAssetsVersionOutdated(provider, fs)
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_ITEM))
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_BLOCK))
             || shouldUpdateGeneratedTextureFiles(provider, fs)
@@ -949,6 +954,30 @@ public class ContentManager
 
         FileUtils.closeFileSystem(fs, provider);
         return missingAssets;
+    }
+
+    private static boolean isGeneratedAssetsVersionOutdated(IContentProvider provider, @Nullable FileSystem fs)
+    {
+        if (provider.isArchive() && fs == null)
+            return true;
+
+        Path root = provider.isArchive() ? fs.getPath("/") : provider.getPath();
+        Path versionFile = root.resolve(GENERATED_ASSETS_VERSION_FILE);
+        try
+        {
+            return !Files.isRegularFile(versionFile)
+                || !GENERATED_ASSETS_VERSION.equals(Files.readString(versionFile, StandardCharsets.UTF_8).trim());
+        }
+        catch (IOException e)
+        {
+            return true;
+        }
+    }
+
+    private static void writeGeneratedAssetsVersion(IContentProvider provider)
+    {
+        Path root = provider.isArchive() ? provider.getExtractedPath() : provider.getPath();
+        FileUtils.writeString(root.resolve(GENERATED_ASSETS_VERSION_FILE), GENERATED_ASSETS_VERSION);
     }
 
     private static boolean shouldUpdateGeneratedTextureFiles(IContentProvider provider, FileSystem fs)
@@ -978,7 +1007,7 @@ public class ContentManager
         for (String fileName : textureNamePlan)
         {
             Path destFile = destPath.resolve(fileName);
-            if (!Files.exists(destFile))
+            if (!Files.exists(destFile) || !FileUtils.hasPngSignature(destFile))
                 return true;
         }
 
@@ -1163,11 +1192,20 @@ public class ContentManager
                 if (!p.equals(paintableType.getDefaultPaintjob()))
                 {
                     outputFile = outputFolder.resolve(p.getIcon() + FileUtils.JSON_EXTENSION);
-                    model = ResourceUtils.ModelJson.createItemModel(config, p);
+                    String icon = hasItemIcon(config.getContentPack(), p.getIcon()) ? p.getIcon() : config.getIcon();
+                    model = ResourceUtils.ModelJson.createItemModel(config, p, icon);
                     writeGeneratedItemModelJson(outputFile, model);
                 }
             }
         }
+    }
+
+    private static boolean hasItemIcon(IContentProvider provider, String icon)
+    {
+        String fileName = ResourceUtils.sanitize(icon) + FileUtils.PNG_EXTENSION;
+        Path textures = provider.getAssetsPath().resolve(FOLDER_TEXTURES);
+        return Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEMS).resolve(fileName))
+            || Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEM).resolve(fileName));
     }
 
     private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model)
@@ -1417,6 +1455,7 @@ public class ContentManager
         try (Stream<Path> paths = Files.walk(sourcePath, 1))
         {
             return paths.filter(Files::isRegularFile)
+                .filter(p -> !FileUtils.isMacOsMetadataPath(p.getFileName().toString()))
                 .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.PNG_EXTENSION))
                 .sorted(Comparator.comparing(path -> path.getFileName().toString().toLowerCase(Locale.ROOT)))
                 .toList();
@@ -1487,7 +1526,7 @@ public class ContentManager
             Path plannedSource = textureCopyPlan.get(candidateFileName);
             if (plannedSource != null)
             {
-                if (!FileUtils.isDifferentFileBytes(sourceFile, plannedSource, false))
+                if (!FileUtils.isDifferentFileContent(sourceFile, plannedSource, false))
                     return Optional.empty();
             }
             else if (!isReservedTextureFileConflict(sourceFile, destPath.resolve(candidateFileName), candidateFileName, previousGeneratedTextures, overwriteExistingConflicts))
@@ -1550,7 +1589,7 @@ public class ContentManager
         return !overwriteExistingConflicts
             && Files.exists(candidateFile)
             && !previousGeneratedTextures.contains(candidateFileName)
-            && FileUtils.isDifferentFileBytes(sourceFile, candidateFile, false);
+            && FileUtils.isDifferentFileContent(sourceFile, candidateFile, false);
     }
 
     private static boolean isReservedTextureFileNameConflict(Path candidateFile, String candidateFileName, Set<String> previousGeneratedTextures, boolean overwriteExistingConflicts)
@@ -1591,8 +1630,9 @@ public class ContentManager
             {
                 try
                 {
-                    if (!Files.exists(destFile) || FileUtils.isDifferentFileBytes(sourceFile, destFile, false))
-                        Files.copy(sourceFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+                    if (!Files.exists(destFile) || !FileUtils.hasPngSignature(destFile)
+                        || FileUtils.isDifferentFileContent(sourceFile, destFile, false))
+                        FileUtils.copyAsPng(sourceFile, destFile);
                 }
                 catch (IOException e)
                 {
@@ -1988,10 +2028,12 @@ public class ContentManager
                 String content = String.format("""
                     {
                         "pack": {
-                            "pack_format": 15,
+                            "pack_format": %d,
+                            "supported_formats": [%d, %d],
                             "description": "%s"
                         }
-                    }""", FilenameUtils.getBaseName(provider.getName()));
+                    }""", LEGACY_RESOURCE_PACK_FORMAT, LEGACY_RESOURCE_PACK_FORMAT, CURRENT_RESOURCE_PACK_FORMAT,
+                    FilenameUtils.getBaseName(provider.getName()));
                 Files.writeString(mcMetaFile, content);
             }
             catch (IOException e)

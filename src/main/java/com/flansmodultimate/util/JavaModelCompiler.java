@@ -308,7 +308,7 @@ public final class JavaModelCompiler
         addCodeSource(entries, ModelRendererTurbo.class);
         addCodeSource(entries, "net.minecraft.world.entity.Entity");
         addCodeSource(entries, "net.minecraft.client.Minecraft");
-        addCodeSource(entries, "net.minecraftforge.fml.ModList");
+        addCodeSource(entries, "net.neoforged.fml.ModList");
         addCodeSource(entries, "com.mojang.blaze3d.vertex.PoseStack");
         addCodeSource(entries, "org.lwjgl.opengl.GL11");
         addCodeSource(entries, "org.joml.Quaternionf");

@@ -3,9 +3,12 @@ package com.flansmodultimate;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.IoSupplier;
 
 import java.io.IOException;
@@ -16,11 +19,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class FilteringPackResources implements PackResources
 {
     private final PackResources delegate;
+    private final PackType packType;
     private final AtomicInteger filteredCount = new AtomicInteger();
 
-    public FilteringPackResources(PackResources delegate)
+    public FilteringPackResources(PackResources delegate, PackType packType)
     {
         this.delegate = delegate;
+        this.packType = packType;
     }
 
     private static boolean isExcluded(PackType type, ResourceLocation location)
@@ -69,8 +74,23 @@ public final class FilteringPackResources implements PackResources
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getMetadataSection(@NotNull MetadataSectionSerializer<T> serializer) throws IOException
     {
+        if (serializer == PackMetadataSection.TYPE)
+        {
+            PackMetadataSection metadata = delegate.getMetadataSection(PackMetadataSection.TYPE);
+            if (metadata == null)
+                return null;
+
+            // Flan packs are transformed by ContentManager before they reach
+            // Minecraft. Their original pack.mcmeta often targets a much older
+            // game, so report the transformed pack as compatible without
+            // modifying the user's archive on every version switch.
+            int currentFormat = SharedConstants.getCurrentVersion().getPackVersion(packType);
+            return (T) new PackMetadataSection(metadata.description(), currentFormat);
+        }
+
         return delegate.getMetadataSection(serializer);
     }
 
@@ -79,6 +99,12 @@ public final class FilteringPackResources implements PackResources
     public String packId()
     {
         return delegate.packId();
+    }
+
+    @Override
+    public PackLocationInfo location()
+    {
+        return delegate.location();
     }
 
     @Override

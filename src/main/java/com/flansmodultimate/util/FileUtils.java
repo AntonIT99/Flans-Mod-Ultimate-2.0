@@ -60,6 +60,7 @@ public final class FileUtils
     private static final long IMAGE_COMPARE_TIMEOUT_SECONDS = 5L;
     private static final long MAX_IMAGE_PIXELS_FOR_COMPARE = 67_108_864L;
     private static final int MAX_IMAGE_COMPARE_PIXELS_PER_CHUNK = 1_048_576;
+    private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
     private static final AtomicInteger IMAGE_COMPARE_THREAD_ID = new AtomicInteger();
     private static final Object FILE_LOCK_MONITOR = new Object();
     private static final ExecutorService IMAGE_COMPARE_EXECUTOR = Executors.newCachedThreadPool(r ->
@@ -349,6 +350,48 @@ public final class FileUtils
         {
             FlansMod.log.error("Could not compare file bytes {} and {}", file1, file2, e);
             return true;
+        }
+    }
+
+    /**
+     * Checks the actual file signature instead of trusting a legacy content
+     * pack's extension. Minecraft 1.21 rejects JPEG/GIF data named {@code .png}.
+     */
+    public static boolean hasPngSignature(Path file)
+    {
+        if (!Files.isRegularFile(file))
+            return false;
+
+        try (InputStream input = Files.newInputStream(file))
+        {
+            return Arrays.equals(input.readNBytes(PNG_SIGNATURE.length), PNG_SIGNATURE);
+        }
+        catch (IOException e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Copies a texture as a standards-compliant PNG. Correct PNG sources stay
+     * byte-identical; mislabeled legacy images are decoded and re-encoded.
+     */
+    public static void copyAsPng(Path source, Path target) throws IOException
+    {
+        if (hasPngSignature(source))
+        {
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+
+        BufferedImage image = readImage(source);
+        if (image == null)
+            throw new IOException("Unsupported or corrupt image data in " + source);
+
+        try (OutputStream output = Files.newOutputStream(target, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))
+        {
+            if (!ImageIO.write(image, "png", output))
+                throw new IOException("No PNG image writer is available");
         }
     }
 
@@ -708,6 +751,9 @@ public final class FileUtils
             while ((entry = zis.getNextEntry()) != null)
             {
                 String rawName = entry.getName();
+                if (isMacOsMetadataPath(rawName))
+                    continue;
+
                 String safeName = sanitizeArchiveEntryName(rawName);
 
                 if (safeName.isBlank())
@@ -746,6 +792,25 @@ public final class FileUtils
             FlansMod.log.error("Failed to extract archive for content pack {}", archivePath, e);
             return false;
         }
+    }
+
+    /**
+     * AppleDouble files and __MACOSX folders contain Finder metadata, not pack
+     * resources. In particular, files such as {@code ._Icon.png} are not PNG
+     * images despite their extension and must never enter resource generation.
+     */
+    public static boolean isMacOsMetadataPath(String path)
+    {
+        if (path == null || path.isBlank())
+            return false;
+
+        String normalized = path.replace('\\', '/');
+        for (String segment : normalized.split("/"))
+        {
+            if (segment.equals("__MACOSX") || segment.startsWith("._"))
+                return true;
+        }
+        return false;
     }
 
     /**

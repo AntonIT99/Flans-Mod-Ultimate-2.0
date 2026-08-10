@@ -250,6 +250,11 @@ public final class ResourceUtils
 
         public static ModelJson createItemModel(InfoType config, Paintjob paintjob)
         {
+            return createItemModel(config, paintjob, paintjob.getIcon());
+        }
+
+        public static ModelJson createItemModel(InfoType config, Paintjob paintjob, String icon)
+        {
             String parent = "minecraft:item/generated";
             if (config.getType().isHasBlock())
                 parent = FlansMod.FLANSMOD_ID + ":block/" + config.getShortName();
@@ -258,7 +263,7 @@ public final class ResourceUtils
 
             Map<String, String> textures = null;
             if (!config.getType().isHasBlock())
-                textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + paintjob.getIcon());
+                textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + icon);
 
             return new ModelJson(parent, null, textures, null);
         }

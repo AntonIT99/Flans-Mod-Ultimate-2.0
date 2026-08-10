@@ -199,7 +199,7 @@ public final class ClassLoaderUtils
 
         ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
-        ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(map));
+        ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(Opcodes.ASM9, map));
         ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
         ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor);
 

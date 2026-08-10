@@ -1,29 +1,36 @@
 package com.flansmodultimate;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.FileUtil;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.server.packs.FilePackResources;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.validation.DirectoryValidator;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Consumer;
-
-import static net.minecraft.server.packs.repository.Pack.readPackInfo;
 
 public class ModRepositorySource extends FolderRepositorySource
 {
+    // Flan content packs provide the generated models, textures and data for the
+    // types registered during mod construction. They are implementation packs,
+    // not optional user-selected resource packs, and therefore must always be
+    // present in the selected pack set (as they were on Forge 1.20.1).
+    private static final PackSelectionConfig DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.TOP, false);
     protected final Path folder;
     protected final PackType packType;
+    protected final PackSource packSource;
 
     public ModRepositorySource(Path pFolder)
     {
@@ -32,34 +39,64 @@ public class ModRepositorySource extends FolderRepositorySource
 
     public ModRepositorySource(Path pFolder, PackType packType)
     {
-        super(pFolder, packType, PackSource.BUILT_IN);
+        super(pFolder, packType, PackSource.BUILT_IN, new DirectoryValidator(path -> true));
         folder = pFolder;
         this.packType = packType;
+        packSource = PackSource.BUILT_IN;
     }
 
     @Override
-    public void loadPacks(@NotNull Consumer<Pack> pOnLoad) {
+    public void loadPacks(@NotNull Consumer<Pack> pOnLoad)
+    {
         try
         {
-            FileUtil.createDirectoriesSafe(folder);
-            discoverPacks(folder, false, (path, resourcesSupplier) ->
+            net.minecraft.FileUtil.createDirectoriesSafe(folder);
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(folder))
             {
-                String fileName = path.getFileName().toString();
-                Pack.Info mcmetaFileInfo = readPackInfo("file/" + fileName, resourcesSupplier);
+                for (Path path : paths)
+                {
+                    Pack.ResourcesSupplier supplier = createPackResourcesSupplier(path);
+                    if (supplier == null)
+                        continue;
 
-                int packFormat = SharedConstants.getCurrentVersion().getPackVersion(packType);
-                Pack.Info info = new Pack.Info((mcmetaFileInfo != null) ? mcmetaFileInfo.description() : MutableComponent.create(new LiteralContents(FilenameUtils.getBaseName(fileName))),
-                    packFormat, packFormat, (mcmetaFileInfo != null) ? mcmetaFileInfo.requestedFeatures() : FeatureFlagSet.of(), false);
+                    Pack.ResourcesSupplier filteredSupplier = new Pack.ResourcesSupplier()
+                    {
+                        @Override
+                        public PackResources openPrimary(PackLocationInfo location)
+                        {
+                            return new FilteringPackResources(supplier.openPrimary(location), packType);
+                        }
 
-                Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId));
+                        @Override
+                        public PackResources openFull(PackLocationInfo location, Pack.Metadata metadata)
+                        {
+                            return new FilteringPackResources(supplier.openFull(location, metadata), packType);
+                        }
+                    };
 
-                Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, filteredSupplier, info, packType, Pack.Position.TOP, false, PackSource.BUILT_IN);
-                pOnLoad.accept(pack);
-            });
+                    String fileName = path.getFileName().toString();
+                    PackLocationInfo location = new PackLocationInfo("file/" + fileName, Component.literal(fileName), packSource, Optional.empty());
+                    Pack pack = Pack.readMetaAndCreate(location, filteredSupplier, packType, DISCOVERED_PACK_SELECTION_CONFIG);
+                    if (pack != null)
+                        pOnLoad.accept(pack);
+                }
+            }
         }
         catch (IOException ioexception)
         {
             FlansMod.log.warn("Failed to list packs in {}", folder, ioexception);
         }
+    }
+
+    private Pack.ResourcesSupplier createPackResourcesSupplier(Path path)
+    {
+        if (Files.isDirectory(path))
+            return new PathPackResources.PathResourcesSupplier(path);
+
+        String fileName = path.getFileName().toString().toLowerCase();
+        if (fileName.endsWith(".zip") || fileName.endsWith(".jar"))
+            return new FilePackResources.FileResourcesSupplier(path);
+
+        return null;
     }
 }
