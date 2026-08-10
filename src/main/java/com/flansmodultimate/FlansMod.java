@@ -37,6 +37,7 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -316,6 +317,7 @@ public class FlansMod
 
     public FlansMod(FMLJavaModLoadingContext context)
     {
+        ModLogFile.initialize(MOD_ID);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
         Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));
         Mixins.addConfiguration(MOD_ID + ".mixins.json");
