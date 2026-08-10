@@ -51,7 +51,7 @@ public class ModRepositorySource extends FolderRepositorySource
                 Pack.Info info = new Pack.Info((mcmetaFileInfo != null) ? mcmetaFileInfo.description() : MutableComponent.create(new LiteralContents(FilenameUtils.getBaseName(fileName))),
                     packFormat, packFormat, (mcmetaFileInfo != null) ? mcmetaFileInfo.requestedFeatures() : FeatureFlagSet.of(), false);
 
-                Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId));
+                Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId), packType);
 
                 Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, filteredSupplier, info, packType, Pack.Position.TOP, false, PackSource.BUILT_IN);
                 pOnLoad.accept(pack);
