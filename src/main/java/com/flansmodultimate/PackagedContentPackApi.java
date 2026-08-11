@@ -76,6 +76,10 @@ public final class PackagedContentPackApi
         Path moduleResourceRoot = modFileInfo.getFile().findResource("pack.mcmeta").getParent();
         Path moduleAssetsRoot = modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID);
         Path modulePath = modFileInfo.getFile().getFilePath();
+        String moduleDisplayName = ModList.get().getModContainerById(modId)
+            .map(container -> container.getModInfo().getDisplayName())
+            .filter(displayName -> !displayName.isBlank())
+            .orElse(modId);
         boolean archiveBacked = FMLEnvironment.production;
 
         if (archiveBacked && (!Files.isRegularFile(modulePath)
@@ -128,7 +132,7 @@ public final class PackagedContentPackApi
                 : archivePackRoot;
 
             providers.add(new PackagedContentProvider(
-                displayNames.getOrDefault(packId, displayName(packId)), packId, modulePath,
+                displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath,
                 definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
                 archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot,
                 archiveBacked, indexSharedAssets

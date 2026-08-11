@@ -15,6 +15,7 @@ import java.util.UUID;
 public final class PackagedContentProvider implements IContentProvider
 {
     private final String name;
+    private final String conflictDisplayName;
     private final String packId;
     private final Path path;
     private final Path developmentContentRoot;
@@ -27,12 +28,13 @@ public final class PackagedContentProvider implements IContentProvider
     private final boolean indexAssetsForConflicts;
     private final String runId = UUID.randomUUID().toString();
 
-    PackagedContentProvider(String name, String packId, Path path,
+    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path,
                             Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
                             String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot,
                             boolean archiveBacked, boolean indexAssetsForConflicts)
     {
         this.name = Objects.requireNonNull(name);
+        this.conflictDisplayName = Objects.requireNonNull(conflictDisplayName);
         this.packId = Objects.requireNonNull(packId);
         this.path = path.toAbsolutePath().normalize();
         this.developmentContentRoot = Objects.requireNonNull(developmentContentRoot);
@@ -55,6 +57,12 @@ public final class PackagedContentProvider implements IContentProvider
     public boolean isPreprocessed()
     {
         return true;
+    }
+
+    @Override
+    public String getConflictDisplayName()
+    {
+        return conflictDisplayName;
     }
 
     /** Production providers reopen the installed JAR; development providers use Forge's resolved directories. */

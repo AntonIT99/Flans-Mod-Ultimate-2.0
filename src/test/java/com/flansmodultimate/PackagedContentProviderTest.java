@@ -27,6 +27,7 @@ class PackagedContentProviderTest
 
         assertTrue(provider.isDirectory());
         assertFalse(provider.isArchive());
+        assertEquals("Official Content for Flan's Mod Ultimate 2", provider.getConflictDisplayName());
         assertEquals(content, provider.getContentRoot(null));
         assertEquals(assets.resolve("textures"), provider.getTextureSourcePath(null));
         assertEquals(models.resolve("com/flansmod/client/model/ModelTest.class"),
@@ -79,7 +80,7 @@ class PackagedContentProviderTest
                                                      Path models, boolean archiveBacked)
     {
         return new PackagedContentProvider(
-            "Parts (Official)", "parts", modulePath,
+            "Parts (Official)", "Official Content for Flan's Mod Ultimate 2", "parts", modulePath,
             content, assets, models,
             "flans_content/parts", "assets/flansmod", "flans_models",
             archiveBacked, true

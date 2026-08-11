@@ -13,6 +13,15 @@ public interface IContentProvider
 {
     String getName();
 
+    /**
+     * Label used where a provider represents shared module-wide resources, such as texture
+     * conflict reporting. Normal content packs use their own display name.
+     */
+    default String getConflictDisplayName()
+    {
+        return getName();
+    }
+
     Path getPath();
 
     void update(String name, Path path);

@@ -915,7 +915,7 @@ public class ContentManager
         if (!name.equals(newName))
         {
             name = newName;
-            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getName(), otherContentPack.getName(), name, thisContentPack.getName());
+            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
         }
 
         return name;
