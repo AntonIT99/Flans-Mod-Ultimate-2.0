@@ -58,6 +58,23 @@ class PackagedContentProviderTest
         }
     }
 
+    @Test
+    void readsJsonPackDisplayNames() throws Exception
+    {
+        Path mapping = tempDir.resolve("pack_names.json");
+        Files.writeString(mapping, """
+            {
+              "modernwarfare": "Modern Warfare Content Pack",
+              "parts": "Parts Content Pack"
+            }
+            """);
+
+        assertEquals(Map.of(
+            "modernwarfare", "Modern Warfare Content Pack",
+            "parts", "Parts Content Pack"
+        ), PackagedContentPackApi.loadDisplayNames(mapping));
+    }
+
     private static PackagedContentProvider provider(Path modulePath, Path content, Path assets,
                                                      Path models, boolean archiveBacked)
     {

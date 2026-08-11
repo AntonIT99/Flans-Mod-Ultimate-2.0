@@ -1,6 +1,9 @@
 package com.flansmodultimate;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.config.ModConfig;
@@ -9,6 +12,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -48,6 +52,18 @@ public final class PackagedContentPackApi
                                              String contentRoot, String modelsRoot,
                                              Set<String> enforcedPackIds)
     {
+        register(context, modId, contentRoot, modelsRoot, enforcedPackIds, Map.of());
+    }
+
+    /**
+     * Registers packaged content with optional display-name overrides keyed by logical pack ID.
+     * Pack IDs without an override retain the generated {@code "Name (Official)"} label.
+     */
+    public static synchronized void register(FMLJavaModLoadingContext context, String modId,
+                                             String contentRoot, String modelsRoot,
+                                             Set<String> enforcedPackIds,
+                                             Map<String, String> displayNameOverrides)
+    {
         if (modules.stream().anyMatch(module -> module.modId().equals(modId)))
             throw new IllegalStateException("Packaged Flan content module already registered: " + modId);
 
@@ -73,11 +89,23 @@ public final class PackagedContentPackApi
 
         List<String> discoveredPackIds = discoverPackIds(moduleContentRoot);
         Set<String> enforced = normalizePackIds(enforcedPackIds);
+        Map<String, String> configuredDisplayNames = new LinkedHashMap<>(
+            loadDisplayNames(moduleContentRoot.resolve("pack_names.json"))
+        );
+        configuredDisplayNames.putAll(normalizeDisplayNames(displayNameOverrides));
+        Map<String, String> displayNames = Map.copyOf(configuredDisplayNames);
         if (!discoveredPackIds.containsAll(enforced))
         {
             Set<String> missing = new LinkedHashSet<>(enforced);
             missing.removeAll(discoveredPackIds);
             throw new IllegalStateException("Enforced packaged content packs are missing from " + contentRoot + ": " + missing);
+        }
+        if (!discoveredPackIds.containsAll(displayNames.keySet()))
+        {
+            Set<String> unknown = new LinkedHashSet<>(displayNames.keySet());
+            unknown.removeAll(discoveredPackIds);
+            throw new IllegalStateException("Display names were configured for unknown packaged content packs in "
+                + contentRoot + ": " + unknown);
         }
 
         Set<String> enabled = loadEarlySelection(context, modId, discoveredPackIds, enforced);
@@ -100,7 +128,7 @@ public final class PackagedContentPackApi
                 : archivePackRoot;
 
             providers.add(new PackagedContentProvider(
-                displayName(packId), packId, modulePath,
+                displayNames.getOrDefault(packId, displayName(packId)), packId, modulePath,
                 definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
                 archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot,
                 archiveBacked, indexSharedAssets
@@ -197,6 +225,50 @@ public final class PackagedContentPackApi
         Set<String> normalized = new LinkedHashSet<>();
         packIds.forEach(id -> normalized.add(id.toLowerCase(Locale.ROOT)));
         return Set.copyOf(normalized);
+    }
+
+    private static Map<String, String> normalizeDisplayNames(Map<String, String> displayNames)
+    {
+        Map<String, String> normalized = new LinkedHashMap<>();
+        displayNames.forEach((packId, displayName) -> {
+            String normalizedPackId = packId.toLowerCase(Locale.ROOT);
+            if (normalizedPackId.isBlank())
+                throw new IllegalArgumentException("Pack ID for a display-name override cannot be blank");
+            if (displayName.isBlank())
+                throw new IllegalArgumentException("Display name for packaged content pack '" + packId + "' cannot be blank");
+            normalized.put(normalizedPackId, displayName);
+        });
+        return Map.copyOf(normalized);
+    }
+
+    static Map<String, String> loadDisplayNames(Path mappingFile)
+    {
+        if (!Files.isRegularFile(mappingFile))
+            return Map.of();
+
+        try (var reader = Files.newBufferedReader(mappingFile, StandardCharsets.UTF_8))
+        {
+            JsonElement root = JsonParser.parseReader(reader);
+            if (!root.isJsonObject())
+                throw new IllegalStateException("Pack display-name mapping must be a JSON object: " + mappingFile);
+
+            Map<String, String> displayNames = new LinkedHashMap<>();
+            JsonObject object = root.getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : object.entrySet())
+            {
+                if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString())
+                    throw new IllegalStateException("Display name for packaged content pack '" + entry.getKey()
+                        + "' must be a JSON string in " + mappingFile);
+                displayNames.put(entry.getKey(), entry.getValue().getAsString());
+            }
+            return normalizeDisplayNames(displayNames);
+        }
+        catch (Exception e)
+        {
+            if (e instanceof IllegalStateException illegalStateException)
+                throw illegalStateException;
+            throw new IllegalStateException("Could not read packaged content display names from " + mappingFile, e);
+        }
     }
 
     private static String displayName(String packId)
