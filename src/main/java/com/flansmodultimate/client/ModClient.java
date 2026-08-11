@@ -846,18 +846,23 @@ public class ModClient
         pendingPitch -= applyPitch;
         pendingYaw -= applyYaw;
 
-        // Apply smoothly
+        if (Math.abs(applyPitch) < 1.0E-6F && Math.abs(applyYaw) < 1.0E-6F)
+            return;
+
+        // Shift both ends of vanilla's interpolation interval. Assigning the
+        // old rotations to the new current value here collapses mounted camera
+        // interpolation to one frame and looks like low FPS while driving.
         float newPitch = Mth.clamp(player.getXRot() + applyPitch, -90.0F, 90.0F);
         player.setXRot(newPitch);
 
         float newYaw = player.getYRot() + Mth.wrapDegrees(applyYaw);
         player.setYRot(newYaw);
 
-        player.yHeadRot = newYaw;
-        player.yBodyRot = newYaw;
-        player.xRotO = newPitch;
-        player.yRotO = newYaw;
-        player.yHeadRotO = newYaw;
-        player.yBodyRotO = newYaw;
+        player.xRotO = Mth.clamp(player.xRotO + applyPitch, -90F, 90F);
+        player.yRotO += Mth.wrapDegrees(applyYaw);
+        player.yHeadRot += applyYaw;
+        player.yBodyRot += applyYaw;
+        player.yHeadRotO += applyYaw;
+        player.yBodyRotO += applyYaw;
     }
 }

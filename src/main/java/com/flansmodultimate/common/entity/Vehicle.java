@@ -134,9 +134,6 @@ public class Vehicle extends Driveable
         }
 
         harvestConfiguredBlocks();
-        if (DriveableInput.isDown(getInputMask(), DriveableInput.FLARE)
-            && !DriveableInput.isDown(previousInputMask, DriveableInput.FLARE))
-            dischargeSmoke();
         if (isEngineActive())
             consumeFuel(Math.abs(effectiveThrottle));
     }
@@ -147,6 +144,37 @@ public class Vehicle extends Driveable
         VehicleType type = getVehicleType();
         if (type != null)
             advanceAnimations(type);
+    }
+
+    @Override
+    protected void handleRisingInputs(Seat seat, Player player, int rising)
+    {
+        boolean deploySmoke = DriveableInput.isDown(rising, DriveableInput.FLARE);
+        boolean smokeWasReady = !isVarFlare() && !isCountermeasureReloading();
+        super.handleRisingInputs(seat, player, rising);
+
+        VehicleType type = getVehicleType();
+        if (deploySmoke && smokeWasReady && isVarFlare() && type != null && !type.getSmokers().isEmpty())
+            dischargeSmoke();
+    }
+
+    /**
+     * Vehicles use the legacy smoke dispensers as their countermeasures. The
+     * shared timer and flags still provide cooldown and lock-on behaviour, but
+     * the generic flare particle must not be emitted as well.
+     */
+    @Override
+    protected void updateFlares()
+    {
+        if (ticksFlareUsing <= 0)
+        {
+            setFlag(FLAG_FLARE, false);
+            setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
+            return;
+        }
+        --ticksFlareUsing;
+        setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
     }
 
     private void updateThrottleAndSteering(VehicleType type)

@@ -340,10 +340,15 @@ public class Seat extends Entity implements IControllable
         // Legacy driveable seat coordinates already describe the rider anchor.
         // EntityPlayer 1.7.10 contributed a -0.35 Y offset here, whereas the
         // modern default mount offset raises the player by about 0.45 blocks.
-        double ridingOffset = passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
+        double ridingOffset = getPassengerRidingOffset(passenger);
         move.accept(passenger, getX(), getY() + ridingOffset, getZ());
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
+    }
+
+    public double getPassengerRidingOffset(@NotNull Entity passenger)
+    {
+        return passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
     }
 
     @Override

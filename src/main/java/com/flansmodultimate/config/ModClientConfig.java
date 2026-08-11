@@ -17,6 +17,7 @@ public final class ModClientConfig
     public final boolean searchModelsInOtherContentPacks;
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
+    public final EnumSpeedUnit driveableSpeedUnit;
     public final int bulletRenderDistance;
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
@@ -51,6 +52,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    private static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
     private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
@@ -107,6 +109,9 @@ public final class ModClientConfig
         SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder
                 .comment("Show the armor-style HUD bar for legacy armor damage absorption")
                 .define("showArmorDamageAbsorptionBar", true);
+        DRIVEABLE_SPEED_UNIT = builder
+                .comment("Unit used for vehicle and plane speed on the HUD")
+                .defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -182,6 +187,7 @@ public final class ModClientConfig
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
+        driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();

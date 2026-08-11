@@ -148,6 +148,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static final int FLAG_ENGINE = 1 << 4;
     protected static final int FLAG_IT1_CAN_FIRE = 1 << 5;
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
+    /** Countermeasures have finished deploying but are not ready to fire again. */
+    protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -171,6 +173,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static final EntityDataAccessor<Integer> DATA_MODE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Float> DATA_FUEL = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Integer> DATA_LOCK_TARGET = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    /** Server game-time at which the secondary weapon bank becomes usable again. */
+    protected static final EntityDataAccessor<Long> DATA_SECONDARY_READY_AT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.LONG);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
@@ -209,6 +213,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     private float clientTargetYaw;
     private float clientTargetPitch;
     private float clientTargetRoll;
+    private int clientTurretLerpSteps;
+    private float clientVisualTurretYaw;
+    private float clientVisualTurretPitch;
+    private float clientTargetTurretYaw;
+    private float clientTargetTurretPitch;
 
     protected int localInputMask;
     protected int previousInputMask;
@@ -373,8 +382,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public float getPitch() { return useClientVisualTransform() ? clientVisualPitch : getSyncedPitch(); }
     public float getRoll() { return useClientVisualTransform() ? clientVisualRoll : getSyncedRoll(); }
     public float getThrottle() { return entityData.get(DATA_THROTTLE); }
-    public float getTurretYaw() { return entityData.get(DATA_TURRET_YAW); }
-    public float getTurretPitch() { return entityData.get(DATA_TURRET_PITCH); }
+    public float getTurretYaw() { return useClientVisualTransform() ? clientVisualTurretYaw : getSyncedTurretYaw(); }
+    public float getTurretPitch() { return useClientVisualTransform() ? clientVisualTurretPitch : getSyncedTurretPitch(); }
     public float getFlightPitchControl() { return entityData.get(DATA_FLIGHT_PITCH); }
     public float getFlightRollControl() { return entityData.get(DATA_FLIGHT_ROLL); }
     public boolean isMouseControlEnabled() { return entityData.get(DATA_MOUSE_CONTROL); }
@@ -390,10 +399,35 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
+    public int getSecondaryReloadTicks()
+    {
+        if (!level().isClientSide)
+            return secondaryShootDelay;
+        return (int) Mth.clamp(entityData.get(DATA_SECONDARY_READY_AT) - level().getGameTime(), 0L, Integer.MAX_VALUE);
+    }
+
+    /** Returns the next valid ammunition stack for the secondary weapon bank. */
+    public Component getCurrentSecondaryAmmoName()
+    {
+        if (configType == null || driveableData == null)
+            return Component.empty();
+        EnumWeaponType weapon = configType.weaponType(true);
+        boolean bombBank = weapon == EnumWeaponType.BOMB || weapon == EnumWeaponType.MINE;
+        int slots = bombBank ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
+        for (int slot = 0; slot < slots; slot++)
+        {
+            ItemStack stack = bombBank ? driveableData.getBomb(slot) : driveableData.getMissile(slot);
+            if (validAmmo(stack, weapon))
+                return stack.getHoverName();
+        }
+        return Component.empty();
+    }
 
     private float getSyncedYaw() { return entityData.get(DATA_YAW); }
     private float getSyncedPitch() { return entityData.get(DATA_PITCH); }
     private float getSyncedRoll() { return entityData.get(DATA_ROLL); }
+    private float getSyncedTurretYaw() { return entityData.get(DATA_TURRET_YAW); }
+    private float getSyncedTurretPitch() { return entityData.get(DATA_TURRET_PITCH); }
 
     private boolean useClientVisualTransform()
     {
@@ -497,6 +531,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public boolean isDoorOpen() { return getFlag(FLAG_DOOR); }
     public boolean isWingFolded() { return getFlag(FLAG_WING); }
     public boolean isVarFlare() { return getFlag(FLAG_FLARE); }
+    public boolean isCountermeasureReloading() { return getFlag(FLAG_COUNTERMEASURE_RELOADING); }
     public boolean isEngineActive() { return getFlag(FLAG_ENGINE); }
     public void setGearDeployed(boolean value) { setFlag(FLAG_GEAR, value); }
     public void setDoorOpen(boolean value) { setFlag(FLAG_DOOR, value); }
@@ -533,6 +568,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         entityData.define(DATA_MODE, 0);
         entityData.define(DATA_FUEL, 0F);
         entityData.define(DATA_LOCK_TARGET, -1);
+        entityData.define(DATA_SECONDARY_READY_AT, 0L);
     }
 
     @Override
@@ -598,8 +634,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             engineStartTicks = Math.max(0, tag.getInt(NBT_ENGINE_START_TICKS));
         primaryShootDelay = tag.contains(NBT_PRIMARY_SHOOT_DELAY, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0;
-        secondaryShootDelay = tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0;
+        setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
+            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0);
         recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS)) : 0;
         recoilDuration = tag.contains(NBT_RECOIL_DURATION, Tag.TAG_INT)
@@ -682,6 +718,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             }
             axes.setAngles(getYaw(), getPitch(), getRoll());
         }
+        if ((DATA_TURRET_YAW.equals(key) || DATA_TURRET_PITCH.equals(key)) && level().isClientSide)
+        {
+            initializeClientTransform();
+            clientTargetTurretYaw = getSyncedTurretYaw();
+            clientTargetTurretPitch = getSyncedTurretPitch();
+            clientTurretLerpSteps = Math.max(clientTurretLerpSteps, 2);
+        }
         if (DATA_FUEL.equals(key) && driveableData != null)
             driveableData.setFuelInTank(getFuel());
     }
@@ -737,9 +780,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             prevYaw = clientVisualYaw;
             prevPitch = clientVisualPitch;
             prevRoll = clientVisualRoll;
-            prevTurretYaw = getTurretYaw();
-            prevTurretPitch = getTurretPitch();
+            prevTurretYaw = clientVisualTurretYaw;
+            prevTurretPitch = clientVisualTurretPitch;
             tickClientTransformInterpolation();
+            tickClientTurretInterpolation();
         }
         else
         {
@@ -839,6 +883,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         clientVisualYaw = clientTargetYaw = getSyncedYaw();
         clientVisualPitch = clientTargetPitch = getSyncedPitch();
         clientVisualRoll = clientTargetRoll = getSyncedRoll();
+        clientVisualTurretYaw = clientTargetTurretYaw = getSyncedTurretYaw();
+        clientVisualTurretPitch = clientTargetTurretPitch = getSyncedTurretPitch();
         setYRot(clientVisualYaw);
         setXRot(clientVisualPitch);
     }
@@ -864,6 +910,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
     }
 
+    private void tickClientTurretInterpolation()
+    {
+        if (clientTurretLerpSteps <= 0)
+            return;
+        float divisor = clientTurretLerpSteps;
+        clientVisualTurretYaw = Mth.wrapDegrees(clientVisualTurretYaw
+            + Mth.wrapDegrees(clientTargetTurretYaw - clientVisualTurretYaw) / divisor);
+        clientVisualTurretPitch += (clientTargetTurretPitch - clientVisualTurretPitch) / divisor;
+        --clientTurretLerpSteps;
+    }
+
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
         if (configType == null || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
@@ -880,7 +937,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         placementEffectsPending = false;
         primaryShootDelay = Math.max(primaryShootDelay, Math.max(0, configType.getPlaceTimePrimary()));
-        secondaryShootDelay = Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary()));
+        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary())));
 
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
@@ -938,7 +995,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         {
             if (fireWeaponBank(true))
             {
-                secondaryShootDelay = Math.max(1, Mth.ceil(getConfiguredShootDelay(true)));
+                setSecondaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(true))));
                 if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
                     --secondaryBurstRemaining;
             }
@@ -1187,10 +1244,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!ammunitionChanged)
             return;
         primaryShootDelay = Math.max(primaryShootDelay, Math.max(0, configType.getReloadTimePrimary()));
-        secondaryShootDelay = Math.max(secondaryShootDelay, Math.max(0, configType.getReloadTimeSecondary()));
+        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getReloadTimeSecondary())));
         String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(), configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 96D, sound, false);
+    }
+
+    private void setSecondaryShootDelay(int delay)
+    {
+        secondaryShootDelay = Math.max(0, delay);
+        if (!level().isClientSide)
+            entityData.set(DATA_SECONDARY_READY_AT, level().getGameTime() + secondaryShootDelay);
     }
 
     protected int weaponInventoryFingerprint()
@@ -1422,13 +1486,22 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         Vec3 offset = LegacyDriveableCoordinates.toLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
-            return localToWorld(root.x, root.y, root.z).add(localDirectionToWorld(offset));
+            return applyVehicleModelVerticalOffset(localToWorld(root.x, root.y, root.z).add(localDirectionToWorld(offset)));
 
         boolean separateMuzzleOffset = offset.lengthSqr() > 1.0E-8D;
         float rootPitch = part == EnumDriveablePart.BARREL || !separateMuzzleOffset ? getTurretPitch() : 0F;
         Vec3 origin = turretPointToWorld(root, getTurretYaw(), rootPitch);
         Vec3 muzzleOffset = rotateTurretLocalDirection(offset, getTurretYaw(), getTurretPitch());
-        return origin.add(localDirectionToWorld(muzzleOffset));
+        return applyVehicleModelVerticalOffset(origin.add(localDirectionToWorld(muzzleOffset)));
+    }
+
+    /** Aligns model-anchored positions with the visual offset used by vehicles. */
+    protected Vec3 applyVehicleModelVerticalOffset(@NotNull Vec3 position)
+    {
+        if (!(this instanceof Vehicle) || configType == null)
+            return position;
+        return position.add(localDirectionToWorld(new Vec3(0D,
+            Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
     }
 
     protected Vec3 getShootDirection(ShootPoint point, boolean secondary)
@@ -1477,14 +1550,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected Vec3 turretPointToWorld(@NotNull Vec3 point, float yaw, float pitch)
     {
+        Vec3 local = turretPointToLocal(point, yaw, pitch);
+        return localToWorld(local.x, local.y, local.z);
+    }
+
+    private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch)
+    {
         if (configType == null)
-            return localToWorld(point.x, point.y, point.z);
+            return point;
         Vec3 pivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
         Vec3 rotated = rotateTurretLocalDirection(point.subtract(pivot), yaw, pitch).add(pivot);
         Vec3 configuredOffset = LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
         Vec3 originOffset = rotateTurretLocalDirection(configuredOffset, yaw, 0F);
-        Vec3 local = rotated.add(originOffset);
-        return localToWorld(local.x, local.y, local.z);
+        return rotated.add(originOffset);
     }
 
     protected Vec3 aimedDirection(float yaw, float pitch)
@@ -1551,6 +1629,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             Vec3 origin = isTurretMountedPart(info.getPart())
                 ? turretPointToWorld(gunOrigin, seat.getAimYaw(), info.getPart() == EnumDriveablePart.BARREL ? seat.getAimPitch() : 0F)
                 : localToWorld(gunOrigin.x, gunOrigin.y, gunOrigin.z);
+            origin = applyVehicleModelVerticalOffset(origin);
             Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
             FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
             boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
@@ -2001,19 +2080,44 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         SeatInfo info = configType == null ? null : configType.getSeat(index);
         if (info == null)
             return position().add(0D, getBbHeight() * 0.5D, 0D);
+        Vec3 localPosition = getSeatLocalPosition(info, getTurretYaw(), getTurretPitch());
+        return localToWorld(localPosition.x, localPosition.y, localPosition.z);
+    }
+
+    /** Render-time seat anchor using the exact same transform as the model. */
+    public Vec3 getInterpolatedSeatWorldPosition(int index, float partialTick)
+    {
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
+            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        SeatInfo info = configType == null ? null : configType.getSeat(index);
+        if (info == null)
+            return root.add(0D, getBbHeight() * 0.5D, 0D);
+
+        float yaw = Mth.rotLerp(partial, prevYaw, getYaw());
+        float pitch = Mth.rotLerp(partial, prevPitch, getPitch());
+        float roll = Mth.rotLerp(partial, prevRoll, getRoll());
+        float turretYaw = Mth.rotLerp(partial, prevTurretYaw, getTurretYaw());
+        float turretPitch = Mth.rotLerp(partial, prevTurretPitch, getTurretPitch());
+        Vec3 localPosition = getSeatLocalPosition(info, turretYaw, turretPitch);
+        return root.add(localDirectionToWorld(localPosition, yaw, pitch, roll));
+    }
+
+    private Vec3 getSeatLocalPosition(@NotNull SeatInfo info, float turretYaw, float turretPitch)
+    {
         Vec3 localPosition = rotateLegacyModelVector(
             new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
         if (info.isDriver())
             localPosition = mirrorAroundLocalZAxis(localPosition);
-        Vec3 worldPosition = isTurretMountedPart(info.getPart())
-            ? turretPointToWorld(localPosition, getTurretYaw(), info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F)
-            : localToWorld(localPosition.x, localPosition.y, localPosition.z);
+        if (isTurretMountedPart(info.getPart()))
+            localPosition = turretPointToLocal(localPosition, turretYaw,
+                info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F);
 
         // The visual vehicle model is lowered in model space. Keep the driver
         // anchor aligned, including the model's configured scale and rotation.
         if (info.isDriver() && this instanceof Vehicle)
-            worldPosition = worldPosition.add(localDirectionToWorld(new Vec3(0D,
-                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
+            localPosition = localPosition.add(0D,
+                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D);
 
         Vec3 rotatedOffset = rotateLegacyModelVector(
             new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
@@ -2021,11 +2125,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
-            float pitch = info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
-            rotatedOffset = rotateTurretLocalDirection(rotatedOffset, getTurretYaw(), pitch);
-            worldPosition = worldPosition.add(localDirectionToWorld(rotatedOffset));
+            float pitch = info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F;
+            rotatedOffset = rotateTurretLocalDirection(rotatedOffset, turretYaw, pitch);
+            localPosition = localPosition.add(rotatedOffset);
         }
-        return worldPosition;
+        return localPosition;
     }
 
     public Vec3 getWheelWorldPosition(int index)
@@ -2141,6 +2245,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         ticksFlareUsing = (int) Math.min(Integer.MAX_VALUE, Math.max(1L, (long) configType.getTimeFlareUsing() * 20L));
         flareDelay = Math.max(ticksFlareUsing, configType.getFlareDelay());
         setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, true);
         if (StringUtils.isNotBlank(configType.getFlareSound()))
             PacketPlaySound.sendSoundPacket(this, 96D, configType.getFlareSound(), false);
     }
@@ -2150,10 +2255,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (ticksFlareUsing <= 0)
         {
             setFlag(FLAG_FLARE, false);
+            setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
             return;
         }
         --ticksFlareUsing;
         setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
         if (tickCount % 2 == 0)
         {
             Vec3 behind = position().subtract(getForwardVector().scale(Math.max(1D, getBbWidth())));
@@ -2849,6 +2956,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public Vec3 localDirectionToWorld(@NotNull Vec3 local)
     {
         return getForwardVector().scale(local.x).add(getUpVector().scale(local.y)).add(getRightVector().scale(local.z));
+    }
+
+    private static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
+    {
+        Vec3 forward = ModUtils.getDirectionFromPitchAndYaw(pitch, yaw).normalize();
+        Vec3 horizontalRight = ModUtils.getDirectionFromPitchAndYaw(0F, yaw - 90F).normalize();
+        Vec3 vertical = forward.cross(horizontalRight).normalize();
+        double rollRadians = roll * Mth.DEG_TO_RAD;
+        Vec3 right = horizontalRight.scale(Math.cos(rollRadians)).add(vertical.scale(Math.sin(rollRadians))).normalize();
+        Vec3 up = vertical.scale(Math.cos(rollRadians)).subtract(horizontalRight.scale(Math.sin(rollRadians))).normalize();
+        return forward.scale(local.x).add(up.scale(local.y)).add(right.scale(local.z));
     }
 
     public Vec3 worldToLocal(@NotNull Vec3 world)

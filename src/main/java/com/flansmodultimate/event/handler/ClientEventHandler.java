@@ -45,6 +45,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Vector3f;
 
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.model.HumanoidModel;
@@ -81,16 +82,24 @@ public final class ClientEventHandler
         var driveable = KeyInputHandler.resolveDriveable(player);
         if (driveable != null && player.getVehicle() instanceof Seat seat)
         {
-            float craftYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
-            float craftPitch = Mth.lerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
             boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
-            float aimYaw = fixedPlaneView ? 0F : seat.getViewAimYaw();
-            float aimPitch = fixedPlaneView ? 0F : seat.getViewAimPitch();
-            event.setYaw(Mth.wrapDegrees(craftYaw + 90F + aimYaw));
-            event.setPitch(Mth.clamp(craftPitch + aimPitch, -89.9F, 89.9F));
+            if (fixedPlaneView)
+            {
+                float cameraYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()) - 90F;
+                float cameraPitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
+                if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
+                {
+                    cameraYaw += 180F;
+                    cameraPitch = -cameraPitch;
+                }
+                event.setYaw(Mth.wrapDegrees(cameraYaw));
+                event.setPitch(Mth.clamp(cameraPitch, -89.9F, 89.9F));
+            }
         }
 
         float roll = Mth.rotLerp(partialTick, controllable.getPrevPlayerRoll(), controllable.getPlayerRoll());
+        if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
+            roll = -roll;
         event.setRoll(event.getRoll() + roll);
     }
 
@@ -365,7 +374,22 @@ public final class ClientEventHandler
     public static void onRenderPlayer(RenderPlayerEvent.Pre event)
     {
         if (TeamsClientState.shouldHidePlayer(event.getEntity()))
+        {
             event.setCanceled(true);
+            return;
+        }
+
+        Player player = event.getEntity();
+        if (!(player.getVehicle() instanceof Seat seat) || seat.getDriveable() == null)
+            return;
+        float partialTick = event.getPartialTick();
+        Vec3 renderedFeet = new Vec3(Mth.lerp((double) partialTick, player.xo, player.getX()),
+            Mth.lerp((double) partialTick, player.yo, player.getY()),
+            Mth.lerp((double) partialTick, player.zo, player.getZ()));
+        Vec3 seatFeet = seat.getDriveable().getInterpolatedSeatWorldPosition(seat.getSeatIndex(), partialTick)
+            .add(0D, seat.getPassengerRidingOffset(player), 0D);
+        Vec3 correction = seatFeet.subtract(renderedFeet);
+        event.getPoseStack().translate(correction.x, correction.y, correction.z);
     }
 
     @SubscribeEvent
