@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name AmericanOfficerHelmet
+ShortName AmericanOfficerHelmet
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon americanohelmet
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+Defence 0.1
+
+
+//Visuals
+Model ww2.AmericanOfficerHelmet
+ArmorTexture aofficer
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

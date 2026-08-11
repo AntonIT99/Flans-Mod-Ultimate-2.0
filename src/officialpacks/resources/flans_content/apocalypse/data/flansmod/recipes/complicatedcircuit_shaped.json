@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RCR",
+    "CDC",
+    "RCR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:repeater"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "flansmod:complicatedcircuit"
+  }
+}

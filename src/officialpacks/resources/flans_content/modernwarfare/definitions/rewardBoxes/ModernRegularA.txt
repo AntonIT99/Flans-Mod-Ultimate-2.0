@@ -1,0 +1,24 @@
+//Naming
+Name Alpha Paint Box
+ShortName modernRegularA
+Icon RewardBox_Modern_Regular
+// Weighting
+RarityWeight common 1.5
+RarityWeight uncommon 1.0
+RarityWeight rare 0.5
+RarityWeight legendary 0.25
+// Commons
+AddPaintjob common ak47 AK47_Birch
+AddPaintjob common m16a4 M16A4_Howl
+AddPaintjob common desertEagle DesertEagle_Neon
+AddPaintjob common minigun Minigun_Candy
+//AddPaintjob common gl6 GL6_Red
+// Uncommons
+AddPaintjob uncommon ak47 AK47_Redline
+AddPaintjob uncommon m16a4 M16A4_Orange
+AddPaintjob uncommon desertEagle DesertEagle_CoralSnake
+// Rares
+AddPaintjob rare minigun Minigun_Rainbow
+AddPaintjob rare desertEagle DesertEagle_Gold
+// Legendaries
+AddPaintjob legendary minigun Minigun_Steampunk

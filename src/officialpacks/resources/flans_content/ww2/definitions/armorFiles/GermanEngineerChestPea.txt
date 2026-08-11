@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name GermanEngineerChestPea
+ShortName GermanEngineerChestPea
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon germanecoat
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+Defence 0.1
+
+
+//Visuals
+Model ww2.GermanEngineerChest
+ArmorTexture gengineerpea
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

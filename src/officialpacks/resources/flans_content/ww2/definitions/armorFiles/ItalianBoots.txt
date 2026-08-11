@@ -1,0 +1,8 @@
+Name Italian WW2 Boots
+ShortName italianBoots
+ItemID 23698
+Icon ItalianBoots
+Colour 255 255 255
+Type Boots
+Defence 0.1
+ArmourTexture Italian

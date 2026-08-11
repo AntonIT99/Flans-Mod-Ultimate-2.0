@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RRR",
+    "GGF",
+    "RRR"
+  ],
+  "key": {
+    "R": {
+      "item": "flansmod:fiberglass"
+    },
+    "F": {
+      "item": "minecraft:red_dye"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "result": {
+    "item": "flansmod:flanmwunderbarrellaser"
+  }
+}

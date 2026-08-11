@@ -83,6 +83,9 @@ minecraft {
                 "${mod_id}" {
                     source sourceSets.main
                 }
+                "flansmodultimate_officialpacks" {
+                    source sourceSets.maybeCreate('officialpacks')
+                }
             }
         }
 
@@ -120,6 +123,8 @@ configurations {
     implementation.extendsFrom library
     packsImplementation.extendsFrom implementation
     packsRuntimeOnly.extendsFrom runtimeOnly
+    officialpacksImplementation.extendsFrom implementation
+    officialpacksRuntimeOnly.extendsFrom runtimeOnly
 }
 
 // Configure all runs with the following
@@ -146,6 +151,41 @@ sourceSets {
             srcDirs = ['src/packs/resources']
         }
     }
+    officialpacks {
+        java {
+            srcDirs = ['src/officialpacks/java']
+        }
+        resources {
+            srcDirs = ['src/officialpacks/resources']
+            // Legacy pack bootstrap classes carry @Mod and must not be scanned as additional Forge mods.
+            // They are not render models and are never loaded by the packaged-content provider.
+            exclude 'flans_models/**/common/*PackMod.class'
+        }
+    }
+}
+
+// IntelliJ's incremental resource compiler does not remove files that later become excluded.
+// Forge scans every .class below a development mod root, so stale legacy @Mod bootstrap
+// classes would be interpreted as extra mods without matching mods.toml entries.
+def cleanOfficialPacksIntellijLegacyModClasses = tasks.register('cleanOfficialPacksIntellijLegacyModClasses', Delete) {
+    delete fileTree("$projectDir/out/officialpacks/resources/flans_models") {
+        include '**/common/*PackMod.class'
+    }
+}
+
+// IntelliJ can keep an older version of the submod entrypoint in its module output even when
+// ForgeGradle has compiled the current source. Copy the Gradle-compiled classes into the exact
+// development mod root used by the generated IntelliJ run configuration.
+def syncOfficialPacksIntellijClasses = tasks.register('syncOfficialPacksIntellijClasses', Copy) {
+    dependsOn tasks.named('compileOfficialpacksJava')
+    from sourceSets.officialpacks.output.classesDirs
+    into "$projectDir/out/officialpacks/classes"
+}
+
+// ForgeGradle adds this task for IntelliJ run configurations. Run the targeted cleanup after
+// IntelliJ Make and before Forge starts scanning the official-packs development mod root.
+tasks.matching { it.name == 'copyIntellijResources' }.configureEach {
+    dependsOn cleanOfficialPacksIntellijLegacyModClasses, syncOfficialPacksIntellijClasses
 }
 
 repositories {
@@ -173,6 +213,7 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    officialpacksImplementation sourceSets.main.output
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -285,8 +326,23 @@ def packsJar = tasks.register('packsJar', Jar) {
     }
 }
 
+def officialPacksJar = tasks.register('officialPacksJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Official Packs")
+    archiveVersion.set('1.0')
+
+    from sourceSets.officialpacks.output
+
+    manifest {
+        attributes(
+            'Implementation-Title': 'officialpacks',
+            'Implementation-Version': '1.0'
+        )
+    }
+}
+
 artifacts {
     archives packsJar
+    archives officialPacksJar
 }
 
 // Example configuration to allow publishing using the maven-publish plugin

@@ -1,0 +1,11 @@
+Name Balaclava
+ShortName balaclava
+Icon Balaclava
+Colour 255 255 255
+Type Hat
+Defence 0.1
+ArmourTexture Criminal
+Enchantability 0
+Toughness 0
+Durability 0
+DamageReductionAmount 2

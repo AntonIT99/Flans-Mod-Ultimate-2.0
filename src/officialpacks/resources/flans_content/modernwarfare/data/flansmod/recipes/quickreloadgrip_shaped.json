@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    " FL",
+    " FL"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:fiberglass"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "flansmod:quickreloadgrip"
+  }
+}

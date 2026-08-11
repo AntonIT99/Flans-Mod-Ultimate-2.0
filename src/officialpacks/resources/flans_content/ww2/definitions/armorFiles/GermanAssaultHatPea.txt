@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name GermanAssaultHatPea
+ShortName GermanAssaultHatPea
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon germanahat
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+Defence 0.1
+
+
+//Visuals
+Model ww2.GermanAssaultHat
+ArmorTexture gassaultpea
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

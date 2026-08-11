@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "particle": "flansmod:item/slumpedskeleton",
+    "top": "flansmod:item/slumpedskeleton",
+    "bottom": "flansmod:item/slumpedskeleton",
+    "side": "flansmod:item/slumpedskeleton"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BRC",
+    "IAR",
+    "EID"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:mechadiamondcutter"
+    },
+    "B": {
+      "item": "flansmod:mechadustextractor"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "C": {
+      "item": "flansmod:mecharedstonemagnet"
+    },
+    "D": {
+      "item": "flansmod:mechametalmagpie"
+    },
+    "E": {
+      "item": "flansmod:mecharotarymagnet"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechaorecrusher2000"
+  }
+}

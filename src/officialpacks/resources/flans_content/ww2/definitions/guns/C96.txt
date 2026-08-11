@@ -1,0 +1,45 @@
+Name Mauser C96
+ShortName C96
+//The ammo this gun uses (shortName)
+Ammo C96Ammo
+Icon C96
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 40
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 6
+//Damage in half hearts
+Damage 4
+//The higher this value, the more the bullets spread
+Accuracy 4
+//Time in ticks between rounds
+ShootDelay 2
+ShootSound lugerShoot
+ReloadSound lugerReload
+Mode SemiAuto
+//Bullet speed, default 3.0
+BulletSpeed 100.0
+OneHanded true
+Scope None
+Deployable False
+DeployedModel None
+Model ww2.C96
+Texture SkinC96
+ModelScale 0.15
+//Attachment Settings
+AllowAllAttachments true
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments WoodenStock HollowPointBullet ArmorPiercingBullet flanMWAutoFire
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments true
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+Paintjob c96_acacia c96_acacia orange 1
+Paintjob c96_birch c96_birch yellow 1
+Paintjob c96_oak c96_oak brown 1
+Paintjob c96_pepper c96_pepper white 1
+Paintjob c96_black c96_black black 1
+Paintjob c96_green c96_green green 1

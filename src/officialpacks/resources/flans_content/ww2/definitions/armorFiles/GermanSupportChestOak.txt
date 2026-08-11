@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name GermanSupportChestOak
+ShortName GermanSupportChestOak
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon germansucoat
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+Defence 0.1
+
+
+//Visuals
+Model ww2.GermanSupportChest
+ArmorTexture gsupportoak
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

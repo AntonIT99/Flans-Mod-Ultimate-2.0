@@ -144,21 +144,17 @@ public final class ClassLoaderUtils
             if (loadedClass != null)
                 return loadedClass;
 
-            String relativeClassPath = fileClassName.replace('.', '/') + FileUtils.CLASS_EXTENSION;
-
             byte[] classData;
-
-            if (contentProvider.isDirectory())
+            FileSystem fs = FileUtils.createFileSystem(contentProvider);
+            try
             {
-                classData = Files.readAllBytes(contentProvider.getPath().resolve(relativeClassPath));
+                if (!contentProvider.isDirectory() && !contentProvider.isArchive())
+                    throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
+                classData = Files.readAllBytes(contentProvider.getModelPath(fileClassName, fs));
             }
-            else if (contentProvider.isArchive())
+            finally
             {
-                classData = readFileBytesFromArchive(contentProvider.getPath(), relativeClassPath);
-            }
-            else
-            {
-                throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
+                FileUtils.closeFileSystem(fs, contentProvider);
             }
 
             byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
@@ -189,24 +185,16 @@ public final class ClassLoaderUtils
 
     public static boolean hasClassFile(IContentProvider contentProvider, String className)
     {
-        String relativeClassPath = className.replace('.', '/') + FileUtils.CLASS_EXTENSION;
-
-        if (contentProvider.isDirectory())
-            return Files.isRegularFile(contentProvider.getPath().resolve(relativeClassPath));
-
-        if (contentProvider.isArchive())
+        FileSystem fs = FileUtils.createFileSystem(contentProvider);
+        try
         {
-            try (FileSystem fs = FileSystems.newFileSystem(contentProvider.getPath()))
-            {
-                return Files.isRegularFile(fs.getPath(relativeClassPath));
-            }
-            catch (IOException e)
-            {
-                return false;
-            }
+            return (contentProvider.isDirectory() || contentProvider.isArchive())
+                && Files.isRegularFile(contentProvider.getModelPath(className, fs));
         }
-
-        return false;
+        finally
+        {
+            FileUtils.closeFileSystem(fs, contentProvider);
+        }
     }
 
     public static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)

@@ -1,0 +1,6 @@
+Name Heavy Assault
+ShortName nerfStampedeClass
+AddItem nerfStampede
+AddItem nerfMaverick
+AddItem 18DartClip 2
+AddItem whistlerDart 12

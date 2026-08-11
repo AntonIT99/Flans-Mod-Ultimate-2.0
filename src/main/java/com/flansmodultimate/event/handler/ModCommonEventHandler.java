@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
+import com.flansmodultimate.PackagedContentRepositorySource;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
@@ -34,6 +35,8 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void registerPack(AddPackFindersEvent event)
     {
+        event.addRepositorySource(PackagedContentRepositorySource.create(event.getPackType()));
+
         if (event.getPackType() == PackType.SERVER_DATA && ModApocalypseConfig.apocalypseDimensionDatapackEnabled())
             event.addRepositorySource(ApocalypseDatapackSource.create());
 

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "minecraft:slime_ball"
+  },
+  "result": "flansmod:nerfplastic",
+  "experience": 0.0,
+  "cookingtime": 200
+}

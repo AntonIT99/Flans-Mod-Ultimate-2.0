@@ -719,12 +719,12 @@ public final class FileUtils
     {
         if (provider.isDirectory())
         {
-            return Files.newDirectoryStream(provider.getPath());
+            return Files.newDirectoryStream(provider.getContentRoot(null));
         }
         else if (provider.isArchive())
         {
             FileSystem fs = FileSystems.newFileSystem(provider.getPath());
-            return new AutoCloseableDirectoryStream(Files.newDirectoryStream(fs.getPath("/")), fs);
+            return new AutoCloseableDirectoryStream(Files.newDirectoryStream(provider.getContentRoot(fs)), fs);
         }
         throw new IllegalArgumentException("Content Pack must be either a directory or a ZIP/JAR-archive");
     }

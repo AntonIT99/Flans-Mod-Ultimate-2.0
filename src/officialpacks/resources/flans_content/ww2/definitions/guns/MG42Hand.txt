@@ -1,0 +1,30 @@
+Name MG42
+ShortName MG42Hand
+//The ammo this gun uses (shortName)
+Ammo mg42Ammo50
+Ammo mg42Ammo250
+Icon MG42
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 2
+//Damage in half hearts
+Damage 5
+//The higher this value, the more the bullets spread
+Accuracy 4
+//Time in ticks between rounds
+ShootDelay 1
+ShootSound MG42Shoot
+Model ww2.MG42Hand
+Texture SkinMG42Gun
+//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+//SoundLength 15
+DistortSound True
+ReloadSound MG42Reload
+Mode Minigun
+//Bullet speed, default 3.0
+BulletSpeed 100.0
+Scope None
+MoveSpeedModifier 0.7

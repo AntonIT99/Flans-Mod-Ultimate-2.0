@@ -53,7 +53,7 @@ public class ModRepositorySource extends FolderRepositorySource
 
                 Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId), packType);
 
-                Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, filteredSupplier, info, packType, Pack.Position.TOP, false, PackSource.BUILT_IN);
+                Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, filteredSupplier, info, packType, Pack.Position.BOTTOM, false, PackSource.BUILT_IN);
                 pOnLoad.accept(pack);
             });
         }

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "particle": "flansmod:item/gunrack",
+    "top": "flansmod:item/gunrack",
+    "bottom": "flansmod:item/gunrack",
+    "side": "flansmod:item/gunrack"
+  }
+}

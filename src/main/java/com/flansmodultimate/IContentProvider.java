@@ -19,6 +19,32 @@ public interface IContentProvider
 
     String getRunId();
 
+    /**
+     * Root containing legacy type folders and alias files.
+     */
+    default Path getContentRoot(@Nullable FileSystem fs)
+    {
+        if (isArchive())
+            return fs != null ? fs.getPath("/") : getExtractedPath();
+        return getPath();
+    }
+
+    /**
+     * Immutable packaged providers already contain final assets and data and must never be rewritten.
+     */
+    default boolean isPreprocessed()
+    {
+        return false;
+    }
+
+    /**
+     * A packaged module may share one merged asset tree across several logical content providers.
+     */
+    default boolean shouldIndexAssetsForConflicts()
+    {
+        return true;
+    }
+
     default Path getTempRoot()
     {
         if (!isArchive())
@@ -50,6 +76,15 @@ public interface IContentProvider
             return (fs != null) ? fs.getPath("/assets").resolve(FlansMod.FLANSMOD_ID) : getExtractedPath().resolve("assets").resolve(FlansMod.FLANSMOD_ID);
         }
         return getPath().resolve("assets").resolve(FlansMod.FLANSMOD_ID);
+    }
+
+    /**
+     * Legacy texture folders used by duplicate detection. Preprocessed providers may override this
+     * to point at their final {@code assets/flansmod/textures} directory.
+     */
+    default Path getTextureSourcePath(@Nullable FileSystem fs)
+    {
+        return getAssetsPath(fs);
     }
 
     default Path getDataPath()

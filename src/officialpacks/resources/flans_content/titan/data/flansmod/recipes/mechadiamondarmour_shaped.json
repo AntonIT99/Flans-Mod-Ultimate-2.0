@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "ILI",
+    "IBI"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:diamond_boots"
+    },
+    "C": {
+      "item": "minecraft:diamond_chestplate"
+    },
+    "I": {
+      "item": "minecraft:diamond_block"
+    },
+    "L": {
+      "item": "minecraft:diamond_leggings"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechadiamondarmour"
+  }
+}

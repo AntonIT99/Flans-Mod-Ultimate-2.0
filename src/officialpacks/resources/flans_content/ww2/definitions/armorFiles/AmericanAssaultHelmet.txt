@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name AmericanAssaultHelmet
+ShortName AmericanAssaultHelmet
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon americanahelmet
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+Defence 0.1
+
+
+//Visuals
+Model ww2.AmericanAssaultHelmet
+ArmorTexture aassault
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

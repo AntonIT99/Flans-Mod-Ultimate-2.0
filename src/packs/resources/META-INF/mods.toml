@@ -4,11 +4,11 @@ license="MIT"
 
 [[mods]]
 modId="flansmodultimate_packs"
-version="1.0-beta-5"
+version="1.0"
 displayName="Content Packs for Flan's Mod Ultimate 2"
 authors="Wolff"
 displayTest = "NONE"
-description='''This Mod adds armors from content packs designed for legacy Flan's Mod'''
+description=''''''
 
 [[dependencies.flansmodultimate_packs]]
     modId="forge"

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MR ",
+    "IMR",
+    " IM"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "M": {
+      "item": "flansmod:mecharotarymagnet"
+    }
+  },
+  "result": {
+    "item": "flansmod:mecharotarysupermagnet"
+  }
+}

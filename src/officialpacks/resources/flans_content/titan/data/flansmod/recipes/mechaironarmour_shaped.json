@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "ILI",
+    "IBI"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:iron_boots"
+    },
+    "C": {
+      "item": "minecraft:iron_chestplate"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "L": {
+      "item": "minecraft:iron_leggings"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechaironarmour"
+  }
+}

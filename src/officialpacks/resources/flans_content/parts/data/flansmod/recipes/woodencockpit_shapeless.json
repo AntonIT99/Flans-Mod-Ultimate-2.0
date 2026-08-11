@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:oak_boat"
+    }
+  ],
+  "result": {
+    "item": "flansmod:woodencockpit"
+  }
+}

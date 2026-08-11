@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name GermanOfficerHat
+ShortName GermanOfficerHat
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon germanohat
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+Defence 0.1
+
+
+//Visuals
+Model ww2.GermanOfficerHat
+ArmorTexture gofficer
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

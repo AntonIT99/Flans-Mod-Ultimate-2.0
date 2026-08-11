@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "facing\u003dnorth": {
+      "model": "flansmod:block/flanskeleton",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing\u003dsouth": {
+      "model": "flansmod:block/flanskeleton",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing\u003dwest": {
+      "model": "flansmod:block/flanskeleton",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing\u003deast": {
+      "model": "flansmod:block/flanskeleton",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}
