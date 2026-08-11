@@ -56,8 +56,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     }
 
     @Override
-    public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack,
-                       @NotNull MultiBufferSource buffer, int packedLight)
+    public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         DriveableType type = driveable.getConfigType();
         if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
@@ -113,6 +112,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
+        // Keep this in model space so the correction follows terrain pitch and roll,
+        // and is scaled along with legacy models that use ModelScale.
+        if (driveable instanceof Vehicle)
+            poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
+
         // Legacy driveable renderers applied ModelScale to the complete model
         // hierarchy. Keep pivots, attachment points and procedural track paths
         // under the same transform instead of scaling every mesh independently.
@@ -145,13 +149,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     private static float inputAxis(int mask, int positive, int negative)
     {
-        return (DriveableInput.isDown(mask, positive) ? 1F : 0F)
-            - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
+        return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
     }
 
-    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel,
-                                          ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack,
-                                          MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
         if (data == null)
@@ -178,9 +179,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 
-    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType,
-                                        float armPitch, boolean active, float animationTime, GunAnimations gunAnimations,
-                                        PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!armIntact || stack.isEmpty())
             return;
@@ -207,8 +206,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.popPose();
     }
 
-    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack,
-                                         MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!(stack.getItem() instanceof MechaAddonItem addon))
             return;

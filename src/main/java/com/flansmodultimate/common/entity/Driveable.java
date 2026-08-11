@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.SuspensionPhysics;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -188,6 +189,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected Seat[] seats = new Seat[0];
     @Getter
     protected Wheel[] wheels = new Wheel[0];
+    protected int groundedWheelCount;
     @Getter
     protected final RotatedAxes axes = new RotatedAxes();
 
@@ -196,6 +198,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     @Getter protected float prevRoll;
     @Getter protected float prevTurretYaw;
     @Getter protected float prevTurretPitch;
+    private boolean clientTransformInitialized;
+    private int clientTransformLerpSteps;
+    private double clientTargetX;
+    private double clientTargetY;
+    private double clientTargetZ;
+    private float clientVisualYaw;
+    private float clientVisualPitch;
+    private float clientVisualRoll;
+    private float clientTargetYaw;
+    private float clientTargetPitch;
+    private float clientTargetRoll;
 
     protected int localInputMask;
     protected int previousInputMask;
@@ -356,9 +369,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         entityData.set(DATA_DRIVEABLE_TYPE, shortname);
     }
 
-    public float getYaw() { return entityData.get(DATA_YAW); }
-    public float getPitch() { return entityData.get(DATA_PITCH); }
-    public float getRoll() { return entityData.get(DATA_ROLL); }
+    public float getYaw() { return useClientVisualTransform() ? clientVisualYaw : getSyncedYaw(); }
+    public float getPitch() { return useClientVisualTransform() ? clientVisualPitch : getSyncedPitch(); }
+    public float getRoll() { return useClientVisualTransform() ? clientVisualRoll : getSyncedRoll(); }
     public float getThrottle() { return entityData.get(DATA_THROTTLE); }
     public float getTurretYaw() { return entityData.get(DATA_TURRET_YAW); }
     public float getTurretPitch() { return entityData.get(DATA_TURRET_PITCH); }
@@ -377,6 +390,15 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
+
+    private float getSyncedYaw() { return entityData.get(DATA_YAW); }
+    private float getSyncedPitch() { return entityData.get(DATA_PITCH); }
+    private float getSyncedRoll() { return entityData.get(DATA_ROLL); }
+
+    private boolean useClientVisualTransform()
+    {
+        return level().isClientSide && clientTransformInitialized;
+    }
 
     protected void setYaw(float yaw)
     {
@@ -649,20 +671,84 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (DATA_DRIVEABLE_TYPE.equals(key) && configType == null)
             getConfigType();
         if (DATA_YAW.equals(key) || DATA_PITCH.equals(key) || DATA_ROLL.equals(key))
+        {
+            if (level().isClientSide)
+            {
+                initializeClientTransform();
+                clientTargetYaw = getSyncedYaw();
+                clientTargetPitch = getSyncedPitch();
+                clientTargetRoll = getSyncedRoll();
+                clientTransformLerpSteps = Math.max(clientTransformLerpSteps, 2);
+            }
             axes.setAngles(getYaw(), getPitch(), getRoll());
+        }
         if (DATA_FUEL.equals(key) && driveableData != null)
             driveableData.setFuelInTank(getFuel());
+    }
+
+    /**
+     * Non-living entities teleport to every movement packet by default. A
+     * moving driveable needs the same short client interpolation used by
+     * vanilla boats and minecarts, otherwise its mounted camera visibly runs
+     * at the server tick rate even while the renderer is much faster.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
+    {
+        if (!level().isClientSide)
+        {
+            super.lerpTo(x, y, z, yaw, pitch, steps, teleport);
+            return;
+        }
+
+        initializeClientTransform();
+        clientTargetX = x;
+        clientTargetY = y;
+        clientTargetZ = z;
+        clientTargetYaw = Mth.wrapDegrees(yaw);
+        clientTargetPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+
+        double distanceSquared = distanceToSqr(x, y, z);
+        if (teleport || !Double.isFinite(distanceSquared) || distanceSquared > 4096D)
+        {
+            setPos(x, y, z);
+            clientVisualYaw = clientTargetYaw;
+            clientVisualPitch = clientTargetPitch;
+            clientVisualRoll = clientTargetRoll;
+            clientTransformLerpSteps = 0;
+            setYRot(clientVisualYaw);
+            setXRot(clientVisualPitch);
+            axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
+            return;
+        }
+
+        // Two to three ticks remove packet stepping without making steering
+        // feel detached from the locally controlled vehicle.
+        clientTransformLerpSteps = Mth.clamp(steps, 2, 3);
     }
 
     @Override
     public void tick()
     {
         super.tick();
-        prevYaw = getYaw();
-        prevPitch = getPitch();
-        prevRoll = getRoll();
-        prevTurretYaw = getTurretYaw();
-        prevTurretPitch = getTurretPitch();
+        if (level().isClientSide)
+        {
+            initializeClientTransform();
+            prevYaw = clientVisualYaw;
+            prevPitch = clientVisualPitch;
+            prevRoll = clientVisualRoll;
+            prevTurretYaw = getTurretYaw();
+            prevTurretPitch = getTurretPitch();
+            tickClientTransformInterpolation();
+        }
+        else
+        {
+            prevYaw = getYaw();
+            prevPitch = getPitch();
+            prevRoll = getRoll();
+            prevTurretYaw = getTurretYaw();
+            prevTurretPitch = getTurretPitch();
+        }
 
         DriveableType type = getConfigType();
         if (type == null || driveableData == null)
@@ -741,6 +827,42 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     /** Lightweight visual state update; world simulation remains server-owned. */
     protected void tickClientDriveable() {}
+
+    private void initializeClientTransform()
+    {
+        if (clientTransformInitialized || !level().isClientSide)
+            return;
+        clientTransformInitialized = true;
+        clientTargetX = getX();
+        clientTargetY = getY();
+        clientTargetZ = getZ();
+        clientVisualYaw = clientTargetYaw = getSyncedYaw();
+        clientVisualPitch = clientTargetPitch = getSyncedPitch();
+        clientVisualRoll = clientTargetRoll = getSyncedRoll();
+        setYRot(clientVisualYaw);
+        setXRot(clientVisualPitch);
+    }
+
+    private void tickClientTransformInterpolation()
+    {
+        if (clientTransformLerpSteps <= 0)
+            return;
+
+        double divisor = clientTransformLerpSteps;
+        setPos(getX() + (clientTargetX - getX()) / divisor,
+            getY() + (clientTargetY - getY()) / divisor,
+            getZ() + (clientTargetZ - getZ()) / divisor);
+        clientVisualYaw = Mth.wrapDegrees(clientVisualYaw
+            + Mth.wrapDegrees(clientTargetYaw - clientVisualYaw) / (float) divisor);
+        clientVisualPitch += (clientTargetPitch - clientVisualPitch) / (float) divisor;
+        clientVisualRoll = Mth.wrapDegrees(clientVisualRoll
+            + Mth.wrapDegrees(clientTargetRoll - clientVisualRoll) / (float) divisor);
+        --clientTransformLerpSteps;
+
+        setYRot(clientVisualYaw);
+        setXRot(clientVisualPitch);
+        axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
+    }
 
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
@@ -1887,6 +2009,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ? turretPointToWorld(localPosition, getTurretYaw(), info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F)
             : localToWorld(localPosition.x, localPosition.y, localPosition.z);
 
+        // The visual vehicle model is lowered in model space. Keep the driver
+        // anchor aligned, including the model's configured scale and rotation.
+        if (info.isDriver() && this instanceof Vehicle)
+            worldPosition = worldPosition.add(localDirectionToWorld(new Vec3(0D,
+                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
+
         Vec3 rotatedOffset = rotateLegacyModelVector(
             new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
         if (info.isDriver())
@@ -2759,94 +2887,87 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     /**
-     * Samples configured wheel contact points and applies bounded spring and
-     * step-up corrections before the root entity moves. This keeps wheels as
-     * cheap visual/damage proxies while retaining terrain-aware suspension.
+     * Samples the terrain below the configured wheels and applies an
+     * over-damped suspension response before the root entity moves. Wheel
+     * proxies remain cheap visual / damage entities; collision sampling uses
+     * the real block shapes, so slabs and other partial blocks remain smooth.
      */
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain)
     {
+        groundedWheelCount = 0;
         if (configType == null || configType.getWheelPositions().isEmpty())
             return velocity;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
-        double verticalCorrection = 0D;
-        double stepCorrection = 0D;
-        int contacts = 0;
+        double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
+        double maximumCompression = Math.max(0.15D, step + 0.1D);
+        double supportError = 0D;
         double frontHeight = 0D, backHeight = 0D, leftHeight = 0D, rightHeight = 0D;
         int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
         double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
+
+        Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
+        double predictionLength = horizontalPrediction.length();
+        if (predictionLength > 1.5D)
+            horizontalPrediction = horizontalPrediction.scale(1.5D / predictionLength);
 
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
             DriveablePosition definition = configType.getWheelPosition(index);
             if (definition == null || !isPartIntact(definition.getPart()))
                 continue;
-            Vec3 wheel = getWheelWorldPosition(index).add(velocity.x, 0D, velocity.z);
-            if (step > 0F)
-            {
-                BlockPos obstacle = BlockPos.containing(wheel.add(0D, 0.1D, 0D));
-                if (level().getBlockState(obstacle).blocksMotion())
-                {
-                    int maximumStep = Math.max(1, Mth.ceil(step));
-                    for (int rise = 1; rise <= maximumStep; rise++)
-                    {
-                        if (!level().getBlockState(obstacle.above(rise)).blocksMotion())
-                        {
-                            stepCorrection = Math.max(stepCorrection, Math.min(step, rise + 0.05D));
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Vec3 rayStart = wheel.add(0D, Math.max(0.5D, step + 0.25D), 0D);
-            Vec3 rayEnd = wheel.add(0D, -1.5D, 0D);
+            Vec3 wheel = getWheelWorldPosition(index).add(horizontalPrediction);
+            Vec3 rayStart = wheel.add(0D, step + 0.6D, 0D);
+            Vec3 rayEnd = wheel.add(0D, -suspensionDroop - 0.45D, 0D);
             BlockHitResult hit = level().clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
-            double desiredWheelY = surface + 0.35D;
+            double desiredWheelY = surface + 0.375D;
             double error = desiredWheelY - wheel.y;
-            if (error < -1.25D || error > step + 1D)
+            if (error < -suspensionDroop || error > maximumCompression)
                 continue;
-            verticalCorrection += Mth.clamp(error * spring, -0.2D, Math.max(0.2D, step));
-            ++contacts;
+            supportError += error;
+            ++groundedWheelCount;
 
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
-            double forwardPosition = -local.z;
-            double rightPosition = local.x;
+            double forwardPosition = local.x;
+            double rightPosition = local.z;
             if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
             else { backHeight += surface; backX += forwardPosition; ++backCount; }
             if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }
             else { leftHeight += surface; leftZ += rightPosition; ++leftCount; }
         }
-        if (contacts == 0)
-            return velocity.add(0D, stepCorrection, 0D);
+        if (groundedWheelCount == 0)
+            return velocity;
 
-        double correctedY = velocity.y + verticalCorrection / contacts;
-        if (correctedY < 0D)
-            correctedY *= Mth.clamp(1D - spring * 0.8D, 0.05D, 1D);
-        correctedY += stepCorrection;
+        double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y,
+            supportError / groundedWheelCount, spring, velocity.horizontalDistance());
 
         if (alignToTerrain && frontCount > 0 && backCount > 0)
         {
             double front = frontHeight / frontCount;
             double back = backHeight / backCount;
             double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(front - back, length));
-            float pitch = Mth.lerp(Math.max(0.05F, spring * 0.25F), getPitch(), Mth.clamp(targetPitch, -30F, 30F));
+            float targetPitch = -SuspensionPhysics.terrainAngle(front - back, length);
+            float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
             if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
             {
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;
                 double width = Math.max(0.5D, rightZ / rightCount - leftZ / leftCount);
-                float targetRoll = (float) Math.toDegrees(Math.atan2(right - left, width));
-                roll = Mth.lerp(Math.max(0.05F, spring * 0.25F), getRoll(), Mth.clamp(targetRoll, -30F, 30F));
+                float targetRoll = SuspensionPhysics.terrainAngle(right - left, width);
+                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), targetRoll, spring);
             }
             setOrientation(getYaw(), pitch, roll);
         }
         return new Vec3(velocity.x, correctedY, velocity.z);
+    }
+
+    protected boolean hasWheelContact()
+    {
+        return groundedWheelCount > 0;
     }
 
     protected boolean isNearGround(int distance)

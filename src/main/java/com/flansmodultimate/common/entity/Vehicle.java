@@ -30,6 +30,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Vehicle extends Driveable
 {
+    /** Model-space correction for legacy vehicle models, expressed in blocks. */
+    public static final float VEHICLE_MODEL_VERTICAL_OFFSET = -5.5F / 16F;
+
     @Getter protected float wheelYaw;
     @Getter protected float prevWheelYaw;
     @Getter protected float wheelAngle;
@@ -62,6 +65,11 @@ public class Vehicle extends Driveable
         VehicleType type = getVehicleType();
         if (type == null)
             return;
+        // Let the root collision body clear the same ledges that the wheel
+        // probes can reach. Legacy vehicles always used a one-block entity
+        // step; using the configured value preserves that behaviour without
+        // injecting an upward suspension impulse.
+        setMaxUpStep(Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F));
         float previousLeftPhase = leftTrackProgress;
         float previousRightPhase = rightTrackProgress;
         advanceAnimations(type);
@@ -104,7 +112,7 @@ public class Vehicle extends Driveable
             forward = forward.normalize();
         Vec3 current = getDeltaMovement();
         Vec3 desired = forward.scale(targetSpeed);
-        double grip = isInWater() ? 0.08D : onGround() ? 0.22D : 0.035D;
+        double grip = isInWater() ? 0.08D : (onGround() || hasWheelContact() ? 0.22D : 0.035D);
         Vec3 velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
         if (DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND))
             velocity = velocity.multiply(0.55D, 1D, 0.55D);

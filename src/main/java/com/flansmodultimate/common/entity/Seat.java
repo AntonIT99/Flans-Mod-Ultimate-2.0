@@ -269,6 +269,27 @@ public class Seat extends Entity implements IControllable
         setXRot(getAimPitch());
     }
 
+    /**
+     * Once bound, the seat follows the already-interpolated parent locally.
+     * Applying its own movement packets as well would introduce a second,
+     * slightly different camera position every network tick.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpTo(x, y, z, yaw, pitch, steps, teleport);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpMotion(x, y, z);
+    }
+
     @Override
     public boolean isPickable()
     {
