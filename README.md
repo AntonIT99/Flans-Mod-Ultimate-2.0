@@ -1,55 +1,43 @@
 # Flan's Mod Ultimate 2
 
-Flan's Mod Ultimate 2 is an unofficial continuation of Flan's Mod for Minecraft 1.20.1. It focuses on loading and modernizing content packs designed for legacy Flan's Mod versions, including weapons, ammo, armor, gun boxes, armor boxes, workbenches, paintjobs, sounds, particles, and related gameplay systems.
+Flan's Mod Ultimate 2 is an unofficial continuation of Flan's Mod for Minecraft 1.21.1. It focuses on loading and modernizing content packs designed for legacy Flan's Mod versions, including weapons, ammo, armor, gun boxes, armor boxes, workbenches, paintjobs, sounds, particles, and related gameplay systems.
 
-This repository contains the main Forge mod and an optional bundled content-pack module.
+This branch targets NeoForge 1.21.1 and contains the main mod, an optional bundled content-pack module, and optional official content packs.
 
 ## Project Status
 
 | Item             | Value                         |
 |------------------|-------------------------------|
-| Minecraft        | 1.20.1                        |
-| Forge            | 47.4.10                       |
-| Java             | 17                            |
+| Minecraft        | 1.21.1                        |
+| NeoForge         | 21.1.248                      |
+| Java             | 21                            |
 | Main mod id      | `flansmodultimate`            |
 | Main mod version | `2.0-beta-5`                  |
 | Packs mod id     | `flansmodultimate_packs`      |
 | Packs version    | `1.0`                  |
-| Mappings         | Parchment `2023.09.03-1.20.1` |
+| Mappings         | Parchment `2024.11.17-1.21.1` |
 
 The project is still in beta. Some legacy systems are implemented, some are work in progress.
 
 ## Features
 
-- Loads legacy-style Flan's Mod content packs in a Minecraft 1.20.1 Forge environment.
+- Loads legacy-style Flan's Mod content packs in a Minecraft 1.21.1 NeoForge environment.
 - Registers guns, bullets, grenades, armor, attachments, tools, parts, boxes, workbenches, paintjob tables, entities, particles, sounds, menus, and creative tabs.
 - Supports custom armor rendering and armor configuration behavior.
 - Includes gun handling, reload logic, fire modes, hit markers, scopes, recoil, spread, melee behavior, block hit effects, and network synchronization.
 - Includes optional digital ammo support with server-side storage, HUD sync, admin commands, and configurable supply blocks.
 - Includes compatibility-oriented content loading, including fallback text encodings for older and Chinese content packs.
-- Provides a separate `packs` source set for packaging bundled content packs.
+- Provides separate `packs` and `officialpacks` source sets for packaging bundled and official content packs.
 
 ## Requirements
 
-- JDK 17
-- Minecraft Forge for Minecraft 1.20.1
+- JDK 21
+- NeoForge for Minecraft 1.21.1
 - Gradle wrapper included in this repository
 
 ## Getting Started
 
 Clone or open the repository, then let Gradle import the project.
-
-For IntelliJ IDEA:
-
-```powershell
-.\gradlew.bat genIntellijRuns
-```
-
-For Eclipse:
-
-```powershell
-.\gradlew.bat genEclipseRuns
-```
 
 To refresh dependencies if the IDE is missing libraries:
 
@@ -83,6 +71,12 @@ Build the bundled packs jar:
 .\gradlew.bat packsJar
 ```
 
+Build the official content-packs jar:
+
+```powershell
+.\gradlew.bat officialPacksJar
+```
+
 Generate data:
 
 ```powershell
@@ -103,6 +97,7 @@ Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-
 | `src/main/resources`  | Main mod resources, assets, data, mixin config, and metadata |
 | `src/packs/java`      | Optional bundled content-pack mod sources                    |
 | `src/packs/resources` | Bundled content-pack resources                               |
+| `src/officialpacks`   | Optional official content packs and their NeoForge entrypoint |
 | `libs`                | Local mod jars used as development dependencies              |
 | `run`                 | Development runtime directory                                |
 | `run-data`            | Data generation runtime directory                            |
@@ -111,7 +106,7 @@ Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-
 
 ## Configuration
 
-The mod registers client and common Forge config files at runtime. Current common settings cover gameplay, damage, armor, guns, shootables, sound ranges, penetration, digital ammo, and enchantment modules.
+The mod registers client and common NeoForge config files at runtime. Current common settings cover gameplay, damage, armor, guns, shootables, sound ranges, penetration, digital ammo, and enchantment modules.
 
 More detailed configuration documentation will be added later.
 
@@ -142,7 +137,7 @@ when running:
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
 - The `packsJar` task builds the optional content-pack mod separately from the main mod jar.
-- Existing `README.txt` contains Forge MDK setup notes.
+- `README.txt` contains legacy Forge MDK setup notes and does not describe this NeoForge 1.21.1 branch.
 
 ## Credits
 
