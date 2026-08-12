@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "IWI",
+    "IPI"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:hydraulics"
+  }
+}

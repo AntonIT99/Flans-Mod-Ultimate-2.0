@@ -6,6 +6,7 @@ import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
@@ -38,6 +39,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -49,6 +51,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     /** Weak keys avoid retaining entities after a world unload. Render-thread only. */
     private final Map<Driveable, AnimationHistory> animationStates = new WeakHashMap<>();
+    /** Limits diagnostic markers to once per game tick, rather than once per frame. */
+    private final Map<Driveable, Integer> diagnosticMarkerTicks = new WeakHashMap<>();
 
     public DriveableRenderer(EntityRendererProvider.Context context)
     {
@@ -57,8 +61,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     }
 
     @Override
-    public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack,
-                       @NotNull MultiBufferSource buffer, int packedLight)
+    public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         DriveableType type = driveable.getConfigType();
         if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
@@ -72,6 +75,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
+        updatePassengerGunPivots(driveable, type, model);
+        renderDiagnosticMarkers(driveable, type);
         float throttle = Mth.lerp(partialTick, history.previousThrottle, history.throttle);
         float steering = Mth.lerp(partialTick, history.previousSteering, history.steering);
         float gearProgress = Mth.lerp(partialTick, history.previousGear, history.gear);
@@ -114,6 +119,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
+        // Keep this in model space so the correction follows terrain pitch and roll,
+        // and is scaled along with legacy models that use ModelScale.
+        if (driveable instanceof Vehicle)
+            poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
+
         // Legacy driveable renderers applied ModelScale to the complete model
         // hierarchy. Keep pivots, attachment points and procedural track paths
         // under the same transform instead of scaling every mesh independently.
@@ -144,15 +154,63 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
     }
 
-    private static float inputAxis(int mask, int positive, int negative)
+    private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
     {
-        return (DriveableInput.isDown(mask, positive) ? 1F : 0F)
-            - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
+        Integer renderedTick = diagnosticMarkerTicks.get(driveable);
+        if (renderedTick != null && renderedTick == driveable.tickCount)
+            return;
+        diagnosticMarkerTicks.put(driveable, driveable.tickCount);
+
+        if (driveable instanceof Vehicle)
+        {
+            for (var point : type.shootPoints(false))
+                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 0F, 1F, 1F);
+            for (var point : type.shootPoints(true))
+                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 1F, 0.5F, 0F);
+        }
+
+        for (int seat = 0; seat <= type.getNumPassengers(); seat++)
+        {
+            var seatInfo = type.getSeat(seat);
+            if (seatInfo == null)
+                continue;
+            Vec3 seatPosition = driveable.getSeatWorldPosition(seat);
+            if (seat == 0)
+            {
+                DebugHelper.spawnDebugDot(seatPosition, 2, 0F, 0.45F, 1F);
+                DebugHelper.spawnDebugVector(seatPosition, new Vec3(0D, 2D, 0D), 2, 0F, 0.45F, 1F);
+            }
+            else
+            {
+                DebugHelper.spawnDebugDot(seatPosition, 2, 1F, 0F, 1F);
+                DebugHelper.spawnDebugVector(seatPosition, new Vec3(0D, 2D, 0D), 2, 1F, 0F, 1F);
+            }
+            if (seat > 0 && seatInfo.getGunType() != null)
+            {
+                Vec3 muzzle = driveable.getPassengerShootOrigin(seat);
+                if (muzzle != null)
+                    DebugHelper.spawnDebugDot(muzzle, 2, 0F, 1F, 0.25F);
+            }
+        }
     }
 
-    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel,
-                                          ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack,
-                                          MultiBufferSource buffer, int packedLight)
+    private static void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
+    {
+        for (int seat = 1; seat <= type.getNumPassengers(); seat++)
+        {
+            var info = type.getSeat(seat);
+            if (info != null && info.getGunType() != null)
+                driveable.setModelPassengerGunAimPivot(seat,
+                    model.getRegisteredGunAimPivot(info.getGunName()));
+        }
+    }
+
+    private static float inputAxis(int mask, int positive, int negative)
+    {
+        return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
+    }
+
+    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
         if (data == null)
@@ -179,9 +237,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 
-    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType,
-                                        float armPitch, boolean active, float animationTime, GunAnimations gunAnimations,
-                                        PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!armIntact || stack.isEmpty())
             return;
@@ -208,8 +264,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.popPose();
     }
 
-    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack,
-                                         MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!(stack.getItem() instanceof MechaAddonItem addon))
             return;

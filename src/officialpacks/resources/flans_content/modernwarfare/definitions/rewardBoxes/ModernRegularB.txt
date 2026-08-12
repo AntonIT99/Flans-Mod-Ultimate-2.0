@@ -1,0 +1,21 @@
+//Naming
+Name Bravo Paint Box
+ShortName modernRegularB
+Icon RewardBox_Modern_Deluxe
+// Weighting
+RarityWeight common 1.5
+RarityWeight uncommon 1.0
+RarityWeight rare 0.5
+RarityWeight legendary 0.25
+// Commons
+AddPaintjob common ak47 AK47_JungleCamo
+AddPaintjob common m16a4 M16A4_Green
+AddPaintjob common minigun Minigun_Harvester
+//AddPaintjob common gl6 GL6_Lurid
+// Uncommons
+AddPaintjob uncommon minigun Minigun_Murica
+AddPaintjob uncommon ak47 AK47_CaseHardened
+AddPaintjob uncommon desertEagle DesertEagle_Venom
+// Rares
+// Legendaries
+AddPaintjob legendary desertEagle DesertEagle_Messenger

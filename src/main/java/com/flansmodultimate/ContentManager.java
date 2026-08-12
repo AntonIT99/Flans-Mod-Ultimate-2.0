@@ -55,7 +55,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -314,6 +313,21 @@ public class ContentManager
         }
     }
 
+    /**
+     * Adds immutable packaged providers ahead of user folder packs. First registration keeps the
+     * original item/model/texture name, so this ordering makes later user conflicts receive aliases.
+     */
+    public static void addPackagedContentPacks(List<? extends IContentProvider> providers)
+    {
+        for (IContentProvider provider : providers)
+        {
+            if (!provider.isPreprocessed())
+                throw new IllegalArgumentException("Packaged provider must be preprocessed: " + provider);
+            if (!contentPacks.contains(provider))
+                contentPacks.add(provider);
+        }
+    }
+
     public static void readContentPacks()
     {
         if (flanFolder == null)
@@ -360,9 +374,17 @@ public class ContentManager
 
             loadTypes(provider);
 
-            if (FMLEnvironment.dist == Dist.CLIENT)
+            if (FMLEnvironment.dist == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
             {
                 findDuplicateTextures(provider);
+            }
+
+            if (provider.isPreprocessed())
+            {
+                long endTime = System.currentTimeMillis();
+                String loadingTimeMs = String.format("%,d", endTime - startTime);
+                FlansMod.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), loadingTimeMs);
+                continue;
             }
 
             boolean archiveExtracted = false;
@@ -829,7 +851,7 @@ public class ContentManager
 
     private static void findDuplicateTexturesInFolder(String folderName, IContentProvider provider, FileSystem fs, Map<String, DynamicReference> aliasMapping)
     {
-        Path textureFolderPath = provider.getAssetsPath(fs).resolve(folderName);
+        Path textureFolderPath = provider.getTextureSourcePath(fs).resolve(folderName);
 
         if (Files.exists(textureFolderPath))
         {
@@ -858,7 +880,7 @@ public class ContentManager
             TextureFile otherFile = textures.get(folderName).get(fileName);
             FileSystem fs = FileUtils.createFileSystem(otherFile.contentPack());
 
-            Path otherPath = otherFile.contentPack().getAssetsPath(fs).resolve(folderName).resolve(otherFile.name());
+            Path otherPath = otherFile.contentPack().getTextureSourcePath(fs).resolve(folderName).resolve(otherFile.name());
             if (FileUtils.isDifferentFileContent(texturePath, otherPath, false))
                 aliasName = findValidTextureName(fileName, folderName, provider, otherFile.contentPack(), aliasMapping);
 
@@ -893,7 +915,7 @@ public class ContentManager
         if (!name.equals(newName))
         {
             name = newName;
-            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getName(), otherContentPack.getName(), name, thisContentPack.getName());
+            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
         }
 
         return name;

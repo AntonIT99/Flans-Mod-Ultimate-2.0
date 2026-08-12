@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BF ",
+    "FIF",
+    " FI"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smallbomb"
+    },
+    "F": {
+      "item": "flansmod:fiberglass"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:mk4rocket"
+  }
+}

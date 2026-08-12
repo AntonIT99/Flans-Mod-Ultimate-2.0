@@ -32,6 +32,11 @@ sourceSets {
         compileClasspath += sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
+    officialpacks {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+        resources.exclude 'flans_models/**/common/*PackMod.class'
+    }
     test {
         // ModDevGradle attaches the remapped Minecraft/NeoForge artifacts to
         // the main source set. Unit tests exercise classes with Minecraft API
@@ -118,6 +123,9 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        "flansmodultimate_officialpacks" {
+            sourceSet(sourceSets.officialpacks)
+        }
     }
 }
 
@@ -130,9 +138,13 @@ configurations {
     packsImplementation.extendsFrom implementation
     packsCompileOnly.extendsFrom compileOnly
     packsAnnotationProcessor.extendsFrom annotationProcessor
+    officialpacksImplementation.extendsFrom implementation
+    officialpacksCompileOnly.extendsFrom compileOnly
+    officialpacksAnnotationProcessor.extendsFrom annotationProcessor
 }
 
 dependencies {
+    officialpacksImplementation sourceSets.main.output
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
@@ -268,8 +280,20 @@ def packsJar = tasks.register('packsJar', Jar) {
     }
 }
 
+def officialPacksJar = tasks.register('officialPacksJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Official Packs")
+    archiveVersion.set('1.0')
+    from sourceSets.officialpacks.output
+    manifest {
+        attributes(
+                'Implementation-Title': 'officialpacks',
+                'Implementation-Version': '1.0'
+        )
+    }
+}
+
 tasks.named('assemble').configure {
-    dependsOn packsJar
+    dependsOn packsJar, officialPacksJar
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

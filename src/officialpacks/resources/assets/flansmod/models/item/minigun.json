@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/minigun"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/minigun_candy"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/minigun_murica"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/minigun_rainbow"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/minigun_harvester"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/minigun_steampunk"
+    }
+  ]
+}

@@ -30,6 +30,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Vehicle extends Driveable
 {
+    /** Model-space correction for legacy vehicle models, expressed in blocks. */
+    public static final float VEHICLE_MODEL_VERTICAL_OFFSET = -5.5F / 16F;
+
     @Getter protected float wheelYaw;
     @Getter protected float prevWheelYaw;
     @Getter protected float wheelAngle;
@@ -62,6 +65,10 @@ public class Vehicle extends Driveable
         VehicleType type = getVehicleType();
         if (type == null)
             return;
+        // Let the root collision body clear the same ledges that the wheel
+        // probes can reach. Legacy vehicles always used a one-block entity
+        // step; using the configured value preserves that behaviour without
+        // injecting an upward suspension impulse.
         float previousLeftPhase = leftTrackProgress;
         float previousRightPhase = rightTrackProgress;
         advanceAnimations(type);
@@ -104,7 +111,7 @@ public class Vehicle extends Driveable
             forward = forward.normalize();
         Vec3 current = getDeltaMovement();
         Vec3 desired = forward.scale(targetSpeed);
-        double grip = isInWater() ? 0.08D : onGround() ? 0.22D : 0.035D;
+        double grip = isInWater() ? 0.08D : (onGround() || hasWheelContact() ? 0.22D : 0.035D);
         Vec3 velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
         if (DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND))
             velocity = velocity.multiply(0.55D, 1D, 0.55D);
@@ -126,11 +133,15 @@ public class Vehicle extends Driveable
         }
 
         harvestConfiguredBlocks();
-        if (DriveableInput.isDown(getInputMask(), DriveableInput.FLARE)
-            && !DriveableInput.isDown(previousInputMask, DriveableInput.FLARE))
-            dischargeSmoke();
         if (isEngineActive())
             consumeFuel(Math.abs(effectiveThrottle));
+    }
+
+    @Override
+    public float maxUpStep()
+    {
+        VehicleType type = getVehicleType();
+        return type == null ? super.maxUpStep() : Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F);
     }
 
     @Override
@@ -139,6 +150,37 @@ public class Vehicle extends Driveable
         VehicleType type = getVehicleType();
         if (type != null)
             advanceAnimations(type);
+    }
+
+    @Override
+    protected void handleRisingInputs(Seat seat, Player player, int rising)
+    {
+        boolean deploySmoke = DriveableInput.isDown(rising, DriveableInput.FLARE);
+        boolean smokeWasReady = !isVarFlare() && !isCountermeasureReloading();
+        super.handleRisingInputs(seat, player, rising);
+
+        VehicleType type = getVehicleType();
+        if (deploySmoke && smokeWasReady && isVarFlare() && type != null && !type.getSmokers().isEmpty())
+            dischargeSmoke();
+    }
+
+    /**
+     * Vehicles use the legacy smoke dispensers as their countermeasures. The
+     * shared timer and flags still provide cooldown and lock-on behaviour, but
+     * the generic flare particle must not be emitted as well.
+     */
+    @Override
+    protected void updateFlares()
+    {
+        if (ticksFlareUsing <= 0)
+        {
+            setFlag(FLAG_FLARE, false);
+            setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
+            return;
+        }
+        --ticksFlareUsing;
+        setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
     }
 
     private void updateThrottleAndSteering(VehicleType type)

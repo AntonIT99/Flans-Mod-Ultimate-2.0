@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "F  ",
+    " S ",
+    "  E"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "E": {
+      "item": "minecraft:feather"
+    },
+    "F": {
+      "item": "minecraft:flint"
+    }
+  },
+  "result": {
+    "item": "flansmod:crossbowbolt",
+    "count": 4
+  }
+}

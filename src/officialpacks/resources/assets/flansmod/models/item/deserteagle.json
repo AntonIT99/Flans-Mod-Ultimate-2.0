@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/deserteagle"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/deserteagle_neon"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/deserteagle_venom"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/deserteagle_coralsnake"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/deserteagle_gold"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/deserteagle_messenger"
+    }
+  ]
+}

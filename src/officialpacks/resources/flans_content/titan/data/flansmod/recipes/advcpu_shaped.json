@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "UCU",
+    "CBC",
+    "UCU"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:redstone_block"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "U": {
+      "item": "flansmod:basiccpu"
+    }
+  },
+  "result": {
+    "item": "flansmod:advcpu"
+  }
+}

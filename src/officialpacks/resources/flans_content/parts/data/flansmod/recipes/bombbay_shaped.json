@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "I I",
+    "IDI"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:oak_trapdoor"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:bombbay"
+  }
+}

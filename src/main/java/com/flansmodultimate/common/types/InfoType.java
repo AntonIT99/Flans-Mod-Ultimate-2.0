@@ -423,7 +423,7 @@ public abstract class InfoType
 
                     modelPackageName = String.join(".", Arrays.copyOf(modelNameSplit, modelNameSplit.length - 1));
                     modelClassName = "com." + FlansMod.FLANSMOD_ID + "." + modelPackageName + ".client.model.Model" + modelSimpleName;
-                    Path redirectFile = fs.map(fileSystem -> fileSystem.getPath("redirect.info")).orElseGet(() -> contentPack.getPath().resolve("redirect.info"));
+                    Path redirectFile = contentPack.getContentRoot(fs.orElse(null)).resolve("redirect.info");
 
                     if (Files.exists(redirectFile))
                     {

@@ -269,6 +269,27 @@ public class Seat extends Entity implements IControllable
         setXRot(getAimPitch());
     }
 
+    /**
+     * Once bound, the seat follows the already-interpolated parent locally.
+     * Applying its own movement packets as well would introduce a second,
+     * slightly different camera position every network tick.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpTo(x, y, z, yaw, pitch, steps);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpMotion(x, y, z);
+    }
+
     @Override
     public boolean isPickable()
     {
@@ -319,10 +340,15 @@ public class Seat extends Entity implements IControllable
         // Legacy driveable seat coordinates already describe the rider anchor.
         // EntityPlayer 1.7.10 contributed a -0.35 Y offset here, whereas the
         // modern default mount offset raises the player by about 0.45 blocks.
-        double ridingOffset = passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
+        double ridingOffset = getPassengerRidingOffset(passenger);
         move.accept(passenger, getX(), getY() + ridingOffset, getZ());
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
+    }
+
+    public double getPassengerRidingOffset(@NotNull Entity passenger)
+    {
+        return passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
     }
 
     @Override

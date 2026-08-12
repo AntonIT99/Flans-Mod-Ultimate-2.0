@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name GermanPants
+ShortName GermanUniformPants
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon germannpants
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Pants
+Defence 0.1
+
+
+//Visuals
+Model ww2.GermanPants
+ArmorTexture gengineer
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

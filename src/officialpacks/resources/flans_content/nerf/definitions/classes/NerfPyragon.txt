@@ -1,0 +1,6 @@
+Name Assault
+ShortName nerfPyragonClass
+AddItem nerfPyragon
+AddItem nerfMaverick
+AddItem 40DiscDrum
+AddItem whistlerDart 12

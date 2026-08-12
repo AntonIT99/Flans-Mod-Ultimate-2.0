@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "FFF",
+    "WWW"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:fiberglass"
+    },
+    "W": {
+      "item": "minecraft:oak_planks"
+    }
+  },
+  "result": {
+    "item": "flansmod:mwarmour"
+  }
+}

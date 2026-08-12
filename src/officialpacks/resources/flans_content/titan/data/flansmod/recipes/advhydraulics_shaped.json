@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "HLH",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:sticky_piston"
+    },
+    "H": {
+      "item": "flansmod:hydraulics"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "result": {
+    "item": "flansmod:advhydraulics"
+  }
+}

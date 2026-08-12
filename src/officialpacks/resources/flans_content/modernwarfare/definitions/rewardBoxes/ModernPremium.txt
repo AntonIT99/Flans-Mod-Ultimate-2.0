@@ -1,0 +1,21 @@
+//Naming
+Name Premium Paint Box
+ShortName modernPremium
+Icon RewardBox_Modern_Premium
+// Weighting
+RarityWeight common 0.0
+RarityWeight uncommon 1.0
+RarityWeight rare 1.0
+RarityWeight legendary 0.25
+// Uncommons
+AddPaintjob uncommon ak47 AK47_Redline
+AddPaintjob uncommon m16a4 M16A4_Orange
+AddPaintjob uncommon desertEagle DesertEagle_CoralSnake
+AddPaintjob uncommon minigun Minigun_Murica
+AddPaintjob uncommon desertEagle DesertEagle_Venom
+// Rares
+AddPaintjob rare minigun Minigun_Rainbow
+AddPaintjob rare desertEagle DesertEagle_Gold
+// Legendaries
+AddPaintjob legendary desertEagle DesertEagle_Messenger
+AddPaintjob legendary minigun Minigun_Steampunk

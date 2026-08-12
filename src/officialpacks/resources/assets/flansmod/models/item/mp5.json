@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/mp5"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/mp5_stoic_blue"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/mp5_stoic_green"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/mp5_stoic_red"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/mp5_stoic_orange"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/mp5_lionheart"
+    }
+  ]
+}

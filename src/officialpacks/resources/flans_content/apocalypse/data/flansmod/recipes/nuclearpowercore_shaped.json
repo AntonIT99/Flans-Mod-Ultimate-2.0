@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "OTO",
+    "TET",
+    "OTO"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "item": "flansmod:nuclearpowercore"
+  }
+}

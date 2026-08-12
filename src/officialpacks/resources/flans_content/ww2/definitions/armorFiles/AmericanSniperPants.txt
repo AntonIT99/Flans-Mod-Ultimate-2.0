@@ -1,0 +1,41 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name AmericanSniperPants
+ShortName AmericanSniperPants
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon americanspants
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Pants
+Defence 0.1
+
+
+//Visuals
+Model ww2.AmericanSniperPants
+ArmorTexture asniper
+
+
+//Armor Settings
+
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

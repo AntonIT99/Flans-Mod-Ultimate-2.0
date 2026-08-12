@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " I",
+    "CC",
+    "CC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:coal"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:fuelcan"
+  }
+}

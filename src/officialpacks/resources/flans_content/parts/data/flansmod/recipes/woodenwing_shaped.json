@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "W"
+  ],
+  "key": {
+    "W": {
+      "item": "flansmod:biplanewing"
+    }
+  },
+  "result": {
+    "item": "flansmod:woodenwing",
+    "count": 2
+  }
+}

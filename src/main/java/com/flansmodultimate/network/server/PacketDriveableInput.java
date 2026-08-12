@@ -6,12 +6,14 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Client input intent for a driveable. No position, velocity, fuel, inventory,
@@ -29,6 +31,8 @@ public final class PacketDriveableInput implements IServerPacket
     private float flightPitch;
     private float flightRoll;
     private boolean mouseControl;
+    @Nullable
+    private Vec3 barrelPitchPivot;
     private int sequence;
 
     public PacketDriveableInput()
@@ -38,18 +42,41 @@ public final class PacketDriveableInput implements IServerPacket
     public PacketDriveableInput(Driveable driveable, int inputMask, float aimYaw, float aimPitch,
                                 float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
-        this(driveable.getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, sequence);
+        this(driveable.getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, null, sequence);
+    }
+
+    public PacketDriveableInput(Driveable driveable, int inputMask, float aimYaw, float aimPitch,
+                                float flightPitch, float flightRoll, boolean mouseControl,
+                                @Nullable Vec3 barrelPitchPivot, int sequence)
+    {
+        this(driveable.getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl,
+            barrelPitchPivot, sequence);
     }
 
     public PacketDriveableInput(Seat seat, int inputMask, float aimYaw, float aimPitch,
                                 float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
         this(seat.getDriveable() == null ? -1 : seat.getDriveable().getId(), inputMask, aimYaw, aimPitch,
-            flightPitch, flightRoll, mouseControl, sequence);
+            flightPitch, flightRoll, mouseControl, null, sequence);
+    }
+
+    public PacketDriveableInput(Seat seat, int inputMask, float aimYaw, float aimPitch,
+                                float flightPitch, float flightRoll, boolean mouseControl,
+                                @Nullable Vec3 barrelPitchPivot, int sequence)
+    {
+        this(seat.getDriveable() == null ? -1 : seat.getDriveable().getId(), inputMask, aimYaw, aimPitch,
+            flightPitch, flightRoll, mouseControl, barrelPitchPivot, sequence);
     }
 
     public PacketDriveableInput(int driveableId, int inputMask, float aimYaw, float aimPitch,
                                 float flightPitch, float flightRoll, boolean mouseControl, int sequence)
+    {
+        this(driveableId, inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, null, sequence);
+    }
+
+    public PacketDriveableInput(int driveableId, int inputMask, float aimYaw, float aimPitch,
+                                float flightPitch, float flightRoll, boolean mouseControl,
+                                @Nullable Vec3 barrelPitchPivot, int sequence)
     {
         this.driveableId = driveableId;
         this.inputMask = DriveableInput.sanitize(inputMask);
@@ -58,6 +85,7 @@ public final class PacketDriveableInput implements IServerPacket
         this.flightPitch = Mth.clamp(flightPitch, -1F, 1F);
         this.flightRoll = Mth.clamp(flightRoll, -1F, 1F);
         this.mouseControl = mouseControl;
+        this.barrelPitchPivot = barrelPitchPivot;
         this.sequence = sequence;
     }
 
@@ -71,6 +99,13 @@ public final class PacketDriveableInput implements IServerPacket
         data.writeFloat(Mth.clamp(flightPitch, -1F, 1F));
         data.writeFloat(Mth.clamp(flightRoll, -1F, 1F));
         data.writeBoolean(mouseControl);
+        data.writeBoolean(barrelPitchPivot != null);
+        if (barrelPitchPivot != null)
+        {
+            data.writeDouble(barrelPitchPivot.x);
+            data.writeDouble(barrelPitchPivot.y);
+            data.writeDouble(barrelPitchPivot.z);
+        }
         data.writeVarInt(sequence);
     }
 
@@ -84,6 +119,8 @@ public final class PacketDriveableInput implements IServerPacket
         flightPitch = data.readFloat();
         flightRoll = data.readFloat();
         mouseControl = data.readBoolean();
+        barrelPitchPivot = data.readBoolean()
+            ? new Vec3(data.readDouble(), data.readDouble(), data.readDouble()) : null;
         sequence = data.readVarInt();
     }
 
@@ -97,7 +134,14 @@ public final class PacketDriveableInput implements IServerPacket
 
         Entity entity = level.getEntity(driveableId);
         if (entity instanceof Driveable driveable)
+        {
+            Seat seat = driveable.getSeat(player);
+            if (seat != null && seat.isDriverSeat())
+                driveable.setModelBarrelPitchPivot(barrelPitchPivot);
+            else if (seat != null)
+                driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
             driveable.acceptInput(player, inputMask, aimYaw, aimPitch, Mth.clamp(flightPitch, -1F, 1F),
                 Mth.clamp(flightRoll, -1F, 1F), mouseControl, sequence);
+        }
     }
 }

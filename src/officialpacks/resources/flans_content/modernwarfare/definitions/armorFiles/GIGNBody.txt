@@ -1,0 +1,11 @@
+Name French GIGN Bodyarmour
+ShortName gignBody
+Icon GIGNCoat
+Colour 255 255 255
+Type Chest
+Defence 0.1
+ArmourTexture GIGN
+Enchantability 0
+Toughness 0
+Durability 0
+DamageReductionAmount 7

@@ -144,21 +144,17 @@ public final class ClassLoaderUtils
             if (loadedClass != null)
                 return loadedClass;
 
-            String relativeClassPath = fileClassName.replace('.', '/') + FileUtils.CLASS_EXTENSION;
-
             byte[] classData;
-
-            if (contentProvider.isDirectory())
+            FileSystem fs = FileUtils.createFileSystem(contentProvider);
+            try
             {
-                classData = Files.readAllBytes(contentProvider.getPath().resolve(relativeClassPath));
+                if (!contentProvider.isDirectory() && !contentProvider.isArchive())
+                    throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
+                classData = Files.readAllBytes(contentProvider.getModelPath(fileClassName, fs));
             }
-            else if (contentProvider.isArchive())
+            finally
             {
-                classData = readFileBytesFromArchive(contentProvider.getPath(), relativeClassPath);
-            }
-            else
-            {
-                throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
+                FileUtils.closeFileSystem(fs, contentProvider);
             }
 
             byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
@@ -184,6 +180,20 @@ public final class ClassLoaderUtils
             }
 
             return classLoader.defineClass(actualClassName, newClassData);
+        }
+    }
+
+    public static boolean hasClassFile(IContentProvider contentProvider, String className)
+    {
+        FileSystem fs = FileUtils.createFileSystem(contentProvider);
+        try
+        {
+            return (contentProvider.isDirectory() || contentProvider.isArchive())
+                && Files.isRegularFile(contentProvider.getModelPath(className, fs));
+        }
+        finally
+        {
+            FileUtils.closeFileSystem(fs, contentProvider);
         }
     }
 

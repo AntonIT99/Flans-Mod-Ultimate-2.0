@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.SuspensionPhysics;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -148,6 +149,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static final int FLAG_ENGINE = 1 << 4;
     protected static final int FLAG_IT1_CAN_FIRE = 1 << 5;
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
+    /** Countermeasures have finished deploying but are not ready to fire again. */
+    protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -171,6 +174,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static final EntityDataAccessor<Integer> DATA_MODE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Float> DATA_FUEL = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Integer> DATA_LOCK_TARGET = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_PRIMARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Component> DATA_SECONDARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Integer> DATA_SECONDARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
@@ -189,6 +196,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected Seat[] seats = new Seat[0];
     @Getter
     protected Wheel[] wheels = new Wheel[0];
+    protected int groundedWheelCount;
     @Getter
     protected final RotatedAxes axes = new RotatedAxes();
 
@@ -197,6 +205,27 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     @Getter protected float prevRoll;
     @Getter protected float prevTurretYaw;
     @Getter protected float prevTurretPitch;
+    private boolean clientTransformInitialized;
+    private int clientTransformLerpSteps;
+    private double clientTargetX;
+    private double clientTargetY;
+    private double clientTargetZ;
+    private float clientVisualYaw;
+    private float clientVisualPitch;
+    private float clientVisualRoll;
+    private float clientTargetYaw;
+    private float clientTargetPitch;
+    private float clientTargetRoll;
+    private int clientTurretLerpSteps;
+    private float clientVisualTurretYaw;
+    private float clientVisualTurretPitch;
+    private float clientTargetTurretYaw;
+    private float clientTargetTurretPitch;
+    /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
+    @Nullable
+    private Vec3 modelBarrelPitchPivot;
+    /** Per-seat gun pivots read from registered model gun rows. */
+    private Vec3[] modelPassengerGunAimPivots = new Vec3[0];
 
     protected int localInputMask;
     protected int previousInputMask;
@@ -312,6 +341,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
         partSyncInitialized = false;
         setFuel(driveableData.getFuelInTank());
+        if (!level().isClientSide)
+            updateCurrentAmmoNames();
         refreshDimensions();
     }
 
@@ -331,6 +362,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
+        if (modelPassengerGunAimPivots.length != seatCount)
+            modelPassengerGunAimPivots = Arrays.copyOf(modelPassengerGunAimPivots, seatCount);
     }
 
     @Override
@@ -357,12 +390,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         entityData.set(DATA_DRIVEABLE_TYPE, shortname);
     }
 
-    public float getYaw() { return entityData.get(DATA_YAW); }
-    public float getPitch() { return entityData.get(DATA_PITCH); }
-    public float getRoll() { return entityData.get(DATA_ROLL); }
+    public float getYaw() { return useClientVisualTransform() ? clientVisualYaw : getSyncedYaw(); }
+    public float getPitch() { return useClientVisualTransform() ? clientVisualPitch : getSyncedPitch(); }
+    public float getRoll() { return useClientVisualTransform() ? clientVisualRoll : getSyncedRoll(); }
     public float getThrottle() { return entityData.get(DATA_THROTTLE); }
-    public float getTurretYaw() { return entityData.get(DATA_TURRET_YAW); }
-    public float getTurretPitch() { return entityData.get(DATA_TURRET_PITCH); }
+    public float getTurretYaw() { return useClientVisualTransform() ? clientVisualTurretYaw : getSyncedTurretYaw(); }
+    public float getTurretPitch() { return useClientVisualTransform() ? clientVisualTurretPitch : getSyncedTurretPitch(); }
     public float getFlightPitchControl() { return entityData.get(DATA_FLIGHT_PITCH); }
     public float getFlightRollControl() { return entityData.get(DATA_FLIGHT_ROLL); }
     public boolean isMouseControlEnabled() { return entityData.get(DATA_MOUSE_CONTROL); }
@@ -378,6 +411,58 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
+    public int getSecondaryReloadTicks()
+    {
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : secondaryShootDelay;
+    }
+
+    public int getPrimaryReloadTicks()
+    {
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : primaryShootDelay;
+    }
+
+    public Component getCurrentPrimaryAmmoName()
+    {
+        return entityData.get(DATA_PRIMARY_AMMO_NAME);
+    }
+
+    public Component getCurrentSecondaryAmmoName()
+    {
+        return entityData.get(DATA_SECONDARY_AMMO_NAME);
+    }
+
+    private void updateCurrentAmmoNames()
+    {
+        if (level().isClientSide)
+            return;
+        entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
+        entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
+    }
+
+    private Component findCurrentAmmoName(boolean secondary)
+    {
+        if (configType == null || driveableData == null)
+            return Component.empty();
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, weapon);
+            if (selection != null && !selection.stack().isEmpty())
+                return selection.stack().getHoverName();
+        }
+        return Component.empty();
+    }
+
+    private float getSyncedYaw() { return entityData.get(DATA_YAW); }
+    private float getSyncedPitch() { return entityData.get(DATA_PITCH); }
+    private float getSyncedRoll() { return entityData.get(DATA_ROLL); }
+    private float getSyncedTurretYaw() { return entityData.get(DATA_TURRET_YAW); }
+    private float getSyncedTurretPitch() { return entityData.get(DATA_TURRET_PITCH); }
+
+    private boolean useClientVisualTransform()
+    {
+        return level().isClientSide && clientTransformInitialized;
+    }
 
     protected void setYaw(float yaw)
     {
@@ -476,6 +561,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public boolean isDoorOpen() { return getFlag(FLAG_DOOR); }
     public boolean isWingFolded() { return getFlag(FLAG_WING); }
     public boolean isVarFlare() { return getFlag(FLAG_FLARE); }
+    public boolean isCountermeasureReloading() { return getFlag(FLAG_COUNTERMEASURE_RELOADING); }
     public boolean isEngineActive() { return getFlag(FLAG_ENGINE); }
     public void setGearDeployed(boolean value) { setFlag(FLAG_GEAR, value); }
     public void setDoorOpen(boolean value) { setFlag(FLAG_DOOR, value); }
@@ -512,6 +598,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         builder.define(DATA_MODE, 0);
         builder.define(DATA_FUEL, 0F);
         builder.define(DATA_LOCK_TARGET, -1);
+        builder.define(DATA_PRIMARY_RELOAD_TICKS, 0);
+        builder.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
+        builder.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
+        builder.define(DATA_SECONDARY_RELOAD_TICKS, 0);
     }
 
     @Override
@@ -575,10 +665,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         locked = tag.getBoolean(NBT_LOCKED);
         if (tag.contains(NBT_ENGINE_START_TICKS, Tag.TAG_INT))
             engineStartTicks = Math.max(0, tag.getInt(NBT_ENGINE_START_TICKS));
-        primaryShootDelay = tag.contains(NBT_PRIMARY_SHOOT_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0;
-        secondaryShootDelay = tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0;
+        setPrimaryShootDelay(tag.contains(NBT_PRIMARY_SHOOT_DELAY, Tag.TAG_INT)
+            ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0);
+        setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
+            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0);
         recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS)) : 0;
         recoilDuration = tag.contains(NBT_RECOIL_DURATION, Tag.TAG_INT)
@@ -650,20 +740,92 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (DATA_DRIVEABLE_TYPE.equals(key) && configType == null)
             getConfigType();
         if (DATA_YAW.equals(key) || DATA_PITCH.equals(key) || DATA_ROLL.equals(key))
+        {
+            if (level().isClientSide)
+            {
+                initializeClientTransform();
+                clientTargetYaw = getSyncedYaw();
+                clientTargetPitch = getSyncedPitch();
+                clientTargetRoll = getSyncedRoll();
+                clientTransformLerpSteps = Math.max(clientTransformLerpSteps, 2);
+            }
             axes.setAngles(getYaw(), getPitch(), getRoll());
+        }
+        if ((DATA_TURRET_YAW.equals(key) || DATA_TURRET_PITCH.equals(key)) && level().isClientSide)
+        {
+            initializeClientTransform();
+            clientTargetTurretYaw = getSyncedTurretYaw();
+            clientTargetTurretPitch = getSyncedTurretPitch();
+            clientTurretLerpSteps = Math.max(clientTurretLerpSteps, 2);
+        }
         if (DATA_FUEL.equals(key) && driveableData != null)
             driveableData.setFuelInTank(getFuel());
+    }
+
+    /**
+     * Non-living entities teleport to every movement packet by default. A
+     * moving driveable needs the same short client interpolation used by
+     * vanilla boats and minecarts, otherwise its mounted camera visibly runs
+     * at the server tick rate even while the renderer is much faster.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        if (!level().isClientSide)
+        {
+            super.lerpTo(x, y, z, yaw, pitch, steps);
+            return;
+        }
+
+        initializeClientTransform();
+        clientTargetX = x;
+        clientTargetY = y;
+        clientTargetZ = z;
+        clientTargetYaw = Mth.wrapDegrees(yaw);
+        clientTargetPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+
+        double distanceSquared = distanceToSqr(x, y, z);
+        if (!Double.isFinite(distanceSquared) || distanceSquared > 4096D)
+        {
+            setPos(x, y, z);
+            clientVisualYaw = clientTargetYaw;
+            clientVisualPitch = clientTargetPitch;
+            clientVisualRoll = clientTargetRoll;
+            clientTransformLerpSteps = 0;
+            setYRot(clientVisualYaw);
+            setXRot(clientVisualPitch);
+            axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
+            return;
+        }
+
+        // Two to three ticks remove packet stepping without making steering
+        // feel detached from the locally controlled vehicle.
+        clientTransformLerpSteps = Mth.clamp(steps, 2, 3);
     }
 
     @Override
     public void tick()
     {
         super.tick();
-        prevYaw = getYaw();
-        prevPitch = getPitch();
-        prevRoll = getRoll();
-        prevTurretYaw = getTurretYaw();
-        prevTurretPitch = getTurretPitch();
+        if (level().isClientSide)
+        {
+            initializeClientTransform();
+            prevYaw = clientVisualYaw;
+            prevPitch = clientVisualPitch;
+            prevRoll = clientVisualRoll;
+            prevTurretYaw = clientVisualTurretYaw;
+            prevTurretPitch = clientVisualTurretPitch;
+            tickClientTransformInterpolation();
+            tickClientTurretInterpolation();
+        }
+        else
+        {
+            prevYaw = getYaw();
+            prevPitch = getPitch();
+            prevRoll = getRoll();
+            prevTurretYaw = getTurretYaw();
+            prevTurretPitch = getTurretPitch();
+        }
 
         DriveableType type = getConfigType();
         if (type == null || driveableData == null)
@@ -706,9 +868,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
         int previousPrimaryShootDelay = primaryShootDelay;
         if (primaryShootDelay > 0)
-            --primaryShootDelay;
+            setPrimaryShootDelay(primaryShootDelay - 1);
         if (secondaryShootDelay > 0)
-            --secondaryShootDelay;
+            setSecondaryShootDelay(secondaryShootDelay - 1);
         tickTimedWeaponSounds(previousPrimaryShootDelay);
         applyPlacementEffects();
         if (flareDelay > 0)
@@ -722,6 +884,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (collisionHelper != null)
             collisionHelper.tick(this);
         tickWeapons();
+        updateCurrentAmmoNames();
         tickWeaponAnimations();
         tickSounds();
         previousInputMask = getInputMask();
@@ -743,6 +906,55 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     /** Lightweight visual state update; world simulation remains server-owned. */
     protected void tickClientDriveable() {}
 
+    private void initializeClientTransform()
+    {
+        if (clientTransformInitialized || !level().isClientSide)
+            return;
+        clientTransformInitialized = true;
+        clientTargetX = getX();
+        clientTargetY = getY();
+        clientTargetZ = getZ();
+        clientVisualYaw = clientTargetYaw = getSyncedYaw();
+        clientVisualPitch = clientTargetPitch = getSyncedPitch();
+        clientVisualRoll = clientTargetRoll = getSyncedRoll();
+        clientVisualTurretYaw = clientTargetTurretYaw = getSyncedTurretYaw();
+        clientVisualTurretPitch = clientTargetTurretPitch = getSyncedTurretPitch();
+        setYRot(clientVisualYaw);
+        setXRot(clientVisualPitch);
+    }
+
+    private void tickClientTransformInterpolation()
+    {
+        if (clientTransformLerpSteps <= 0)
+            return;
+
+        double divisor = clientTransformLerpSteps;
+        setPos(getX() + (clientTargetX - getX()) / divisor,
+            getY() + (clientTargetY - getY()) / divisor,
+            getZ() + (clientTargetZ - getZ()) / divisor);
+        clientVisualYaw = Mth.wrapDegrees(clientVisualYaw
+            + Mth.wrapDegrees(clientTargetYaw - clientVisualYaw) / (float) divisor);
+        clientVisualPitch += (clientTargetPitch - clientVisualPitch) / (float) divisor;
+        clientVisualRoll = Mth.wrapDegrees(clientVisualRoll
+            + Mth.wrapDegrees(clientTargetRoll - clientVisualRoll) / (float) divisor);
+        --clientTransformLerpSteps;
+
+        setYRot(clientVisualYaw);
+        setXRot(clientVisualPitch);
+        axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
+    }
+
+    private void tickClientTurretInterpolation()
+    {
+        if (clientTurretLerpSteps <= 0)
+            return;
+        float divisor = clientTurretLerpSteps;
+        clientVisualTurretYaw = Mth.wrapDegrees(clientVisualTurretYaw
+            + Mth.wrapDegrees(clientTargetTurretYaw - clientVisualTurretYaw) / divisor);
+        clientVisualTurretPitch += (clientTargetTurretPitch - clientVisualTurretPitch) / divisor;
+        --clientTurretLerpSteps;
+    }
+
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
         if (configType == null || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
@@ -758,8 +970,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (!placementEffectsPending || configType == null)
             return;
         placementEffectsPending = false;
-        primaryShootDelay = Math.max(primaryShootDelay, Math.max(0, configType.getPlaceTimePrimary()));
-        secondaryShootDelay = Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary()));
+        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, configType.getPlaceTimePrimary())));
+        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary())));
 
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
@@ -808,7 +1020,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         {
             if (fireWeaponBank(false))
             {
-                primaryShootDelay = Math.max(1, Mth.ceil(getConfiguredShootDelay(false)));
+                setPrimaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(false))));
                 if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
                     --primaryBurstRemaining;
             }
@@ -817,7 +1029,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         {
             if (fireWeaponBank(true))
             {
-                secondaryShootDelay = Math.max(1, Mth.ceil(getConfiguredShootDelay(true)));
+                setSecondaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(true))));
                 if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
                     --secondaryBurstRemaining;
             }
@@ -1065,11 +1277,25 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         driveableData.setInventoryChanged(false);
         if (!ammunitionChanged)
             return;
-        primaryShootDelay = Math.max(primaryShootDelay, Math.max(0, configType.getReloadTimePrimary()));
-        secondaryShootDelay = Math.max(secondaryShootDelay, Math.max(0, configType.getReloadTimeSecondary()));
+        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, configType.getReloadTimePrimary())));
+        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getReloadTimeSecondary())));
         String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(), configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 96D, sound, false);
+    }
+
+    private void setPrimaryShootDelay(int delay)
+    {
+        primaryShootDelay = Math.max(0, delay);
+        if (!level().isClientSide)
+            entityData.set(DATA_PRIMARY_RELOAD_TICKS, primaryShootDelay);
+    }
+
+    private void setSecondaryShootDelay(int delay)
+    {
+        secondaryShootDelay = Math.max(0, delay);
+        if (!level().isClientSide)
+            entityData.set(DATA_SECONDARY_RELOAD_TICKS, secondaryShootDelay);
     }
 
     protected int weaponInventoryFingerprint()
@@ -1244,9 +1470,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             if (slot < 0 || slot >= driveableData.getNumAmmoSlots())
                 return null;
             ItemStack stack = driveableData.getAmmo(slot);
-            if (!validAmmo(stack, weapon))
+            GunType gunType = pilotGun.getType();
+            if (!validGunAmmo(stack, gunType))
                 return null;
-            return new AmmoSelection(AmmoBank.AMMO, slot, stack, pilotGun.getType());
+            return new AmmoSelection(AmmoBank.AMMO, slot, stack, gunType);
         }
 
         if (weapon == EnumWeaponType.GUN)
@@ -1254,8 +1481,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             for (int slot = 0; slot < configType.getPilotGuns().size(); slot++)
             {
                 ItemStack stack = driveableData.getAmmo(slot);
-                if (validAmmo(stack, weapon))
-                    return new AmmoSelection(AmmoBank.AMMO, slot, stack, configType.getPilotGuns().get(slot).getType());
+                GunType gunType = configType.getGunTypeForAmmoSlot(slot);
+                if (validGunAmmo(stack, gunType))
+                    return new AmmoSelection(AmmoBank.AMMO, slot, stack, gunType);
             }
             return null;
         }
@@ -1277,6 +1505,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return false;
         return ShootableItem.hasRoundsLeft(stack) && configType.isValidAmmo(bulletType)
             && (bulletType.getWeaponType() == requested || requested == EnumWeaponType.GUN && bulletType.getWeaponType() == EnumWeaponType.NONE);
+    }
+
+    protected boolean validGunAmmo(ItemStack stack, @Nullable GunType gunType)
+    {
+        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item)
+            || !(item.getConfigType() instanceof BulletType bulletType))
+            return false;
+        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(bulletType);
     }
 
     protected void consumeAmmo(AmmoSelection selection)
@@ -1301,13 +1537,28 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         Vec3 offset = LegacyDriveableCoordinates.toLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
-            return localToWorld(root.x, root.y, root.z).add(localDirectionToWorld(offset));
+            return applyVehicleModelVerticalOffset(modelLocalToWorld(root.add(offset)));
 
-        boolean separateMuzzleOffset = offset.lengthSqr() > 1.0E-8D;
-        float rootPitch = part == EnumDriveablePart.BARREL || !separateMuzzleOffset ? getTurretPitch() : 0F;
-        Vec3 origin = turretPointToWorld(root, getTurretYaw(), rootPitch);
-        Vec3 muzzleOffset = rotateTurretLocalDirection(offset, getTurretYaw(), getTurretPitch());
-        return origin.add(localDirectionToWorld(muzzleOffset));
+        // Root and offset together describe the actual muzzle point. Rotating
+        // only the offset leaves the root yaw-only and makes the projectile
+        // origin detach from the barrel as its pitch changes.
+        Vec3 muzzle = root.add(offset);
+        return applyVehicleModelVerticalOffset(turretPointToWorld(muzzle, getTurretYaw(), getTurretPitch()));
+    }
+
+    /** Returns the model-aligned muzzle position for client-side diagnostics. */
+    public Vec3 getDebugShootOrigin(@NotNull ShootPoint point)
+    {
+        return getShootOrigin(point);
+    }
+
+    /** Aligns model-anchored positions with the visual offset used by vehicles. */
+    protected Vec3 applyVehicleModelVerticalOffset(@NotNull Vec3 position)
+    {
+        if (!(this instanceof Vehicle) || configType == null)
+            return position;
+        return position.add(modelLocalDirectionToWorld(new Vec3(0D,
+            Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
     }
 
     protected Vec3 getShootDirection(ShootPoint point, boolean secondary)
@@ -1322,14 +1573,13 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 localDirection = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
             if (isTurretMountedPart(part))
             {
-                float pitch = part == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
-                localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), pitch);
+                localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
             }
-            return localDirectionToWorld(localDirection).normalize();
+            return modelLocalDirectionToWorld(localDirection).normalize();
         }
         if (isTurretMountedPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
-        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
+        return modelLocalDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
 
     protected static boolean isTurretMountedPart(@Nullable EnumDriveablePart part)
@@ -1338,38 +1588,86 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             || part != null && part.name().startsWith("TURRET_");
     }
 
-    /** Rotate a vector expressed in forward / up / right driveable coordinates. */
+    /**
+     * Apply the legacy vehicle model's barrel-pitch-then-turret-yaw hierarchy
+     * to a vector that has already been converted to the driveable-local basis.
+     */
     protected static Vec3 rotateTurretLocalDirection(@NotNull Vec3 vector, float yaw, float pitch)
     {
-        double yawRadians = yaw * Mth.DEG_TO_RAD;
-        double pitchRadians = pitch * Mth.DEG_TO_RAD;
-        double yawCos = Math.cos(yawRadians);
-        double yawSin = Math.sin(yawRadians);
-        double pitchCos = Math.cos(pitchRadians);
-        double pitchSin = Math.sin(pitchRadians);
+        return LegacyDriveableCoordinates.rotateTurretLocal(vector, yaw, pitch);
+    }
 
-        double pitchX = vector.x * pitchCos + vector.y * pitchSin;
-        double pitchY = -vector.x * pitchSin + vector.y * pitchCos;
-        return new Vec3(pitchX * yawCos + vector.z * yawSin, pitchY,
-            -pitchX * yawSin + vector.z * yawCos);
+    protected static Vec3 rotateBarrelPitchLocal(@NotNull Vec3 vector, float pitch)
+    {
+        return LegacyDriveableCoordinates.rotateBarrelPitchLocal(vector, pitch);
+    }
+
+    protected static Vec3 rotateTurretYawLocal(@NotNull Vec3 vector, float yaw)
+    {
+        return LegacyDriveableCoordinates.rotateTurretYawLocal(vector, yaw);
     }
 
     protected Vec3 turretPointToWorld(@NotNull Vec3 point, float yaw, float pitch)
     {
+        Vec3 local = turretPointToLocal(point, yaw, pitch);
+        return modelLocalToWorld(local);
+    }
+
+    private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch)
+    {
         if (configType == null)
-            return localToWorld(point.x, point.y, point.z);
-        Vec3 pivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
-        Vec3 rotated = rotateTurretLocalDirection(point.subtract(pivot), yaw, pitch).add(pivot);
+            return point;
+        Vec3 turretPivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+        Vec3 pitchPivot = modelBarrelPitchPivot == null ? turretPivot : modelBarrelPitchPivot;
+
+        // The renderer pitches each barrel around its own model pivot first,
+        // then yaws the complete turret around TurretOrigin.
+        Vec3 pitched = rotateBarrelPitchLocal(point.subtract(pitchPivot), pitch).add(pitchPivot);
+        Vec3 rotated = rotateTurretYawLocal(pitched.subtract(turretPivot), yaw).add(turretPivot);
         Vec3 configuredOffset = LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
-        Vec3 originOffset = rotateTurretLocalDirection(configuredOffset, yaw, 0F);
-        Vec3 local = rotated.add(originOffset);
-        return localToWorld(local.x, local.y, local.z);
+        Vec3 originOffset = rotateTurretYawLocal(configuredOffset, yaw);
+        return rotated.add(originOffset);
+    }
+
+    /**
+     * Supplies the pitch pivot extracted from the client-side vehicle model.
+     * The value is model-authored legacy xyz in blocks, matching shoot-point data.
+     */
+    public void setModelBarrelPitchPivot(@Nullable Vec3 legacyPivot)
+    {
+        if (legacyPivot == null)
+        {
+            modelBarrelPitchPivot = null;
+            return;
+        }
+        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
+            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
+            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
+            return;
+        modelBarrelPitchPivot = LegacyDriveableCoordinates.toLocal(legacyPivot);
+    }
+
+    /** Supplies the registered gun-model pivot for one passenger seat. */
+    public void setModelPassengerGunAimPivot(int seatIndex, @Nullable Vec3 legacyPivot)
+    {
+        if (seatIndex <= 0 || seatIndex >= modelPassengerGunAimPivots.length)
+            return;
+        if (legacyPivot == null)
+        {
+            modelPassengerGunAimPivots[seatIndex] = null;
+            return;
+        }
+        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
+            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
+            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
+            return;
+        modelPassengerGunAimPivots[seatIndex] = LegacyDriveableCoordinates.toLocal(legacyPivot);
     }
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
         Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
-        return localDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
+        return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
     }
 
     protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
@@ -1388,7 +1686,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                     new Vec3(particle.x(), particle.y(), particle.z()));
                 if (isTurretMountedPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
-                Vec3 direction = localDirectionToWorld(localDirection);
+                Vec3 direction = modelLocalDirectionToWorld(localDirection);
                 PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z,
                     direction.x, direction.y, direction.z), origin, 128D, level().dimension());
             }
@@ -1418,7 +1716,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
             int ammoSlot = configType.getPilotGuns().size() + Math.max(0, info.getGunnerID());
             ItemStack ammo = driveableData.getAmmo(ammoSlot);
-            if (!validAmmo(ammo, EnumWeaponType.GUN) || !(ammo.getItem() instanceof ShootableItem shootable)
+            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable)
                 || !(shootable.getConfigType() instanceof BulletType bulletType))
                 continue;
             if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
@@ -1426,10 +1724,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
             FireableGun fireable = new FireableGun(gun, ammo);
             LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 gunOrigin = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
-            Vec3 origin = isTurretMountedPart(info.getPart())
-                ? turretPointToWorld(gunOrigin, seat.getAimYaw(), info.getPart() == EnumDriveablePart.BARREL ? seat.getAimPitch() : 0F)
-                : localToWorld(gunOrigin.x, gunOrigin.y, gunOrigin.z);
+            Vec3 origin = getPassengerShootOrigin(seat, info);
             Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
             FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
             boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
@@ -1448,6 +1743,45 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             if (StringUtils.isNotBlank(sound))
                 PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
         }
+    }
+
+    /** Current passenger muzzle position, shared by firing and debug rendering. */
+    @Nullable
+    public Vec3 getPassengerShootOrigin(int seatIndex)
+    {
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
+        return seat == null || info == null || info.getGunType() == null
+            ? null : getPassengerShootOrigin(seat, info);
+    }
+
+    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
+    {
+        Vec3 muzzle = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
+        int seatIndex = seat.getSeatIndex();
+        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
+            ? modelPassengerGunAimPivots[seatIndex] : null;
+        if (pivot == null)
+            pivot = muzzle;
+
+        float pitch = seat.getAimPitch();
+        Vec3 aimedMuzzle;
+        Vec3 origin;
+        if (isTurretMountedPart(info.getPart()))
+        {
+            // Registered turret guns are rendered inside the driver's turret
+            // yaw, then apply their own relative yaw and pitch at their pivot.
+            float relativeYaw = Mth.wrapDegrees(seat.getAimYaw() - getTurretYaw());
+            aimedMuzzle = pivot.add(rotateTurretLocalDirection(muzzle.subtract(pivot), relativeYaw, pitch));
+            origin = turretPointToWorld(aimedMuzzle, getTurretYaw(), 0F);
+        }
+        else
+        {
+            aimedMuzzle = pivot.add(rotateTurretLocalDirection(
+                muzzle.subtract(pivot), seat.getAimYaw(), pitch));
+            origin = modelLocalToWorld(aimedMuzzle);
+        }
+        return applyVehicleModelVerticalOffset(origin);
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }
@@ -1880,25 +2214,54 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         SeatInfo info = configType == null ? null : configType.getSeat(index);
         if (info == null)
             return position().add(0D, getBbHeight() * 0.5D, 0D);
+        Vec3 localPosition = getSeatLocalPosition(info, getTurretYaw(), getTurretPitch());
+        return modelLocalToWorld(localPosition);
+    }
+
+    /** Render-time seat anchor using the exact same transform as the model. */
+    public Vec3 getInterpolatedSeatWorldPosition(int index, float partialTick)
+    {
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
+            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        SeatInfo info = configType == null ? null : configType.getSeat(index);
+        if (info == null)
+            return root.add(0D, getBbHeight() * 0.5D, 0D);
+
+        float yaw = Mth.rotLerp(partial, prevYaw, getYaw());
+        float pitch = Mth.rotLerp(partial, prevPitch, getPitch());
+        float roll = Mth.rotLerp(partial, prevRoll, getRoll());
+        float turretYaw = Mth.rotLerp(partial, prevTurretYaw, getTurretYaw());
+        float turretPitch = Mth.rotLerp(partial, prevTurretPitch, getTurretPitch());
+        Vec3 localPosition = getSeatLocalPosition(info, turretYaw, turretPitch);
+        return root.add(modelLocalDirectionToWorld(localPosition, yaw, pitch, roll));
+    }
+
+    private Vec3 getSeatLocalPosition(@NotNull SeatInfo info, float turretYaw, float turretPitch)
+    {
         Vec3 localPosition = rotateLegacyModelVector(
             new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
-        if (info.isDriver())
-            localPosition = mirrorAroundLocalZAxis(localPosition);
-        Vec3 worldPosition = isTurretMountedPart(info.getPart())
-            ? turretPointToWorld(localPosition, getTurretYaw(), info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F)
-            : localToWorld(localPosition.x, localPosition.y, localPosition.z);
+        localPosition = mirrorAroundLocalZAxis(localPosition);
+        if (isTurretMountedPart(info.getPart()))
+            localPosition = turretPointToLocal(localPosition, turretYaw,
+                info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F);
+
+        // The renderer lowers the complete vehicle model, so every seat anchor
+        // needs the same model-space correction, not only the driver.
+        if (this instanceof Vehicle)
+            localPosition = localPosition.add(0D,
+                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D);
 
         Vec3 rotatedOffset = rotateLegacyModelVector(
             new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
-        if (info.isDriver())
-            rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
+        rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
-            float pitch = info.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
-            rotatedOffset = rotateTurretLocalDirection(rotatedOffset, getTurretYaw(), pitch);
-            worldPosition = worldPosition.add(localDirectionToWorld(rotatedOffset));
+            float pitch = info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F;
+            rotatedOffset = rotateTurretLocalDirection(rotatedOffset, turretYaw, pitch);
+            localPosition = localPosition.add(rotatedOffset);
         }
-        return worldPosition;
+        return localPosition;
     }
 
     public Vec3 getWheelWorldPosition(int index)
@@ -2014,6 +2377,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         ticksFlareUsing = (int) Math.min(Integer.MAX_VALUE, Math.max(1L, (long) configType.getTimeFlareUsing() * 20L));
         flareDelay = Math.max(ticksFlareUsing, configType.getFlareDelay());
         setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, true);
         if (StringUtils.isNotBlank(configType.getFlareSound()))
             PacketPlaySound.sendSoundPacket(this, 96D, configType.getFlareSound(), false);
     }
@@ -2023,10 +2387,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (ticksFlareUsing <= 0)
         {
             setFlag(FLAG_FLARE, false);
+            setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
             return;
         }
         --ticksFlareUsing;
         setFlag(FLAG_FLARE, true);
+        setFlag(FLAG_COUNTERMEASURE_RELOADING, flareDelay > 0);
         if (tickCount % 2 == 0)
         {
             Vec3 behind = position().subtract(getForwardVector().scale(Math.max(1D, getBbWidth())));
@@ -2445,12 +2811,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             {
                 float pitch = emitter.getPart() == EnumDriveablePart.BARREL ? getTurretPitch() : 0F;
                 origin = turretPointToWorld(localOrigin, getTurretYaw(), pitch);
-                direction = localDirectionToWorld(rotateTurretLocalDirection(localVelocity, getTurretYaw(), pitch));
+                direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localVelocity, getTurretYaw(), pitch));
             }
             else
             {
-                origin = localToWorld(localOrigin.x, localOrigin.y, localOrigin.z);
-                direction = localDirectionToWorld(localVelocity);
+                origin = modelLocalToWorld(localOrigin);
+                direction = modelLocalDirectionToWorld(localVelocity);
             }
             PacketHandler.sendToAllAround(new PacketParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
                 direction.x, direction.y, direction.z), origin, 128D, level().dimension());
@@ -2533,21 +2899,69 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
 
-        Seat target = null;
-        for (Seat seat : seats)
-        {
-            if (seat != null && seat.getFirstPassenger() == null && isPartIntact(seat.getSeatInfo() == null ? EnumDriveablePart.CORE : seat.getSeatInfo().getPart()))
-            {
-                target = seat;
-                if (seat.isDriverSeat())
-                    break;
-            }
-        }
+        // A seat proxy can be hidden behind the much larger vehicle hitbox.
+        // Continue the click ray through that hitbox so clicking a passenger
+        // position does not silently fall back to the driver seat.
+        Seat target = findTargetedSeat(player);
+        if (target != null && target.getFirstPassenger() != null && target.getFirstPassenger() != player)
+            return InteractionResult.CONSUME;
+        if (target == null)
+            target = findPreferredAvailableSeat();
         if (target == null)
             return InteractionResult.PASS;
         if (player.getVehicle() != null)
             player.stopRiding();
         return player.startRiding(target, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+    }
+
+    @Nullable
+    private Seat findTargetedSeat(@NotNull Player player)
+    {
+        Vec3 rayStart = player.getEyePosition();
+        Vec3 rayEnd = rayStart.add(player.getLookAngle().scale(6D));
+        Seat closest = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (Seat seat : seats)
+        {
+            if (!isUsableSeat(seat))
+                continue;
+            // Slightly widen the logical proxy while retaining separation
+            // between neighbouring seats and preserving ray-depth ordering.
+            AABB target = seat.getBoundingBox().inflate(0.3D);
+            Optional<Vec3> intersection = target.contains(rayStart)
+                ? Optional.of(rayStart) : target.clip(rayStart, rayEnd);
+            if (intersection.isEmpty())
+                continue;
+            double distance = rayStart.distanceToSqr(intersection.get());
+            if (distance < closestDistance)
+            {
+                closest = seat;
+                closestDistance = distance;
+            }
+        }
+        return closest;
+    }
+
+    @Nullable
+    private Seat findPreferredAvailableSeat()
+    {
+        Seat fallback = null;
+        for (Seat seat : seats)
+        {
+            if (isUsableSeat(seat) && seat.getFirstPassenger() == null)
+            {
+                fallback = seat;
+                if (seat.isDriverSeat())
+                    break;
+            }
+        }
+        return fallback;
+    }
+
+    private boolean isUsableSeat(@Nullable Seat seat)
+    {
+        return seat != null && seat.isAlive()
+            && isPartIntact(seat.getSeatInfo() == null ? EnumDriveablePart.CORE : seat.getSeatInfo().getPart());
     }
 
     @Override
@@ -2724,6 +3138,33 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return getForwardVector().scale(local.x).add(getUpVector().scale(local.y)).add(getRightVector().scale(local.z));
     }
 
+    /** Converts a model-authored point using the same rotation order as DriveableRenderer. */
+    public Vec3 modelLocalToWorld(@NotNull Vec3 local)
+    {
+        return position().add(modelLocalDirectionToWorld(local));
+    }
+
+    public Vec3 modelLocalDirectionToWorld(@NotNull Vec3 local)
+    {
+        return modelLocalDirectionToWorld(local, getYaw(), getPitch(), getRoll());
+    }
+
+    private static Vec3 modelLocalDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
+    {
+        return LegacyDriveableCoordinates.modelLocalToWorldDirection(local, yaw, pitch, roll);
+    }
+
+    private static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
+    {
+        Vec3 forward = ModUtils.getDirectionFromPitchAndYaw(pitch, yaw).normalize();
+        Vec3 horizontalRight = ModUtils.getDirectionFromPitchAndYaw(0F, yaw - 90F).normalize();
+        Vec3 vertical = forward.cross(horizontalRight).normalize();
+        double rollRadians = roll * Mth.DEG_TO_RAD;
+        Vec3 right = horizontalRight.scale(Math.cos(rollRadians)).add(vertical.scale(Math.sin(rollRadians))).normalize();
+        Vec3 up = vertical.scale(Math.cos(rollRadians)).subtract(horizontalRight.scale(Math.sin(rollRadians))).normalize();
+        return forward.scale(local.x).add(up.scale(local.y)).add(right.scale(local.z));
+    }
+
     public Vec3 worldToLocal(@NotNull Vec3 world)
     {
         return worldDirectionToLocal(world.subtract(position()));
@@ -2760,94 +3201,87 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     /**
-     * Samples configured wheel contact points and applies bounded spring and
-     * step-up corrections before the root entity moves. This keeps wheels as
-     * cheap visual/damage proxies while retaining terrain-aware suspension.
+     * Samples the terrain below the configured wheels and applies an
+     * over-damped suspension response before the root entity moves. Wheel
+     * proxies remain cheap visual / damage entities; collision sampling uses
+     * the real block shapes, so slabs and other partial blocks remain smooth.
      */
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain)
     {
+        groundedWheelCount = 0;
         if (configType == null || configType.getWheelPositions().isEmpty())
             return velocity;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
-        double verticalCorrection = 0D;
-        double stepCorrection = 0D;
-        int contacts = 0;
+        double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
+        double maximumCompression = Math.max(0.15D, step + 0.1D);
+        double supportError = 0D;
         double frontHeight = 0D, backHeight = 0D, leftHeight = 0D, rightHeight = 0D;
         int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
         double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
+
+        Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
+        double predictionLength = horizontalPrediction.length();
+        if (predictionLength > 1.5D)
+            horizontalPrediction = horizontalPrediction.scale(1.5D / predictionLength);
 
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
             DriveablePosition definition = configType.getWheelPosition(index);
             if (definition == null || !isPartIntact(definition.getPart()))
                 continue;
-            Vec3 wheel = getWheelWorldPosition(index).add(velocity.x, 0D, velocity.z);
-            if (step > 0F)
-            {
-                BlockPos obstacle = BlockPos.containing(wheel.add(0D, 0.1D, 0D));
-                if (hasCollisionAt(obstacle))
-                {
-                    int maximumStep = Math.max(1, Mth.ceil(step));
-                    for (int rise = 1; rise <= maximumStep; rise++)
-                    {
-                        if (!hasCollisionAt(obstacle.above(rise)))
-                        {
-                            stepCorrection = Math.max(stepCorrection, Math.min(step, rise + 0.05D));
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Vec3 rayStart = wheel.add(0D, Math.max(0.5D, step + 0.25D), 0D);
-            Vec3 rayEnd = wheel.add(0D, -1.5D, 0D);
+            Vec3 wheel = getWheelWorldPosition(index).add(horizontalPrediction);
+            Vec3 rayStart = wheel.add(0D, step + 0.6D, 0D);
+            Vec3 rayEnd = wheel.add(0D, -suspensionDroop - 0.45D, 0D);
             BlockHitResult hit = level().clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
-            double desiredWheelY = surface + 0.35D;
+            double desiredWheelY = surface + 0.375D;
             double error = desiredWheelY - wheel.y;
-            if (error < -1.25D || error > step + 1D)
+            if (error < -suspensionDroop || error > maximumCompression)
                 continue;
-            verticalCorrection += Mth.clamp(error * spring, -0.2D, Math.max(0.2D, step));
-            ++contacts;
+            supportError += error;
+            ++groundedWheelCount;
 
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
-            double forwardPosition = -local.z;
-            double rightPosition = local.x;
+            double forwardPosition = local.x;
+            double rightPosition = local.z;
             if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
             else { backHeight += surface; backX += forwardPosition; ++backCount; }
             if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }
             else { leftHeight += surface; leftZ += rightPosition; ++leftCount; }
         }
-        if (contacts == 0)
-            return velocity.add(0D, stepCorrection, 0D);
+        if (groundedWheelCount == 0)
+            return velocity;
 
-        double correctedY = velocity.y + verticalCorrection / contacts;
-        if (correctedY < 0D)
-            correctedY *= Mth.clamp(1D - spring * 0.8D, 0.05D, 1D);
-        correctedY += stepCorrection;
+        double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y,
+            supportError / groundedWheelCount, spring, velocity.horizontalDistance());
 
         if (alignToTerrain && frontCount > 0 && backCount > 0)
         {
             double front = frontHeight / frontCount;
             double back = backHeight / backCount;
             double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            float targetPitch = (float) -Math.toDegrees(Math.atan2(front - back, length));
-            float pitch = Mth.lerp(Math.max(0.05F, spring * 0.25F), getPitch(), Mth.clamp(targetPitch, -30F, 30F));
+            float targetPitch = -SuspensionPhysics.terrainAngle(front - back, length);
+            float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
             if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
             {
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;
                 double width = Math.max(0.5D, rightZ / rightCount - leftZ / leftCount);
-                float targetRoll = (float) Math.toDegrees(Math.atan2(right - left, width));
-                roll = Mth.lerp(Math.max(0.05F, spring * 0.25F), getRoll(), Mth.clamp(targetRoll, -30F, 30F));
+                float targetRoll = SuspensionPhysics.terrainAngle(right - left, width);
+                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), targetRoll, spring);
             }
             setOrientation(getYaw(), pitch, roll);
         }
         return new Vec3(velocity.x, correctedY, velocity.z);
+    }
+
+    protected boolean hasWheelContact()
+    {
+        return groundedWheelCount > 0;
     }
 
     protected boolean isNearGround(int distance)

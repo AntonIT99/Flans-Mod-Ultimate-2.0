@@ -38,6 +38,7 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
+import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -319,6 +320,7 @@ public class FlansMod
     {
         modEventBus.addListener(PacketHandler::register);
         modEventBus.addListener(NeoForgeChunkTickets::register);
+        ModLogFile.initialize(MOD_ID);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
         Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));
         // Init Configs

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "UCU",
+    "CPC",
+    "UCU"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:nuclearpowercore"
+    },
+    "C": {
+      "item": "flansmod:complicatedcircuit"
+    },
+    "U": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "item": "flansmod:aichip"
+  }
+}

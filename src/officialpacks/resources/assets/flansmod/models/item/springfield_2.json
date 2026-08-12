@@ -1,0 +1,44 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "flansmod:item/springfield"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/springfield_acacia"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/springfield_birch"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/springfield_black"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/springfield_frog"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/springfield_green"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 6
+      },
+      "model": "flansmod:item/springfield_oak"
+    }
+  ]
+}

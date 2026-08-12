@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "R R",
+    " A ",
+    "R R"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:advcpu"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechananobots"
+  }
+}

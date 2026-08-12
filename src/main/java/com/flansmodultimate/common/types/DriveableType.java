@@ -698,6 +698,35 @@ public class DriveableType extends PaintableType
         return getNumAmmoSlots();
     }
 
+    /**
+     * Resolves the mounted gun fed by an ammo inventory slot. The compact
+     * inventory stores pilot guns first, followed by passenger guns ordered by
+     * their automatically assigned gunner id.
+     */
+    @Nullable
+    public GunType getGunTypeForAmmoSlot(int ammoSlot)
+    {
+        if (ammoSlot < 0 || ammoSlot >= getNumAmmoSlots())
+            return null;
+        if (ammoSlot < pilotGuns.size())
+            return pilotGuns.get(ammoSlot).getType();
+
+        int gunnerId = ammoSlot - pilotGuns.size();
+        for (SeatInfo seat : seats)
+        {
+            if (seat != null && seat.getGunnerID() == gunnerId)
+                return seat.getGunType();
+        }
+        return null;
+    }
+
+    /** The gun definition, rather than the vehicle AddAmmo list, owns this rule. */
+    public boolean isValidGunAmmo(int ammoSlot, @Nullable ShootableType ammoType)
+    {
+        GunType gunType = getGunTypeForAmmoSlot(ammoSlot);
+        return gunType != null && ammoType != null && gunType.getAmmoTypes().contains(ammoType);
+    }
+
     @Nullable
     public SeatInfo getSeat(int id)
     {

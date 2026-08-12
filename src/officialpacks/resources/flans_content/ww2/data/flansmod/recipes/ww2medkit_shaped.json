@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLL",
+    "PPP",
+    "LLL"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:potion"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "flansmod:ww2medkit"
+  }
+}
