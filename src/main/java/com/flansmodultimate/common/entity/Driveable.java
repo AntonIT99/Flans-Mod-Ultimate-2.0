@@ -2842,21 +2842,69 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
 
-        Seat target = null;
-        for (Seat seat : seats)
-        {
-            if (seat != null && seat.getFirstPassenger() == null && isPartIntact(seat.getSeatInfo() == null ? EnumDriveablePart.CORE : seat.getSeatInfo().getPart()))
-            {
-                target = seat;
-                if (seat.isDriverSeat())
-                    break;
-            }
-        }
+        // A seat proxy can be hidden behind the much larger vehicle hitbox.
+        // Continue the click ray through that hitbox so clicking a passenger
+        // position does not silently fall back to the driver seat.
+        Seat target = findTargetedSeat(player);
+        if (target != null && target.getFirstPassenger() != null && target.getFirstPassenger() != player)
+            return InteractionResult.CONSUME;
+        if (target == null)
+            target = findPreferredAvailableSeat();
         if (target == null)
             return InteractionResult.PASS;
         if (player.getVehicle() != null)
             player.stopRiding();
         return player.startRiding(target, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+    }
+
+    @Nullable
+    private Seat findTargetedSeat(@NotNull Player player)
+    {
+        Vec3 rayStart = player.getEyePosition();
+        Vec3 rayEnd = rayStart.add(player.getLookAngle().scale(6D));
+        Seat closest = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (Seat seat : seats)
+        {
+            if (!isUsableSeat(seat))
+                continue;
+            // Slightly widen the logical proxy while retaining separation
+            // between neighbouring seats and preserving ray-depth ordering.
+            AABB target = seat.getBoundingBox().inflate(0.3D);
+            Optional<Vec3> intersection = target.contains(rayStart)
+                ? Optional.of(rayStart) : target.clip(rayStart, rayEnd);
+            if (intersection.isEmpty())
+                continue;
+            double distance = rayStart.distanceToSqr(intersection.get());
+            if (distance < closestDistance)
+            {
+                closest = seat;
+                closestDistance = distance;
+            }
+        }
+        return closest;
+    }
+
+    @Nullable
+    private Seat findPreferredAvailableSeat()
+    {
+        Seat fallback = null;
+        for (Seat seat : seats)
+        {
+            if (isUsableSeat(seat) && seat.getFirstPassenger() == null)
+            {
+                fallback = seat;
+                if (seat.isDriverSeat())
+                    break;
+            }
+        }
+        return fallback;
+    }
+
+    private boolean isUsableSeat(@Nullable Seat seat)
+    {
+        return seat != null && seat.isAlive()
+            && isPartIntact(seat.getSeatInfo() == null ? EnumDriveablePart.CORE : seat.getSeatInfo().getPart());
     }
 
     @Override

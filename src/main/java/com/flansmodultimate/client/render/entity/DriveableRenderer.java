@@ -38,6 +38,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -170,10 +171,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         {
             if (type.getSeat(seat) == null)
                 continue;
+            Vec3 seatPosition = driveable.getSeatWorldPosition(seat);
             if (seat == 0)
-                DebugHelper.spawnDebugDot(driveable.getSeatWorldPosition(seat), 2, 0F, 0.45F, 1F);
+            {
+                DebugHelper.spawnDebugDot(seatPosition, 2, 0F, 0.45F, 1F);
+                DebugHelper.spawnDebugVector(seatPosition, new Vec3(0D, 2D, 0D), 2, 0F, 0.45F, 1F);
+            }
             else
-                DebugHelper.spawnDebugDot(driveable.getSeatWorldPosition(seat), 2, 1F, 0F, 1F);
+            {
+                DebugHelper.spawnDebugDot(seatPosition, 2, 1F, 0F, 1F);
+                DebugHelper.spawnDebugVector(seatPosition, new Vec3(0D, 2D, 0D), 2, 1F, 0F, 1F);
+            }
         }
     }
 
