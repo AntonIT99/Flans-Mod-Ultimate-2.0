@@ -291,13 +291,13 @@ public class Plane extends Driveable
     }
 
     /**
-     * Legacy plane content is authored with model X as forward and model Z as
-     * lateral. Convert that basis before using the modern driveable transform,
-     * matching the corrected vehicle propulsion path.
+     * Plane models face the opposite legacy X direction from the extra-facing
+     * correction used by land vehicles. Reusing the vehicle axis here makes
+     * positive throttle propel the rendered plane tail-first.
      */
     private Vec3 flightForwardVector()
     {
-        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
+        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(-1D, 0D, 0D))).normalize();
     }
 
     private Vec3 flightRightVector()

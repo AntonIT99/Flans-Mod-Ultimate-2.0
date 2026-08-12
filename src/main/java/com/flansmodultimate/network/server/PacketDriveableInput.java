@@ -135,8 +135,11 @@ public final class PacketDriveableInput implements IServerPacket
         Entity entity = level.getEntity(driveableId);
         if (entity instanceof Driveable driveable)
         {
-            if (driveable.isControlledBy(player))
+            Seat seat = driveable.getSeat(player);
+            if (seat != null && seat.isDriverSeat())
                 driveable.setModelBarrelPitchPivot(barrelPitchPivot);
+            else if (seat != null)
+                driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
             driveable.acceptInput(player, inputMask, aimYaw, aimPitch, Mth.clamp(flightPitch, -1F, 1F),
                 Mth.clamp(flightRoll, -1F, 1F), mouseControl, sequence);
         }

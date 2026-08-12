@@ -15,8 +15,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 
@@ -387,6 +389,42 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     {
         if (name != null && gunModel != null)
             gunModels.put(name, gunModel);
+    }
+
+    /**
+     * Returns the model-authored pivot used by a registered passenger gun's
+     * yaw and pitch rows. The constructor-time flip/translation has already
+     * been applied to these rotation points, so this matches rendering.
+     */
+    @Nullable
+    public Vec3 getRegisteredGunAimPivot(String gunName)
+    {
+        ModelRendererTurbo[][] gun = gunModels.get(gunName);
+        if (gun == null || gun.length == 0)
+            return null;
+
+        ModelRendererTurbo pivotPart = firstPart(gun.length > 1 ? gun[1] : null);
+        if (pivotPart == null)
+            pivotPart = firstPart(gun[0]);
+        if (pivotPart == null)
+            return null;
+
+        float gunScale = type == null ? 1F : Math.max(0.001F, type.getVehicleGunModelScale());
+        return new Vec3(pivotPart.rotationPointX * MODEL_SCALE * gunScale,
+            pivotPart.rotationPointY * MODEL_SCALE * gunScale,
+            pivotPart.rotationPointZ * MODEL_SCALE * gunScale);
+    }
+
+    private static ModelRendererTurbo firstPart(ModelRendererTurbo[] parts)
+    {
+        if (parts == null)
+            return null;
+        for (ModelRendererTurbo part : parts)
+        {
+            if (part != null)
+                return part;
+        }
+        return null;
     }
 
     protected void flip(ModelRendererTurbo[] model)

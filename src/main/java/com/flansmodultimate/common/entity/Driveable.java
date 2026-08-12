@@ -223,6 +223,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
     @Nullable
     private Vec3 modelBarrelPitchPivot;
+    /** Per-seat gun pivots read from registered model gun rows. */
+    private Vec3[] modelPassengerGunAimPivots = new Vec3[0];
 
     protected int localInputMask;
     protected int previousInputMask;
@@ -359,6 +361,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
+        if (modelPassengerGunAimPivots.length != seatCount)
+            modelPassengerGunAimPivots = Arrays.copyOf(modelPassengerGunAimPivots, seatCount);
     }
 
     @Override
@@ -1642,6 +1646,23 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         modelBarrelPitchPivot = LegacyDriveableCoordinates.toLocal(legacyPivot);
     }
 
+    /** Supplies the registered gun-model pivot for one passenger seat. */
+    public void setModelPassengerGunAimPivot(int seatIndex, @Nullable Vec3 legacyPivot)
+    {
+        if (seatIndex <= 0 || seatIndex >= modelPassengerGunAimPivots.length)
+            return;
+        if (legacyPivot == null)
+        {
+            modelPassengerGunAimPivots[seatIndex] = null;
+            return;
+        }
+        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
+            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
+            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
+            return;
+        modelPassengerGunAimPivots[seatIndex] = LegacyDriveableCoordinates.toLocal(legacyPivot);
+    }
+
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
         Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
@@ -1702,11 +1723,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
             FireableGun fireable = new FireableGun(gun, ammo);
             LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 gunOrigin = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
-            Vec3 origin = isTurretMountedPart(info.getPart())
-                ? turretPointToWorld(gunOrigin, seat.getAimYaw(), info.getPart() == EnumDriveablePart.BARREL ? seat.getAimPitch() : 0F)
-                : modelLocalToWorld(gunOrigin);
-            origin = applyVehicleModelVerticalOffset(origin);
+            Vec3 origin = getPassengerShootOrigin(seat, info);
             Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
             FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
             boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
@@ -1725,6 +1742,45 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (StringUtils.isNotBlank(sound))
                 PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
         }
+    }
+
+    /** Current passenger muzzle position, shared by firing and debug rendering. */
+    @Nullable
+    public Vec3 getPassengerShootOrigin(int seatIndex)
+    {
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
+        return seat == null || info == null || info.getGunType() == null
+            ? null : getPassengerShootOrigin(seat, info);
+    }
+
+    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
+    {
+        Vec3 muzzle = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
+        int seatIndex = seat.getSeatIndex();
+        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
+            ? modelPassengerGunAimPivots[seatIndex] : null;
+        if (pivot == null)
+            pivot = muzzle;
+
+        float pitch = seat.getAimPitch();
+        Vec3 aimedMuzzle;
+        Vec3 origin;
+        if (isTurretMountedPart(info.getPart()))
+        {
+            // Registered turret guns are rendered inside the driver's turret
+            // yaw, then apply their own relative yaw and pitch at their pivot.
+            float relativeYaw = Mth.wrapDegrees(seat.getAimYaw() - getTurretYaw());
+            aimedMuzzle = pivot.add(rotateTurretLocalDirection(muzzle.subtract(pivot), relativeYaw, pitch));
+            origin = turretPointToWorld(aimedMuzzle, getTurretYaw(), 0F);
+        }
+        else
+        {
+            aimedMuzzle = pivot.add(rotateTurretLocalDirection(
+                muzzle.subtract(pivot), seat.getAimYaw(), pitch));
+            origin = modelLocalToWorld(aimedMuzzle);
+        }
+        return applyVehicleModelVerticalOffset(origin);
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }

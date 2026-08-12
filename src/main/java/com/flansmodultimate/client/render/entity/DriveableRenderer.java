@@ -74,6 +74,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
+        updatePassengerGunPivots(driveable, type, model);
         renderDiagnosticMarkers(driveable, type);
         float throttle = Mth.lerp(partialTick, history.previousThrottle, history.throttle);
         float steering = Mth.lerp(partialTick, history.previousSteering, history.steering);
@@ -169,7 +170,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         for (int seat = 0; seat <= type.getNumPassengers(); seat++)
         {
-            if (type.getSeat(seat) == null)
+            var seatInfo = type.getSeat(seat);
+            if (seatInfo == null)
                 continue;
             Vec3 seatPosition = driveable.getSeatWorldPosition(seat);
             if (seat == 0)
@@ -182,6 +184,23 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 DebugHelper.spawnDebugDot(seatPosition, 2, 1F, 0F, 1F);
                 DebugHelper.spawnDebugVector(seatPosition, new Vec3(0D, 2D, 0D), 2, 1F, 0F, 1F);
             }
+            if (seat > 0 && seatInfo.getGunType() != null)
+            {
+                Vec3 muzzle = driveable.getPassengerShootOrigin(seat);
+                if (muzzle != null)
+                    DebugHelper.spawnDebugDot(muzzle, 2, 0F, 1F, 0.25F);
+            }
+        }
+    }
+
+    private static void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
+    {
+        for (int seat = 1; seat <= type.getNumPassengers(); seat++)
+        {
+            var info = type.getSeat(seat);
+            if (info != null && info.getGunType() != null)
+                driveable.setModelPassengerGunAimPivot(seat,
+                    model.getRegisteredGunAimPivot(info.getGunName()));
         }
     }
 

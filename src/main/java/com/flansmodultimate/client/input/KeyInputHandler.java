@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.input;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelVehicle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
@@ -238,8 +239,11 @@ public final class KeyInputHandler
 
         if (changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
         {
-            Vec3 barrelPitchPivot = getVehicleBarrelPitchPivot(driveable);
-            driveable.setModelBarrelPitchPivot(barrelPitchPivot);
+            Vec3 barrelPitchPivot = getActiveModelAimPivot(driveable, mount);
+            if (mount instanceof Seat seat && !seat.isDriverSeat())
+                driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
+            else
+                driveable.setModelBarrelPitchPivot(barrelPitchPivot);
             PacketDriveableInput packet = mount instanceof Seat seat
                 ? new PacketDriveableInput(seat, mask, aimYaw, aimPitch, flightPitch, flightRoll,
                     mouseControl, barrelPitchPivot, ++inputSequence)
@@ -263,6 +267,17 @@ public final class KeyInputHandler
         return driveable.getConfigType() != null
             && ModelCache.getOrLoadTypeModel(driveable.getConfigType()) instanceof ModelVehicle model
             ? model.getPrimaryBarrelPitchPivot() : null;
+    }
+
+    @Nullable
+    private static Vec3 getActiveModelAimPivot(Driveable driveable, Entity mount)
+    {
+        if (!(mount instanceof Seat seat) || seat.isDriverSeat())
+            return getVehicleBarrelPitchPivot(driveable);
+        if (seat.getSeatInfo() == null || driveable.getConfigType() == null
+            || !(ModelCache.getOrLoadTypeModel(driveable.getConfigType()) instanceof ModelDriveable model))
+            return null;
+        return model.getRegisteredGunAimPivot(seat.getSeatInfo().getGunName());
     }
 
     private static void updateCompatibilityState(IControllable controllable, int mask, int edgeMask, Player player)
