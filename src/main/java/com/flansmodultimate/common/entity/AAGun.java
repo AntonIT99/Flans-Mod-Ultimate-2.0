@@ -250,6 +250,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         int barrelCount = type == null ? 0 : type.getNumBarrels();
         currentBarrel = barrelCount <= 0 ? 0 : Math.floorMod(barrel, barrelCount);
         entityData.set(DATA_CURRENT_BARREL, currentBarrel);
+        updateCurrentAmmoName();
     }
 
     public int getAmmoMask()
@@ -275,18 +276,32 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     private void updateAmmoMask()
     {
         int mask = 0;
-        Component currentAmmoName = Component.empty();
         for (int i = 0; i < Math.min(ammo.length, Integer.SIZE); i++)
         {
             if (!ammo[i].isEmpty())
-            {
                 mask |= (1 << i);
-                if (currentAmmoName.getString().isEmpty())
-                    currentAmmoName = ammo[i].getHoverName();
-            }
         }
         setAmmoMask(mask);
-        entityData.set(DATA_CURRENT_AMMO_NAME, currentAmmoName);
+        updateCurrentAmmoName();
+    }
+
+    private void updateCurrentAmmoName()
+    {
+        int currentSlot = ammoSlotForBarrel(getCurrentBarrelIndex());
+        if (currentSlot >= 0 && currentSlot < ammo.length && !ammo[currentSlot].isEmpty())
+        {
+            entityData.set(DATA_CURRENT_AMMO_NAME, ammo[currentSlot].getHoverName());
+            return;
+        }
+        for (ItemStack stack : ammo)
+        {
+            if (!stack.isEmpty())
+            {
+                entityData.set(DATA_CURRENT_AMMO_NAME, stack.getHoverName());
+                return;
+            }
+        }
+        entityData.set(DATA_CURRENT_AMMO_NAME, Component.empty());
     }
 
     @Override

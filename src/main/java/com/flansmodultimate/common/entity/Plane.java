@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.types.PlaneType;
 import lombok.EqualsAndHashCode;
@@ -177,7 +178,7 @@ public class Plane extends Driveable
         double targetSpeed = type.getMaxSpeed() * getEngineSpeed() * poweredThrottle * 0.42D * wingEfficiency * thrustToMass;
         if (isWingFolded())
             targetSpeed *= 0.25D;
-        Vec3 desired = getForwardVector().scale(targetSpeed);
+        Vec3 desired = flightForwardVector().scale(targetSpeed);
         Vec3 current = getDeltaMovement();
         double steeringBlend = type.isNewFlightControl() ? 0.12D : 0.075D;
         Vec3 velocity = current.add(desired.subtract(current).scale(steeringBlend));
@@ -213,8 +214,10 @@ public class Plane extends Driveable
             * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
         boolean powered = isEngineActive();
         double verticalTarget = powered ? (getThrottle() - 0.48F) * 0.32D * getEngineSpeed() * rotorEfficiency * thrustToMass : -0.12D;
-        Vec3 horizontalForward = new Vec3(getForwardVector().x, 0D, getForwardVector().z).normalize();
-        Vec3 horizontalRight = new Vec3(getRightVector().x, 0D, getRightVector().z).normalize();
+        Vec3 forward = flightForwardVector();
+        Vec3 right = flightRightVector();
+        Vec3 horizontalForward = new Vec3(forward.x, 0D, forward.z).normalize();
+        Vec3 horizontalRight = new Vec3(right.x, 0D, right.z).normalize();
         double tiltForward = -getPitch() / 45D;
         double tiltRight = getRoll() / 45D;
         Vec3 desiredHorizontal = powered
@@ -237,7 +240,7 @@ public class Plane extends Driveable
         setOrientation(getYaw() + yawInput * type.getTurnRightModifier(), getPitch() + pitchInput * type.getLookDownModifier(),
             getRoll() + rollInput * type.getRollRightModifier());
         double thrust = type.getMaxSpeed() * (isEngineActive() ? getThrottle() : 0F) * getEngineSpeed() * 0.35D;
-        Vec3 desired = getForwardVector().scale(thrust);
+        Vec3 desired = flightForwardVector().scale(thrust);
         Vec3 velocity = getDeltaMovement().add(desired.subtract(getDeltaMovement()).scale(0.1D));
         return applyAerodynamicDrag(velocity, type);
     }
@@ -285,6 +288,21 @@ public class Plane extends Driveable
     private static float emptyDrag(PlaneType type)
     {
         return Mth.clamp(1F - 0.05F * Math.max(0F, type.getEmptyDrag() - 1F), 0.7F, 1F);
+    }
+
+    /**
+     * Legacy plane content is authored with model X as forward and model Z as
+     * lateral. Convert that basis before using the modern driveable transform,
+     * matching the corrected vehicle propulsion path.
+     */
+    private Vec3 flightForwardVector()
+    {
+        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
+    }
+
+    private Vec3 flightRightVector()
+    {
+        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(0D, 0D, 1D))).normalize();
     }
 
     private static float axis(int mask, int positive, int negative)

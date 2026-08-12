@@ -108,9 +108,24 @@ public final class MouseInputHandler
         }
 
         float yawDelta = Mth.wrapDegrees(player.getYRot() - seat.getMountedViewYaw());
-        float pitchDelta = player.getXRot() - seat.getMountedViewPitch();
+        float mountedPitchBeforeInput = seat.getMountedViewPitch();
+        float pitchDelta = player.getXRot() - mountedPitchBeforeInput;
         if (Math.abs(yawDelta) > 1.0E-4F || Math.abs(pitchDelta) > 1.0E-4F)
+        {
             seat.applyClientAimDelta(yawDelta, pitchDelta);
+
+            // Vanilla has already added the complete mouse delta to both xRot
+            // and xRotO. If the seat rejects part of that delta at its pitch
+            // limit, leaving xRotO outside the limit makes rendering interpolate
+            // from the invalid angle back to the clamped one every frame.
+            float mountedPitchAfterInput = seat.getMountedViewPitch();
+            float appliedPitchDelta = mountedPitchAfterInput - mountedPitchBeforeInput;
+            if (Math.abs(pitchDelta - appliedPitchDelta) > 1.0E-4F)
+            {
+                player.setXRot(mountedPitchAfterInput);
+                player.xRotO = mountedPitchAfterInput;
+            }
+        }
     }
 
     private static boolean isMouseFlightActive(Player player, Driveable driveable)

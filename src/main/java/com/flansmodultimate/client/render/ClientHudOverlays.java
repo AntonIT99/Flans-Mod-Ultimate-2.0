@@ -7,6 +7,7 @@ import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
@@ -522,12 +523,17 @@ public final class ClientHudOverlays
         Component yawText = Component.translatable("hud.flansmodultimate.driveable.yaw", Math.round(yaw));
         Component pitchText = Component.translatable("hud.flansmodultimate.driveable.pitch", Math.round(pitch));
         VehicleType vehicleType = isVehicle ? ((Vehicle) driveable).getVehicleType() : null;
-        boolean hasShellBank = vehicleType != null && vehicleType.getNumMissileSlots() > 0;
-        int shellReloadTicks = hasShellBank ? driveable.getSecondaryReloadTicks() : 0;
+        boolean primaryShellBank = driveable.getConfigType().weaponType(false) == EnumWeaponType.SHELL;
+        boolean secondaryShellBank = driveable.getConfigType().weaponType(true) == EnumWeaponType.SHELL;
+        boolean hasShellBank = primaryShellBank || secondaryShellBank;
+        int shellReloadTicks = primaryShellBank ? driveable.getPrimaryReloadTicks()
+            : secondaryShellBank ? driveable.getSecondaryReloadTicks() : 0;
         Component shellText = shellReloadTicks > 0
             ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", shellReloadTicks / 20F))
             : Component.translatable("hud.flansmodultimate.aa_gun.ready");
-        Component currentAmmoName = hasShellBank ? driveable.getCurrentSecondaryAmmoName() : Component.empty();
+        Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
+        Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
+        Component currentAmmoName = !primaryAmmoName.getString().isEmpty() ? primaryAmmoName : secondaryAmmoName;
         boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
         boolean hasSmoke = vehicleType != null && vehicleType.isHasFlare() && !vehicleType.getSmokers().isEmpty();
@@ -545,24 +551,25 @@ public final class ClientHudOverlays
         int hudRightX = Math.max(LEGACY_HUD_LEFT,
             sw - 2 - maxWidth(font, yawText, pitchText, shellText, smokeText, ammoHeading, currentAmmoName,
                 rollText, altitudeText, compassText));
-        g.drawString(font, yawText, hudRightX, LEGACY_HUD_TOP, HUD_WHITE, false);
-        g.drawString(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
-        if (hasShellBank)
-            g.drawString(font, shellText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2,
-                shellReloadTicks > 0 ? HUD_RED : HUD_GREEN, false);
-        if (hasSmoke)
-            g.drawString(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * (hasShellBank ? 3 : 2), smokeColor, false);
-        if (hasShellBank && hasCurrentAmmo)
-        {
-            int ammoY = LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * (hasSmoke ? 4 : 3);
-            g.drawString(font, ammoHeading, hudRightX, ammoY, HUD_WHITE, false);
-            g.drawString(font, currentAmmoName, hudRightX, ammoY + LEGACY_HUD_LINE_HEIGHT, HUD_AMMO_GREEN, false);
-        }
+        int rightLine = 0;
+        g.drawString(font, yawText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        g.drawString(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         if (isPlane)
         {
-            g.drawString(font, rollText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2, HUD_WHITE, false);
-            g.drawString(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
-            g.drawString(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 4, HUD_WHITE, false);
+            g.drawString(font, rollText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        }
+        if (hasShellBank)
+            g.drawString(font, shellText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++,
+                shellReloadTicks > 0 ? HUD_RED : HUD_GREEN, false);
+        if (hasSmoke)
+            g.drawString(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
+        if (hasCurrentAmmo)
+        {
+            int ammoY = LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine;
+            g.drawString(font, ammoHeading, hudRightX, ammoY, HUD_WHITE, false);
+            g.drawString(font, currentAmmoName, hudRightX, ammoY + LEGACY_HUD_LINE_HEIGHT, HUD_AMMO_GREEN, false);
         }
 
         if (!ModClient.isDebug())
@@ -577,8 +584,9 @@ public final class ClientHudOverlays
             driveable.getTurretYaw(), driveable.getTurretPitch()));
         Component input = Component.literal(String.format(Locale.ROOT, "Input 0x%05X", driveable.getInputMask()));
         int rightX = Math.max(LEGACY_HUD_LEFT, sw - 2 - maxWidth(font, id, position, rotation, turret, input));
-        int debugY = LEGACY_HUD_TOP;
-        for (Component line : List.of(id, position, rotation, turret, input))
+        List<Component> debugLines = List.of(id, position, rotation, turret, input);
+        int debugY = Math.max(LEGACY_HUD_TOP, sh - 2 - debugLines.size() * LEGACY_HUD_LINE_HEIGHT);
+        for (Component line : debugLines)
         {
             g.drawString(font, line, rightX, debugY, HUD_GREEN, false);
             debugY += LEGACY_HUD_LINE_HEIGHT;

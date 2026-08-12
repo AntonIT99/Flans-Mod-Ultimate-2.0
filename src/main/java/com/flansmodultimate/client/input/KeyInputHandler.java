@@ -1,9 +1,11 @@
 package com.flansmodultimate.client.input;
 
 import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelVehicle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Driveable;
@@ -32,6 +34,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
@@ -235,9 +238,13 @@ public final class KeyInputHandler
 
         if (changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
         {
+            Vec3 barrelPitchPivot = getVehicleBarrelPitchPivot(driveable);
+            driveable.setModelBarrelPitchPivot(barrelPitchPivot);
             PacketDriveableInput packet = mount instanceof Seat seat
-                ? new PacketDriveableInput(seat, mask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, ++inputSequence)
-                : new PacketDriveableInput(driveable, mask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, ++inputSequence);
+                ? new PacketDriveableInput(seat, mask, aimYaw, aimPitch, flightPitch, flightRoll,
+                    mouseControl, barrelPitchPivot, ++inputSequence)
+                : new PacketDriveableInput(driveable, mask, aimYaw, aimPitch, flightPitch, flightRoll,
+                    mouseControl, barrelPitchPivot, ++inputSequence);
             PacketHandler.sendToServer(packet);
             lastControlEntityId = driveable.getId();
             lastInputMask = mask;
@@ -248,6 +255,14 @@ public final class KeyInputHandler
             lastMouseControl = mouseControl;
             ticksSinceInputPacket = 0;
         }
+    }
+
+    @Nullable
+    private static Vec3 getVehicleBarrelPitchPivot(Driveable driveable)
+    {
+        return driveable.getConfigType() != null
+            && ModelCache.getOrLoadTypeModel(driveable.getConfigType()) instanceof ModelVehicle model
+            ? model.getPrimaryBarrelPitchPivot() : null;
     }
 
     private static void updateCompatibilityState(IControllable controllable, int mask, int edgeMask, Player player)

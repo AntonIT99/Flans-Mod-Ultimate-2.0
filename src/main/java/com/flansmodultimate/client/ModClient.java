@@ -388,7 +388,11 @@ public class ModClient
             return;
 
         boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
-        float yaw = fixedPlaneView ? Mth.wrapDegrees(driveable.getYaw() - 90F) : seat.getMountedViewYaw();
+        float wrappedYaw = fixedPlaneView ? Mth.wrapDegrees(driveable.getYaw() - 90F) : seat.getMountedViewYaw();
+        // Keep the equivalent angle nearest to the player's current rotation.
+        // Assigning the wrapped value directly creates a 358-degree interpolation
+        // jump whenever the mounted camera crosses from +180 to -180 degrees.
+        float yaw = player.getYRot() + Mth.wrapDegrees(wrappedYaw - player.getYRot());
         float pitch = fixedPlaneView ? Mth.clamp(driveable.getPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);

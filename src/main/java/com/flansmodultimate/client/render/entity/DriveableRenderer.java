@@ -5,6 +5,7 @@ import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
+import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
@@ -48,6 +49,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     /** Weak keys avoid retaining entities after a world unload. Render-thread only. */
     private final Map<Driveable, AnimationHistory> animationStates = new WeakHashMap<>();
+    /** Limits diagnostic markers to once per game tick, rather than once per frame. */
+    private final Map<Driveable, Integer> diagnosticMarkerTicks = new WeakHashMap<>();
 
     public DriveableRenderer(EntityRendererProvider.Context context)
     {
@@ -70,6 +73,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
+        renderDiagnosticMarkers(driveable, type);
         float throttle = Mth.lerp(partialTick, history.previousThrottle, history.throttle);
         float steering = Mth.lerp(partialTick, history.previousSteering, history.steering);
         float gearProgress = Mth.lerp(partialTick, history.previousGear, history.gear);
@@ -145,6 +149,32 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         DriveableData data = driveable.getDriveableData();
         Paintjob paintjob = type.getPaintjob(data == null ? 0 : data.getPaintjobID());
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
+    }
+
+    private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
+    {
+        Integer renderedTick = diagnosticMarkerTicks.get(driveable);
+        if (renderedTick != null && renderedTick == driveable.tickCount)
+            return;
+        diagnosticMarkerTicks.put(driveable, driveable.tickCount);
+
+        if (driveable instanceof Vehicle)
+        {
+            for (var point : type.shootPoints(false))
+                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 0F, 1F, 1F);
+            for (var point : type.shootPoints(true))
+                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 1F, 0.5F, 0F);
+        }
+
+        for (int seat = 0; seat <= type.getNumPassengers(); seat++)
+        {
+            if (type.getSeat(seat) == null)
+                continue;
+            if (seat == 0)
+                DebugHelper.spawnDebugDot(driveable.getSeatWorldPosition(seat), 2, 0F, 0.45F, 1F);
+            else
+                DebugHelper.spawnDebugDot(driveable.getSeatWorldPosition(seat), 2, 1F, 0F, 1F);
+        }
     }
 
     private static float inputAxis(int mask, int positive, int negative)

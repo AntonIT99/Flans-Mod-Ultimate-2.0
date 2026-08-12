@@ -11,7 +11,10 @@ import com.flansmodultimate.common.types.VehicleType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -85,6 +88,52 @@ public class ModelVehicle extends ModelDriveable
     private transient DriveableType trackPathType;
     private transient TrackPath leftTrackPath = TrackPath.EMPTY;
     private transient TrackPath rightTrackPath = TrackPath.EMPTY;
+    private transient boolean barrelPitchPivotResolved;
+    @Nullable
+    private transient Vec3 primaryBarrelPitchPivot;
+
+    /**
+     * Finds the pitch pivot of the barrel section that reaches furthest along
+     * the vehicle model's forward axis. ModelRendererTurbo stores vertices
+     * relative to that pivot, so this mirrors the actual render transform.
+     */
+    @Nullable
+    public Vec3 getPrimaryBarrelPitchPivot()
+    {
+        if (barrelPitchPivotResolved)
+            return primaryBarrelPitchPivot;
+        barrelPitchPivotResolved = true;
+
+        ModelRendererTurbo bestPart = null;
+        double furthestForward = Double.NEGATIVE_INFINITY;
+        if (barrelModel != null)
+        {
+            for (ModelRendererTurbo part : barrelModel)
+            {
+                if (part == null)
+                    continue;
+                double[] bounds = new double[] {
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+                };
+                if (!part.appendVertexBounds(bounds))
+                    continue;
+                double forwardEnd = part.rotationPointX + bounds[3];
+                if (forwardEnd > furthestForward)
+                {
+                    furthestForward = forwardEnd;
+                    bestPart = part;
+                }
+            }
+        }
+        if (bestPart != null)
+            primaryBarrelPitchPivot = new Vec3(bestPart.rotationPointX / 16D, bestPart.rotationPointY / 16D,
+                bestPart.rotationPointZ / 16D);
+        else if ((barrelSpecModel != null && barrelSpecModel.length > 0)
+            || (animBarrelModel != null && animBarrelModel.length > 0))
+            primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, barrelAttach.z);
+        return primaryBarrelPitchPivot;
+    }
 
     @Override
     public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
