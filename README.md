@@ -83,6 +83,12 @@ Build the bundled packs jar:
 .\gradlew.bat packsJar
 ```
 
+Build the official content-packs jar:
+
+```powershell
+.\gradlew.bat officialPacksJar
+```
+
 Generate data:
 
 ```powershell
@@ -103,6 +109,7 @@ Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-
 | `src/main/resources`  | Main mod resources, assets, data, mixin config, and metadata |
 | `src/packs/java`      | Optional bundled content-pack mod sources                    |
 | `src/packs/resources` | Bundled content-pack resources                               |
+| `src/officialpacks`   | Optional official content packs and their mod entrypoint     |
 | `libs`                | Local mod jars used as development dependencies              |
 | `run`                 | Development runtime directory                                |
 | `run-data`            | Data generation runtime directory                            |
@@ -117,7 +124,7 @@ More detailed configuration documentation will be added later.
 
 ## Content Packs
 
-Legacy content packs are loaded through the mod's content loading system. The project also contains a `packs` source set that can package bundled packs into a separate `flansmodultimate_packs` mod jar.
+Legacy content packs are loaded through the mod's content loading system. The project contains `packs` and `officialpacks` source sets that package bundled and official content packs into separate mod jars.
 
 For local development, bundled pack content is copied from:
 
@@ -142,6 +149,7 @@ when running:
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
 - The `packsJar` task builds the optional content-pack mod separately from the main mod jar.
+- The `officialPacksJar` task builds the optional official content-pack mod separately from the main mod jar.
 - Existing `README.txt` contains Forge MDK setup notes.
 
 ## Credits
