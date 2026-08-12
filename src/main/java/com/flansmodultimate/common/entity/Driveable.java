@@ -1465,9 +1465,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (slot < 0 || slot >= driveableData.getNumAmmoSlots())
                 return null;
             ItemStack stack = driveableData.getAmmo(slot);
-            if (!validAmmo(stack, weapon))
+            GunType gunType = pilotGun.getType();
+            if (!validGunAmmo(stack, gunType))
                 return null;
-            return new AmmoSelection(AmmoBank.AMMO, slot, stack, pilotGun.getType());
+            return new AmmoSelection(AmmoBank.AMMO, slot, stack, gunType);
         }
 
         if (weapon == EnumWeaponType.GUN)
@@ -1475,8 +1476,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             for (int slot = 0; slot < configType.getPilotGuns().size(); slot++)
             {
                 ItemStack stack = driveableData.getAmmo(slot);
-                if (validAmmo(stack, weapon))
-                    return new AmmoSelection(AmmoBank.AMMO, slot, stack, configType.getPilotGuns().get(slot).getType());
+                GunType gunType = configType.getGunTypeForAmmoSlot(slot);
+                if (validGunAmmo(stack, gunType))
+                    return new AmmoSelection(AmmoBank.AMMO, slot, stack, gunType);
             }
             return null;
         }
@@ -1498,6 +1500,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return false;
         return ShootableItem.hasRoundsLeft(stack) && configType.isValidAmmo(bulletType)
             && (bulletType.getWeaponType() == requested || requested == EnumWeaponType.GUN && bulletType.getWeaponType() == EnumWeaponType.NONE);
+    }
+
+    protected boolean validGunAmmo(ItemStack stack, @Nullable GunType gunType)
+    {
+        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item)
+            || !(item.getConfigType() instanceof BulletType bulletType))
+            return false;
+        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(bulletType);
     }
 
     protected void consumeAmmo(AmmoSelection selection)
@@ -1684,7 +1694,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
             int ammoSlot = configType.getPilotGuns().size() + Math.max(0, info.getGunnerID());
             ItemStack ammo = driveableData.getAmmo(ammoSlot);
-            if (!validAmmo(ammo, EnumWeaponType.GUN) || !(ammo.getItem() instanceof ShootableItem shootable)
+            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable)
                 || !(shootable.getConfigType() instanceof BulletType bulletType))
                 continue;
             if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))

@@ -294,7 +294,9 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         return switch (page)
         {
             case MENU -> false;
-            case GUNS -> isAmmo(stack, EnumWeaponType.GUN);
+            // DriveableData performs the exact mounted-gun check for the
+            // mapped slot. Do not reject that gun's ammo via vehicle AddAmmo.
+            case GUNS -> stack.getItem() instanceof BulletItem;
             case BOMBS -> isAmmo(stack, EnumWeaponType.BOMB) || isAmmo(stack, EnumWeaponType.MINE);
             case MISSILES -> isAmmo(stack, EnumWeaponType.MISSILE) || isAmmo(stack, EnumWeaponType.SHELL);
             case CARGO -> true;

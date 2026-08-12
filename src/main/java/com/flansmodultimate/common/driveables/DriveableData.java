@@ -254,7 +254,7 @@ public final class DriveableData implements Container
         if (slot < 0 || slot >= inventory.size() || stack == null || stack.isEmpty())
             return false;
         if (slot < getBombInventoryStart())
-            return isAmmo(stack, EnumWeaponType.GUN, EnumWeaponType.NONE);
+            return isGunAmmo(slot, stack);
         if (slot < getMissileInventoryStart())
             return isAmmo(stack, EnumWeaponType.BOMB, EnumWeaponType.MINE);
         if (slot < getCargoInventoryStart())
@@ -286,6 +286,12 @@ public final class DriveableData implements Container
         BulletType bulletType = bulletItem.getConfigType();
         EnumWeaponType weaponType = bulletType.getWeaponType();
         return driveableType.isValidAmmo(bulletType) && (weaponType == first || weaponType == second);
+    }
+
+    private boolean isGunAmmo(int slot, ItemStack stack)
+    {
+        return stack.getItem() instanceof ShootableItem shootable
+            && driveableType.isValidGunAmmo(slot, shootable.getConfigType());
     }
 
     private boolean canPlaceCargo(ItemStack stack)
