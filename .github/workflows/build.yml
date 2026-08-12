@@ -1,10 +1,23 @@
-name: Build
+name: Build 1.21.1
 
-on: [push, pull_request]
+on:
+  push:
+    branches: ["1.21.1"]
+  pull_request:
+    branches: ["1.21.1"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-1.21.1-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,5 +34,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace
