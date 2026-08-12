@@ -10,9 +10,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-ZIP_ROOT = Path("run/flan")
-CONFIG_DIR = Path("src/main/resources/config")
-OUTPUT_CSV = Path("missing_shortnames.csv")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ZIP_ROOT = PROJECT_ROOT / "run" / "flan"
+CONFIG_DIR = PROJECT_ROOT / "src" / "main" / "resources" / "config"
+OUTPUT_CSV = PROJECT_ROOT / "missing_shortnames.csv"
 
 FOLDER_TO_CATEGORY: Dict[str, str] = {
     "armorFiles": "armor",
@@ -29,7 +30,7 @@ CATEGORY_TO_JSON: Dict[str, str] = {
 }
 
 SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(\S+)\s*$", re.IGNORECASE)
-NAME_RE = re.compile(r"^\s*Name\s+(.+?)\s*$", re.IGNORECASE)  # captures the rest of the line
+NAME_RE = re.compile(r"^\s*Name\s+(.+?)\s*$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -48,38 +49,37 @@ def iter_zip_files(root: Path) -> Iterable[Path]:
 
 
 def is_txt_in_category(internal_path: str) -> Optional[str]:
-    p = internal_path.replace("\\", "/")
-    if not p.lower().endswith(".txt"):
+    normalized_path = internal_path.replace("\\", "/")
+    if not normalized_path.lower().endswith(".txt"):
         return None
     for folder, category in FOLDER_TO_CATEGORY.items():
-        if p.startswith(folder.rstrip("/") + "/"):
+        if normalized_path.startswith(folder.rstrip("/") + "/"):
             return category
     return None
 
 
 def extract_shortnames_from_text(text: str) -> List[str]:
-    out: List[str] = []
+    shortnames: List[str] = []
     for line in text.splitlines():
-        m = SHORTNAME_RE.match(line)
-        if m:
-            out.append(m.group(1).strip().lower())
-    return out
+        match = SHORTNAME_RE.match(line)
+        if match:
+            shortnames.append(match.group(1).strip().lower())
+    return shortnames
 
 
 def extract_full_name_from_text(text: str) -> str:
-    # take the first "Name ..." line (common in these files)
     for line in text.splitlines():
-        m = NAME_RE.match(line)
-        if m:
-            return m.group(1).strip()
+        match = NAME_RE.match(line)
+        if match:
+            return match.group(1).strip()
     return ""
 
 
 def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
     results: List[ShortnameOrigin] = []
     try:
-        with zipfile.ZipFile(zip_path, "r") as zf:
-            for info in zf.infolist():
+        with zipfile.ZipFile(zip_path, "r") as zip_file:
+            for info in zip_file.infolist():
                 if info.is_dir():
                     continue
 
@@ -88,9 +88,9 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
                     continue
 
                 try:
-                    raw = zf.read(info.filename)
-                except Exception as e:
-                    print(f"[WARN] Could not read {zip_path}::{info.filename}: {e}", file=sys.stderr)
+                    raw = zip_file.read(info.filename)
+                except Exception as error:
+                    print(f"[WARN] Could not read {zip_path}::{info.filename}: {error}", file=sys.stderr)
                     continue
 
                 try:
@@ -99,18 +99,18 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
                     text = raw.decode("latin-1", errors="replace")
 
                 full_name = extract_full_name_from_text(text)
-                for sn in extract_shortnames_from_text(text):
+                for shortname in extract_shortnames_from_text(text):
                     results.append(
                         ShortnameOrigin(
                             category=category,
-                            shortname_lower=sn,
+                            shortname_lower=shortname,
                             full_name=full_name,
-                            zip_path=str(zip_path),
+                            zip_path=str(zip_path.relative_to(PROJECT_ROOT)),
                             internal_txt_path=info.filename.replace("\\", "/"),
                         )
                     )
-    except Exception as e:
-        print(f"[WARN] Failed to process zip {zip_path}: {e}", file=sys.stderr)
+    except Exception as error:
+        print(f"[WARN] Failed to process zip {zip_path}: {error}", file=sys.stderr)
 
     return results
 
@@ -123,53 +123,60 @@ def load_category_items(config_dir: Path, category: str) -> Set[str]:
 
     try:
         data = json.loads(json_path.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"[WARN] Could not parse JSON {json_path}: {e}", file=sys.stderr)
+    except Exception as error:
+        print(f"[WARN] Could not parse JSON {json_path}: {error}", file=sys.stderr)
         return set()
 
     items: Set[str] = set()
     if isinstance(data, dict):
-        for group_obj in data.values():
-            if isinstance(group_obj, dict):
-                for it in group_obj.get("items", []):
-                    if isinstance(it, str):
-                        items.add(it.lower())
+        for group in data.values():
+            if isinstance(group, dict):
+                for item in group.get("items", []):
+                    if isinstance(item, str):
+                        items.add(item.lower())
     return items
 
 
 def main() -> int:
-    origins_by_category: Dict[str, List[ShortnameOrigin]] = {c: [] for c in CATEGORY_TO_JSON.keys()}
+    origins_by_category: Dict[str, List[ShortnameOrigin]] = {
+        category: [] for category in CATEGORY_TO_JSON
+    }
 
-    for zp in iter_zip_files(ZIP_ROOT):
-        for origin in read_zip_txt_shortnames(zp):
+    for zip_path in iter_zip_files(ZIP_ROOT):
+        for origin in read_zip_txt_shortnames(zip_path):
             origins_by_category[origin.category].append(origin)
 
     json_items_by_category = {
-        cat: load_category_items(CONFIG_DIR, cat) for cat in CATEGORY_TO_JSON.keys()
+        category: load_category_items(CONFIG_DIR, category)
+        for category in CATEGORY_TO_JSON
     }
 
     missing_rows: List[Tuple[str, ShortnameOrigin]] = []
     for category, origins in origins_by_category.items():
         allowed_items = json_items_by_category.get(category, set())
         if not allowed_items:
-            for origin in origins:
-                missing_rows.append(("category_json_missing_or_empty", origin))
+            missing_rows.extend(("category_json_missing_or_empty", origin) for origin in origins)
             continue
 
         for origin in origins:
             if origin.shortname_lower not in allowed_items:
                 missing_rows.append(("not_found_in_any_items_list", origin))
 
-    missing_rows.sort(key=lambda x: (x[1].category, x[1].shortname_lower))
+    missing_rows.sort(key=lambda row: (row[1].category, row[1].shortname_lower))
 
-    with OUTPUT_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, delimiter=";", quoting=csv.QUOTE_MINIMAL)
-        # replaced "reason" with "full_name"
+    with OUTPUT_CSV.open("w", newline="", encoding="utf-8") as output_file:
+        writer = csv.writer(output_file, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["category", "shortname", "full_name", "zip_path", "zip_internal_txt_path"])
         for _reason, origin in missing_rows:
-            writer.writerow([origin.category, origin.shortname_lower, origin.full_name, origin.zip_path, origin.internal_txt_path])
+            writer.writerow([
+                origin.category,
+                origin.shortname_lower,
+                origin.full_name,
+                origin.zip_path,
+                origin.internal_txt_path,
+            ])
 
-    print(f"[OK] Wrote output: {OUTPUT_CSV.resolve()}")
+    print(f"[OK] Wrote output: {OUTPUT_CSV}")
     print(f"[OK] Missing entries: {len(missing_rows)}")
     input("Press Enter to exit...")
     return 0
