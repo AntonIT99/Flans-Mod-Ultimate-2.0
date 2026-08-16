@@ -29,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -63,6 +64,7 @@ public final class FileUtils
     private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
     private static final AtomicInteger IMAGE_COMPARE_THREAD_ID = new AtomicInteger();
     private static final Object FILE_LOCK_MONITOR = new Object();
+    private static final ThreadLocal<ArchiveFileSystemCache> ARCHIVE_FILE_SYSTEM_CACHE = new ThreadLocal<>();
     private static final ExecutorService IMAGE_COMPARE_EXECUTOR = Executors.newCachedThreadPool(r ->
     {
         Thread thread = new Thread(r, "flansmod-image-compare-" + IMAGE_COMPARE_THREAD_ID.incrementAndGet());
@@ -670,6 +672,10 @@ public final class FileUtils
     {
         if (provider.isArchive())
         {
+            ArchiveFileSystemCache cache = ARCHIVE_FILE_SYSTEM_CACHE.get();
+            if (cache != null)
+                return cache.open(provider);
+
             try
             {
                 return FileSystems.newFileSystem(provider.getPath());
@@ -692,6 +698,10 @@ public final class FileUtils
     {
         if (fs != null)
         {
+            ArchiveFileSystemCache cache = ARCHIVE_FILE_SYSTEM_CACHE.get();
+            if (cache != null && cache.owns(fs))
+                return;
+
             try
             {
                 fs.close();
@@ -701,6 +711,24 @@ public final class FileUtils
                 FlansMod.log.error("Failed to close {}", provider.getPath(), e);
             }
         }
+    }
+
+    /**
+     * Reuses archive filesystems opened on the current thread until the returned scope is closed.
+     * Calls to {@link #closeFileSystem(FileSystem, IContentProvider)} are deferred for filesystems
+     * owned by the scope. Nested scopes share the outer scope and do not close it prematurely.
+     *
+     * @return a scope that closes every cached archive filesystem when the outermost scope ends
+     */
+    public static ArchiveFileSystemCache cacheArchiveFileSystems()
+    {
+        ArchiveFileSystemCache existing = ARCHIVE_FILE_SYSTEM_CACHE.get();
+        if (existing != null)
+            return new ArchiveFileSystemCache(existing);
+
+        ArchiveFileSystemCache cache = new ArchiveFileSystemCache();
+        ARCHIVE_FILE_SYSTEM_CACHE.set(cache);
+        return cache;
     }
 
 
@@ -723,8 +751,18 @@ public final class FileUtils
         }
         else if (provider.isArchive())
         {
-            FileSystem fs = FileSystems.newFileSystem(provider.getPath());
-            return new AutoCloseableDirectoryStream(Files.newDirectoryStream(provider.getContentRoot(fs)), fs);
+            FileSystem fs = createFileSystem(provider);
+            if (fs == null)
+                throw new IOException("Could not open archive filesystem for " + provider.getPath());
+            try
+            {
+                return new AutoCloseableDirectoryStream(Files.newDirectoryStream(provider.getContentRoot(fs)), fs, provider);
+            }
+            catch (IOException | RuntimeException e)
+            {
+                closeFileSystem(fs, provider);
+                throw e;
+            }
         }
         throw new IllegalArgumentException("Content Pack must be either a directory or a ZIP/JAR-archive");
     }
@@ -1102,8 +1140,10 @@ public final class FileUtils
      *
      * @param delegate directory stream returned by the archive filesystem
      * @param fileSystem archive filesystem that must be closed with the stream
+     * @param provider provider that owns the archive filesystem
      */
-    private record AutoCloseableDirectoryStream(DirectoryStream<Path> delegate, FileSystem fileSystem) implements DirectoryStream<Path>
+    private record AutoCloseableDirectoryStream(DirectoryStream<Path> delegate, FileSystem fileSystem,
+                                                IContentProvider provider) implements DirectoryStream<Path>
     {
         /**
          * Closes the wrapped directory stream and then closes the archive filesystem that owns it.
@@ -1113,8 +1153,14 @@ public final class FileUtils
         @Override
         public void close() throws IOException
         {
-            delegate.close();
-            fileSystem.close();
+            try
+            {
+                delegate.close();
+            }
+            finally
+            {
+                FileUtils.closeFileSystem(fileSystem, provider);
+            }
         }
 
         /**
@@ -1127,6 +1173,77 @@ public final class FileUtils
         public Iterator<Path> iterator()
         {
             return delegate.iterator();
+        }
+    }
+
+    /**
+     * Current-thread lifetime for archive filesystems. Use through
+     * {@link FileUtils#cacheArchiveFileSystems()}.
+     */
+    public static final class ArchiveFileSystemCache implements AutoCloseable
+    {
+        private final Map<Path, FileSystem> fileSystems;
+        private final boolean owner;
+        private boolean closed;
+
+        private ArchiveFileSystemCache()
+        {
+            fileSystems = new HashMap<>();
+            owner = true;
+        }
+
+        private ArchiveFileSystemCache(ArchiveFileSystemCache parent)
+        {
+            fileSystems = parent.fileSystems;
+            owner = false;
+        }
+
+        @Nullable
+        private FileSystem open(IContentProvider provider)
+        {
+            Path archive = provider.getPath().toAbsolutePath().normalize();
+            FileSystem existing = fileSystems.get(archive);
+            if (existing != null && existing.isOpen())
+                return existing;
+
+            try
+            {
+                FileSystem opened = FileSystems.newFileSystem(archive);
+                fileSystems.put(archive, opened);
+                return opened;
+            }
+            catch (IOException e)
+            {
+                FlansMod.log.error("Failed to open {}", archive, e);
+                return null;
+            }
+        }
+
+        private boolean owns(FileSystem fileSystem)
+        {
+            return fileSystems.containsValue(fileSystem);
+        }
+
+        @Override
+        public void close()
+        {
+            if (closed || !owner)
+                return;
+
+            closed = true;
+            ARCHIVE_FILE_SYSTEM_CACHE.remove();
+            for (Map.Entry<Path, FileSystem> entry : fileSystems.entrySet())
+            {
+                try
+                {
+                    entry.getValue().close();
+                }
+                catch (IOException e)
+                {
+                    FlansMod.log.error("Failed to close {}", entry.getKey(), e);
+                }
+            }
+            fileSystems.clear();
         }
     }
 
