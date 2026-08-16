@@ -39,7 +39,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -835,9 +834,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             {
                 if (configType.isFlashEffects())
                 {
-                    MobEffect effect = MobEffect.byId(configType.getFlashEffectsId());
-                    if (effect != null)
-                        entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel()));
+                    configType.getFlashEffectInstances().forEach(effect ->
+                        entity.addEffect(new MobEffectInstance(effect)));
                 }
                 entity.hurt(getDamageSource(), configType.getFlashDamage());
             }
