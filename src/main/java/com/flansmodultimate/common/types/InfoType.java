@@ -357,14 +357,20 @@ public abstract class InfoType
 
     protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible)
     {
+        addEffects(key, effects, file, ambient, visible, 250, 0);
+    }
+
+    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible,
+                                     int defaultDuration, int defaultAmplifier)
+    {
         readValuesInLines(key, file).ifPresent(lines -> lines.forEach(effectValues -> {
             if (effectValues.length > 0)
             {
                 try
                 {
                     int effectId = Integer.parseInt(effectValues[0]);
-                    int duration = (effectValues.length > 1) ? Integer.parseInt(effectValues[1]) : 250;
-                    int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : 0;
+                    int duration = (effectValues.length > 1) ? Integer.parseInt(effectValues[1]) : defaultDuration;
+                    int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : defaultAmplifier;
                     boolean isAmbient = (effectValues.length > 3) ? Boolean.parseBoolean(effectValues[3]) : ambient;
                     boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
                     // Legacy content uses the old 1-based potion IDs. The 1.21.1

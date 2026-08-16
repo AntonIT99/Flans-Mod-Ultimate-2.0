@@ -84,11 +84,11 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean flashEffects;
     @Getter
-    protected int flashEffectsId;
-    @Getter
     protected int flashEffectsDuration;
     @Getter
     protected int flashEffectsLevel;
+    @Getter
+    protected List<MobEffectInstance> flashEffectInstances = new ArrayList<>();
 
     //Conditions for detonation
     @Getter
@@ -181,9 +181,10 @@ public class GrenadeType extends ShootableType
         flashDamageEnable = readValue("FlashDamageEnable", flashDamageEnable, file);
         flashDamage = readValue("FlashDamage", flashDamage, file);
         flashEffects = readValue("FlashEffects", flashEffects, file);
-        flashEffectsId = readValue("FlashEffectsID", flashEffectsId, file);
         flashEffectsDuration = readValue("FlashEffectsDuration", flashEffectsDuration, file);
         flashEffectsLevel = readValue("FlashEffectsLevel", flashEffectsLevel, file);
+        addEffects("FlashEffectsID", flashEffectInstances, file, false, false, flashEffectsDuration, flashEffectsLevel);
+        addEffects("AddFlashEffect", flashEffectInstances, file, false, false, flashEffectsDuration, flashEffectsLevel);
         flashBang = readValue("FlashBang", flashBang, file);
 
         smokeTime = readValue("SmokeTime", smokeTime, file);
