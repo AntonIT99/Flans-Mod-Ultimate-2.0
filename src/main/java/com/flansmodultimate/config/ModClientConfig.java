@@ -37,6 +37,7 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
 
+    public final boolean enableFastTranslucentRendering;
     public final boolean alwaysEnableArmorTranslucentRenderingByDefault;
     public final boolean alwaysEnableGunTranslucentRenderingByDefault;
     public final boolean alwaysEnableGrenadeTranslucentRenderingByDefault;
@@ -82,6 +83,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
     private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
@@ -195,6 +197,9 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Translucent Rendering Defaults");
+        ENABLE_FAST_TRANSLUCENT_RENDERING = builder
+            .comment("Use Flan's Mod's faster unsorted translucent render type. This avoids expensive per-frame vertex sorting, but intersecting translucent surfaces may occasionally render in the wrong order.")
+            .define("enableFastTranslucentRendering", true);
         ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("armors", "alwaysEnableArmorsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("guns", "alwaysEnableGunsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("grenades", "alwaysEnableGrenadesTranslucentRenderingByDefault", true);
@@ -248,6 +253,7 @@ public final class ModClientConfig
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
 
+        enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();
         alwaysEnableArmorTranslucentRenderingByDefault = ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableGunTranslucentRenderingByDefault = ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableGrenadeTranslucentRenderingByDefault = ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
