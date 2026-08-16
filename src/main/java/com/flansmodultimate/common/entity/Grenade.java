@@ -836,7 +836,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             {
                 if (configType.isFlashEffects())
                 {
-                    BuiltInRegistries.MOB_EFFECT.getHolder(configType.getFlashEffectsId()).ifPresent(effect ->
+                    // FlashEffectsID is a legacy 1-based potion ID.
+                    BuiltInRegistries.MOB_EFFECT.getHolder(configType.getFlashEffectsId() - 1).ifPresent(effect ->
                         entity.addEffect(new MobEffectInstance(effect, configType.getFlashEffectsDuration(), configType.getFlashEffectsLevel())));
                 }
                 entity.hurt(getDamageSource(), configType.getFlashDamage());

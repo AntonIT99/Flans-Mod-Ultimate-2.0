@@ -367,7 +367,9 @@ public abstract class InfoType
                     int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : 0;
                     boolean isAmbient = (effectValues.length > 3) ? Boolean.parseBoolean(effectValues[3]) : ambient;
                     boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
-                    var effect = BuiltInRegistries.MOB_EFFECT.getHolder(effectId);
+                    // Legacy content uses the old 1-based potion IDs. The 1.21.1
+                    // built-in registry is indexed from zero, so translate before lookup.
+                    var effect = BuiltInRegistries.MOB_EFFECT.getHolder(effectId - 1);
                     if (effect.isPresent())
                     {
                         effects.add(new MobEffectInstance(effect.get(), duration, amplifier, isAmbient, isVisible));
