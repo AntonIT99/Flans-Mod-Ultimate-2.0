@@ -3,7 +3,6 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
@@ -35,7 +34,7 @@ final class CustomArmorMaterial
             type.getEnchantability(),
             equipSound,
             () -> Ingredient.of(Items.IRON_INGOT),
-            List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, type.getShortName()))),
+            List.of(),
             type.getToughness(),
             0.0F
         );
