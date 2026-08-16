@@ -54,6 +54,8 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 {
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
+    /** Player#getMyRidingOffset() in 1.20.1, removed from the 1.21.1 API. */
+    public static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
 
     public static final String NBT_TYPE_NAME = "type";
     public static final String NBT_AMMO = "ammo";
@@ -408,7 +410,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         float pitchNorm = (maxAbsPitch > 0.0001F) ? (pitch / maxAbsPitch) : 0F;
         double maxPitchYOffset = 0.5D;
         double pitchYOffset = maxPitchYOffset * pitchNorm;
-        double baseY = blockPos.getY() + 0.5D - 0.65D;
+        double baseY = blockPos.getY() + LEGACY_PLAYER_RIDING_OFFSET - 0.65D;
         double y = baseY + pitchYOffset;
 
         move.accept(passenger, x, y, z);
