@@ -3,6 +3,7 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
@@ -15,6 +16,8 @@ import java.util.List;
 
 final class CustomArmorMaterial
 {
+    private static final ResourceLocation VANILLA_FALLBACK_LAYER = ResourceLocation.withDefaultNamespace("leather");
+
     private CustomArmorMaterial()
     {
     }
@@ -34,7 +37,10 @@ final class CustomArmorMaterial
             type.getEnchantability(),
             equipSound,
             () -> Ingredient.of(Items.IRON_INGOT),
-            List.of(),
+            // ArmorMaterial requires a valid visual layer during client resource preparation.
+            // HumanoidArmorLayerMixin suppresses this fallback for CustomArmorItem instances;
+            // the actual legacy model and texture are rendered by CustomArmorLayer.
+            List.of(new ArmorMaterial.Layer(VANILLA_FALLBACK_LAYER)),
             type.getToughness(),
             0.0F
         );
