@@ -47,6 +47,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;
@@ -72,6 +73,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -142,6 +145,7 @@ public class ContentManager
     // Keep track of registered items and loaded textures and models
     /** &lt; shortname, config file string representation &gt; */
     private static final Map<String, String> registeredItems = new HashMap<>();
+    private static final ConcurrentMap<EnumType, Constructor<? extends InfoType>> typeConstructors = new ConcurrentHashMap<>();
     /** &lt; folder name, &lt;lowercase name, texture file &gt;&gt; */
     private static final Map<String, Map<String, TextureFile>> textures = new HashMap<>();
     /** &lt; model class name, &lt; contentPack &gt;&gt; */
@@ -372,26 +376,68 @@ public class ContentManager
             if (!provider.isArchive())
                 compileJavaModelsIfNeeded(provider);
 
-            loadTypes(provider);
+            boolean preprocessed = provider.isPreprocessed();
+            boolean preLoadAssets = false;
+            boolean preLoadData = false;
+            boolean unpackArchive = false;
+            long postTypeStart;
+            long textureIndexNanos = 0L;
+            long idAliasNanos = 0L;
+            long assetCheckNanos = 0L;
+            long dataCheckNanos = 0L;
+            long unpackCheckNanos = 0L;
 
-            if (FMLEnvironment.dist == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
+            try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
             {
-                findDuplicateTextures(provider);
+                loadTypes(provider);
+                postTypeStart = System.nanoTime();
+
+                if (FMLEnvironment.dist == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
+                {
+                    long phaseStart = System.nanoTime();
+                    findDuplicateTextures(provider);
+                    textureIndexNanos = System.nanoTime() - phaseStart;
+                }
+
+                if (!preprocessed)
+                {
+                    long phaseStart = System.nanoTime();
+                    boolean idAliasNeedsUpdate = shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider,
+                        DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+                    idAliasNanos = System.nanoTime() - phaseStart;
+
+                    phaseStart = System.nanoTime();
+                    preLoadAssets = shouldPreLoadAssets(provider, idAliasNeedsUpdate);
+                    assetCheckNanos = System.nanoTime() - phaseStart;
+
+                    phaseStart = System.nanoTime();
+                    preLoadData = shouldPreLoadData(provider, idAliasNeedsUpdate);
+                    dataCheckNanos = System.nanoTime() - phaseStart;
+
+                    phaseStart = System.nanoTime();
+                    unpackArchive = shouldUnpackArchive(provider, preLoadAssets, preLoadData, idAliasNeedsUpdate);
+                    unpackCheckNanos = System.nanoTime() - phaseStart;
+                }
             }
 
-            if (provider.isPreprocessed())
+            long postTypeNanos = System.nanoTime() - postTypeStart;
+            long archiveCloseNanos = postTypeNanos - textureIndexNanos - idAliasNanos - assetCheckNanos
+                - dataCheckNanos - unpackCheckNanos;
+            FlansMod.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
+                provider.getName(), formatMilliseconds(postTypeNanos), formatMilliseconds(textureIndexNanos),
+                formatMilliseconds(idAliasNanos), formatMilliseconds(assetCheckNanos), formatMilliseconds(dataCheckNanos),
+                formatMilliseconds(unpackCheckNanos), formatMilliseconds(Math.max(0L, archiveCloseNanos)));
+
+            if (preprocessed)
             {
                 long endTime = System.currentTimeMillis();
-                String loadingTimeMs = String.format("%,d", endTime - startTime);
-                FlansMod.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), loadingTimeMs);
+                FlansMod.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
                 continue;
             }
 
             boolean archiveExtracted = false;
-            boolean preLoadAssets = shouldPreLoadAssets(provider);
-            boolean preLoadData = shouldPreLoadData(provider);
 
-            if (shouldUnpackArchive(provider, preLoadAssets, preLoadData))
+            if (unpackArchive)
             {
                 FlansMod.log.info("Reprocessing {}...", provider.getName());
                 FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
@@ -432,8 +478,7 @@ public class ContentManager
             }
 
             long endTime = System.currentTimeMillis();
-            String loadingTimeMs = String.format("%,d", endTime - startTime);
-            FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), loadingTimeMs);
+            FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
         }
 
         resolveDeferredContentReferences();
@@ -443,19 +488,25 @@ public class ContentManager
 
     private static void loadTypes(IContentProvider provider)
     {
-        if (FlansMod.log.isDebugEnabled())
-        {
-            long start = System.currentTimeMillis();
-            readFiles(provider);
-            registerConfigs(provider);
-            long end = System.currentTimeMillis();
-            FlansMod.log.debug("{}: Types loaded in {} ms", provider.getName(), String.format("%,d", end - start));
-        }
-        else
+        long readStart = System.nanoTime();
+        long readEnd;
+        long registerEnd;
+        try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
         {
             readFiles(provider);
+            readEnd = System.nanoTime();
             registerConfigs(provider);
+            registerEnd = System.nanoTime();
         }
+
+        FlansMod.log.debug("{}: Types loaded in {} ms (read: {} ms, register: {} ms)", provider.getName(),
+            formatMilliseconds(registerEnd - readStart), formatMilliseconds(readEnd - readStart),
+            formatMilliseconds(registerEnd - readEnd));
+    }
+
+    private static String formatMilliseconds(long nanoseconds)
+    {
+        return String.format(Locale.ROOT, "%.3f", nanoseconds / 1_000_000.0);
     }
 
     private static void resolveDeferredContentReferences()
@@ -616,7 +667,6 @@ public class ContentManager
                 .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.TXT_EXTENSION))
                 .map(txtFile -> readTypeFile(txtFile, folderName, provider))
                 .filter(Objects::nonNull)
-                .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
                 .toList()
             );
         }
@@ -684,7 +734,14 @@ public class ContentManager
             {
                 CategoryManager.applyCategoriesToFile(typeFile);
                 EnumType type = typeFile.getType();
-                InfoType config = type.getTypeClass().getConstructor().newInstance();
+                Constructor<? extends InfoType> constructor = typeConstructors.get(type);
+                if (constructor == null)
+                {
+                    Constructor<? extends InfoType> discovered = type.getTypeClass().getConstructor();
+                    Constructor<? extends InfoType> previous = typeConstructors.putIfAbsent(type, discovered);
+                    constructor = previous != null ? previous : discovered;
+                }
+                InfoType config = constructor.newInstance();
                 config.load(typeFile);
                 String shortName = config.getOriginalShortName();
 
@@ -878,13 +935,27 @@ public class ContentManager
         if (isTextureNameAlreadyRegistered(fileName, folderName, provider))
         {
             TextureFile otherFile = textures.get(folderName).get(fileName);
-            FileSystem fs = FileUtils.createFileSystem(otherFile.contentPack());
-
-            Path otherPath = otherFile.contentPack().getTextureSourcePath(fs).resolve(folderName).resolve(otherFile.name());
-            if (FileUtils.isDifferentFileContent(texturePath, otherPath, false))
+            if (aliasMapping.containsKey(fileName))
+            {
+                // A persisted alias means this collision was already classified as different on a
+                // previous load. Keeping a redundant alias is harmless if either image later becomes
+                // identical, and avoids repeatedly decoding large legacy textures on every startup.
                 aliasName = findValidTextureName(fileName, folderName, provider, otherFile.contentPack(), aliasMapping);
-
-            FileUtils.closeFileSystem(fs, otherFile.contentPack());
+            }
+            else
+            {
+                FileSystem fs = FileUtils.createFileSystem(otherFile.contentPack());
+                try
+                {
+                    Path otherPath = otherFile.contentPack().getTextureSourcePath(fs).resolve(folderName).resolve(otherFile.name());
+                    if (FileUtils.isDifferentFileContent(texturePath, otherPath, false))
+                        aliasName = findValidTextureName(fileName, folderName, provider, otherFile.contentPack(), aliasMapping);
+                }
+                finally
+                {
+                    FileUtils.closeFileSystem(fs, otherFile.contentPack());
+                }
+            }
         }
 
         DynamicReference.storeOrUpdate(fileName, aliasName, aliasMapping);
@@ -944,7 +1015,7 @@ public class ContentManager
         }
     }
 
-    private static boolean shouldPreLoadAssets(IContentProvider provider)
+    private static boolean shouldPreLoadAssets(IContentProvider provider, boolean idAliasNeedsUpdate)
     {
         if (FMLEnvironment.dist != Dist.CLIENT)
             return false;
@@ -953,7 +1024,7 @@ public class ContentManager
             return true;
 
         if (provider.isJarFile() // JAR File means it's the first time we've loaded the pack
-            || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)))
+            || idAliasNeedsUpdate
             || shouldUpdateAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(armorTextureReferences.get(provider)))
             || shouldUpdateAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(guiTextureReferences.get(provider)))
             || shouldUpdateAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(skinsTextureReferences.get(provider))))
@@ -1036,13 +1107,12 @@ public class ContentManager
         return false;
     }
 
-    private static boolean shouldPreLoadData(IContentProvider provider)
+    private static boolean shouldPreLoadData(IContentProvider provider, boolean idAliasNeedsUpdate)
     {
         if (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds())
             return true;
 
-        if (provider.isJarFile()
-            || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))))
+        if (provider.isJarFile() || idAliasNeedsUpdate)
             return true;
 
         FileSystem fs = FileUtils.createFileSystem(provider);
@@ -1051,9 +1121,10 @@ public class ContentManager
         return missingData;
     }
 
-    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData)
+    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData,
+                                               boolean idAliasNeedsUpdate)
     {
-        return provider.isArchive() && (preLoadAssets || preLoadData || shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider))));
+        return provider.isArchive() && (preLoadAssets || preLoadData || idAliasNeedsUpdate);
     }
 
     private static void compileJavaModelsIfNeeded(IContentProvider provider)

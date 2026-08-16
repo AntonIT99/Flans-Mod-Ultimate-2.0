@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class TypeFile
 {
+    private static final Pattern CONFIG_LINE_SEPARATOR = Pattern.compile("\\s+");
+
     @Getter
     private final String name;
     @Getter
@@ -34,7 +37,7 @@ public class TypeFile
             if (line.isBlank() || line.startsWith("//"))
                 continue;
 
-            String[] split = line.trim().split("\\s+", 2);
+            String[] split = CONFIG_LINE_SEPARATOR.split(line.trim(), 2);
             String configKey = split[0].toLowerCase(Locale.ROOT);
             configMap.putIfAbsent(configKey, new ArrayList<>());
             configMap.get(configKey).add((split.length > 1) ? split[1] : null);
