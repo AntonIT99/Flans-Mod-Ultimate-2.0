@@ -21,6 +21,7 @@ public final class FlanParticles
     public static final String FM_SMOKE = "flansmod.fmsmoke";
     public static final String FM_SMOKE_BURST = "flansmod.smokeburst";
     public static final String FM_SMOKER = "flansmod.smoker";
+    public static final String FM_SMOKER_1 = "flansmod.smoker1";
 
     // Minecraft Legacy Particles
     public static final String RED_DUST = "reddust";
