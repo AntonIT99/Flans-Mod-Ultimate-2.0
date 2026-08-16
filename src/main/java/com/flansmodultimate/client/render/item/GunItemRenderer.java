@@ -160,7 +160,7 @@ public final class GunItemRenderer
         renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
         boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
             renderGunAndComponents(model, stack, animations, numRounds, poseStack,
                 buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, cull)),
@@ -1057,7 +1057,7 @@ public final class GunItemRenderer
             {
                 boolean translucent = ModClientConfig.get().useTranslucentRendering(gripAttachment);
                 boolean cull = ModClientConfig.get().useCullingRendering(gripAttachment);
-                for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+                for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
                     gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
             }
         }
@@ -1081,7 +1081,7 @@ public final class GunItemRenderer
             ResourceLocation casingTexture = model.getType().getCasingTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
             boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
-            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
                 casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture, translucent, cull)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
             poseStack.popPose();
         }
@@ -1213,7 +1213,7 @@ public final class GunItemRenderer
             ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(modelAttachment.getType());
             boolean cull = ModClientConfig.get().useCullingRendering(modelAttachment.getType());
-            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
                 modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }
     }

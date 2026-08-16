@@ -47,18 +47,18 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
 
-        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour modelCustomArmour)
+        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour model)
         {
             ArmorType armorType = armorItem.getConfigType();
             ResourceLocation texture = armorType.getTexture();
-            getParentModel().copyPropertiesTo((HumanoidModel<T>) modelCustomArmour);
+            getParentModel().copyPropertiesTo((HumanoidModel<T>) model);
             
-            setModelPartVisibility(modelCustomArmour, slot, entity);
+            setModelPartVisibility(model, slot, entity);
 
             boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
             boolean cull = ModClientConfig.get().useCullingRendering(armorType);
-            for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
-                modelCustomArmour.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent, cull)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
+            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+                model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent, cull)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
         }
     }
 

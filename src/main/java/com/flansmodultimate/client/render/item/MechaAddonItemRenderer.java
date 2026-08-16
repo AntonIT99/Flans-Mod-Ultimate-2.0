@@ -42,7 +42,7 @@ public final class MechaAddonItemRenderer
         poseStack.pushPose();
         applyDisplayTransform(context, poseStack);
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
             model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
                 packedLight, packedOverlay, red, green, blue, 1F, type.getModelScale(), 0F, renderPass);

@@ -53,7 +53,7 @@ public final class DriveableItemRenderer
         poseStack.pushPose();
         applyDisplayTransform(context, type, poseStack);
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
             model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red, green, blue, 1F, type.getModelScale(), renderPass);
         }

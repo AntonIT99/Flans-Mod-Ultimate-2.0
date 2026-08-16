@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ClassLoaderUtils;
@@ -29,7 +30,7 @@ public final class LegacyTransformApplier
 
         boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
         boolean cull = ModClientConfig.get().useCullingRendering(infoType);
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
 
         poseStack.popPose();
