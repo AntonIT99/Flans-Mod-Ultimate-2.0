@@ -128,7 +128,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
             model.render(driveable, state, poseStack,
                 buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
@@ -148,8 +148,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         if (type == null)
             return ResourceLocation.parse("");
 
-        DriveableData data = driveable.getDriveableData();
-        Paintjob paintjob = type.getPaintjob(data == null ? 0 : data.getPaintjobID());
+        Paintjob paintjob = type.getPaintjob(driveable.getPaintjobId());
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
     }
 
@@ -281,7 +280,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         poseStack.pushPose();
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
             model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
                 packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F,

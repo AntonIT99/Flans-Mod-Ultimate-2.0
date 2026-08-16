@@ -11,6 +11,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -29,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,10 +51,12 @@ public final class ModelCache
     }
 
     private static final Map<ModelCacheKey, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
+    private static final Map<IModelBase, List<EnumRenderPass>> renderPassCache = new ConcurrentHashMap<>();
 
     public static void reload()
     {
         cache.clear();
+        renderPassCache.clear();
         if (ModClientConfig.get().loadAllModelsInCache)
             loadAll();
     }
@@ -140,6 +145,43 @@ public final class ModelCache
         }
 
         return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
+    }
+
+    /**
+     * Returns only the render passes represented by this model's immutable part flags.
+     * Legacy renderers previously traversed the complete model four times even when it
+     * contained no glow geometry.
+     */
+    public static List<EnumRenderPass> getRenderPasses(IModelBase model)
+    {
+        return renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses);
+    }
+
+    private static List<EnumRenderPass> findRenderPasses(IModelBase model)
+    {
+        EnumSet<EnumRenderPass> passes = EnumSet.noneOf(EnumRenderPass.class);
+        for (ModelRenderer modelRenderer : model.getBoxList())
+        {
+            if (modelRenderer instanceof ModelRendererTurbo turbo)
+            {
+                if (turbo.glowNoDepthWrite)
+                    passes.add(EnumRenderPass.GLOW_ALPHA_NO_DEPTH_WRITE);
+                if (turbo.glow)
+                    passes.add(EnumRenderPass.GLOW_ALPHA);
+                if (turbo.glowAdditive)
+                    passes.add(EnumRenderPass.GLOW_ADDITIVE);
+                if (!turbo.glow && !turbo.glowAdditive && !turbo.glowNoDepthWrite)
+                    passes.add(EnumRenderPass.DEFAULT);
+            }
+            else
+            {
+                passes.add(EnumRenderPass.DEFAULT);
+            }
+        }
+
+        if (passes.isEmpty())
+            passes.add(EnumRenderPass.DEFAULT);
+        return EnumRenderPass.ORDER.stream().filter(passes::contains).toList();
     }
 
     @SuppressWarnings("unchecked")

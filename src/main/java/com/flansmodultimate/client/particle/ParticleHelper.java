@@ -2,6 +2,7 @@ package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -19,15 +20,25 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
+    private static final Map<String, Optional<ParticleOptions>> PARTICLE_OPTIONS_CACHE = new ConcurrentHashMap<>();
+    private static long particleBudgetTick = Long.MIN_VALUE;
+    private static int particlesCreatedThisTick;
+
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
+        if (!shouldSpawn(x, y, z))
+            return;
+
         String normalized = normalize(s);
         if (normalized == null)
         {
@@ -43,7 +54,7 @@ public final class ParticleHelper
             return;
         }
 
-        Optional<ParticleOptions> opt = toNamedOptions(normalized);
+        Optional<ParticleOptions> opt = PARTICLE_OPTIONS_CACHE.computeIfAbsent(normalized, ParticleHelper::toNamedOptions);
         if (opt.isEmpty())
         {
             warnCouldNotParse(s);
@@ -57,6 +68,9 @@ public final class ParticleHelper
     public static void spawnFromString(String s, BlockState state, BlockPos sourcePos,
                                        double x, double y, double z, double vx, double vy, double vz, float scale)
     {
+        if (!shouldSpawn(x, y, z))
+            return;
+
         String normalized = normalize(s);
         if (normalized == null)
         {
@@ -121,6 +135,50 @@ public final class ParticleHelper
     {
         if (particle != null && scale != 1.0F)
             particle.scale(scale);
+    }
+
+    private static boolean shouldSpawn(double x, double y, double z)
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        if (level == null)
+            return false;
+
+        ModClientConfig config = ModClientConfig.get();
+        int renderDistance = config == null ? 128 : config.particleRenderDistance;
+        int fullDensityDistance = config == null ? 32 : config.fullParticleDensityDistance;
+        double distantDensity = config == null ? 0.25D : config.distantParticleDensity;
+        int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
+
+        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
+        double dx = x - camera.x;
+        double dy = y - camera.y;
+        double dz = z - camera.z;
+        double distanceSquared = dx * dx + dy * dy + dz * dz;
+        double renderDistanceSquared = (double)renderDistance * renderDistance;
+        if (distanceSquared > renderDistanceSquared)
+            return false;
+
+        if (distanceSquared > (double)fullDensityDistance * fullDensityDistance && renderDistance > fullDensityDistance)
+        {
+            double distance = Math.sqrt(distanceSquared);
+            double progress = (distance - fullDensityDistance) / (renderDistance - fullDensityDistance);
+            double density = 1D + (distantDensity - 1D) * progress;
+            if (level.random.nextDouble() > density)
+                return false;
+        }
+
+        long gameTime = level.getGameTime();
+        if (particleBudgetTick != gameTime)
+        {
+            particleBudgetTick = gameTime;
+            particlesCreatedThisTick = 0;
+        }
+        if (particlesCreatedThisTick >= tickBudget)
+            return false;
+
+        particlesCreatedThisTick++;
+        return true;
     }
 
     private static Optional<ItemStack> getLegacyItemStack(String resourceId)

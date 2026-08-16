@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings({"unused", "SameParameterValue", "java:S1104"})
@@ -24,8 +25,14 @@ public class TexturedPolygon
     private boolean invertNormal;
     private float[] normals;
     private List<Vec3> iNormals;
+    private final boolean hasTransformVertices;
+    private boolean cachedFaceNormalValid;
+    private float cachedFaceNormalX;
+    private float cachedFaceNormalY;
+    private float cachedFaceNormalZ;
 
     private static final float INV_16 = 0.0625F;
+    private static final ThreadLocal<RenderScratch> RENDER_SCRATCH = ThreadLocal.withInitial(RenderScratch::new);
 
     public TexturedPolygon(PositionTextureVertex[] apositionTexturevertex)
     {
@@ -34,6 +41,7 @@ public class TexturedPolygon
         this.nVertices = apositionTexturevertex.length;
         this.iNormals = new ArrayList<>();
         this.normals = new float[0];
+        this.hasTransformVertices = Arrays.stream(apositionTexturevertex).anyMatch(PositionTransformVertex.class::isInstance);
     }
 
     public TexturedPolygon(PositionTextureVertex[] apositionTexturevertex, int par2, int par3, int par4, int par5, float par6, float par7)
@@ -62,6 +70,7 @@ public class TexturedPolygon
         }
 
         this.vertexPositions = var1;
+        cachedFaceNormalValid = false;
     }
 
     public void setNormals(List<Vec3> vec)
@@ -90,10 +99,12 @@ public class TexturedPolygon
         final int perVertexNormalCount = iNormals.size();
         final boolean hasPerVertexNormals = perVertexNormalCount > 0;
 
-        final Vector3f transformedNormal = new Vector3f();
-        final Vector4f transformedPos = new Vector4f();
+        RenderScratch scratch = RENDER_SCRATCH.get();
+        final Vector3f transformedNormal = scratch.normal;
+        final Vector4f transformedPos = scratch.position;
 
-        transformVertices();
+        if (hasTransformVertices)
+            transformVertices();
 
         if (!hasPerVertexNormals)
         {
@@ -148,31 +159,39 @@ public class TexturedPolygon
 
     private void setFaceNormal(Vector3f transformedNormal, Matrix3f normalMatrix, float normalSign)
     {
-        Vec3 vector0 = vertexPositions[0].vector3D;
-        Vec3 vector1 = vertexPositions[1].vector3D;
-        Vec3 vector2 = vertexPositions[2].vector3D;
-
-        double edgeAX = vector1.x - vector0.x;
-        double edgeAY = vector1.y - vector0.y;
-        double edgeAZ = vector1.z - vector0.z;
-        double edgeBX = vector1.x - vector2.x;
-        double edgeBY = vector1.y - vector2.y;
-        double edgeBZ = vector1.z - vector2.z;
-
-        double normalX = edgeBY * edgeAZ - edgeBZ * edgeAY;
-        double normalY = edgeBZ * edgeAX - edgeBX * edgeAZ;
-        double normalZ = edgeBX * edgeAY - edgeBY * edgeAX;
-        double length = Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
-
-        if (length != 0D)
+        if (!cachedFaceNormalValid || hasTransformVertices)
         {
-            double inverseLength = normalSign / length;
-            normalX *= inverseLength;
-            normalY *= inverseLength;
-            normalZ *= inverseLength;
+            Vec3 vector0 = vertexPositions[0].vector3D;
+            Vec3 vector1 = vertexPositions[1].vector3D;
+            Vec3 vector2 = vertexPositions[2].vector3D;
+
+            double edgeAX = vector1.x - vector0.x;
+            double edgeAY = vector1.y - vector0.y;
+            double edgeAZ = vector1.z - vector0.z;
+            double edgeBX = vector1.x - vector2.x;
+            double edgeBY = vector1.y - vector2.y;
+            double edgeBZ = vector1.z - vector2.z;
+
+            double normalX = edgeBY * edgeAZ - edgeBZ * edgeAY;
+            double normalY = edgeBZ * edgeAX - edgeBX * edgeAZ;
+            double normalZ = edgeBX * edgeAY - edgeBY * edgeAX;
+            double length = Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
+
+            if (length != 0D)
+            {
+                double inverseLength = 1D / length;
+                normalX *= inverseLength;
+                normalY *= inverseLength;
+                normalZ *= inverseLength;
+            }
+
+            cachedFaceNormalX = (float)normalX;
+            cachedFaceNormalY = (float)normalY;
+            cachedFaceNormalZ = (float)normalZ;
+            cachedFaceNormalValid = !hasTransformVertices;
         }
 
-        transformedNormal.set((float)normalX, (float)normalY, (float)normalZ);
+        transformedNormal.set(cachedFaceNormalX * normalSign, cachedFaceNormalY * normalSign, cachedFaceNormalZ * normalSign);
         normalMatrix.transform(transformedNormal);
     }
 
@@ -223,5 +242,11 @@ public class TexturedPolygon
         positionMatrix.transform(transformedPos);
 
         vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
+    }
+
+    private static final class RenderScratch
+    {
+        private final Vector3f normal = new Vector3f();
+        private final Vector4f position = new Vector4f();
     }
 }
