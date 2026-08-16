@@ -112,7 +112,7 @@ More detailed configuration documentation will be added later.
 
 ## Content Packs
 
-Legacy content packs are loaded through the mod's content loading system. The project also contains a `packs` source set that can package bundled packs into a separate `flansmodultimate_packs` mod jar.
+Legacy content packs are loaded through the mod's content loading system. The project contains `packs` and `officialpacks` source sets that package bundled and official content packs into separate mod jars.
 
 For local development, bundled pack content is copied from:
 
@@ -137,6 +137,7 @@ when running:
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
 - The `packsJar` task builds the optional content-pack mod separately from the main mod jar.
+- The `officialPacksJar` task builds the optional official content-pack mod separately from the main mod jar.
 - `README.txt` contains legacy Forge MDK setup notes and does not describe this NeoForge 1.21.1 branch.
 
 ## Credits
