@@ -22,6 +22,10 @@ public final class ModClientConfig
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
     public final int aaGunRenderDistance;
+    public final int particleRenderDistance;
+    public final int fullParticleDensityDistance;
+    public final double distantParticleDensity;
+    public final int maxFlansParticlesPerTick;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -39,6 +43,9 @@ public final class ModClientConfig
     public final boolean alwaysEnableBulletTranslucentRenderingByDefault;
     public final boolean alwaysEnableAttachmentTranslucentRenderingByDefault;
     public final boolean alwaysEnableAAGunTranslucentRenderingByDefault;
+    public final boolean alwaysEnableVehicleTranslucentRenderingByDefault;
+    public final boolean alwaysEnablePlaneTranslucentRenderingByDefault;
+    public final boolean alwaysEnableMechaTranslucentRenderingByDefault;
 
     public final boolean alwaysEnableArmorCullingByDefault;
     public final boolean alwaysEnableGunCullingByDefault;
@@ -46,6 +53,9 @@ public final class ModClientConfig
     public final boolean alwaysEnableBulletCullingByDefault;
     public final boolean alwaysEnableAttachmentCullingByDefault;
     public final boolean alwaysEnableAAGunCullingByDefault;
+    public final boolean alwaysEnableVehicleCullingByDefault;
+    public final boolean alwaysEnablePlaneCullingByDefault;
+    public final boolean alwaysEnableMechaCullingByDefault;
 
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
@@ -57,6 +67,10 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final ForgeConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
+    private static final ForgeConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
+    private static final ForgeConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
+    private static final ForgeConfigSpec.IntValue MAX_FLANS_PARTICLES_PER_TICK;
 
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -74,6 +88,9 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
@@ -81,6 +98,9 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
     private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
+    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -129,6 +149,21 @@ public final class ModClientConfig
             .defineInRange("aaGunRenderDistance", 128, 1, 4096);
         builder.pop();
 
+        builder.push("Particle Rendering Settings");
+        PARTICLE_RENDER_DISTANCE = builder
+            .comment("Maximum camera distance in blocks for particles spawned by Flan's Mod.")
+            .defineInRange("particleRenderDistance", 128, 8, 4096);
+        FULL_PARTICLE_DENSITY_DISTANCE = builder
+            .comment("Particles inside this camera distance retain full density. Density gradually falls beyond it.")
+            .defineInRange("fullParticleDensityDistance", 32, 0, 4096);
+        DISTANT_PARTICLE_DENSITY = builder
+            .comment("Fraction of Flan's Mod particles retained at the maximum render distance.")
+            .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
+        MAX_FLANS_PARTICLES_PER_TICK = builder
+            .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
+            .defineInRange("maxFlansParticlesPerTick", 512, 16, 100000);
+        builder.pop();
+
         builder.push("Input Settings");
         SHOOT_BUTTON = builder
                 .comment("Main Hand Gun shooting / primary function button")
@@ -166,6 +201,9 @@ public final class ModClientConfig
         ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("bullets", "alwaysEnableBulletsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("attachments", "alwaysEnableAttachmentsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("aa-guns", "alwaysEnableAAGunsTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("vehicles", "alwaysEnableVehiclesTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("planes", "alwaysEnablePlanesTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("mechas", "alwaysEnableMechasTranslucentRenderingByDefault", true);
         builder.pop();
 
         builder.push("Culling Defaults");
@@ -175,6 +213,9 @@ public final class ModClientConfig
         ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT = defineCullingDefault("bullets", "alwaysEnableBulletsCullingByDefault", true);
         ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT = defineCullingDefault("attachments", "alwaysEnableAttachmentsCullingByDefault", false);
         ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT = defineCullingDefault("aa-guns", "alwaysEnableAAGunsCullingByDefault", true);
+        ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT = defineCullingDefault("vehicles", "alwaysEnableVehiclesCullingByDefault", true);
+        ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT = defineCullingDefault("planes", "alwaysEnablePlanesCullingByDefault", true);
+        ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT = defineCullingDefault("mechas", "alwaysEnableMechasCullingByDefault", true);
         builder.pop();
 
         configSpec = builder.build();
@@ -192,6 +233,10 @@ public final class ModClientConfig
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
         aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
+        particleRenderDistance = PARTICLE_RENDER_DISTANCE.get();
+        fullParticleDensityDistance = Math.min(FULL_PARTICLE_DENSITY_DISTANCE.get(), particleRenderDistance);
+        distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
+        maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
@@ -209,6 +254,9 @@ public final class ModClientConfig
         alwaysEnableBulletTranslucentRenderingByDefault = ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAttachmentTranslucentRenderingByDefault = ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAAGunTranslucentRenderingByDefault = ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableVehicleTranslucentRenderingByDefault = ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnablePlaneTranslucentRenderingByDefault = ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableMechaTranslucentRenderingByDefault = ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
 
         alwaysEnableArmorCullingByDefault = ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT.get();
         alwaysEnableGunCullingByDefault = ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT.get();
@@ -216,6 +264,9 @@ public final class ModClientConfig
         alwaysEnableBulletCullingByDefault = ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT.get();
         alwaysEnableAttachmentCullingByDefault = ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT.get();
         alwaysEnableAAGunCullingByDefault = ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT.get();
+        alwaysEnableVehicleCullingByDefault = ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT.get();
+        alwaysEnablePlaneCullingByDefault = ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT.get();
+        alwaysEnableMechaCullingByDefault = ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT.get();
     }
 
     public static ModClientConfig get()
@@ -236,6 +287,9 @@ public final class ModClientConfig
             case BULLET -> alwaysEnableBulletTranslucentRenderingByDefault;
             case ATTACHMENT -> alwaysEnableAttachmentTranslucentRenderingByDefault;
             case AA_GUN -> alwaysEnableAAGunTranslucentRenderingByDefault;
+            case VEHICLE -> alwaysEnableVehicleTranslucentRenderingByDefault;
+            case PLANE -> alwaysEnablePlaneTranslucentRenderingByDefault;
+            case MECHA -> alwaysEnableMechaTranslucentRenderingByDefault;
             default -> false;
         };
     }
@@ -253,6 +307,9 @@ public final class ModClientConfig
             case BULLET -> alwaysEnableBulletCullingByDefault;
             case ATTACHMENT -> alwaysEnableAttachmentCullingByDefault;
             case AA_GUN -> alwaysEnableAAGunCullingByDefault;
+            case VEHICLE -> alwaysEnableVehicleCullingByDefault;
+            case PLANE -> alwaysEnablePlaneCullingByDefault;
+            case MECHA -> alwaysEnableMechaCullingByDefault;
             default -> true;
         };
     }
