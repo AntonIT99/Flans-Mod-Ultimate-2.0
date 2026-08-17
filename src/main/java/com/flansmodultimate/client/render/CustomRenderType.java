@@ -53,8 +53,10 @@ public class CustomRenderType
 
     private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
     private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
+    private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_UNSORTED = Util.memoize(key -> createEntityTranslucentUnsorted(key.texture(), key.cull()));
     private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key -> createArmorCutout(key.texture(), key.cull()));
-    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull()));
+    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), true));
+    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT_UNSORTED = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), false));
 
     private static final RenderStateShard.LayeringStateShard ARMOR_VIEW_OFFSET_LAYERING =
         new RenderStateShard.LayeringStateShard(
@@ -89,6 +91,24 @@ public class CustomRenderType
         return RenderType.create(cull ? debugName + "_cull" : debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
     }
 
+    private static RenderType createEntityTranslucentUnsorted(ResourceLocation texture, boolean cull)
+    {
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
+            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
+            .setCullState(new RenderStateShard.CullStateShard(cull))
+            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+            .createCompositeState(true);
+
+        // The final argument disables quad sorting on upload. High-poly legacy models
+        // are mostly opaque and pay a disproportionate CPU cost for that sorting when
+        // their complete texture is rendered through an alpha-blended layer.
+        return RenderType.create(cull ? "entity_translucent_unsorted_cull" : "entity_translucent_unsorted",
+            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, state);
+    }
+
     private static RenderType createArmorCutout(ResourceLocation texture, boolean cull)
     {
         RenderType.CompositeState state = RenderType.CompositeState.builder()
@@ -103,7 +123,7 @@ public class CustomRenderType
         return RenderType.create(cull ? "armor_cutout_cull" : "armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, state);
     }
 
-    private static RenderType createArmorTranslucent(ResourceLocation texture, boolean cull)
+    private static RenderType createArmorTranslucent(ResourceLocation texture, boolean cull, boolean sortOnUpload)
     {
         RenderType.CompositeState state = RenderType.CompositeState.builder()
             .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
@@ -115,7 +135,9 @@ public class CustomRenderType
             .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
             .createCompositeState(true);
 
-        return RenderType.create(cull ? "armor_translucent_cull" : "armor_translucent_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true, state);
+        String debugName = sortOnUpload ? "armor_translucent" : "armor_translucent_unsorted";
+        return RenderType.create(cull ? debugName + "_cull" : debugName + "_no_cull",
+            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, sortOnUpload, state);
     }
 
     /** Emissive alpha-blended layer (writes depth) */
@@ -162,6 +184,11 @@ public class CustomRenderType
         return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, false, cull));
     }
 
+    public static RenderType entityTranslucentUnsorted(ResourceLocation tex, boolean cull)
+    {
+        return ENTITY_TRANSLUCENT_UNSORTED.apply(new TexCullKey(tex, cull));
+    }
+
     public static RenderType armorCutout(ResourceLocation tex, boolean cull)
     {
         return ARMOR_CUTOUT.apply(new TexCullKey(tex, cull));
@@ -170,6 +197,11 @@ public class CustomRenderType
     public static RenderType armorTranslucent(ResourceLocation tex, boolean cull)
     {
         return ARMOR_TRANSLUCENT.apply(new TexCullKey(tex, cull));
+    }
+
+    public static RenderType armorTranslucentUnsorted(ResourceLocation tex, boolean cull)
+    {
+        return ARMOR_TRANSLUCENT_UNSORTED.apply(new TexCullKey(tex, cull));
     }
 
     /** Armor layer render type with armor z-offset and entity-style partial alpha blending */

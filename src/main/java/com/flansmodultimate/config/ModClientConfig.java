@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.common.types.InfoType;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -22,6 +23,19 @@ public final class ModClientConfig
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
     public final int aaGunRenderDistance;
+    public final double minimumDriveablePartPixelSize;
+    public final boolean enableDriveableLod;
+    public final double maximumDriveableLodPartPixelSize;
+    public final double driveableImpostorPixelSize;
+    public final int driveableImpostorMinimumDistance;
+    public final int driveableImpostorMaximumDistance;
+    public final int driveableImpostorResolution;
+    public final int driveableImpostorYawAngles;
+    public final int driveableImpostorCacheEntries;
+    public final int particleRenderDistance;
+    public final int fullParticleDensityDistance;
+    public final double distantParticleDensity;
+    public final int maxFlansParticlesPerTick;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -33,12 +47,16 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
 
+    public final boolean enableFastTranslucentRendering;
     public final boolean alwaysEnableArmorTranslucentRenderingByDefault;
     public final boolean alwaysEnableGunTranslucentRenderingByDefault;
     public final boolean alwaysEnableGrenadeTranslucentRenderingByDefault;
     public final boolean alwaysEnableBulletTranslucentRenderingByDefault;
     public final boolean alwaysEnableAttachmentTranslucentRenderingByDefault;
     public final boolean alwaysEnableAAGunTranslucentRenderingByDefault;
+    public final boolean alwaysEnableVehicleTranslucentRenderingByDefault;
+    public final boolean alwaysEnablePlaneTranslucentRenderingByDefault;
+    public final boolean alwaysEnableMechaTranslucentRenderingByDefault;
 
     public final boolean alwaysEnableArmorCullingByDefault;
     public final boolean alwaysEnableGunCullingByDefault;
@@ -46,6 +64,9 @@ public final class ModClientConfig
     public final boolean alwaysEnableBulletCullingByDefault;
     public final boolean alwaysEnableAttachmentCullingByDefault;
     public final boolean alwaysEnableAAGunCullingByDefault;
+    public final boolean alwaysEnableVehicleCullingByDefault;
+    public final boolean alwaysEnablePlaneCullingByDefault;
+    public final boolean alwaysEnableMechaCullingByDefault;
 
     private static final ModConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final ModConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
@@ -57,6 +78,19 @@ public final class ModClientConfig
     private static final ModConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
     private static final ModConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
     private static final ModConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final ModConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
+    private static final ModConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
+    private static final ModConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
+    private static final ModConfigSpec.DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
+    private static final ModConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
+    private static final ModConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
+    private static final ModConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
+    private static final ModConfigSpec.IntValue MAX_FLANS_PARTICLES_PER_TICK;
 
     private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -68,12 +102,16 @@ public final class ModClientConfig
     private static final ModConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
     private static final ModConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
 
+    private static final ModConfigSpec.BooleanValue ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
@@ -81,6 +119,9 @@ public final class ModClientConfig
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
     private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
+    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
 
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -127,6 +168,48 @@ public final class ModClientConfig
         AA_GUN_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for AA guns.")
             .defineInRange("aaGunRenderDistance", 128, 1, 4096);
+        MINIMUM_DRIVEABLE_PART_PIXEL_SIZE = builder
+            .comment("Skip individual driveable model parts whose projected bounding diameter is smaller than this many physical screen pixels. Set to 0 to disable. Only affects driveables rendered in the world.")
+            .defineInRange("minimumDriveablePartPixelSize", 0.75D, 0D, 16D);
+        ENABLE_DRIVEABLE_LOD = builder
+            .comment("Enable automatic world-rendered driveable LOD. Medium-distance models use stronger part culling and distant vehicles / planes may use generated impostors. Mechas retain exact rendering because held add-ons are not part of their base model.")
+            .define("enableDriveableLod", true);
+        MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE = builder
+            .comment("Maximum projected part diameter culled as a driveable approaches the far impostor LOD. Must be at least minimumDriveablePartPixelSize to have an effect.")
+            .defineInRange("maximumDriveableLodPartPixelSize", 2D, 0D, 32D);
+        DRIVEABLE_IMPOSTOR_PIXEL_SIZE = builder
+            .comment("Use a generated far-distance impostor when a vehicle or plane projects to at most this many physical screen pixels. Set to 0 to disable only impostors.")
+            .defineInRange("driveableImpostorPixelSize", 32D, 0D, 256D);
+        DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE = builder
+            .comment("Minimum camera distance in blocks before a generated driveable impostor may be used.")
+            .defineInRange("driveableImpostorMinimumDistance", 64, 8, 4096);
+        DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE = builder
+            .comment("Always use a ready generated driveable impostor at or beyond this camera distance, even for physically large vehicles. Set to 0 to use only the projected-pixel threshold.")
+            .defineInRange("driveableImpostorMaximumDistance", 128, 0, 4096);
+        DRIVEABLE_IMPOSTOR_RESOLUTION = builder
+            .comment("Resolution of each generated driveable impostor view. Changing this clears and regenerates the runtime cache.")
+            .defineInRange("driveableImpostorResolution", 64, 32, 256);
+        DRIVEABLE_IMPOSTOR_YAW_ANGLES = builder
+            .comment("Number of horizontal views generated per driveable impostor. Three vertical views are generated automatically.")
+            .defineInRange("driveableImpostorYawAngles", 8, 4, 16);
+        DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder
+            .comment("Maximum generated model / paintjob impostor atlases retained in memory.")
+            .defineInRange("driveableImpostorCacheEntries", 32, 1, 128);
+        builder.pop();
+
+        builder.push("Particle Rendering Settings");
+        PARTICLE_RENDER_DISTANCE = builder
+            .comment("Maximum camera distance in blocks for particles spawned by Flan's Mod.")
+            .defineInRange("particleRenderDistance", 128, 8, 4096);
+        FULL_PARTICLE_DENSITY_DISTANCE = builder
+            .comment("Particles inside this camera distance retain full density. Density gradually falls beyond it.")
+            .defineInRange("fullParticleDensityDistance", 32, 0, 4096);
+        DISTANT_PARTICLE_DENSITY = builder
+            .comment("Fraction of Flan's Mod particles retained at the maximum render distance.")
+            .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
+        MAX_FLANS_PARTICLES_PER_TICK = builder
+            .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
+            .defineInRange("maxFlansParticlesPerTick", 512, 16, 100000);
         builder.pop();
 
         builder.push("Input Settings");
@@ -160,12 +243,18 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Translucent Rendering Defaults");
+        ENABLE_FAST_TRANSLUCENT_RENDERING = builder
+            .comment("Use Flan's Mod's faster unsorted translucent render type. This avoids expensive per-frame vertex sorting, but intersecting translucent surfaces may occasionally render in the wrong order.")
+            .define("enableFastTranslucentRendering", true);
         ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("armors", "alwaysEnableArmorsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("guns", "alwaysEnableGunsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("grenades", "alwaysEnableGrenadesTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("bullets", "alwaysEnableBulletsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("attachments", "alwaysEnableAttachmentsTranslucentRenderingByDefault", true);
         ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("aa-guns", "alwaysEnableAAGunsTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("vehicles", "alwaysEnableVehiclesTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("planes", "alwaysEnablePlanesTranslucentRenderingByDefault", true);
+        ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT = defineTranslucentDefault("mechas", "alwaysEnableMechasTranslucentRenderingByDefault", true);
         builder.pop();
 
         builder.push("Culling Defaults");
@@ -175,6 +264,9 @@ public final class ModClientConfig
         ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT = defineCullingDefault("bullets", "alwaysEnableBulletsCullingByDefault", true);
         ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT = defineCullingDefault("attachments", "alwaysEnableAttachmentsCullingByDefault", false);
         ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT = defineCullingDefault("aa-guns", "alwaysEnableAAGunsCullingByDefault", true);
+        ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT = defineCullingDefault("vehicles", "alwaysEnableVehiclesCullingByDefault", true);
+        ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT = defineCullingDefault("planes", "alwaysEnablePlanesCullingByDefault", true);
+        ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT = defineCullingDefault("mechas", "alwaysEnableMechasCullingByDefault", true);
         builder.pop();
 
         configSpec = builder.build();
@@ -192,6 +284,19 @@ public final class ModClientConfig
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
         aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
+        minimumDriveablePartPixelSize = MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get();
+        enableDriveableLod = ENABLE_DRIVEABLE_LOD.get();
+        maximumDriveableLodPartPixelSize = MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get();
+        driveableImpostorPixelSize = DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get();
+        driveableImpostorMinimumDistance = DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get();
+        driveableImpostorMaximumDistance = DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get();
+        driveableImpostorResolution = DRIVEABLE_IMPOSTOR_RESOLUTION.get();
+        driveableImpostorYawAngles = DRIVEABLE_IMPOSTOR_YAW_ANGLES.get();
+        driveableImpostorCacheEntries = DRIVEABLE_IMPOSTOR_CACHE_ENTRIES.get();
+        particleRenderDistance = PARTICLE_RENDER_DISTANCE.get();
+        fullParticleDensityDistance = Math.min(FULL_PARTICLE_DENSITY_DISTANCE.get(), particleRenderDistance);
+        distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
+        maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
@@ -203,12 +308,16 @@ public final class ModClientConfig
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
 
+        enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();
         alwaysEnableArmorTranslucentRenderingByDefault = ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableGunTranslucentRenderingByDefault = ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableGrenadeTranslucentRenderingByDefault = ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableBulletTranslucentRenderingByDefault = ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAttachmentTranslucentRenderingByDefault = ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
         alwaysEnableAAGunTranslucentRenderingByDefault = ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableVehicleTranslucentRenderingByDefault = ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnablePlaneTranslucentRenderingByDefault = ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
+        alwaysEnableMechaTranslucentRenderingByDefault = ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT.get();
 
         alwaysEnableArmorCullingByDefault = ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT.get();
         alwaysEnableGunCullingByDefault = ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT.get();
@@ -216,6 +325,9 @@ public final class ModClientConfig
         alwaysEnableBulletCullingByDefault = ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT.get();
         alwaysEnableAttachmentCullingByDefault = ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT.get();
         alwaysEnableAAGunCullingByDefault = ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT.get();
+        alwaysEnableVehicleCullingByDefault = ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT.get();
+        alwaysEnablePlaneCullingByDefault = ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT.get();
+        alwaysEnableMechaCullingByDefault = ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT.get();
     }
 
     public static ModClientConfig get()
@@ -236,6 +348,9 @@ public final class ModClientConfig
             case BULLET -> alwaysEnableBulletTranslucentRenderingByDefault;
             case ATTACHMENT -> alwaysEnableAttachmentTranslucentRenderingByDefault;
             case AA_GUN -> alwaysEnableAAGunTranslucentRenderingByDefault;
+            case VEHICLE -> alwaysEnableVehicleTranslucentRenderingByDefault;
+            case PLANE -> alwaysEnablePlaneTranslucentRenderingByDefault;
+            case MECHA -> alwaysEnableMechaTranslucentRenderingByDefault;
             default -> false;
         };
     }
@@ -253,6 +368,9 @@ public final class ModClientConfig
             case BULLET -> alwaysEnableBulletCullingByDefault;
             case ATTACHMENT -> alwaysEnableAttachmentCullingByDefault;
             case AA_GUN -> alwaysEnableAAGunCullingByDefault;
+            case VEHICLE -> alwaysEnableVehicleCullingByDefault;
+            case PLANE -> alwaysEnablePlaneCullingByDefault;
+            case MECHA -> alwaysEnableMechaCullingByDefault;
             default -> true;
         };
     }
@@ -282,5 +400,11 @@ public final class ModClientConfig
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.loadAllModelsInCache != get().loadAllModelsInCache && get().loadAllModelsInCache)
             ModelCache.reload();
+
+        if (old.enableDriveableLod != get().enableDriveableLod
+            || old.driveableImpostorResolution != get().driveableImpostorResolution
+            || old.driveableImpostorYawAngles != get().driveableImpostorYawAngles
+            || old.driveableImpostorCacheEntries != get().driveableImpostorCacheEntries)
+            DriveableImpostorCache.clear();
     }
 }

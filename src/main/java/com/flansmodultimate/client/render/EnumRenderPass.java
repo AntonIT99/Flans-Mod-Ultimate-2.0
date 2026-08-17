@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render;
 
+import com.flansmodultimate.config.ModClientConfig;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
@@ -23,10 +24,12 @@ public enum EnumRenderPass
             case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture, cull);
             default ->
             {
-                if (translucent && cull)
-                    yield RenderType.entityTranslucentCull(texture);
                 if (translucent)
-                    yield RenderType.entityTranslucent(texture);
+                {
+                    if (ModClientConfig.get().enableFastTranslucentRendering)
+                        yield CustomRenderType.entityTranslucentUnsorted(texture, cull);
+                    yield cull ? RenderType.entityTranslucentCull(texture) : RenderType.entityTranslucent(texture);
+                }
                 if (cull)
                     yield RenderType.entityCutout(texture);
 
@@ -42,7 +45,11 @@ public enum EnumRenderPass
             case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture, cull);
             case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture, cull);
             case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture, cull);
-            default -> translucent ? CustomRenderType.armorTranslucent(texture, cull) : CustomRenderType.armorCutout(texture, cull);
+            default -> translucent
+                ? (ModClientConfig.get().enableFastTranslucentRendering
+                    ? CustomRenderType.armorTranslucentUnsorted(texture, cull)
+                    : CustomRenderType.armorTranslucent(texture, cull))
+                : CustomRenderType.armorCutout(texture, cull);
         };
     }
 }

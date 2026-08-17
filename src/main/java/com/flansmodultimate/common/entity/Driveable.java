@@ -173,6 +173,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static final EntityDataAccessor<Integer> DATA_FLAGS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_MODE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Float> DATA_FUEL = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Integer> DATA_PAINTJOB_ID = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_LOCK_TARGET = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
@@ -325,6 +326,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         sourceStack = stack.copy();
         sourceStack.setCount(sourceStack.isEmpty() ? 0 : 1);
         driveableData = stack.isEmpty() ? new DriveableData(type, level().registryAccess()) : DriveableData.fromStack(type, stack, level().registryAccess());
+        if (!level().isClientSide)
+            entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (!sourceStack.isEmpty())
             driveableData.removeSerializedState(ItemStackData.copy(sourceStack));
         weaponInventoryFingerprint = weaponInventoryFingerprint();
@@ -597,6 +600,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         builder.define(DATA_FLAGS, FLAG_GEAR);
         builder.define(DATA_MODE, 0);
         builder.define(DATA_FUEL, 0F);
+        builder.define(DATA_PAINTJOB_ID, 0);
         builder.define(DATA_LOCK_TARGET, -1);
         builder.define(DATA_PRIMARY_RELOAD_TICKS, 0);
         builder.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
@@ -649,6 +653,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
         driveableData = new DriveableData(type, tag, level().registryAccess());
+        if (!level().isClientSide)
+            entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
         renderInventoryFingerprint = renderInventoryFingerprint();
@@ -1331,8 +1337,18 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return result;
     }
 
+    /** Paintjob selected on the authoritative entity and replicated with vanilla entity data. */
+    public int getPaintjobId()
+    {
+        return entityData.get(DATA_PAINTJOB_ID);
+    }
+
     private void syncRenderInventoryState()
     {
+        int paintjobId = driveableData == null ? 0 : driveableData.getPaintjobID();
+        if (entityData.get(DATA_PAINTJOB_ID) != paintjobId)
+            entityData.set(DATA_PAINTJOB_ID, paintjobId);
+
         int fingerprint = renderInventoryFingerprint();
         if (renderInventoryFingerprintInitialized && fingerprint == renderInventoryFingerprint)
             return;
@@ -1347,6 +1363,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             || slots.length != stacks.length || slots.length > DriveableData.MAX_RENDER_SYNC_SLOTS)
             return;
         driveableData.setPaintjobID(paintjobId);
+        entityData.set(DATA_PAINTJOB_ID, paintjobId);
         for (int index = 0; index < slots.length; index++)
             driveableData.applyRenderSlot(slots[index], stacks[index]);
         renderInventoryFingerprint = renderInventoryFingerprint();

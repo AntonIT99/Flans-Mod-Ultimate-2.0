@@ -47,7 +47,7 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         float baseYaw = Direction.from2DDataValue(deployedGun.getGunDirection()).toYRot();
         poseStack.mulPose(Axis.YP.rotationDegrees(180F - baseYaw));
 
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         float aimPitch = getAimPitch(deployedGun, partialTicks);
@@ -56,7 +56,7 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         
         poseStack.mulPose(Axis.YP.rotationDegrees(-aimLocalYaw));
 
-        for (EnumRenderPass renderPass : EnumRenderPass.ORDER)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         poseStack.popPose();

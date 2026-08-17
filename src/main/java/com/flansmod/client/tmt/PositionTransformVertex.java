@@ -10,6 +10,7 @@ public class PositionTransformVertex extends PositionTextureVertex
 {
     public Vec3 neutralVector;
     public List<TransformGroup> transformGroups = new ArrayList<>();
+    private long lastTransformationSequence = Long.MIN_VALUE;
 
     public PositionTransformVertex(float x, float y, float z, float u, float v)
     {
@@ -37,6 +38,19 @@ public class PositionTransformVertex extends PositionTextureVertex
     }
 
     public void setTransformation()
+    {
+        applyTransformation();
+    }
+
+    public void setTransformation(long transformationSequence)
+    {
+        if (lastTransformationSequence == transformationSequence)
+            return;
+        lastTransformationSequence = transformationSequence;
+        applyTransformation();
+    }
+
+    private void applyTransformation()
     {
         if(transformGroups.isEmpty())
         {
