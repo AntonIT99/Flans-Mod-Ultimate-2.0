@@ -12,36 +12,50 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 
 import java.util.Collections;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonEventHandler
 {
+    private static final int MAX_WORLDGEN_CHUNKS_PER_TICK = 64;
+    private static final Queue<PendingWorldgen> PENDING_WORLDGEN = new ConcurrentLinkedQueue<>();
+
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event)
     {
         if (!event.isNewChunk() || !(event.getLevel() instanceof ServerLevel level))
             return;
-        ChunkAccess chunk = event.getChunk();
-        ApocalypseWorldgen.generate(level, chunk);
+
+        // ChunkEvent.Load is fired before the chunk's completion task has necessarily
+        // returned. Accessing the level here can synchronously request this or a
+        // neighbouring chunk and make the server thread wait on its own task. Defer
+        // generation until the server tick, after the load callback has unwound.
+        PENDING_WORLDGEN.add(new PendingWorldgen(level, event.getChunk()));
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
-        if (event.phase != TickEvent.Phase.END
-            || event.getServer() == null
-            || !ModApocalypseConfig.apocalypseDimensionEnabled()
+        if (event.phase != TickEvent.Phase.END || event.getServer() == null)
+            return;
+
+        runPendingWorldgen(event.getServer());
+
+        if (!ModApocalypseConfig.apocalypseDimensionEnabled()
             || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
@@ -53,6 +67,12 @@ public final class CommonEventHandler
                 continue;
             spawnWanderingSurvivor(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event)
+    {
+        PENDING_WORLDGEN.removeIf(pending -> pending.level().getServer() == event.getServer());
     }
 
     @SubscribeEvent
@@ -93,4 +113,26 @@ public final class CommonEventHandler
             .filter(pos -> pos.distSqr(center) > 144.0D)
             .ifPresent(pos -> ApocalypseWorldgen.spawnSurvivor(level, pos));
     }
+
+    private static void runPendingWorldgen(MinecraftServer server)
+    {
+        // Only process the snapshot queued before this tick. Generation may load
+        // neighbouring new chunks, whose work must wait for the following tick too.
+        int pendingCount = Math.min(PENDING_WORLDGEN.size(), MAX_WORLDGEN_CHUNKS_PER_TICK);
+        for (int i = 0; i < pendingCount; i++)
+        {
+            PendingWorldgen pending = PENDING_WORLDGEN.poll();
+            if (pending == null)
+                return;
+            if (pending.level().getServer() != server)
+            {
+                PENDING_WORLDGEN.add(pending);
+                continue;
+            }
+            if (server.getLevel(pending.level().dimension()) == pending.level())
+                ApocalypseWorldgen.generate(pending.level(), pending.chunk());
+        }
+    }
+
+    private record PendingWorldgen(ServerLevel level, ChunkAccess chunk) {}
 }
