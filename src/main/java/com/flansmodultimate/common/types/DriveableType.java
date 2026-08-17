@@ -104,6 +104,7 @@ public class DriveableType extends PaintableType
     protected float yOffset = 10F / 16F;
     protected float cameraDistance = 5F;
     protected final List<ParticleEmitter> emitters = new ArrayList<>();
+    protected boolean emittersRequireOccupant = true;
 
     protected float maxThrottle = 1F;
     protected float maxNegativeThrottle;
@@ -637,6 +638,7 @@ public class DriveableType extends PaintableType
 
     private void readParticles(TypeFile file)
     {
+        emittersRequireOccupant = readValue("EmittersRequireOccupant", emittersRequireOccupant, file);
         Consumer<String[]> parser = values -> {
             Vector3f origin = parseVector(values[2], 1F / 16F);
             Vector3f extents = parseVector(values[3], 1F / 16F);

@@ -2797,7 +2797,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void emitConfiguredParticles()
     {
-        if (configType == null)
+        if (configType == null || (configType.isEmittersRequireOccupant() && !hasDriveableOccupant()))
             return;
         configType.getEmitters().forEach(emitter -> {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
@@ -2838,6 +2838,18 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             PacketHandler.sendToAllAround(new PacketParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
                 direction.x, direction.y, direction.z), origin, 128D, level().dimension());
         });
+    }
+
+    protected boolean hasDriveableOccupant()
+    {
+        if (!getPassengers().isEmpty())
+            return true;
+        for (Seat seat : seats)
+        {
+            if (seat != null && !seat.getPassengers().isEmpty())
+                return true;
+        }
+        return false;
     }
 
     /** Convert legacy model X/Z coordinates to the modern driveable basis. */
