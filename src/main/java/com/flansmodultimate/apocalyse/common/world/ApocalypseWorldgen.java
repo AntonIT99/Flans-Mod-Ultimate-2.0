@@ -54,34 +54,34 @@ public final class ApocalypseWorldgen
         if (apocalypse)
         {
             if (random.nextInt(SULPHUR_POOL_RARITY) == 0)
-                generateSulphurPool(level, random, randomSurfacePos(level, chunkPos, random));
+                generateSulphurPool(level, random, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseDeadTreeRarity()) == 0)
-                generateDeadTree(level, randomSurfacePos(level, chunkPos, random));
+                generateDeadTree(level, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseSkeletonRarity()) == 0)
-                generateSkeletonDisplay(level, random, randomSurfacePos(level, chunkPos, random));
+                generateSkeletonDisplay(level, random, randomSurfacePos(chunk, random));
             if (ModApocalypseConfig.apocalypseDimensionEnabled()
                 && ModApocalypseConfig.apocalypsePortalsEnabled()
                 && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalRarity()) == 0)
-                ApocalypsePortalManager.createPortal(level, randomSurfacePos(level, chunkPos, random), null);
+                ApocalypsePortalManager.createPortal(level, randomSurfacePos(chunk, random), null);
             if (random.nextInt(ModApocalypseConfig.apocalypseLabRarity()) == 0)
-                generateResearchLab(level, random, randomSurfacePos(level, chunkPos, random));
+                generateResearchLab(level, random, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseDyeFactoryRarity()) == 0)
-                generateFactory(level, random, randomSurfacePos(level, chunkPos, random));
+                generateFactory(level, random, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseAirportRarity()) == 0)
-                generateRunway(level, randomSurfacePos(level, chunkPos, random));
+                generateRunway(level, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseVehicleRarity()) == 0)
-                generateAbandonedVehicle(level, random, randomSurfacePos(level, chunkPos, random));
+                generateAbandonedVehicle(level, random, randomSurfacePos(chunk, random));
             if (random.nextInt(BOSS_PILLAR_RARITY) == 0)
-                generateBossPillar(level, randomSurfacePos(level, chunkPos, random));
+                generateBossPillar(level, randomSurfacePos(chunk, random));
             if (ModApocalypseConfig.apocalypseMobsEnabled() && random.nextInt(ModApocalypseConfig.apocalypseSurvivorRarity()) == 0)
-                spawnSurvivor(level, randomSurfacePos(level, chunkPos, random));
+                spawnSurvivor(level, randomSurfacePos(chunk, random));
         }
         else if (ModApocalypseConfig.apocalypseDimensionEnabled()
             && ModApocalypseConfig.apocalypsePortalsEnabled()
             && ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled()
             && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalOverworldRarity()) == 0)
         {
-            ApocalypsePortalManager.createPortal(level, randomSurfacePos(level, chunkPos, random), null);
+            ApocalypsePortalManager.createPortal(level, randomSurfacePos(chunk, random), null);
         }
     }
 
@@ -291,11 +291,13 @@ public final class ApocalypseWorldgen
             holder.setStack(ApocalypseLoot.randomLoot(random, gunsOnly));
     }
 
-    private static BlockPos randomSurfacePos(ServerLevel level, ChunkPos chunkPos, RandomSource random)
+    private static BlockPos randomSurfacePos(ChunkAccess chunk, RandomSource random)
     {
+        ChunkPos chunkPos = chunk.getPos();
         int x = chunkPos.getMinBlockX() + random.nextInt(16);
         int z = chunkPos.getMinBlockZ() + random.nextInt(16);
-        return surfacePos(level, x, z);
+        int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        return new BlockPos(x, Math.max(chunk.getMinBuildHeight() + 1, y), z);
     }
 
     private static BlockPos surfacePos(ServerLevel level, int x, int z)
