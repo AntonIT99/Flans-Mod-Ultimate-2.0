@@ -13,6 +13,7 @@ import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -56,6 +57,7 @@ public final class ModelCache
 
     public static void reload()
     {
+        DriveableImpostorCache.clear();
         cache.clear();
         renderPassCache.clear();
         if (ModClientConfig.get().loadAllModelsInCache)

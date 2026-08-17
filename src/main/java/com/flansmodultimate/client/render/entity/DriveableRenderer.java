@@ -115,9 +115,32 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         float green = getGreen(type);
         float blue = getBlue(type);
         float scale = type.getModelScale();
+        float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
+        double cameraDistance = Math.sqrt(entityRenderDispatcher.distanceToSqr(driveable));
+
+        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle ? 180F - yaw : -yaw;
+        boolean locallyControlled = Minecraft.getInstance().player != null
+            && Minecraft.getInstance().player.getVehicle() == driveable;
+        boolean intact = true;
+        for (EnumDriveablePart part : type.getHealth().keySet())
+        {
+            if (!driveable.isPartIntact(part))
+            {
+                intact = false;
+                break;
+            }
+        }
+        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.renderOrPrepare(
+            model, type, texture, translucent, cull, red, green, blue,
+            poseStack, buffer, packedLight, projectionPixels, cameraDistance,
+            entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
+            !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
+        history.usingImpostor = lodResult.usingImpostor();
+        if (lodResult.rendered())
+            return;
 
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(driveable instanceof Plane || driveable instanceof Vehicle ? 180F - yaw : -yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
@@ -133,13 +156,15 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
         float minimumPartPixels = (float)ModClientConfig.get().minimumDriveablePartPixelSize;
+        if (ModClientConfig.get().enableDriveableLod)
+        {
+            minimumPartPixels = DriveableImpostorCache.adaptivePartThreshold(minimumPartPixels,
+                (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
+                lodResult.projectedPixelDiameter(), (float)ModClientConfig.get().driveableImpostorPixelSize);
+        }
         boolean useScreenSpaceCulling = minimumPartPixels > 0F;
         if (useScreenSpaceCulling)
-        {
-            float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11())
-                * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
-        }
         try
         {
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
@@ -215,22 +240,6 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
     }
 
-    private static void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
-    {
-        for (int seat = 1; seat <= type.getNumPassengers(); seat++)
-        {
-            var info = type.getSeat(seat);
-            if (info != null && info.getGunType() != null)
-                driveable.setModelPassengerGunAimPivot(seat,
-                    model.getRegisteredGunAimPivot(info.getGunName()));
-        }
-    }
-
-    private static float inputAxis(int mask, int positive, int negative)
-    {
-        return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
-    }
-
     private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
@@ -271,7 +280,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.pushPose();
         translateModelVector(poseStack, armOrigin);
         poseStack.mulPose(Axis.ZP.rotationDegrees(90F - armPitch));
-        poseStack.translate(handModifier.y, -mechaType.getArmLength() - handModifier.x, -handModifier.z);
+        // The arm has already been rotated around Z, so model-space X/Y map to pose-space Y/X here.
+        double translatedX = handModifier.y;
+        double translatedY = -mechaType.getArmLength() - handModifier.x;
+        poseStack.translate(translatedX, translatedY, -handModifier.z);
         poseStack.scale(mechaType.getModelScale() * mechaType.getHeldItemScale(),
             mechaType.getModelScale() * mechaType.getHeldItemScale(),
             mechaType.getModelScale() * mechaType.getHeldItemScale());
@@ -369,12 +381,19 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private int rightGunRounds = -1;
         private DriveableType passengerPivotType;
         private ModelDriveable passengerPivotModel;
+        private boolean usingImpostor;
 
         private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
         {
             if (passengerPivotType == type && passengerPivotModel == model)
                 return;
-            DriveableRenderer.updatePassengerGunPivots(driveable, type, model);
+            for (int seat = 1; seat <= type.getNumPassengers(); seat++)
+            {
+                var info = type.getSeat(seat);
+                if (info != null && info.getGunType() != null)
+                    driveable.setModelPassengerGunAimPivot(seat,
+                        model.getRegisteredGunAimPivot(info.getGunName()));
+            }
             passengerPivotType = type;
             passengerPivotModel = model;
         }
@@ -386,7 +405,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 configuredType = type;
                 throttle = driveable.getThrottle();
                 previousThrottle = throttle;
-                steering = targetSteering(driveable);
+                steering = targetSteering(driveable.getInputMask());
                 previousSteering = steering;
                 gear = driveable.isGearDeployed() ? 1F : 0F;
                 previousGear = gear;
@@ -425,7 +444,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
             float amount = TRANSITION_PER_TICK * elapsed;
             throttle = approach(throttle, driveable.getThrottle(), amount);
-            steering = approach(steering, targetSteering(driveable), amount * 90F);
+            steering = approach(steering, targetSteering(driveable.getInputMask()), amount * 90F);
             gear = approach(gear, driveable.isGearDeployed() ? 1F : 0F, amount);
             door = approach(door, driveable.isDoorOpen() ? 1F : 0F, amount);
             mode = approach(mode, driveable.isWingFolded() || driveable.getDriveableMode() != 0 ? 1F : 0F, amount);
@@ -495,26 +514,26 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             if (type instanceof PlaneType planeType)
             {
                 boolean folded = driveable.isWingFolded();
-                boolean gear = driveable.isGearDeployed();
-                boolean door = driveable.isDoorOpen();
+                boolean gearDeployed = driveable.isGearDeployed();
+                boolean doorOpen = driveable.isDoorOpen();
                 wingTransform.snap(folded ? planeType.getWingPos2() : planeType.getWingPos1(),
                     folded ? planeType.getWingRot2() : planeType.getWingRot1());
-                wingWheelTransform.snap(gear ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
-                    gear ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2());
-                bodyWheelTransform.snap(gear ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
-                    gear ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2());
-                tailWheelTransform.snap(gear ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
-                    gear ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2());
-                doorTransform.snap(door ? planeType.getDoorPos2() : planeType.getDoorPos1(),
-                    door ? planeType.getDoorRot2() : planeType.getDoorRot1());
+                wingWheelTransform.snap(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
+                    gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2());
+                bodyWheelTransform.snap(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
+                    gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2());
+                tailWheelTransform.snap(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
+                    gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2());
+                doorTransform.snap(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(),
+                    doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1());
             }
             else if (type instanceof VehicleType vehicleType)
             {
-                boolean door = driveable.isDoorOpen();
-                doorTransform.snap(door ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
-                    door ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1());
-                door2Transform.snap(door ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
-                    door ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1());
+                boolean doorOpen = driveable.isDoorOpen();
+                doorTransform.snap(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
+                    doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1());
+                door2Transform.snap(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
+                    doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1());
             }
         }
 
@@ -523,32 +542,32 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             if (type instanceof PlaneType planeType)
             {
                 boolean folded = driveable.isWingFolded();
-                boolean gear = driveable.isGearDeployed();
-                boolean door = driveable.isDoorOpen();
+                boolean gearDeployed = driveable.isGearDeployed();
+                boolean doorOpen = driveable.isDoorOpen();
                 wingTransform.advance(folded ? planeType.getWingPos2() : planeType.getWingPos1(),
                     folded ? planeType.getWingRot2() : planeType.getWingRot1(),
                     planeType.getWingRate(), planeType.getWingRotRate(), elapsed);
-                wingWheelTransform.advance(gear ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
-                    gear ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2(),
+                wingWheelTransform.advance(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
+                    gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2(),
                     planeType.getWingWheelRate(), planeType.getWingWheelRotRate(), elapsed);
-                bodyWheelTransform.advance(gear ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
-                    gear ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2(),
+                bodyWheelTransform.advance(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
+                    gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2(),
                     planeType.getBodyWheelRate(), planeType.getBodyWheelRotRate(), elapsed);
-                tailWheelTransform.advance(gear ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
-                    gear ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2(),
+                tailWheelTransform.advance(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
+                    gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2(),
                     planeType.getTailWheelRate(), planeType.getTailWheelRotRate(), elapsed);
-                doorTransform.advance(door ? planeType.getDoorPos2() : planeType.getDoorPos1(),
-                    door ? planeType.getDoorRot2() : planeType.getDoorRot1(),
+                doorTransform.advance(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(),
+                    doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1(),
                     planeType.getDoorRate(), planeType.getDoorRotRate(), elapsed);
             }
             else if (type instanceof VehicleType vehicleType)
             {
-                boolean door = driveable.isDoorOpen();
-                doorTransform.advance(door ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
-                    door ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1(),
+                boolean doorOpen = driveable.isDoorOpen();
+                doorTransform.advance(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
+                    doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1(),
                     vehicleType.getDoorRate(), vehicleType.getDoorRotRate(), elapsed);
-                door2Transform.advance(door ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
-                    door ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1(),
+                door2Transform.advance(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
+                    doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1(),
                     vehicleType.getDoor2Rate(), vehicleType.getDoor2RotRate(), elapsed);
             }
         }
@@ -566,9 +585,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             legAnimation.approachTargets(elapsed);
         }
 
-        private static float targetSteering(Driveable driveable)
+        private static float targetSteering(int inputMask)
         {
-            return inputAxis(driveable.getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) * 20F;
+            return ((DriveableInput.isDown(inputMask, DriveableInput.RIGHT) ? 1F : 0F)
+                - (DriveableInput.isDown(inputMask, DriveableInput.LEFT) ? 1F : 0F)) * 20F;
         }
     }
 }

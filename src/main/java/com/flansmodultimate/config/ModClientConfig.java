@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.common.types.InfoType;
 import net.minecraftforge.common.ForgeConfigSpec;
 
@@ -23,6 +24,14 @@ public final class ModClientConfig
     public final int deployedGunRenderDistance;
     public final int aaGunRenderDistance;
     public final double minimumDriveablePartPixelSize;
+    public final boolean enableDriveableLod;
+    public final double maximumDriveableLodPartPixelSize;
+    public final double driveableImpostorPixelSize;
+    public final int driveableImpostorMinimumDistance;
+    public final int driveableImpostorMaximumDistance;
+    public final int driveableImpostorResolution;
+    public final int driveableImpostorYawAngles;
+    public final int driveableImpostorCacheEntries;
     public final int particleRenderDistance;
     public final int fullParticleDensityDistance;
     public final double distantParticleDensity;
@@ -70,6 +79,14 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
+    private static final ForgeConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
+    private static final ForgeConfigSpec.DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
+    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
+    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
+    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
+    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
+    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
     private static final ForgeConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
     private static final ForgeConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
@@ -154,6 +171,30 @@ public final class ModClientConfig
         MINIMUM_DRIVEABLE_PART_PIXEL_SIZE = builder
             .comment("Skip individual driveable model parts whose projected bounding diameter is smaller than this many physical screen pixels. Set to 0 to disable. Only affects driveables rendered in the world.")
             .defineInRange("minimumDriveablePartPixelSize", 0.75D, 0D, 16D);
+        ENABLE_DRIVEABLE_LOD = builder
+            .comment("Enable automatic world-rendered driveable LOD. Medium-distance models use stronger part culling and distant vehicles / planes may use generated impostors. Mechas retain exact rendering because held add-ons are not part of their base model.")
+            .define("enableDriveableLod", true);
+        MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE = builder
+            .comment("Maximum projected part diameter culled as a driveable approaches the far impostor LOD. Must be at least minimumDriveablePartPixelSize to have an effect.")
+            .defineInRange("maximumDriveableLodPartPixelSize", 2D, 0D, 32D);
+        DRIVEABLE_IMPOSTOR_PIXEL_SIZE = builder
+            .comment("Use a generated far-distance impostor when a vehicle or plane projects to at most this many physical screen pixels. Set to 0 to disable only impostors.")
+            .defineInRange("driveableImpostorPixelSize", 32D, 0D, 256D);
+        DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE = builder
+            .comment("Minimum camera distance in blocks before a generated driveable impostor may be used.")
+            .defineInRange("driveableImpostorMinimumDistance", 64, 8, 4096);
+        DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE = builder
+            .comment("Always use a ready generated driveable impostor at or beyond this camera distance, even for physically large vehicles. Set to 0 to use only the projected-pixel threshold.")
+            .defineInRange("driveableImpostorMaximumDistance", 128, 0, 4096);
+        DRIVEABLE_IMPOSTOR_RESOLUTION = builder
+            .comment("Resolution of each generated driveable impostor view. Changing this clears and regenerates the runtime cache.")
+            .defineInRange("driveableImpostorResolution", 64, 32, 256);
+        DRIVEABLE_IMPOSTOR_YAW_ANGLES = builder
+            .comment("Number of horizontal views generated per driveable impostor. Three vertical views are generated automatically.")
+            .defineInRange("driveableImpostorYawAngles", 8, 4, 16);
+        DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder
+            .comment("Maximum generated model / paintjob impostor atlases retained in memory.")
+            .defineInRange("driveableImpostorCacheEntries", 32, 1, 128);
         builder.pop();
 
         builder.push("Particle Rendering Settings");
@@ -244,6 +285,14 @@ public final class ModClientConfig
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
         aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
         minimumDriveablePartPixelSize = MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get();
+        enableDriveableLod = ENABLE_DRIVEABLE_LOD.get();
+        maximumDriveableLodPartPixelSize = MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get();
+        driveableImpostorPixelSize = DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get();
+        driveableImpostorMinimumDistance = DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get();
+        driveableImpostorMaximumDistance = DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get();
+        driveableImpostorResolution = DRIVEABLE_IMPOSTOR_RESOLUTION.get();
+        driveableImpostorYawAngles = DRIVEABLE_IMPOSTOR_YAW_ANGLES.get();
+        driveableImpostorCacheEntries = DRIVEABLE_IMPOSTOR_CACHE_ENTRIES.get();
         particleRenderDistance = PARTICLE_RENDER_DISTANCE.get();
         fullParticleDensityDistance = Math.min(FULL_PARTICLE_DENSITY_DISTANCE.get(), particleRenderDistance);
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
@@ -351,5 +400,11 @@ public final class ModClientConfig
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.loadAllModelsInCache != get().loadAllModelsInCache && get().loadAllModelsInCache)
             ModelCache.reload();
+
+        if (old.enableDriveableLod != get().enableDriveableLod
+            || old.driveableImpostorResolution != get().driveableImpostorResolution
+            || old.driveableImpostorYawAngles != get().driveableImpostorYawAngles
+            || old.driveableImpostorCacheEntries != get().driveableImpostorCacheEntries)
+            DriveableImpostorCache.clear();
     }
 }
