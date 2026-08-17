@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
@@ -26,6 +25,7 @@ public class TexturedPolygon
     private float[] normals;
     private List<Vec3> iNormals;
     private final boolean hasTransformVertices;
+    private final int[] renderVertexIndices;
     private boolean cachedFaceNormalValid;
     private float cachedFaceNormalX;
     private float cachedFaceNormalY;
@@ -42,6 +42,7 @@ public class TexturedPolygon
         this.iNormals = new ArrayList<>();
         this.normals = new float[0];
         this.hasTransformVertices = Arrays.stream(apositionTexturevertex).anyMatch(PositionTransformVertex.class::isInstance);
+        this.renderVertexIndices = createRenderVertexIndices(nVertices);
     }
 
     public TexturedPolygon(PositionTextureVertex[] apositionTexturevertex, int par2, int par3, int par4, int par5, float par6, float par7)
@@ -85,6 +86,11 @@ public class TexturedPolygon
 
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow)
     {
+        draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow, Long.MIN_VALUE);
+    }
+
+    void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow, long transformationSequence)
+    {
         if (nVertices < 3)
             return;
 
@@ -101,10 +107,9 @@ public class TexturedPolygon
 
         RenderScratch scratch = RENDER_SCRATCH.get();
         final Vector3f transformedNormal = scratch.normal;
-        final Vector4f transformedPos = scratch.position;
 
         if (hasTransformVertices)
-            transformVertices();
+            transformVertices(transformationSequence);
 
         if (!hasPerVertexNormals)
         {
@@ -121,39 +126,51 @@ public class TexturedPolygon
                 return;
         }
 
-        // Minecraft entity render types are quad buffers; emulate old triangle/polygon modes with degenerate quads.
-        if (nVertices == 3)
+        for (int vertexIndex : renderVertexIndices)
         {
-            emitTriangleAsQuad(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
+            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
                     packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                    perVertexNormalCount, hasPerVertexNormals, 0, 1, 2);
-        }
-        else if (nVertices == 4)
-        {
-            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
-            {
-                emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                        perVertexNormalCount, hasPerVertexNormals, vertexIndex);
-            }
-        }
-        else
-        {
-            for (int vertexIndex = 1; vertexIndex < nVertices - 1; vertexIndex++)
-            {
-                emitTriangleAsQuad(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                        perVertexNormalCount, hasPerVertexNormals, 0, vertexIndex, vertexIndex + 1);
-            }
+                    perVertexNormalCount, hasPerVertexNormals, vertexIndex);
         }
     }
 
-    private void transformVertices()
+    /**
+     * Minecraft's entity buffers consume quads. Cache the immutable expansion of
+     * triangles and polygon fans once rather than rebuilding that control flow for
+     * every instance on every frame.
+     */
+    private static int[] createRenderVertexIndices(int vertexCount)
+    {
+        if (vertexCount < 3)
+            return new int[0];
+        if (vertexCount == 3)
+            return new int[]{0, 1, 2, 2};
+        if (vertexCount == 4)
+            return new int[]{0, 1, 2, 3};
+
+        int[] indices = new int[(vertexCount - 2) * 4];
+        int outputIndex = 0;
+        for (int vertexIndex = 1; vertexIndex < vertexCount - 1; vertexIndex++)
+        {
+            indices[outputIndex++] = 0;
+            indices[outputIndex++] = vertexIndex;
+            indices[outputIndex++] = vertexIndex + 1;
+            indices[outputIndex++] = vertexIndex + 1;
+        }
+        return indices;
+    }
+
+    private void transformVertices(long transformationSequence)
     {
         for (PositionTextureVertex vertex : vertexPositions)
         {
             if (vertex instanceof PositionTransformVertex transformVertex)
-                transformVertex.setTransformation();
+            {
+                if (transformationSequence == Long.MIN_VALUE)
+                    transformVertex.setTransformation();
+                else
+                    transformVertex.setTransformation(transformationSequence);
+            }
         }
     }
 
@@ -195,28 +212,8 @@ public class TexturedPolygon
         normalMatrix.transform(transformedNormal);
     }
 
-    private void emitTriangleAsQuad(Matrix4f positionMatrix, Matrix3f normalMatrix,
-                                    Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
-                                    int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
-                                    boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
-                                    int vertexIndex0, int vertexIndex1, int vertexIndex2)
-    {
-        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                perVertexNormalCount, hasPerVertexNormals, vertexIndex0);
-        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                perVertexNormalCount, hasPerVertexNormals, vertexIndex1);
-        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                perVertexNormalCount, hasPerVertexNormals, vertexIndex2);
-        emitVertex(positionMatrix, normalMatrix, transformedNormal, transformedPos, vertexConsumer,
-                packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                perVertexNormalCount, hasPerVertexNormals, vertexIndex2);
-    }
-
     private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix,
-            Vector3f transformedNormal, Vector4f transformedPos, VertexConsumer vertexConsumer,
+            Vector3f transformedNormal, VertexConsumer vertexConsumer,
             int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
             boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
             int vertexIndex)
@@ -238,15 +235,15 @@ public class TexturedPolygon
         final float localY = (float)vertex.vector3D.y() * INV_16;
         final float localZ = (float)vertex.vector3D.z() * INV_16;
 
-        transformedPos.set(localX, localY, localZ, 1F);
-        positionMatrix.transform(transformedPos);
+        final float transformedX = positionMatrix.m00() * localX + positionMatrix.m10() * localY + positionMatrix.m20() * localZ + positionMatrix.m30();
+        final float transformedY = positionMatrix.m01() * localX + positionMatrix.m11() * localY + positionMatrix.m21() * localZ + positionMatrix.m31();
+        final float transformedZ = positionMatrix.m02() * localX + positionMatrix.m12() * localY + positionMatrix.m22() * localZ + positionMatrix.m32();
 
-        vertexConsumer.vertex(transformedPos.x(), transformedPos.y(), transformedPos.z(), red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
+        vertexConsumer.vertex(transformedX, transformedY, transformedZ, red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
     }
 
     private static final class RenderScratch
     {
         private final Vector3f normal = new Vector3f();
-        private final Vector4f position = new Vector4f();
     }
 }

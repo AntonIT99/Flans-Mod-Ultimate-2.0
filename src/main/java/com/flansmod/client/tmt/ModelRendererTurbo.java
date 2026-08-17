@@ -47,10 +47,14 @@ public class ModelRendererTurbo extends ModelRenderer
     public boolean forcedRecompile;
     public boolean useLegacyCompiler;
 
+    /** Render-thread sequence used to deduplicate shared transform vertices per part draw. */
+    private static long transformationSequence;
+
     private int textureOffsetX;
     private int textureOffsetY;
     private PositionTextureVertex[] vertices;
     private TexturedPolygon[] faces;
+    private TexturedPolygon[] renderFaces;
     private TransformGroup currentGroup;
     private TextureGroup currentTextureGroup;
     @Setter
@@ -68,6 +72,7 @@ public class ModelRendererTurbo extends ModelRenderer
         isHidden = false;
         vertices = new PositionTextureVertex[0];
         faces = new TexturedPolygon[0];
+        renderFaces = new TexturedPolygon[0];
         forcedRecompile = false;
         transformGroup = new HashMap<>();
         transformGroup.put("0", new TransformGroupBone(new Bone(0, 0, 0, 0), 1D));
@@ -1966,6 +1971,7 @@ public class ModelRendererTurbo extends ModelRenderer
         faces = Arrays.copyOf(faces, faceOffset + poly.length);
         System.arraycopy(verts, 0, vertices, vertexOffset, verts.length);
         System.arraycopy(poly, 0, faces, faceOffset, poly.length);
+        renderFaces = new TexturedPolygon[0];
 
         if (copyGroup)
         {
@@ -2111,20 +2117,30 @@ public class ModelRendererTurbo extends ModelRenderer
     private void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                         float red, float green, float blue, float alpha, float scale, boolean oldRotateOrder)
     {
-        if (!isVisible())
+        if (!isVisible() || (faces.length == 0 && childModels.isEmpty()))
             return;
 
-        poseStack.pushPose();
-        poseStack.translate(offsetX, offsetY, offsetZ);
-        translateAndRotate(poseStack, scale, oldRotateOrder);
-        compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        boolean hasTransform = offsetX != 0F || offsetY != 0F || offsetZ != 0F
+            || rotationPointX != 0F || rotationPointY != 0F || rotationPointZ != 0F
+            || rotateAngleX != 0F || rotateAngleY != 0F || rotateAngleZ != 0F
+            || scale != 1F;
+        if (hasTransform)
+        {
+            poseStack.pushPose();
+            poseStack.translate(offsetX, offsetY, offsetZ);
+            translateAndRotate(poseStack, scale, oldRotateOrder);
+        }
+
+        if (faces.length != 0)
+            compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
         {
             childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
-        poseStack.popPose();
+        if (hasTransform)
+            poseStack.popPose();
     }
 
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
@@ -2190,12 +2206,37 @@ public class ModelRendererTurbo extends ModelRenderer
     @Override
     protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        for (TextureGroup usedGroup : textureGroup.values())
+        TexturedPolygon[] polygons = getRenderFaces();
+        long currentTransformationSequence = ++transformationSequence;
+        boolean glowing = glow || glowAdditive || glowNoDepthWrite;
+        for (TexturedPolygon poly : polygons)
         {
-            for (TexturedPolygon poly : usedGroup.poly)
-            {
-                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow || glowAdditive || glowNoDepthWrite);
-            }
+            poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glowing, currentTransformationSequence);
         }
+    }
+
+    /**
+     * Flatten legacy texture groups once while retaining their established polygon
+     * order. Modern RenderTypes own the actual texture binding, but unsorted alpha
+     * blending can still make submission order visible.
+     */
+    private TexturedPolygon[] getRenderFaces()
+    {
+        int groupedFaceCount = 0;
+        for (TextureGroup group : textureGroup.values())
+            groupedFaceCount += group.poly.size();
+
+        if (renderFaces.length == groupedFaceCount)
+            return renderFaces;
+
+        TexturedPolygon[] flattened = new TexturedPolygon[groupedFaceCount];
+        int index = 0;
+        for (TextureGroup group : textureGroup.values())
+        {
+            for (TexturedPolygon polygon : group.poly)
+                flattened[index++] = polygon;
+        }
+        renderFaces = flattened;
+        return flattened;
     }
 }

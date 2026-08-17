@@ -5,6 +5,7 @@ import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
 import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmod.client.model.ModelFlash;
+import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMG;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
@@ -160,6 +161,12 @@ public final class ModelCache
     private static List<EnumRenderPass> findRenderPasses(IModelBase model)
     {
         EnumSet<EnumRenderPass> passes = EnumSet.noneOf(EnumRenderPass.class);
+
+        // Gun bullet-counter parts are marked as glowing only while they are drawn,
+        // so their required pass cannot be discovered from the model's initial flags.
+        if (model instanceof ModelGun gun && (gun.isBulletCounterActive() || gun.isAdvBulletCounterActive()))
+            passes.add(EnumRenderPass.GLOW_ALPHA);
+
         for (ModelRenderer modelRenderer : model.getBoxList())
         {
             if (modelRenderer instanceof ModelRendererTurbo turbo)
