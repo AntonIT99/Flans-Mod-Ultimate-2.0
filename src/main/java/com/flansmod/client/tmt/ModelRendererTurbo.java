@@ -10,6 +10,7 @@ import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -49,12 +50,20 @@ public class ModelRendererTurbo extends ModelRenderer
 
     /** Render-thread sequence used to deduplicate shared transform vertices per part draw. */
     private static long transformationSequence;
+    private static final ThreadLocal<ScreenSpaceCullingState> SCREEN_SPACE_CULLING =
+        ThreadLocal.withInitial(ScreenSpaceCullingState::new);
 
     private int textureOffsetX;
     private int textureOffsetY;
     private PositionTextureVertex[] vertices;
     private TexturedPolygon[] faces;
     private TexturedPolygon[] renderFaces;
+    private boolean boundsDirty = true;
+    private boolean hasStaticBounds;
+    private float boundsCenterX;
+    private float boundsCenterY;
+    private float boundsCenterZ;
+    private float boundsRadius;
     private TransformGroup currentGroup;
     private TextureGroup currentTextureGroup;
     @Setter
@@ -1910,7 +1919,10 @@ public class ModelRendererTurbo extends ModelRenderer
             }
             if (x ^ y ^ z)
                 face.flipFace();
+            else
+                face.invalidateCompiledVertices();
         }
+        boundsDirty = true;
     }
 
     /**
@@ -1945,6 +1957,8 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         vertices = new PositionTextureVertex[0];
         faces = new TexturedPolygon[0];
+        renderFaces = new TexturedPolygon[0];
+        boundsDirty = true;
         transformGroup.clear();
         transformGroup.put("0", new TransformGroupBone(new Bone(0, 0, 0, 0), 1D));
         currentGroup = transformGroup.get("0");
@@ -1972,6 +1986,7 @@ public class ModelRendererTurbo extends ModelRenderer
         System.arraycopy(verts, 0, vertices, vertexOffset, verts.length);
         System.arraycopy(poly, 0, faces, faceOffset, poly.length);
         renderFaces = new TexturedPolygon[0];
+        boundsDirty = true;
 
         if (copyGroup)
         {
@@ -2131,7 +2146,7 @@ public class ModelRendererTurbo extends ModelRenderer
             translateAndRotate(poseStack, scale, oldRotateOrder);
         }
 
-        if (faces.length != 0)
+        if (faces.length != 0 && !isBelowScreenSize(poseStack.last()))
             compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
         for (ModelRenderer childModel : childModels)
@@ -2238,5 +2253,91 @@ public class ModelRendererTurbo extends ModelRenderer
         }
         renderFaces = flattened;
         return flattened;
+    }
+
+    /** Enable conservative projected-size culling for the current world-model render. */
+    public static void beginScreenSpaceCulling(float minimumPixelDiameter, float projectionPixels)
+    {
+        ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
+        state.minimumPixelDiameter = minimumPixelDiameter;
+        state.projectionPixels = projectionPixels;
+    }
+
+    public static void endScreenSpaceCulling()
+    {
+        ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
+        state.minimumPixelDiameter = 0F;
+        state.projectionPixels = 0F;
+    }
+
+    private boolean isBelowScreenSize(PoseStack.Pose pose)
+    {
+        ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
+        if (state.minimumPixelDiameter <= 0F || state.projectionPixels <= 0F)
+            return false;
+
+        updateBounds();
+        if (!hasStaticBounds || boundsRadius <= 0F)
+            return false;
+
+        Matrix4f matrix = pose.pose();
+        float centerX = matrix.m00() * boundsCenterX + matrix.m10() * boundsCenterY + matrix.m20() * boundsCenterZ + matrix.m30();
+        float centerY = matrix.m01() * boundsCenterX + matrix.m11() * boundsCenterY + matrix.m21() * boundsCenterZ + matrix.m31();
+        float centerZ = matrix.m02() * boundsCenterX + matrix.m12() * boundsCenterY + matrix.m22() * boundsCenterZ + matrix.m32();
+
+        float scaleX = Mth.sqrt(matrix.m00() * matrix.m00() + matrix.m01() * matrix.m01() + matrix.m02() * matrix.m02());
+        float scaleY = Mth.sqrt(matrix.m10() * matrix.m10() + matrix.m11() * matrix.m11() + matrix.m12() * matrix.m12());
+        float scaleZ = Mth.sqrt(matrix.m20() * matrix.m20() + matrix.m21() * matrix.m21() + matrix.m22() * matrix.m22());
+        float worldRadius = boundsRadius * Math.max(scaleX, Math.max(scaleY, scaleZ));
+        float centerDistance = Mth.sqrt(centerX * centerX + centerY * centerY + centerZ * centerZ);
+        float nearestDistance = Math.max(0.01F, centerDistance - worldRadius);
+        float projectedDiameter = 2F * worldRadius * state.projectionPixels / nearestDistance;
+        return projectedDiameter < state.minimumPixelDiameter;
+    }
+
+    private void updateBounds()
+    {
+        if (!boundsDirty)
+            return;
+        boundsDirty = false;
+        hasStaticBounds = false;
+        if (vertices.length == 0)
+            return;
+
+        float minX = Float.POSITIVE_INFINITY;
+        float minY = Float.POSITIVE_INFINITY;
+        float minZ = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY;
+        float maxY = Float.NEGATIVE_INFINITY;
+        float maxZ = Float.NEGATIVE_INFINITY;
+        for (PositionTextureVertex vertex : vertices)
+        {
+            if (vertex == null || vertex instanceof PositionTransformVertex)
+                return;
+            float x = (float)vertex.vector3D.x() * 0.0625F;
+            float y = (float)vertex.vector3D.y() * 0.0625F;
+            float z = (float)vertex.vector3D.z() * 0.0625F;
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+        }
+
+        boundsCenterX = (minX + maxX) * 0.5F;
+        boundsCenterY = (minY + maxY) * 0.5F;
+        boundsCenterZ = (minZ + maxZ) * 0.5F;
+        float extentX = (maxX - minX) * 0.5F;
+        float extentY = (maxY - minY) * 0.5F;
+        float extentZ = (maxZ - minZ) * 0.5F;
+        boundsRadius = Mth.sqrt(extentX * extentX + extentY * extentY + extentZ * extentZ);
+        hasStaticBounds = true;
+    }
+
+    private static final class ScreenSpaceCullingState
+    {
+        private float minimumPixelDiameter;
+        private float projectionPixels;
     }
 }

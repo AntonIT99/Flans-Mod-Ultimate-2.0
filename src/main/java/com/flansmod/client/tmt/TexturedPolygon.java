@@ -26,6 +26,7 @@ public class TexturedPolygon
     private List<Vec3> iNormals;
     private final boolean hasTransformVertices;
     private final int[] renderVertexIndices;
+    private float[] compiledStaticVertices;
     private boolean cachedFaceNormalValid;
     private float cachedFaceNormalX;
     private float cachedFaceNormalY;
@@ -71,6 +72,7 @@ public class TexturedPolygon
         }
 
         this.vertexPositions = var1;
+        compiledStaticVertices = null;
         cachedFaceNormalValid = false;
     }
 
@@ -126,12 +128,56 @@ public class TexturedPolygon
                 return;
         }
 
-        for (int vertexIndex : renderVertexIndices)
+        if (!hasTransformVertices)
         {
-            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
-                    packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                    perVertexNormalCount, hasPerVertexNormals, vertexIndex);
+            float[] staticVertices = getCompiledStaticVertices();
+            for (int vertexIndex : renderVertexIndices)
+            {
+                int dataIndex = vertexIndex * 5;
+                emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
+                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                        perVertexNormalCount, hasPerVertexNormals, vertexIndex,
+                        staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2],
+                        staticVertices[dataIndex + 3], staticVertices[dataIndex + 4]);
+            }
         }
+        else
+        {
+            for (int vertexIndex : renderVertexIndices)
+            {
+                PositionTextureVertex vertex = vertexPositions[vertexIndex];
+                emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
+                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                        perVertexNormalCount, hasPerVertexNormals, vertexIndex,
+                        (float)vertex.vector3D.x() * INV_16, (float)vertex.vector3D.y() * INV_16,
+                        (float)vertex.vector3D.z() * INV_16, vertex.texturePositionX, vertex.texturePositionY);
+            }
+        }
+    }
+
+    private float[] getCompiledStaticVertices()
+    {
+        if (compiledStaticVertices != null)
+            return compiledStaticVertices;
+
+        float[] data = new float[nVertices * 5];
+        for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+        {
+            PositionTextureVertex vertex = vertexPositions[vertexIndex];
+            int dataIndex = vertexIndex * 5;
+            data[dataIndex] = (float)vertex.vector3D.x() * INV_16;
+            data[dataIndex + 1] = (float)vertex.vector3D.y() * INV_16;
+            data[dataIndex + 2] = (float)vertex.vector3D.z() * INV_16;
+            data[dataIndex + 3] = vertex.texturePositionX;
+            data[dataIndex + 4] = vertex.texturePositionY;
+        }
+        compiledStaticVertices = data;
+        return data;
+    }
+
+    void invalidateCompiledVertices()
+    {
+        compiledStaticVertices = null;
     }
 
     /**
@@ -216,10 +262,8 @@ public class TexturedPolygon
             Vector3f transformedNormal, VertexConsumer vertexConsumer,
             int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
             boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
-            int vertexIndex)
+            int vertexIndex, float localX, float localY, float localZ, float textureX, float textureY)
     {
-        PositionTextureVertex vertex = vertexPositions[vertexIndex];
-
         if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
         {
             Vec3 normal = iNormals.get(vertexIndex);
@@ -231,15 +275,11 @@ public class TexturedPolygon
         final float normalY = glow ? 1F : transformedNormal.y();
         final float normalZ = glow ? 0F : transformedNormal.z();
 
-        final float localX = (float)vertex.vector3D.x() * INV_16;
-        final float localY = (float)vertex.vector3D.y() * INV_16;
-        final float localZ = (float)vertex.vector3D.z() * INV_16;
-
         final float transformedX = positionMatrix.m00() * localX + positionMatrix.m10() * localY + positionMatrix.m20() * localZ + positionMatrix.m30();
         final float transformedY = positionMatrix.m01() * localX + positionMatrix.m11() * localY + positionMatrix.m21() * localZ + positionMatrix.m31();
         final float transformedZ = positionMatrix.m02() * localX + positionMatrix.m12() * localY + positionMatrix.m22() * localZ + positionMatrix.m32();
 
-        vertexConsumer.vertex(transformedX, transformedY, transformedZ, red, green, blue, alpha, vertex.texturePositionX, vertex.texturePositionY, packedOverlay, finalLight, normalX, normalY, normalZ);
+        vertexConsumer.vertex(transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY, normalZ);
     }
 
     private static final class RenderScratch

@@ -5,6 +5,8 @@ import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
@@ -28,10 +30,12 @@ import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -74,7 +78,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
-        updatePassengerGunPivots(driveable, type, model);
+        history.updatePassengerGunPivots(driveable, type, model);
         renderDiagnosticMarkers(driveable, type);
         float throttle = Mth.lerp(partialTick, history.previousThrottle, history.throttle);
         float steering = Mth.lerp(partialTick, history.previousSteering, history.steering);
@@ -128,15 +132,31 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+        float minimumPartPixels = (float)ModClientConfig.get().minimumDriveablePartPixelSize;
+        boolean useScreenSpaceCulling = minimumPartPixels > 0F;
+        if (useScreenSpaceCulling)
         {
-            model.render(driveable, state, poseStack,
-                buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+            float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11())
+                * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
+            ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
         }
-        poseStack.popPose();
-        if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
-            renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
+        try
+        {
+            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+            {
+                model.render(driveable, state, poseStack,
+                    buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
+                    packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+            }
+            poseStack.popPose();
+            if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
+                renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
+        }
+        finally
+        {
+            if (useScreenSpaceCulling)
+                ModelRendererTurbo.endScreenSpaceCulling();
+        }
         poseStack.popPose();
     }
 
@@ -154,6 +174,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
     {
+        if (!ModClient.isDebug())
+            return;
+
         Integer renderedTick = diagnosticMarkerTicks.get(driveable);
         if (renderedTick != null && renderedTick == driveable.tickCount)
             return;
@@ -344,6 +367,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private GunItem rightGunItem;
         private int leftGunRounds = -1;
         private int rightGunRounds = -1;
+        private DriveableType passengerPivotType;
+        private ModelDriveable passengerPivotModel;
+
+        private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
+        {
+            if (passengerPivotType == type && passengerPivotModel == model)
+                return;
+            DriveableRenderer.updatePassengerGunPivots(driveable, type, model);
+            passengerPivotType = type;
+            passengerPivotModel = model;
+        }
 
         private void advance(Driveable driveable, DriveableType type)
         {

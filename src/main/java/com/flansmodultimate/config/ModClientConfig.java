@@ -22,6 +22,7 @@ public final class ModClientConfig
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
     public final int aaGunRenderDistance;
+    public final double minimumDriveablePartPixelSize;
     public final int particleRenderDistance;
     public final int fullParticleDensityDistance;
     public final double distantParticleDensity;
@@ -68,6 +69,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final ForgeConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
     private static final ForgeConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
@@ -149,6 +151,9 @@ public final class ModClientConfig
         AA_GUN_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for AA guns.")
             .defineInRange("aaGunRenderDistance", 128, 1, 4096);
+        MINIMUM_DRIVEABLE_PART_PIXEL_SIZE = builder
+            .comment("Skip individual driveable model parts whose projected bounding diameter is smaller than this many physical screen pixels. Set to 0 to disable. Only affects driveables rendered in the world.")
+            .defineInRange("minimumDriveablePartPixelSize", 0.75D, 0D, 16D);
         builder.pop();
 
         builder.push("Particle Rendering Settings");
@@ -238,6 +243,7 @@ public final class ModClientConfig
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
         aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
+        minimumDriveablePartPixelSize = MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get();
         particleRenderDistance = PARTICLE_RENDER_DISTANCE.get();
         fullParticleDensityDistance = Math.min(FULL_PARTICLE_DENSITY_DISTANCE.get(), particleRenderDistance);
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
