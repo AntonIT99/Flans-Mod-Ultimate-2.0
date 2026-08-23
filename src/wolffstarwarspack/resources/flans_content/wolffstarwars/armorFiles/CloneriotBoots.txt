@@ -1,0 +1,9 @@
+Name Clonetrooper Boots
+ShortName cloneriotBoots
+ItemID 31251
+Icon cloneriotboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooperriotlegs
+Model mineworld.CloneBootsRiot

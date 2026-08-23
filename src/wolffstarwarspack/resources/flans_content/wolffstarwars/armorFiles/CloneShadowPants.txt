@@ -1,0 +1,9 @@
+Name Clone Shadow Trooper Pants
+ShortName cloneShadowPants
+ItemID 31221
+Icon cloneshadowpants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetroopershadowlegs
+Model mineworld.ClonePants212

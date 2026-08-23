@@ -1,0 +1,9 @@
+Name Clone 212th Attack Battalion Boots
+ShortName clone212Boots
+ItemID 31219
+Icon clone212boots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooper212legs
+Model mineworld.CloneBoots212

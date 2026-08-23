@@ -1,0 +1,182 @@
+{
+  "blaster": {
+    "category": "player",
+    "sounds": [
+      "flansmod:blaster"
+    ]
+  },
+  "bullet": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullet"
+    ]
+  },
+  "mg42reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg42reload"
+    ]
+  },
+  "lugerreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lugerreload"
+    ]
+  },
+  "reload1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:reload1"
+    ]
+  },
+  "rifle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rifle"
+    ]
+  },
+  "dc19shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dc19shoot"
+    ]
+  },
+  "minigunwarmup": {
+    "category": "player",
+    "sounds": [
+      "flansmod:minigunwarmup"
+    ]
+  },
+  "minigunspin": {
+    "category": "player",
+    "sounds": [
+      "flansmod:minigunspin"
+    ]
+  },
+  "miniguncooldown": {
+    "category": "player",
+    "sounds": [
+      "flansmod:miniguncooldown"
+    ]
+  },
+  "detonator": {
+    "category": "player",
+    "sounds": [
+      "flansmod:detonator"
+    ]
+  },
+  "detonator_explosion": {
+    "category": "player",
+    "sounds": [
+      "flansmod:detonator_explosion"
+    ]
+  },
+  "lightsaber_idle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lightsaber_idle"
+    ]
+  },
+  "lightsaber_swing": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lightsaber_swing"
+    ]
+  },
+  "dc15shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dc15shoot"
+    ]
+  },
+  "dc17shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dc17shoot"
+    ]
+  },
+  "e5shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:e5shoot"
+    ]
+  },
+  "z6blastershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:z6blastershoot"
+    ]
+  },
+  "z6blastercooldown": {
+    "category": "player",
+    "sounds": [
+      "flansmod:z6blastercooldown"
+    ]
+  },
+  "z6blasterwarmup": {
+    "category": "player",
+    "sounds": [
+      "flansmod:z6blasterwarmup"
+    ]
+  },
+  "droidekashoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:droidekashoot"
+    ]
+  },
+  "mg34shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg34shoot"
+    ]
+  },
+  "bazookareload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bazookareload"
+    ]
+  },
+  "flamethrower": {
+    "category": "player",
+    "sounds": [
+      "flansmod:flamethrower"
+    ]
+  },
+  "g41shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:g41shoot"
+    ]
+  },
+  "mg42shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg42shoot"
+    ]
+  },
+  "miniuzishoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:miniuzishoot"
+    ]
+  },
+  "moabdelay": {
+    "category": "player",
+    "sounds": [
+      "flansmod:moabdelay"
+    ]
+  },
+  "moabexplosion": {
+    "category": "player",
+    "sounds": [
+      "flansmod:moabexplosion"
+    ]
+  },
+  "stg44shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:stg44shoot"
+    ]
+  }
+}

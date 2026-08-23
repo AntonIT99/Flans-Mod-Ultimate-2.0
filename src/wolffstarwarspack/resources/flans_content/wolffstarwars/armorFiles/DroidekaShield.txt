@@ -1,0 +1,15 @@
+Name Droideka Shield
+ShortName droidekashield
+ItemID 31218
+Icon droidekashield
+Colour 255 255 255
+Type Body
+Defence 0.3
+ArmourTexture droidekashield
+Model mineworld.DroidekaShield
+SmokeProtection True
+NightVision False
+KnockbackModifier 0.8
+Overlay shieldblue
+Description Blue droideka deflector shield
+

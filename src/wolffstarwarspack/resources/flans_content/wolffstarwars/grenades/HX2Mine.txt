@@ -1,0 +1,49 @@
+////Name and icon
+Name HX2 Mine
+ShortName hx2mine
+Icon hx2mine
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+ItemID 23698
+StackSize 5
+////Visuals
+Model mineworld.SWMine
+Texture itemhx2mine
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 0
+//SmokeParticleType <particleType>
+SpinWhenThrown false
+////Throwing
+ThrowDelay 10
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.0
+HitEntityDamage 0
+ThrowSpeed 0.1
+FallSpeed 1.0
+BreaksGlass false
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger 3.0
+LivingProximityTrigger 3.0
+Fuse 0
+DetonateWhenShot true
+Remote false
+DespawnTime 32000
+PrimeDelay 100
+////Detonation
+FireRadius 0.0
+ExplosionRadius 5.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+//Detonate Sound <sound>
+DetonateSound detonator_explosion

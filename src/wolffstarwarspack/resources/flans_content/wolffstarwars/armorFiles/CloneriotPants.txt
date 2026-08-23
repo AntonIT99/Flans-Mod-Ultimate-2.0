@@ -1,0 +1,9 @@
+Name Clonetrooper Pants
+ShortName cloneriotPants
+ItemID 31253
+Icon cloneriotpants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetrooperriotlegs
+Model mineworld.ClonePants

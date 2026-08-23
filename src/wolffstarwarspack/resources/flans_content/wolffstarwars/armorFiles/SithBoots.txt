@@ -1,0 +1,11 @@
+Name Sith Boots
+ShortName SithBootsPowered
+ItemID 31262
+Icon sithboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture sith_layer
+MoveSpeedModifier 1.25
+JumpModifier 5.0
+NegateFallDamage True

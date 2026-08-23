@@ -1,0 +1,52 @@
+////Name and icon
+Name Smoke Detonator
+ShortName SmokeDetonator
+Icon itemthermaldetonator
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+ItemID 23712
+StackSize 4
+////Visuals
+Model mineworld.ThermalDetonator
+Texture thermaldetonatorsmoke
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 600
+//ExplodeParticleType hugeexplosion
+//ExplodeParticleType flame
+//ExplodeParticleType smoke
+//SmokeParticleType <particleType>
+SmokeEffect 15 100 0
+SmokeEffect 2 100 0
+SmokeRadius 5
+SpinWhenThrown true
+////Throwing
+ThrowDelay 8
+//ThrowSound <sound>
+ThrowSound detonator
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.8
+HitEntityDamage 1
+ThrowSpeed 2.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+DetonateWhenShot true
+PrimeDelay 0
+////Detonation
+Fuse 80
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//Detonate Sound <sound>
+ModelScale 1.2

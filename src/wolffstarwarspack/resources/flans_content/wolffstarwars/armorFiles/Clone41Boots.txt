@@ -1,0 +1,9 @@
+Name Clone 41st Elite Corps Boots
+ShortName clone41Boots
+ItemID 31219
+Icon clonetrooperboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooperlegs
+Model mineworld.CloneBoots

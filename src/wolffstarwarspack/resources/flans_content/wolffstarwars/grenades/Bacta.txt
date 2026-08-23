@@ -1,0 +1,45 @@
+////Name and icon
+Name Bacta
+ShortName healingbacta
+Icon bacta
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Visuals
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 1
+SmokeEffect 6 1 1
+SmokeEffect 10 200 1
+SmokeEffect 12 1 0
+SmokeParticles heart
+SpinWhenThrown true
+////Throwing
+ThrowDelay 100
+ThrowSound CreeperExplode
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 1.0
+HitEntityDamage 0
+ThrowSpeed 1.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+StackSize 4
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 0.5
+//Sticks to the thrower
+StickToThrower true
+Fuse 1
+DetonateWhenShot false
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+Description right click to heal yourself

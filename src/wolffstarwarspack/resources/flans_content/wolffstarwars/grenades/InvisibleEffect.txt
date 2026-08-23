@@ -1,0 +1,43 @@
+////Name and icon
+Name Invisible Effect for Droid Armour 
+ShortName InvisibleEffect
+Icon invisibleeffect
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Visuals
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 1
+SmokeEffect 14 100000000 0
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+////Throwing
+ThrowDelay 100
+ThrowSound CreeperExplode
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 1.0
+HitEntityDamage 0
+ThrowSpeed 1.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+StackSize 1
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger 0.5
+//Sticks to the thrower
+StickToThrower true
+Fuse 1
+DetonateWhenShot false
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+Description For players, to use with battle droid armours
