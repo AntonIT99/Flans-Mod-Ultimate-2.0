@@ -1,0 +1,62 @@
+Name Z-6 Rotary Blaster Cannon
+ShortName Z6rotaryblaster
+//The ammo this gun uses (shortName)
+Ammo Dc15Ammo
+Ammo blasterStunAmmo
+Icon minigun
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1
+//The amount of knockback dealt to the player when using this. Negated by sneaking
+Knockback 0.5
+//Damage in half hearts
+Damage 4
+//The higher this value, the more the bullets spread
+Accuracy 10
+//Time in ticks between rounds
+ShootDelay 1
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+NumBullets 1
+//Spin sound plays the whole time the player holds the shoot button, on loop. Warmup plays first, and cooldown plays when they stop firing
+WarmupSound z6blasterwarmup
+SpinSound MinigunSpin
+CooldownSound z6blastercooldown
+WarmupSoundLength 13
+SpinSoundLength 9
+ShootSound z6blastershoot
+SoundLength 30
+ReloadSound MG42Reload
+Mode MiniGun
+BulletSpeed 3.0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model mineworld.Z6Blaster
+Texture z6blaster
+ModelScale 1.0
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+//AllowAttachments flanMWSilencer flanMWRedDot flanMWACOG
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+MoveSpeedModifier 0.8
+KnockbackModifier 0.4
+ShowDamage True
+ShowRecoil True
+ShowAccuracy True
+ShowReloadTime True
+//Muzzle Flashes
+FlashModel mineworld.MuzzleFlash
+FlashTexture sw_blueflash

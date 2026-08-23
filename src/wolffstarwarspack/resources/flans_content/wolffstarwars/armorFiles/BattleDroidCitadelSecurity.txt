@@ -1,0 +1,12 @@
+Name Battle Droid B1 Citadel Security
+ShortName BattleDroidCitadelSecurity
+ItemID 31218
+Icon battledroidcitadelsecurity
+Colour 255 255 255
+Type Head
+Defence 0.4
+ArmourTexture battledroidcitadelsecurity
+Model mineworld.BattleDroid
+SmokeProtection False
+NightVision True
+Invisible True

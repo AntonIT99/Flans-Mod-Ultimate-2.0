@@ -1,0 +1,9 @@
+Name Clone Ghost Company Pants
+ShortName cloneghostPants
+ItemID 31221
+Icon clonetrooperpants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetrooperlegs
+Model mineworld.ClonePants

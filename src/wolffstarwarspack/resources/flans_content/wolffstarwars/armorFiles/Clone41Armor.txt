@@ -1,0 +1,9 @@
+Name Clone 41st Elite Corps Armor
+ShortName clone41Armor
+ItemID 31218
+Icon clone41armor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooper41chestplate
+Model mineworld.CloneChestplate

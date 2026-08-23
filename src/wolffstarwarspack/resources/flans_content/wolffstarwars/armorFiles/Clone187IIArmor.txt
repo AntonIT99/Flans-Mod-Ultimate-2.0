@@ -1,0 +1,9 @@
+Name ClonetrooperArmor
+ShortName clone187IIArmor
+ItemID 31250
+Icon clone187iiarmor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooperii187chestplate
+Model mineworld.CloneChestplateIIShock

@@ -1,0 +1,11 @@
+Name Clonelieutnant Helmet
+ShortName clonelieutnantHelmet
+ItemID 31236
+Icon clonelieutnanthelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture clonetrooperlieutenanthelmet
+Model mineworld.CloneHelmet
+SmokeProtection True
+Overlay clonehelmet

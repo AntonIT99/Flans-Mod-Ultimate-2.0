@@ -1,0 +1,8 @@
+Name Jedi Boots
+ShortName JediHood
+ItemID 31262
+Icon jedihelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.05
+ArmourTexture jedi_layer

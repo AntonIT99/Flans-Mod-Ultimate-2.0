@@ -1,0 +1,11 @@
+Name Clone 501st Legion Helmet
+ShortName clone501Helmet
+ItemID 31220
+Icon clone501helmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture clonetrooper501helmet
+Model mineworld.CloneHelmet501
+SmokeProtection True
+Overlay clonehelmet

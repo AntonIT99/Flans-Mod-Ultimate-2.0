@@ -1,0 +1,9 @@
+Name Clone Torrent Company Armor
+ShortName clonetorrentArmor
+ItemID 31218
+Icon clonetorrentarmor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetroopertorrentchestplate
+Model mineworld.CloneChestplate

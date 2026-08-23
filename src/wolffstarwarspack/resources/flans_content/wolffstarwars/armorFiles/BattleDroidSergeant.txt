@@ -1,0 +1,12 @@
+Name Battle Droid B1 Sergeant
+ShortName BattleDroidSergeant
+ItemID 31218
+Icon battledroidsergeant
+Colour 255 255 255
+Type Head
+Defence 0.4
+ArmourTexture battledroidsergeant
+Model mineworld.BattleDroid
+SmokeProtection False
+NightVision True
+Invisible True

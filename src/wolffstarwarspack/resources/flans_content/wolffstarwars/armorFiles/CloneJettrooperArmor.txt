@@ -1,0 +1,10 @@
+Name Clone Jet Trooper Armour
+ShortName JettrooperArmor
+ItemID 31246
+Icon jettrooperarmor
+Colour 255 255 255
+Type Boots
+Defence 0.3
+ArmourTexture clonejettrooperchestplate
+Model mineworld.CloneJettrooperArmour
+NegateFallDamage True

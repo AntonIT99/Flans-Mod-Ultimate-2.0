@@ -1,0 +1,9 @@
+Name Cody's Clone Pants
+ShortName codyclonePants
+ItemID 31245
+Icon codyclonepants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture codylegs
+Model mineworld.ClonePantsCody

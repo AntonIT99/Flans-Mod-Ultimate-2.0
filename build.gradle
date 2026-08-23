@@ -37,6 +37,11 @@ sourceSets {
         runtimeClasspath += sourceSets.main.runtimeClasspath
         resources.exclude 'flans_models/**/common/*PackMod.class'
     }
+    wolffstarwarspack {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+        resources.exclude 'flans_models/**/common/*PackMod.class'
+    }
     test {
         // ModDevGradle attaches the remapped Minecraft/NeoForge artifacts to
         // the main source set. Unit tests exercise classes with Minecraft API
@@ -121,6 +126,9 @@ neoForge {
         "flansmodultimate_officialpacks" {
             sourceSet(sourceSets.officialpacks)
         }
+        "flansmodultimate_wolff_starwars" {
+            sourceSet(sourceSets.wolffstarwarspack)
+        }
     }
 }
 
@@ -136,10 +144,14 @@ configurations {
     officialpacksImplementation.extendsFrom implementation
     officialpacksCompileOnly.extendsFrom compileOnly
     officialpacksAnnotationProcessor.extendsFrom annotationProcessor
+    wolffstarwarspackImplementation.extendsFrom implementation
+    wolffstarwarspackCompileOnly.extendsFrom compileOnly
+    wolffstarwarspackAnnotationProcessor.extendsFrom annotationProcessor
 }
 
 dependencies {
     officialpacksImplementation sourceSets.main.output
+    wolffstarwarspackImplementation sourceSets.main.output
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
@@ -246,6 +258,23 @@ var generateOfficialPacksModMetadata = tasks.register("generateOfficialPacksModM
 sourceSets.officialpacks.resources.srcDir generateOfficialPacksModMetadata
 neoForge.ideSyncTask generateOfficialPacksModMetadata
 
+var generateWolffStarWarsPackModMetadata = tasks.register("generateWolffStarWarsPackModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_version            : mod_version,
+            mod_license            : mod_license,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/wolffstarwarspack/templates"
+    into "build/generated/sources/wolffStarWarsPackModMetadata"
+}
+sourceSets.wolffstarwarspack.resources.srcDir generateWolffStarWarsPackModMetadata
+neoForge.ideSyncTask generateWolffStarWarsPackModMetadata
+
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
@@ -304,8 +333,20 @@ def officialPacksJar = tasks.register('officialPacksJar', Jar) {
     }
 }
 
+def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] Wolff's Star Wars Pack")
+    archiveVersion.set('3.0')
+    from sourceSets.wolffstarwarspack.output
+    manifest {
+        attributes(
+                'Implementation-Title': 'wolffstarwarspack',
+                'Implementation-Version': '3.0'
+        )
+    }
+}
+
 tasks.named('assemble').configure {
-    dependsOn packsJar, officialPacksJar
+    dependsOn packsJar, officialPacksJar, wolffStarWarsPackJar
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

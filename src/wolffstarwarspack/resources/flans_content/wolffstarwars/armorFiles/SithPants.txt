@@ -1,0 +1,8 @@
+Name Sith Boots
+ShortName SithPants
+ItemID 31262
+Icon sithleggings
+Colour 255 255 255
+Type Pants
+Defence 0.3
+ArmourTexture sith_layer

@@ -1,0 +1,9 @@
+Name Clonetrooper Boots
+ShortName cloneKaminoBoots
+ItemID 31251
+Icon clonekaminoboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooperiikaminolegs
+Model mineworld.CloneBoots
