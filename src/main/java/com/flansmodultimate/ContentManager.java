@@ -61,7 +61,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
@@ -77,8 +76,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContentManager
@@ -141,6 +138,7 @@ public class ContentManager
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
+    private static Set<Path> excludedFlanArchives = Set.of();
 
     // Keep track of registered items and loaded textures and models
     /** &lt; shortname, config file string representation &gt; */
@@ -181,119 +179,43 @@ public class ContentManager
         textures.put(FOLDER_TEXTURES_SKINS, new HashMap<>());
     }
 
-    /**
-     * Scan the mod-loader mods folder for misplaced Flan content packs and move them to flanFolder.
-     * - If destination already exists: do NOT move, log a warning.
-     * - Any IOExceptions are handled internally (won't crash startup).
-     */
-    public static void searchForContentPacksInModsFolder()
+    /** Reconciles misplaced standalone content archives and packaged-content mod JARs. */
+    public static void reconcileContentPackLocations()
     {
-        final Path modsFolder = FMLPaths.MODSDIR.get();
-
-        if (canSearchModsFolderForContentPacks(modsFolder))
-        {
-            try
-            {
-                moveMisplacedContentPacks(modsFolder);
-            }
-            catch (IOException e)
-            {
-                FlansMod.log.warn("Error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
-            }
-            catch (Exception e)
-            {
-                FlansMod.log.warn("Unexpected error while scanning mods folder '{}' for misplaced content packs: {}", modsFolder.toAbsolutePath(), e.toString());
-            }
-        }
-    }
-
-    private static boolean canSearchModsFolderForContentPacks(Path modsFolder)
-    {
-        return flanFolder != null && FileUtils.tryCreateDirectories(flanFolder) && Files.isDirectory(modsFolder);
-    }
-
-    private static void moveMisplacedContentPacks(Path modsFolder) throws IOException
-    {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsFolder, ContentManager::isJarOrZipFile))
-        {
-            for (Path candidate : stream)
-                moveContentPackIfNeeded(candidate);
-        }
-    }
-
-    private static boolean isJarOrZipFile(Path entry)
-    {
-        if (!Files.isRegularFile(entry))
-            return false;
-
-        String name = entry.getFileName().toString().toLowerCase(Locale.ROOT);
-        return name.endsWith(FileUtils.JAR_EXTENSION) || name.endsWith(FileUtils.ZIP_EXTENSION);
-    }
-
-    private static void moveContentPackIfNeeded(Path candidate)
-    {
-        if (!isReadableContentPack(candidate))
+        loadFlanFolder();
+        if (flanFolder == null)
             return;
 
-        Path destination = flanFolder.resolve(candidate.getFileName());
-        if (Files.exists(destination))
+        Path gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize();
+        Path normalizedFlanFolder = flanFolder.toAbsolutePath().normalize();
+        boolean isGameDirectory = normalizedFlanFolder.equals(gameDir);
+        try
         {
-            FlansMod.log.warn("Found Flan content pack '{}' in mods folder, but '{}' already exists in '{}'. Not moving to avoid overwriting.", candidate.getFileName(), destination.getFileName(), flanFolder.toAbsolutePath());
+            isGameDirectory = isGameDirectory || Files.isSameFile(normalizedFlanFolder, gameDir);
+        }
+        catch (IOException ignored)
+        {
+        }
+        if (isGameDirectory)
+        {
+            FlansMod.log.warn("Content pack relocation is disabled because the configured flan folder is the game directory: '{}'.", gameDir);
             return;
         }
 
-        moveContentPack(candidate, destination);
-    }
-
-    private static boolean isReadableContentPack(Path candidate)
-    {
-        try
-        {
-            return looksLikeContentPack(candidate);
-        }
-        catch (IOException e)
-        {
-            return false;
-        }
-    }
-
-    private static void moveContentPack(Path candidate, Path destination)
-    {
-        try
-        {
-            FileUtils.safeMove(candidate, destination);
-            FlansMod.log.info("Moved misplaced Flan content pack '{}' to '{}'.", candidate.getFileName(), flanFolder.toAbsolutePath());
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.warn("Failed to move '{}' to '{}': {}", candidate.getFileName(), destination, e.toString());
-        }
-    }
-
-    /**
-     * Identification rules:
-     *  - Must contain at least one entry under assets/flansmod/
-     *  - Must not contain Forge or NeoForge mod metadata
-     */
-    private static boolean looksLikeContentPack(Path jarOrZip) throws IOException
-    {
-        try (ZipFile zip = new ZipFile(jarOrZip.toFile()))
-        {
-            // A real loader mod can also contain legacy Flan assets; never relocate it as a content pack.
-            if (zip.getEntry("META-INF/mods.toml") != null || zip.getEntry("META-INF/neoforge.mods.toml") != null)
-                return false;
-
-            // Prefix scan with early exit
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements())
-            {
-                ZipEntry e = entries.nextElement();
-                String name = e.getName();
-                if (name.startsWith("assets/flansmod/"))
-                    return true;
-            }
-            return false;
-        }
+        ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(
+            FMLPaths.MODSDIR.get(), normalizedFlanFolder,
+            gameDir.resolve(ContentPackRelocator.CACHE_FILE_NAME)
+        );
+        excludedFlanArchives = result.excludedFromContentLoading();
+        result.warnings().forEach(FlansMod.log::warn);
+        if (result.movedContentPacks() > 0)
+            FlansMod.log.info("Moved {} misplaced standalone Flan content pack(s) from mods to '{}'.",
+                result.movedContentPacks(), normalizedFlanFolder);
+        if (result.restartRequired())
+            FlansMod.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.",
+                result.movedBundles(), FMLPaths.MODSDIR.get().toAbsolutePath());
+        FlansMod.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).",
+            result.elapsedMillis(), result.inspectedArchives());
     }
 
     public static void findContentInFlanFolder()
@@ -584,6 +506,13 @@ public class ContentManager
             return stream.filter(path -> {
                 if (path.equals(rootPath))
                     return false;
+
+                if (excludedFlanArchives.contains(path.toAbsolutePath().normalize()))
+                {
+                    FlansMod.log.warn("Skipping pack mod bundle '{}' in the flan folder; move it to the mods folder as a JAR.",
+                        path.getFileName());
+                    return false;
+                }
 
                 if (Files.isDirectory(path) || path.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.JAR_EXTENSION) || path.toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.ZIP_EXTENSION))
                 {
