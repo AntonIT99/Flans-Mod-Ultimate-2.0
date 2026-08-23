@@ -9,6 +9,7 @@ Repository-wide guidance. A nested `AGENTS.md` or `AGENTS.override.md` takes pre
 | `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
 | `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
+| `26.2` | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
 
 Check the current branch and `gradle.properties` first. When porting, preserve behavior but adapt loader imports, events, registration, networking, metadata, and Minecraft APIs; do not apply cross-branch code mechanically.
 
@@ -34,11 +35,11 @@ Use the Gradle wrapper (`./gradlew` on Linux/macOS):
 .\gradlew.bat packsJar officialPacksJar
 ```
 
-Run focused tests first. Run a full build after changes to loader setup, registries, networking, entities, resources, source sets, or packaging. CI uses Java 17 for `master`, Java 21 for `1.21.1`, and Java 25 for `26.1.2`; keep `gradlew` executable.
+Run focused tests first. Run a full build after changes to loader setup, registries, networking, entities, resources, source sets, or packaging. CI uses Java 17 for `master`, Java 21 for `1.21.1`, and Java 25 for `26.1.2` and `26.2`; keep `gradlew` executable.
 
 ## Project Rules
 
-- `master` uses `net.minecraftforge.*` and `src/main/resources/META-INF/mods.toml`; `1.21.1` and `26.1.2` use `net.neoforged.*` and generated `neoforge.mods.toml` metadata. The `26.1.2` branch uses modern render-state extraction and Mojang's deobfuscated names.
+- `master` uses `net.minecraftforge.*` and `src/main/resources/META-INF/mods.toml`; `1.21.1`, `26.1.2`, and `26.2` use `net.neoforged.*` and generated `neoforge.mods.toml` metadata. The 26.x branches use modern render-state extraction and Mojang's deobfuscated names; 26.2 uses the feature-rendering pipeline.
 - Keep gameplay state authoritative on the server and client-only classes out of common/server initialization. Validate entity, menu, and inventory access in packet handlers.
 - Preserve deterministic legacy-content loading and compatibility. Do not bulk-change definition whitespace, casing, filenames, encodings, or layouts.
 - Treat `src/officialpacks/resources/flans_models` as imported binary assets. Preserve exclusions for legacy `*PackMod.class` bootstrap classes.
