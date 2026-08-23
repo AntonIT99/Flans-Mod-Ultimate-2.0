@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.render.DeferredMultiBufferSubmitter;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -33,7 +34,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
@@ -56,6 +58,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -67,7 +70,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onDetachedCameraDistance(CalculateDetachedCameraDistanceEvent event)
     {
-        if (!(event.getCamera().getEntity() instanceof Player player))
+        if (!(event.getCamera().entity() instanceof Player player))
             return;
 
         var controllable = KeyInputHandler.resolveControllable(player);
@@ -124,6 +127,16 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event)
     {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player != null && minecraft.level != null)
+        {
+            ItemStack mainHand = minecraft.player.getMainHandItem();
+            if (mainHand.getItem() instanceof GunItem gun)
+                gun.clientInventoryTick(minecraft.level, minecraft.player, mainHand, InteractionHand.MAIN_HAND);
+            ItemStack offHand = minecraft.player.getOffhandItem();
+            if (offHand.getItem() instanceof GunItem gun)
+                gun.clientInventoryTick(minecraft.level, minecraft.player, offHand, InteractionHand.OFF_HAND);
+        }
         GunInputState.tick();
         ModClient.tick();
     }
@@ -159,19 +172,23 @@ public final class ClientEventHandler
 
     /** Render world-space geometry AFTER particles/translucents so the trail blends nicely. */
     @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent event)
+    public static void extractLevelRenderState(ExtractLevelRenderStateEvent event)
     {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
-            return;
-        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getCamera());
+        InstantBulletRenderer.extract(event.getRenderState(),
+            event.getDeltaTracker().getGameTimeDeltaPartialTick(true), event.getCamera());
+    }
+
+    @SubscribeEvent
+    public static void submitCustomGeometry(SubmitCustomGeometryEvent event)
+    {
+        InstantBulletRenderer.submit(event.getLevelRenderState(), event.getPoseStack(), event.getSubmitNodeCollector());
 
         if (ModClient.isDebug())
         {
+            var camera = Minecraft.getInstance().gameRenderer.getMainCamera();
             for (DebugColor debugEntity : DebugHelper.getActiveDebugEntities())
-            {
-                if (event.getFrustum().isVisible(debugEntity.getAABB()))
-                    debugEntity.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera());
-            }
+                DeferredMultiBufferSubmitter.submit(event.getPoseStack(), event.getSubmitNodeCollector(),
+                    (pose, buffers) -> debugEntity.render(pose, buffers, camera));
         }
     }
 
@@ -211,13 +228,10 @@ public final class ClientEventHandler
         }
     }
 
-    /** Set up RenderContext for gun animations and set Aim Pose when GunItem is held by players */
-    @SubscribeEvent
-    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event)
+    /** Copy Flan-specific player pose data while vanilla extracts its render state. */
+    public static void extractLivingRenderState(LivingEntity entity, net.minecraft.client.renderer.entity.state.LivingEntityRenderState renderState)
     {
-        ModClient.entityRenderContext.set(event.getEntity());
-
-        if (!(event.getEntity() instanceof Player player))
+        if (!(entity instanceof Player player))
             return;
 
         // Render debug boxes for player snapshots
@@ -228,12 +242,11 @@ public final class ClientEventHandler
                 renderSnapshot(data.getSnapshots()[0]);
         }
 
-        var model = event.getRenderer().getModel();
-        if (!(model instanceof HumanoidModel<?> humanoid))
+        if (!(renderState instanceof net.minecraft.client.renderer.entity.state.HumanoidRenderState humanoid))
             return;
 
-        ItemStack main = event.getEntity().getMainHandItem();
-        ItemStack off  = event.getEntity().getOffhandItem();
+        ItemStack main = entity.getMainHandItem();
+        ItemStack off  = entity.getOffhandItem();
         boolean mainArmPose = isGunItemWithAiming(main);
         boolean offArmPose = isGunItemWithAiming(off);
 
@@ -281,12 +294,6 @@ public final class ClientEventHandler
                 }
             }
         }
-    }
-
-    @SubscribeEvent
-    public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> e)
-    {
-        ModClient.entityRenderContext.remove();
     }
 
     private static boolean isGunItemWithAiming(ItemStack s)
@@ -383,15 +390,18 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onRenderPlayer(RenderPlayerEvent.Pre event)
+    public static void onRenderPlayer(RenderPlayerEvent.Pre<?> event)
     {
-        if (TeamsClientState.shouldHidePlayer(event.getEntity()))
+        if (Minecraft.getInstance().level == null
+            || !(Minecraft.getInstance().level.getEntity(event.getRenderState().id) instanceof Player player))
+            return;
+
+        if (TeamsClientState.shouldHidePlayer(player))
         {
             event.setCanceled(true);
             return;
         }
 
-        Player player = event.getEntity();
         if (!(player.getVehicle() instanceof Seat seat) || seat.getDriveable() == null)
             return;
         float partialTick = event.getPartialTick();
@@ -405,10 +415,10 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onRenderNameTag(RenderNameTagEvent event)
+    public static void onRenderNameTag(RenderNameTagEvent.CanRender event)
     {
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
-            event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
+            event.setCanRender(net.minecraft.util.TriState.FALSE);
     }
 
 }

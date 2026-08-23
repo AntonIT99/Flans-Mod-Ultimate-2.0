@@ -14,14 +14,14 @@ import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
@@ -59,7 +59,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))
             return true;
 
-        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -72,7 +72,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("plane"))
             return true;
 
-        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -181,7 +181,7 @@ public final class ModUtils
     {
         if (infoType != null && infoType.getType().isHasItem())
         {
-            return Optional.ofNullable(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
+            return Optional.ofNullable(BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
         }
         return Optional.empty();
     }
@@ -223,11 +223,11 @@ public final class ModUtils
             id = "minecraft:" + ResourceUtils.sanitize(id);
         }
 
-        ResourceLocation rl = ResourceLocation.tryParse(id);
+        Identifier rl = Identifier.tryParse(id);
         if (rl == null)
             return Optional.empty();
 
-        return Optional.ofNullable(BuiltInRegistries.ITEM.get(rl));
+        return Optional.ofNullable(BuiltInRegistries.ITEM.getValue(rl));
     }
 
     private static boolean isInteger(String s)
@@ -254,7 +254,7 @@ public final class ModUtils
         }
         else
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
+            return Optional.ofNullable(Identifier.tryParse(id)).map(BuiltInRegistries.BLOCK::getValue).map(Block::defaultBlockState);
         }
     }
 
@@ -267,7 +267,7 @@ public final class ModUtils
         }
         else
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.ITEM::get).map(ItemStack::new);
+            return Optional.ofNullable(Identifier.tryParse(id)).map(BuiltInRegistries.ITEM::getValue).map(ItemStack::new);
         }
     }
 
@@ -301,7 +301,7 @@ public final class ModUtils
         if (state.isAir())
             return false;
 
-        BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
+        BreakBlockEvent breakEvent = new BreakBlockEvent(level, pos, state, player);
         NeoForge.EVENT_BUS.post(breakEvent);
 
         if (breakEvent.isCanceled())
@@ -315,18 +315,18 @@ public final class ModUtils
      */
     public static void dropItem(Level level, Entity entity, @Nullable String itemName, IContentProvider contentPack)
     {
-        if (!level.isClientSide && StringUtils.isNotBlank(itemName))
+        if (level instanceof ServerLevel serverLevel && StringUtils.isNotBlank(itemName))
         {
             ItemStack dropStack = InfoType.getRecipeElement(itemName, contentPack);
-            entity.spawnAtLocation(dropStack, 0.5F);
+            entity.spawnAtLocation(serverLevel, dropStack);
         }
     }
 
     public static String getItemLocalizedName(String itemId)
     {
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
+        Item item = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
         if (item != null)
-            return item.getDescription().getString();
+            return item.getName(new ItemStack(item)).getString();
         return itemId;
     }
 

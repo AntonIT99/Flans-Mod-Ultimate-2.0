@@ -8,6 +8,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +21,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -42,7 +44,7 @@ public class SkullBossEntity extends Monster
     private static final int IDLE_TICKS = 20;
     private static final int ACTION_TICKS = 80;
 
-    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(getUUID(), Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
     private Action currentAction = Action.IDLE;
     private int actionTicks;
 
@@ -82,7 +84,7 @@ public class SkullBossEntity extends Monster
         bossEvent.setProgress(getHealth() / getMaxHealth());
         Level level = level();
 
-        if (level.isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
+        if (level.isClientSide() || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
         actionTicks++;
@@ -178,11 +180,11 @@ public class SkullBossEntity extends Monster
         int count = 1 + random.nextInt(3);
         for (int i = 0; i < count; i++)
         {
-            SkullDroneEntity drone = ApocalypseContent.skullDrone.get().create(serverLevel);
+            SkullDroneEntity drone = ApocalypseContent.skullDrone.get().create(serverLevel, EntitySpawnReason.MOB_SUMMONED);
             if (drone == null)
                 continue;
-            drone.moveTo(getX() + random.nextGaussian() * 4.0D, getY() - 2.0D + random.nextDouble() * 4.0D, getZ() + random.nextGaussian() * 4.0D, random.nextFloat() * 360.0F, 0.0F);
-            drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
+            drone.snapTo(getX() + random.nextGaussian() * 4.0D, getY() - 2.0D + random.nextDouble() * 4.0D, getZ() + random.nextGaussian() * 4.0D, random.nextFloat() * 360.0F, 0.0F);
+            drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
             serverLevel.addFreshEntity(drone);
         }
     }
@@ -210,7 +212,7 @@ public class SkullBossEntity extends Monster
             return;
 
         NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.nukeDrop.get(), serverLevel);
-        nuke.moveTo(target.getX(), Math.min(serverLevel.getMaxBuildHeight() - 4.0D, target.getY() + 48.0D), target.getZ(), 0.0F, 0.0F);
+        nuke.snapTo(target.getX(), Math.min(serverLevel.getMaxY() - 4.0D, target.getY() + 48.0D), target.getZ(), 0.0F, 0.0F);
         serverLevel.addFreshEntity(nuke);
     }
 
@@ -220,22 +222,22 @@ public class SkullBossEntity extends Monster
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, float amount)
     {
         if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_FIRE))
             return false;
 
-        return super.hurt(source, Math.min(amount, 99.0F));
+        return super.hurtServer(serverLevel, source, Math.min(amount, 99.0F));
     }
 
     @Override
     protected void dropCustomDeathLoot(@NotNull net.minecraft.server.level.ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
     {
         super.dropCustomDeathLoot(level, source, recentlyHit);
-        spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(3)));
-        spawnAtLocation(new ItemStack(Items.GUNPOWDER, 16 + random.nextInt(16)));
+        spawnAtLocation(level, new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(3)));
+        spawnAtLocation(level, new ItemStack(Items.GUNPOWDER, 16 + random.nextInt(16)));
         if (random.nextBoolean())
-            spawnAtLocation(new ItemStack(Items.TOTEM_OF_UNDYING));
+            spawnAtLocation(level, new ItemStack(Items.TOTEM_OF_UNDYING));
     }
 
     @Override
@@ -253,25 +255,25 @@ public class SkullBossEntity extends Monster
     }
 
     @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, @NotNull DamageSource source)
+    public boolean causeFallDamage(double fallDistance, float multiplier, @NotNull DamageSource source)
     {
         return false;
     }
 
     @Override
-    public void readAdditionalSaveData(@NotNull CompoundTag tag)
+    public void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        super.readAdditionalSaveData(tag);
-        currentAction = Action.byId(tag.getInt(NBT_ACTION));
-        actionTicks = tag.getInt(NBT_ACTION_TICKS);
+        super.readAdditionalSaveData(input);
+        currentAction = Action.byId(input.getIntOr(NBT_ACTION, 0));
+        actionTicks = input.getIntOr(NBT_ACTION_TICKS, 0);
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag tag)
+    public void addAdditionalSaveData(@NotNull ValueOutput output)
     {
-        super.addAdditionalSaveData(tag);
-        tag.putInt(NBT_ACTION, currentAction.ordinal());
-        tag.putInt(NBT_ACTION_TICKS, actionTicks);
+        super.addAdditionalSaveData(output);
+        output.putInt(NBT_ACTION, currentAction.ordinal());
+        output.putInt(NBT_ACTION_TICKS, actionTicks);
     }
 
     private enum Action

@@ -14,6 +14,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.ValueIOUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,12 +26,14 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -45,6 +48,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -319,22 +324,14 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         return distSq < r * r;
     }
 
-    private static int getRenderDistance()
+    public static int getRenderDistance()
     {
         ModClientConfig config = ModClientConfig.get();
         return config == null ? RENDER_DISTANCE : config.aaGunRenderDistance;
     }
 
     @Override
-    @NotNull
-    public AABB getBoundingBoxForCulling()
-    {
-        double r = getRenderDistance();
-        return new AABB(getX() - r, getY() - r, getZ() - r, getX() + r, getY() + r, getZ() + r);
-    }
-
-    @Override
-    public ItemStack getPickedResult(HitResult target)
+    public ItemStack getPickResult()
     {
         return ModUtils.getItemStack(getConfigType()).orElse(ItemStack.EMPTY);
     }
@@ -396,9 +393,14 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setShortName(tag.getString(NBT_TYPE_NAME));
+        readLegacySaveData(ValueIOUtils.toCompoundTag(input));
+    }
+
+    private void readLegacySaveData(@NotNull CompoundTag tag)
+    {
+        setShortName(tag.getString(NBT_TYPE_NAME).orElse(StringUtils.EMPTY));
 
         if (InfoType.getInfoType(shortname) instanceof AAGunType aaGunType)
             configType = aaGunType;
@@ -409,32 +411,32 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         }
 
         initType();
-        setHealth(tag.contains(NBT_HEALTH, Tag.TAG_INT) ? tag.getInt(NBT_HEALTH) : configType.getHealth());
-        setGunYaw(tag.getFloat(NBT_GUN_YAW));
-        setGunPitch(tag.getFloat(NBT_GUN_PITCH));
-        setReloadTimer(tag.getInt(NBT_RELOAD_TIMER));
-        setCurrentBarrel(tag.getInt(NBT_CURRENT_BARREL));
-        shotsFired = tag.getInt(NBT_SHOTS_FIRED);
-        if (tag.hasUUID(NBT_PLACER))
-            placerId = tag.getUUID(NBT_PLACER);
+        setHealth(tag.getInt(NBT_HEALTH).orElse(configType.getHealth()));
+        setGunYaw(tag.getFloat(NBT_GUN_YAW).orElse(0F));
+        setGunPitch(tag.getFloat(NBT_GUN_PITCH).orElse(0F));
+        setReloadTimer(tag.getInt(NBT_RELOAD_TIMER).orElse(0));
+        setCurrentBarrel(tag.getInt(NBT_CURRENT_BARREL).orElse(0));
+        shotsFired = tag.getInt(NBT_SHOTS_FIRED).orElse(0);
+        placerId = tag.read(NBT_PLACER, UUIDUtil.LENIENT_CODEC).orElse(null);
 
-        if (tag.contains(NBT_AMMO, Tag.TAG_LIST))
+        if (tag.contains(NBT_AMMO))
         {
-            ListTag ammoList = tag.getList(NBT_AMMO, Tag.TAG_COMPOUND);
+            ListTag ammoList = tag.getListOrEmpty(NBT_AMMO);
             for (int i = 0; i < ammoList.size(); i++)
             {
-                CompoundTag ammoTag = ammoList.getCompound(i);
-                int slot = ammoTag.getInt(NBT_AMMO_SLOT);
-                if (slot >= 0 && slot < ammo.length && ammoTag.contains(NBT_AMMO_STACK, Tag.TAG_COMPOUND))
-                    ammo[slot] = ItemStackData.parse(level().registryAccess(), ammoTag.getCompound(NBT_AMMO_STACK));
+                CompoundTag ammoTag = ammoList.getCompoundOrEmpty(i);
+                int slot = ammoTag.getInt(NBT_AMMO_SLOT).orElse(-1);
+                if (slot >= 0 && slot < ammo.length && ammoTag.contains(NBT_AMMO_STACK))
+                    ammo[slot] = ItemStackData.parse(level().registryAccess(), ammoTag.getCompoundOrEmpty(NBT_AMMO_STACK));
             }
         }
         updateAmmoMask();
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
+        CompoundTag tag = new CompoundTag();
         AAGunType type = getConfigType();
         if (type == null)
             return;
@@ -447,7 +449,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         tag.putInt(NBT_CURRENT_BARREL, getCurrentBarrelIndex());
         tag.putInt(NBT_SHOTS_FIRED, shotsFired);
         if (placerId != null)
-            tag.putUUID(NBT_PLACER, placerId);
+            tag.store(NBT_PLACER, UUIDUtil.CODEC, placerId);
 
         ListTag ammoList = new ListTag();
         for (int i = 0; i < ammo.length; i++)
@@ -463,6 +465,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             ammoList.add(ammoTag);
         }
         tag.put(NBT_AMMO, ammoList);
+        ValueIOUtils.storeCompoundTag(output, tag);
     }
 
     @Override
@@ -473,14 +476,14 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             Level level = level();
             AAGunType type = getConfigType();
 
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
+            if (level instanceof ServerLevel serverLevel && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
             {
                 if (type.isDropThis())
-                    spawnAtLocation(ModUtils.getItemStack(type).orElse(ItemStack.EMPTY), 0F);
+                    spawnAtLocation(serverLevel, ModUtils.getItemStack(type).orElse(ItemStack.EMPTY), 0F);
                 for (ItemStack stack : ammo)
                 {
                     if (!stack.isEmpty())
-                        spawnAtLocation(stack.copy(), 0.5F);
+                        spawnAtLocation(serverLevel, stack.copy(), 0.5F);
                 }
             }
         }
@@ -493,7 +496,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount)
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount)
     {
         Entity attacker = source.getEntity();
         Entity gunner = getFirstPassenger();
@@ -501,7 +504,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         if (attacker == gunner)
             return true;
         if (gunner != null)
-            return gunner.hurt(source, amount);
+            return gunner.hurtServer(serverLevel, source, amount);
 
         if (attacker instanceof Player && FlansMod.teamsManager.isCanBreakGuns())
         {
@@ -518,7 +521,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
 
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
         AAGunType type = getConfigType();
         if (type == null)
@@ -528,8 +531,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         Entity gunner = getFirstPassenger();
 
         if (player != gunner && gunner != null)
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        if (level.isClientSide)
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        if (level.isClientSide())
             return InteractionResult.SUCCESS;
 
         if (player == gunner)
@@ -542,7 +545,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         {
             if (player.getVehicle() != null)
                 player.stopRiding();
-            player.startRiding(this, true);
+            player.startRiding(this, true, true);
         }
 
         reloadGun(level, player);
@@ -596,7 +599,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         for (int i = 0; i < barrelRecoil.length; i++)
             barrelRecoil[i] *= 0.9F;
 
-        if (level().isClientSide)
+        if (level().isClientSide())
         {
             ClientHooks.GUN.tickAAGun(this);
             return;
@@ -828,7 +831,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     private void reloadGun(Level level, Player player)
     {
         AAGunType type = getConfigType();
-        if (level.isClientSide || type == null || getReloadTimer() > 0)
+        if (level.isClientSide() || type == null || getReloadTimer() > 0)
             return;
 
         boolean loadedAny = false;
@@ -865,9 +868,10 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             return -1;
 
         Inventory inv = player.getInventory();
-        ItemStack selected = inv.getItem(inv.selected);
+        int selectedSlot = inv.getSelectedSlot();
+        ItemStack selected = inv.getItem(selectedSlot);
         if (type.isAmmo(selected))
-            return inv.selected;
+            return selectedSlot;
 
         for (int i = 0; i < inv.getContainerSize(); i++)
         {

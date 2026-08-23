@@ -1,8 +1,6 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.entity.Seat;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -47,7 +45,6 @@ public interface IControllable
 	 */
 	float getCameraDistance();
 	
-	@OnlyIn(Dist.CLIENT)
     LivingEntity getCamera();
 
 	Seat getSeat(LivingEntity living);

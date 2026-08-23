@@ -5,20 +5,20 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 /**
  * Reimplementation of Flan's Mod 1.7.10's EntityDebris1.
  */
-public final class Debris1Particle extends TextureSheetParticle
+public final class Debris1Particle extends SingleQuadParticle
 {
     private Debris1Particle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
-        super(level, x, y, z, vx, vy, vz);
+        super(level, x, y, z, vx, vy, vz, sprites.first());
 
         // Both the 1.7.10 EntityFX constructor and the modern Particle
         // constructor choose the same randomized base lifetime. The legacy
@@ -33,7 +33,7 @@ public final class Debris1Particle extends TextureSheetParticle
 
         // EntityDebris1 never changed EntityFX's default texture index, so it
         // always rendered legacy particles.png tile 0 (modern generic_0).
-        pickSprite(sprites);
+        setSprite(sprites.get(random));
     }
 
     @Override
@@ -83,7 +83,7 @@ public final class Debris1Particle extends TextureSheetParticle
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    protected Layer getLayer()
     {
         return LegacyParticleRenderTypes.TRANSLUCENT;
     }
@@ -91,7 +91,7 @@ public final class Debris1Particle extends TextureSheetParticle
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
-        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
+        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz, RandomSource random)
         {
             return new Debris1Particle(level, x, y, z, vx, vy, vz, sprites);
         }

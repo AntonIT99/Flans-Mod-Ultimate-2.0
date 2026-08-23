@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.neoforged.neoforge.event.EventHooks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -93,18 +93,18 @@ public final class ApocalypseBossFightManager
         if (!level.getEntitiesOfClass(SkullBossEntity.class, existingBosses).isEmpty())
             return;
 
-        SkullBossEntity boss = ApocalypseContent.skullBoss.get().create(level);
+        SkullBossEntity boss = ApocalypseContent.skullBoss.get().create(level, EntitySpawnReason.TRIGGERED);
         if (boss == null)
             return;
 
-        boss.moveTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
+        boss.snapTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
         if (placer != null)
             boss.setTarget(placer);
-        EventHooks.finalizeMobSpawn(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED, null);
+        EventHooks.finalizeMobSpawn(boss, level, level.getCurrentDifficultyAt(center), EntitySpawnReason.TRIGGERED, null);
         level.addFreshEntity(boss);
         level.players().stream()
             .filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)
-            .forEach(player -> player.displayClientMessage(Component.translatable("message.flansmodultimate.apocalypse_boss_awakened"), false));
+            .forEach(player -> player.sendSystemMessage(Component.translatable("message.flansmodultimate.apocalypse_boss_awakened")));
     }
 
     private static void consumeAltarCubes(ServerLevel level, BlockPos corner)

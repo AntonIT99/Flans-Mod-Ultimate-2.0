@@ -8,7 +8,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Unmodifiable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -36,14 +36,14 @@ public class Paintjob
     private final String textureName;
     private final List<Supplier<ItemStack>> dyesNeeded;
     @Getter
-    private final ResourceLocation texture;
+    private final Identifier texture;
 
     @Getter @Setter
     private EnumPaintjobRarity rarity;
     @Getter @Setter
     private boolean addToTables = true;
 
-    private Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, ResourceLocation texture, List<Supplier<ItemStack>> dyesNeeded)
+    private Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, Identifier texture, List<Supplier<ItemStack>> dyesNeeded)
     {
         this.type = type;
         this.id = id;
@@ -57,7 +57,7 @@ public class Paintjob
 
     public Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, List<Supplier<ItemStack>> dyesNeeded)
     {
-        this(type, id, displayName, iconName, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
+        this(type, id, displayName, iconName, textureName, (FMLEnvironment.getDist() == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
     }
 
     public boolean isDefault()

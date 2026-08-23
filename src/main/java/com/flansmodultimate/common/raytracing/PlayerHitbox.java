@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -202,7 +203,7 @@ public class PlayerHitbox
             {
                 Vec3 motBefore = player.getDeltaMovement();
 
-                if (!player.level().isClientSide)
+                if (!player.level().isClientSide())
                 {
                     //Calculate the hit damage
                     float hitDamage = ShootingHelper.getDamage(player, bullet, shot) * damageModifier;
@@ -216,7 +217,7 @@ public class PlayerHitbox
                         currentRound.get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
 
                     //Attack the entity!
-                    if (player.hurt(damagesource, hitDamage))
+                    if (player.hurtServer((ServerLevel)player.level(), damagesource, hitDamage))
                     {
                         //If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                         player.hurtTime = Math.min(player.hurtTime + 1, player.hurtDuration);
@@ -226,7 +227,7 @@ public class PlayerHitbox
 
                 //Slowdown when shot in the legs
                 if (type == EnumHitboxType.LEGS)
-                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, true, false));
+                    player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 20, 0, true, false));
 
                 // Handle knockback by finding entity motion before and after, and reapplying to negate effect of vanilla code.
                 Vec3 motAfter = player.getDeltaMovement();

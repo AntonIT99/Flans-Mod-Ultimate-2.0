@@ -18,15 +18,18 @@ public final class RewardBoxItem extends Item implements IFlanItem<RewardBox>
     @Getter
     private final RewardBox configType;
 
-    public RewardBoxItem(RewardBox configType)
+    public RewardBoxItem(RewardBox configType, Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configType;
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag flag)
     {
+        List<Component> tooltip = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltip);
     }
 }

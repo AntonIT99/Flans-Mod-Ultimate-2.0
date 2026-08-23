@@ -30,15 +30,16 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -126,7 +127,7 @@ public final class GunItemRenderer
         float green = (color >> 8 & 255) / 255F;
         float blue = (color & 255) / 255F;
         float modelScale = model.getType().getModelScale();
-        ResourceLocation gunTexture = model.getType().getPaintjob(stack).getTexture();
+        Identifier gunTexture = model.getType().getPaintjob(stack).getTexture();
 
         final int numRounds = countRoundsInGun(stack);
         if (model.isSlideLockOnEmpty())
@@ -211,7 +212,7 @@ public final class GunItemRenderer
 
     private static void applyFirstPersonAdjustments(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack, boolean leftHand)
     {
-        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
         boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching() && !animations.isReloading();
         boolean sprinting = ModClient.getZoomProgress() + 0.1F < 0.2F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isSprinting() && !animations.isReloading() && model.isFancyStance();
 
@@ -246,7 +247,7 @@ public final class GunItemRenderer
         if (animations.getSwitchAnimationProgress() <= 0F || animations.getSwitchAnimationLength() <= 0F)
             return;
 
-        float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float frameTime = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
         float interp = (animations.getSwitchAnimationProgress() + frameTime) / animations.getSwitchAnimationLength();
 
         poseStack.translate(VEC3_SWITCH_POS2.x + (VEC3_SWITCH_POS2.x - VEC3_SWITCH_POS1.x) * interp, VEC3_SWITCH_POS1.y + (VEC3_SWITCH_POS2.y - VEC3_SWITCH_POS1.y) * interp, VEC3_SWITCH_POS1.z + (VEC3_SWITCH_POS2.z - VEC3_SWITCH_POS1.z) * interp);
@@ -264,7 +265,7 @@ public final class GunItemRenderer
             Vector3f configuredTranslate = model.getSprintStanceTranslate();
             Vector3f configuredRotation = model.getSprintStanceRotate();
 
-            float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+            float frameTime = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
             float progress = (animations.getRunningStanceAnimationProgress() + frameTime) / animations.getRunningStanceAnimationLength();
             if (animations.getRunningStanceAnimationProgress() == animations.getRunningStanceAnimationLength())
                 progress = 1;
@@ -303,7 +304,7 @@ public final class GunItemRenderer
         if (progress <= 0 || progress >= gunType.getMeleePath().size())
             return;
 
-        float t = Mth.clamp(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.0f, 1.0f);
+        float t = Mth.clamp(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true), 0.0f, 1.0f);
 
         Vector3f p0 = gunType.getMeleePath().get(progress);
         Vector3f p1 = (progress + 1 < gunType.getMeleePath().size()) ? gunType.getMeleePath().get(progress + 1) : new Vector3f();
@@ -328,7 +329,7 @@ public final class GunItemRenderer
 
     private static void renderLookAtGunMovement(GunAnimations animations, PoseStack poseStack)
     {
-        float frameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float frameTime = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
         float interp = animations.getLookAtTimer() + frameTime;
         interp /= animations.getLookAt().getTime();
 
@@ -385,7 +386,7 @@ public final class GunItemRenderer
             return;
 
         poseStack.translate(model.getSpinPoint().x, model.getSpinPoint().y, model.getSpinPoint().z);
-        float pumped = (animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+        float pumped = (animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pumped * 180F + 180F));
         poseStack.translate(-model.getSpinPoint().x, -model.getSpinPoint().y, -model.getSpinPoint().z);
     }
@@ -484,7 +485,7 @@ public final class GunItemRenderer
         float max = 1.5f;
         float randomNum = GunAnimations.random.nextFloat();
         float result = min + (randomNum * (max - min));
-        float smoothing = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float smoothing = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
         poseStack.translate(-(animations.getLastGunRecoil() + (animations.getGunRecoil() - animations.getLastGunRecoil()) * smoothing) * recoilDistance, 0F, 0F);
         poseStack.mulPose(Axis.ZP.rotationDegrees(-(animations.getLastGunRecoil() + (animations.getGunRecoil() - animations.getLastGunRecoil()) * smoothing) * recoilAngle));
@@ -642,8 +643,8 @@ public final class GunItemRenderer
             poseStack.pushPose();
             if (!model.getType().getSecondaryFire(stack))
             {
-                poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) * model.getGunSlideDistance(), 0F, 0F);
-                poseStack.translate(-(1 - Math.abs(animations.getLastCharged() + (animations.getCharged() - animations.getLastCharged()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true))) * model.getChargeHandleDistance(), 0F, 0F);
+                poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true)) * model.getGunSlideDistance(), 0F, 0F);
+                poseStack.translate(-(1 - Math.abs(animations.getLastCharged() + (animations.getCharged() - animations.getLastCharged()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true))) * model.getChargeHandleDistance(), 0F, 0F);
             }
             model.render(model.getSlideModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (scopeAttachment == null && model.isScopeIsOnSlide())
@@ -653,7 +654,7 @@ public final class GunItemRenderer
             if (!model.getType().getSecondaryFire(stack))
             {
                 poseStack.pushPose();
-                poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) * model.getAltgunSlideDistance(), 0F, 0F);
+                poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true)) * model.getAltgunSlideDistance(), 0F, 0F);
                 model.render(model.getAltslideModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
                 poseStack.popPose();
             }
@@ -701,7 +702,7 @@ public final class GunItemRenderer
         if (pumpAttachment == null)
         {
             poseStack.pushPose();
-            poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true))) * model.getPumpHandleDistance(), 0F, 0F);
+            poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true))) * model.getPumpHandleDistance(), 0F, 0F);
             model.render(model.getPumpModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (gripAttachment == null && model.isGripIsOnPump())
                 model.render(model.getDefaultGripModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -714,9 +715,9 @@ public final class GunItemRenderer
     private static void renderBoltAction(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
-        poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true))) * model.getBoltCycleDistance(), 0F, 0F);
+        poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true))) * model.getBoltCycleDistance(), 0F, 0F);
         poseStack.translate(model.getBoltRotationOffset().x, model.getBoltRotationOffset().y, model.getBoltRotationOffset().z);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true))) * model.getBoltRotationAngle()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true))) * model.getBoltRotationAngle()));
         poseStack.translate(-model.getBoltRotationOffset().x, -model.getBoltRotationOffset().y, -model.getBoltRotationOffset().z);
         model.render(model.getBoltActionModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
@@ -727,7 +728,7 @@ public final class GunItemRenderer
         if (model.getChargeHandleDistance() != 0F)
         {
             poseStack.pushPose();
-            poseStack.translate(-(1 - Math.abs(animations.getLastCharged() + (animations.getCharged() - animations.getLastCharged()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true))) * model.getChargeHandleDistance(), 0F, 0F);
+            poseStack.translate(-(1 - Math.abs(animations.getLastCharged() + (animations.getCharged() - animations.getLastCharged()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true))) * model.getChargeHandleDistance(), 0F, 0F);
             model.render(model.getChargeModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
@@ -791,7 +792,7 @@ public final class GunItemRenderer
         if (shouldRender && animations.isReloading())
         {
             // Calculate the amount of tilt required for the reloading animation
-            float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+            float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
             float clipPosition = getClipPosition(model, stack, effectiveReloadAnimationProgress);
             float loadOnlyClipPosition = Math.max(0F, Math.min(1F, 1F - ((effectiveReloadAnimationProgress - model.getTiltGunTime()) / (model.getUnloadClipTime() + model.getLoadClipTime()))));
 
@@ -941,7 +942,7 @@ public final class GunItemRenderer
             model.render(model.getAmmoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         // Renders fullammo model for 2nd half of reload animation
-        float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
         if (effectiveReloadAnimationProgress > 0.5)
             model.render(model.getFullammoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
@@ -999,7 +1000,7 @@ public final class GunItemRenderer
         if (!animations.isReloading())
             return 0F;
 
-        float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
         if (effectiveReloadAnimationProgress < model.getTiltGunTime())
             reloadRotate = effectiveReloadAnimationProgress / model.getTiltGunTime();
@@ -1033,8 +1034,8 @@ public final class GunItemRenderer
                 poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
             }
 
-            ResourceLocation flashTexture = model.getType().getFlashTexture();
-            flash.renderFlash(animations.getFlashInt(), poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(flashTexture)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
+            Identifier flashTexture = model.getType().getFlashTexture();
+            flash.renderFlash(animations.getFlashInt(), poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(flashTexture)), LightCoordsUtil.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
             poseStack.popPose();
         }
     }
@@ -1051,7 +1052,7 @@ public final class GunItemRenderer
             float green = (color >> 8 & 255) / 255F;
             float blue = (color & 255) / 255F;
             float modelScale = gripAttachment.getModelScale();
-            ResourceLocation ammoTexture = gripAttachment.getPaintjob(gripItemStack).getTexture();
+            Identifier ammoTexture = gripAttachment.getPaintjob(gripItemStack).getTexture();
 
             if (shouldRenderAmmo(animations, model.getAnimationType(), numRounds) || !model.getType().getSecondaryFire(stack))
             {
@@ -1068,7 +1069,7 @@ public final class GunItemRenderer
         ModelCasing casing = ModelCache.getOrLoadCasingModel(model.getType());
         if (casing != null)
         {
-            float casingProg = (animations.getLastCasingStage() + (animations.getCasingStage() - animations.getLastCasingStage()) * Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) / model.getCasingAnimTime();
+            float casingProg = (animations.getLastCasingStage() + (animations.getCasingStage() - animations.getLastCasingStage()) * Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true)) / model.getCasingAnimTime();
             if (casingProg >= 1)
                 casingProg = 0;
             float moveX = model.getCasingAnimDistance().x + (animations.getCasingRandom().x * model.getCasingAnimSpread().x);
@@ -1078,7 +1079,7 @@ public final class GunItemRenderer
             poseStack.scale(model.getCaseScale(), model.getCaseScale(), model.getCaseScale());
             poseStack.translate(model.getCasingAttachPoint().x + (casingProg * moveX), model.getCasingAttachPoint().y + (casingProg * moveY), model.getCasingAttachPoint().z + (casingProg * moveZ));
             poseStack.mulPose(Axis.of(new org.joml.Vector3f(model.getCasingRotateVector().x, model.getCasingRotateVector().y, model.getCasingRotateVector().z)).rotationDegrees(casingProg * 180));
-            ResourceLocation casingTexture = model.getType().getCasingTexture();
+            Identifier casingTexture = model.getType().getCasingTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
             boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(casing))
@@ -1115,7 +1116,7 @@ public final class GunItemRenderer
 
                 poseStack.pushPose();
                 poseStack.translate(mfPoint.x * model.getType().getModelScale(), mfPoint.y * model.getType().getModelScale(), mfPoint.z * model.getType().getModelScale());
-                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(muzzleFlash.getTexture())), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
+                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(muzzleFlash.getTexture())), LightCoordsUtil.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
                 poseStack.popPose();
             }
         }
@@ -1123,7 +1124,7 @@ public final class GunItemRenderer
 
     private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        float smoothing = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float smoothing = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
         ItemStack scopeItemStack = model.getType().getScopeItemStack(item);
         ItemStack barrelItemStack = model.getType().getBarrelItemStack(item);
@@ -1210,7 +1211,7 @@ public final class GunItemRenderer
             float red = (color >> 16 & 255) / 255F;
             float green = (color >> 8 & 255) / 255F;
             float blue = (color & 255) / 255F;
-            ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
+            Identifier attachmentTexture = attachment.getPaintjob(stack).getTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(modelAttachment.getType());
             boolean cull = ModClientConfig.get().useCullingRendering(modelAttachment.getType());
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(modelAttachment))
@@ -1228,21 +1229,22 @@ public final class GunItemRenderer
         if (player == null)
             return;
 
-        float smoothing = mc.getTimer().getGameTimeDeltaPartialTick(true);
-        PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
-        PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
+        float smoothing = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        @SuppressWarnings("unchecked")
+        AvatarRenderer<LocalPlayer> playerRenderer = (AvatarRenderer<LocalPlayer>) mc.getEntityRenderDispatcher().getRenderer(player);
+        PlayerModel playerModel = (PlayerModel) playerRenderer.getModel();
 
-        ResourceLocation skin = player.getSkin().texture();
-        RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
+        Identifier skin = player.getSkin().body().texturePath();
+        RenderType rt = RenderTypes.entitySolid(skin);
         VertexConsumer vc = buffer.getBuffer(rt);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-
-        playerModel.rightArmPose = HumanoidModel.ArmPose.EMPTY;
-        playerModel.leftArmPose  = HumanoidModel.ArmPose.EMPTY;
-        playerModel.crouching = false;
-        playerModel.swimAmount = 0.0F;
-        playerModel.attackTime = 0.0F;
-        playerModel.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+        AvatarRenderState armState = playerRenderer.createRenderState();
+        playerRenderer.extractRenderState(player, armState, smoothing);
+        armState.rightArmPose = HumanoidModel.ArmPose.EMPTY;
+        armState.leftArmPose = HumanoidModel.ArmPose.EMPTY;
+        armState.isCrouching = false;
+        armState.swimAmount = 0.0F;
+        armState.attackTime = 0.0F;
+        playerModel.setupAnim(armState);
 
         poseStack.pushPose();
         if (!anim.isReloading() && model.isRighthandPump())
@@ -1287,21 +1289,22 @@ public final class GunItemRenderer
         if (player == null)
             return;
 
-        float smoothing = mc.getTimer().getGameTimeDeltaPartialTick(true);
-        PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
-        PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
+        float smoothing = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        @SuppressWarnings("unchecked")
+        AvatarRenderer<LocalPlayer> playerRenderer = (AvatarRenderer<LocalPlayer>) mc.getEntityRenderDispatcher().getRenderer(player);
+        PlayerModel playerModel = (PlayerModel) playerRenderer.getModel();
 
-        ResourceLocation skin = player.getSkin().texture();
-        RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
+        Identifier skin = player.getSkin().body().texturePath();
+        RenderType rt = RenderTypes.entitySolid(skin);
         VertexConsumer vc = buffer.getBuffer(rt);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-
-        playerModel.rightArmPose = HumanoidModel.ArmPose.EMPTY;
-        playerModel.leftArmPose  = HumanoidModel.ArmPose.EMPTY;
-        playerModel.crouching = false;
-        playerModel.swimAmount = 0.0F;
-        playerModel.attackTime = 0.0F;
-        playerModel.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+        AvatarRenderState armState = playerRenderer.createRenderState();
+        playerRenderer.extractRenderState(player, armState, smoothing);
+        armState.rightArmPose = HumanoidModel.ArmPose.EMPTY;
+        armState.leftArmPose = HumanoidModel.ArmPose.EMPTY;
+        armState.isCrouching = false;
+        armState.swimAmount = 0.0F;
+        armState.attackTime = 0.0F;
+        playerModel.setupAnim(armState);
 
         poseStack.pushPose();
         poseStack.scale(1F / model.getType().getModelScale(), 1F / model.getType().getModelScale(), 1F / model.getType().getModelScale());

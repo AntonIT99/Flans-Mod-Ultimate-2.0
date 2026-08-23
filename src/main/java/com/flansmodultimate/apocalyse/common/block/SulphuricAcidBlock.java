@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,10 +24,11 @@ public class SulphuricAcidBlock extends LiquidBlock
     }
 
     @Override
-    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity)
+    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity,
+                             @NotNull InsideBlockEffectApplier effectApplier, boolean isPrecise)
     {
-        if (!level.isClientSide && ModApocalypseConfig.apocalypseAcidDamage() > 0.0F)
-            entity.hurt(ApocalypseDamageSources.sulphuricAcid(level), ModApocalypseConfig.apocalypseAcidDamage());
-        super.entityInside(state, level, pos, entity);
+        if (level instanceof ServerLevel serverLevel && ModApocalypseConfig.apocalypseAcidDamage() > 0.0F)
+            entity.hurtServer(serverLevel, ApocalypseDamageSources.sulphuricAcid(level), ModApocalypseConfig.apocalypseAcidDamage());
+        super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
     }
 }

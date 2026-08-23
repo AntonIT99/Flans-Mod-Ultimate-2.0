@@ -2,8 +2,6 @@ package com.wolffsmod.api.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -143,7 +141,6 @@ public class ModelRenderer
         rotationPointZ = rotationPointZIn;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
     {
         if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty()))
@@ -163,7 +160,6 @@ public class ModelRenderer
         poseStack.popPose();
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void render(float scale)
     {
         // ignore calls to legacy rendering,

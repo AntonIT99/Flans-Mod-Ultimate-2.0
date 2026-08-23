@@ -45,7 +45,7 @@ public final class LoadoutPool extends InfoType
     private int[] experiencePerLevel = new int[0];
     private final int[] loadoutUnlockLevels = { 0, 0, 5, 10, 20 };
     private final Map<LoadoutSlot, List<LoadoutEntry>> entries = new EnumMap<>(LoadoutSlot.class);
-    private final List<PlayerLoadout> defaults = new ArrayList<>(LOADOUT_COUNT);
+    private final List<Map<LoadoutSlot, String>> defaultDefinitions = new ArrayList<>(LOADOUT_COUNT);
     @Getter
     private List<String> rewardBoxIds = List.of();
     private final Map<Integer, List<String>> rewardsPerLevel = new LinkedHashMap<>();
@@ -54,7 +54,7 @@ public final class LoadoutPool extends InfoType
     public void load(TypeFile file)
     {
         for (LoadoutSlot slot : LoadoutSlot.values()) entries.put(slot, new ArrayList<>());
-        for (int i = 0; i < LOADOUT_COUNT; i++) defaults.add(new PlayerLoadout());
+        for (int i = 0; i < LOADOUT_COUNT; i++) defaultDefinitions.add(new EnumMap<>(LoadoutSlot.class));
         super.load(file);
         if (StringUtils.isNotBlank(originalShortName)) POOLS.put(normalize(originalShortName), this);
     }
@@ -86,12 +86,9 @@ public final class LoadoutPool extends InfoType
         for (String[] values : readValuesInLines("DefaultLoadout", file, 2).orElse(List.of()))
         {
             int index = parseInt(values[0], 0) - 1;
-            if (index < 0 || index >= defaults.size()) continue;
+            if (index < 0 || index >= defaultDefinitions.size()) continue;
             for (int slot = 0; slot < LoadoutSlot.values().length && slot + 1 < values.length; slot++)
-            {
-                ItemStack stack = createStack(values[slot + 1]).orElse(ItemStack.EMPTY);
-                if (!stack.isEmpty()) defaults.get(index).set(LoadoutSlot.values()[slot], stack);
-            }
+                defaultDefinitions.get(index).put(LoadoutSlot.values()[slot], values[slot + 1]);
         }
 
         rewardBoxIds = readValuesInLines("AddRewardBox", file, 1).orElse(List.of()).stream()
@@ -126,7 +123,11 @@ public final class LoadoutPool extends InfoType
 
     public PlayerLoadout getDefaultLoadout(int index)
     {
-        return defaults.get(Math.max(0, Math.min(index, defaults.size() - 1))).copy();
+        Map<LoadoutSlot, String> definitions = defaultDefinitions.get(
+            Math.max(0, Math.min(index, defaultDefinitions.size() - 1)));
+        PlayerLoadout result = new PlayerLoadout();
+        definitions.forEach((slot, id) -> createStack(id).ifPresent(stack -> result.set(slot, stack)));
+        return result;
     }
 
     public List<String> getRewardsForRank(int rank)

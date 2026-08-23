@@ -9,7 +9,6 @@ import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
-import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.AfterburnParticle;
 import com.flansmodultimate.client.particle.BigSmokeParticle;
@@ -26,6 +25,7 @@ import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
+import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
@@ -36,26 +36,25 @@ import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
-import com.flansmodultimate.common.item.ICustomRendereredItem;
-import com.flansmodultimate.common.item.IFlanItem;
-import com.flansmodultimate.common.item.IPaintableItem;
-import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.client.render.item.LegacyItemModel;
+import com.flansmodultimate.client.render.item.LegacyItemPreviewRenderer;
+import com.flansmodultimate.client.render.item.OpStickItemModel;
 import com.flansmodultimate.common.types.TypeFile;
-import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.google.common.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -69,12 +68,11 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.sounds.SoundManager;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -82,8 +80,6 @@ import net.minecraft.world.item.Item;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
@@ -96,21 +92,6 @@ public final class ModClientEventHandler
     {
         event.enqueueWork(() -> {
             CustomItemRenderers.registerAll();
-
-            // Paintjob registrations
-            for (DeferredHolder<Item, ? extends Item> item : FlansMod.getItems())
-            {
-                if (item.get() instanceof IPaintableItem<?>)
-                {
-                    ItemProperties.register(item.get(), FlansMod.paintjob, (stack, level, entity, seed) -> {
-                        CompoundTag tag = ItemStackData.copy(stack);
-                        return tag.contains(IPaintableItem.NBT_PAINTJOB_ID) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
-                    });
-                }
-            }
-            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams_mode"),
-                (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
-
         });
     }
 
@@ -126,33 +107,16 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void registerClientExtensions(RegisterClientExtensionsEvent event)
+    public static void registerItemModels(RegisterItemModelsEvent event)
     {
-        Item[] customRenderedItems = FlansMod.getItems().stream()
-            .map(DeferredHolder::get)
-            .filter(ICustomRendereredItem.class::isInstance)
-            .toArray(Item[]::new);
-        if (customRenderedItems.length > 0)
-            event.registerItem(ClientHooks.RENDER.customItemExtensions(), customRenderedItems);
+        event.register(LegacyItemModel.TYPE, LegacyItemModel.Unbaked.MAP_CODEC);
+        event.register(OpStickItemModel.TYPE, OpStickItemModel.Unbaked.MAP_CODEC);
     }
 
     @SubscribeEvent
-    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
+    public static void registerPictureInPictureRenderers(RegisterPictureInPictureRenderersEvent event)
     {
-        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream()
-            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .map(DeferredHolder::getId)
-            .filter(java.util.Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
-
-        // Wrap all variants in one pass. Large legacy installations can have
-        // thousands of registered Flan items, so one full map scan per item is
-        // prohibitively expensive during every resource reload.
-        event.getModels().replaceAll((location, original) -> {
-            if (customRenderedItemIds.contains(location.id()) && !(original instanceof BewlrRoutingModel))
-                return new BewlrRoutingModel(original);
-            return original;
-        });
+        event.register(LegacyItemPreviewRenderer.State.class, LegacyItemPreviewRenderer::new);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -161,19 +125,22 @@ public final class ModClientEventHandler
     {
         for (var skin : event.getSkins())
         {
-            var renderer = event.getSkin(skin);
-            if (renderer instanceof PlayerRenderer playerRenderer)
+            var renderer = event.getPlayerRenderer(skin);
+            if (renderer instanceof AvatarRenderer<?> playerRenderer)
             {
                 playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
             }
+            var mannequinRenderer = event.getMannequinRenderer(skin);
+            if (mannequinRenderer != null)
+                mannequinRenderer.addLayer(new CustomArmorLayer<>(mannequinRenderer));
         }
 
         for (EntityType<?> entityType : event.getEntityTypes())
         {
             EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
-            EntityRenderer<? extends LivingEntity> renderer = event.getRenderer(livingType);
+            EntityRenderer<?, ?> renderer = event.getRenderer(livingType);
 
-            if (renderer instanceof LivingEntityRenderer<?, ?> livingRenderer && livingRenderer.getModel() instanceof HumanoidModel<?>)
+            if (renderer instanceof LivingEntityRenderer<?, ?, ?> livingRenderer && livingRenderer.getModel() instanceof HumanoidModel<?>)
             {
                 livingRenderer.addLayer(new CustomArmorLayer<>((RenderLayerParent) livingRenderer));
             }
@@ -201,10 +168,10 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiLayersEvent event)
     {
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "scope"), ClientHudOverlays.SCOPE);
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "armor"), ClientHudOverlays.ARMOR);
-        event.registerAbove(VanillaGuiLayers.ARMOR_LEVEL, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "damage_absorption"), ClientHudOverlays.DAMAGE_ABSORPTION);
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "hud"), ClientHudOverlays.HUD);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "scope"), ClientHudOverlays.SCOPE);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "armor"), ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiLayers.ARMOR_LEVEL, Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "damage_absorption"), ClientHudOverlays.DAMAGE_ABSORPTION);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "hud"), ClientHudOverlays.HUD);
     }
 
     @SubscribeEvent
@@ -228,22 +195,17 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void registerItemColors(RegisterColorHandlersEvent.Item event)
+    public static void registerRenderPipelines(RegisterRenderPipelinesEvent event)
     {
-        event.register((stack, tintIndex) -> {
-            Item item = stack.getItem();
-            if (item instanceof IFlanItem<?> flanItem)
-                // Legacy content packs store colours as 24-bit RGB. Since
-                // 1.21 the item renderer consumes ARGB and therefore treated
-                // the missing high byte as alpha=0, making every tinted Flan
-                // item completely transparent in every render context.
-                return 0xFF000000 | flanItem.getConfigType().getColour();
-            return 0xFFFFFFFF;
-        },
-        FlansMod.getItems().stream()
-            .map(DeferredHolder::get)
-            .toArray(Item[]::new)
-        );
+        CustomRenderType.registerPipelines(event);
+    }
+
+    @SubscribeEvent
+    public static void registerRenderStateModifiers(RegisterRenderStateModifiersEvent event)
+    {
+        event.registerEntityModifier(
+            new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() { },
+            ClientEventHandler::extractLivingRenderState);
     }
 
     @SubscribeEvent
@@ -253,9 +215,9 @@ public final class ModClientEventHandler
     }
 
     @SubscribeEvent
-    public static void onClientReload(RegisterClientReloadListenersEvent event)
+    public static void onClientReload(AddClientReloadListenersEvent event)
     {
-        event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+        event.addListener(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "model_cache"), (ResourceManagerReloadListener) rm -> {
             ModelCache.reload();
             ContentManager.logMissingModelTextures(rm);
         });
@@ -274,7 +236,7 @@ public final class ModClientEventHandler
         SoundManager soundManager = event.getEngine().soundManager;
 
         FlansMod.getSoundsOrigins().entrySet().stream()
-            .sorted(Comparator.<Map.Entry<ResourceLocation, TypeFile>, String>comparing(e -> e.getValue().getContentPack().getName(), Comparator.naturalOrder())
+            .sorted(Comparator.<Map.Entry<Identifier, TypeFile>, String>comparing(e -> e.getValue().getContentPack().getName(), Comparator.naturalOrder())
                 .thenComparing(e -> e.getValue().getType(), Comparator.naturalOrder())
                 .thenComparing(e -> e.getValue().getName(), Comparator.naturalOrder())
             )

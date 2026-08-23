@@ -2,7 +2,7 @@ package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -36,8 +36,9 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         super(FlansMod.paintjobTableMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
-        addSlot(new SlotItemHandler(table.getItemHandler(), 0, 187, GUI_TOP_H + 17));
-        addSlot(new SlotItemHandler(table.getItemHandler(), 1, 187, GUI_TOP_H + 71));
+        var itemHandler = table.getItemHandler();
+        addSlot(new ResourceHandlerSlot(itemHandler, itemHandler::set, 0, 187, GUI_TOP_H + 17));
+        addSlot(new ResourceHandlerSlot(itemHandler, itemHandler::set, 1, 187, GUI_TOP_H + 71));
 
         // Player inventory
         for (int row = 0; row < 3; row++)

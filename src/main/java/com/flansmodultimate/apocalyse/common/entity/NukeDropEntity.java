@@ -8,10 +8,13 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class NukeDropEntity extends Entity
 {
@@ -62,7 +65,7 @@ public class NukeDropEntity extends Entity
     private void impact(Level level)
     {
         setExplodedTicks(1);
-        if (level.isClientSide || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
+        if (level.isClientSide() || !ModApocalypseConfig.apocalypseNukeDropsEnabled())
             return;
 
         float power = ModApocalypseConfig.apocalypseNukeExplosionPower();
@@ -77,14 +80,20 @@ public class NukeDropEntity extends Entity
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setExplodedTicks(tag.getInt(NBT_EXPLODED_TICKS));
+        setExplodedTicks(input.getIntOr(NBT_EXPLODED_TICKS, 0));
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
-        tag.putInt(NBT_EXPLODED_TICKS, getExplodedTicks());
+        output.putInt(NBT_EXPLODED_TICKS, getExplodedTicks());
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount)
+    {
+        return false;
     }
 }

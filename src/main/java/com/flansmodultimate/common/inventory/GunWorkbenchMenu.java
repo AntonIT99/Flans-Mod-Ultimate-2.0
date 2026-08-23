@@ -284,12 +284,12 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     private void loadAttachmentsFromGunIntoSlots(ItemStack gunStack)
     {
         CompoundTag gunTag = ItemStackData.copy(gunStack);
-        CompoundTag attachments = gunTag.getCompound(GunItem.NBT_ATTACHMENTS);
+        CompoundTag attachments = gunTag.getCompoundOrEmpty(GunItem.NBT_ATTACHMENTS);
 
         // specific 1..8
         for (int i = 0; i < SPECIFIC_ATTACHMENT_SLOTS; i++)
         {
-            CompoundTag attTag = attachments.getCompound(SPECIFIC_TAGS[i]);
+            CompoundTag attTag = attachments.getCompoundOrEmpty(SPECIFIC_TAGS[i]);
             ItemStack att = ItemStackData.parse(registries, attTag);
             gunInv.setItem(SLOT_SPECIFIC_START + i, att);
         }
@@ -297,7 +297,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         // generic 9..16
         for (int i = 0; i < GENERIC_ATTACHMENT_SLOTS; i++)
         {
-            CompoundTag attTag = attachments.getCompound(GunItem.NBT_GENERIC + i);
+            CompoundTag attTag = attachments.getCompoundOrEmpty(GunItem.NBT_GENERIC + i);
             ItemStack att = ItemStackData.parse(registries, attTag);
             gunInv.setItem(SLOT_GENERIC_START + i, att);
         }

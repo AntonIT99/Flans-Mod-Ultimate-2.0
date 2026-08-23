@@ -2,14 +2,13 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -22,6 +21,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvider
 {
@@ -29,10 +30,10 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
 
     private final BlockState blockState;
 
-    private final ItemStackHandler items = new ItemStackHandler(2)
+    private final ItemStacksResourceHandler items = new ItemStacksResourceHandler(2)
     {
         @Override
-        protected void onContentsChanged(int slot)
+        protected void onContentsChanged(int slot, ItemStack previousContents)
         {
             setChanged();
         }
@@ -45,23 +46,23 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @NotNull
-    public IItemHandler getItemHandler()
+    public ItemStacksResourceHandler getItemHandler()
     {
         return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveAdditional(@NotNull ValueOutput output)
     {
-        super.saveAdditional(tag, registries);
-        tag.put(NBT_ITEMS, items.serializeNBT(registries));
+        super.saveAdditional(output);
+        items.serialize(output.child(NBT_ITEMS));
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadAdditional(@NotNull ValueInput input)
     {
-        super.loadAdditional(tag, registries);
-        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
+        super.loadAdditional(input);
+        items.deserialize(input.childOrEmpty(NBT_ITEMS));
     }
 
     @Override
@@ -86,11 +87,19 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
         if (level instanceof ServerLevel)
         {
             Containers.dropContents(level, pos, new SimpleContainer(
-                items.getStackInSlot(0),
-                items.getStackInSlot(1)
+                ItemUtil.getStack(items, 0),
+                ItemUtil.getStack(items, 1)
             ));
-            items.setStackInSlot(0, ItemStack.EMPTY);
-            items.setStackInSlot(1, ItemStack.EMPTY);
+            items.set(0, ItemResource.EMPTY, 0);
+            items.set(1, ItemResource.EMPTY, 0);
         }
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state)
+    {
+        if (level != null)
+            dropContents(level, pos);
+        super.preRemoveSideEffects(pos, state);
     }
 }

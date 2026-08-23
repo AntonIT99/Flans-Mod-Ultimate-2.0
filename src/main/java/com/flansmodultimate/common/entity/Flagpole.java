@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.util.ValueIOUtils;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -20,6 +22,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -28,6 +31,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
@@ -107,28 +112,28 @@ public final class Flagpole extends Entity implements ITeamBase
     public void onAddedToLevel()
     {
         super.onAddedToLevel();
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             TeamsManager.getInstance().registerBase(this);
     }
 
     @Override
     public void remove(@NotNull RemovalReason reason)
     {
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             TeamsManager.getInstance().unregisterBase(getUUID());
         super.remove(reason);
     }
 
     @NotNull
     @Override
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
-        if (level().isClientSide)
+        if (level().isClientSide())
             return InteractionResult.SUCCESS;
         if (!(player instanceof ServerPlayer serverPlayer))
             return InteractionResult.PASS;
         ItemStack held = player.getItemInHand(hand);
-        if (held.getItem() instanceof ItemOpStick stick && serverPlayer.hasPermissions(2))
+        if (held.getItem() instanceof ItemOpStick stick && serverPlayer.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
         {
             stick.useOnTeamObject(serverPlayer, this, held);
             return InteractionResult.CONSUME;
@@ -144,38 +149,41 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    public boolean isInvulnerableTo(@NotNull DamageSource source)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        return true;
-    }
-
-    @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
-    {
-        setDefaultOwnerId(tag.getInt(NBT_DEFAULT_OWNER)); setOwnerId(tag.getInt(NBT_OWNER)); setBaseName(tag.getString(NBT_NAME)); setMapId(tag.getString(NBT_MAP));
-        flagId = tag.hasUUID(NBT_FLAG) ? tag.getUUID(NBT_FLAG) : null;
+        CompoundTag tag = ValueIOUtils.toCompoundTag(input);
+        setDefaultOwnerId(tag.getIntOr(NBT_DEFAULT_OWNER, 0)); setOwnerId(tag.getIntOr(NBT_OWNER, 0)); setBaseName(tag.getStringOr(NBT_NAME, "Default Base")); setMapId(tag.getStringOr(NBT_MAP, ""));
+        flagId = tag.read(NBT_FLAG, UUIDUtil.LENIENT_CODEC).orElse(null);
         objectIds.clear();
-        for (Tag entry : tag.getList(NBT_OBJECTS, Tag.TAG_COMPOUND))
+        for (Tag entry : tag.getListOrEmpty(NBT_OBJECTS))
         {
             CompoundTag object = (CompoundTag) entry;
-            if (object.hasUUID(NBT_ID)) objectIds.add(object.getUUID(NBT_ID));
+            object.read(NBT_ID, UUIDUtil.LENIENT_CODEC).ifPresent(objectIds::add);
         }
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
+        CompoundTag tag = new CompoundTag();
         tag.putInt(NBT_DEFAULT_OWNER, getDefaultOwnerId()); tag.putInt(NBT_OWNER, getOwnerId()); tag.putString(NBT_NAME, getBaseName()); tag.putString(NBT_MAP, getMapId());
         if (flagId != null)
-            tag.putUUID(NBT_FLAG, flagId);
+            tag.store(NBT_FLAG, UUIDUtil.CODEC, flagId);
         ListTag objects = new ListTag();
         for (UUID id : objectIds)
         {
             CompoundTag object = new CompoundTag();
-            object.putUUID(NBT_ID, id);
+            object.store(NBT_ID, UUIDUtil.CODEC, id);
             objects.add(object);
         }
         tag.put(NBT_OBJECTS, objects);
+        ValueIOUtils.storeCompoundTag(output, tag);
+    }
+
+    @Override
+    public boolean hurtServer(@NotNull ServerLevel level, @NotNull DamageSource source, float amount)
+    {
+        return false;
     }
 
     @NotNull

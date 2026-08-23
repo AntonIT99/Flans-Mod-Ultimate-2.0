@@ -25,6 +25,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
@@ -52,7 +53,7 @@ public final class TeamsCommand
             .then(Commands.literal("vote")
                 .then(Commands.argument("option", IntegerArgumentType.integer(1, 5)).executes(TeamsCommand::vote)))
             .then(Commands.literal("stats").executes(context -> showStats(context.getSource(), context.getSource().getPlayerOrException()))
-                .then(Commands.argument("player", EntityArgument.player()).requires(source -> source.hasPermission(2))
+                .then(Commands.argument("player", EntityArgument.player()).requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                     .executes(context -> showStats(context.getSource(), EntityArgument.getPlayer(context, "player")))))
             .then(Commands.literal("leaderboard").executes(TeamsCommand::leaderboard))
             .then(Commands.literal("loadouts").executes(TeamsCommand::openLoadouts))
@@ -69,26 +70,26 @@ public final class TeamsCommand
             .then(Commands.literal("listMaps").executes(TeamsCommand::listMaps))
             .then(Commands.literal("listRounds").executes(TeamsCommand::listRounds))
             .then(Commands.literal("listAllTeams").executes(TeamsCommand::listTeams))
-            .then(Commands.literal("on").requires(source -> source.hasPermission(2)).executes(context -> { manager(context).setEnabled(true); return success(context, "Teams enabled"); }))
-            .then(Commands.literal("off").requires(source -> source.hasPermission(2)).executes(context -> { manager(context).setEnabled(false); return success(context, "Teams disabled"); }))
+            .then(Commands.literal("on").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(context -> { manager(context).setEnabled(true); return success(context, "Teams enabled"); }))
+            .then(Commands.literal("off").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(context -> { manager(context).setEnabled(false); return success(context, "Teams disabled"); }))
             .then(booleanSetting("explosions", TeamsCommand::setExplosions))
             .then(booleanSetting("forceAdventure", TeamsCommand::setForceAdventure))
             .then(booleanSetting("forceAdventureMode", TeamsCommand::setForceAdventure))
             .then(booleanSetting("fuelNeeded", TeamsCommand::setFuelNeeded))
-            .then(Commands.literal("start").requires(source -> source.hasPermission(2)).executes(context -> manager(context).startNextRound() ? success(context, "Round started") : failure(context, "No valid round is configured")))
-            .then(Commands.literal("nextRound").requires(source -> source.hasPermission(2)).executes(context -> manager(context).startNextRound() ? success(context, "Advanced to the next round") : failure(context, "No valid round is configured")))
-            .then(Commands.literal("getOpKit").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
-            .then(Commands.literal("setloadoutpool").requires(source -> source.hasPermission(2))
+            .then(Commands.literal("start").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(context -> manager(context).startNextRound() ? success(context, "Round started") : failure(context, "No valid round is configured")))
+            .then(Commands.literal("nextRound").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(context -> manager(context).startNextRound() ? success(context, "Advanced to the next round") : failure(context, "No valid round is configured")))
+            .then(Commands.literal("getOpKit").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).executes(TeamsCommand::giveKit))
+            .then(Commands.literal("setloadoutpool").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(Commands.argument("id", StringArgumentType.word()).suggests((context, builder) ->
                     SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getOriginalShortName)), builder))
                     .executes(TeamsCommand::setLoadoutPool)))
-            .then(Commands.literal("xpmultiplier").requires(source -> source.hasPermission(2))
+            .then(Commands.literal("xpmultiplier").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(Commands.argument("value", FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
-            .then(Commands.literal("xp").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player())
+            .then(Commands.literal("xp").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).then(Commands.argument("player", EntityArgument.player())
                 .then(Commands.argument("amount", IntegerArgumentType.integer(1)).executes(TeamsCommand::giveExperience))))
-            .then(Commands.literal("resetrank").requires(source -> source.hasPermission(2))
+            .then(Commands.literal("resetrank").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(Commands.argument("player", EntityArgument.player()).executes(TeamsCommand::resetRank)))
-            .then(Commands.literal("giverewardbox").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player())
+            .then(Commands.literal("giverewardbox").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)).then(Commands.argument("player", EntityArgument.player())
                 .then(Commands.argument("box", StringArgumentType.word()).suggests((context, builder) ->
                     SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getOriginalShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(adminCommands());
@@ -100,7 +101,7 @@ public final class TeamsCommand
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> adminCommands()
     {
-        return Commands.literal("admin").requires(source -> source.hasPermission(2))
+        return Commands.literal("admin").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(Commands.literal("enabled").then(Commands.argument("value", BoolArgumentType.bool()).executes(context -> {
                 manager(context).setEnabled(BoolArgumentType.getBool(context, "value"));
                 return success(context, "Teams " + (manager(context).isEnabled() ? "enabled" : "disabled"));
@@ -168,7 +169,7 @@ public final class TeamsCommand
     private static int help(CommandContext<CommandSourceStack> context)
     {
         context.getSource().sendSuccess(() -> Component.literal("/teams loadouts, /teams join <team>, /teams class <class>, /teams vote <number>, /teams score, /teams stats, /teams list <gametypes|teams|classes|loadouts|rewardboxes|maps|rounds>"), false);
-        if (context.getSource().hasPermission(2))
+        if (context.getSource().permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             context.getSource().sendSuccess(() -> Component.literal("Administration: /teams <explosions|forceAdventure|fuelNeeded> <true|false>, /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|start|next|stop|arena|survival|kit|map|round|setvariable>"), false);
         return 1;
     }
@@ -176,7 +177,7 @@ public final class TeamsCommand
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> booleanSetting(
         String name, java.util.function.ToIntFunction<CommandContext<CommandSourceStack>> handler)
     {
-        return Commands.literal(name).requires(source -> source.hasPermission(2))
+        return Commands.literal(name).requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(Commands.argument("value", BoolArgumentType.bool()).executes(handler::applyAsInt));
     }
 
@@ -316,7 +317,7 @@ public final class TeamsCommand
 
     private static int listMaps(CommandContext<CommandSourceStack> context)
     {
-        manager(context).getMaps().forEach(map -> context.getSource().sendSuccess(() -> Component.literal(map.getShortName() + " — " + map.getName() + " [" + map.getDimension().location() + "]"), false));
+        manager(context).getMaps().forEach(map -> context.getSource().sendSuccess(() -> Component.literal(map.getShortName() + " — " + map.getName() + " [" + map.getDimension().identifier() + "]"), false));
         return manager(context).getMaps().size();
     }
 

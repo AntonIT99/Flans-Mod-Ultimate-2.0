@@ -25,8 +25,6 @@ import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@OnlyIn(Dist.CLIENT)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
 {
@@ -194,7 +191,6 @@ public final class ModelCache
     }
 
     @SuppressWarnings("unchecked")
-    @OnlyIn(Dist.CLIENT)
     @Nullable
     public static IModelBase loadModel(String modelClassName, InfoType type, @Nullable IModelBase defaultModel)
     {

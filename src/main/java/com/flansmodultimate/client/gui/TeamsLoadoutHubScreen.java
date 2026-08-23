@@ -8,7 +8,8 @@ import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -61,9 +62,8 @@ public final class TeamsLoadoutHubScreen extends Screen
         }
     }
 
-    @Override public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    @Override public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
 
         if (state == null)
@@ -71,24 +71,24 @@ public final class TeamsLoadoutHubScreen extends Screen
 
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.teamsLandingPageGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
-        graphics.drawCenteredString(font, state.getPoolName(), width / 2, top + 9, 0xFFFFFF);
-        graphics.drawString(font, "Rank " + state.getRank(), left + 113, top + 150, 0xFFFFFF, false);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, FlansMod.teamsLandingPageGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        graphics.centeredText(font, state.getPoolName(), width / 2, top + 9, 0xFFFFFF);
+        graphics.text(font, "Rank " + state.getRank(), left + 113, top + 150, 0xFFFFFF, false);
 
         int next = state.getExperienceForNextRank();
         String xp = next == Integer.MAX_VALUE ? "MAX" : state.getExperience() + " / " + next + " XP";
-        graphics.drawCenteredString(font, xp, left + 154, top + 174, 0xFFFFFF);
+        graphics.centeredText(font, xp, left + 154, top + 174, 0xFFFFFF);
 
         for (int loadout = 0; loadout < Math.min(5, state.getLoadouts().size()); loadout++) {
             for (LoadoutSlot slot : LoadoutSlot.values())
             {
                 var stack = state.getLoadouts().get(loadout).get(slot);
                 if (!stack.isEmpty())
-                    graphics.renderItem(stack, left + 13 + loadout * 49 + slot.ordinal() * 6, top + 72 + slot.ordinal() * 7);
+                    graphics.item(stack, left + 13 + loadout * 49 + slot.ordinal() * 6, top + 72 + slot.ordinal() * 7);
             }
         }
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.flansmodultimate.platform.neoforge;
 
 import com.flansmodultimate.FlansMod;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
@@ -12,7 +12,7 @@ import java.util.UUID;
 public final class NeoForgeChunkTickets
 {
     private static final TicketController CONTROLLER = new TicketController(
-        ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams"));
+        Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "teams"));
 
     private NeoForgeChunkTickets() {}
 

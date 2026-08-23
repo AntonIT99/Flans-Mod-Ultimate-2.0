@@ -4,24 +4,23 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 
-public abstract class ParticleBase extends TextureSheetParticle
+public abstract class ParticleBase extends SingleQuadParticle
 {
     protected final SpriteSet sprites;
     protected float scaleMultiplier = 1F;
 
     protected ParticleBase(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
-        super(level, x, y, z, vx, vy, vz);
+        super(level, x, y, z, vx, vy, vz, sprites.first());
         this.sprites = sprites;
     }
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    protected Layer getLayer()
     {
         return LegacyParticleRenderTypes.TRANSLUCENT;
     }

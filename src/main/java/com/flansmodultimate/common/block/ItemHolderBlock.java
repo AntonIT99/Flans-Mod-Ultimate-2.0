@@ -10,10 +10,11 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -41,9 +43,9 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
     @Getter
     protected final ItemHolderType configType;
 
-    public ItemHolderBlock(ItemHolderType type)
+    public ItemHolderBlock(ItemHolderType type, BlockBehaviour.Properties properties)
     {
-        super(BlockBehaviour.Properties.of()
+        super(properties
             .mapColor(MapColor.STONE)
             .strength(2.0F, 4.0F)
             .sound(SoundType.STONE)
@@ -74,7 +76,7 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
     @NotNull
     public RenderShape getRenderShape(@NotNull BlockState state)
     {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Nullable
@@ -106,11 +108,14 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
 
     @Override
     @NotNull
-    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos)
+    protected BlockState updateShape(@NotNull BlockState state, @NotNull LevelReader level,
+                                     @NotNull ScheduledTickAccess ticks, @NotNull BlockPos pos,
+                                     @NotNull Direction direction, @NotNull BlockPos neighborPos,
+                                     @NotNull BlockState neighborState, @NotNull RandomSource random)
     {
         if (direction == Direction.DOWN && !canSurvive(state, level, pos))
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+        return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
@@ -122,13 +127,13 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+    protected InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = interact(state, level, pos, player, hand);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? InteractionResult.TRY_WITH_EMPTY_HAND
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
@@ -136,7 +141,7 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
         if (!(level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder))
             return InteractionResult.PASS;
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             return InteractionResult.SUCCESS;
 
         ItemStack held = player.getItemInHand(hand);
@@ -159,14 +164,4 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
         return InteractionResult.CONSUME;
     }
 
-    @Override
-    public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean isMoving)
-    {
-        if (!state.is(newState.getBlock()))
-        {
-            if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder)
-                holder.dropContents(level, pos);
-            super.onRemove(state, level, pos, newState, isMoving);
-        }
-    }
 }

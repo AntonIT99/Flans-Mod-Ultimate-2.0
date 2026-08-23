@@ -7,7 +7,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public class TexturedPolygon
         final Matrix4f positionMatrix = pose.pose();
         final Matrix3f normalMatrix = pose.normal();
 
-        final int finalLight = glow ? LightTexture.FULL_BRIGHT : packedLight;
+        final int finalLight = glow ? LightCoordsUtil.FULL_BRIGHT : packedLight;
 
         // Normal direction flip
         final float normalSign = invertNormal ? -1F : 1F;

@@ -32,10 +32,11 @@ import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -259,22 +260,22 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readLegacySaveData(@NotNull CompoundTag tag)
     {
-        super.readAdditionalSaveData(tag);
+        super.readLegacySaveData(tag);
         if (InfoType.getInfoType(shortname) instanceof GrenadeType gType)
         {
             configType = gType;
 
-            if (tag.hasUUID(NBT_THROWER))
+            throwerUUID = tag.read(NBT_THROWER, UUIDUtil.LENIENT_CODEC).orElse(null);
+            if (throwerUUID != null)
             {
-                throwerUUID = tag.getUUID(NBT_THROWER);
                 checkForUUIDs = true;
             }
 
             // Orientation
-            float yaw = tag.getFloat(NBT_YAW);
-            float pitch = tag.getFloat(NBT_PITCH);
+            float yaw = tag.getFloat(NBT_YAW).orElse(0F);
+            float pitch = tag.getFloat(NBT_PITCH).orElse(0F);
             setYRot(yaw);
             setXRot(pitch);
             yRotO = yaw;
@@ -288,14 +289,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addLegacySaveData(@NotNull CompoundTag tag)
     {
-        super.addAdditionalSaveData(tag);
+        super.addLegacySaveData(tag);
 
         if (thrower != null)
             throwerUUID = thrower.getUUID();
         if (throwerUUID != null)
-            tag.putUUID(NBT_THROWER, throwerUUID);
+            tag.store(NBT_THROWER, UUIDUtil.CODEC, throwerUUID);
 
         tag.putFloat(NBT_YAW, axes.getYaw());
         tag.putFloat(NBT_PITCH, axes.getPitch());
@@ -303,14 +304,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
         if (!configType.isDeployableBag())
             return InteractionResult.PASS;
 
         Level level = level();
 
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             boolean used = false;
 
@@ -361,7 +362,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     if (!ammoTypes.isEmpty())
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
-                        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
+                        Item item = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
                         if (item != null && item != Items.AIR)
                         {
                             int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
@@ -389,11 +390,11 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, float amount)
     {
         if (configType.isDetonateWhenShot())
         {
@@ -432,7 +433,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             applyDragAndGravity();
 
             // Fire glitch fix
-            if (level.isClientSide)
+            if (level.isClientSide())
                 clearFire();
         }
         catch (Exception ex)
@@ -445,7 +446,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     /** Resolve UUID of thrower */
     protected void resolveUUID(Level level)
     {
-        if (level.isClientSide || !checkForUUIDs)
+        if (level.isClientSide() || !checkForUUIDs)
             return;
 
         if (thrower == null && throwerUUID != null && ((ServerLevel)level).getEntity(throwerUUID) instanceof LivingEntity living)
@@ -462,7 +463,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void spawnTrailParticles(Level level)
     {
-        if (!level.isClientSide || !configType.isTrailParticles())
+        if (!level.isClientSide() || !configType.isTrailParticles())
             return;
 
         double dx = (getX() - xo) / 10.0;
@@ -485,7 +486,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             return;
 
         // Send flak packet to spawn particles
-        if (!level.isClientSide)
+        if (!level.isClientSide())
             PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         // Apply potion effects in smoke radius
@@ -527,8 +528,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (event.isCanceled())
             return false;
 
-        if (getConfigType().getDamageToTriggerer() > 0F)
-            entity.hurt(getDamageSource(), getConfigType().getDamageToTriggerer());
+        if (getConfigType().getDamageToTriggerer() > 0F && level instanceof ServerLevel serverLevel)
+            entity.hurtServer(serverLevel, getDamageSource(), getConfigType().getDamageToTriggerer());
 
         return true;
     }
@@ -779,7 +780,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void handleImpactDamage(Level level)
     {
-        if (stuck || (configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
+        if (!(level instanceof ServerLevel serverLevel) || stuck
+            || (configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
         double speedSq = velocity.lengthSqr();
@@ -792,14 +794,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             if (living == thrower && tickCount < 10)
                 continue;
 
-            living.hurt(getDamageSource(), ShootingHelper.getDamage(living, this, null));
+            living.hurtServer(serverLevel, getDamageSource(), ShootingHelper.getDamage(living, this, null));
         }
     }
 
     @Override
     public void detonate(Level level)
     {
-        if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
+        if (level.isClientSide() || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
             return;
 
         detonate(level, thrower);
@@ -822,7 +824,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void handleFlashbang(Level level)
     {
-        if (!configType.isFlashBang() || level.isClientSide)
+        if (!configType.isFlashBang() || !(level instanceof ServerLevel serverLevel))
             return;
 
         double smokeRadius = configType.getSmokeRadius();
@@ -838,7 +840,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     configType.getFlashEffectInstances().forEach(effect ->
                         entity.addEffect(new MobEffectInstance(effect)));
                 }
-                entity.hurt(getDamageSource(), configType.getFlashDamage());
+                entity.hurtServer(serverLevel, getDamageSource(), configType.getFlashDamage());
             }
         }
 

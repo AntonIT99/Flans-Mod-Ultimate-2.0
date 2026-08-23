@@ -117,10 +117,10 @@ public final class DriveablePart
     {
         if (tag.contains("health"))
         {
-            health = Mth.clamp(tag.getFloat("health"), 0F, maxHealth);
-            fireTime = Math.max(0, tag.getInt("fire_ticks"));
-            onFire = tag.getBoolean("on_fire") && fireTime > 0;
-            dead = tag.getBoolean("dead") || maxHealth > 0F && health <= 0F;
+            health = Mth.clamp(tag.getFloat("health").orElse(maxHealth), 0F, maxHealth);
+            fireTime = Math.max(0, tag.getInt("fire_ticks").orElse(0));
+            onFire = tag.getBoolean("on_fire").orElse(false) && fireTime > 0;
+            dead = tag.getBoolean("dead").orElse(false) || maxHealth > 0F && health <= 0F;
         }
     }
 
@@ -129,8 +129,8 @@ public final class DriveablePart
         String healthKey = type.getShortName() + "_Health";
         if (!tag.contains(healthKey))
             return;
-        health = Mth.clamp(tag.getFloat(healthKey), 0F, maxHealth);
-        onFire = tag.getBoolean(type.getShortName() + "_Fire");
+        health = Mth.clamp(tag.getFloat(healthKey).orElse(maxHealth), 0F, maxHealth);
+        onFire = tag.getBoolean(type.getShortName() + "_Fire").orElse(false);
         fireTime = onFire ? DEFAULT_FIRE_TICKS : 0;
         dead = maxHealth > 0F && health <= 0F;
     }

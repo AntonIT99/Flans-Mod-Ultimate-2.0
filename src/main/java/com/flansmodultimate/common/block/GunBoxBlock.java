@@ -20,7 +20,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -37,9 +37,9 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
     @Getter
     protected final GunBoxType configType;
 
-    public GunBoxBlock(GunBoxType type)
+    public GunBoxBlock(GunBoxType type, Properties properties)
     {
-        super(Properties.of()
+        super(properties
             .mapColor(MapColor.WOOD)
             .strength(2.0F, 4.0F)
             .sound(SoundType.WOOD)
@@ -73,13 +73,13 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+    protected InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = open(state, level, pos, player);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? InteractionResult.TRY_WITH_EMPTY_HAND
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
@@ -87,12 +87,12 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
             serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     public void buyGunServer(InfoType item, ServerPlayer player)
@@ -144,7 +144,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
             GunType gunType = gunItem.getConfigType();
             CompoundTag tag = ItemStackData.copy(stack);
 
-            if (!tag.contains(GunItem.NBT_AMMO, Tag.TAG_LIST))
+            if (!tag.contains(GunItem.NBT_AMMO))
             {
                 ListTag ammoList = new ListTag();
                 for (int i = 0; i < gunType.getNumAmmoItemsInGun(stack); i++)
@@ -154,7 +154,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
 
             ItemStackData.set(stack, tag);
 
-            if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
+            if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID))
                 gunType.applyPaintjobToStack(stack, gunType.getDefaultPaintjob());
 
             gunType.checkForTags(stack);

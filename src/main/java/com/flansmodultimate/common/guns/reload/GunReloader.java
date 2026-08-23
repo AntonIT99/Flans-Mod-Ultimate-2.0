@@ -16,6 +16,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -177,8 +178,8 @@ public record GunReloader(GunItem item)
 
             ItemStack toReturn = oldMag.copy();
             boolean added = InventoryHelper.addItemStackToContainer(inventory, toReturn, pending.creative(), pending.combineAmmoOnReload(), pending.ammoToUpperInventory(), Inventory.getSelectionSize());
-            if (!added)
-                reloadingEntity.spawnAtLocation(toReturn, 0.5F);
+            if (!added && level instanceof ServerLevel serverLevel)
+                reloadingEntity.spawnAtLocation(serverLevel, toReturn, 0.5F);
         }
 
         // Load new mag into gun

@@ -55,7 +55,7 @@ public final class PlayerLoadout
     {
         PlayerLoadout result = new PlayerLoadout();
         for (LoadoutSlot slot : LoadoutSlot.values())
-            if (tag.contains(tagKey(slot))) result.set(slot, ItemStackData.parse(registries, tag.getCompound(tagKey(slot))));
+            if (tag.contains(tagKey(slot))) result.set(slot, ItemStackData.parse(registries, tag.getCompoundOrEmpty(tagKey(slot))));
         return result;
     }
 

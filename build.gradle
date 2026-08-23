@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.143'
+    id 'net.neoforged.moddev' version '2.0.144'
     id 'idea'
 }
 
@@ -54,17 +54,12 @@ base {
     archivesName = "[$minecraft_version] $mod_name"
 }
 
-// Mojang ships Java 21 to end users in 1.21, so mods should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Mojang ships Java 25 to end users in 26.1.2, so mods should target Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
 
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
@@ -92,7 +87,7 @@ neoForge {
         }
 
         data {
-            data()
+            clientData()
             // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
             // gameDirectory = project.file('run-data')
 
@@ -157,7 +152,6 @@ dependencies {
     // Optional compatibility mod used only in local development runs. Keeping
     // it off the published/compile API prevents unrelated consumers from
     // inheriting this local file dependency.
-    localRuntime files('libs/CustomNPCs-Unofficial-NeoForge-1.21.1.20251230.jar')
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -193,7 +187,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
@@ -217,7 +210,6 @@ var generatePacksModMetadata = tasks.register("generatePacksModMetadata", Proces
     var replaceProperties = [
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_id_packs           : mod_id_packs,
             mod_name_packs         : mod_name_packs,
@@ -233,6 +225,26 @@ var generatePacksModMetadata = tasks.register("generatePacksModMetadata", Proces
 }
 sourceSets.packs.resources.srcDir generatePacksModMetadata
 neoForge.ideSyncTask generatePacksModMetadata
+
+var generateOfficialPacksModMetadata = tasks.register("generateOfficialPacksModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_version            : mod_version,
+            mod_license            : mod_license,
+            mod_authors            : mod_authors,
+            official_packs_mod_id  : official_packs_mod_id,
+            official_packs_mod_name: official_packs_mod_name,
+            official_packs_version : official_packs_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/officialpacks/templates"
+    into "build/generated/sources/officialPacksModMetadata"
+}
+sourceSets.officialpacks.resources.srcDir generateOfficialPacksModMetadata
+neoForge.ideSyncTask generateOfficialPacksModMetadata
 
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
@@ -282,12 +294,12 @@ def packsJar = tasks.register('packsJar', Jar) {
 
 def officialPacksJar = tasks.register('officialPacksJar', Jar) {
     archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Official Packs")
-    archiveVersion.set('1.0')
+    archiveVersion.set(official_packs_version)
     from sourceSets.officialpacks.output
     manifest {
         attributes(
                 'Implementation-Title': 'officialpacks',
-                'Implementation-Version': '1.0'
+                'Implementation-Version': official_packs_version
         )
     }
 }

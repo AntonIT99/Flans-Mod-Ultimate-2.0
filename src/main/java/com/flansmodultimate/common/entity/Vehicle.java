@@ -247,7 +247,7 @@ public class Vehicle extends Driveable
 
     private void tickWalkerStompSounds(VehicleType type, float previousLeftPhase, float previousRightPhase)
     {
-        if (level().isClientSide || !isEngineActive() || Math.abs(getThrottle()) <= 0.01F)
+        if (level().isClientSide() || !isEngineActive() || Math.abs(getThrottle()) <= 0.01F)
             return;
         playWalkerStomp(type.getStompSoundFrontRight(), crossedLegZero(previousRightPhase, rightTrackProgress, 0F));
         playWalkerStomp(type.getStompSoundBackRight(), crossedLegZero(previousRightPhase, rightTrackProgress, 0.75F));

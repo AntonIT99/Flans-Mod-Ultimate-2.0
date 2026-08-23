@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 @NoArgsConstructor
 public class PacketRequestDebug implements IServerPacket
@@ -28,7 +29,7 @@ public class PacketRequestDebug implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        if (player.hasPermissions(2))
+        if (player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             PacketHandler.sendTo(new PacketAllowDebug(), player);
     }
 }

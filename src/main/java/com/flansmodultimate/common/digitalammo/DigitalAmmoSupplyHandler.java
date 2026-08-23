@@ -5,7 +5,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @EventBusSubscriber
 public final class DigitalAmmoSupplyHandler
 {
-    private static final Set<ResourceLocation> supplyBlocks = new HashSet<>();
+    private static final Set<Identifier> supplyBlocks = new HashSet<>();
     private static final Set<UUID> cooldownPlayers = new HashSet<>();
 
     private DigitalAmmoSupplyHandler() {}
@@ -55,7 +55,7 @@ public final class DigitalAmmoSupplyHandler
             {
                 try
                 {
-                    ResourceLocation loc = ResourceLocation.parse(blockId.trim());
+                    Identifier loc = Identifier.parse(blockId.trim());
                     supplyBlocks.add(loc);
                 }
                 catch (Exception e)
@@ -70,7 +70,7 @@ public final class DigitalAmmoSupplyHandler
         }
     }
 
-    public static boolean isSupplyBlock(ResourceLocation blockId)
+    public static boolean isSupplyBlock(Identifier blockId)
     {
         return supplyBlocks.contains(blockId);
     }
@@ -103,7 +103,7 @@ public final class DigitalAmmoSupplyHandler
             Level level = event.getLevel();
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            Identifier blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
             if (!isSupplyBlock(blockId)) return;
 

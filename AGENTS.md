@@ -8,6 +8,7 @@ Repository-wide guidance. A nested `AGENTS.md` or `AGENTS.override.md` takes pre
 | --- | --- | --- | --- | --- |
 | `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
+| `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
 
 Check the current branch and `gradle.properties` first. When porting, preserve behavior but adapt loader imports, events, registration, networking, metadata, and Minecraft APIs; do not apply cross-branch code mechanically.
 
@@ -37,7 +38,7 @@ Run focused tests first. Run a full build after changes to loader setup, registr
 
 ## Project Rules
 
-- `master` uses `net.minecraftforge.*` and `src/main/resources/META-INF/mods.toml`; `1.21.1` uses `net.neoforged.*` and generated `neoforge.mods.toml` metadata.
+- `master` uses `net.minecraftforge.*` and `src/main/resources/META-INF/mods.toml`; `1.21.1` and `26.1.2` use `net.neoforged.*` and generated `neoforge.mods.toml` metadata.
 - Keep gameplay state authoritative on the server and client-only classes out of common/server initialization. Validate entity, menu, and inventory access in packet handlers.
 - Preserve deterministic legacy-content loading and compatibility. Do not bulk-change definition whitespace, casing, filenames, encodings, or layouts.
 - Treat `src/officialpacks/resources/flans_models` as imported binary assets. Preserve exclusions for legacy `*PackMod.class` bootstrap classes.

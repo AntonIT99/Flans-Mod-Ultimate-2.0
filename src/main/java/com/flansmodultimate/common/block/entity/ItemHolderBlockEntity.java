@@ -3,8 +3,9 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class ItemHolderBlockEntity extends BlockEntity
 {
@@ -27,10 +30,10 @@ public class ItemHolderBlockEntity extends BlockEntity
 
     private ItemHolderType type;
 
-    private final ItemStackHandler items = new ItemStackHandler(1)
+    private final ItemStacksResourceHandler items = new ItemStacksResourceHandler(1)
     {
         @Override
-        protected void onContentsChanged(int slot)
+        protected void onContentsChanged(int slot, ItemStack previousContents)
         {
             setChangedAndSync();
         }
@@ -44,28 +47,27 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @NotNull
-    public IItemHandler getItemHandler()
+    public ItemStacksResourceHandler getItemHandler()
     {
         return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveAdditional(@NotNull ValueOutput output)
     {
-        super.saveAdditional(tag, registries);
-        tag.put(NBT_ITEMS, items.serializeNBT(registries));
+        super.saveAdditional(output);
+        items.serialize(output.child(NBT_ITEMS));
         ItemHolderType holderType = getItemHolderType();
         if (holderType != null)
-            tag.putString(NBT_TYPE, holderType.getShortName());
+            output.putString(NBT_TYPE, holderType.getShortName());
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadAdditional(@NotNull ValueInput input)
     {
-        super.loadAdditional(tag, registries);
-        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
-        if (tag.contains(NBT_TYPE))
-            type = ItemHolderType.getItemHolder(tag.getString(NBT_TYPE));
+        super.loadAdditional(input);
+        items.deserialize(input.childOrEmpty(NBT_ITEMS));
+        type = ItemHolderType.getItemHolder(input.getStringOr(NBT_TYPE, ""));
     }
 
     @Nullable
@@ -78,12 +80,12 @@ public class ItemHolderBlockEntity extends BlockEntity
 
     public ItemStack getStack()
     {
-        return items.getStackInSlot(0);
+        return ItemUtil.getStack(items, 0);
     }
 
     public void setStack(ItemStack stack)
     {
-        items.setStackInSlot(0, stack);
+        items.set(0, ItemResource.of(stack), stack.getCount());
     }
 
     public void dropContents(Level level, BlockPos pos)
@@ -100,15 +102,7 @@ public class ItemHolderBlockEntity extends BlockEntity
     @NotNull
     public CompoundTag getUpdateTag(HolderLookup.Provider registries)
     {
-        CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, registries);
-        return tag;
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries)
-    {
-        loadAdditional(tag, registries);
+        return saveWithoutMetadata(registries);
     }
 
     @Nullable
@@ -118,18 +112,18 @@ public class ItemHolderBlockEntity extends BlockEntity
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries)
-    {
-        CompoundTag tag = packet.getTag();
-        if (tag != null)
-            loadAdditional(tag, registries);
-    }
-
     private void setChangedAndSync()
     {
         setChanged();
-        if (level != null && !level.isClientSide)
+        if (level != null && !level.isClientSide())
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state)
+    {
+        if (level != null)
+            dropContents(level, pos);
+        super.preRemoveSideEffects(pos, state);
     }
 }

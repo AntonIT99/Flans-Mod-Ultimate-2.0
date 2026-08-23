@@ -162,7 +162,7 @@ public final class PacketLoadoutAction implements IServerPacket
                 ItemStack gun = edited.get(slot);
                 if (!(gun.getItem() instanceof GunItem gunItem) || !accepts(gunItem.getConfigType(), attachment)) return;
                 CompoundTag gunData = ItemStackData.copy(gun);
-                CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
+                CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS).orElseGet(CompoundTag::new);
                 String attachmentSlot = attachmentSlot(attachment.getEnumAttachmentType());
                 ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
                 if (attachmentStack.isEmpty()) return;

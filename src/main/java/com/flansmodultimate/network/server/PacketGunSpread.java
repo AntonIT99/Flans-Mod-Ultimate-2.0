@@ -37,7 +37,7 @@ public class PacketGunSpread implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        ItemStack stack = player.getInventory().getSelected();
+        ItemStack stack = player.getInventory().getSelectedItem();
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
         {
             GunType type = gunItem.getConfigType();

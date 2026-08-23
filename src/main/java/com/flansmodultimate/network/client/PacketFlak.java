@@ -50,12 +50,12 @@ public class PacketFlak implements IClientPacket
     {
         for (int i = 0; i < numParticles; i++)
         {
-            double ox = position.x + level.random.nextGaussian();
-            double oy = position.y + level.random.nextGaussian();
-            double oz = position.z + level.random.nextGaussian();
-            double vx = level.random.nextGaussian() / 20.0;
-            double vy = level.random.nextGaussian() / 20.0;
-            double vz = level.random.nextGaussian() / 20.0;
+            double ox = position.x + level.getRandom().nextGaussian();
+            double oy = position.y + level.getRandom().nextGaussian();
+            double oz = position.z + level.getRandom().nextGaussian();
+            double vx = level.getRandom().nextGaussian() / 20.0;
+            double vy = level.getRandom().nextGaussian() / 20.0;
+            double vz = level.getRandom().nextGaussian() / 20.0;
 
             ClientHooks.RENDER.spawnParticle(particleType, ox, oy, oz, vx, vy, vz, 1F);
         }

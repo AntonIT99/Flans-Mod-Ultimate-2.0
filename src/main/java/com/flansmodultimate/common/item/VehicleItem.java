@@ -10,9 +10,9 @@ import net.minecraft.world.level.Level;
 
 public final class VehicleItem extends DriveableItem<VehicleType, Vehicle>
 {
-    public VehicleItem(VehicleType configType)
+    public VehicleItem(VehicleType configType, Properties properties)
     {
-        super(configType);
+        super(configType, properties);
     }
 
     @Override

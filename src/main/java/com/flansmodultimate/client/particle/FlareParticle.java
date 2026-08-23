@@ -8,6 +8,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 public class FlareParticle extends ParticleBase
 {
@@ -90,7 +91,7 @@ public class FlareParticle extends ParticleBase
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    public ParticleRenderType getGroup()
     {
         // The flare acts only as the moving controller for its fmflame trail.
         // Its own flare.png quad is intentionally not submitted for rendering.
@@ -100,7 +101,7 @@ public class FlareParticle extends ParticleBase
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
-        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
+        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz, RandomSource random)
         {
             return new FlareParticle(level, x, y, z, vx, vy, vz, sprites);
         }

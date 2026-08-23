@@ -12,10 +12,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -46,31 +48,31 @@ public final class ItemOpStick extends Item
         }
     }
 
-    public ItemOpStick()
+    public ItemOpStick(Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties);
     }
 
     @NotNull
     @Override
-    public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
         if (!player.isShiftKeyDown())
-            return InteractionResultHolder.pass(stack);
-        if (!level.isClientSide)
+            return InteractionResult.PASS;
+        if (!level.isClientSide())
         {
             Mode next = Mode.values()[(getMode(stack).ordinal() + 1) % Mode.values().length];
             ItemStackData.update(stack, tag -> tag.putInt(NBT_MODE, next.ordinal()));
             clearConnection(stack);
-            player.displayClientMessage(Component.literal("Operator stick: " + next.displayName).withStyle(ChatFormatting.YELLOW), true);
+            player.sendOverlayMessage(Component.literal("Operator stick: " + next.displayName).withStyle(ChatFormatting.YELLOW));
         }
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     public void useOnTeamObject(ServerPlayer player, ITeamObject object, ItemStack stack)
     {
-        if (!player.hasPermissions(2))
+        if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             return;
         switch (getMode(stack))
         {
@@ -79,7 +81,7 @@ public final class ItemOpStick extends Item
             case MAPPING -> changeMap(player, object);
             case DESTRUCTION -> {
                 TeamsManager.getInstance().destroyObject(object);
-                player.displayClientMessage(Component.literal("Team object removed"), false);
+                player.sendSystemMessage(Component.literal("Team object removed"));
             }
         }
     }
@@ -88,7 +90,7 @@ public final class ItemOpStick extends Item
     {
         if (!(object instanceof ITeamBase base))
         {
-            player.displayClientMessage(Component.literal("Ownership is configured on bases"), false);
+            player.sendSystemMessage(Component.literal("Ownership is configured on bases"));
             return;
         }
         PacketHandler.sendTo(PacketBaseEditState.create(TeamsManager.getInstance(), base), player);
@@ -97,17 +99,17 @@ public final class ItemOpStick extends Item
     private void connect(ServerPlayer player, ITeamObject object, ItemStack stack)
     {
         CompoundTag tag = ItemStackData.copy(stack);
-        if (!tag.hasUUID(NBT_CONNECTION))
+        if (tag.read(NBT_CONNECTION, UUIDUtil.CODEC).isEmpty())
         {
-            tag.putUUID(NBT_CONNECTION, object.getObjectId());
+            tag.store(NBT_CONNECTION, UUIDUtil.CODEC, object.getObjectId());
             tag.putBoolean(NBT_CONNECTION_BASE, object instanceof ITeamBase);
             ItemStackData.set(stack, tag);
-            player.displayClientMessage(Component.literal("First endpoint selected"), false);
+            player.sendSystemMessage(Component.literal("First endpoint selected"));
             return;
         }
 
-        UUID firstId = tag.getUUID(NBT_CONNECTION);
-        boolean firstIsBase = tag.getBoolean(NBT_CONNECTION_BASE);
+        UUID firstId = tag.read(NBT_CONNECTION, UUIDUtil.CODEC).orElseThrow();
+        boolean firstIsBase = tag.getBooleanOr(NBT_CONNECTION_BASE, false);
         TeamsManager manager = TeamsManager.getInstance();
         ITeamBase base;
         ITeamObject child;
@@ -123,17 +125,17 @@ public final class ItemOpStick extends Item
         }
         else
         {
-            player.displayClientMessage(Component.literal("Connect one base to one team object"), false);
+            player.sendSystemMessage(Component.literal("Connect one base to one team object"));
             clearConnection(stack);
             return;
         }
 
         if (base == null || child == null)
-            player.displayClientMessage(Component.literal("The first endpoint is no longer loaded"), false);
+            player.sendSystemMessage(Component.literal("The first endpoint is no longer loaded"));
         else
         {
             manager.connectObject(base, child);
-            player.displayClientMessage(Component.literal("Team object connected to " + base.getBaseName()), false);
+            player.sendSystemMessage(Component.literal("Team object connected to " + base.getBaseName()));
         }
         clearConnection(stack);
     }
@@ -142,14 +144,14 @@ public final class ItemOpStick extends Item
     {
         if (!(object instanceof ITeamBase base))
         {
-            player.displayClientMessage(Component.literal("Maps are configured on bases"), false);
+            player.sendSystemMessage(Component.literal("Maps are configured on bases"));
             return;
         }
         List<TeamsMap> maps = TeamsManager.getInstance().getMaps().stream()
             .filter(map -> map.getDimension().equals(player.level().dimension())).toList();
         if (maps.isEmpty())
         {
-            player.displayClientMessage(Component.literal("Create a map first with /teams map add"), false);
+            player.sendSystemMessage(Component.literal("Create a map first with /teams map add"));
             return;
         }
         int current = -1;
@@ -157,13 +159,13 @@ public final class ItemOpStick extends Item
             if (maps.get(i).getShortName().equals(base.getMapId())) current = i;
         TeamsMap next = maps.get((current + 1) % maps.size());
         TeamsManager.getInstance().assignBaseToMap(base, next);
-        player.displayClientMessage(Component.literal("Base assigned to " + next.getName()), false);
+        player.sendSystemMessage(Component.literal("Base assigned to " + next.getName()));
     }
 
     public static Mode getMode(ItemStack stack)
     {
         CompoundTag tag = ItemStackData.copy(stack);
-        int value = tag.getInt(NBT_MODE);
+        int value = tag.getIntOr(NBT_MODE, 0);
         return Mode.values()[Math.floorMod(value, Mode.values().length)];
     }
 
@@ -176,9 +178,11 @@ public final class ItemOpStick extends Item
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
-                                @NotNull TooltipFlag flag)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag flag)
     {
+        List<Component> tooltip = IFlanItem.tooltipList(tooltipBuilder);
         tooltip.add(Component.literal("Mode: " + getMode(stack).displayName).withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Sneak + use to change mode").withStyle(ChatFormatting.GRAY));
     }

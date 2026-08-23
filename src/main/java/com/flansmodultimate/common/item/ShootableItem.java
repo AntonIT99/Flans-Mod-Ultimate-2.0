@@ -23,9 +23,9 @@ public abstract class ShootableItem extends Item
     protected final String shortname;
     private static final String NBT_ROUNDS = "rounds";
 
-    protected ShootableItem(ShootableType configType)
+    protected ShootableItem(ShootableType configType, Properties properties)
     {
-        super(createProperties(configType));
+        super(createProperties(configType, properties));
         shortname = configType.getShortName();
     }
 
@@ -54,7 +54,7 @@ public abstract class ShootableItem extends Item
         CompoundTag tag = ItemStackData.copy(stack);
         if (tag.contains(NBT_ROUNDS))
         {
-            return tag.getInt(NBT_ROUNDS);
+            return tag.getIntOr(NBT_ROUNDS, roundsPerItem);
         }
         return roundsPerItem;
     }
@@ -139,12 +139,10 @@ public abstract class ShootableItem extends Item
         return false;
     }
 
-    private static Properties createProperties(ShootableType configType)
+    private static Properties createProperties(ShootableType configType, Properties properties)
     {
-        Properties p = new Properties();
         int maxStack = Math.max(1, configType.getMaxStackSize());
-        p.stacksTo(maxStack);
-        return p;
+        return properties.stacksTo(maxStack);
     }
 
     @Override
@@ -181,8 +179,11 @@ public abstract class ShootableItem extends Item
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         if (getConfigType().getRoundsPerItem() > 1)
         {
             int currentRounds = getRoundsRemaining(stack);

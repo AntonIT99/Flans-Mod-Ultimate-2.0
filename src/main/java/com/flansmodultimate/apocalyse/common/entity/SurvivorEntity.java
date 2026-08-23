@@ -14,7 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -74,7 +74,7 @@ public class SurvivorEntity extends PathfinderMob implements RangedAttackMob
     @Override
     public void performRangedAttack(@NotNull LivingEntity target, float distanceFactor)
     {
-        if (attackCooldown > 0 || level().isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
+        if (attackCooldown > 0 || level().isClientSide() || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
         getLookControl().setLookAt(target, 30.0F, 30.0F);
         if (ApocalypseGunHelper.shootLoadedGun(this, target))
@@ -84,7 +84,7 @@ public class SurvivorEntity extends PathfinderMob implements RangedAttackMob
     @Override
     @Nullable
     @SuppressWarnings("deprecation") // NeoForge marks this as override-only; external callers use EventHooks.
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData)
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnData)
     {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         equipDefault(level.getRandom());

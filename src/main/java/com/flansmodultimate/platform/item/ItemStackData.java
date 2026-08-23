@@ -5,6 +5,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -49,17 +51,25 @@ public final class ItemStackData
 
     public static CompoundTag save(ItemStack stack, HolderLookup.Provider registries)
     {
-        return (CompoundTag) stack.save(registries, new CompoundTag());
+        Tag encoded = ItemStack.OPTIONAL_CODEC
+            .encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), stack)
+            .getOrThrow();
+        return encoded instanceof CompoundTag compoundTag ? compoundTag : new CompoundTag();
     }
 
     public static void save(ItemStack stack, HolderLookup.Provider registries, CompoundTag target)
     {
-        stack.save(registries, target);
+        target.merge(save(stack, registries));
     }
 
     public static ItemStack parse(HolderLookup.Provider registries, CompoundTag tag)
     {
-        return tag.isEmpty() ? ItemStack.EMPTY : ItemStack.parseOptional(registries, tag);
+        if (tag.isEmpty())
+            return ItemStack.EMPTY;
+        return ItemStack.OPTIONAL_CODEC
+            .parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
+            .result()
+            .orElse(ItemStack.EMPTY);
     }
 
     /** For stacks whose components only reference static built-in registries. */

@@ -51,7 +51,21 @@ public final class PackagedContentRepositorySource
     private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,
                                 String displayName, Path root)
     {
-        Pack.ResourcesSupplier resources = new PathPackResources.PathResourcesSupplier(root);
+        Pack.ResourcesSupplier pathResources = new PathPackResources.PathResourcesSupplier(root);
+        Pack.ResourcesSupplier resources = new Pack.ResourcesSupplier()
+        {
+            @Override
+            public net.minecraft.server.packs.PackResources openPrimary(PackLocationInfo location)
+            {
+                return new CompatiblePackResources(pathResources.openPrimary(location), packType);
+            }
+
+            @Override
+            public net.minecraft.server.packs.PackResources openFull(PackLocationInfo location, Pack.Metadata metadata)
+            {
+                return new CompatiblePackResources(pathResources.openFull(location, metadata), packType);
+            }
+        };
         PackLocationInfo location = new PackLocationInfo(id, Component.literal(displayName), PackSource.BUILT_IN, Optional.empty());
         PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, false);
         Pack pack = Pack.readMetaAndCreate(location, resources, packType, selection);

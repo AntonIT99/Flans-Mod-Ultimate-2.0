@@ -14,7 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,9 +40,9 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     @Getter
     protected final T configType;
 
-    protected DriveableItem(T configType)
+    protected DriveableItem(T configType, Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configType;
     }
 
@@ -54,36 +54,36 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
 
     @Override
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
     {
         ItemStack heldStack = player.getItemInHand(hand);
         if (!canPlayerPlace(player))
-            return InteractionResultHolder.fail(heldStack);
+            return InteractionResult.FAIL;
 
         BlockHitResult hit = raytracePlacement(level, player);
         if (hit.getType() != HitResult.Type.BLOCK)
-            return InteractionResultHolder.pass(heldStack);
+            return InteractionResult.PASS;
 
         Placement placement = resolvePlacement(level, hit);
         if (placement == null)
-            return InteractionResultHolder.pass(heldStack);
+            return InteractionResult.PASS;
 
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             float yaw = snapPlacementYaw(player.getYRot());
             D driveable = spawnDriveable(level, placement.x(), placement.y() + configType.getYOffset(), placement.z(), yaw, player, heldStack);
             if (driveable == null)
-                return InteractionResultHolder.fail(heldStack);
+                return InteractionResult.FAIL;
             if (!player.getAbilities().instabuild)
                 heldStack.shrink(1);
         }
-        return InteractionResultHolder.sidedSuccess(heldStack, level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     @Nullable
     public D spawnDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack)
     {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return null;
         ItemStack entityStack = sourceStack == null || sourceStack.isEmpty()
             ? new ItemStack(this)
@@ -128,8 +128,11 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag advanced)
     {
+        List<Component> tooltip = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltip);
         DriveableData data = DriveableData.fromStack(configType, stack, context.registries());
         if (data.getEngine() != null)

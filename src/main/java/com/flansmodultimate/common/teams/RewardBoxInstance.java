@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.teams;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ public record RewardBoxInstance(UUID id, String boxId, Origin origin, long award
     public CompoundTag save()
     {
         CompoundTag tag = new CompoundTag();
-        tag.putUUID(NBT_ID, id);
+        tag.store(NBT_ID, UUIDUtil.CODEC, id);
         tag.putString(NBT_BOX, boxId);
         tag.putString(NBT_ORIGIN, origin.name());
         tag.putLong(NBT_AWARDED_AT, awardedAt);
@@ -50,14 +51,14 @@ public record RewardBoxInstance(UUID id, String boxId, Origin origin, long award
         Origin origin;
         try
         {
-            origin = Origin.valueOf(tag.getString(NBT_ORIGIN));
+            origin = Origin.valueOf(tag.getStringOr(NBT_ORIGIN, "MIGRATED"));
         }
         catch (IllegalArgumentException ignored)
         {
             origin = Origin.MIGRATED;
         }
 
-        UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
-        return new RewardBoxInstance(id, tag.getString(NBT_BOX), origin, tag.getLong(NBT_AWARDED_AT), tag.getString(NBT_REWARD));
+        UUID id = tag.read(NBT_ID, UUIDUtil.LENIENT_CODEC).orElseGet(UUID::randomUUID);
+        return new RewardBoxInstance(id, tag.getStringOr(NBT_BOX, ""), origin, tag.getLongOr(NBT_AWARDED_AT, 0L), tag.getStringOr(NBT_REWARD, ""));
     }
 }

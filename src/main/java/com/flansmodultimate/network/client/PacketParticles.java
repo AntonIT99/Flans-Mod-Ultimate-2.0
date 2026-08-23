@@ -84,12 +84,12 @@ public class PacketParticles implements IClientPacket
 
         for (int i = 0; i < count; i++)
         {
-            double ox = x + level.random.nextGaussian() * dx;
-            double oy = y + level.random.nextGaussian() * dy;
-            double oz = z + level.random.nextGaussian() * dz;
-            double vx = level.random.nextGaussian() * speed;
-            double vy = level.random.nextGaussian() * speed;
-            double vz = level.random.nextGaussian() * speed;
+            double ox = x + level.getRandom().nextGaussian() * dx;
+            double oy = y + level.getRandom().nextGaussian() * dy;
+            double oz = z + level.getRandom().nextGaussian() * dz;
+            double vx = level.getRandom().nextGaussian() * speed;
+            double vy = level.getRandom().nextGaussian() * speed;
+            double vz = level.getRandom().nextGaussian() * speed;
 
             ClientHooks.RENDER.spawnParticle(particleType, ox, oy, oz, vx, vy, vz, scale);
         }

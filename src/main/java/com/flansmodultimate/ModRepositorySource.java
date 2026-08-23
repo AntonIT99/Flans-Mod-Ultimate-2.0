@@ -50,7 +50,7 @@ public class ModRepositorySource extends FolderRepositorySource
     {
         try
         {
-            net.minecraft.FileUtil.createDirectoriesSafe(folder);
+            Files.createDirectories(folder);
             try (DirectoryStream<Path> paths = Files.newDirectoryStream(folder))
             {
                 for (Path path : paths)

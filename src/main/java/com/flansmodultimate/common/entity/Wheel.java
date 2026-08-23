@@ -12,10 +12,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /** Non-persistent hit and suspension proxy owned by a {@link Driveable}. */
@@ -70,12 +73,12 @@ public class Wheel extends Entity
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
     }
 
@@ -130,9 +133,9 @@ public class Wheel extends Entity
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
+        if (driveable == null || level().isClientSide())
             return driveable != null;
         DriveablePosition definition = driveable.getConfigType() == null ? null : driveable.getConfigType().getWheelPosition(getWheelIndex());
         EnumDriveablePart part = definition == null ? EnumDriveablePart.CORE : definition.getPart();

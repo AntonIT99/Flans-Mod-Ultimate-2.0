@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface IScope
 {
@@ -10,5 +10,5 @@ public interface IScope
 
     boolean hasZoomOverlay();
 
-    ResourceLocation getZoomOverlay();
+    Identifier getZoomOverlay();
 }

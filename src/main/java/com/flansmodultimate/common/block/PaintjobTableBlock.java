@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -51,13 +51,13 @@ public class PaintjobTableBlock extends BaseEntityBlock
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+    protected InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = open(level, pos, player);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? InteractionResult.TRY_WITH_EMPTY_HAND
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult open(Level level, BlockPos pos, Player player)
@@ -65,24 +65,11 @@ public class PaintjobTableBlock extends BaseEntityBlock
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof PaintjobTableBlockEntity blockEntity)
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof PaintjobTableBlockEntity blockEntity)
         {
             serverPlayer.openMenu(blockEntity, buffer -> buffer.writeBlockPos(pos));
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
-    @Override
-    public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean isMoving)
-    {
-        if (!state.is(newState.getBlock()))
-        {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof PaintjobTableBlockEntity table)
-            {
-                table.dropContents(level, pos);
-            }
-            super.onRemove(state, level, pos, newState, isMoving);
-        }
-    }
 }

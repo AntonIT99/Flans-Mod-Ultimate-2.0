@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import lombok.AccessLevel;
@@ -114,7 +115,7 @@ public final class SoundJsonProcessor {
     {
         try (StringReader sr = new StringReader(normalizedContent); JsonReader reader = new JsonReader(sr))
         {
-            reader.setLenient(true);
+            reader.setStrictness(Strictness.LENIENT);
 
             if (reader.peek() != JsonToken.BEGIN_OBJECT)
                 return null;

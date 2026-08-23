@@ -15,7 +15,7 @@ import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -121,7 +121,7 @@ public class PlayerData
     private boolean playerMovedByAutobalancer;
     /** Save the player's skin here, to replace after having done a swap for a certain class override */
     @Getter @Setter
-    private ResourceLocation skin;
+    private Identifier skin;
 
     private PlayerData(UUID id)
     {
@@ -131,7 +131,7 @@ public class PlayerData
     @NotNull
     public static PlayerData getInstance(@NotNull Player player)
     {
-        return getInstance(player.getUUID(), player.level().isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+        return getInstance(player.getUUID(), player.level().isClientSide() ? LogicalSide.CLIENT : LogicalSide.SERVER);
     }
 
     @NotNull
@@ -257,7 +257,7 @@ public class PlayerData
         isPrevShootKeyPressedLeft = isShootKeyPressedLeft;
         isPrevShootKeyPressedRight = isShootKeyPressedRight;
 
-        if (!player.level().isClientSide)
+        if (!player.level().isClientSide())
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
 
         //Move all snapshots along one place

@@ -35,8 +35,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.GraphicsStatus;
+import net.minecraft.client.GraphicsPreset;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
@@ -75,7 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@OnlyIn(Dist.CLIENT)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
 {
@@ -180,7 +177,7 @@ public class ModClient
         isDebug = value;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null)
-            mc.gui.getChat().addMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
+            mc.gui.getChat().addClientSystemMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
     }
 
     public static boolean isMouseControlEnabled()
@@ -201,9 +198,9 @@ public class ModClient
             seat.resetClientAim();
         player.setYRot(driveable.getYaw());
         player.setXRot(driveable.getPitch());
-        player.displayClientMessage(Component.translatable(controlModeMouse
+        player.sendOverlayMessage(Component.translatable(controlModeMouse
             ? "message.flansmodultimate.driveable_control.mouse"
-            : "message.flansmodultimate.driveable_control.keyboard"), true);
+            : "message.flansmodultimate.driveable_control.keyboard"));
         return true;
     }
 
@@ -212,12 +209,11 @@ public class ModClient
         if (doneTutorial)
             return;
         doneTutorial = true;
-        player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable_tutorial",
-            inventoryKey, exitKey, controlKey), false);
+        player.sendSystemMessage(Component.translatable("message.flansmodultimate.driveable_tutorial",
+            inventoryKey, exitKey, controlKey));
     }
 
     @NotNull
-    @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(LivingEntity living, InteractionHand hand)
     {
         Map<LivingEntity, GunAnimations> map = (hand == InteractionHand.OFF_HAND) ? gunAnimationsLeft : gunAnimationsRight;
@@ -225,7 +221,6 @@ public class ModClient
     }
 
     @NotNull
-    @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(ItemDisplayContext context)
     {
         LivingEntity living;
@@ -263,7 +258,6 @@ public class ModClient
         return Objects.requireNonNullElse(animations, new GunAnimations());
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem)
     {
         Minecraft mc = Minecraft.getInstance();
@@ -328,7 +322,6 @@ public class ModClient
         PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void tick()
     {
         Minecraft mc = Minecraft.getInstance();
@@ -418,8 +411,8 @@ public class ModClient
 
     public static boolean hasFancyGraphics()
     {
-        GraphicsStatus graphics = Minecraft.getInstance().options.graphicsMode().get();
-        return graphics != GraphicsStatus.FAST;
+        GraphicsPreset graphics = Minecraft.getInstance().options.graphicsPreset().get();
+        return graphics != GraphicsPreset.FAST;
     }
 
     private static void clearOldLightBlocks(ClientLevel level)
@@ -800,7 +793,6 @@ public class ModClient
 
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void updateCameraZoom(ViewportEvent.ComputeFov event)
     {
         // If the zoom has changed sufficiently, update it
@@ -821,7 +813,6 @@ public class ModClient
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void renderTick()
     {
         Minecraft mc = Minecraft.getInstance();
@@ -830,7 +821,7 @@ public class ModClient
             return;
 
         // Frame delta in seconds (approx). getDeltaFrameTime() is in ticks.
-        float dtTicks = mc.getTimer().getRealtimeDeltaTicks();
+        float dtTicks = mc.getDeltaTracker().getRealtimeDeltaTicks();
         float dtSeconds = dtTicks / 20.0F;
 
         // frame-rate independent smoothing

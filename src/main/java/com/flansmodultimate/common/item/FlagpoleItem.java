@@ -12,9 +12,9 @@ import net.minecraft.world.phys.Vec3;
 
 public final class FlagpoleItem extends Item
 {
-    public FlagpoleItem()
+    public FlagpoleItem(Properties properties)
     {
-        super(new Properties().stacksTo(16));
+        super(properties);
     }
 
     @NotNull

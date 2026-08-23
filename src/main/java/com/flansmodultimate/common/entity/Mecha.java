@@ -233,7 +233,7 @@ public class Mecha extends Driveable
         if (stompDelay <= 0 && crossedRange(previousPhase, legSwing, type.getStompRangeLower(), type.getStompRangeUpper())
             && StringUtils.isNotBlank(type.getStompSound()))
         {
-            if (!level().isClientSide)
+            if (!level().isClientSide())
                 PacketPlaySound.sendSoundPacket(this, 50D, type.getStompSound(), false);
             stompDelay = Math.max(1, type.getStompSoundLength());
         }
@@ -305,7 +305,7 @@ public class Mecha extends Driveable
     @Override
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
     {
-        if (!level().isClientSide && amount > 0F && shieldEnergy > 0F)
+        if (!level().isClientSide() && amount > 0F && shieldEnergy > 0F)
         {
             float absorbed = Math.min(shieldEnergy, amount);
             shieldEnergy -= absorbed;
@@ -553,9 +553,9 @@ public class Mecha extends Driveable
         AABB sweep = new AABB(origin, origin.add(direction.scale(reach))).inflate(1.25D);
         Entity target = level().getEntities(this, sweep, entity -> entity instanceof LivingEntity && entity != attacker && !isPartOfThis(entity))
             .stream().min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
-        if (target != null)
+        if (target != null && level() instanceof ServerLevel serverLevel)
         {
-            target.hurt(level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
+            target.hurtServer(serverLevel, level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
             if (tool.isFlameBurst())
                 target.igniteForSeconds(4);
         }

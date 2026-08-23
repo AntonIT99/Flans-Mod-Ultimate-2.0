@@ -22,18 +22,19 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -44,7 +45,7 @@ import java.util.Locale;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHudOverlays
 {
-    private static final ResourceLocation GUI_ICONS_LOCATION = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/icons.png");
+    private static final Identifier GUI_ICONS_LOCATION = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/icons.png");
     private static final int ARMOR_EMPTY_U = 16;
     private static final int ARMOR_HALF_U = 25;
     private static final int ARMOR_FULL_U = 34;
@@ -72,14 +73,14 @@ public final class ClientHudOverlays
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
 
-    public static final LayeredDraw.Layer SCOPE = (g, deltaTracker) -> {
+    public static final GuiLayer SCOPE = (g, deltaTracker) -> {
         int sw = g.guiWidth();
         int sh = g.guiHeight();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
 
-        ResourceLocation scopeTexture = null;
+        Identifier scopeTexture = null;
 
         boolean hasScope = ModClient.getCurrentScope() != null && ModClient.getCurrentScope().hasZoomOverlay();
         boolean noScreen = Minecraft.getInstance().screen == null;
@@ -92,19 +93,12 @@ public final class ClientHudOverlays
             renderScopeOverlay(g, scopeTexture, sw, sh);
     };
 
-    public static final LayeredDraw.Layer ARMOR = (g, deltaTracker) -> {
+    public static final GuiLayer ARMOR = (g, deltaTracker) -> {
         int sw = g.guiWidth();
         int sh = g.guiHeight();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        RenderSystem.disableCull();
 
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
@@ -113,16 +107,13 @@ public final class ClientHudOverlays
             if (player.getItemBySlot(slot).getItem() instanceof CustomArmorItem armorItem)
             {
                 armorItem.getConfigType().getOverlay().ifPresent(overlayTexture ->
-                    g.blit(overlayTexture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh));
+                    g.blit(RenderPipelines.GUI_TEXTURED, overlayTexture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh));
             }
         }
 
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
     };
 
-    public static final LayeredDraw.Layer HUD = (g, deltaTracker) -> {
+    public static final GuiLayer HUD = (g, deltaTracker) -> {
         int sw = g.guiWidth();
         int sh = g.guiHeight();
         float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
@@ -134,7 +125,7 @@ public final class ClientHudOverlays
         renderVehicleDebug(g, sw, sh);
     };
 
-    public static void renderAAGunHud(GuiGraphics g, float partialTick, int sw)
+    public static void renderAAGunHud(GuiGraphicsExtractor g, float partialTick, int sw)
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -146,12 +137,12 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        g.drawString(font, Component.literal(type.getName()), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
+        g.text(font, Component.literal(type.getName()), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
         int healthPercent = type.getHealth() <= 0
             ? 0
             : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
         Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent);
-        g.drawString(font, health, LEGACY_HUD_LEFT, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
+        g.text(font, health, LEGACY_HUD_LEFT, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
 
         float yaw = Mth.rotLerp(partialTick, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
         float pitch = Mth.lerp(partialTick, aaGun.getPrevGunPitch(), aaGun.getGunPitch());
@@ -168,15 +159,15 @@ public final class ClientHudOverlays
         int rightX = Math.max(LEGACY_HUD_LEFT, sw - 2 - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
             currentAmmoName));
 
-        g.drawString(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
-        g.drawString(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
-        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2,
+        g.text(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
+        g.text(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
+        g.text(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2,
             aaGun.getReloadTimer() > 0 ? HUD_RED : HUD_GREEN, false);
 
         if (hasCurrentAmmo)
         {
-            g.drawString(font, ammoHeading, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
-            g.drawString(font, currentAmmoName, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
+            g.text(font, ammoHeading, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
+            g.text(font, currentAmmoName, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
         }
     }
 
@@ -211,7 +202,7 @@ public final class ClientHudOverlays
         return Component.translatable("hud.flansmodultimate.driveable.compass.north");
     }
 
-    public static final LayeredDraw.Layer DAMAGE_ABSORPTION = (g, deltaTracker) -> {
+    public static final GuiLayer DAMAGE_ABSORPTION = (g, deltaTracker) -> {
         Minecraft minecraft = Minecraft.getInstance();
         if (!ModClientConfig.get().showArmorDamageAbsorptionBar || minecraft.options.hideGui
             || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer())
@@ -227,7 +218,7 @@ public final class ClientHudOverlays
 
     //TODO: FMU Style hit marker
     /** Draw the hit marker at screen center with fade-out alpha. */
-    public static void renderHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
+    public static void renderHitMarker(GuiGraphicsExtractor g, float partialTick, int sw, int sh)
     {
         if (ModClient.getHitMarkerTime() <= 0)
             return;
@@ -239,25 +230,19 @@ public final class ClientHudOverlays
         int x = sw / 2 - 5;
         int y = sh / 2 - 5;
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1f, 1f, 1f, a);
-        g.blit(FlansMod.hitmarkerTexture, x, y, 0, 0, w, h, 16, 16);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        g.blit(RenderPipelines.GUI_TEXTURED, FlansMod.hitmarkerTexture, x, y, 0, 0, w, h, 16, 16,
+            ARGB.white(a));
     }
 
     /** Fullscreen scope/helmet overlay; mirrors your old quad (centered square using screen height). */
-    public static void renderScopeOverlay(GuiGraphics g, ResourceLocation texture, int sw, int sh)
+    public static void renderScopeOverlay(GuiGraphicsExtractor g, Identifier texture, int sw, int sh)
     {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        g.blit(texture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh);
+        g.blit(RenderPipelines.GUI_TEXTURED, texture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh);
 
         //TODO: compare with renderArmorOverlay()
     }
 
-    private static boolean renderDamageAbsorptionArmorBar(LocalPlayer player, GuiGraphics g, int left, int top)
+    private static boolean renderDamageAbsorptionArmorBar(LocalPlayer player, GuiGraphicsExtractor g, int left, int top)
     {
         if (player == null)
             return false;
@@ -265,8 +250,10 @@ public final class ClientHudOverlays
         double damageAbsorption = 0.0;
         double bulletAbsorption = 0.0;
 
-        for (ItemStack stack : player.getArmorSlots())
+        for (EquipmentSlot slot : new EquipmentSlot[] {
+            EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET })
         {
+            ItemStack stack = player.getItemBySlot(slot);
             if (!(stack.getItem() instanceof CustomArmorItem armorItem))
                 continue;
 
@@ -278,9 +265,6 @@ public final class ClientHudOverlays
         int absorptionPoints = toAbsorptionArmorPoints(Math.max(damageAbsorption, bulletAbsorption));
         if (absorptionPoints <= 0)
             return false;
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
 
         for (int i = 0; i < 10; i++)
         {
@@ -294,8 +278,6 @@ public final class ClientHudOverlays
                 drawTintedArmorIcon(g, x, top, ARMOR_HALF_U, ABSORPTION_ICON_RED, ABSORPTION_ICON_GREEN, ABSORPTION_ICON_BLUE, 1.0F);
         }
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disableBlend();
         return true;
     }
 
@@ -304,13 +286,13 @@ public final class ClientHudOverlays
         return Mth.clamp((int) Math.round(absorption * 20.0), 0, 20);
     }
 
-    private static void drawTintedArmorIcon(GuiGraphics g, int x, int y, int u, float red, float green, float blue, float alpha)
+    private static void drawTintedArmorIcon(GuiGraphicsExtractor g, int x, int y, int u, float red, float green, float blue, float alpha)
     {
-        RenderSystem.setShaderColor(red, green, blue, alpha);
-        g.blit(GUI_ICONS_LOCATION, x, y, u, ARMOR_V, ARMOR_ICON_SIZE, ARMOR_ICON_SIZE);
+        g.blit(RenderPipelines.GUI_TEXTURED, GUI_ICONS_LOCATION, x, y, u, ARMOR_V,
+            ARMOR_ICON_SIZE, ARMOR_ICON_SIZE, 256, 256, ARGB.colorFromFloat(alpha, red, green, blue));
     }
 
-    public static void renderPlayerAmmo(GuiGraphics g, int sw, int sh)
+    public static void renderPlayerAmmo(GuiGraphicsExtractor g, int sw, int sh)
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -332,8 +314,8 @@ public final class ClientHudOverlays
             int modeX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 96 : sw / 2 - 132 - font.width(modeText);
             int modeY = sh - 31;
             int modeColor = gunType.canSwitchFireMode(stack) ? 0xAAAAFF : 0x888888;
-            g.drawString(font, modeText, modeX + 1, modeY + 1, 0x000000, false);
-            g.drawString(font, modeText, modeX,     modeY,     modeColor, false);
+            g.text(font, modeText, modeX + 1, modeY + 1, 0x000000, false);
+            g.text(font, modeText, modeX,     modeY,     modeColor, false);
 
             int xAccum = 0;
 
@@ -372,7 +354,7 @@ public final class ClientHudOverlays
                 int iconX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 96 + xAccum : sw / 2 - 176 - xAccum;
                 int iconY = sh - 19;
 
-                g.renderItem(sampleStack, iconX, iconY);
+                g.item(sampleStack, iconX, iconY);
 
                 String s = totalCount > 1 ? String.valueOf(totalCount) : "";
 
@@ -380,8 +362,8 @@ public final class ClientHudOverlays
                 int textY = sh - 13;
                 if (!s.isEmpty())
                 {
-                    g.drawString(font, s, textX + 1, textY + 1, 0x000000, false);
-                    g.drawString(font, s, textX,     textY,     0xFFFFFF, false);
+                    g.text(font, s, textX + 1, textY + 1, 0x000000, false);
+                    g.text(font, s, textX,     textY,     0xFFFFFF, false);
                 }
 
                 xAccum += 16 + font.width(s);
@@ -398,8 +380,8 @@ public final class ClientHudOverlays
                 int iconX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 96 + xAccum : sw / 2 - 176 - xAccum;
                 int iconY = sh - 19;
 
-                g.renderItem(bulletStack, iconX, iconY);
-                g.renderItemDecorations(font, bulletStack, iconX, iconY);
+                g.item(bulletStack, iconX, iconY);
+                g.itemDecorations(font, bulletStack, iconX, iconY);
 
                 int stackCount = bulletStack.getCount();
                 String s;
@@ -410,15 +392,15 @@ public final class ClientHudOverlays
 
                 int textX = (hand == InteractionHand.MAIN_HAND) ? sw / 2 + 112 + xAccum : sw / 2 - 160 - xAccum;
                 int textY = sh - 13;
-                g.drawString(font, s, textX + 1, textY + 1, 0x000000, false);
-                g.drawString(font, s, textX,     textY,     0xFFFFFF, false);
+                g.text(font, s, textX + 1, textY + 1, 0x000000, false);
+                g.text(font, s, textX,     textY,     0xFFFFFF, false);
 
                 xAccum += 16 + font.width(s);
             }
         }
     }
 
-    public static void renderDigitalAmmo(GuiGraphics g, int sw, int sh)
+    public static void renderDigitalAmmo(GuiGraphicsExtractor g, int sw, int sh)
     {
         if (!ModCommonConfig.get().enableDigitalAmmoSystem())
             return;
@@ -430,15 +412,10 @@ public final class ClientHudOverlays
 
         int numTypes = Math.min(LocalBulletManager.getNumTypes(), BAR_X_OFFSETS.length);
 
-        RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
         int bgX = 10;
         int bgY = sh - 50;
 
-        g.blit(FlansMod.ammoGuiTexture, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        g.blit(RenderPipelines.GUI_TEXTURED, FlansMod.ammoGuiTexture, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         for (int i = 0; i < numTypes; i++)
         {
@@ -452,19 +429,17 @@ public final class ClientHudOverlays
                 int barX = (int) Math.round(bgX + BAR_X_OFFSETS[i]);
                 int barY = bgY + 12;
 
-                RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
-                g.blit(FlansMod.ammoGuiTexture, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+                g.blit(RenderPipelines.GUI_TEXTURED, FlansMod.ammoGuiTexture, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
             }
         }
 
-        RenderSystem.disableBlend();
     }
 
     //TODO: implement these methods
-    public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
-    public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
+    public static void renderTeamInfo(GuiGraphicsExtractor g, int sw, int sh) {}
+    public static void renderKillMessages(GuiGraphicsExtractor g, int sw, int sh) {}
 
-    public static void renderVehicleDebug(GuiGraphics g, int sw, int sh)
+    public static void renderVehicleDebug(GuiGraphicsExtractor g, int sw, int sh)
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -477,7 +452,7 @@ public final class ClientHudOverlays
 
         Font font = mc.font;
         int y = LEGACY_HUD_TOP;
-        g.drawString(font, Component.literal(driveable.getConfigType().getName()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.text(font, Component.literal(driveable.getConfigType().getName()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
 
         DriveableData data = driveable.getDriveableData();
@@ -487,7 +462,7 @@ public final class ClientHudOverlays
             if (core != null && core.getMaxHealth() > 0F)
             {
                 int healthPercent = Mth.clamp(Math.round(core.getHealth() * 100F / core.getMaxHealth()), 0, 100);
-                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent),
+                g.text(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent),
                     LEGACY_HUD_LEFT, y, healthColor(healthPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }
@@ -496,7 +471,7 @@ public final class ClientHudOverlays
             if (tankSize > 0F)
             {
                 int fuelPercent = Mth.clamp(Math.round(driveable.getFuel() * 100F / tankSize), 0, 100);
-                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.fuel", fuelPercent),
+                g.text(font, Component.translatable("hud.flansmodultimate.driveable.fuel", fuelPercent),
                     LEGACY_HUD_LEFT, y, healthColor(fuelPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }
@@ -509,10 +484,10 @@ public final class ClientHudOverlays
             : driveable.getThrottle() / maximumReverseThrottle;
         int throttlePercent = Math.round(Mth.clamp(throttleRatio, -1F, 1F) * 100F);
         double speed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().length() * 20D);
-        g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.throttle", throttlePercent),
+        g.text(font, Component.translatable("hud.flansmodultimate.driveable.throttle", throttlePercent),
             LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
-        g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.speed",
+        g.text(font, Component.translatable("hud.flansmodultimate.driveable.speed",
             String.format(Locale.ROOT, "%.1f", speed), ModClientConfig.get().driveableSpeedUnit.getSymbol()),
             LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
@@ -521,9 +496,9 @@ public final class ClientHudOverlays
             ? "hud.flansmodultimate.driveable.gear.down" : "hud.flansmodultimate.driveable.gear.up");
         Component door = Component.translatable(driveable.isDoorOpen()
             ? "hud.flansmodultimate.driveable.door.open" : "hud.flansmodultimate.driveable.door.closed");
-        g.drawString(font, gear, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.text(font, gear, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
-        g.drawString(font, door, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.text(font, door, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
 
         boolean isVehicle = driveable instanceof Vehicle;
         boolean isPlane = driveable instanceof Plane;
@@ -561,24 +536,24 @@ public final class ClientHudOverlays
             sw - 2 - maxWidth(font, yawText, pitchText, shellText, smokeText, ammoHeading, currentAmmoName,
                 rollText, altitudeText, compassText));
         int rightLine = 0;
-        g.drawString(font, yawText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-        g.drawString(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        g.text(font, yawText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        g.text(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         if (isPlane)
         {
-            g.drawString(font, rollText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-            g.drawString(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-            g.drawString(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.text(font, rollText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.text(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.text(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         }
         if (hasShellBank)
-            g.drawString(font, shellText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++,
+            g.text(font, shellText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++,
                 shellReloadTicks > 0 ? HUD_RED : HUD_GREEN, false);
         if (hasSmoke)
-            g.drawString(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
+            g.text(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
         if (hasCurrentAmmo)
         {
             int ammoY = LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine;
-            g.drawString(font, ammoHeading, hudRightX, ammoY, HUD_WHITE, false);
-            g.drawString(font, currentAmmoName, hudRightX, ammoY + LEGACY_HUD_LINE_HEIGHT, HUD_AMMO_GREEN, false);
+            g.text(font, ammoHeading, hudRightX, ammoY, HUD_WHITE, false);
+            g.text(font, currentAmmoName, hudRightX, ammoY + LEGACY_HUD_LINE_HEIGHT, HUD_AMMO_GREEN, false);
         }
 
         if (!ModClient.isDebug())
@@ -597,7 +572,7 @@ public final class ClientHudOverlays
         int debugY = Math.max(LEGACY_HUD_TOP, sh - 2 - debugLines.size() * LEGACY_HUD_LINE_HEIGHT);
         for (Component line : debugLines)
         {
-            g.drawString(font, line, rightX, debugY, HUD_GREEN, false);
+            g.text(font, line, rightX, debugY, HUD_GREEN, false);
             debugY += LEGACY_HUD_LINE_HEIGHT;
         }
     }

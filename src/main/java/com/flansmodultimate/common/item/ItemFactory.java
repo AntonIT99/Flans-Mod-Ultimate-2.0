@@ -13,13 +13,14 @@ import net.minecraft.world.item.Item;
 public final class ItemFactory
 {
     @Nullable
-    public static Item createItem(InfoType config)
+    public static Item createItem(InfoType config, Item.Properties properties)
     {
         try
         {
             Class<? extends InfoType> typeClass = config.getType().getTypeClass();
             Class<? extends IFlanItem<?>> itemClass = config.getType().getItemClass();
-            return itemClass.getConstructor(typeClass).newInstance(typeClass.cast(config)).asItem();
+            return itemClass.getConstructor(typeClass, Item.Properties.class)
+                .newInstance(typeClass.cast(config), properties).asItem();
         }
         catch (Exception e)
         {

@@ -79,7 +79,7 @@ public class FlanPacksMod
 
     public FlanPacksMod()
     {
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
             return;
 
         try

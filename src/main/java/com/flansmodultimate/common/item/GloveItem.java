@@ -20,42 +20,44 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     protected final GloveType configType;
     protected final String shortname;
 
-    public GloveItem(GloveType configType)
+    public GloveItem(GloveType configType, Properties properties)
     {
-        super(properties(configType));
+        super(properties(configType, properties));
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
-    private static Properties properties(GloveType configType)
+    private static Properties properties(GloveType configType, Properties properties)
     {
-        Properties properties = new Properties().stacksTo(1);
+        properties.stacksTo(1);
         if (configType.hasDurability())
             properties.durability(configType.getDurability());
+        if (configType.getEnchantability() > 0)
+            properties.enchantable(configType.getEnchantability());
         return properties;
     }
 
-    @Override
     public int getEnchantmentValue(ItemStack stack)
     {
         return configType.getEnchantability();
     }
 
-    @Override
     public boolean isEnchantable(@NotNull ItemStack stack)
     {
         return configType.getEnchantability() > 0 && stack.getCount() == 1;
     }
 
-    @Override
     public boolean isDamageable(@NotNull ItemStack stack)
     {
         return configType.hasDurability();
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.literal("Improves gun, sword or axe handling when enchanted and held in off hand").withStyle(ChatFormatting.DARK_AQUA));
         tooltipComponents.add(Component.literal("Works with two-handed guns").withStyle(ChatFormatting.DARK_AQUA));

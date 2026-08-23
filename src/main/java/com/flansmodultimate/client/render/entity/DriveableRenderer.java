@@ -10,6 +10,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.DeferredMultiBufferSubmitter;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
@@ -31,16 +32,17 @@ import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -65,11 +67,23 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     }
 
     @Override
-    public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    protected AABB getBoundingBoxForCulling(T driveable)
     {
+        float radius = driveable.getCullingRadius();
+        return new AABB(driveable.getX() - radius, driveable.getY() - radius, driveable.getZ() - radius,
+            driveable.getX() + radius, driveable.getY() + radius, driveable.getZ() + radius);
+    }
+
+    @Override
+    public void extractRenderState(T driveable, State state, float partialTick)
+    {
+        super.extractRenderState(driveable, state, partialTick);
         DriveableType type = driveable.getConfigType();
         if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
+        {
+            state.customData = null;
             return;
+        }
 
         float yaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
         float pitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
@@ -100,7 +114,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         float legSwing = driveable instanceof Mecha
             ? wrappedLerp(partialTick, history.previousLegSwing, history.legSwing) : 0F;
 
-        ModelDriveable.RenderState state = new ModelDriveable.RenderState(
+        ModelDriveable.RenderState modelState = new ModelDriveable.RenderState(
             partialTick, yaw, pitch, roll, throttle, turretYaw, turretPitch,
             wheelAngle, steering, animationTime, gearProgress, doorProgress, modeProgress,
             leftTrackProgress, rightTrackProgress, legSwing,
@@ -109,86 +123,77 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             history.legAnimation, driveable.getInputMask(), driveable.getDriveableMode(), driveable.isVarFlare()
         );
 
-        ResourceLocation texture = getTextureLocation(driveable);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
         boolean cull = ModClientConfig.get().useCullingRendering(type);
-        float red = getRed(type);
-        float green = getGreen(type);
-        float blue = getBlue(type);
-        float scale = type.getModelScale();
-        float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
-        double cameraDistance = Math.sqrt(entityRenderDispatcher.distanceToSqr(driveable));
-
         float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle ? 180F - yaw : -yaw;
-        boolean locallyControlled = Minecraft.getInstance().player != null
-            && Minecraft.getInstance().player.getVehicle() == driveable;
-        boolean intact = true;
-        for (EnumDriveablePart part : type.getHealth().keySet())
-        {
-            if (!driveable.isPartIntact(part))
-            {
-                intact = false;
-                break;
-            }
-        }
-        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.renderOrPrepare(
-            model, type, texture, translucent, cull, red, green, blue,
-            poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-            entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
-            !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
-        history.usingImpostor = lodResult.usingImpostor();
-        if (lodResult.rendered())
+        state.customData = new RenderData(driveable, model, type, modelState, history, state.texture,
+            translucent, cull, state.red, state.green, state.blue, entityYawRotation, pitch, roll,
+            state.lightCoords);
+    }
+
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera)
+    {
+        if (!(state.customData instanceof RenderData data))
             return;
 
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
-        poseStack.mulPose(Axis.XP.rotationDegrees(roll));
-        LegacyTransformApplier.applyModelTransform(model, type, poseStack);
+        poseStack.mulPose(Axis.YP.rotationDegrees(data.entityYawRotation));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(data.pitch));
+        poseStack.mulPose(Axis.XP.rotationDegrees(data.roll));
+        LegacyTransformApplier.applyModelTransform(data.model, data.type, poseStack);
 
         // Keep this in model space so the correction follows terrain pitch and roll,
         // and is scaled along with legacy models that use ModelScale.
-        if (driveable instanceof Vehicle)
+        if (data.driveable instanceof Vehicle)
             poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
 
         // Legacy driveable renderers applied ModelScale to the complete model
         // hierarchy. Keep pivots, attachment points and procedural track paths
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
+        float scale = data.type.getModelScale();
         poseStack.scale(scale, scale, scale);
-        float minimumPartPixels = (float)ModClientConfig.get().minimumDriveablePartPixelSize;
-        if (ModClientConfig.get().enableDriveableLod)
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(data.model))
         {
-            minimumPartPixels = DriveableImpostorCache.adaptivePartThreshold(minimumPartPixels,
-                (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
-                lodResult.projectedPixelDiameter(), (float)ModClientConfig.get().driveableImpostorPixelSize);
+            collector.submitCustomGeometry(poseStack,
+                renderPass.getRenderType(data.texture, data.translucent, data.cull),
+                (submittedPose, vertices) -> {
+                    PoseStack deferred = poseStack(submittedPose);
+                    data.model.render(data.driveable, data.modelState, deferred, vertices,
+                        data.packedLight, OverlayTexture.NO_OVERLAY, data.red, data.green, data.blue,
+                        1F, 1F, renderPass);
+                });
         }
-        boolean useScreenSpaceCulling = minimumPartPixels > 0F;
-        if (useScreenSpaceCulling)
-            ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
-        try
+
+        poseStack.popPose();
+        if (data.driveable instanceof Mecha && data.model instanceof ModelMecha mechaModel
+            && data.type instanceof MechaType mechaType)
         {
-            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            {
-                model.render(driveable, state, poseStack,
-                    buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                    packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
-            }
-            poseStack.popPose();
-            if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
-                renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
-        }
-        finally
-        {
-            if (useScreenSpaceCulling)
-                ModelRendererTurbo.endScreenSpaceCulling();
+            DeferredMultiBufferSubmitter.submit(poseStack, collector,
+                (deferred, buffer) -> renderMechaAddons(data.driveable, mechaType, mechaModel,
+                    data.modelState, data.history, deferred, buffer, data.packedLight));
         }
         poseStack.popPose();
+        submitEntityFeatures(state, poseStack, collector, camera);
     }
+
+    private static PoseStack poseStack(PoseStack.Pose pose)
+    {
+        PoseStack result = new PoseStack();
+        result.last().set(pose);
+        return result;
+    }
+
+    private record RenderData(Driveable driveable, ModelDriveable model, DriveableType type,
+                              ModelDriveable.RenderState modelState, AnimationHistory history,
+                              Identifier texture, boolean translucent, boolean cull,
+                              float red, float green, float blue, float entityYawRotation,
+                              float pitch, float roll, int packedLight) { }
 
     @Override
     @NotNull
-    public ResourceLocation getTextureLocation(@NotNull T driveable)
+    public Identifier getTextureLocation(@NotNull T driveable)
     {
         DriveableType type = driveable.getConfigType();
         if (type == null)
@@ -306,7 +311,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         if (!(ModelCache.getOrLoadTypeModel(type) instanceof ModelMechaTool model))
             return;
 
-        ResourceLocation texture = type.getTexture();
+        Identifier texture = type.getTexture();
         int color = type.getColour();
         float red = (color >> 16 & 255) / 255F;
         float green = (color >> 8 & 255) / 255F;
@@ -382,7 +387,6 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private int rightGunRounds = -1;
         private DriveableType passengerPivotType;
         private ModelDriveable passengerPivotModel;
-        private boolean usingImpostor;
 
         private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
         {

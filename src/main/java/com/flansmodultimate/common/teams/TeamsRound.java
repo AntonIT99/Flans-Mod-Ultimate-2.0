@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -97,7 +98,7 @@ public final class TeamsRound implements Comparable<TeamsRound>
     public CompoundTag save()
     {
         CompoundTag tag = new CompoundTag();
-        tag.putUUID(NBT_ID, id);
+        tag.store(NBT_ID, UUIDUtil.CODEC, id);
         tag.putString(NBT_MAP, mapId);
         tag.putString(NBT_GAME_TYPE, gameTypeId);
         ListTag teams = new ListTag();
@@ -112,10 +113,10 @@ public final class TeamsRound implements Comparable<TeamsRound>
 
     public static TeamsRound load(CompoundTag tag)
     {
-        List<String> teams = tag.getList(NBT_TEAMS, Tag.TAG_STRING).stream().map(Tag::getAsString).toList();
-        UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
-        return new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams,
-            tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY), tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
+        List<String> teams = tag.getListOrEmpty(NBT_TEAMS).stream().map(value -> value.asString().orElse("")).toList();
+        UUID id = tag.read(NBT_ID, UUIDUtil.LENIENT_CODEC).orElseGet(UUID::randomUUID);
+        return new TeamsRound(id, tag.getStringOr(NBT_MAP, ""), tag.getStringOr(NBT_GAME_TYPE, ""), teams,
+            tag.getIntOr(NBT_TIME_LIMIT, 1), tag.getIntOr(NBT_SCORE_LIMIT, 1), tag.getFloatOr(NBT_POPULARITY, 0.5F), tag.getIntOr(NBT_ROUNDS_SINCE_PLAYED, 0));
     }
 
     @Override

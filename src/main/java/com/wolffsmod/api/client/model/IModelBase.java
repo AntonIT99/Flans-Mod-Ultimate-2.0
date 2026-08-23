@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -18,9 +18,9 @@ public interface IModelBase
     int TEXTURE_WIDTH = 64;
     int TEXTURE_HEIGHT = 32;
 
-    ResourceLocation getTexture();
+    Identifier getTexture();
 
-    void setTexture(ResourceLocation texture);
+    void setTexture(Identifier texture);
 
     List<ModelRenderer> getBoxList();
 

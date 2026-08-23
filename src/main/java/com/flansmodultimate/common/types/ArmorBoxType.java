@@ -9,7 +9,7 @@ import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -95,7 +95,7 @@ public class ArmorBoxType extends BlockType
         pages.forEach(ArmourBoxEntry::validateRecipeIngredients);
     }
 
-    public ResourceLocation getGuiTexture()
+    public Identifier getGuiTexture()
     {
         return loadGuiTextureLocation(guiTexturePath, FlansMod.armorBoxGuiTexture);
     }

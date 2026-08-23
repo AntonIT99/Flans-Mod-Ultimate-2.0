@@ -3,33 +3,34 @@ package com.flansmodultimate.client.render.entity;
 import com.flansmodultimate.common.entity.Bullet;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 
 public class BulletRenderer extends FlanEntityRenderer<Bullet>
 {
-    public BulletRenderer(EntityRendererProvider.Context ctx)
+    public BulletRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
+
+    @Override
+    public void extractRenderState(Bullet bullet, State state, float partialTicks)
     {
-        super(ctx);
+        super.extractRenderState(bullet, state, partialTicks);
+        state.yaw = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
+        state.pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
+        if (bullet.getConfigType() != null && bullet.getConfigType().isHasLight())
+            state.lightCoords = LightCoordsUtil.FULL_BRIGHT;
     }
 
     @Override
-    public void render(@NotNull Bullet bullet, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera)
     {
         poseStack.pushPose();
-
-        float yaw = Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot());
-        float pitch = Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot());
-
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
-
-        super.render(bullet, entityYaw, partialTicks, poseStack, buffer, bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : packedLight);
-
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(90.0F - state.pitch));
+        submitFlanState(state, poseStack, collector);
         poseStack.popPose();
+        submitEntityFeatures(state, poseStack, collector, camera);
     }
 }

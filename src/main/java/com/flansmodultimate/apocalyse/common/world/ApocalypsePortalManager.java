@@ -70,20 +70,20 @@ public final class ApocalypsePortalManager
         if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
 
-        ServerLevel sourceLevel = player.serverLevel();
+        ServerLevel sourceLevel = (ServerLevel)player.level();
         ServerLevel targetLevel;
         BlockPos searchCenter;
         boolean goingToApocalypse = !sourceLevel.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL);
 
         if (goingToApocalypse)
         {
-            targetLevel = player.server.getLevel(ApocalypseContent.APOCALYPSE_LEVEL);
+            targetLevel = player.level().getServer().getLevel(ApocalypseContent.APOCALYPSE_LEVEL);
             searchCenter = player.blockPosition();
             ApocalypseSavedData.get(sourceLevel).setEntryPoint(player.getUUID(), teleporter.getLowerLeftCorner());
         }
         else
         {
-            targetLevel = player.server.getLevel(Level.OVERWORLD);
+            targetLevel = player.level().getServer().getLevel(Level.OVERWORLD);
             searchCenter = ApocalypseSavedData.get(sourceLevel)
                 .getEntryPoint(player.getUUID())
                 .orElse(player.blockPosition());
@@ -91,7 +91,7 @@ public final class ApocalypsePortalManager
 
         if (targetLevel == null)
         {
-            player.displayClientMessage(Component.translatable("message.flansmodultimate.apocalypse_dimension_unavailable"), true);
+            player.sendOverlayMessage(Component.translatable("message.flansmodultimate.apocalypse_dimension_unavailable"));
             return;
         }
 
@@ -101,7 +101,7 @@ public final class ApocalypsePortalManager
 
         if (targetCorner.isEmpty())
         {
-            player.displayClientMessage(Component.translatable("message.flansmodultimate.apocalypse_portal_failed"), true);
+            player.sendOverlayMessage(Component.translatable("message.flansmodultimate.apocalypse_portal_failed"));
             return;
         }
 
@@ -110,7 +110,7 @@ public final class ApocalypsePortalManager
         double x = corner.getX() + 2.0D;
         double y = corner.getY() + 1.0D;
         double z = corner.getZ() + 2.0D;
-        player.teleportTo(targetLevel, x, y, z, Collections.emptySet(), player.getYRot(), player.getXRot());
+        player.teleportTo(targetLevel, x, y, z, Collections.emptySet(), player.getYRot(), player.getXRot(), false);
         player.setPortalCooldown();
     }
 
@@ -119,8 +119,8 @@ public final class ApocalypsePortalManager
         int radius = ModApocalypseConfig.apocalypseReturnRadius();
         for (int attempt = 0; attempt < 300; attempt++)
         {
-            double angle = level.random.nextDouble() * Math.PI * 2.0D;
-            double distance = Math.max(8.0D, radius * (0.5D + level.random.nextDouble() * 0.75D));
+            double angle = level.getRandom().nextDouble() * Math.PI * 2.0D;
+            double distance = Math.max(8.0D, radius * (0.5D + level.getRandom().nextDouble() * 0.75D));
             int x = searchCenter.getX() + (int)Math.round(Math.cos(angle) * distance);
             int z = searchCenter.getZ() + (int)Math.round(Math.sin(angle) * distance);
             Optional<BlockPos> surface = findSurfacePortalCorner(level, x, z);
@@ -157,7 +157,7 @@ public final class ApocalypsePortalManager
         for (int dy = 0; dy < 24; dy++)
         {
             BlockPos candidate = pos.below(dy);
-            if (candidate.getY() <= level.getMinBuildHeight() + 2)
+            if (candidate.getY() <= level.getMinY() + 2)
                 break;
             if (level.getWorldBorder().isWithinBounds(candidate)
                 && level.getWorldBorder().isWithinBounds(candidate.offset(3, 0, 3))
@@ -192,7 +192,7 @@ public final class ApocalypsePortalManager
         {
             for (int dz = 0; dz < PORTAL_SIZE; dz++)
             {
-                for (BlockPos pos = corner.offset(dx, -1, dz); pos.getY() > level.getMinBuildHeight() && level.getBlockState(pos.below()).isAir(); pos = pos.below())
+                for (BlockPos pos = corner.offset(dx, -1, dz); pos.getY() > level.getMinY() && level.getBlockState(pos.below()).isAir(); pos = pos.below())
                     level.setBlock(pos.below(), Blocks.OBSIDIAN.defaultBlockState(), 3);
             }
         }

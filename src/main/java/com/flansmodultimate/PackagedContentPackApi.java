@@ -71,16 +71,16 @@ public final class PackagedContentPackApi
         if (modFileInfo == null)
             throw new IllegalStateException("Could not find Forge mod file for " + modId);
 
-        Path moduleContentRoot = modFileInfo.getFile().findResource(splitPath(contentRoot));
-        Path moduleModelsRoot = modFileInfo.getFile().findResource(splitPath(modelsRoot));
-        Path moduleResourceRoot = modFileInfo.getFile().findResource("pack.mcmeta").getParent();
-        Path moduleAssetsRoot = modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID);
+        Path moduleContentRoot = findResource(modFileInfo, contentRoot);
+        Path moduleModelsRoot = findResource(modFileInfo, modelsRoot);
+        Path moduleResourceRoot = findResource(modFileInfo, "pack.mcmeta").getParent();
+        Path moduleAssetsRoot = findResource(modFileInfo, "assets", FlansMod.FLANSMOD_ID);
         Path modulePath = modFileInfo.getFile().getFilePath();
         String moduleDisplayName = ModList.get().getModContainerById(modId)
             .map(container -> container.getModInfo().getDisplayName())
             .filter(displayName -> !displayName.isBlank())
             .orElse(modId);
-        boolean archiveBacked = FMLEnvironment.production;
+        boolean archiveBacked = FMLEnvironment.isProduction();
 
         if (archiveBacked && (!Files.isRegularFile(modulePath)
             || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
@@ -284,6 +284,17 @@ public final class PackagedContentPackApi
         return Stream.of(path.split("[/\\\\]+"))
             .filter(part -> !part.isBlank())
             .toArray(String[]::new);
+    }
+
+    private static Path findResource(IModFileInfo modFileInfo, String... pathParts)
+    {
+        String relativePath = joinArchivePath(pathParts);
+        return modFileInfo.getFile().getContents().getContentRoots().stream()
+            .map(root -> root.resolve(relativePath))
+            .filter(Files::exists)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Could not find packaged content resource '"
+                + relativePath + "' in " + modFileInfo.getFile().getFilePath()));
     }
 
     private static String joinArchivePath(String... parts)

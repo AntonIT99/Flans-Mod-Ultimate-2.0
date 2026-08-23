@@ -48,17 +48,22 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.ValueIOUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -81,12 +86,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -208,6 +216,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     @Getter protected float prevTurretPitch;
     private boolean clientTransformInitialized;
     private int clientTransformLerpSteps;
+    private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
     private double clientTargetX;
     private double clientTargetY;
     private double clientTargetZ;
@@ -313,7 +322,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         collisionHelper = new DriveableCollisionHelper(type.getCollisionProfile());
         getPersistentData().putBoolean("CanMountEntity", type.isCanMountEntity());
         engineStartTicks = Math.max(0, type.getEngineStartTime());
-        placementEffectsPending = !level().isClientSide;
+        placementEffectsPending = !level().isClientSide();
         recoilTicksRemaining = 0;
         recoilDuration = 0;
         entityData.set(DATA_RECOIL_PROGRESS, 0F);
@@ -326,7 +335,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         sourceStack = stack.copy();
         sourceStack.setCount(sourceStack.isEmpty() ? 0 : 1);
         driveableData = stack.isEmpty() ? new DriveableData(type, level().registryAccess()) : DriveableData.fromStack(type, stack, level().registryAccess());
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (!sourceStack.isEmpty())
             driveableData.removeSerializedState(ItemStackData.copy(sourceStack));
@@ -344,7 +353,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
         partSyncInitialized = false;
         setFuel(driveableData.getFuelInTank());
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             updateCurrentAmmoNames();
         refreshDimensions();
     }
@@ -416,12 +425,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public float getFuel() { return entityData.get(DATA_FUEL); }
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : secondaryShootDelay;
+        return level().isClientSide() ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : secondaryShootDelay;
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : primaryShootDelay;
+        return level().isClientSide() ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : primaryShootDelay;
     }
 
     public Component getCurrentPrimaryAmmoName()
@@ -436,7 +445,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private void updateCurrentAmmoNames()
     {
-        if (level().isClientSide)
+        if (level().isClientSide())
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
@@ -464,7 +473,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private boolean useClientVisualTransform()
     {
-        return level().isClientSide && clientTransformInitialized;
+        return level().isClientSide() && clientTransformInitialized;
     }
 
     protected void setYaw(float yaw)
@@ -628,7 +637,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             CompoundTag state = buffer.readNbt();
             if (state == null)
                 state = new CompoundTag();
-            readAdditionalSaveData(state);
+            readLegacySaveData(state);
         }
         catch (RuntimeException exception)
         {
@@ -638,9 +647,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        String typeName = tag.contains(NBT_TYPE, Tag.TAG_STRING) ? tag.getString(NBT_TYPE) : tag.getString("Type");
+        readLegacySaveData(ValueIOUtils.toCompoundTag(input));
+    }
+
+    private void readLegacySaveData(@NotNull CompoundTag tag)
+    {
+        String typeName = tag.getString(NBT_TYPE).orElseGet(() -> tag.getString("Type").orElse(StringUtils.EMPTY));
         setShortName(typeName);
         if (!(InfoType.getInfoType(typeName) instanceof DriveableType type))
         {
@@ -649,11 +663,11 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return;
         }
 
-        ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND)
-            ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
+        ItemStack savedSource = tag.contains(NBT_SOURCE_STACK)
+            ? ItemStackData.parse(level().registryAccess(), tag.getCompoundOrEmpty(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
         driveableData = new DriveableData(type, tag, level().registryAccess());
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
@@ -661,42 +675,42 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         renderInventoryFingerprintInitialized = true;
         driveableData.setInventoryChanged(false);
         setFuel(driveableData.getFuelInTank());
-        setOrientation(tag.getFloat(NBT_YAW), tag.getFloat(NBT_PITCH), tag.getFloat(NBT_ROLL));
-        setThrottle(tag.getFloat(NBT_THROTTLE));
-        setTurretAim(tag.getFloat(NBT_TURRET_YAW), tag.getFloat(NBT_TURRET_PITCH));
-        entityData.set(DATA_FLAGS, tag.contains(NBT_FLAGS) ? tag.getInt(NBT_FLAGS) : FLAG_GEAR);
-        setDriveableMode(tag.getInt(NBT_MODE));
-        if (tag.hasUUID(NBT_OWNER))
-            ownerId = tag.getUUID(NBT_OWNER);
-        locked = tag.getBoolean(NBT_LOCKED);
-        if (tag.contains(NBT_ENGINE_START_TICKS, Tag.TAG_INT))
-            engineStartTicks = Math.max(0, tag.getInt(NBT_ENGINE_START_TICKS));
-        setPrimaryShootDelay(tag.contains(NBT_PRIMARY_SHOOT_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0);
-        setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0);
-        recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS)) : 0;
-        recoilDuration = tag.contains(NBT_RECOIL_DURATION, Tag.TAG_INT)
-            ? Math.max(recoilTicksRemaining, tag.getInt(NBT_RECOIL_DURATION)) : recoilTicksRemaining;
+        setOrientation(tag.getFloat(NBT_YAW).orElse(0F), tag.getFloat(NBT_PITCH).orElse(0F), tag.getFloat(NBT_ROLL).orElse(0F));
+        setThrottle(tag.getFloat(NBT_THROTTLE).orElse(0F));
+        setTurretAim(tag.getFloat(NBT_TURRET_YAW).orElse(0F), tag.getFloat(NBT_TURRET_PITCH).orElse(0F));
+        entityData.set(DATA_FLAGS, tag.getInt(NBT_FLAGS).orElse(FLAG_GEAR));
+        setDriveableMode(tag.getInt(NBT_MODE).orElse(0));
+        ownerId = tag.read(NBT_OWNER, UUIDUtil.LENIENT_CODEC).orElse(null);
+        locked = tag.getBoolean(NBT_LOCKED).orElse(false);
+        if (tag.contains(NBT_ENGINE_START_TICKS))
+            engineStartTicks = Math.max(0, tag.getInt(NBT_ENGINE_START_TICKS).orElse(0));
+        setPrimaryShootDelay(tag.contains(NBT_PRIMARY_SHOOT_DELAY)
+            ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY).orElse(0)) : 0);
+        setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY)
+            ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY).orElse(0)) : 0);
+        recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS)
+            ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS).orElse(0)) : 0;
+        recoilDuration = tag.contains(NBT_RECOIL_DURATION)
+            ? Math.max(recoilTicksRemaining, tag.getInt(NBT_RECOIL_DURATION).orElse(0)) : recoilTicksRemaining;
         entityData.set(DATA_RECOIL_PROGRESS, recoilDuration <= 0 ? 0F
             : Mth.clamp(1F - (float) recoilTicksRemaining / recoilDuration, 0F, 1F));
-        it1Stage = tag.contains(NBT_IT1_STAGE, Tag.TAG_INT)
-            ? Mth.clamp(tag.getInt(NBT_IT1_STAGE), 1, 8) : 8;
-        it1ReloadDelay = tag.contains(NBT_IT1_RELOAD_DELAY, Tag.TAG_INT)
-            ? Math.max(0, tag.getInt(NBT_IT1_RELOAD_DELAY)) : 0;
-        setIT1Angles(tag.getFloat(NBT_IT1_DOOR_ANGLE), tag.getFloat(NBT_IT1_ARM_ANGLE),
-            tag.getFloat(NBT_IT1_RAIL_ANGLE), true);
-        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE)));
-        setFlag(FLAG_IT1_RELOADING, type.isIT1() && tag.getBoolean(NBT_IT1_RELOADING));
+        it1Stage = tag.contains(NBT_IT1_STAGE)
+            ? Mth.clamp(tag.getInt(NBT_IT1_STAGE).orElse(8), 1, 8) : 8;
+        it1ReloadDelay = tag.contains(NBT_IT1_RELOAD_DELAY)
+            ? Math.max(0, tag.getInt(NBT_IT1_RELOAD_DELAY).orElse(0)) : 0;
+        setIT1Angles(tag.getFloat(NBT_IT1_DOOR_ANGLE).orElse(0F), tag.getFloat(NBT_IT1_ARM_ANGLE).orElse(0F),
+            tag.getFloat(NBT_IT1_RAIL_ANGLE).orElse(0F), true);
+        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE).orElse(false)));
+        setFlag(FLAG_IT1_RELOADING, type.isIT1() && tag.getBoolean(NBT_IT1_RELOADING).orElse(false));
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
         resizeProxyArrays();
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
+        CompoundTag tag = new CompoundTag();
         DriveableType type = getConfigType();
         if (type == null || driveableData == null)
             return;
@@ -708,6 +722,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             tag.put(NBT_SOURCE_STACK, sourceTag);
         }
         driveableData.save(tag);
+        ValueIOUtils.storeCompoundTag(output, tag);
     }
 
     private void writeRuntimeState(@NotNull CompoundTag tag)
@@ -723,7 +738,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         tag.putInt(NBT_FLAGS, entityData.get(DATA_FLAGS));
         tag.putInt(NBT_MODE, getDriveableMode());
         if (ownerId != null)
-            tag.putUUID(NBT_OWNER, ownerId);
+            tag.store(NBT_OWNER, UUIDUtil.CODEC, ownerId);
         tag.putBoolean(NBT_LOCKED, locked);
         tag.putInt(NBT_ENGINE_START_TICKS, Math.max(0, engineStartTicks));
         tag.putInt(NBT_PRIMARY_SHOOT_DELAY, Math.max(0, primaryShootDelay));
@@ -747,7 +762,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             getConfigType();
         if (DATA_YAW.equals(key) || DATA_PITCH.equals(key) || DATA_ROLL.equals(key))
         {
-            if (level().isClientSide)
+            if (level().isClientSide())
             {
                 initializeClientTransform();
                 clientTargetYaw = getSyncedYaw();
@@ -757,7 +772,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             }
             axes.setAngles(getYaw(), getPitch(), getRoll());
         }
-        if ((DATA_TURRET_YAW.equals(key) || DATA_TURRET_PITCH.equals(key)) && level().isClientSide)
+        if ((DATA_TURRET_YAW.equals(key) || DATA_TURRET_PITCH.equals(key)) && level().isClientSide())
         {
             initializeClientTransform();
             clientTargetTurretYaw = getSyncedTurretYaw();
@@ -775,45 +790,17 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
      * at the server tick rate even while the renderer is much faster.
      */
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    public InterpolationHandler getInterpolation()
     {
-        if (!level().isClientSide)
-        {
-            super.lerpTo(x, y, z, yaw, pitch, steps);
-            return;
-        }
-
-        initializeClientTransform();
-        clientTargetX = x;
-        clientTargetY = y;
-        clientTargetZ = z;
-        clientTargetYaw = Mth.wrapDegrees(yaw);
-        clientTargetPitch = Mth.clamp(pitch, -89.9F, 89.9F);
-
-        double distanceSquared = distanceToSqr(x, y, z);
-        if (!Double.isFinite(distanceSquared) || distanceSquared > 4096D)
-        {
-            setPos(x, y, z);
-            clientVisualYaw = clientTargetYaw;
-            clientVisualPitch = clientTargetPitch;
-            clientVisualRoll = clientTargetRoll;
-            clientTransformLerpSteps = 0;
-            setYRot(clientVisualYaw);
-            setXRot(clientVisualPitch);
-            axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
-            return;
-        }
-
-        // Two to three ticks remove packet stepping without making steering
-        // feel detached from the locally controlled vehicle.
-        clientTransformLerpSteps = Mth.clamp(steps, 2, 3);
+        return interpolation;
     }
 
     @Override
     public void tick()
     {
         super.tick();
-        if (level().isClientSide)
+        interpolation.interpolate();
+        if (level().isClientSide())
         {
             initializeClientTransform();
             prevYaw = clientVisualYaw;
@@ -836,7 +823,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         DriveableType type = getConfigType();
         if (type == null || driveableData == null)
         {
-            if (!level().isClientSide)
+            if (!level().isClientSide())
                 discard();
             return;
         }
@@ -848,7 +835,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             isShowedPosition = markerTicks > 0;
         }
 
-        if (level().isClientSide)
+        if (level().isClientSide())
         {
             tickClientDriveable();
             return;
@@ -914,7 +901,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private void initializeClientTransform()
     {
-        if (clientTransformInitialized || !level().isClientSide)
+        if (clientTransformInitialized || !level().isClientSide())
             return;
         clientTransformInitialized = true;
         clientTargetX = getX();
@@ -935,9 +922,6 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return;
 
         double divisor = clientTransformLerpSteps;
-        setPos(getX() + (clientTargetX - getX()) / divisor,
-            getY() + (clientTargetY - getY()) / divisor,
-            getZ() + (clientTargetZ - getZ()) / divisor);
         clientVisualYaw = Mth.wrapDegrees(clientVisualYaw
             + Mth.wrapDegrees(clientTargetYaw - clientVisualYaw) / (float) divisor);
         clientVisualPitch += (clientTargetPitch - clientVisualPitch) / (float) divisor;
@@ -1004,7 +988,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void tickWeapons()
     {
-        if (configType == null || driveableData == null || level().isClientSide)
+        if (configType == null || driveableData == null || level().isClientSide())
             return;
 
         handleInventoryReloadState();
@@ -1293,14 +1277,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     private void setPrimaryShootDelay(int delay)
     {
         primaryShootDelay = Math.max(0, delay);
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             entityData.set(DATA_PRIMARY_RELOAD_TICKS, primaryShootDelay);
     }
 
     private void setSecondaryShootDelay(int delay)
     {
         secondaryShootDelay = Math.max(0, delay);
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             entityData.set(DATA_SECONDARY_RELOAD_TICKS, secondaryShootDelay);
     }
 
@@ -1359,7 +1343,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     public void applyRenderInventoryNetworkState(int paintjobId, int[] slots, ItemStack[] stacks)
     {
-        if (!level().isClientSide || driveableData == null || slots == null || stacks == null
+        if (!level().isClientSide() || driveableData == null || slots == null || stacks == null
             || slots.length != stacks.length || slots.length > DriveableData.MAX_RENDER_SYNC_SLOTS)
             return;
         driveableData.setPaintjobID(paintjobId);
@@ -1854,7 +1838,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void syncChangedPartState()
     {
-        if (level().isClientSide || driveableData == null || isRemoved())
+        if (level().isClientSide() || driveableData == null || isRemoved())
             return;
         List<DriveablePart> changed = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
@@ -1878,7 +1862,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     /** Applies a validated server snapshot without running destructive gameplay effects on the client. */
     public void applyPartNetworkState(int[] ordinals, float[] health, int[] fireTicks, byte[] flags)
     {
-        if (!level().isClientSide || driveableData == null || ordinals == null || health == null || fireTicks == null || flags == null)
+        if (!level().isClientSide() || driveableData == null || ordinals == null || health == null || fireTicks == null || flags == null)
             return;
         int count = Math.min(Math.min(ordinals.length, health.length), Math.min(fireTicks.length, flags.length));
         EnumDriveablePart[] values = EnumDriveablePart.values();
@@ -2129,7 +2113,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void dropDestroyedPartRecipe(EnumDriveablePart partType)
     {
-        if (suppressDrops || level().isClientSide || configType == null || driveableData == null)
+        if (suppressDrops || level().isClientSide() || configType == null || driveableData == null)
             return;
         DriveablePart part = driveableData.getPart(partType);
         if (part == null)
@@ -2149,7 +2133,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void ensureProxyEntities()
     {
-        if (level().isClientSide || configType == null || !isAlive())
+        if (level().isClientSide() || configType == null || !isAlive())
             return;
         resizeProxyArrays();
         for (int index = 0; index < seats.length; index++)
@@ -2559,7 +2543,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         float remainingPower = Math.max(0F, previousPower - resistance);
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         float damage = bulletType.getDamage().getDamageAgainstEntity(this) * Mth.clamp(previousPower, 0.1F, 1F);
-        if (!level().isClientSide)
+        if (!level().isClientSide())
         {
             part.damage(Math.max(0F, damage), bulletType.isSetEntitiesOnFire());
             if (part.isDestroyed())
@@ -2596,7 +2580,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
     {
-        if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)
+        if (level().isClientSide() || destroyed || driveableData == null || amount <= 0F)
             return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
@@ -2612,16 +2596,16 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, float amount)
     {
-        if (isInvulnerableTo(source) || destroyed)
+        if (isInvulnerableToBase(source) || destroyed)
             return false;
         Entity attacker = source.getEntity();
         if (attacker instanceof Player player && getControllingEntity() == null && onGround()
             && canPlayerAccess(player)
             && (player.getAbilities().instabuild || FlansMod.teamsManager.isSurvivalCanBreakVehicles()))
         {
-            if (!level().isClientSide)
+            if (!level().isClientSide())
                 pickupAsItem(player);
             return true;
         }
@@ -2641,7 +2625,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     public boolean repairFromTool(@NotNull Player player, int amount)
     {
-        if (level().isClientSide || amount <= 0 || driveableData == null || !canPlayerAccess(player))
+        if (level().isClientSide() || amount <= 0 || driveableData == null || !canPlayerAccess(player))
             return false;
         Vec3 origin = player.getEyePosition();
         Vec3 motion = player.getLookAngle().scale(6D);
@@ -2688,7 +2672,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     /** Repairs one part after validating its dependency chain. Inventory costs are owned by the caller. */
     public boolean repairPart(@Nullable EnumDriveablePart part, float amount)
     {
-        if (level().isClientSide || amount <= 0F || !Float.isFinite(amount) || !canRepairPart(part))
+        if (level().isClientSide() || amount <= 0F || !Float.isFinite(amount) || !canRepairPart(part))
             return false;
         DriveablePart state = driveableData.getPart(part);
         if (state == null || state.repair(amount) <= 0F)
@@ -2730,7 +2714,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void consumeFuel(float load)
     {
-        if (level().isClientSide || driveableData == null || configType == null || configType.getFuelTankSize() < 0F
+        if (level().isClientSide() || driveableData == null || configType == null || configType.getFuelTankSize() < 0F
             || !FlansMod.teamsManager.isVehiclesNeedFuel() || getControllingEntity() instanceof Player player && player.getAbilities().instabuild)
             return;
         PartType engine = driveableData.getEngine();
@@ -2779,15 +2763,21 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             ItemStack stack = driveableData.getItem(slot);
             if (stack.isEmpty())
                 continue;
-            IEnergyStorage energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-            if (energy == null || !energy.canExtract())
+            EnergyHandler energy = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+            if (energy == null)
                 continue;
 
             double room = tankCapacity - getFuel();
             int roomLimitedDraw = (int) Math.min(drawRate, Math.ceil(room * drawRate / 2D));
             if (roomLimitedDraw <= 0)
                 break;
-            int extracted = Math.max(0, energy.extractEnergy(roomLimitedDraw, false));
+            int extracted;
+            try (Transaction transaction = Transaction.openRoot())
+            {
+                extracted = Math.max(0, energy.extract(roomLimitedDraw, transaction));
+                if (extracted > 0)
+                    transaction.commit();
+            }
             if (extracted <= 0)
                 continue;
             setFuel((float) Math.min(tankCapacity, getFuel() + 2D * extracted / drawRate));
@@ -2869,7 +2859,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (!(keyStack.getItem() instanceof ToolItem tool) || !tool.getConfigType().isKey())
             return false;
         String expected = getUUID().toString();
-        String key = ItemStackData.copy(keyStack).getString(NBT_KEY_ID);
+        String key = ItemStackData.copy(keyStack).getString(NBT_KEY_ID).orElse(StringUtils.EMPTY);
         if (StringUtils.isBlank(key))
         {
             if (locked && ownerId != null && !ownerId.equals(player.getUUID()) && !player.getAbilities().instabuild)
@@ -2918,14 +2908,18 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
-            return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
+        {
+            if (level().isClientSide())
+                return InteractionResult.SUCCESS;
+            return bindOrCheckKey(player, held) ? InteractionResult.SUCCESS_SERVER : InteractionResult.CONSUME;
+        }
         if (!canPlayerAccess(player) || player.isSpectator())
             return InteractionResult.PASS;
-        if (level().isClientSide)
+        if (level().isClientSide())
             return InteractionResult.SUCCESS;
 
         // A seat proxy can be hidden behind the much larger vehicle hitbox.
@@ -2940,7 +2934,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return InteractionResult.PASS;
         if (player.getVehicle() != null)
             player.stopRiding();
-        return player.startRiding(target, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return player.startRiding(target, true, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
     }
 
     @Nullable
@@ -3000,7 +2994,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    public ItemStack getPickedResult(HitResult target)
+    public ItemStack getPickResult()
     {
         return createDropStack();
     }
@@ -3021,8 +3015,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         ItemStack stack = createDropStack();
         if (!stack.isEmpty())
         {
-            if (!player.getInventory().add(stack))
-                spawnAtLocation(stack, 0.25F);
+            if (!player.getInventory().add(stack) && level() instanceof ServerLevel serverLevel)
+                spawnAtLocation(serverLevel, stack, 0.25F);
         }
         suppressDrops = true;
         discard();
@@ -3048,13 +3042,15 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             for (Entity passenger : List.copyOf(seat.getPassengers()))
             {
                 passenger.stopRiding();
-                passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
+                if (level() instanceof ServerLevel serverLevel)
+                    passenger.hurtServer(serverLevel, level().damageSources().generic(), Float.MAX_VALUE);
             }
         }
         for (Entity passenger : List.copyOf(getPassengers()))
         {
             passenger.stopRiding();
-            passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
+            if (level() instanceof ServerLevel serverLevel)
+                passenger.hurtServer(serverLevel, level().damageSources().generic(), Float.MAX_VALUE);
         }
         if (!suppressDrops)
             dropContents();
@@ -3081,7 +3077,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void createExplosion(DriveableExplosion settings, Vec3 centre)
     {
-        if (level().isClientSide || settings.explosionRadius() <= 0F)
+        if (level().isClientSide() || settings.explosionRadius() <= 0F)
             return;
         DamageStats blast = new DamageStats();
         blast.setDamage(settings.damageVsVehicle());
@@ -3113,7 +3109,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         for (ItemStack stack : driveableData.getInventory())
         {
             if (!stack.isEmpty())
-                spawnAtLocation(stack.copy(), 0.5F);
+                if (level() instanceof ServerLevel serverLevel)
+                    spawnAtLocation(serverLevel, stack.copy(), 0.5F);
         }
         driveableData.clearContent();
     }
@@ -3354,8 +3351,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
-            if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D)
-                entity.hurt(level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
+            if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D && level() instanceof ServerLevel serverLevel)
+                entity.hurtServer(serverLevel, level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
             Vec3 push = entity.position().subtract(position());
             if (push.horizontalDistanceSqr() < 1.0E-6D)
                 push = getForwardVector();
@@ -3381,7 +3378,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     /** Executes a bounded, permission-checked legacy harvester pass. */
     protected void harvestConfiguredBlocks()
     {
-        if (level().isClientSide || tickCount % 3 != 0 || configType == null || driveableData == null
+        if (level().isClientSide() || tickCount % 3 != 0 || configType == null || driveableData == null
             || !configType.isHarvestBlocks() || !isPartIntact(EnumDriveablePart.HARVESTER)
             || !FlansMod.teamsManager.isDriveablesBreakBlocks())
             return;
@@ -3442,7 +3439,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         for (String raw : configType.getMaterialsHarvested())
         {
             String token = raw.toLowerCase(java.util.Locale.ROOT).replace("minecraft:", "").replace("material.", "");
-            if (path.contains(token) || state.getTags().anyMatch(tag -> tag.location().getPath().contains(token)))
+            if (path.contains(token) || state.typeHolder().tags().anyMatch(tag -> tag.location().getPath().contains(token)))
                 return true;
             if (token.equals("wood") && (state.is(BlockTags.LOGS) || state.is(BlockTags.PLANKS)))
                 return true;
@@ -3492,18 +3489,15 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return EntityDimensions.scalable(width, height);
     }
 
-    @Override
-    @NotNull
-    public AABB getBoundingBoxForCulling()
+    public float getCullingRadius()
     {
-        float radius = configType == null ? 8F : Mth.clamp(configType.getBulletDetectionRadius() + 2F, 4F, 64F);
-        return new AABB(getX() - radius, getY() - radius, getZ() - radius, getX() + radius, getY() + radius, getZ() + radius);
+        return configType == null ? 8F : Mth.clamp(configType.getBulletDetectionRadius() + 2F, 4F, 64F);
     }
 
     public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z,
                                             float yaw, @Nullable Player placer, @Nullable ItemStack sourceStack)
     {
-        if (level.isClientSide || !validSpawnCoordinate(x) || !validSpawnCoordinate(y) || !validSpawnCoordinate(z) || !Float.isFinite(yaw))
+        if (level.isClientSide() || !validSpawnCoordinate(x) || !validSpawnCoordinate(y) || !validSpawnCoordinate(z) || !Float.isFinite(yaw))
             return Optional.empty();
         Driveable entity = create(level, type, x, y, z, yaw, placer, sourceStack == null ? ItemStack.EMPTY : sourceStack);
         if (entity == null || !level.getWorldBorder().isWithinBounds(entity.blockPosition()) || !level.noCollision(entity, entity.getBoundingBox()))

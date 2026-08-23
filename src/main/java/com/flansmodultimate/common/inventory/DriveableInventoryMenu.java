@@ -193,7 +193,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         }
         if (id >= REPAIR_BUTTON_BASE && id < REPAIR_BUTTON_BASE + EnumDriveablePart.values().length)
         {
-            if (!player.level().isClientSide)
+            if (!player.level().isClientSide())
                 repairPart(player, EnumDriveablePart.values()[id - REPAIR_BUTTON_BASE]);
             return true;
         }

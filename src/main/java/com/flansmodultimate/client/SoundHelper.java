@@ -14,7 +14,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -99,7 +99,7 @@ public final class SoundHelper
             float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
             Vec3 soundPosition = relativeToListener ? Vec3.ZERO : pos;
 
-            SimpleSoundInstance soundInstance = new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, soundPosition.x, soundPosition.y, soundPosition.z, relativeToListener);
+            SimpleSoundInstance soundInstance = new SimpleSoundInstance(soundEvent.location(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, soundPosition.x, soundPosition.y, soundPosition.z, relativeToListener);
 
             if (cancellable)
                 cancellableSounds.put(instanceUUID, soundInstance);
@@ -125,7 +125,7 @@ public final class SoundHelper
         DeferredHolder<SoundEvent, SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
         if (soundEvent == null || soundEvent.getId() == null)
         {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
+            FlansMod.log.debug("Could not play sound event {}", Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
             return Optional.empty();
         }
         return Optional.of(soundEvent.get());

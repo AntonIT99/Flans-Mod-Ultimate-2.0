@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "flansmod:item/teams_item_spawner"
+  }
+}

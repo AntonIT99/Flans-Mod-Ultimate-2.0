@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -43,7 +44,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KeyInputHandler
 {
-    private static final String CATEGORY = "key.categories." + FlansMod.MOD_ID;
+    private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "controls"));
     private static final int INPUT_KEEPALIVE_TICKS = 5;
     private static final float AIM_CHANGE_EPSILON = 0.1F;
     private static final float FLIGHT_CONTROL_EPSILON = 0.005F;
@@ -91,6 +92,7 @@ public final class KeyInputHandler
 
     public static void registerKeys(RegisterKeyMappingsEvent event)
     {
+        event.registerCategory(CATEGORY);
         event.register(reloadKey);
         event.register(fireModeKey);
         event.register(lookAtGunKey);

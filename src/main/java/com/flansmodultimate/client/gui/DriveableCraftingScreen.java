@@ -6,7 +6,8 @@ import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -32,9 +33,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
     public DriveableCraftingScreen(DriveableCraftingMenu menu, Inventory inventory, Component title)
     {
-        super(menu, inventory, title);
-        imageWidth = 248;
-        imageHeight = 212;
+        super(menu, inventory, title, 248, 212);
     }
 
     @Override
@@ -70,24 +69,22 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         hoveredStack = ItemStack.EMPTY;
         clampSelection();
         updateButtons();
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         renderBlueprints(graphics, mouseX, mouseY);
         renderRecipe(graphics, mouseX, mouseY);
         if (!hoveredStack.isEmpty())
-            graphics.renderTooltip(font, hoveredStack, mouseX, mouseY);
-        else
-            renderTooltip(graphics, mouseX, mouseY);
+            graphics.setTooltipForNextFrame(font, hoveredStack, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xE0181C22);
         graphics.fill(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + imageHeight - 4, 0xFF313842);
         graphics.fill(leftPos + 7, topPos + 16, leftPos + 153, topPos + 55, 0xFF20262E);
@@ -96,31 +93,31 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.crafting"), 8, 6, 0xFFFFFF, false);
+        graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.crafting"), 8, 6, 0xFFFFFF, false);
         DriveableType selected = getSelectedBlueprint();
         if (selected == null)
         {
-            graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.none"), 12, 73, 0xB0B0B0, false);
+            graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.none"), 12, 73, 0xB0B0B0, false);
             return;
         }
 
-        graphics.drawString(font, Component.literal(font.plainSubstrByWidth(selected.getName(), 150)), 38, 65, 0xFFFFFF, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), 38, 77, 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), 38, 88, 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), 38, 99, 0xC9D2DC, false);
+        graphics.text(font, Component.literal(font.plainSubstrByWidth(selected.getName(), 150)), 38, 65, 0xFFFFFF, false);
+        graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), 38, 77, 0xC9D2DC, false);
+        graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), 38, 88, 0xC9D2DC, false);
+        graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), 38, 99, 0xC9D2DC, false);
         PartType engine = menu.getBestEngine(selected);
         boolean needsEngine = selected.numEngines() > 0;
         Component engineDescription = !needsEngine
             ? Component.translatable("gui.flansmodultimate.driveable.no_engine")
             : Component.translatable("gui.flansmodultimate.driveable.engine", selected.numEngines(), engine == null
                 ? Component.translatable("gui.flansmodultimate.driveable.missing_engine") : Component.literal(engine.getName()));
-        graphics.drawString(font, engineDescription, 116, 99, needsEngine && engine == null ? 0xFF7777 : 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.requires"), 10, 123, 0xFFFFFF, false);
+        graphics.text(font, engineDescription, 116, 99, needsEngine && engine == null ? 0xFF7777 : 0xC9D2DC, false);
+        graphics.text(font, Component.translatable("gui.flansmodultimate.driveable.requires"), 10, 123, 0xFFFFFF, false);
     }
 
-    private void renderBlueprints(GuiGraphics graphics, int mouseX, int mouseY)
+    private void renderBlueprints(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
         List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
         int first = blueprintPage * BLUEPRINTS_PER_PAGE;
@@ -135,13 +132,13 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
             graphics.fill(x - 1, y - 1, x + 17, y + 17, background);
             ItemStack stack = ModUtils.getItemStack(blueprints.get(blueprint)).orElse(ItemStack.EMPTY);
             if (!stack.isEmpty())
-                graphics.renderItem(stack, x, y);
+                graphics.item(stack, x, y);
             if (isInside(mouseX, mouseY, x - 1, y - 1, 18, 18))
                 hoveredStack = stack;
         }
     }
 
-    private void renderRecipe(GuiGraphics graphics, int mouseX, int mouseY)
+    private void renderRecipe(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
         DriveableType selected = getSelectedBlueprint();
         if (selected == null)
@@ -161,25 +158,28 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
                 && (minecraft.player.getAbilities().instabuild
                     || InventoryHelper.countInInventory(minecraft.player.getInventory(), required) >= required.getCount());
             graphics.fill(x - 1, y - 1, x + 17, y + 17, enough ? 0xFF465349 : 0xFF713F43);
-            graphics.renderItem(required, x, y);
-            graphics.renderItemDecorations(font, required, x, y);
+            graphics.item(required, x, y);
+            graphics.itemDecorations(font, required, x, y);
             if (isInside(mouseX, mouseY, x - 1, y - 1, 18, 18))
                 hoveredStack = required;
         }
         if (recipe.size() > RECIPE_ITEMS_PER_PAGE)
         {
-            graphics.drawString(font, Component.literal((recipeOffset + 1) + "-" + Math.min(recipe.size(), recipeOffset + RECIPE_ITEMS_PER_PAGE)
+            graphics.text(font, Component.literal((recipeOffset + 1) + "-" + Math.min(recipe.size(), recipeOffset + RECIPE_ITEMS_PER_PAGE)
                 + " / " + recipe.size()), leftPos + 89, topPos + 163, 0xAAB4C0, false);
         }
 
         ItemStack output = ModUtils.getItemStack(selected).orElse(ItemStack.EMPTY);
         if (!output.isEmpty())
-            graphics.renderItem(output, leftPos + 16, topPos + 76);
+            graphics.item(output, leftPos + 16, topPos + 76);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick)
     {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         if (button == 0)
         {
             int localX = (int) mouseX - leftPos - 8;
@@ -197,7 +197,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override

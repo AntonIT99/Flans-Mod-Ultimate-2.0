@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
@@ -261,7 +262,7 @@ public final class PlayerStats
     public CompoundTag save(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
-        tag.putUUID(NBT_ID, playerId); tag.putString(NBT_NAME, lastKnownName); tag.putInt(NBT_KILLS, kills); tag.putInt(NBT_DEATHS, deaths);
+        tag.store(NBT_ID, UUIDUtil.CODEC, playerId); tag.putString(NBT_NAME, lastKnownName); tag.putInt(NBT_KILLS, kills); tag.putInt(NBT_DEATHS, deaths);
         tag.putInt(NBT_EXPERIENCE, experience); tag.putInt(NBT_TOTAL_EXPERIENCE, totalExperience); tag.putInt(NBT_RANK, rank); tag.putDouble(NBT_LONGEST_KILL, longestKill);
         tag.putInt(NBT_PLAYED_ROUNDS, playedRounds); tag.putLong(NBT_PLAY_TIME, playTimeTicks); tag.putInt(NBT_MVP_COUNT, mvpCount);
         tag.putInt(NBT_CAPTURED_FLAGS, capturedFlags); tag.putInt(NBT_SAVED_FLAGS, savedFlags); tag.putInt(NBT_VEHICLES_DESTROYED, vehiclesDestroyed);
@@ -287,24 +288,24 @@ public final class PlayerStats
 
     public static PlayerStats load(CompoundTag tag, HolderLookup.Provider registries)
     {
-        PlayerStats result = new PlayerStats(tag.getUUID(NBT_ID), tag.getString(NBT_NAME));
-        result.kills = tag.getInt(NBT_KILLS); result.deaths = tag.getInt(NBT_DEATHS); result.experience = tag.getInt(NBT_EXPERIENCE);
-        result.totalExperience = tag.getInt(NBT_TOTAL_EXPERIENCE); result.rank = Math.max(1, tag.getInt(NBT_RANK)); result.longestKill = tag.getDouble(NBT_LONGEST_KILL);
-        result.playedRounds = tag.getInt(NBT_PLAYED_ROUNDS); result.playTimeTicks = tag.getLong(NBT_PLAY_TIME); result.mvpCount = tag.getInt(NBT_MVP_COUNT);
-        result.capturedFlags = tag.getInt(NBT_CAPTURED_FLAGS); result.savedFlags = tag.getInt(NBT_SAVED_FLAGS); result.vehiclesDestroyed = tag.getInt(NBT_VEHICLES_DESTROYED);
-        result.selectedTeam = tag.getString(NBT_SELECTED_TEAM); result.selectedClass = tag.getString(NBT_SELECTED_CLASS);
-        result.selectedLoadout = Math.max(0, Math.min(LoadoutPool.LOADOUT_COUNT - 1, tag.getInt(NBT_SELECTED_LOADOUT)));
-        result.killstreak = tag.getInt(NBT_KILLSTREAK); result.bestKillstreak = tag.getInt(NBT_BEST_KILLSTREAK);
-        for (Tag rawProfile : tag.getList(NBT_LOADOUT_PROFILES, Tag.TAG_COMPOUND))
+        PlayerStats result = new PlayerStats(tag.read(NBT_ID, UUIDUtil.LENIENT_CODEC).orElseGet(UUID::randomUUID), tag.getStringOr(NBT_NAME, ""));
+        result.kills = tag.getIntOr(NBT_KILLS, 0); result.deaths = tag.getIntOr(NBT_DEATHS, 0); result.experience = tag.getIntOr(NBT_EXPERIENCE, 0);
+        result.totalExperience = tag.getIntOr(NBT_TOTAL_EXPERIENCE, 0); result.rank = Math.max(1, tag.getIntOr(NBT_RANK, 1)); result.longestKill = tag.getDoubleOr(NBT_LONGEST_KILL, 0D);
+        result.playedRounds = tag.getIntOr(NBT_PLAYED_ROUNDS, 0); result.playTimeTicks = tag.getLongOr(NBT_PLAY_TIME, 0L); result.mvpCount = tag.getIntOr(NBT_MVP_COUNT, 0);
+        result.capturedFlags = tag.getIntOr(NBT_CAPTURED_FLAGS, 0); result.savedFlags = tag.getIntOr(NBT_SAVED_FLAGS, 0); result.vehiclesDestroyed = tag.getIntOr(NBT_VEHICLES_DESTROYED, 0);
+        result.selectedTeam = tag.getStringOr(NBT_SELECTED_TEAM, "spectators"); result.selectedClass = tag.getStringOr(NBT_SELECTED_CLASS, "");
+        result.selectedLoadout = Math.max(0, Math.min(LoadoutPool.LOADOUT_COUNT - 1, tag.getIntOr(NBT_SELECTED_LOADOUT, 0)));
+        result.killstreak = tag.getIntOr(NBT_KILLSTREAK, 0); result.bestKillstreak = tag.getIntOr(NBT_BEST_KILLSTREAK, 0);
+        for (Tag rawProfile : tag.getListOrEmpty(NBT_LOADOUT_PROFILES))
         {
             CompoundTag profile = (CompoundTag) rawProfile;
             List<PlayerLoadout> loadouts = new ArrayList<>();
-            for (Tag rawLoadout : profile.getList(NBT_LOADOUTS, Tag.TAG_COMPOUND))
+            for (Tag rawLoadout : profile.getListOrEmpty(NBT_LOADOUTS))
                 loadouts.add(PlayerLoadout.load((CompoundTag) rawLoadout, registries));
             while (loadouts.size() < LoadoutPool.LOADOUT_COUNT) loadouts.add(new PlayerLoadout());
-            result.loadoutProfiles.put(profile.getString(NBT_POOL), new ArrayList<>(loadouts.subList(0, LoadoutPool.LOADOUT_COUNT)));
+            result.loadoutProfiles.put(profile.getStringOr(NBT_POOL, ""), new ArrayList<>(loadouts.subList(0, LoadoutPool.LOADOUT_COUNT)));
         }
-        for (Tag rawBox : tag.getList(NBT_REWARD_BOXES, Tag.TAG_COMPOUND)) result.rewardBoxes.add(RewardBoxInstance.load((CompoundTag) rawBox));
+        for (Tag rawBox : tag.getListOrEmpty(NBT_REWARD_BOXES)) result.rewardBoxes.add(RewardBoxInstance.load((CompoundTag) rawBox));
         return result;
     }
 }

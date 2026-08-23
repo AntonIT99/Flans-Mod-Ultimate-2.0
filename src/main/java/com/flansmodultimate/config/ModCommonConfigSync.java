@@ -15,7 +15,7 @@ public final class ModCommonConfigSync
 {
     public static void resyncAllClientsIfServer()
     {
-        if (FMLEnvironment.dist.isClient())
+        if (FMLEnvironment.getDist().isClient())
             return;
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();

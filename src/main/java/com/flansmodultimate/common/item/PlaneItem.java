@@ -10,9 +10,9 @@ import net.minecraft.world.level.Level;
 
 public final class PlaneItem extends DriveableItem<PlaneType, Plane>
 {
-    public PlaneItem(PlaneType configType)
+    public PlaneItem(PlaneType configType, Properties properties)
     {
-        super(configType);
+        super(configType, properties);
     }
 
     @Override

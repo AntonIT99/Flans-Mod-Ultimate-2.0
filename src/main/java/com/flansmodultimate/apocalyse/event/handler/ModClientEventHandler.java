@@ -9,17 +9,15 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -27,9 +25,16 @@ import net.minecraft.world.item.Items;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModClientEventHandler
 {
-    private static final ResourceLocation SULPHURIC_ACID_STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill");
-    private static final ResourceLocation SULPHURIC_ACID_FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing");
-    private static final ResourceLocation SULPHURIC_ACID_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
+    private static final Identifier SULPHURIC_ACID_OVERLAY_TEXTURE = Identifier.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
+    private static final Material SULPHURIC_ACID_STILL = new Material(Identifier.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill"));
+    private static final Material SULPHURIC_ACID_FLOWING = new Material(Identifier.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing"));
+
+    @SubscribeEvent
+    public static void registerFluidModels(RegisterFluidModelsEvent event)
+    {
+        event.register(new FluidModel.Unbaked(SULPHURIC_ACID_STILL, SULPHURIC_ACID_FLOWING, null, null),
+            ApocalypseContent.sulphuricAcid, ApocalypseContent.flowingSulphuricAcid);
+    }
 
     @SubscribeEvent
     public static void registerClientExtensions(RegisterClientExtensionsEvent event)
@@ -37,32 +42,11 @@ public final class ModClientEventHandler
         event.registerFluidType(new IClientFluidTypeExtensions()
         {
             @Override
-            public ResourceLocation getStillTexture()
-            {
-                return SULPHURIC_ACID_STILL_TEXTURE;
-            }
-
-            @Override
-            public ResourceLocation getFlowingTexture()
-            {
-                return SULPHURIC_ACID_FLOWING_TEXTURE;
-            }
-
-            @Override
-            public ResourceLocation getRenderOverlayTexture(Minecraft minecraft)
+            public Identifier getRenderOverlayTexture(Minecraft minecraft)
             {
                 return SULPHURIC_ACID_OVERLAY_TEXTURE;
             }
         }, ApocalypseContent.sulphuricAcidFluidType.get());
-    }
-
-    @SubscribeEvent
-    public static void clientSetup(FMLClientSetupEvent event)
-    {
-        event.enqueueWork(() -> {
-            ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.sulphuricAcid.get(), RenderType.translucent());
-            ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.flowingSulphuricAcid.get(), RenderType.translucent());
-        });
     }
 
     @SubscribeEvent

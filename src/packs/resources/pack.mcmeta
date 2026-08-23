@@ -3,6 +3,7 @@
     "description": {
       "text": "Flan's Mod Ultimate bundled packs"
     },
-    "pack_format": 34
+    "min_format": [84, 0],
+    "max_format": [101, 1]
   }
 }

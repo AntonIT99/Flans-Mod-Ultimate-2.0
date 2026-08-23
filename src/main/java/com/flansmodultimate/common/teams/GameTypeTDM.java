@@ -90,8 +90,8 @@ public class GameTypeTDM extends GameType
     @Override
     public void loadSettings(CompoundTag tag)
     {
-        friendlyFire = tag.getBoolean(NBT_FRIENDLY_FIRE);
-        autoBalance = !tag.contains(NBT_AUTO_BALANCE) || tag.getBoolean(NBT_AUTO_BALANCE);
+        friendlyFire = tag.getBooleanOr(NBT_FRIENDLY_FIRE, false);
+        autoBalance = tag.getBooleanOr(NBT_AUTO_BALANCE, true);
     }
 
     @Override

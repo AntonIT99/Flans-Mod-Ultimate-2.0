@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.fml.loading.FMLPaths;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -616,7 +616,7 @@ public final class ModCommonConfig
 
             try
             {
-                ResourceLocation id = ResourceLocation.parse(idStr);
+                Identifier id = Identifier.parse(idStr);
                 double hardness = Double.parseDouble(hardnessStr);
                 boolean breaks = Boolean.parseBoolean(breaksStr);
                 PenetrableBlock.put(id, new PenetrableBlock(hardness, breaks));

@@ -5,9 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 public class SmokeBurstParticle extends ParticleBase 
 {
@@ -50,7 +51,7 @@ public class SmokeBurstParticle extends ParticleBase
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    protected SingleQuadParticle.Layer getLayer()
     {
         return LegacyParticleRenderTypes.PREMULTIPLIED;
     }
@@ -58,7 +59,7 @@ public class SmokeBurstParticle extends ParticleBase
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
-        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
+        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz, RandomSource random)
         {
             return new SmokeBurstParticle(level, x, y, z, vx, vy, vz, sprites);
         }

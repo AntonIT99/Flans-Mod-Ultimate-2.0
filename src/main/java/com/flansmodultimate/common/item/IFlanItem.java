@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -19,13 +20,36 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
 {
+    static List<Component> tooltipList(Consumer<Component> builder)
+    {
+        return new ArrayList<>()
+        {
+            @Override
+            public boolean add(Component component)
+            {
+                builder.accept(component);
+                return super.add(component);
+            }
+
+            @Override
+            public boolean addAll(Collection<? extends Component> components)
+            {
+                components.forEach(builder);
+                return super.addAll(components);
+            }
+        };
+    }
+
     T getConfigType();
 
     default String getContentPack()
@@ -161,11 +185,13 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static UUID getOrCreateStackUUID(ItemStack stack, String key)
     {
         CompoundTag tag = ItemStackData.copy(stack);
-        if (!tag.hasUUID(key))
+        UUID uuid = tag.read(key, UUIDUtil.LENIENT_CODEC).orElse(null);
+        if (uuid == null)
         {
-            tag.putUUID(key, UUID.randomUUID());
+            uuid = UUID.randomUUID();
+            tag.store(key, UUIDUtil.CODEC, uuid);
             ItemStackData.set(stack, tag);
         }
-        return tag.getUUID(key);
+        return uuid;
     }
 }

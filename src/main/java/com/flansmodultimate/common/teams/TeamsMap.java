@@ -6,11 +6,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 import java.util.Collections;
@@ -85,12 +86,12 @@ public final class TeamsMap
         CompoundTag tag = new CompoundTag();
         tag.putString(NBT_ID, shortName);
         tag.putString(NBT_NAME, name);
-        tag.putString(NBT_DIMENSION, dimension.location().toString());
+        tag.putString(NBT_DIMENSION, dimension.identifier().toString());
         ListTag baseList = new ListTag();
         for (UUID id : bases)
         {
             CompoundTag base = new CompoundTag();
-            base.putUUID(NBT_ID, id);
+            base.store(NBT_ID, UUIDUtil.CODEC, id);
             BlockPos position = basePositions.get(id);
             if (position != null)
             {
@@ -106,19 +107,19 @@ public final class TeamsMap
 
     public static TeamsMap load(CompoundTag tag)
     {
-        ResourceLocation dimensionId = ResourceLocation.tryParse(tag.getString(NBT_DIMENSION));
+        Identifier dimensionId = Identifier.tryParse(tag.getStringOr(NBT_DIMENSION, ""));
         if (dimensionId == null)
-            dimensionId = Level.OVERWORLD.location();
-        TeamsMap map = new TeamsMap(tag.getString(NBT_ID), tag.getString(NBT_NAME), ResourceKey.create(Registries.DIMENSION, dimensionId));
-        for (Tag entry : tag.getList(NBT_BASES, Tag.TAG_COMPOUND))
+            dimensionId = Level.OVERWORLD.identifier();
+        TeamsMap map = new TeamsMap(tag.getStringOr(NBT_ID, "unknown"), tag.getStringOr(NBT_NAME, "Unknown"), ResourceKey.create(Registries.DIMENSION, dimensionId));
+        for (Tag entry : tag.getListOrEmpty(NBT_BASES))
         {
             CompoundTag base = (CompoundTag) entry;
-            if (base.hasUUID(NBT_ID))
+            UUID id = base.read(NBT_ID, UUIDUtil.LENIENT_CODEC).orElse(null);
+            if (id != null)
             {
-                UUID id = base.getUUID(NBT_ID);
                 map.bases.add(id);
                 if (base.contains(NBT_X) && base.contains(NBT_Y) && base.contains(NBT_Z))
-                    map.basePositions.put(id, new BlockPos(base.getInt(NBT_X), base.getInt(NBT_Y), base.getInt(NBT_Z)));
+                    map.basePositions.put(id, new BlockPos(base.getIntOr(NBT_X, 0), base.getIntOr(NBT_Y, 0), base.getIntOr(NBT_Z, 0)));
             }
         }
         return map;

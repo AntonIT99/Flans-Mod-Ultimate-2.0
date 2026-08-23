@@ -34,15 +34,16 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -67,14 +68,14 @@ import java.util.UUID;
 @EventBusSubscriber(modid = FlansMod.MOD_ID)
 public final class CommonEventHandler
 {
-    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        BuiltInLootTables.ABANDONED_MINESHAFT.location(),
-        BuiltInLootTables.VILLAGE_WEAPONSMITH.location(),
-        BuiltInLootTables.END_CITY_TREASURE.location(),
-        BuiltInLootTables.NETHER_BRIDGE.location(),
-        BuiltInLootTables.DESERT_PYRAMID.location(),
-        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
-        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
+    private static final Set<Identifier> FLANS_LOOT_TABLES = Set.of(
+        BuiltInLootTables.ABANDONED_MINESHAFT.identifier(),
+        BuiltInLootTables.VILLAGE_WEAPONSMITH.identifier(),
+        BuiltInLootTables.END_CITY_TREASURE.identifier(),
+        BuiltInLootTables.NETHER_BRIDGE.identifier(),
+        BuiltInLootTables.DESERT_PYRAMID.identifier(),
+        Identifier.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
+        Identifier.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
     );
 
     @Getter
@@ -83,6 +84,13 @@ public final class CommonEventHandler
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
     private static boolean contentReferencesValidated;
+
+    @SubscribeEvent
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event)
+    {
+        if (event.getItemStack().getItem() instanceof GunItem)
+            event.setCanceled(true);
+    }
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event)
@@ -185,7 +193,7 @@ public final class CommonEventHandler
         Player player = event.getEntity();
         PlayerData.getInstance(player).tick(player);
 
-        if (!player.level().isClientSide)
+        if (!player.level().isClientSide())
         {
             int regenTimer = regenTimers.merge(player.getUUID(), 1, Integer::sum);
             if (regenTimer >= ModCommonConfig.get().bonusRegenTickDelay())
@@ -244,7 +252,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onLivingTick(EntityTickEvent.Post event)
     {
-        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide)
+        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide())
             return;
 
         if (living instanceof Player || living instanceof Mob)
@@ -257,7 +265,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onLivingJump(LivingEvent.LivingJumpEvent event)
     {
-        if (event.getEntity().level().isClientSide)
+        if (event.getEntity().level().isClientSide())
             return;
 
         if (event.getEntity() instanceof Player || event.getEntity() instanceof Mob)
@@ -271,7 +279,7 @@ public final class CommonEventHandler
         if (entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat)
             event.setCanceled(true);
 
-        if (!entity.level().isClientSide && entity instanceof ServerPlayer player)
+        if (!entity.level().isClientSide() && entity instanceof ServerPlayer player)
         {
             FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
                 if (!type.playerAttacked(player, event.getSource()))
@@ -285,7 +293,7 @@ public final class CommonEventHandler
         MutableDamageContext damage = new NeoForgeDamageContext(event);
         DamageSource source = damage.source();
 
-        if (entity.level().isClientSide)
+        if (entity.level().isClientSide())
             return;
 
         EnchantmentModule.applyOffHandWeaponDamage(damage);

@@ -64,7 +64,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         List<DriveableType> blueprints = getBlueprints();
         if (blueprintIndex < 0 || blueprintIndex >= blueprints.size() || !stillValid(player))
             return false;
-        if (!player.level().isClientSide)
+        if (!player.level().isClientSide())
             craft(player, blueprints.get(blueprintIndex));
         return true;
     }

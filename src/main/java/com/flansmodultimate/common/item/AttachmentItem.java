@@ -20,9 +20,9 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     @Getter
     protected final AttachmentType configType;
 
-    public AttachmentItem(AttachmentType configconfigType)
+    public AttachmentItem(AttachmentType configconfigType, Item.Properties properties)
     {
-        super(new Item.Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configconfigType;
     }
 
@@ -33,8 +33,11 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 

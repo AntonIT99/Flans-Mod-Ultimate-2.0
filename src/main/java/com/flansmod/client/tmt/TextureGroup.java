@@ -1,9 +1,5 @@
 package com.flansmod.client.tmt;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,16 +27,8 @@ public class TextureGroup
 
     public void loadTexture(int defaultTexture)
     {
-        ResourceLocation textureLocation = ResourceLocation.tryParse(texture.trim().replace('\\', '/'));
-        if (textureLocation != null && !textureLocation.getPath().isEmpty())
-        {
-            RenderSystem.setShaderTexture(0, textureLocation);
-        }
-        else if (defaultTexture > -1)
-        {
-            // The legacy fallback is an already allocated OpenGL texture id,
-            // not a resource path. 1.21 rejects the former "minecraft:" shim.
-            RenderSystem.setShaderTexture(0, defaultTexture);
-        }
+        // Textures are bound by the immutable RenderType/RenderSetup chosen by
+        // the caller. Immediate shader texture mutation is not supported by
+        // the 26.1 extraction renderer.
     }
 }

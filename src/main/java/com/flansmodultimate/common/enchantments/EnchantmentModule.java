@@ -13,15 +13,15 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.tags.ItemTags;
 
 import java.util.Optional;
 
@@ -44,7 +44,7 @@ public final class EnchantmentModule
 
     private static ResourceKey<Enchantment> key(String name)
     {
-        return ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, name));
+        return ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, name));
     }
 
     public static void modifyGun(@NotNull FireableGun fireableGun, @Nullable LivingEntity entity, @Nullable ItemStack otherHand)
@@ -94,7 +94,7 @@ public final class EnchantmentModule
 
     public static void applyOffHandWeaponDamage(MutableDamageContext event)
     {
-        if (!isEnabled() || event.entity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide())
             return;
 
         Entity sourceEntity = event.source().getEntity();
@@ -112,9 +112,9 @@ public final class EnchantmentModule
 
         int level = 0;
 
-        if (weaponStack.getItem() instanceof AxeItem)
+        if (weaponStack.is(ItemTags.AXES))
             level = getLevel(lumberjackEnchant, offHandStack);
-        else if (weaponStack.getItem() instanceof SwordItem)
+        else if (weaponStack.is(ItemTags.SWORDS))
             level = getLevel(duelistEnchant, offHandStack);
 
         if (level <= 0)
@@ -126,7 +126,7 @@ public final class EnchantmentModule
 
     public static void applyJuggernaut(MutableDamageContext event)
     {
-        if (!isEnabled() || event.entity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide())
             return;
 
         LivingEntity entity = event.entity();
@@ -177,7 +177,7 @@ public final class EnchantmentModule
 
     private static void damageEquipment(ItemStack stack, @Nullable LivingEntity entity, EquipmentSlot slot, int amount)
     {
-        if (amount <= 0 || entity == null || entity.level().isClientSide || stack.isEmpty() || !stack.isDamageableItem())
+        if (amount <= 0 || entity == null || entity.level().isClientSide() || stack.isEmpty() || !stack.isDamageableItem())
             return;
 
         stack.hurtAndBreak(amount, entity, slot);

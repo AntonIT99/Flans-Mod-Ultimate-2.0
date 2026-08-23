@@ -1,19 +1,9 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.util.JomlUtils;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 public class InstantShotTrail
@@ -25,7 +15,7 @@ public class InstantShotTrail
     private final float bulletSpeed; // blocks per tick
     private final double distanceToTarget;
     private int ticksExisted;
-    private final ResourceLocation texture;
+    private final Identifier texture;
 
     /**
      * @param origin       world-space start
@@ -35,7 +25,7 @@ public class InstantShotTrail
      * @param bulletSpeed  blocks per tick (client-simulated travel)
      * @param trailTexture texture RL (e.g., "modid:textures/misc/trail.png")
      */
-    public InstantShotTrail(Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed, ResourceLocation trailTexture)
+    public InstantShotTrail(Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed, Identifier trailTexture)
     {
         this.origin = origin;
         this.hitPos = hitPos;
@@ -59,23 +49,14 @@ public class InstantShotTrail
         return ticksExisted * bulletSpeed >= distanceToTarget - length;
     }
 
-    public void render(PoseStack poseStack, float partialTicks)
+    public Snapshot extract(float partialTicks, Vec3 cameraPosition)
     {
-        // Camera/player vectors
-        Minecraft mc = Minecraft.getInstance();
-        LocalPlayer player = mc.player;
-        if (player == null)
-            return;
-
-        // Bind texture per trail (cheap)
-        RenderSystem.setShaderTexture(0, texture);
-
         float parametric = (ticksExisted + partialTicks) * bulletSpeed;
 
         // Direction from origin to hit
         Vector3f dir = JomlUtils.fromVec3(hitPos.subtract(origin));
         if (dir.lengthSquared() == 0)
-            return;
+            return null;
         dir.normalize();
 
         float startT = parametric - length * 0.5f;
@@ -90,28 +71,20 @@ public class InstantShotTrail
 
         // Build trail frame:
         // tangent is perpendicular to both (dir) and (toCamera)
-        Vector3f toCam = new Vector3f((float) (player.getX() - hitPos.x), (float) (player.getEyeY() - hitPos.y), (float) (player.getZ() - hitPos.z));
+        Vector3f toCam = new Vector3f((float) (cameraPosition.x - hitPos.x), (float) (cameraPosition.y - hitPos.y), (float) (cameraPosition.z - hitPos.z));
         Vector3f tangent = dir.cross(toCam, new Vector3f());
         if (tangent.lengthSquared() == 0)
-            return;
+            return null;
         tangent.normalize().mul(-width * 0.5f);
 
-        Matrix4f pose = poseStack.last().pose();
-
-        Tesselator tess = Tesselator.getInstance();
-        BufferBuilder buf = tess.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-        // Quad: start+tan, start-tan, end-tan, end+tan
-        putPosUv(buf, pose, startX + tangent.x, startY + tangent.y, startZ + tangent.z, 0.0f, 0.0f);
-        putPosUv(buf, pose, startX - tangent.x, startY - tangent.y, startZ - tangent.z, 0.0f, 1.0f);
-        putPosUv(buf, pose, endX - tangent.x, endY - tangent.y, endZ - tangent.z, 1.0f, 1.0f);
-        putPosUv(buf, pose, endX + tangent.x, endY + tangent.y, endZ + tangent.z, 1.0f, 0.0f);
-
-        BufferUploader.drawWithShader(buf.buildOrThrow());
+        Vector3f camera = JomlUtils.fromVec3(cameraPosition);
+        return new Snapshot(texture,
+            new Vector3f(startX + tangent.x, startY + tangent.y, startZ + tangent.z).sub(camera),
+            new Vector3f(startX - tangent.x, startY - tangent.y, startZ - tangent.z).sub(camera),
+            new Vector3f(endX - tangent.x, endY - tangent.y, endZ - tangent.z).sub(camera),
+            new Vector3f(endX + tangent.x, endY + tangent.y, endZ + tangent.z).sub(camera));
     }
 
-    private static void putPosUv(BufferBuilder buf, Matrix4f pose, float x, float y, float z, float u, float v)
-    {
-        buf.addVertex(pose, x, y, z).setUv(u, v);
-    }
+    public record Snapshot(Identifier texture, Vector3f startTop, Vector3f startBottom,
+                           Vector3f endBottom, Vector3f endTop) {}
 }

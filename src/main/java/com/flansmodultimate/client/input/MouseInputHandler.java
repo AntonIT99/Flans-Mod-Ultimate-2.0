@@ -8,8 +8,6 @@ import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -30,7 +28,6 @@ public final class MouseInputHandler
     private static float flightRollControl;
 
     /** Recentres the virtual flight stick and validates its current mount once per client tick. */
-    @OnlyIn(Dist.CLIENT)
     public static void beginTick(Player player)
     {
         Driveable driveable = KeyInputHandler.resolveDriveable(player);
@@ -54,7 +51,6 @@ public final class MouseInputHandler
         flightRollControl = recenter(flightRollControl);
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void handleMouseMove(double dx, double dy)
     {
         if (Minecraft.getInstance().screen != null)

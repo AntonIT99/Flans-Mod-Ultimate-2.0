@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Getter;
@@ -10,11 +9,12 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 
 /**
  * Entity for debugging purposes.
@@ -62,12 +62,10 @@ public class DebugVector extends DebugColor
         // half-thickness
         float h = THICKNESS * 0.5F;
 
-        RenderSystem.disableDepthTest();
-
         pose.pushPose();
 
         // 1) translate to start (camera-relative)
-        Vec3 camPos = cam.getPosition();
+        Vec3 camPos = cam.position();
         pose.translate(position.x - camPos.x, position.y - camPos.y, position.z - camPos.z);
 
         // 2) rotate local +X to the segment direction
@@ -76,11 +74,16 @@ public class DebugVector extends DebugColor
         pose.mulPose(new Quaternionf().rotationTo(from, to));
 
         // 3) draw a rectangular prism from x=[0..len], y,z=[-h..h]
-        VertexConsumer solid = buffers.getBuffer(RenderType.debugFilledBox());
-        LevelRenderer.addChainedFilledBoxVertices(pose, solid, 0f, -h, -h, (float) len, h, h, colorRed, colorGreen, colorBlue, colorAlpha);
+        VertexConsumer solid = buffers.getBuffer(RenderTypes.lines());
+        ShapeRenderer.renderShape(pose, solid, Shapes.box(0F, -h, -h, (float)len, h, h), 0D, 0D, 0D, packedColor(), 1F);
 
         pose.popPose();
 
-        RenderSystem.enableDepthTest();
+    }
+
+    private int packedColor()
+    {
+        return (Math.round(colorAlpha * 255F) << 24) | (Math.round(colorRed * 255F) << 16)
+            | (Math.round(colorGreen * 255F) << 8) | Math.round(colorBlue * 255F);
     }
 }

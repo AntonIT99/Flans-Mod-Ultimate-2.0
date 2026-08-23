@@ -50,6 +50,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -377,20 +378,20 @@ public class GunItemHandler
         {
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
             data.setLoopingSoundActive(true);
-            if (!level.isClientSide)
+            if (!level.isClientSide())
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
             data.setLoopingSoundActive(true);
-            if (!level.isClientSide)
+            if (!level.isClientSide())
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getLoopedSound(), false);
         }
         else if (data.isLoopingSoundActive())
         {
             data.setLoopingSoundActive(false);
-            if (!level.isClientSide)
+            if (!level.isClientSide())
                 PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
         }
     }
@@ -477,7 +478,7 @@ public class GunItemHandler
 
     private boolean shouldPlayLockOnSound(Level level, Player player, Entity target)
     {
-        if (target == null || item.lockOnSoundDelay > 0 || level.isClientSide)
+        if (target == null || item.lockOnSoundDelay > 0 || level.isClientSide())
             return false;
         ItemStack held = player.getMainHandItem();
         if (held.isEmpty())
@@ -519,7 +520,7 @@ public class GunItemHandler
             return false;
         if (item.configType.getMeleePath().isEmpty())
             return false;
-        return player.getInventory().getSelected() == itemstack;
+        return player.getInventory().getSelectedItem() == itemstack;
     }
 
     private void processDamagePoint(Level level, Player player, PlayerData data, ItemStack itemstack, int pointIdx)
@@ -540,7 +541,7 @@ public class GunItemHandler
         Vector3f nextPosInWorldCoords = JomlUtils.fromVec3(segment.end);
         Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : new Vector3f(nextPosInWorldCoords).sub(data.getLastMeleePositions()[pointIdx]);
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             ClientHooks.RENDER.spawnDebugVector(JomlUtils.toVec3(data.getLastMeleePositions()[pointIdx]), JomlUtils.toVec3(dPos), 200, 1F, 0F, 0F);
 
         List<BulletHit> hits = collectHits(level, player, data, segment, pointIdx, dPos);
@@ -678,7 +679,8 @@ public class GunItemHandler
         Player attackedPlayer = hit.getHitbox().player;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
-        boolean didHurt = attackedPlayer.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
+        boolean didHurt = level instanceof ServerLevel serverLevel
+            && attackedPlayer.hurtServer(serverLevel, FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
         if (didHurt)
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
@@ -690,7 +692,8 @@ public class GunItemHandler
         Entity target = hit.getEntity();
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, target instanceof Driveable));
 
-        boolean didHurt = target.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
+        boolean didHurt = level instanceof ServerLevel serverLevel
+            && target.hurtServer(serverLevel, FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
         if (didHurt && target instanceof LivingEntity living)
             living.invulnerableTime = living.hurtDuration / 2;
 
@@ -771,7 +774,7 @@ public class GunItemHandler
             BlockPos mgPos = pos.above();
             BlockPos forwardAbove = mgPos.relative(direction);
 
-            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(direction)))
+            if (!level.isClientSide() && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(direction)))
             {
                 // check if an MG already exists at that block position
                 boolean exists = !level.getEntitiesOfClass(DeployedGun.class, new AABB(mgPos)).isEmpty();
@@ -801,6 +804,6 @@ public class GunItemHandler
     private static boolean isSolidTop(Level level, BlockPos pos)
     {
         BlockState st = level.getBlockState(pos);
-        return st.isSolidRender(level, pos) && st.canOcclude();
+        return st.isSolidRender() && st.canOcclude();
     }
 }

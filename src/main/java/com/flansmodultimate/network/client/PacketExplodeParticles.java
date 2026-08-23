@@ -52,6 +52,6 @@ public class PacketExplodeParticles implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         for (int i = 0; i < number; i++)
-            ClientHooks.RENDER.spawnParticle(particleType, x, y, z, level.random.nextGaussian(), level.random.nextGaussian(), level.random.nextGaussian(), 1F);
+            ClientHooks.RENDER.spawnParticle(particleType, x, y, z, level.getRandom().nextGaussian(), level.getRandom().nextGaussian(), level.getRandom().nextGaussian(), 1F);
     }
 }

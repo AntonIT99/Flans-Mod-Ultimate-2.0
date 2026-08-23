@@ -43,7 +43,7 @@ public class PacketGunScopedState implements IServerPacket
     {
         PlayerData.getInstance(player, LogicalSide.SERVER).setScoped(isScoped);
 
-        ItemStack stack = player.getInventory().getSelected();
+        ItemStack stack = player.getInventory().getSelectedItem();
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
         {
             AttachmentType scope = gunItem.getConfigType().getScope(stack);

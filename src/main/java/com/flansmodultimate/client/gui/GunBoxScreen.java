@@ -8,7 +8,9 @@ import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -57,74 +59,71 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
     public GunBoxScreen(GunBoxMenu menu, Inventory inv, Component title)
     {
-        super(menu, inv, title);
-        imageWidth = 273;
-        imageHeight = 233;
+        super(menu, inv, title, 273, 233);
     }
 
     @Override
-    public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg, mouseX, mouseY, partialTick);
         updateHoverState(mouseX, mouseY);
-        super.render(gg, mouseX, mouseY, partialTick);
-        renderTooltip(gg, mouseX, mouseY);
+        super.extractRenderState(gg, mouseX, mouseY, partialTick);
         renderCustomTooltip(gg, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(@NotNull GuiGraphics gg, float partialTick, int mouseX, int mouseY)
+    public void extractBackground(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
+        super.extractBackground(gg, mouseX, mouseY, partialTick);
         GunBoxType type = menu.getBlock().getConfigType();
-        gg.blit(type.getGuiTexture(), leftPos, topPos, 0F, 0F, imageWidth, imageHeight, TEX_W, TEX_H);
+        gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos, topPos, 0F, 0F, imageWidth, imageHeight, TEX_W, TEX_H);
 
         if (hoveredEntry != -1)
-            gg.blit(type.getGuiTexture(), leftPos + LIST_X, topPos + LIST_Y + (hoveredEntry * LIST_ENTRY_H), 383F, 5F, LIST_W, LIST_ENTRY_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + LIST_X, topPos + LIST_Y + (hoveredEntry * LIST_ENTRY_H), 383F, 5F, LIST_W, LIST_ENTRY_H, TEX_W, TEX_H);
 
         GunBoxType.GunBoxEntry entry = getSelectedEntry().orElse(null);
         if (entry != null)
         {
-            gg.blit(type.getGuiTexture(), leftPos + LIST_X, topPos + LIST_Y + (selectedEntry * LIST_ENTRY_H), 275F, 5F, LIST_W, LIST_ENTRY_H, TEX_W, TEX_H);
-            gg.blit(type.getGuiTexture(), leftPos + 121, topPos + 20, 275F, 207F, 144, 25, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + LIST_X, topPos + LIST_Y + (selectedEntry * LIST_ENTRY_H), 275F, 5F, LIST_W, LIST_ENTRY_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + 121, topPos + 20, 275F, 207F, 144, 25, TEX_W, TEX_H);
 
             if (tabToAmmo)
-                gg.blit(type.getGuiTexture(), leftPos + 121, topPos + 45, 275F, 112F, 144, 95, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + 121, topPos + 45, 275F, 112F, 144, 95, TEX_W, TEX_H);
             else
             {
-                gg.blit(type.getGuiTexture(), leftPos + 121, topPos + 45, 275F, 17F, 144, 95, TEX_W, TEX_H);
-                gg.blit(type.getGuiTexture(), leftPos + 127, topPos + 26, 419F, 33F, 16, 16, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + 121, topPos + 45, 275F, 17F, 144, 95, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + 127, topPos + 26, 419F, 33F, 16, 16, TEX_W, TEX_H);
             }
 
             int ammoTabCount = Math.min(entry.getAmmoEntryList().size(), MAX_AMMO_TABS_VISIBLE);
             for (int i = 0; i < ammoTabCount; i++)
-                gg.blit(type.getGuiTexture(), leftPos + AMMO_TAB_X + (i * AMMO_TAB_STEP), topPos + 25, 435F, 17F, 18, 18, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + AMMO_TAB_X + (i * AMMO_TAB_STEP), topPos + 25, 435F, 17F, 18, 18, TEX_W, TEX_H);
 
             if (tabToAmmo && selectedAmmoEntry >= 0 && selectedAmmoEntry < ammoTabCount)
-                gg.blit(type.getGuiTexture(), leftPos + 155 + (selectedAmmoEntry * AMMO_TAB_STEP), topPos + 26, 419F, 17F, 16, 16, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + 155 + (selectedAmmoEntry * AMMO_TAB_STEP), topPos + 26, 419F, 17F, 16, 16, TEX_W, TEX_H);
 
-            gg.blit(type.getGuiTexture(), leftPos + CRAFT_X, topPos + CRAFT_Y, 419F, craftHighlight ? 85F : 65F, CRAFT_W, CRAFT_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + CRAFT_X, topPos + CRAFT_Y, 419F, craftHighlight ? 85F : 65F, CRAFT_W, CRAFT_H, TEX_W, TEX_H);
         }
 
-        gg.blit(type.getGuiTexture(), leftPos + NEXT_X, topPos + PAGE_BUTTON_Y, nextHighlight ? 439F : 419F, 105F, PAGE_BUTTON_SIZE, PAGE_BUTTON_SIZE, TEX_W, TEX_H);
-        gg.blit(type.getGuiTexture(), leftPos + BACK_X, topPos + PAGE_BUTTON_Y, backHighlight ? 439F : 419F, 105F, PAGE_BUTTON_SIZE, PAGE_BUTTON_SIZE, TEX_W, TEX_H);
+        gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + NEXT_X, topPos + PAGE_BUTTON_Y, nextHighlight ? 439F : 419F, 105F, PAGE_BUTTON_SIZE, PAGE_BUTTON_SIZE, TEX_W, TEX_H);
+        gg.blit(RenderPipelines.GUI_TEXTURED, type.getGuiTexture(), leftPos + BACK_X, topPos + PAGE_BUTTON_Y, backHighlight ? 439F : 419F, 105F, PAGE_BUTTON_SIZE, PAGE_BUTTON_SIZE, TEX_W, TEX_H);
     }
 
     @Override
-    protected void renderLabels(@NotNull GuiGraphics gg, int mouseX, int mouseY)
+    protected void extractLabels(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY)
     {
         GunBoxType type = menu.getBlock().getConfigType();
         GunBoxType.GunBoxPage page = getCurrentPage();
 
-        gg.drawString(font, menu.getBlock().getName().getString(), 7, 6, hexColor(type.getGunBoxTextColor()), false);
+        gg.text(font, menu.getBlock().getName().getString(), 7, 6, hexColor(type.getGunBoxTextColor()), false);
         if (page != null)
-            gg.drawString(font, page.getPageName(), 62 - (font.width(page.getPageName()) / 2), 26, hexColor(type.getPageTextColor()), true);
+            gg.text(font, page.getPageName(), 62 - (font.width(page.getPageName()) / 2), 26, hexColor(type.getPageTextColor()), true);
 
         List<GunBoxType.GunBoxEntry> entries = page == null ? List.of() : page.getEntries();
         for (int i = 0; i < entries.size() && i < MAX_GUNS_VISIBLE; i++)
         {
             String label = getDisplayName(entries.get(i));
             label = font.plainSubstrByWidth(label, 97);
-            gg.drawString(font, label, 19, 46 + (i * LIST_ENTRY_H), hexColor(type.getItemListTextColor()), false);
+            gg.text(font, label, 19, 46 + (i * LIST_ENTRY_H), hexColor(type.getItemListTextColor()), false);
         }
 
         GunBoxType.GunBoxEntry selected = getSelectedEntry().orElse(null);
@@ -135,7 +134,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
         drawButtonText(gg, "<", 17, 26, backHighlight ? type.getButtonTextHoverColor() : type.getButtonTextColor());
     }
 
-    private void renderSelectedEntry(GuiGraphics gg, GunBoxType type, GunBoxType.GunBoxEntry entry)
+    private void renderSelectedEntry(GuiGraphicsExtractor gg, GunBoxType type, GunBoxType.GunBoxEntry entry)
     {
         renderInfoTypeStack(gg, entry, 127, 26);
 
@@ -144,39 +143,42 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
             renderInfoTypeStack(gg, entry.getAmmoEntryList().get(i), 155 + (i * AMMO_TAB_STEP), 26);
 
         GunBoxType.GunBoxEntry displayedEntry = getDisplayedCraftEntry().orElse(entry);
-        gg.drawString(font, getDisplayName(displayedEntry), 127, 52, hexColor(type.getItemTextColor()), false);
+        gg.text(font, getDisplayName(displayedEntry), 127, 52, hexColor(type.getItemTextColor()), false);
         drawRecipe(gg, displayedEntry.getRequiredParts());
         drawButtonText(gg, "Craft", 158, 117, craftHighlight ? type.getButtonTextHoverColor() : type.getButtonTextColor());
     }
 
-    private void drawRecipe(GuiGraphics gg, List<ItemStack> parts)
+    private void drawRecipe(GuiGraphicsExtractor gg, List<ItemStack> parts)
     {
         for (int i = 0; i < parts.size() && i < 8; i++)
         {
             ItemStack stack = parts.get(i);
             int x = i < 4 ? 127 + (i * 19) : 127 + ((i - 4) * 19);
             int y = i < 4 ? 68 : 87;
-            gg.renderItem(stack, x, y);
-            gg.renderItemDecorations(font, stack, x, y);
+            gg.item(stack, x, y);
+            gg.itemDecorations(font, stack, x, y);
         }
     }
 
-    private void renderInfoTypeStack(GuiGraphics gg, GunBoxType.GunBoxEntry entry, int x, int y)
+    private void renderInfoTypeStack(GuiGraphicsExtractor gg, GunBoxType.GunBoxEntry entry, int x, int y)
     {
         ModUtils.getItemStack(entry.getType()).ifPresent(stack -> {
-            gg.renderItem(stack, x, y);
-            gg.renderItemDecorations(font, stack, x, y);
+            gg.item(stack, x, y);
+            gg.itemDecorations(font, stack, x, y);
         });
     }
 
-    private void drawButtonText(GuiGraphics gg, String text, int centerX, int y, String color)
+    private void drawButtonText(GuiGraphicsExtractor gg, String text, int centerX, int y, String color)
     {
-        gg.drawString(font, text, centerX - (font.width(text) / 2), y, hexColor(color), true);
+        gg.text(font, text, centerX - (font.width(text) / 2), y, hexColor(color), true);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick)
     {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         if (button == 0 || button == 1)
         {
             updateHoverState((int) mouseX, (int) mouseY);
@@ -237,7 +239,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     private void updateHoverState(int mouseX, int mouseY)
@@ -302,10 +304,10 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
         }
     }
 
-    private void renderCustomTooltip(GuiGraphics gg, int mouseX, int mouseY)
+    private void renderCustomTooltip(GuiGraphicsExtractor gg, int mouseX, int mouseY)
     {
         if (!tooltipStack.isEmpty())
-            gg.renderTooltip(font, tooltipStack, mouseX, mouseY);
+            gg.setTooltipForNextFrame(font, tooltipStack, mouseX, mouseY);
     }
 
     private boolean isInBox(int mouseX, int mouseY, int x, int y, int w, int h)

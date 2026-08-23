@@ -5,22 +5,22 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 
 /**
  * Reimplementation of Minecraft 1.7.10's EntityExplodeFX.
  */
-public final class LegacyExplodeParticle extends TextureSheetParticle
+public final class LegacyExplodeParticle extends SingleQuadParticle
 {
     private final SpriteSet sprites;
 
     private LegacyExplodeParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
-        super(level, x, y, z, vx, vy, vz);
+        super(level, x, y, z, vx, vy, vz, sprites.first());
         this.sprites = sprites;
 
         xd = vx + (random.nextDouble() * 2.0D - 1.0D) * 0.05D;
@@ -78,7 +78,7 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    protected Layer getLayer()
     {
         return LegacyParticleRenderTypes.TRANSLUCENT;
     }
@@ -86,7 +86,7 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>
     {
         @Override
-        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
+        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz, RandomSource random)
         {
             return new LegacyExplodeParticle(level, x, y, z, vx, vy, vz, sprites);
         }

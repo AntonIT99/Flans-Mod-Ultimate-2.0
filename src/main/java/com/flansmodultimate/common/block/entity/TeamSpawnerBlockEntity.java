@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -24,6 +25,8 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -94,8 +97,8 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         spawner.currentDelay = spawner.spawnDelayTicks;
 
         AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
-        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER)
-            && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+        if (!serverLevel.getEntities((Entity) null, nearby, entity -> spawner.objectId.equals(
+            entity.getPersistentData().read(NBT_SPAWNER, UUIDUtil.CODEC).orElse(null))).isEmpty())
             return;
 
         for (ItemStack template : spawner.templates)
@@ -113,13 +116,13 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
                 else if (template.getItem() instanceof AAGunItem aaGunItem)
                     spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null);
                 if (spawned != null)
-                    spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
+                    spawned.getPersistentData().store(NBT_SPAWNER, UUIDUtil.CODEC, spawner.objectId);
                 continue;
             }
 
             ItemEntity item = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.2D, pos.getZ() + 0.5D, template.copy());
             item.setDefaultPickUpDelay();
-            item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
+            item.getPersistentData().store(NBT_SPAWNER, UUIDUtil.CODEC, spawner.objectId);
             level.addFreshEntity(item);
         }
     }
@@ -141,45 +144,47 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveAdditional(@NotNull ValueOutput output)
     {
-        super.saveAdditional(tag, registries);
-        tag.putUUID(NBT_OBJECT_ID, objectId);
+        super.saveAdditional(output);
+        output.store(NBT_OBJECT_ID, UUIDUtil.CODEC, objectId);
         if (baseId != null)
-            tag.putUUID(NBT_BASE_ID, baseId);
-        tag.putString(NBT_MODE, mode.name()); tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks); tag.putInt(NBT_CURRENT_DELAY, currentDelay);
-        ListTag items = new ListTag();
-        templates.forEach(stack -> items.add(ItemStackData.save(stack, registries)));
-        tag.put(NBT_ITEMS, items);
+            output.store(NBT_BASE_ID, UUIDUtil.CODEC, baseId);
+        output.putString(NBT_MODE, mode.name());
+        output.putInt(NBT_SPAWN_DELAY, spawnDelayTicks);
+        output.putInt(NBT_CURRENT_DELAY, currentDelay);
+        ValueOutput.TypedOutputList<ItemStack> items = output.list(NBT_ITEMS, ItemStack.CODEC);
+        templates.forEach(items::add);
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadAdditional(@NotNull ValueInput input)
     {
-        super.loadAdditional(tag, registries);
-        objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
-        baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
+        super.loadAdditional(input);
+        objectId = input.read(NBT_OBJECT_ID, UUIDUtil.CODEC).orElseGet(UUID::randomUUID);
+        baseId = input.read(NBT_BASE_ID, UUIDUtil.CODEC).orElse(null);
 
         try
         {
-            mode = Mode.valueOf(tag.getString(NBT_MODE).toUpperCase(Locale.ROOT));
+            mode = Mode.valueOf(input.getStringOr(NBT_MODE, Mode.PLAYER.name()).toUpperCase(Locale.ROOT));
         }
         catch (IllegalArgumentException ignored)
         {
             mode = Mode.PLAYER;
         }
 
-        spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY)); currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
+        spawnDelayTicks = Math.max(20, input.getIntOr(NBT_SPAWN_DELAY, 20 * 20));
+        currentDelay = Math.max(0, input.getIntOr(NBT_CURRENT_DELAY, 10));
         templates.clear();
 
-        for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
-            templates.add(ItemStackData.parse(registries, (CompoundTag) item));
+        for (ItemStack item : input.listOrEmpty(NBT_ITEMS, ItemStack.CODEC))
+            templates.add(item);
     }
 
     private void setChangedAndSync()
     {
         setChanged();
-        if (level != null && !level.isClientSide)
+        if (level != null && !level.isClientSide())
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 

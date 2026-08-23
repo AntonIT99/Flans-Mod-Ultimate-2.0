@@ -21,16 +21,19 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
     protected final ItemHolderType configType;
     protected final String shortname;
 
-    public ItemHolderItem(ItemHolderType configType)
+    public ItemHolderItem(ItemHolderType configType, Properties properties)
     {
-        super(FlansMod.getBlocks().get(configType.getType()).get(configType.getShortName()).get(), new Properties());
+        super(FlansMod.getBlocks().get(configType.getType()).get(configType.getShortName()).get(), properties);
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.literal("Place items on display").withStyle(ChatFormatting.DARK_AQUA));
     }

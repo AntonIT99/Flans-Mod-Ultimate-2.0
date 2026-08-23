@@ -16,6 +16,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.ValueIOUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +32,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -42,6 +44,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -160,7 +164,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
     }
 
     @Override
-    public ItemStack getPickedResult(HitResult target)
+    public ItemStack getPickResult()
     {
         return ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY);
     }
@@ -172,19 +176,10 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         return distSq < r * r;
     }
 
-    private static int getRenderDistance()
+    public static int getRenderDistance()
     {
         ModClientConfig config = ModClientConfig.get();
         return config == null ? RENDER_DISTANCE : config.deployedGunRenderDistance;
-    }
-
-    @Override
-    @NotNull
-    public AABB getBoundingBoxForCulling()
-    {
-        // No frustum-culling within the render distance
-        double r = getRenderDistance();
-        return new AABB(getX() - r, getY() - r, getZ() - r, getX() + r, getY() + r, getZ() + r);
     }
 
     @Override
@@ -232,28 +227,30 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setShortName(tag.getString(NBT_TYPE_NAME));
+        CompoundTag tag = ValueIOUtils.toCompoundTag(input);
+        setShortName(tag.getString(NBT_TYPE_NAME).orElse(StringUtils.EMPTY));
 
         if (InfoType.getInfoType(shortname) instanceof GunType gType)
             configType = gType;
         else
             discard();
 
-        setGunDirection(tag.getInt(NBT_DIRECTION));
-        blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X), tag.getInt(NBT_BLOCK_Y), tag.getInt(NBT_BLOCK_Z));
+        setGunDirection(tag.getInt(NBT_DIRECTION).orElse(0));
+        blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X).orElse(0), tag.getInt(NBT_BLOCK_Y).orElse(0), tag.getInt(NBT_BLOCK_Z).orElse(0));
 
-        if (tag.contains(NBT_AMMO, Tag.TAG_COMPOUND))
-            ammo = ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_AMMO));
+        if (tag.getCompound(NBT_AMMO).isPresent())
+            ammo = ItemStackData.parse(level().registryAccess(), tag.getCompoundOrEmpty(NBT_AMMO));
         else
             ammo = ItemStack.EMPTY;
         setHasAmmo(!ammo.isEmpty());
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
+        CompoundTag tag = new CompoundTag();
         if (configType == null)
         {
             discard();
@@ -272,6 +269,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
             ItemStackData.save(ammo, level().registryAccess(), ammoTag);
             tag.put(NBT_AMMO, ammoTag);
         }
+        ValueIOUtils.storeCompoundTag(output, tag);
     }
 
     @Override
@@ -282,7 +280,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
             Level level = level();
 
             // Only do "death drops" on the server, and not when the entity is merely being unloaded
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK)
+            if (level instanceof ServerLevel serverLevel && reason != RemovalReason.UNLOADED_TO_CHUNK)
             {
                 if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.SMART_DROPS)
                 {
@@ -290,9 +288,9 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
                 }
                 else if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.DROPS)
                 {
-                    spawnAtLocation(ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY), 0F);
+                    spawnAtLocation(serverLevel, ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY), 0F);
                     if (!ammo.isEmpty())
-                        spawnAtLocation(ammo.copy(), 0.5F);
+                        spawnAtLocation(serverLevel, ammo.copy(), 0.5F);
                 }
             }
         }
@@ -305,7 +303,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount)
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount)
     {
         Entity entity = source.getEntity();
         Entity gunner = getFirstPassenger();
@@ -316,7 +314,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
         // If someone else hits the gun while someone is mounted: forward damage to gunner
         if (gunner != null)
-            return gunner.hurt(source, amount);
+            return gunner.hurtServer(serverLevel, source, amount);
 
         // If unmounted and allowed to break guns: remove it
         if (FlansMod.teamsManager.isCanBreakGuns())
@@ -327,17 +325,17 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
         Level level = level();
         Entity gunner = getFirstPassenger();
 
         // If someone else is mounted, ignore
         if (player != gunner && gunner != null)
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
 
         // Client: just return success so the hand animates; server does the logic
-        if (level.isClientSide)
+        if (level.isClientSide())
             return InteractionResult.SUCCESS;
 
         PlayerData data = PlayerData.getInstance(player);
@@ -361,7 +359,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
             return InteractionResult.CONSUME;
 
         // None of the above applied, so mount the gun
-        player.startRiding(this, true);
+        player.startRiding(this, true, true);
         // Auto-reload if ammo empty
         reloadGun(level, player);
 
@@ -485,7 +483,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         if (gunner == null || !gunner.isAlive())
             shootKeyPressed = false;
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             ClientHooks.GUN.tickDeployedGun(this);
         else
             serverTick(level);
@@ -544,7 +542,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         List<ShootableType> allowed = configType.getAmmoTypes();
         Inventory inv = player.getInventory();
 
-        int selected = inv.selected;
+        int selected = inv.getSelectedSlot();
         ItemStack selectedStack = inv.getItem(selected);
         if (selectedStack.getItem() instanceof ShootableItem shootableItem && allowed.contains(shootableItem.getConfigType()))
             return selected;
@@ -597,7 +595,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void fireGun(Level level, LivingEntity gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide() || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
@@ -631,7 +629,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void reloadGun(Level level, Player gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        if (level.isClientSide() || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
             return;
 
         int slot = findAmmo(gunner); // you port this to modern inventory below
@@ -651,7 +649,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void reloadGun(Level level, LivingEntity gunner, ItemStack newAmmo)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        if (level.isClientSide() || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
             return;
 
         ammo = newAmmo.copy();

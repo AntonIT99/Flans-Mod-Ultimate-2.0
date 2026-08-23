@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -81,7 +81,7 @@ public final class RecipeResolver
      * @param provider content pack context used for short name alias lookup
      * @return the resolved item id, or {@link Optional#empty()} when the token cannot be resolved
      */
-    public static Optional<ResourceLocation> resolveItemId(String token, @Nullable IContentProvider provider)
+    public static Optional<Identifier> resolveItemId(String token, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(token))
             return Optional.empty();
@@ -103,7 +103,7 @@ public final class RecipeResolver
      * @param provider content pack context used for short name alias lookup
      * @return the resolved item id, or {@link Optional#empty()} when no known id can be found
      */
-    public static Optional<ResourceLocation> resolveItemId(String id, int damage, @Nullable IContentProvider provider)
+    public static Optional<Identifier> resolveItemId(String id, int damage, @Nullable IContentProvider provider)
     {
         if (StringUtils.isBlank(id))
             return Optional.empty();
@@ -122,16 +122,16 @@ public final class RecipeResolver
      * @param token raw recipe token from a content pack recipe definition
      * @return fallback item id for generated recipe JSON
      */
-    public static ResourceLocation createFallbackItemId(String token)
+    public static Identifier createFallbackItemId(String token)
     {
         String trimmedToken = token.trim();
         if (trimmedToken.contains(":"))
         {
             String[] split = trimmedToken.split(":", 2);
-            return ResourceLocation.fromNamespaceAndPath(ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]));
+            return Identifier.fromNamespaceAndPath(ResourceUtils.sanitize(split[0]), ResourceUtils.sanitize(split[1]));
         }
 
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, ResourceUtils.sanitize(trimmedToken));
+        return Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, ResourceUtils.sanitize(trimmedToken));
     }
 
     private static <T> Optional<T> resolveRecipeItem(String rawId, int damage, @Nullable IContentProvider provider, RecipeItemResolution<T> resolution)
@@ -254,9 +254,9 @@ public final class RecipeResolver
         };
     }
 
-    private static Optional<ResourceLocation> resolveRawItemId(String id)
+    private static Optional<Identifier> resolveRawItemId(String id)
     {
-        ResourceLocation location = ResourceLocation.tryParse(id);
+        Identifier location = Identifier.tryParse(id);
         if (location != null && BuiltInRegistries.ITEM.containsKey(location))
             return Optional.of(location);
 
@@ -265,11 +265,11 @@ public final class RecipeResolver
 
     private static Optional<ItemStack> resolveRawRecipeElement(String id, int amount, int damage)
     {
-        ResourceLocation location = ResourceLocation.tryParse(id);
+        Identifier location = Identifier.tryParse(id);
         if (location == null || !BuiltInRegistries.ITEM.containsKey(location))
             return Optional.empty();
 
-        Item item = BuiltInRegistries.ITEM.get(location);
+        Item item = BuiltInRegistries.ITEM.getValue(location);
         if (item == null)
             return Optional.empty();
 
@@ -280,18 +280,18 @@ public final class RecipeResolver
         return Optional.of(stack);
     }
 
-    private static Optional<ResourceLocation> resolveFlansmodItemId(String id)
+    private static Optional<Identifier> resolveFlansmodItemId(String id)
     {
         InfoType type = InfoType.getInfoType(id);
         if (type != null && type.getType().isHasItem())
-            return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getShortName()));
+            return Optional.of(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getShortName()));
 
         return resolveRegisteredItemId(FlansMod.FLANSMOD_ID, id);
     }
 
-    private static Optional<ResourceLocation> resolveRegisteredItemId(String namespace, String path)
+    private static Optional<Identifier> resolveRegisteredItemId(String namespace, String path)
     {
-        ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
+        Identifier location = Identifier.tryBuild(namespace, path);
         if (location != null && BuiltInRegistries.ITEM.containsKey(location))
             return Optional.of(location);
 
@@ -309,11 +309,11 @@ public final class RecipeResolver
 
     private static Optional<ItemStack> getRegisteredRecipeElement(String namespace, String path, int amount, int damage)
     {
-        ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
+        Identifier location = Identifier.tryBuild(namespace, path);
         if (location == null || !BuiltInRegistries.ITEM.containsKey(location))
             return Optional.empty();
 
-        Item item = BuiltInRegistries.ITEM.get(location);
+        Item item = BuiltInRegistries.ITEM.getValue(location);
         if (item == null)
             return Optional.empty();
 
@@ -361,34 +361,34 @@ public final class RecipeResolver
         };
     }
 
-    private static final RecipeItemResolution<ResourceLocation> ITEM_ID_RESOLUTION = new RecipeItemResolution<>()
+    private static final RecipeItemResolution<Identifier> ITEM_ID_RESOLUTION = new RecipeItemResolution<>()
     {
         @Override
-        public Optional<ResourceLocation> raw(String id)
+        public Optional<Identifier> raw(String id)
         {
             return resolveRawItemId(id);
         }
 
         @Override
-        public Optional<ResourceLocation> flansmod(String id)
+        public Optional<Identifier> flansmod(String id)
         {
             return resolveFlansmodItemId(id);
         }
 
         @Override
-        public Optional<ResourceLocation> registered(String namespace, String path)
+        public Optional<Identifier> registered(String namespace, String path)
         {
             return resolveRegisteredItemId(namespace, path);
         }
 
         @Override
-        public Optional<ResourceLocation> legacy(String id, int damage)
+        public Optional<Identifier> legacy(String id, int damage)
         {
             return getLegacyRecipeItemId(id, damage);
         }
 
         @Override
-        public Optional<ResourceLocation> vanillaPath(String id)
+        public Optional<Identifier> vanillaPath(String id)
         {
             return getVanillaRegistryPathRecipeItemId(id);
         }
@@ -414,11 +414,11 @@ public final class RecipeResolver
             .orElse(ItemStack.EMPTY);
     }
 
-    private static Optional<ResourceLocation> getLegacyRecipeItemId(String id, int damage)
+    private static Optional<Identifier> getLegacyRecipeItemId(String id, int damage)
     {
         String equipmentPath = legacyEquipmentPath(id);
         if (equipmentPath != null)
-            return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", equipmentPath));
+            return Optional.of(Identifier.fromNamespaceAndPath("minecraft", equipmentPath));
         return getLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
     }
 
@@ -472,7 +472,7 @@ public final class RecipeResolver
         return getVanillaRegistryPathRecipeItem(id).map(item -> new ItemStack(item, amount));
     }
 
-    private static Optional<ResourceLocation> getVanillaRegistryPathRecipeItemId(String id)
+    private static Optional<Identifier> getVanillaRegistryPathRecipeItemId(String id)
     {
         return getVanillaRegistryPathRecipeItem(id).flatMap(RecipeResolver::id);
     }
@@ -482,7 +482,7 @@ public final class RecipeResolver
         String lookupPath = getLookupPath(id);
         for (Item item : BuiltInRegistries.ITEM)
         {
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
             if (itemId != null && itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
                 return Optional.of(item);
         }
@@ -603,9 +603,9 @@ public final class RecipeResolver
         return new ItemStack(item, amount);
     }
 
-    private static Optional<ResourceLocation> id(ItemLike item)
+    private static Optional<Identifier> id(ItemLike item)
     {
-        ResourceLocation location = BuiltInRegistries.ITEM.getKey(item.asItem());
+        Identifier location = BuiltInRegistries.ITEM.getKey(item.asItem());
         if (location == null)
             location = BuiltInRegistries.ITEM.getKey(item.asItem());
         return Optional.ofNullable(location);

@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.LegacyItemDefinitionRepositorySource;
 import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.PackagedContentRepositorySource;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
@@ -32,9 +33,9 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event)
     {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansMod.itemHolderBlockEntity.get(),
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FlansMod.itemHolderBlockEntity.get(),
             (blockEntity, direction) -> blockEntity.getItemHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansMod.paintjobTableBlockEntity.get(),
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FlansMod.paintjobTableBlockEntity.get(),
             (blockEntity, direction) -> blockEntity.getItemHandler());
     }
 
@@ -42,6 +43,9 @@ public final class ModCommonEventHandler
     public static void registerPack(AddPackFindersEvent event)
     {
         event.addRepositorySource(PackagedContentRepositorySource.create(event.getPackType()));
+
+        if (event.getPackType() == PackType.CLIENT_RESOURCES)
+            event.addRepositorySource(LegacyItemDefinitionRepositorySource.create());
 
         if (event.getPackType() == PackType.SERVER_DATA && ModApocalypseConfig.apocalypseDimensionDatapackEnabled())
             event.addRepositorySource(ApocalypseDatapackSource.create());

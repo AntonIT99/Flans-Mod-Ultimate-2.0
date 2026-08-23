@@ -1,29 +1,23 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
-import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.client.render.item.LegacyItemPreviewRenderer;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -59,9 +53,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
 
     public PaintjobTableScreen(PaintjobTableMenu menu, Inventory inv, Component title)
     {
-        super(menu, inv, title);
-        imageWidth = GUI_W;
-        imageHeight = GUI_H;
+        super(menu, inv, title, GUI_W, GUI_H);
     }
 
     @Override
@@ -77,13 +69,14 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
     }
 
     @Override
-    protected void renderBg(GuiGraphics gg, float partialTick, int mouseX, int mouseY)
+    public void extractBackground(GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
+        super.extractBackground(gg, mouseX, mouseY, partialTick);
         int x0 = leftPos;
         int y0 = topPos;
 
-        gg.blit(FlansMod.paintjobTableGuiTexture, x0, y0, 0, 0, imageWidth, TOP_H, TEX_W, TEX_H);
-        gg.blit(FlansMod.paintjobTableGuiTexture, x0, y0 + TOP_H, 0, TOP_H, imageWidth, BOTTOM_H, TEX_W, TEX_H);
+        gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, x0, y0, 0, 0, imageWidth, TOP_H, TEX_W, TEX_H);
+        gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, x0, y0 + TOP_H, 0, TOP_H, imageWidth, BOTTOM_H, TEX_W, TEX_H);
 
         // Render paintjob icons
         ItemStack paintable = menu.slots.get(0).getItem();
@@ -110,7 +103,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
                 int px = baseX + x * 18;
                 int py = baseY + y * 18;
 
-                gg.renderItem(iconStack, px, py);
+                gg.item(iconStack, px, py);
 
                 if (mouseX >= px && mouseX < px + 18 && mouseY >= py && mouseY < py + 18)
                     hoveringPaintjob = pj;
@@ -121,57 +114,38 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
     }
 
     @Override
-    public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg, mouseX, mouseY, partialTick);
-        super.render(gg, mouseX, mouseY, partialTick);
-        renderTooltip(gg, mouseX, mouseY);
+        super.extractRenderState(gg, mouseX, mouseY, partialTick);
         renderDyeRequirementStrip(gg, mouseX, mouseY, hoveringPaintjob);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick)
     {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         if (button == 0 && hoveringPaintjob != null)
         {
             PacketHandler.sendToServer(new PacketSelectPaintjob(hoveringPaintjob.getId()));
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
-    private void renderPreview(GuiGraphics gg, float partialTick, ItemStack stack)
+    private void renderPreview(GuiGraphicsExtractor gg, float partialTick, ItemStack stack)
     {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null)
+        if (minecraft == null || minecraft.level == null)
             return;
 
-        PoseStack pose = gg.pose();
-        pose.pushPose();
-        pose.translate(leftPos + (GUI_W / 2F), topPos + (TOP_H / 2F), 100F);
-
-
-        float ticks = mc.level.getGameTime() + partialTick;
-        float yRot = (ticks * 3F) % 360F;
-
-        pose.mulPose(Axis.XP.rotationDegrees(160));
-        pose.mulPose(Axis.YP.rotationDegrees(yRot));
-        pose.scale(-60F, 60F, 60F);
-
-        Lighting.setupFor3DItems();
-
-        if (stack.getItem() instanceof AttachmentItem attachmentItem)
-            GunItemRenderer.renderAttachment(attachmentItem.getConfigType(), stack, pose, gg.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-        else
-            mc.getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose, gg.bufferSource(), mc.level, 0);
-
-
-        gg.flush();
-        pose.popPose();
-        Lighting.setupForFlatItems();
+        float ticks = minecraft.level.getGameTime() + partialTick;
+        LegacyItemPreviewRenderer.submit(gg, stack,
+            leftPos, topPos, leftPos + GUI_W, topPos + TOP_H, 60F,
+            160F, (ticks * 3F) % 360F);
     }
 
-    private void renderDyeRequirementStrip(GuiGraphics gg, int mouseX, int mouseY, Paintjob pj)
+    private void renderDyeRequirementStrip(GuiGraphicsExtractor gg, int mouseX, int mouseY, Paintjob pj)
     {
         if (pj == null || minecraft == null)
             return;
@@ -195,22 +169,22 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
         if (dyesNeeded.size() == 1)
         {
             int u = have[0] ? UV_SINGLE_U_HAVE : UV_SINGLE_U_MISSING;
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX, originY, u, UV_SINGLE_V, UV_SINGLE_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, originX, originY, u, UV_SINGLE_V, UV_SINGLE_W, STRIP_H, TEX_W, TEX_H);
         }
         else
         {
             // First
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX, originY, UV_FIRST_U, have[0] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_FIRST_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, originX, originY, UV_FIRST_U, have[0] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_FIRST_W, STRIP_H, TEX_W, TEX_H);
 
             // Middles
             for (int s = 1; s < dyesNeeded.size() - 1; s++)
             {
-                gg.blit(FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H, TEX_W, TEX_H);
+                gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H, TEX_W, TEX_H);
             }
 
             // Last
             int last = dyesNeeded.size() - 1;
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(RenderPipelines.GUI_TEXTURED, FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H, TEX_W, TEX_H);
         }
 
         // Draw dye items + overlays (counts)
@@ -222,8 +196,8 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
             int itemX = originX + ITEM_PAD_X + s * 18;
             int itemY = originY + ITEM_PAD_Y;
 
-            gg.renderItem(req, itemX, itemY);
-            gg.renderItemDecorations(font, req, itemX, itemY);
+            gg.item(req, itemX, itemY);
+            gg.itemDecorations(font, req, itemX, itemY);
         }
 
         // Show tooltip if mouse is over one of the requirement items
@@ -233,7 +207,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
             int itemY = originY + ITEM_PAD_Y;
             if (mouseX >= itemX && mouseX < itemX + 16 && mouseY >= itemY && mouseY < itemY + 16)
             {
-                gg.renderTooltip(minecraft.font, dyesNeeded.get(s), mouseX, mouseY);
+                gg.setTooltipForNextFrame(minecraft.font, dyesNeeded.get(s), mouseX, mouseY);
                 break;
             }
         }

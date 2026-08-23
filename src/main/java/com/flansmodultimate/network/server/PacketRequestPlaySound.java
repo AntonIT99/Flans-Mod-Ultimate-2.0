@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -65,7 +65,7 @@ public class PacketRequestPlaySound implements IServerPacket
         DeferredHolder<SoundEvent, SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
         if (event == null || event.getId() == null)
         {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
+            FlansMod.log.debug("Could not play sound event {}", Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
             return;
         }
 

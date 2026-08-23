@@ -6,72 +6,80 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-@OnlyIn(Dist.CLIENT)
-public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> extends RenderLayer<T, M>
+public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidModel<S>> extends RenderLayer<S, M>
 {
-    public CustomArmorLayer(RenderLayerParent<T, M> parent)
+    public CustomArmorLayer(RenderLayerParent<S, M> parent)
     {
         super(parent);
     }
 
     @Override
-    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch)
+    public void submit(PoseStack poseStack, SubmitNodeCollector collector, int packedLight, S state, float yRot, float xRot)
     {
-        int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0F);
-        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.HEAD, packedLight, overlay);
-        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.LEGS, packedLight, overlay);
-        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.FEET, packedLight, overlay);
-        renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.CHEST, packedLight, overlay);
+        int overlay = LivingEntityRenderer.getOverlayCoords(state, 0F);
+        renderArmorPiece(poseStack, collector, state.headEquipment, EquipmentSlot.HEAD, packedLight, overlay, state);
+        renderArmorPiece(poseStack, collector, state.legsEquipment, EquipmentSlot.LEGS, packedLight, overlay, state);
+        renderArmorPiece(poseStack, collector, state.feetEquipment, EquipmentSlot.FEET, packedLight, overlay, state);
+        renderArmorPiece(poseStack, collector, state.chestEquipment, EquipmentSlot.CHEST, packedLight, overlay, state);
     }
 
-    @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource buffer, T entity, EquipmentSlot slot, int packedLight, int overlay)
+    private void renderArmorPiece(PoseStack poseStack, SubmitNodeCollector collector, ItemStack itemStack,
+                                  EquipmentSlot slot, int packedLight, int overlay, S state)
     {
-        ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
 
         if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour model)
         {
             ArmorType armorType = armorItem.getConfigType();
-            ResourceLocation texture = armorType.getTexture();
-            getParentModel().copyPropertiesTo((HumanoidModel<T>) model);
-            
-            setModelPartVisibility(model, slot, entity);
+            Identifier texture = armorType.getTexture();
+            model.setupAnim(state);
+            model.setYoung(state.isBaby);
+            setModelPartVisibility(model, slot, state);
 
             boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
             boolean cull = ModClientConfig.get().useCullingRendering(armorType);
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-                model.renderToBuffer(poseStack, buffer.getBuffer(renderPass.getArmorRenderType(texture, translucent, cull)), packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
+            {
+                collector.submitCustomGeometry(poseStack, renderPass.getArmorRenderType(texture, translucent, cull),
+                    (submittedPose, vertices) -> {
+                        PoseStack deferred = new PoseStack();
+                        deferred.last().set(submittedPose);
+                        model.renderToBuffer(deferred, vertices, packedLight, overlay,
+                            1F, 1F, 1F, 1F, renderPass);
+                    });
+            }
         }
     }
 
-    private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, LivingEntity entity)
+    private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, S state)
     {
-        model.setAllVisible(false);
+        model.head.visible = false;
+        model.hat.visible = false;
+        model.body.visible = false;
+        model.rightArm.visible = false;
+        model.leftArm.visible = false;
+        model.rightLeg.visible = false;
+        model.leftLeg.visible = false;
         
         switch (slot)
         {
             case HEAD ->
             {
                 model.head.visible = true;
-                model.hat.visible = entity instanceof Player player && player.isModelPartShown(PlayerModelPart.HAT);
+                model.hat.visible = state instanceof AvatarRenderState avatar && avatar.showHat;
             }
             case CHEST ->
             {

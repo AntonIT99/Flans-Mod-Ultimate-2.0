@@ -15,7 +15,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -140,7 +140,7 @@ public final class CreativeTabs
 
     private static String getRegistryName(Item item)
     {
-        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+        Identifier key = BuiltInRegistries.ITEM.getKey(item);
         return key != null ? key.toString() : null;
     }
 }

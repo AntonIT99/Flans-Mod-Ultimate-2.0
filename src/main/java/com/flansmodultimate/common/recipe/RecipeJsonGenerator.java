@@ -11,7 +11,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -161,10 +161,10 @@ public final class RecipeJsonGenerator
 
     private static JsonObject createIngredient(String itemToken, InfoType config)
     {
-        Optional<ResourceLocation> itemId = RecipeResolver.resolveItemId(itemToken, config.getContentPack());
+        Optional<Identifier> itemId = RecipeResolver.resolveItemId(itemToken, config.getContentPack());
         if (itemId.isEmpty())
         {
-            ResourceLocation fallbackItemId = RecipeResolver.createFallbackItemId(itemToken);
+            Identifier fallbackItemId = RecipeResolver.createFallbackItemId(itemToken);
             itemId = Optional.of(fallbackItemId);
         }
 

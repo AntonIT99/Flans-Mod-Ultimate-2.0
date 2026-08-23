@@ -6,12 +6,13 @@ import com.flansmodultimate.network.client.PacketBaseEditState;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
 /** Operator base settings GUI adapted from the legacy 256x189 screen. */
 public final class TeamsBaseEditScreen extends Screen
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/base_edit.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/base_edit.png");
     private final PacketBaseEditState state;
     private final List<Button> ownerButtons = new ArrayList<>();
     private final List<Button> mapButtons = new ArrayList<>();
@@ -103,16 +104,15 @@ public final class TeamsBaseEditScreen extends Screen
     }
 
     @Override
-    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         int left = width / 2 - 128;
         int top = height / 2 - 94;
-        graphics.blit(TEXTURE, left, top, 0, 0, 256, 189, 256, 256);
-        graphics.drawString(font, title, left + 6, top + 6, 0xFFFFFF, false);
-        graphics.drawString(font, Component.translatable("gui.flansmod.teams.base_name"), left + 6, top + 24, 0xFFFFFF, false);
-        graphics.drawString(font, Component.translatable("gui.flansmod.teams.map"), left + 6, top + 64, 0xFFFFFF, false);
-        super.render(graphics, mouseX, mouseY, partialTick);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, left, top, 0, 0, 256, 189, 256, 256);
+        graphics.text(font, title, left + 6, top + 6, 0xFFFFFF, false);
+        graphics.text(font, Component.translatable("gui.flansmod.teams.base_name"), left + 6, top + 24, 0xFFFFFF, false);
+        graphics.text(font, Component.translatable("gui.flansmod.teams.map"), left + 6, top + 64, 0xFFFFFF, false);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override

@@ -10,9 +10,10 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -76,7 +77,7 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type)
     {
-        return level.isClientSide ? null : createTickerHelper(type, FlansMod.teamSpawnerBlockEntity.get(), TeamSpawnerBlockEntity::serverTick);
+        return level.isClientSide() ? null : createTickerHelper(type, FlansMod.teamSpawnerBlockEntity.get(), TeamSpawnerBlockEntity::serverTick);
     }
 
     @NotNull
@@ -88,22 +89,23 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+    protected InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = interact(level, pos, player, hand);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? InteractionResult.TRY_WITH_EMPTY_HAND
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult interact(Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!(level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner))
             return InteractionResult.PASS;
-        if (level.isClientSide)
+        if (level.isClientSide())
             return InteractionResult.SUCCESS;
-        if (!(player instanceof ServerPlayer serverPlayer) || !serverPlayer.hasPermissions(2))
+        if (!(player instanceof ServerPlayer serverPlayer)
+            || !serverPlayer.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             return InteractionResult.CONSUME;
 
         ItemStack held = player.getItemInHand(hand);
@@ -115,12 +117,12 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
         if (spawner.getMode() != TeamSpawnerBlockEntity.Mode.PLAYER && !held.isEmpty())
         {
             spawner.addTemplate(held.copyWithCount(held.getCount()));
-            player.displayClientMessage(Component.literal("Added " + held.getHoverName().getString() + " to this spawner"), false);
+            player.sendSystemMessage(Component.literal("Added " + held.getHoverName().getString() + " to this spawner"));
         }
         else if (held.isEmpty())
         {
             spawner.cycleSpawnDelay();
-            player.displayClientMessage(Component.literal("Spawn delay: " + spawner.getSpawnDelayTicks() / 20 + " seconds"), false);
+            player.sendSystemMessage(Component.literal("Spawn delay: " + spawner.getSpawnDelayTicks() / 20 + " seconds"));
         }
         return InteractionResult.CONSUME;
     }

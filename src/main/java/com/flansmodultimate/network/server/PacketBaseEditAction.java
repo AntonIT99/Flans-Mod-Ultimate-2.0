@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public final class PacketBaseEditAction implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        if (!player.hasPermissions(2))
+        if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             return;
         TeamsManager manager = TeamsManager.getInstance();
         ITeamBase base = manager.getBase(baseId).orElse(null);

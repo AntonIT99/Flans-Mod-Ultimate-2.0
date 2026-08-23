@@ -58,9 +58,9 @@ public class PacketFlanExplosionParticles implements IClientPacket
     {
         for (int i = 0; i < count; i++)
         {
-            float vx = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity;
-            float vy = level.random.nextFloat() * maxVelocity;
-            float vz = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity;
+            float vx = (level.getRandom().nextFloat() * 2.0F - 1.0F) * maxVelocity;
+            float vy = level.getRandom().nextFloat() * maxVelocity;
+            float vz = (level.getRandom().nextFloat() * 2.0F - 1.0F) * maxVelocity;
             ClientHooks.RENDER.spawnParticle(particleType, position.x, position.y, position.z, vx, vy, vz, 1F);
         }
     }

@@ -20,16 +20,19 @@ public class ArmorBoxItem extends BlockItem implements IFlanItem<ArmorBoxType>
     protected final ArmorBoxType configType;
     protected final String shortname;
 
-    public ArmorBoxItem(ArmorBoxType configType)
+    public ArmorBoxItem(ArmorBoxType configType, Properties properties)
     {
-        super(FlansMod.getBlocks().get(configType.getType()).get(configType.getShortName()).get(), new Properties());
+        super(FlansMod.getBlocks().get(configType.getType()).get(configType.getShortName()).get(), properties);
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
     }
 }

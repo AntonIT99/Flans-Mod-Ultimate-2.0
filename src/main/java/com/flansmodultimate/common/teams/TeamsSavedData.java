@@ -2,11 +2,15 @@ package com.flansmodultimate.common.teams;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +23,12 @@ import java.util.UUID;
 /** The single SavedData payload for maps, rotations, runtime state and player stats. */
 public final class TeamsSavedData extends SavedData
 {
-    public static final Factory<TeamsSavedData> FACTORY = new Factory<>(TeamsSavedData::new, TeamsSavedData::load);
     public static final String ID = "flansmodultimate_teams";
+    public static final SavedDataType<TeamsSavedData> TYPE = new SavedDataType<>(
+        Identifier.fromNamespaceAndPath("flansmodultimate", "teams"),
+        level -> new TeamsSavedData(),
+        TeamsSavedData::codec
+    );
     private static final String NBT_MAPS = "maps";
     private static final String NBT_ROUNDS = "rounds";
     private static final String NBT_STATS = "stats";
@@ -36,7 +44,6 @@ public final class TeamsSavedData extends SavedData
         return Collections.unmodifiableCollection(stats.values());
     }
 
-    @Override
     @NotNull
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries)
     {
@@ -58,20 +65,29 @@ public final class TeamsSavedData extends SavedData
     public static TeamsSavedData load(CompoundTag tag, HolderLookup.Provider registries)
     {
         TeamsSavedData result = new TeamsSavedData();
-        for (Tag entry : tag.getList(NBT_MAPS, Tag.TAG_COMPOUND))
+        for (Tag entry : tag.getListOrEmpty(NBT_MAPS))
         {
             TeamsMap map = TeamsMap.load((CompoundTag) entry);
             result.maps.put(map.getShortName(), map);
         }
-        for (Tag entry : tag.getList(NBT_ROUNDS, Tag.TAG_COMPOUND))
+        for (Tag entry : tag.getListOrEmpty(NBT_ROUNDS))
             result.rounds.add(TeamsRound.load((CompoundTag) entry));
-        for (Tag entry : tag.getList(NBT_STATS, Tag.TAG_COMPOUND))
+        for (Tag entry : tag.getListOrEmpty(NBT_STATS))
         {
             PlayerStats stats = PlayerStats.load((CompoundTag) entry, registries);
             result.stats.put(stats.getPlayerId(), stats);
         }
-        if (tag.contains(NBT_RUNTIME, Tag.TAG_COMPOUND))
-            result.runtime.merge(tag.getCompound(NBT_RUNTIME));
+        if (tag.contains(NBT_RUNTIME))
+            result.runtime.merge(tag.getCompoundOrEmpty(NBT_RUNTIME));
         return result;
+    }
+
+    private static Codec<TeamsSavedData> codec(ServerLevel level)
+    {
+        HolderLookup.Provider registries = level.registryAccess();
+        return CompoundTag.CODEC.xmap(
+            tag -> load(tag, registries),
+            data -> data.save(new CompoundTag(), registries)
+        );
     }
 }

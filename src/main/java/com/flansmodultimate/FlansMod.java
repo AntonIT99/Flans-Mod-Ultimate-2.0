@@ -65,7 +65,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -100,6 +100,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 @Mod(FlansMod.MOD_ID)
 public class FlansMod
@@ -137,24 +138,24 @@ public class FlansMod
     public static final String DEFAULT_BULLET_TRAIL_TEXTURE = "defaultbullettrail";
 
     // Resource Locations
-    public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
-    public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
+    public static final Identifier paintjob = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
+    public static final Identifier defaultMuzzleFlashTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     /** Valid fallback for render APIs which no longer accept an empty resource path. */
-    public static final ResourceLocation defaultFallbackTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
-    public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
-    public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
-    public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
-    public static final ResourceLocation armorBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
-    public static final ResourceLocation gunBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
-    public static final ResourceLocation ammoGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
-    public static final ResourceLocation teamsLoadoutEditorGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_loadout_editor.png");
-    public static final ResourceLocation teamsLandingPageGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_landing_page.png");
-    public static final ResourceLocation teamsMissionResultsGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_mission_results.png");
-    public static final ResourceLocation teamsOpenCreatesGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_open_crates.png");
+    public static final Identifier defaultFallbackTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
+    public static final Identifier hitmarkerTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
+    public static final Identifier gunWorkbenchGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
+    public static final Identifier paintjobTableGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
+    public static final Identifier armorBoxGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
+    public static final Identifier gunBoxGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
+    public static final Identifier ammoGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
+    public static final Identifier teamsLoadoutEditorGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_loadout_editor.png");
+    public static final Identifier teamsLandingPageGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_landing_page.png");
+    public static final Identifier teamsMissionResultsGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_mission_results.png");
+    public static final Identifier teamsOpenCreatesGuiTexture = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_open_crates.png");
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(BuiltInRegistries.ITEM, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister.Blocks blockRegistry = DeferredRegister.createBlocks(FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister.Items itemRegistry = DeferredRegister.createItems(FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(BuiltInRegistries.MENU, FlansMod.MOD_ID);
     private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, FlansMod.FLANSMOD_ID);
@@ -163,38 +164,41 @@ public class FlansMod
     private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FlansMod.MOD_ID);
 
     // Blocks
-    public static final DeferredHolder<Block, ? extends Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, ? extends Block> gunWorkbench = blockRegistry.registerBlock("gunworkbench", GunWorkbenchBlock::new, () -> BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(3F, 6F)
         .sound(SoundType.METAL)
         .requiresCorrectToolForDrops()
-        .pushReaction(PushReaction.BLOCK))
-    );
-    public static final DeferredHolder<Block, ? extends Block> paintjobTable = blockRegistry.register("paintjobtable", () -> new PaintjobTableBlock(BlockBehaviour.Properties.of()
+        .pushReaction(PushReaction.BLOCK));
+    public static final DeferredHolder<Block, ? extends Block> paintjobTable = blockRegistry.registerBlock("paintjobtable", PaintjobTableBlock::new, () -> BlockBehaviour.Properties.of()
         .strength(2F, 4F)
-        .sound(SoundType.STONE))
-    );
-    public static final DeferredHolder<Block, ? extends Block> playerSpawner = blockRegistry.register("teams_player_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.PLAYER,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
-    public static final DeferredHolder<Block, ? extends Block> itemSpawner = blockRegistry.register("teams_item_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
-    public static final DeferredHolder<Block, ? extends Block> vehicleSpawner = blockRegistry.register("teams_vehicle_spawner", () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE,
-        BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
+        .sound(SoundType.STONE));
+    public static final DeferredHolder<Block, ? extends Block> playerSpawner = blockRegistry.registerBlock("teams_player_spawner",
+        properties -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.PLAYER, properties),
+        properties -> properties.mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion());
+    public static final DeferredHolder<Block, ? extends Block> itemSpawner = blockRegistry.registerBlock("teams_item_spawner",
+        properties -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM, properties),
+        properties -> properties.mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion());
+    public static final DeferredHolder<Block, ? extends Block> vehicleSpawner = blockRegistry.registerBlock("teams_vehicle_spawner",
+        properties -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE, properties),
+        properties -> properties.mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion());
 
     // Block Entities
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = blockEntityRegistry.register("paintjobtable", () -> new BlockEntityType<>(PaintjobTableBlockEntity::new, paintjobTable.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ItemHolderBlockEntity>> itemHolderBlockEntity = blockEntityRegistry.register("item_holder", () -> new BlockEntityType<>(ItemHolderBlockEntity::new, getRegisteredBlocks(EnumType.ITEM_HOLDER)));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = blockEntityRegistry.register("teams_spawner", () -> new BlockEntityType<>(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()));
 
     // Items
-    public static final DeferredHolder<Item, ? extends Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> paintjobTableItem = itemRegistry.register("paintjobtable", () -> new BlockItem(paintjobTable.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> playerSpawnerItem = itemRegistry.register("teams_player_spawner", () -> new BlockItem(playerSpawner.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> itemSpawnerItem = itemRegistry.register("teams_item_spawner", () -> new BlockItem(itemSpawner.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> vehicleSpawnerItem = itemRegistry.register("teams_vehicle_spawner", () -> new BlockItem(vehicleSpawner.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, ? extends Item> opStick = itemRegistry.register("op_stick", ItemOpStick::new);
-    public static final DeferredHolder<Item, ? extends Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
+    public static final DeferredHolder<Item, ? extends Item> rainbowPaintcan = itemRegistry.registerSimpleItem("rainbowpaintcan");
+    public static final DeferredHolder<Item, ? extends Item> gunWorkbenchItem = itemRegistry.registerSimpleBlockItem(gunWorkbench);
+    public static final DeferredHolder<Item, ? extends Item> paintjobTableItem = itemRegistry.registerSimpleBlockItem(paintjobTable);
+    public static final DeferredHolder<Item, ? extends Item> playerSpawnerItem = itemRegistry.registerSimpleBlockItem(playerSpawner);
+    public static final DeferredHolder<Item, ? extends Item> itemSpawnerItem = itemRegistry.registerSimpleBlockItem(itemSpawner);
+    public static final DeferredHolder<Item, ? extends Item> vehicleSpawnerItem = itemRegistry.registerSimpleBlockItem(vehicleSpawner);
+    public static final DeferredHolder<Item, ? extends Item> opStick = itemRegistry.registerItem("op_stick", ItemOpStick::new,
+        properties -> properties.stacksTo(1));
+    public static final DeferredHolder<Item, ? extends Item> flagpoleItem = itemRegistry.registerItem("flagpole", FlagpoleItem::new,
+        properties -> properties.stacksTo(16));
 
     // Menus
     public static final DeferredHolder<MenuType<?>, MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
@@ -227,62 +231,62 @@ public class FlansMod
         .clientTrackingRange(ModCommonConfig.bulletRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "bullet").toString())
+        .build(entityTypeKey("bullet"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Grenade>> grenadeEntity = entityRegistry.register("grenade", () -> EntityType.Builder.<Grenade>of(Grenade::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.grenadeRegistrationTrackingRange())
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
+        .build(entityTypeKey("grenade"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.deployedGunRegistrationTrackingRange())
         .updateInterval(5)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "deployed_gun").toString())
+        .build(entityTypeKey("deployed_gun"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<GunItemEntity>> gunItemEntity = entityRegistry.register("gun_item", () -> EntityType.Builder.<GunItemEntity>of(GunItemEntity::new, MobCategory.MISC)
         .sized(1F, 1F)
         .clientTrackingRange(16)
         .updateInterval(20)
-        .build("gun_item")
+        .build(entityTypeKey("gun_item"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.aaGunRegistrationTrackingRange())
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "aa_gun").toString())
+        .build(entityTypeKey("aa_gun"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Parachute>> parachuteEntity = entityRegistry.register("parachute", () -> EntityType.Builder.<Parachute>of(Parachute::new, MobCategory.MISC)
         .sized(Parachute.DEFAULT_HITBOX_WIDTH, Parachute.DEFAULT_HITBOX_HEIGHT)
         .clientTrackingRange(64)
         .updateInterval(2)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "parachute").toString())
+        .build(entityTypeKey("parachute"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Plane>> planeEntity = entityRegistry.register("plane", () -> EntityType.Builder.<Plane>of(Plane::new, MobCategory.MISC)
         .sized(3F, 2F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "plane").toString())
+        .build(entityTypeKey("plane"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Vehicle>> vehicleEntity = entityRegistry.register("vehicle", () -> EntityType.Builder.<Vehicle>of(Vehicle::new, MobCategory.MISC)
         .sized(2.5F, 2F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "vehicle").toString())
+        .build(entityTypeKey("vehicle"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Mecha>> mechaEntity = entityRegistry.register("mecha", () -> EntityType.Builder.<Mecha>of(Mecha::new, MobCategory.MISC)
         .sized(2F, 4F)
         .clientTrackingRange(128)
         .updateInterval(1)
         .setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "mecha").toString())
+        .build(entityTypeKey("mecha"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
         .sized(0.6F, 0.6F)
@@ -291,7 +295,7 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_seat").toString())
+        .build(entityTypeKey("driveable_seat"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
         .sized(0.75F, 0.75F)
@@ -300,21 +304,26 @@ public class FlansMod
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "driveable_wheel").toString())
+        .build(entityTypeKey("driveable_wheel"))
     );
     public static final DeferredHolder<EntityType<?>, EntityType<Flagpole>> flagpoleEntity = entityRegistry.register("flagpole", () -> EntityType.Builder.<Flagpole>of(Flagpole::new, MobCategory.MISC)
         .sized(0.75F, 2.5F).clientTrackingRange(64).updateInterval(10)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flagpole").toString()));
+        .build(entityTypeKey("flagpole")));
     public static final DeferredHolder<EntityType<?>, EntityType<Flag>> flagEntity = entityRegistry.register("flag", () -> EntityType.Builder.<Flag>of(Flag::new, MobCategory.MISC)
         .sized(0.75F, 0.75F).clientTrackingRange(64).updateInterval(2)
-        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flag").toString()));
+        .build(entityTypeKey("flag")));
+
+    private static ResourceKey<EntityType<?>> entityTypeKey(String path)
+    {
+        return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, path));
+    }
 
     private static final Map<EnumType, List<DeferredHolder<Item, ? extends Item>>> items = new EnumMap<>(EnumType.class);
     @Getter
     private static final Map<EnumType, Map<String, DeferredHolder<Block, ? extends Block>>> blocks = new EnumMap<>(EnumType.class);
-    private static final Map<ResourceLocation, DeferredHolder<SoundEvent, SoundEvent>> sounds = new HashMap<>();
+    private static final Map<Identifier, DeferredHolder<SoundEvent, SoundEvent>> sounds = new HashMap<>();
     @Getter
-    private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
+    private static final Map<Identifier, TypeFile> soundsOrigins = new HashMap<>();
 
     public FlansMod(IEventBus modEventBus, ModContainer modContainer)
     {
@@ -361,7 +370,7 @@ public class FlansMod
         if (!ModList.get().isLoaded(PACKS_ID))
             return;
 
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             log.info("Flan's Mod Ultimate Packs Extractor found, but extraction is disabled outside production. Continuing without waiting.");
             return;
@@ -441,13 +450,13 @@ public class FlansMod
     @SuppressWarnings("unchecked") // Java cannot create a generic ResourceKey varargs array directly.
     private static void registerCreativeModeTabs()
     {
-        ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MOD_ID, CreativeTabs.TAB_GENERAL));
+        ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MOD_ID, CreativeTabs.TAB_GENERAL));
         ResourceKey<CreativeModeTab>[] creativeTabsFlansModReloadedKey = new ResourceKey[]
         {
-            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_guns")),
-            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_modifiers")),
-            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_parts")),
-            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_bullets"))
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_guns")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_modifiers")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_parts")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(FLANSMOD_ID, "creative_tab_bullets"))
         };
 
         List<DeferredHolder<Item, ? extends Item>> generalItemList = new ArrayList<>();
@@ -512,19 +521,19 @@ public class FlansMod
         registerSound(SOUND_SKULLBOSSSPAWN, null);
     }
 
-    public static void registerItem(String itemName, EnumType type, Supplier<? extends Item> initItem)
+    public static void registerItem(String itemName, EnumType type, Function<Item.Properties, ? extends Item> initItem)
     {
-        items.get(type).add(itemRegistry.register(itemName, initItem));
+        items.get(type).add(itemRegistry.registerItem(itemName, initItem));
     }
 
-    public static void registerBlock(String blockName, EnumType type, Supplier<? extends Block> initItem)
+    public static void registerBlock(String blockName, EnumType type, Function<BlockBehaviour.Properties, ? extends Block> initBlock)
     {
-        blocks.get(type).put(blockName, blockRegistry.register(blockName, initItem));
+        blocks.get(type).put(blockName, blockRegistry.registerBlock(blockName, initBlock));
     }
 
     public static void registerSound(String soundName, @Nullable TypeFile typeFile)
     {
-        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
+        Identifier rl = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
         if (sounds.containsKey(rl))
             return;
 
@@ -553,7 +562,7 @@ public class FlansMod
 
     public static Optional<DeferredHolder<SoundEvent, SoundEvent>> getSoundEvent(String soundName)
     {
-        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
+        Identifier rl = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
         return Optional.ofNullable(sounds.get(rl));
     }
 }

@@ -18,7 +18,9 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.particles.PowerParticleOption;
+import net.minecraft.core.particles.SpellParticleOption;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -152,7 +154,7 @@ public final class ParticleHelper
         double distantDensity = config == null ? 0.25D : config.distantParticleDensity;
         int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
 
-        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
+        Vec3 camera = minecraft.gameRenderer.getMainCamera().position();
         double dx = x - camera.x;
         double dy = y - camera.y;
         double dz = z - camera.z;
@@ -166,7 +168,7 @@ public final class ParticleHelper
             double distance = Math.sqrt(distanceSquared);
             double progress = (distance - fullDensityDistance) / (renderDistance - fullDensityDistance);
             double density = 1D + (distantDensity - 1D) * progress;
-            if (level.random.nextDouble() > density)
+            if (level.getRandom().nextDouble() > density)
                 return false;
         }
 
@@ -287,8 +289,8 @@ public final class ParticleHelper
             case FlanParticles.MAGIC_CRIT -> Optional.of(ParticleTypes.ENCHANTED_HIT);
             case FlanParticles.SMOKE -> Optional.of(ParticleTypes.SMOKE);
             case FlanParticles.LARGE_SMOKE -> Optional.of(ParticleTypes.LARGE_SMOKE);
-            case FlanParticles.SPELL -> Optional.of(ParticleTypes.EFFECT);
-            case FlanParticles.INSTANT_SPELL -> Optional.of(ParticleTypes.INSTANT_EFFECT);
+            case FlanParticles.SPELL -> Optional.of(SpellParticleOption.create(ParticleTypes.EFFECT, -1, 1F));
+            case FlanParticles.INSTANT_SPELL -> Optional.of(SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, -1, 1F));
             case FlanParticles.MOB_SPELL -> Optional.of(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 1F, 1F, 1F));
             case FlanParticles.MOB_SPELL_AMBIENT -> Optional.of(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.5F, 0.5F, 0.5F));
             case FlanParticles.WITCH_MAGIC -> Optional.of(ParticleTypes.WITCH);
@@ -308,7 +310,7 @@ public final class ParticleHelper
             case FlanParticles.BARRIER -> Optional.of(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, Blocks.BARRIER.defaultBlockState()));
             case FlanParticles.DROPLET -> Optional.of(ParticleTypes.FALLING_WATER);
             case FlanParticles.MOB_APPEARANCE -> Optional.of(ParticleTypes.ELDER_GUARDIAN);
-            case FlanParticles.DRAGON_BREATH -> Optional.of(ParticleTypes.DRAGON_BREATH);
+            case FlanParticles.DRAGON_BREATH -> Optional.of(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1F));
             case FlanParticles.END_ROD -> Optional.of(ParticleTypes.END_ROD);
             case FlanParticles.DAMAGE_INDICATOR -> Optional.of(ParticleTypes.DAMAGE_INDICATOR);
             case FlanParticles.SWEEP_ATTACK -> Optional.of(ParticleTypes.SWEEP_ATTACK);
@@ -324,14 +326,14 @@ public final class ParticleHelper
         // Registered particle IDs
         if (s.contains(":"))
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(s))
-                .map(BuiltInRegistries.PARTICLE_TYPE::get)
+            return Optional.ofNullable(Identifier.tryParse(s))
+                .map(BuiltInRegistries.PARTICLE_TYPE::getValue)
                 .filter(ParticleOptions.class::isInstance)
                 .map(ParticleOptions.class::cast);
         }
 
-        return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s))
-            .map(BuiltInRegistries.PARTICLE_TYPE::get)
+        return Optional.of(Identifier.fromNamespaceAndPath("minecraft", s))
+            .map(BuiltInRegistries.PARTICLE_TYPE::getValue)
             .filter(ParticleOptions.class::isInstance)
             .map(ParticleOptions.class::cast);
     }

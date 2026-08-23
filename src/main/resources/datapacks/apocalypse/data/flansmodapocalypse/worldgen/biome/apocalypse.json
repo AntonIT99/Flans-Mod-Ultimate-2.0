@@ -2,16 +2,18 @@
   "has_precipitation": false,
   "temperature": 2.0,
   "downfall": 0.0,
+  "attributes": {
+    "minecraft:visual/fog_color": "#c692a8",
+    "minecraft:visual/sky_color": "#c0d8ff",
+    "minecraft:visual/water_fog_color": "#050533"
+  },
   "effects": {
-    "sky_color": 12638463,
-    "fog_color": 13013672,
-    "water_color": 894731,
-    "water_fog_color": 329011,
-    "grass_color": 10596608,
-    "foliage_color": 9470285
+    "water_color": "#0da70b",
+    "grass_color": "#a1b100",
+    "foliage_color": "#90814d"
   },
   "spawners": {},
   "spawn_costs": {},
-  "carvers": {},
+  "carvers": [],
   "features": []
 }

@@ -48,7 +48,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -149,7 +149,7 @@ public final class PacketHandler
     {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer sender)
-                payload.packet().handleServerSide(sender, sender.serverLevel());
+                payload.packet().handleServerSide(sender, sender.level());
         });
     }
 
@@ -184,7 +184,7 @@ public final class PacketHandler
 
     private record ClientboundPayload(IClientPacket packet) implements CustomPacketPayload
     {
-        private static final Type<ClientboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "clientbound"));
+        private static final Type<ClientboundPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "clientbound"));
         private static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPayload> STREAM_CODEC = StreamCodec.ofMember(
             (payload, buffer) -> encodePacket(buffer, payload.packet, CLIENT_PACKET_IDS),
             buffer -> new ClientboundPayload(decodePacket(buffer, CLIENT_PACKET_TYPES))
@@ -199,7 +199,7 @@ public final class PacketHandler
 
     private record ServerboundPayload(IServerPacket packet) implements CustomPacketPayload
     {
-        private static final Type<ServerboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "serverbound"));
+        private static final Type<ServerboundPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "serverbound"));
         private static final StreamCodec<RegistryFriendlyByteBuf, ServerboundPayload> STREAM_CODEC = StreamCodec.ofMember(
             (payload, buffer) -> encodePacket(buffer, payload.packet, SERVER_PACKET_IDS),
             buffer -> new ServerboundPayload(decodePacket(buffer, SERVER_PACKET_TYPES))
@@ -215,7 +215,7 @@ public final class PacketHandler
     public static void sendToServer(IServerPacket message)
     {
         preparePacketTypes();
-        PacketDistributor.sendToServer(new ServerboundPayload(message));
+        net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(new ServerboundPayload(message));
     }
 
     public static void sendTo(IClientPacket message, ServerPlayer player)

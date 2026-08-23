@@ -111,7 +111,7 @@ public class PlayerClass extends InfoType
         {
             gunItem.getConfigType().checkForTags(stack);
             CompoundTag gunData = ItemStackData.copy(stack);
-            CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
+            CompoundTag attachments = gunData.getCompoundOrEmpty(GunItem.NBT_ATTACHMENTS);
             int generic = 0;
             for (int i = 1; i < parts.length; i++)
             {

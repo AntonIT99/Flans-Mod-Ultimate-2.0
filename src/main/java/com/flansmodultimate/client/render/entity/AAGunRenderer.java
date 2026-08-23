@@ -8,50 +8,84 @@ import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 
 public class AAGunRenderer extends FlanEntityRenderer<AAGun>
 {
-    public AAGunRenderer(EntityRendererProvider.Context ctx)
+    public AAGunRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
+
+    @Override
+    protected AABB getBoundingBoxForCulling(AAGun aaGun)
     {
-        super(ctx);
+        double range = AAGun.getRenderDistance();
+        return new AABB(aaGun.getX() - range, aaGun.getY() - range, aaGun.getZ() - range,
+            aaGun.getX() + range, aaGun.getY() + range, aaGun.getZ() + range);
     }
 
     @Override
-    public void render(@NotNull AAGun aaGun, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    public void extractRenderState(AAGun aaGun, State state, float partialTicks)
     {
+        super.extractRenderState(aaGun, state, partialTicks);
         AAGunType type = aaGun.getConfigType();
-        if (type == null)
+        if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelAAGun model))
+        {
+            state.customData = null;
             return;
+        }
 
-        if (!(ModelCache.getOrLoadTypeModel(type) instanceof ModelAAGun model))
-            return;
-
-        float red = getRed(type);
-        float green = getGreen(type);
-        float blue = getBlue(type);
-        float modelScale = type.getModelScale();
-        ResourceLocation texture = type.getTexture();
-        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
-        boolean cull = ModClientConfig.get().useCullingRendering(type);
-
-        poseStack.pushPose();
-
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
-
-        float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
-        poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
-
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
-
-        poseStack.popPose();
+        int barrelCount = Math.max(0, type.getNumBarrels());
+        boolean[] hasAmmo = new boolean[barrelCount];
+        for (int i = 0; i < barrelCount; i++)
+            hasAmmo[i] = aaGun.hasAmmo(i);
+        state.customData = new RenderData(model, type, Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getGunYaw()),
+            aaGun.getGunPitch(), aaGun.getBarrelRecoil().clone(), hasAmmo);
     }
+
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera)
+    {
+        if (!(state.customData instanceof RenderData data))
+            return;
+
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(data.type);
+        boolean cull = ModClientConfig.get().useCullingRendering(data.type);
+        float modelScale = data.type.getModelScale();
+        poseStack.pushPose();
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(data.model))
+        {
+            collector.submitCustomGeometry(poseStack, renderPass.getRenderType(state.texture, translucent, cull), (pose, vertices) -> {
+                PoseStack deferred = poseStack(pose);
+                data.model.renderBase(deferred, vertices, state.lightCoords, OverlayTexture.NO_OVERLAY,
+                    state.red, state.green, state.blue, state.alpha, modelScale, renderPass);
+            });
+        }
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(270F - data.gunYaw));
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(data.model))
+        {
+            collector.submitCustomGeometry(poseStack, renderPass.getRenderType(state.texture, translucent, cull), (pose, vertices) -> {
+                PoseStack deferred = poseStack(pose);
+                data.model.renderGun(data.gunPitch, data.barrelRecoil, data.hasAmmo, deferred, vertices,
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, state.red, state.green, state.blue, state.alpha,
+                    modelScale, renderPass);
+            });
+        }
+        poseStack.popPose();
+        submitEntityFeatures(state, poseStack, collector, camera);
+    }
+
+    private static PoseStack poseStack(PoseStack.Pose pose)
+    {
+        PoseStack result = new PoseStack();
+        result.last().set(pose);
+        return result;
+    }
+
+    private record RenderData(ModelAAGun model, AAGunType type, float gunYaw, float gunPitch,
+                              float[] barrelRecoil, boolean[] hasAmmo) { }
 }

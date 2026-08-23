@@ -3,7 +3,7 @@
     "description": {
       "text": "Flan's Mod Ultimate resources"
     },
-    "pack_format": 48,
-    "supported_formats": [34, 48]
+    "min_format": [84, 0],
+    "max_format": [101, 1]
   }
 }

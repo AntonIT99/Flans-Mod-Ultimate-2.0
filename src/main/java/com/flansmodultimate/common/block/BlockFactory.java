@@ -8,18 +8,20 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BlockFactory
 {
     @Nullable
-    public static Block createBlock(InfoType config)
+    public static Block createBlock(InfoType config, BlockBehaviour.Properties properties)
     {
         try
         {
             Class<? extends InfoType> typeClass = config.getType().getTypeClass();
             Class<? extends IFlanBlock<?>> blockClass = config.getType().getBlockClass();
-            return blockClass.getConstructor(typeClass).newInstance(typeClass.cast(config)).asBlock();
+            return blockClass.getConstructor(typeClass, BlockBehaviour.Properties.class)
+                .newInstance(typeClass.cast(config), properties).asBlock();
         }
         catch (Exception e)
         {

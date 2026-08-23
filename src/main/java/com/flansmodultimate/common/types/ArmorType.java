@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.ArmorItem;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +21,7 @@ public class ArmorType extends InfoType
 
     protected String rawArmorItemType = StringUtils.EMPTY;
     @Getter
-    protected ArmorItem.Type armorItemType;
+    protected net.minecraft.world.item.equipment.ArmorType armorItemType;
     /** The amount of damage to absorb. From 0 to 1. Stacks additively between armour pieces */
     protected double damageReductionDefence;
     protected boolean readDamageReductionDefence;
@@ -140,20 +138,20 @@ public class ArmorType extends InfoType
         switch (rawArmorItemType.toLowerCase(Locale.ROOT))
         {
             case "helmet", "hat", "head":
-                armorItemType = ArmorItem.Type.HELMET;
+                armorItemType = net.minecraft.world.item.equipment.ArmorType.HELMET;
                 break;
             case "chestplate", "chest", "body":
-                armorItemType = ArmorItem.Type.CHESTPLATE;
+                armorItemType = net.minecraft.world.item.equipment.ArmorType.CHESTPLATE;
                 break;
             case "leggings", "legs", "pants":
-                armorItemType = ArmorItem.Type.LEGGINGS;
+                armorItemType = net.minecraft.world.item.equipment.ArmorType.LEGGINGS;
                 break;
             case "boots", "shoes", "feet":
-                armorItemType = ArmorItem.Type.BOOTS;
+                armorItemType = net.minecraft.world.item.equipment.ArmorType.BOOTS;
                 break;
             default:
                 FlansMod.log.error("Armor Type '{}' not recognized! Defaulting to Helmet", rawArmorItemType);
-                armorItemType = ArmorItem.Type.HELMET;
+                armorItemType = net.minecraft.world.item.equipment.ArmorType.HELMET;
                 break;
         }
     }
@@ -161,7 +159,9 @@ public class ArmorType extends InfoType
     @Override
     protected String getTexturePath(String textureName)
     {
-        return "textures/" + type.getTextureFolderName() + "/" + textureName + (armorItemType != ArmorItem.Type.LEGGINGS ? "_1" : "_2") + FileUtils.PNG_EXTENSION;
+        return "textures/" + type.getTextureFolderName() + "/" + textureName
+            + (armorItemType != net.minecraft.world.item.equipment.ArmorType.LEGGINGS ? "_1" : "_2")
+            + FileUtils.PNG_EXTENSION;
     }
 
     public boolean hasDurability()

@@ -20,9 +20,9 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     @Getter
     private final MechaItemType configType;
 
-    public MechaAddonItem(MechaItemType configType)
+    public MechaAddonItem(MechaItemType configType, Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configType;
     }
 
@@ -51,9 +51,11 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
-                                @NotNull TooltipFlag advanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag advanced)
     {
+        List<Component> tooltip = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltip);
     }
 }

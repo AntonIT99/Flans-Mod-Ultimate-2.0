@@ -1,16 +1,14 @@
 package com.flansmodultimate.client.particle;
 
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -22,7 +20,7 @@ import java.util.List;
 /**
  * 1.20.1 equivalent of 1.7.10's EntityDiggingFX and EntityBlockDustFX.
  */
-public final class LegacyBlockParticle extends TextureSheetParticle
+public final class LegacyBlockParticle extends SingleQuadParticle
 {
     public enum Variant
     {
@@ -37,9 +35,7 @@ public final class LegacyBlockParticle extends TextureSheetParticle
                                 double x, double y, double z, double vx, double vy, double vz)
     {
         // EntityDiggingFX retained EntityFX's randomized and normalized speed.
-        super(level, x, y, z, vx, vy, vz);
-
-        setSprite(selectLegacySprite(state, sourcePos));
+        super(level, x, y, z, vx, vy, vz, selectLegacySprite(level, state, sourcePos));
         gravity = 1.0F;
         rCol = 0.6F;
         gCol = 0.6F;
@@ -62,25 +58,23 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         return new LegacyBlockParticle(level, state, sourcePos, variant, x, y, z, vx, vy, vz);
     }
 
-    private TextureAtlasSprite selectLegacySprite(BlockState state, BlockPos sourcePos)
+    private static TextureAtlasSprite selectLegacySprite(ClientLevel level, BlockState state, BlockPos sourcePos)
     {
         Minecraft minecraft = Minecraft.getInstance();
-        BakedModel model = minecraft.getBlockRenderer().getBlockModel(state);
-        ModelData modelData = level.getModelDataManager().getAt(sourcePos);
-        if (modelData == null)
-            modelData = ModelData.EMPTY;
-        modelData = model.getModelData(level, sourcePos, state, modelData);
+        BlockStateModel model = minecraft.getModelManager().getBlockStateModelSet().get(state);
+        List<BlockStateModelPart> parts = new java.util.ArrayList<>();
+        model.collectParts(level, sourcePos, state, level.getRandom(), parts);
 
         // EntityDiggingFX chose one of the six block faces at random. Modern
         // models expose face quads rather than Block.getIcon(side, metadata).
-        Direction side = Direction.from3DDataValue(random.nextInt(6));
-        List<BakedQuad> quads = model.getQuads(state, side, random, modelData, (RenderType)null);
+        Direction side = Direction.from3DDataValue(level.getRandom().nextInt(6));
+        List<BakedQuad> quads = parts.stream().flatMap(part -> part.getQuads(side).stream()).toList();
         if (quads.isEmpty())
-            quads = model.getQuads(state, null, random, modelData, (RenderType)null);
+            quads = parts.stream().flatMap(part -> part.getQuads(null).stream()).toList();
 
         return quads.isEmpty()
-            ? model.getParticleIcon(modelData)
-            : quads.get(random.nextInt(quads.size())).getSprite();
+            ? model.particleMaterial(level, sourcePos, state).sprite()
+            : quads.get(level.getRandom().nextInt(quads.size())).materialInfo().sprite();
     }
 
     private void applyLegacyRenderColor(BlockState state, BlockPos sourcePos)
@@ -89,9 +83,10 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         if (state.is(Blocks.GRASS_BLOCK))
             return;
 
-        int color = Minecraft.getInstance().getBlockColors().getColor(state, level, sourcePos);
-        if (color != -1)
+        var tintSource = Minecraft.getInstance().getBlockColors().getTintSource(state, 0);
+        if (tintSource != null)
         {
+            int color = tintSource.colorAsTerrainParticle(state, level, sourcePos);
             rCol *= (float)(color >> 16 & 255) / 255.0F;
             gCol *= (float)(color >> 8 & 255) / 255.0F;
             bCol *= (float)(color & 255) / 255.0F;
@@ -100,7 +95,7 @@ public final class LegacyBlockParticle extends TextureSheetParticle
 
     @Override
     @NotNull
-    public ParticleRenderType getRenderType()
+    protected Layer getLayer()
     {
         return LegacyParticleRenderTypes.TERRAIN;
     }
@@ -108,24 +103,24 @@ public final class LegacyBlockParticle extends TextureSheetParticle
     @Override
     protected float getU0()
     {
-        return sprite.getU((uo + 1.0F) / 4.0F * 16.0F);
+        return sprite.getU((uo + 1.0F) / 4.0F);
     }
 
     @Override
     protected float getU1()
     {
-        return sprite.getU(uo / 4.0F * 16.0F);
+        return sprite.getU(uo / 4.0F);
     }
 
     @Override
     protected float getV0()
     {
-        return sprite.getV(vo / 4.0F * 16.0F);
+        return sprite.getV(vo / 4.0F);
     }
 
     @Override
     protected float getV1()
     {
-        return sprite.getV((vo + 1.0F) / 4.0F * 16.0F);
+        return sprite.getV((vo + 1.0F) / 4.0F);
     }
 }

@@ -1,212 +1,165 @@
 package com.flansmodultimate.client.render;
 
-import org.lwjgl.opengl.GL11C;
-
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.flansmodultimate.FlansMod;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
-import net.minecraft.Util;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
-
+import java.util.List;
 import java.util.function.Function;
 
+/** Render pipelines used by imported legacy models. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CustomRenderType
+public final class CustomRenderType
 {
-    private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
-    private record TexCullKey(ResourceLocation texture, boolean cull) {}
+    private record TexDepthCullKey(Identifier texture, boolean depthWrite, boolean cull) {}
+    private record TexCullKey(Identifier texture, boolean cull) {}
 
-    /** Standard alpha blending */
-    private static final RenderStateShard.TransparencyStateShard EMISSIVE_ALPHA_TRANSPARENCY =
-        new RenderStateShard.TransparencyStateShard(
-            "emissive_alpha_transparency",
-            () -> {
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-            },
-            () -> {
-                RenderSystem.disableBlend();
-                RenderSystem.defaultBlendFunc();
-            }
-        );
+    private static final BlendFunction LEGACY_ADDITIVE = new BlendFunction(
+        SourceFactor.SRC_ALPHA, DestFactor.ONE, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
 
-    /** Additive blending */
-    private static final RenderStateShard.TransparencyStateShard EMISSIVE_ADDITIVE_TRANSPARENCY =
-        new RenderStateShard.TransparencyStateShard(
-            "emissive_additive_transparency",
-            () -> {
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-            },
-            () -> {
-                RenderSystem.disableBlend();
-                RenderSystem.defaultBlendFunc();
-            }
-        );
+    private static final RenderPipeline EMISSIVE_ALPHA_DEPTH = emissivePipeline("emissive_alpha_depth", BlendFunction.TRANSLUCENT, true, false);
+    private static final RenderPipeline EMISSIVE_ALPHA_DEPTH_CULL = emissivePipeline("emissive_alpha_depth_cull", BlendFunction.TRANSLUCENT, true, true);
+    private static final RenderPipeline EMISSIVE_ALPHA_NO_DEPTH = emissivePipeline("emissive_alpha_no_depth", BlendFunction.TRANSLUCENT, false, false);
+    private static final RenderPipeline EMISSIVE_ALPHA_NO_DEPTH_CULL = emissivePipeline("emissive_alpha_no_depth_cull", BlendFunction.TRANSLUCENT, false, true);
+    private static final RenderPipeline EMISSIVE_ADDITIVE_DEPTH = emissivePipeline("emissive_additive_depth", LEGACY_ADDITIVE, true, false);
+    private static final RenderPipeline EMISSIVE_ADDITIVE_DEPTH_CULL = emissivePipeline("emissive_additive_depth_cull", LEGACY_ADDITIVE, true, true);
+    private static final RenderPipeline EMISSIVE_ADDITIVE_NO_DEPTH = emissivePipeline("emissive_additive_no_depth", LEGACY_ADDITIVE, false, false);
+    private static final RenderPipeline EMISSIVE_ADDITIVE_NO_DEPTH_CULL = emissivePipeline("emissive_additive_no_depth_cull", LEGACY_ADDITIVE, false, true);
+    private static final RenderPipeline ENTITY_TRANSLUCENT_CULL = entityTranslucentCullPipeline();
+    private static final RenderPipeline ARMOR_CUTOUT_CULL = armorPipeline("armor_cutout_cull", false);
+    private static final RenderPipeline ARMOR_TRANSLUCENT_CULL = armorPipeline("armor_translucent_cull", true);
+    private static final RenderPipeline PARTICLE_PREMULTIPLIED = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
+        .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/particle_premultiplied"))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA))
+        .build();
 
-    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
-    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
-    private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_UNSORTED = Util.memoize(key -> createEntityTranslucentUnsorted(key.texture(), key.cull()));
-    private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key -> createArmorCutout(key.texture(), key.cull()));
-    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), true));
-    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT_UNSORTED = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), false));
+    private static final List<RenderPipeline> PIPELINES = List.of(
+        EMISSIVE_ALPHA_DEPTH, EMISSIVE_ALPHA_DEPTH_CULL,
+        EMISSIVE_ALPHA_NO_DEPTH, EMISSIVE_ALPHA_NO_DEPTH_CULL,
+        EMISSIVE_ADDITIVE_DEPTH, EMISSIVE_ADDITIVE_DEPTH_CULL,
+        EMISSIVE_ADDITIVE_NO_DEPTH, EMISSIVE_ADDITIVE_NO_DEPTH_CULL,
+        ENTITY_TRANSLUCENT_CULL, ARMOR_CUTOUT_CULL, ARMOR_TRANSLUCENT_CULL,
+        PARTICLE_PREMULTIPLIED);
 
-    private static final RenderStateShard.LayeringStateShard ARMOR_VIEW_OFFSET_LAYERING =
-        new RenderStateShard.LayeringStateShard(
-            "armor_view_offset_layering",
-            () -> {
-                var poseStack = RenderSystem.getModelViewStack();
-                poseStack.pushMatrix();
-                poseStack.scale(0.99975586F, 0.99975586F, 0.99975586F);
-                RenderSystem.applyModelViewMatrix();
-            },
-            () -> {
-                var poseStack = RenderSystem.getModelViewStack();
-                poseStack.popMatrix();
-                RenderSystem.applyModelViewMatrix();
-            }
-        );
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key ->
+        createEntityType("entity_emissive_alpha", key.texture(), selectEmissivePipeline(key, false), false));
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key ->
+        createEntityType("entity_emissive_additive", key.texture(), selectEmissivePipeline(key, true), false));
+    private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_UNSORTED = Util.memoize(key ->
+        createEntityType("entity_translucent_unsorted", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, false));
+    private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_SORTED = Util.memoize(key ->
+        createEntityType("entity_translucent", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, true));
+    private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key ->
+        key.cull() ? createArmorType("armor_cutout_cull", key.texture(), ARMOR_CUTOUT_CULL, false) : RenderTypes.armorCutoutNoCull(key.texture()));
+    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key ->
+        key.cull() ? createArmorType("armor_translucent_cull", key.texture(), ARMOR_TRANSLUCENT_CULL, true) : RenderTypes.armorTranslucent(key.texture()));
+    private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT_UNSORTED = Util.memoize(key ->
+        key.cull() ? createArmorType("armor_translucent_unsorted_cull", key.texture(), ARMOR_TRANSLUCENT_CULL, false)
+            : createArmorType("armor_translucent_unsorted", key.texture(), RenderPipelines.ARMOR_TRANSLUCENT, false));
 
-    private static RenderType createEntityEmissive(ResourceLocation texture, boolean depthWrite, boolean cull, RenderStateShard.TransparencyStateShard transparency, String debugName)
+    public static void registerPipelines(RegisterRenderPipelinesEvent event)
     {
-        RenderStateShard.WriteMaskStateShard writeMask = new RenderStateShard.WriteMaskStateShard(true, depthWrite);
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexLightmapShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-            .setTransparencyState(transparency)
-            .setCullState(new RenderStateShard.CullStateShard(cull))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .setWriteMaskState(writeMask)
-            .setDepthTestState(new RenderStateShard.DepthTestStateShard("<=", GL11C.GL_LEQUAL))
-            .createCompositeState(true);
-
-        return RenderType.create(cull ? debugName + "_cull" : debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
+        PIPELINES.forEach(event::registerPipeline);
     }
 
-    private static RenderType createEntityTranslucentUnsorted(ResourceLocation texture, boolean cull)
+    private static RenderPipeline emissivePipeline(String name, BlendFunction blend, boolean depthWrite, boolean cull)
     {
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
-            .setCullState(new RenderStateShard.CullStateShard(cull))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .createCompositeState(true);
-
-        // The final argument disables quad sorting on upload. High-poly legacy models
-        // are mostly opaque and pay a disproportionate CPU cost for that sorting when
-        // their complete texture is rendered through an alpha-blended layer.
-        return RenderType.create(cull ? "entity_translucent_unsorted_cull" : "entity_translucent_unsorted",
-            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, state);
+        return RenderPipeline.builder(RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/" + name))
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("PER_FACE_LIGHTING")
+            .withSampler("Sampler1")
+            .withColorTargetState(new ColorTargetState(blend))
+            .withCull(cull)
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, depthWrite))
+            .build();
     }
 
-    private static RenderType createArmorCutout(ResourceLocation texture, boolean cull)
+    private static RenderPipeline entityTranslucentCullPipeline()
     {
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeArmorCutoutNoCullShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-            .setCullState(new RenderStateShard.CullStateShard(cull))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
-            .createCompositeState(true);
-
-        return RenderType.create(cull ? "armor_cutout_cull" : "armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, state);
+        return RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/entity_translucent_cull"))
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("PER_FACE_LIGHTING")
+            .withSampler("Sampler1")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .build();
     }
 
-    private static RenderType createArmorTranslucent(ResourceLocation texture, boolean cull, boolean sortOnUpload)
+    private static RenderPipeline armorPipeline(String name, boolean translucent)
     {
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeEntityTranslucentShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-            .setTransparencyState(EMISSIVE_ALPHA_TRANSPARENCY)
-            .setCullState(new RenderStateShard.CullStateShard(cull))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .setLayeringState(ARMOR_VIEW_OFFSET_LAYERING)
-            .createCompositeState(true);
-
-        String debugName = sortOnUpload ? "armor_translucent" : "armor_translucent_unsorted";
-        return RenderType.create(cull ? debugName + "_cull" : debugName + "_no_cull",
-            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, sortOnUpload, state);
+        RenderPipeline.Builder builder = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/" + name))
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("NO_OVERLAY")
+            .withShaderDefine("PER_FACE_LIGHTING");
+        if (translucent)
+            builder.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT));
+        return builder.build();
     }
 
-    /** Emissive alpha-blended layer (writes depth) */
-    public static RenderType entityEmissiveAlpha(ResourceLocation tex)
+    private static RenderPipeline selectEmissivePipeline(TexDepthCullKey key, boolean additive)
     {
-        return entityEmissiveAlpha(tex, false);
+        if (additive)
+            return key.depthWrite() ? (key.cull() ? EMISSIVE_ADDITIVE_DEPTH_CULL : EMISSIVE_ADDITIVE_DEPTH)
+                : (key.cull() ? EMISSIVE_ADDITIVE_NO_DEPTH_CULL : EMISSIVE_ADDITIVE_NO_DEPTH);
+        return key.depthWrite() ? (key.cull() ? EMISSIVE_ALPHA_DEPTH_CULL : EMISSIVE_ALPHA_DEPTH)
+            : (key.cull() ? EMISSIVE_ALPHA_NO_DEPTH_CULL : EMISSIVE_ALPHA_NO_DEPTH);
     }
 
-    public static RenderType entityEmissiveAlpha(ResourceLocation tex, boolean cull)
+    private static RenderType createEntityType(String name, Identifier texture, RenderPipeline pipeline, boolean sortOnUpload)
     {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, true, cull));
+        RenderSetup.RenderSetupBuilder setup = RenderSetup.builder(pipeline)
+            .withTexture("Sampler0", texture)
+            .useOverlay()
+            .affectsCrumbling()
+            .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE);
+        if (sortOnUpload)
+            setup.sortOnUpload();
+        return RenderType.create(name, setup.createRenderSetup());
     }
 
-    /** Emissive alpha-blended layer (does NOT write depth) */
-    public static RenderType entityEmissiveAlphaNoDepthWrite(ResourceLocation tex)
+    private static RenderType createArmorType(String name, Identifier texture, RenderPipeline pipeline, boolean sortOnUpload)
     {
-        return entityEmissiveAlphaNoDepthWrite(tex, false);
+        RenderSetup.RenderSetupBuilder setup = RenderSetup.builder(pipeline)
+            .withTexture("Sampler0", texture)
+            .useLightmap()
+            .useOverlay()
+            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE);
+        if (sortOnUpload)
+            setup.sortOnUpload();
+        return RenderType.create(name, setup.createRenderSetup());
     }
 
-    public static RenderType entityEmissiveAlphaNoDepthWrite(ResourceLocation tex, boolean cull)
-    {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, false, cull));
-    }
-
-    /** Emissive additive layer (writes depth) */
-    public static RenderType entityEmissiveAdditive(ResourceLocation tex)
-    {
-        return entityEmissiveAdditive(tex, false);
-    }
-
-    public static RenderType entityEmissiveAdditive(ResourceLocation tex, boolean cull)
-    {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, true, cull));
-    }
-
-    /** Emissive additive layer (does NOT write depth) */
-    public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex)
-    {
-        return entityEmissiveAdditiveNoDepthWrite(tex, false);
-    }
-
-    public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex, boolean cull)
-    {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, false, cull));
-    }
-
-    public static RenderType entityTranslucentUnsorted(ResourceLocation tex, boolean cull)
-    {
-        return ENTITY_TRANSLUCENT_UNSORTED.apply(new TexCullKey(tex, cull));
-    }
-
-    public static RenderType armorCutout(ResourceLocation tex, boolean cull)
-    {
-        return ARMOR_CUTOUT.apply(new TexCullKey(tex, cull));
-    }
-
-    public static RenderType armorTranslucent(ResourceLocation tex, boolean cull)
-    {
-        return ARMOR_TRANSLUCENT.apply(new TexCullKey(tex, cull));
-    }
-
-    public static RenderType armorTranslucentUnsorted(ResourceLocation tex, boolean cull)
-    {
-        return ARMOR_TRANSLUCENT_UNSORTED.apply(new TexCullKey(tex, cull));
-    }
-
-    /** Armor layer render type with armor z-offset and entity-style partial alpha blending */
-    public static RenderType armorTranslucentNoCull(ResourceLocation tex)
-    {
-        return armorTranslucent(tex, false);
-    }
+    public static RenderType entityEmissiveAlpha(Identifier texture) { return entityEmissiveAlpha(texture, false); }
+    public static RenderType entityEmissiveAlpha(Identifier texture, boolean cull) { return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(texture, true, cull)); }
+    public static RenderType entityEmissiveAlphaNoDepthWrite(Identifier texture) { return entityEmissiveAlphaNoDepthWrite(texture, false); }
+    public static RenderType entityEmissiveAlphaNoDepthWrite(Identifier texture, boolean cull) { return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(texture, false, cull)); }
+    public static RenderType entityEmissiveAdditive(Identifier texture) { return entityEmissiveAdditive(texture, false); }
+    public static RenderType entityEmissiveAdditive(Identifier texture, boolean cull) { return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(texture, true, cull)); }
+    public static RenderType entityEmissiveAdditiveNoDepthWrite(Identifier texture) { return entityEmissiveAdditiveNoDepthWrite(texture, false); }
+    public static RenderType entityEmissiveAdditiveNoDepthWrite(Identifier texture, boolean cull) { return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(texture, false, cull)); }
+    public static RenderType entityTranslucentUnsorted(Identifier texture, boolean cull) { return ENTITY_TRANSLUCENT_UNSORTED.apply(new TexCullKey(texture, cull)); }
+    public static RenderType entityTranslucent(Identifier texture, boolean cull) { return ENTITY_TRANSLUCENT_SORTED.apply(new TexCullKey(texture, cull)); }
+    public static RenderType armorCutout(Identifier texture, boolean cull) { return ARMOR_CUTOUT.apply(new TexCullKey(texture, cull)); }
+    public static RenderType armorTranslucent(Identifier texture, boolean cull) { return ARMOR_TRANSLUCENT.apply(new TexCullKey(texture, cull)); }
+    public static RenderType armorTranslucentUnsorted(Identifier texture, boolean cull) { return ARMOR_TRANSLUCENT_UNSORTED.apply(new TexCullKey(texture, cull)); }
+    public static RenderType armorTranslucentNoCull(Identifier texture) { return armorTranslucent(texture, false); }
+    public static RenderPipeline particlePremultipliedPipeline() { return PARTICLE_PREMULTIPLIED; }
 }

@@ -18,19 +18,17 @@ import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -284,10 +282,10 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected boolean showMode = true;
     /**
-     * Whether Gun makes players to be UseAnim.BOW
+     * Whether Gun makes players to be ItemUseAnimation.BOW
      */
     @Getter
-    protected UseAnim itemUseAction = UseAnim.BOW;
+    protected ItemUseAnimation itemUseAction = ItemUseAnimation.BOW;
     /* Whether the gun can be hipfired while sprinting */
     /**
      * 0=use flansmod.cfg default, 1=force allow, 2=force deny
@@ -496,7 +494,7 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
     @Getter
-    protected ResourceLocation deployableTexture;
+    protected Identifier deployableTexture;
     /**
      * The deployable model's texture
      */
@@ -540,7 +538,7 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected String casingModelClassName = StringUtils.EMPTY;
     @Getter
-    protected ResourceLocation casingTexture;
+    protected Identifier casingTexture;
     /**
      * For adding a muzzle flash model to render
      */
@@ -548,7 +546,7 @@ public class GunType extends PaintableType implements IScope
     @Getter
     protected String flashModelClassName = StringUtils.EMPTY;
     @Getter
-    protected ResourceLocation flashTexture;
+    protected Identifier flashTexture;
     protected String muzzleFlashModelName = StringUtils.EMPTY;
     @Getter
     protected String muzzleFlashModelClassName = StringUtils.EMPTY;
@@ -744,7 +742,7 @@ public class GunType extends PaintableType implements IScope
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
-        itemUseAction = readValue("ItemUseAction", itemUseAction, UseAnim.class, file);
+        itemUseAction = readValue("ItemUseAction", itemUseAction, ItemUseAnimation.class, file);
         // This is needed, because the presence of the value overrides the default value of zero.
         if (file.hasConfigLine("HipFireWhileSprinting"))
             hipFireWhileSprinting = readValue("HipFireWhileSprinting", false, file) ? 1 : 2;
@@ -919,7 +917,6 @@ public class GunType extends PaintableType implements IScope
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
         animationConfig.read(file);
@@ -1048,7 +1045,7 @@ public class GunType extends PaintableType implements IScope
     }
 
     @Override
-    public ResourceLocation getZoomOverlay()
+    public Identifier getZoomOverlay()
     {
         return Optional.ofNullable(overlay).orElse(FlansMod.defaultFallbackTexture);
     }
@@ -1222,8 +1219,8 @@ public class GunType extends PaintableType implements IScope
     {
         checkForTags(gun);
         CompoundTag tag = ItemStackData.copy(gun);
-        CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
-        CompoundTag data = attachments.getCompound(name);
+        CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS).orElseGet(CompoundTag::new);
+        CompoundTag data = attachments.getCompound(name).orElseGet(CompoundTag::new);
         return AttachmentType.getFromNBT(data);
     }
 
@@ -1234,8 +1231,8 @@ public class GunType extends PaintableType implements IScope
     {
         checkForTags(gun);
         CompoundTag tag = ItemStackData.copy(gun);
-        CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
-        CompoundTag stackTag = attachments.getCompound(name);
+        CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS).orElseGet(CompoundTag::new);
+        CompoundTag stackTag = attachments.getCompound(name).orElseGet(CompoundTag::new);
         return ItemStackData.parseBuiltIn(stackTag);
     }
 
@@ -1248,7 +1245,7 @@ public class GunType extends PaintableType implements IScope
         CompoundTag tag = ItemStackData.copy(gun);
 
         // If there's no "attachments" compound, create and populate it
-        if (!tag.contains(GunItem.NBT_ATTACHMENTS, Tag.TAG_COMPOUND))
+        if (tag.getCompound(GunItem.NBT_ATTACHMENTS).isEmpty())
         {
             CompoundTag attachments = new CompoundTag();
 
@@ -1661,7 +1658,7 @@ public class GunType extends PaintableType implements IScope
             return false;
         }
 
-        return tag.getBoolean(GunItem.NBT_SECONDARY_FIRE);
+        return tag.getBoolean(GunItem.NBT_SECONDARY_FIRE).orElse(false);
     }
 
     /**
@@ -1747,7 +1744,7 @@ public class GunType extends PaintableType implements IScope
             CompoundTag tag = ItemStackData.copy(stack);
             if (tag.contains(GunItem.NBT_GUN_MODE))
             {
-                EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
+                EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE).orElse(StringUtils.EMPTY));
                 for (EnumFireMode allowed : submode)
                 {
                     if (allowed == stored)

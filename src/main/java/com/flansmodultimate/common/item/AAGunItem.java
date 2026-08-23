@@ -17,7 +17,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -42,28 +42,28 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
     protected final AAGunType configType;
     protected final String shortname;
 
-    public AAGunItem(AAGunType configType)
+    public AAGunItem(AAGunType configType, Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
     @Override
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
         BlockHitResult hit = raytracePlacement(level, player);
 
         if (hit.getType() != HitResult.Type.BLOCK)
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
 
         BlockPos supportPos = hit.getBlockPos();
         if (!hasSolidTop(level, supportPos))
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
 
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             AAGun aaGun = new AAGun(level, configType, supportPos.getX() + 0.5D, supportPos.getY() + 1.0D, supportPos.getZ() + 0.5D, player);
             level.addFreshEntity(aaGun);
@@ -72,13 +72,13 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
                 stack.shrink(1);
         }
 
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     public Entity spawnAAGun(Level level, double x, double y, double z, @Nullable Player placer)
     {
         AAGun aaGun = new AAGun(level, configType, x, y, z, placer);
-        if (!level.isClientSide)
+        if (!level.isClientSide())
             level.addFreshEntity(aaGun);
         return aaGun;
     }
@@ -98,8 +98,11 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 

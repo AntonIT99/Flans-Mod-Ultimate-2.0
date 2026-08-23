@@ -14,13 +14,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -107,9 +106,9 @@ public abstract class InfoType
     protected int dungeonChance = 1;
 
     @Getter
-    protected ResourceLocation texture;
+    protected Identifier texture;
     @Nullable
-    protected ResourceLocation overlay;
+    protected Identifier overlay;
     @Getter
     protected RenderOptions renderOptions;
 
@@ -123,7 +122,7 @@ public abstract class InfoType
             return originalShortName;
     }
 
-    public Optional<ResourceLocation> getOverlay()
+    public Optional<Identifier> getOverlay()
     {
         return Optional.ofNullable(overlay);
     }
@@ -151,7 +150,7 @@ public abstract class InfoType
             String[] split = lines.get(i).split("\\s+");
             readLine(split, i, file);
         }
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (FMLEnvironment.getDist() == Dist.CLIENT)
             readClient(file);
     }
 
@@ -323,7 +322,7 @@ public abstract class InfoType
             return StringUtils.EMPTY;
 
         String configuredSound = readValue(key, defaultValue, file);
-        if (StringUtils.equalsIgnoreCase(configuredSound, "none"))
+        if ("none".equalsIgnoreCase(configuredSound))
             return StringUtils.EMPTY;
 
         String sound = ResourceUtils.sanitize(configuredSound);
@@ -341,7 +340,7 @@ public abstract class InfoType
             return 0;
 
         String configuredLength = readValue(key, (String)null, file);
-        if (StringUtils.equalsIgnoreCase(configuredLength, "none"))
+        if ("none".equalsIgnoreCase(configuredLength))
             return 0;
         try
         {
@@ -375,7 +374,7 @@ public abstract class InfoType
                     boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
                     // Legacy content uses the old 1-based potion IDs. The 1.21.1
                     // built-in registry is indexed from zero, so translate before lookup.
-                    var effect = BuiltInRegistries.MOB_EFFECT.getHolder(effectId - 1);
+                    var effect = BuiltInRegistries.MOB_EFFECT.get(effectId - 1);
                     if (effect.isPresent())
                     {
                         effects.add(new MobEffectInstance(effect.get(), duration, amplifier, isAmbient, isVisible));
@@ -393,7 +392,6 @@ public abstract class InfoType
         }));
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
@@ -406,7 +404,6 @@ public abstract class InfoType
         return "textures/" + type.getTextureFolderName() + "/" + textureName + FileUtils.PNG_EXTENSION;
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected static String findModelClass(String modelName, IContentProvider contentPack)
     {
         String modelClassName = StringUtils.EMPTY;
@@ -517,10 +514,9 @@ public abstract class InfoType
         return newClassName;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public static ResourceLocation loadTexture(String textureName, InfoType type)
+    public static Identifier loadTexture(String textureName, InfoType type)
     {
-        ResourceLocation texture = FlansMod.defaultFallbackTexture;
+        Identifier texture = FlansMod.defaultFallbackTexture;
         if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;
@@ -534,13 +530,12 @@ public abstract class InfoType
             ref = refsMap.get(textureName);
 
             if (ref != null)
-                texture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
+                texture = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
         }
         return texture;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
+    public static Optional<Identifier> loadOverlay(String overlayName, InfoType type)
     {
         if (StringUtils.isNotBlank(overlayName) && !overlayName.equalsIgnoreCase("none"))
         {
@@ -550,13 +545,12 @@ public abstract class InfoType
             DynamicReference ref = refsMap.get(overlayName);
 
             if (ref != null)
-                return Optional.of(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + ref.get() + FileUtils.PNG_EXTENSION));
+                return Optional.of(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + ref.get() + FileUtils.PNG_EXTENSION));
         }
         return Optional.empty();
     }
 
-    @OnlyIn(Dist.CLIENT)
-    protected ResourceLocation loadGuiTextureLocation(String textureName, ResourceLocation defaultTexture)
+    protected Identifier loadGuiTextureLocation(String textureName, Identifier defaultTexture)
     {
         if (StringUtils.isBlank(textureName) || textureName.equalsIgnoreCase("none"))
             return defaultTexture;
@@ -570,7 +564,7 @@ public abstract class InfoType
                 textureName = ref.get();
         }
 
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + textureName + FileUtils.PNG_EXTENSION);
+        return Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/" + textureName + FileUtils.PNG_EXTENSION);
     }
 
     public static ItemStack getRecipeElement(String str, @Nullable IContentProvider provider)

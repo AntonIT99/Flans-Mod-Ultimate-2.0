@@ -10,20 +10,16 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
-import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.util.FileUtils;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -33,20 +29,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
-    @Override
-    public IClientItemExtensions customItemExtensions()
-    {
-        return new IClientItemExtensions()
-        {
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer()
-            {
-                Minecraft mc = Minecraft.getInstance();
-                return new CustomBewlr(mc.getBlockEntityRenderDispatcher(), mc.getEntityModels());
-            }
-        };
-    }
-
     @Override
     public void spawnParticle(String s, double x, double y, double z, float scale)
     {
@@ -165,9 +147,9 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         RotatedAxes axes = new RotatedAxes(player.getYHeadRot() + 90.0F, player.getXRot(), 0.0F);
         org.joml.Vector3f velocity = axes.getXAxis();
         velocity.add(
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F);
+            minecraft.level.getRandom().nextFloat() * 2.0F - 1.0F,
+            minecraft.level.getRandom().nextFloat() * 2.0F - 1.0F,
+            minecraft.level.getRandom().nextFloat() * 2.0F - 1.0F);
         velocity.mul(0.05F);
         return toVec3(velocity);
     }
@@ -223,7 +205,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void spawnTrail(String trailTexture, Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed)
     {
-        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
+        Identifier resLoc = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
         InstantBulletRenderer.addTrail(new InstantShotTrail(origin, hitPos, width, length, bulletSpeed, resLoc));
     }
 

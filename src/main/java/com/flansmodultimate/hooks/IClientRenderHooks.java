@@ -1,7 +1,5 @@
 package com.flansmodultimate.hooks;
 
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
@@ -10,8 +8,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 public interface IClientRenderHooks
 {
-    IClientItemExtensions customItemExtensions();
-
     void spawnParticle(String s, double x, double y, double z, float scale);
 
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);

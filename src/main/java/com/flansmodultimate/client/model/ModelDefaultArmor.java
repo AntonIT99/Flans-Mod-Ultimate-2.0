@@ -3,16 +3,16 @@ package com.flansmodultimate.client.model;
 import com.flansmod.client.model.ModelCustomArmour;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.equipment.ArmorType;
 
 public class ModelDefaultArmor extends ModelCustomArmour
 {
-    public ModelDefaultArmor(ArmorItem.Type armorType, float expansion)
+    public ModelDefaultArmor(ArmorType armorType, float expansion)
     {
         int textureX = 64;
         int textureY = 32;
 
-        if (armorType == ArmorItem.Type.HELMET)
+        if (armorType == ArmorType.HELMET)
         {
             headModel = new ModelRendererTurbo[2];
             headModel[0] = new ModelRendererTurbo(this, 0, 0, textureX, textureY);
@@ -21,7 +21,7 @@ public class ModelDefaultArmor extends ModelCustomArmour
             headModel[1].addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, expansion + 1.0F);
         }
 
-        if (armorType == ArmorItem.Type.CHESTPLATE || armorType == ArmorItem.Type.LEGGINGS)
+        if (armorType == ArmorType.CHESTPLATE || armorType == ArmorType.LEGGINGS)
         {
             bodyModel = new ModelRendererTurbo[1];
             bodyModel[0] = new ModelRendererTurbo(this, 16, 16, textureX, textureY);
@@ -37,7 +37,7 @@ public class ModelDefaultArmor extends ModelCustomArmour
             leftArmModel[0].mirror = true;
         }
 
-        if (armorType == ArmorItem.Type.BOOTS || armorType == ArmorItem.Type.LEGGINGS)
+        if (armorType == ArmorType.BOOTS || armorType == ArmorType.LEGGINGS)
         {
             rightLegModel = new ModelRendererTurbo[1];
             rightLegModel[0] = new ModelRendererTurbo(this, 0, 16, textureX, textureY);
@@ -50,7 +50,7 @@ public class ModelDefaultArmor extends ModelCustomArmour
         }
     }
 
-    public ModelDefaultArmor(ArmorItem.Type armorType)
+    public ModelDefaultArmor(ArmorType armorType)
     {
         this(armorType, 0.5F);
     }

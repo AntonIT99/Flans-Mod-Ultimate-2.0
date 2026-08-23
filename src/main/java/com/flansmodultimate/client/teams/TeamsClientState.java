@@ -68,7 +68,7 @@ public final class TeamsClientState
     {
         if (snapshot == null)
             return Optional.empty();
-        String name = player.getGameProfile().getName();
+        String name = player.getGameProfile().name();
         for (PacketTeamsState.TeamScore team : snapshot.getTeamScores())
             if (team.players().stream().anyMatch(entry -> entry.name().equalsIgnoreCase(name)))
                 return Optional.of(team.id());

@@ -42,7 +42,7 @@ public final class DigitalAmmoStorageHandler
         if (!isDigitalAmmoEnabled())
             return;
 
-        if (player == null || player.level().isClientSide)
+        if (player == null || player.level().isClientSide())
             return;
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
@@ -70,23 +70,25 @@ public final class DigitalAmmoStorageHandler
         if (!isDigitalAmmoEnabled())
             return;
 
-        if (player == null || player.level().isClientSide)
+        if (player == null || player.level().isClientSide())
             return;
 
         CompoundTag persistentData = player.getPersistentData();
         if (!persistentData.contains(NBT_DIGITAL_AMMO))
             return;
 
-        CompoundTag ammoTag = persistentData.getCompound(NBT_DIGITAL_AMMO);
+        CompoundTag ammoTag = persistentData.getCompound(NBT_DIGITAL_AMMO).orElseGet(CompoundTag::new);
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
 
-        ListTag bulletsList = ammoTag.getList(NBT_BULLETS, Tag.TAG_COMPOUND);
+        ListTag bulletsList = ammoTag.getListOrEmpty(NBT_BULLETS);
         for (int i = 0; i < bulletsList.size(); i++)
         {
-            CompoundTag bulletTag = bulletsList.getCompound(i);
-            int type = bulletTag.getInt(NBT_TYPE);
-            double amount = bulletTag.getDouble(NBT_AMOUNT);
+            CompoundTag bulletTag = bulletsList.getCompound(i).orElseGet(CompoundTag::new);
+            int type = bulletTag.getIntOr(NBT_TYPE, 0);
+            double amount = bulletTag.getDoubleOr(NBT_AMOUNT, 0D);
+            if (type <= 0)
+                continue;
             bulletData.setBullets(type, amount);
         }
     }
@@ -98,7 +100,7 @@ public final class DigitalAmmoStorageHandler
             return;
 
         Player player = event.getEntity();
-        if (player == null || player.level().isClientSide)
+        if (player == null || player.level().isClientSide())
             return;
 
         loadPlayerAmmo(player);
@@ -116,7 +118,7 @@ public final class DigitalAmmoStorageHandler
             return;
 
         Player player = event.getEntity();
-        if (player == null || player.level().isClientSide)
+        if (player == null || player.level().isClientSide())
             return;
 
         savePlayerAmmo(player);

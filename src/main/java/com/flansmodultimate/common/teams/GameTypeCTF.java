@@ -95,7 +95,7 @@ public final class GameTypeCTF extends GameTypeTDM
     public void loadSettings(CompoundTag tag)
     {
         super.loadSettings(tag);
-        flagReturnTimeSeconds = Math.max(1, tag.getInt(NBT_FLAG_RETURN_TIME));
+        flagReturnTimeSeconds = Math.max(1, tag.getIntOr(NBT_FLAG_RETURN_TIME, flagReturnTimeSeconds));
     }
 
     @Override

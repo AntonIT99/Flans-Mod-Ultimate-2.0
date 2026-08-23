@@ -24,15 +24,18 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     @Setter
     protected String originGunbox = StringUtils.EMPTY;
 
-    public BulletItem(BulletType configType)
+    public BulletItem(BulletType configType, Properties properties)
     {
-        super(configType);
+        super(configType, properties);
         this.configType = configType;
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
@@ -43,7 +46,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         }
         else
         {
-            super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
+            super.appendHoverText(stack, context, display, tooltipBuilder, isAdvanced);
 
             if (configType.hasDifferentRounds())
             {

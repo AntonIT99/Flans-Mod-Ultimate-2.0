@@ -7,7 +7,8 @@ import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -28,21 +29,20 @@ public final class TeamsMissionResultsScreen extends Screen
     }
 
     @Override
-    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick); int left = width / 2 - 128;
-
+        int left = width / 2 - 128;
         int top = height / 2 - 100;
-        graphics.blit(FlansMod.teamsMissionResultsGuiTexture, left, top, 0, 0, 256, 200, 512, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, FlansMod.teamsMissionResultsGuiTexture, left, top, 0, 0, 256, 200, 512, 256);
         PacketLoadoutState state = LoadoutClientState.get();
-        graphics.drawCenteredString(font, title, width / 2, top + 12, 0xFFFFFF);
+        graphics.centeredText(font, title, width / 2, top + 12, 0xFFFFFF);
 
         if (state != null)
         {
-            graphics.drawCenteredString(font, "Rank " + state.getRank(), width / 2, top + 74, 0xFFFFFF);
-            graphics.drawCenteredString(font, state.getExperience() + " / " + state.getExperienceForNextRank() + " XP", width / 2, top + 92, 0xFFFFFF);
+            graphics.centeredText(font, "Rank " + state.getRank(), width / 2, top + 74, 0xFFFFFF);
+            graphics.centeredText(font, state.getExperience() + " / " + state.getExperienceForNextRank() + " XP", width / 2, top + 92, 0xFFFFFF);
         }
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override

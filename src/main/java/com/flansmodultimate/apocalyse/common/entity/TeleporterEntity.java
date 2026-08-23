@@ -12,9 +12,13 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
@@ -66,7 +70,7 @@ public class TeleporterEntity extends Entity
 
         Level level = level();
 
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.isPortalFrame(level(), lowerLeftCorner))
             {
@@ -102,20 +106,27 @@ public class TeleporterEntity extends Entity
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        lowerLeftCorner = new BlockPos(tag.getInt(NBT_X), tag.getInt(NBT_Y), tag.getInt(NBT_Z));
-        if (tag.contains(NBT_TARGET_X)) targetTeleporter = new BlockPos(tag.getInt(NBT_TARGET_X), tag.getInt(NBT_TARGET_Y), tag.getInt(NBT_TARGET_Z));
+        lowerLeftCorner = new BlockPos(input.getIntOr(NBT_X, 0), input.getIntOr(NBT_Y, 0), input.getIntOr(NBT_Z, 0));
+        if (input.getInt(NBT_TARGET_X).isPresent())
+            targetTeleporter = new BlockPos(input.getIntOr(NBT_TARGET_X, 0), input.getIntOr(NBT_TARGET_Y, 0), input.getIntOr(NBT_TARGET_Z, 0));
         setPos(lowerLeftCorner.getX() + 2.0D, lowerLeftCorner.getY() + 0.5D, lowerLeftCorner.getZ() + 2.0D);
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
-        tag.putInt(NBT_X, lowerLeftCorner.getX()); tag.putInt(NBT_Y, lowerLeftCorner.getY()); tag.putInt(NBT_Z, lowerLeftCorner.getZ());
+        output.putInt(NBT_X, lowerLeftCorner.getX()); output.putInt(NBT_Y, lowerLeftCorner.getY()); output.putInt(NBT_Z, lowerLeftCorner.getZ());
         if (targetTeleporter != null)
         {
-            tag.putInt(NBT_TARGET_X, targetTeleporter.getX()); tag.putInt(NBT_TARGET_Y, targetTeleporter.getY()); tag.putInt(NBT_TARGET_Z, targetTeleporter.getZ());
+            output.putInt(NBT_TARGET_X, targetTeleporter.getX()); output.putInt(NBT_TARGET_Y, targetTeleporter.getY()); output.putInt(NBT_TARGET_Z, targetTeleporter.getZ());
         }
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount)
+    {
+        return false;
     }
 }

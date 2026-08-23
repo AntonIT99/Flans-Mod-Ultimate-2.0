@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.flansmodultimate.mixin",
   "refmap": "flansmodultimate.refmap.json",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
   ],
   "client": [

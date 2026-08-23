@@ -146,7 +146,7 @@ public abstract class PaintableType extends InfoType
 
     public int getPaintjobId(ItemStack stack)
     {
-        return ItemStackData.copy(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID);
+        return ItemStackData.copy(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID).orElse(0);
     }
 
     public Paintjob getPaintjob(ItemStack stack)

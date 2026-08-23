@@ -67,9 +67,9 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
 
     private void spawnBlockBurst(Level level, Vec3 center, BlockPos pos, float radius)
     {
-        double px = pos.getX() + level.random.nextDouble();
-        double py = pos.getY() + level.random.nextDouble();
-        double pz = pos.getZ() + level.random.nextDouble();
+        double px = pos.getX() + level.getRandom().nextDouble();
+        double py = pos.getY() + level.getRandom().nextDouble();
+        double pz = pos.getZ() + level.getRandom().nextDouble();
 
         double dx = px - center.x;
         double dy = py - center.y;
@@ -82,7 +82,7 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
         dx /= len; dy /= len; dz /= len;
 
         double scale = 0.5D / (len / radius + 0.1D);
-        scale *= (level.random.nextDouble() * level.random.nextDouble() + 0.3D);
+        scale *= (level.getRandom().nextDouble() * level.getRandom().nextDouble() + 0.3D);
 
         double vx = dx * scale;
         double vy = dy * scale;

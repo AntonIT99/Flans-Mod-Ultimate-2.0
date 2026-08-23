@@ -24,6 +24,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,9 @@ public class GunItemEntity extends ItemEntity
     public GunItemEntity(EntityType<? extends GunItemEntity> type, Level level)
     {
         super(type, level);
+        // ItemEntity.hurtServer is final in 26.1. Preserve the legacy dropped-gun
+        // immunity through the entity's supported invulnerability state instead.
+        setInvulnerable(true);
     }
 
     public GunItemEntity(ItemEntity itemEntity)
@@ -54,7 +60,7 @@ public class GunItemEntity extends ItemEntity
     {
         super(FlansMod.gunItemEntity.get(), level);
         setPos(x, y, z);
-        setDeltaMovement(level.random.nextDouble() * 0.2D - 0.1D, 0.2D, level.random.nextDouble() * 0.2D - 0.1D);
+        setDeltaMovement(level.getRandom().nextDouble() * 0.2D - 0.1D, 0.2D, level.getRandom().nextDouble() * 0.2D - 0.1D);
         setItem(gunStack);
         gunStack.getItem();
         lifespan = gunStack.getEntityLifespan(level);
@@ -85,16 +91,10 @@ public class GunItemEntity extends ItemEntity
         }
 
         // client side extinguish.
-        if (level.isClientSide)
+        if (level.isClientSide())
         {
             clearFire();
         }
-    }
-
-    @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
-    {
-        return false;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class GunItemEntity extends ItemEntity
     {
         Level level = level();
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         if (!ammoStacks.isEmpty())
@@ -161,11 +161,12 @@ public class GunItemEntity extends ItemEntity
      */
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand,
+                                      @NotNull Vec3 location)
     {
         Level level = level();
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             return InteractionResult.SUCCESS;
 
         ItemStack currentItem = player.getItemInHand(hand);
@@ -222,34 +223,28 @@ public class GunItemEntity extends ItemEntity
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
-        super.addAdditionalSaveData(tag);
+        super.addAdditionalSaveData(output);
 
-        ListTag ammoList = new ListTag();
+        ValueOutput.TypedOutputList<ItemStack> ammoList = output.list(NBT_AMMO_LIST, ItemStack.CODEC);
         for (ItemStack stack : ammoStacks)
         {
             if (stack != null && !stack.isEmpty())
-                ammoList.add(ItemStackData.save(stack, level().registryAccess()));
+                ammoList.add(stack);
         }
-        tag.put(NBT_AMMO_LIST, ammoList);
     }
 
     @Override
-    public void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        super.readAdditionalSaveData(tag);
+        super.readAdditionalSaveData(input);
 
-        if (tag.contains(NBT_AMMO_LIST, Tag.TAG_LIST))
+        ammoStacks.clear();
+        for (ItemStack stack : input.listOrEmpty(NBT_AMMO_LIST, ItemStack.CODEC))
         {
-            ListTag ammoList = tag.getList(NBT_AMMO_LIST, Tag.TAG_COMPOUND);
-            for (int i = 0; i < ammoList.size(); i++)
-            {
-                CompoundTag stackTag = ammoList.getCompound(i);
-                ItemStack stack = ItemStackData.parse(level().registryAccess(), stackTag);
-                if (!stack.isEmpty())
-                    ammoStacks.add(stack);
-            }
+            if (!stack.isEmpty())
+                ammoStacks.add(stack);
         }
     }
 }

@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -30,9 +30,9 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
     @Getter
     protected final ArmorBoxType configType;
 
-    public ArmorBoxBlock(ArmorBoxType type)
+    public ArmorBoxBlock(ArmorBoxType type, BlockBehaviour.Properties properties)
     {
-        super(BlockBehaviour.Properties.of()
+        super(properties
             .mapColor(MapColor.WOOD)
             .strength(2.0F, 4.0F)
             .sound(SoundType.WOOD)
@@ -66,13 +66,13 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
+    protected InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = open(state, level, pos, player);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? InteractionResult.TRY_WITH_EMPTY_HAND
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
@@ -80,12 +80,12 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
             serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     public void buyArmorServer(int pageIndex, int pieceIndex, ServerPlayer player)

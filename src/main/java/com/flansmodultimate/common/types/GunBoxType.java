@@ -10,7 +10,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -195,7 +195,7 @@ public class GunBoxType extends BlockType
         return null;
     }
 
-    public ResourceLocation getGuiTexture()
+    public Identifier getGuiTexture()
     {
         return loadGuiTextureLocation(guiTexturePath, FlansMod.gunBoxGuiTexture);
     }

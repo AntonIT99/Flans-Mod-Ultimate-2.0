@@ -10,9 +10,9 @@ import net.minecraft.world.level.Level;
 
 public final class MechaItem extends DriveableItem<MechaType, Mecha>
 {
-    public MechaItem(MechaType configType)
+    public MechaItem(MechaType configType, Properties properties)
     {
-        super(configType);
+        super(configType, properties);
     }
 
     @Override

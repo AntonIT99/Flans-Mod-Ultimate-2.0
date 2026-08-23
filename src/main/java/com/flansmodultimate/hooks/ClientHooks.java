@@ -12,9 +12,9 @@ import net.neoforged.fml.loading.FMLEnvironment;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHooks
 {
-    public static final IClientPlayerHooks PLAYER = FMLEnvironment.dist.isClient() ? ClientHookFactories.createPlayerHooks() : new ClientPlayerHooksNoop();
-    public static final IClientTooltipHooks TOOLTIPS = FMLEnvironment.dist.isClient() ? ClientHookFactories.createTooltipsHooks() : new ClientTooltipHooksNoop();
-    public static final IClientGunHooks GUN = FMLEnvironment.dist.isClient() ? ClientHookFactories.createGunHooks() : new ClientGunHooksNoop();
-    public static final IClientRenderHooks RENDER = FMLEnvironment.dist.isClient() ? ClientHookFactories.createRenderHooks() : new ClientRenderHooksNoop();
-    public static final IClientSoundHooks SOUND = FMLEnvironment.dist.isClient() ? ClientHookFactories.createSoundHooks() : new ClientSoundHooksNoop();
+    public static final IClientPlayerHooks PLAYER = FMLEnvironment.getDist().isClient() ? ClientHookFactories.createPlayerHooks() : new ClientPlayerHooksNoop();
+    public static final IClientTooltipHooks TOOLTIPS = FMLEnvironment.getDist().isClient() ? ClientHookFactories.createTooltipsHooks() : new ClientTooltipHooksNoop();
+    public static final IClientGunHooks GUN = FMLEnvironment.getDist().isClient() ? ClientHookFactories.createGunHooks() : new ClientGunHooksNoop();
+    public static final IClientRenderHooks RENDER = FMLEnvironment.getDist().isClient() ? ClientHookFactories.createRenderHooks() : new ClientRenderHooksNoop();
+    public static final IClientSoundHooks SOUND = FMLEnvironment.getDist().isClient() ? ClientHookFactories.createSoundHooks() : new ClientSoundHooksNoop();
 }

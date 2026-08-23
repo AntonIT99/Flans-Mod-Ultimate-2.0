@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,7 +29,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
@@ -43,9 +43,9 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     @Getter
     protected final GrenadeType configType;
 
-    public GrenadeItem(GrenadeType configType)
+    public GrenadeItem(GrenadeType configType, Properties properties)
     {
-        super(configType);
+        super(configType, properties);
         this.configType = configType;
     }
 
@@ -74,8 +74,11 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
@@ -86,7 +89,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         }
         else
         {
-            super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
+            super.appendHoverText(stack, context, display, tooltipBuilder, isAdvanced);
         }
     }
 
@@ -100,7 +103,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
             b.add(entry.attribute(), entry.modifier(), entry.slot());
         b.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "grenade_attack_damage"),
+            Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "grenade_attack_damage"),
             configType.getMeleeDamage(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         return b.build();
     }
@@ -113,10 +116,10 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
     @Override
     @NotNull
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
-        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player, level.isClientSide() ? LogicalSide.CLIENT : LogicalSide.SERVER);
 
         // If can throw grenade
         if (configType.isCanThrow() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
@@ -125,7 +128,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             data.setShootTimeRight(configType.getThrowDelay());
 
             // Spawn the entity server side
-            if (!level.isClientSide)
+            if (!level.isClientSide())
                 level.addFreshEntity(new Grenade(level, configType, player));
 
             // Consume an item (non-creative)
@@ -138,7 +141,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
                 String itemName = configType.getDropItemOnDetonate();
                 ItemStack dropStack = InfoType.getRecipeElement(itemName, configType.getContentPack());
 
-                if (!level.isClientSide && dropStack != null && !dropStack.isEmpty())
+                if (!level.isClientSide() && dropStack != null && !dropStack.isEmpty())
                 {
                     ItemEntity itemEntity = new ItemEntity(level, player.getX(), player.getY(), player.getZ(), dropStack);
                     level.addFreshEntity(itemEntity);
@@ -146,10 +149,10 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             }
 
             // We successfully used the item (threw a grenade)
-            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
 
         // Nothing special happened, fall back
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
     }
 }

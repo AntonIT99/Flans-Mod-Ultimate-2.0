@@ -14,7 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanTypeModel<ArmorType>
+public class ModelCustomArmour extends HumanoidModel<HumanoidRenderState> implements IFlanTypeModel<ArmorType>
 {
     @Getter @Setter
     protected ArmorType type;
@@ -41,7 +42,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     @Getter
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     @Getter @Setter
-    private ResourceLocation texture;
+    private Identifier texture;
 
     @Setter
     private boolean scaleHead = true;
@@ -55,6 +56,8 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     private float babyBodyScale = 2F;
     @Setter
     private float bodyYOffset = 24F;
+    @Setter
+    private boolean young;
 
     public ModelCustomArmour()
     {

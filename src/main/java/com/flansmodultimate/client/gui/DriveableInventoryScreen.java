@@ -15,11 +15,13 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -35,10 +37,10 @@ import java.util.Optional;
 /** 1.7.10-style driveable hub, inventory, fuel and repair interface. */
 public final class DriveableInventoryScreen extends AbstractContainerScreen<DriveableInventoryMenu>
 {
-    private static final ResourceLocation MENU_TEXTURE = texture("plane_menu.png");
-    private static final ResourceLocation INVENTORY_TEXTURE = texture("plane_inventory.png");
-    private static final ResourceLocation FUEL_TEXTURE = texture("plane_fuel.png");
-    private static final ResourceLocation REPAIR_TEXTURE = texture("repair.png");
+    private static final Identifier MENU_TEXTURE = texture("plane_menu.png");
+    private static final Identifier INVENTORY_TEXTURE = texture("plane_inventory.png");
+    private static final Identifier FUEL_TEXTURE = texture("plane_fuel.png");
+    private static final Identifier REPAIR_TEXTURE = texture("repair.png");
 
     private static final int LEGACY_WIDTH = 176;
     private static final int LEGACY_HEIGHT = 180;
@@ -52,16 +54,14 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
 
     public DriveableInventoryScreen(DriveableInventoryMenu menu, Inventory inventory, Component title)
     {
-        super(menu, inventory, title);
-        imageWidth = 202;
-        imageHeight = LEGACY_HEIGHT;
+        super(menu, inventory, title, 202, LEGACY_HEIGHT);
         inventoryLabelX = LEGACY_X_OFFSET + 8;
         inventoryLabelY = 86;
     }
 
-    private static ResourceLocation texture(String name)
+    private static Identifier texture(String name)
     {
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/driveable/" + name);
+        return Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/driveable/" + name);
     }
 
     private int legacyLeft()
@@ -225,37 +225,36 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         renderLegacyTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
         int x = legacyLeft();
         int y = topPos;
         switch (menu.getPage())
         {
-            case MENU -> graphics.blit(MENU_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
+            case MENU -> graphics.blit(RenderPipelines.GUI_TEXTURED, MENU_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT, 256, 256);
             case FUEL -> renderFuel(graphics, x, y);
             case REPAIR -> renderRepair(graphics);
             default -> renderInventoryPage(graphics, x, y);
         }
     }
 
-    private void renderInventoryPage(GuiGraphics graphics, int x, int y)
+    private void renderInventoryPage(GuiGraphicsExtractor graphics, int x, int y)
     {
-        graphics.blit(INVENTORY_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT, 256, 256);
         int count = activeItemCount();
         if (menu.getPage() == Page.GUNS)
         {
             int visible = Math.max(0, count - menu.getScrollRow());
             for (int row = 0; row < Math.min(VISIBLE_INVENTORY_ROWS, visible); row++)
-                graphics.blit(INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 176, 0, 37, 18);
+                graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 176, 0, 37, 18, 256, 256);
             renderGunRows(graphics, x, y);
         }
         else
@@ -266,13 +265,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 int remaining = count - (menu.getScrollRow() + row) * 8;
                 int columns = Math.min(8, Math.max(0, remaining));
                 if (columns > 0)
-                    graphics.blit(INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 7, 97, columns * 18, 18);
+                    graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 7, 97, columns * 18, 18, 256, 256);
             }
         }
         if (menu.getScrollRow() == 0)
-            graphics.blit(INVENTORY_TEXTURE, x + 161, y + 41, 176, 18, 10, 10);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_TEXTURE, x + 161, y + 41, 176, 18, 10, 10, 256, 256);
         if (menu.getScrollRow() == menu.getMaxScrollRow())
-            graphics.blit(INVENTORY_TEXTURE, x + 161, y + 53, 176, 28, 10, 10);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_TEXTURE, x + 161, y + 53, 176, 28, 10, 10, 256, 256);
     }
 
     private int activeItemCount()
@@ -313,7 +312,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         return rows;
     }
 
-    private void renderGunRows(GuiGraphics graphics, int x, int y)
+    private void renderGunRows(GuiGraphicsExtractor graphics, int x, int y)
     {
         List<GunRow> rows = gunRows();
         for (int visible = 0; visible < VISIBLE_INVENTORY_ROWS; visible++)
@@ -325,8 +324,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             int itemY = y + 25 + visible * 19;
             ItemStack gunStack = ModUtils.getItemStack(row.type()).orElse(ItemStack.EMPTY);
             if (!gunStack.isEmpty())
-                graphics.renderItem(gunStack, x + 10, itemY);
-            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(row.name(), 55)),
+                graphics.item(gunStack, x + 10, itemY);
+            graphics.text(font, Component.literal(font.plainSubstrByWidth(row.name(), 55)),
                 x + 53, y + 29 + visible * 19, 0x000000, false);
 
             List<ShootableType> ammo = row.type().getAmmoTypes();
@@ -334,7 +333,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             {
                 ItemStack ammoStack = ModUtils.getItemStack(ammo.get(ammoIndex)).orElse(ItemStack.EMPTY);
                 if (!ammoStack.isEmpty())
-                    graphics.renderItem(ammoStack, x + 110 + ammoIndex * 16, itemY);
+                    graphics.item(ammoStack, x + 110 + ammoIndex * 16, itemY);
             }
         }
     }
@@ -355,7 +354,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             .toList();
     }
 
-    private void renderLegacyTooltip(GuiGraphics graphics, int mouseX, int mouseY)
+    private void renderLegacyTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
         if (hoveredSlot != null && hoveredSlot.hasItem())
             return;
@@ -394,13 +393,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             }
         }
         if (!lines.isEmpty())
-            graphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+            graphics.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY);
     }
 
-    private void renderFuel(GuiGraphics graphics, int x, int y)
+    private void renderFuel(GuiGraphicsExtractor graphics, int x, int y)
     {
         y += 19;
-        graphics.blit(FUEL_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, 161);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, FUEL_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, 161, 256, 256);
         if (menu.getDriveable() == null || menu.getDriveable().getConfigType() == null)
             return;
         float capacity = menu.getDriveable().getConfigType().getFuelTankSize();
@@ -408,41 +407,41 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int frame = menu.getDriveable().level() == null ? 0 : (int) (menu.getDriveable().level().getGameTime() / 5L % 4L);
         ItemStack fuelStack = menu.getDriveable().getDriveableData().getFuelStack();
         if (!fuelStack.isEmpty())
-            graphics.blit(FUEL_TEXTURE, x + 15, y + 44, 176 + 15 * frame, 0, 15, 16);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, FUEL_TEXTURE, x + 15, y + 44, 176 + 15 * frame, 0, 15, 16, 256, 256);
         if (capacity > 0F && menu.getDriveable().getFuel() < capacity / 8F && frame > 1)
-            graphics.blit(FUEL_TEXTURE, x + 16, y + 25, 176, 16, 6, 6);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, FUEL_TEXTURE, x + 16, y + 25, 176, 16, 6, 6, 256, 256);
         int width = Math.round(129F * fraction);
         if (width > 0)
-            graphics.blit(FUEL_TEXTURE, x + 26, y + 21, 0, 161, width, 15);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, FUEL_TEXTURE, x + 26, y + 21, 0, 161, width, 15, 256, 256);
     }
 
-    private void renderRepair(GuiGraphics graphics)
+    private void renderRepair(GuiGraphicsExtractor graphics)
     {
         List<DriveablePart> parts = menu.getRepairParts();
         int left = repairLeft();
         int top = repairTop();
         int end = visibleRepairEnd(parts);
-        graphics.blit(REPAIR_TEXTURE, left, top, 0, 0, 202, 23);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, REPAIR_TEXTURE, left, top, 0, 0, 202, 23, 256, 256);
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
             ? title.getString() : menu.getDriveable().getConfigType().getName();
-        graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
+        graphics.text(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
         int y = 23;
         for (int index = repairOffset; index < end; index++)
         {
             DriveablePart part = parts.get(index);
             boolean broken = part.isDestroyed();
             int height = broken ? 40 : 20;
-            graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 24, 202, height);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, REPAIR_TEXTURE, left, top + y, 0, 24, 202, height, 256, 256);
 
             float health = part.getMaxHealth() <= 0F ? 0F : Mth.clamp(part.getHealth() / part.getMaxHealth(), 0F, 1F);
-            graphics.setColor(1F - health, health, 0F, 1F);
-            graphics.blit(REPAIR_TEXTURE, left + 111, top + y + 2, 0, 73, Math.round(70F * health), 16);
-            graphics.setColor(1F, 1F, 1F, 1F);
+            int healthColor = 0xFF000000 | (Math.round((1F - health) * 255F) << 16) | (Math.round(health * 255F) << 8);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, REPAIR_TEXTURE, left + 111, top + y + 2, 0, 73,
+                Math.round(70F * health), 16, 256, 256, healthColor);
 
             int nameX = broken ? 60 : 10;
-            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(part.getType().getName(), broken ? 48 : 95)),
+            graphics.text(font, Component.literal(font.plainSubstrByWidth(part.getType().getName(), broken ? 48 : 95)),
                 left + nameX, top + y + 6, 0xFFFFFF, false);
-            graphics.drawCenteredString(font, Math.round(health * 100F) + "%", left + 148, top + y + 6, 0xFFFFFF);
+            graphics.centeredText(font, Math.round(health * 100F) + "%", left + 148, top + y + 6, 0xFFFFFF);
 
             if (broken && menu.getDriveable() != null)
             {
@@ -452,17 +451,17 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 {
                     int itemX = left + 57 + item * 18;
                     int itemY = top + y + 22;
-                    graphics.renderItem(required.get(item), itemX, itemY);
-                    graphics.renderItemDecorations(font, required.get(item), itemX, itemY);
+                    graphics.item(required.get(item), itemX, itemY);
+                    graphics.itemDecorations(font, required.get(item), itemX, itemY);
                 }
             }
             y += height;
         }
-        graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 65, 202, 8);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, REPAIR_TEXTURE, left, top + y, 0, 65, 202, 8, 256, 256);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
             ? title.getString() : menu.getDriveable().getConfigType().getName();
@@ -472,14 +471,17 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         String pageName = menu.getPage() == Page.MISSILES ? missilePageName() : menu.getPage().getDisplayName();
         String suffix = menu.getPage() == Page.MENU ? "" : " - " + pageName;
         int titleY = menu.getPage() == Page.FUEL ? 25 : 6;
-        graphics.drawString(font, Component.literal(font.plainSubstrByWidth(vehicleName + suffix, 155)),
+        graphics.text(font, Component.literal(font.plainSubstrByWidth(vehicleName + suffix, 155)),
             LEGACY_X_OFFSET + 6, titleY, 0x404040, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick)
     {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         int x = legacyLeft();
         int y = topPos;
         int backY = y + (menu.getPage() == Page.FUEL ? 24 : 5);
@@ -510,7 +512,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             selectPage(Page.MENU);
             return true;
         }
-        boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        boolean handled = super.mouseClicked(event, doubleClick);
         if (handled && menu.getPage() != Page.MENU)
             clearButtonFocus();
         return handled;

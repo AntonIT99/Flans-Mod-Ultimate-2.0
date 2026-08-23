@@ -41,7 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
@@ -151,7 +151,7 @@ public class ContentManager
     /** &lt; model class name, &lt; contentPack &gt;&gt; */
     @Getter
     private static final Map<String, IContentProvider> registeredModels = new HashMap<>();
-    private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
+    private static final Map<Identifier, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     // Latin-1 must stay last because it can decode every byte sequence.
@@ -172,7 +172,7 @@ public class ContentManager
             return typeFolderName + "/" + fileName + " [" + contentPackName + "]";
         }
     }
-    private record MissingModelTexture(ResourceLocation textureId, TextureOrigin origin) {}
+    private record MissingModelTexture(Identifier textureId, TextureOrigin origin) {}
 
     static
     {
@@ -392,7 +392,7 @@ public class ContentManager
                 loadTypes(provider);
                 postTypeStart = System.nanoTime();
 
-                if (FMLEnvironment.dist == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
+                if (FMLEnvironment.getDist() == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
                 {
                     long phaseStart = System.nanoTime();
                     findDuplicateTextures(provider);
@@ -621,7 +621,7 @@ public class ContentManager
                     {
                         readAliasMappingFile(path.getFileName().toString(), provider, shortnameReferences);
                     }
-                    if (FMLEnvironment.dist == Dist.CLIENT)
+                    if (FMLEnvironment.getDist() == Dist.CLIENT)
                     {
                         if (path.getFileName().toString().equals(ARMOR_TEXTURES_ALIAS_FILE))
                         {
@@ -781,7 +781,7 @@ public class ContentManager
     private static void addConfig(IContentProvider contentPack, InfoType config)
     {
         configs.get(contentPack).add(config);
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (FMLEnvironment.getDist() == Dist.CLIENT)
             registerModelTextureOrigins(config);
     }
 
@@ -809,7 +809,7 @@ public class ContentManager
         String texturePath = textureFolder + "/" + ResourceUtils.sanitize(textureName);
         try
         {
-            ResourceLocation textureId = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, texturePath);
+            Identifier textureId = Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, texturePath);
             modelTextureOrigins.computeIfAbsent(textureId, key -> new HashSet<>()).add(origin);
         }
         catch (Exception e)
@@ -821,7 +821,7 @@ public class ContentManager
     public static void logMissingModelTextures(ResourceManager resourceManager)
     {
         List<MissingModelTexture> missingTextures = new ArrayList<>();
-        for (Map.Entry<ResourceLocation, Set<TextureOrigin>> entry : modelTextureOrigins.entrySet())
+        for (Map.Entry<Identifier, Set<TextureOrigin>> entry : modelTextureOrigins.entrySet())
         {
             if (resourceManager.getResource(toTextureResource(entry.getKey())).isEmpty())
             {
@@ -838,9 +838,9 @@ public class ContentManager
             .forEach(missing -> FlansMod.log.warn("Missing texture {}: {}", missing.textureId(), missing.origin()));
     }
 
-    private static ResourceLocation toTextureResource(ResourceLocation textureId)
+    private static Identifier toTextureResource(Identifier textureId)
     {
-        return ResourceLocation.fromNamespaceAndPath(textureId.getNamespace(), FOLDER_TEXTURES + "/" + textureId.getPath() + FileUtils.PNG_EXTENSION);
+        return Identifier.fromNamespaceAndPath(textureId.getNamespace(), FOLDER_TEXTURES + "/" + textureId.getPath() + FileUtils.PNG_EXTENSION);
     }
 
     private static String findNewValidShortName(String originalShortname, IContentProvider provider, TypeFile file)
@@ -889,12 +889,12 @@ public class ContentManager
     private static void registerItem(String shortName, InfoType config, TypeFile typeFile)
     {
         registeredItems.put(shortName, typeFile.toString());
-        FlansMod.registerItem(shortName, config.getType(), () -> ItemFactory.createItem(config));
+        FlansMod.registerItem(shortName, config.getType(), properties -> ItemFactory.createItem(config, properties));
     }
 
     private static void registerBlock(String shortName, InfoType config)
     {
-        FlansMod.registerBlock(shortName, config.getType(), () -> BlockFactory.createBlock(config));
+        FlansMod.registerBlock(shortName, config.getType(), properties -> BlockFactory.createBlock(config, properties));
     }
 
     private static void findDuplicateTextures(IContentProvider provider)
@@ -1017,7 +1017,7 @@ public class ContentManager
 
     private static boolean shouldPreLoadAssets(IContentProvider provider, boolean idAliasNeedsUpdate)
     {
-        if (FMLEnvironment.dist != Dist.CLIENT)
+        if (FMLEnvironment.getDist() != Dist.CLIENT)
             return false;
 
         if (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds())
@@ -1129,7 +1129,7 @@ public class ContentManager
 
     private static void compileJavaModelsIfNeeded(IContentProvider provider)
     {
-        if (FMLEnvironment.dist != Dist.CLIENT)
+        if (FMLEnvironment.getDist() != Dist.CLIENT)
             return;
 
         try

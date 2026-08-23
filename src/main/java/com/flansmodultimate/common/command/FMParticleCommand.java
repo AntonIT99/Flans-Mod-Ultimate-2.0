@@ -17,6 +17,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
@@ -38,7 +39,7 @@ public final class FMParticleCommand
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(Commands.literal("fmparticle")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(Commands.argument(NAME, StringArgumentType.string())
                 .executes(context -> sendParticles(context, context.getSource().getPosition(), Vec3.ZERO, 0.0F, 0, DEFAULT_SCALE, allPlayers(context)))
                 .then(Commands.argument(POS, Vec3Argument.vec3())

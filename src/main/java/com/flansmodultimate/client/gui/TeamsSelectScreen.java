@@ -7,11 +7,12 @@ import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.network.server.PacketTeamsAction;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
 /** Modern recreation of the legacy team and class selection window. */
 public final class TeamsSelectScreen extends Screen
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams.png");
     private final boolean classMenu;
     private int panelHeight;
 
@@ -81,27 +82,26 @@ public final class TeamsSelectScreen extends Screen
     }
 
     @Override
-    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketTeamsState state = TeamsClientState.get();
         if (state == null)
             return;
         int left = width / 2 - 128;
         int top = height / 2 - panelHeight / 2;
-        graphics.blit(TEXTURE, left, top, 0, 0, 256, 22, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, left, top, 0, 0, 256, 22, 256, 256);
         int count = classMenu ? state.getClassChoices().size() : state.getTeamChoices().size();
         for (int row = 0; row < count; row++)
-            graphics.blit(TEXTURE, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
-        graphics.blit(TEXTURE, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
-        graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
-        super.render(graphics, mouseX, mouseY, partialTick);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
+        graphics.text(font, title, left + 8, top + 7, 0xFFFFFF, true);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
 
         if (classMenu)
             renderLoadouts(graphics, state, left, top, mouseX, mouseY);
     }
 
-    private void renderLoadouts(GuiGraphics graphics, PacketTeamsState state, int left, int top, int mouseX, int mouseY)
+    private void renderLoadouts(GuiGraphicsExtractor graphics, PacketTeamsState state, int left, int top, int mouseX, int mouseY)
     {
         for (int row = 0; row < state.getClassChoices().size(); row++)
         {
@@ -112,14 +112,14 @@ public final class TeamsSelectScreen extends Screen
                 int x = left + 85 + 18 * slot;
                 int y = top + 26 + 24 * row;
                 ItemStack stack = loadout.get(slot);
-                graphics.renderItem(stack, x, y);
-                graphics.renderItemDecorations(font, stack, x, y);
+                graphics.item(stack, x, y);
+                graphics.itemDecorations(font, stack, x, y);
                 if (mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16)
-                    graphics.renderTooltip(font, stack, mouseX, mouseY);
+                    graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
             }
             int y = top + 24 + 24 * row;
             if (mouseX >= left + 9 && mouseX < left + 82 && mouseY >= y && mouseY < y + 20)
-                graphics.renderTooltip(font, Component.translatable("gui.flansmod.teams.required_rank", choice.unlockLevel()), mouseX, mouseY);
+                graphics.setTooltipForNextFrame(font, Component.translatable("gui.flansmod.teams.required_rank", choice.unlockLevel()), mouseX, mouseY);
         }
     }
 

@@ -10,7 +10,8 @@ import com.flansmodultimate.network.server.PacketLoadoutAction;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -109,21 +110,20 @@ public final class TeamsLoadoutEditScreen extends Screen
     }
 
     @Override
-    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.teamsLoadoutEditorGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
-        graphics.drawString(font, title, left + 8, top + 8, 0xFFFFFF, true);
-        graphics.drawString(font, "Rank " + (state == null ? 0 : state.getRank()) + " · " + selectedSlot.getDisplayName(), left + 110, top + 9, 0xFFFFFF, false);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, FlansMod.teamsLoadoutEditorGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        graphics.text(font, title, left + 8, top + 8, 0xFFFFFF, true);
+        graphics.text(font, "Rank " + (state == null ? 0 : state.getRank()) + " · " + selectedSlot.getDisplayName(), left + 110, top + 9, 0xFFFFFF, false);
         if (state != null && loadoutIndex < state.getLoadouts().size())
         {
             for (LoadoutSlot slot : LoadoutSlot.values())
             {
                 var stack = state.getLoadouts().get(loadoutIndex).get(slot);
-                graphics.renderItem(stack, left + 62, top + 30 + slot.ordinal() * 25);
+                graphics.item(stack, left + 62, top + 30 + slot.ordinal() * 25);
             }
             List<PacketLoadoutState.Entry> choices = choices(state);
             int start = page * PAGE_SIZE;
@@ -133,11 +133,11 @@ public final class TeamsLoadoutEditScreen extends Screen
                 var stack = choices.get(i).preview();
                 int x = left + 93 + (local % 3) * 75;
                 int y = top + 30 + (local / 3) * 25;
-                graphics.renderItem(stack, x, y);
-                if (!stack.isEmpty() && mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16) graphics.renderTooltip(font, stack, mouseX, mouseY);
+                graphics.item(stack, x, y);
+                if (!stack.isEmpty() && mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16) graphics.setTooltipForNextFrame(font, stack, mouseX, mouseY);
             }
         }
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override

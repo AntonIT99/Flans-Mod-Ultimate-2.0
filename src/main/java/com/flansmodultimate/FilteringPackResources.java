@@ -2,12 +2,12 @@ package com.flansmodultimate;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.IoSupplier;
 
@@ -28,7 +28,7 @@ public final class FilteringPackResources implements PackResources
         this.packType = packType;
     }
 
-    private static boolean isExcluded(PackType type, ResourceLocation location)
+    private static boolean isExcluded(PackType type, Identifier location)
     {
         if (type != PackType.CLIENT_RESOURCES)
             return false;
@@ -49,7 +49,7 @@ public final class FilteringPackResources implements PackResources
     }
 
     @Override
-    public IoSupplier<InputStream> getResource(@NotNull PackType type, @NotNull ResourceLocation location)
+    public IoSupplier<InputStream> getResource(@NotNull PackType type, @NotNull Identifier location)
     {
         if (isExcluded(type, location))
             return null;
@@ -75,11 +75,12 @@ public final class FilteringPackResources implements PackResources
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getMetadataSection(@NotNull MetadataSectionSerializer<T> serializer) throws IOException
+    public <T> T getMetadataSection(@NotNull MetadataSectionType<T> serializer) throws IOException
     {
-        if (serializer == PackMetadataSection.TYPE)
+        MetadataSectionType<PackMetadataSection> packMetadataType = PackMetadataSection.forPackType(packType);
+        if (serializer == packMetadataType)
         {
-            PackMetadataSection metadata = delegate.getMetadataSection(PackMetadataSection.TYPE);
+            PackMetadataSection metadata = delegate.getMetadataSection(packMetadataType);
             if (metadata == null)
                 return null;
 
@@ -87,8 +88,8 @@ public final class FilteringPackResources implements PackResources
             // Minecraft. Their original pack.mcmeta often targets a much older
             // game, so report the transformed pack as compatible without
             // modifying the user's archive on every version switch.
-            int currentFormat = SharedConstants.getCurrentVersion().getPackVersion(packType);
-            return (T) new PackMetadataSection(metadata.description(), currentFormat);
+            var currentFormat = SharedConstants.getCurrentVersion().packVersion(packType);
+            return (T) new PackMetadataSection(metadata.description(), new net.minecraft.util.InclusiveRange<>(currentFormat));
         }
 
         return delegate.getMetadataSection(serializer);

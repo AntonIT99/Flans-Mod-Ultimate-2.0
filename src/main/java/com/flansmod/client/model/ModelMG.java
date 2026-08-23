@@ -31,11 +31,17 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 
     public void renderBipod(DeployedGun mg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
+        renderBipod(mg.getReloadTimer() <= 0 && mg.hasAmmo(), poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    public void renderBipod(boolean showAmmo, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
         for (ModelRendererTurbo bipodPart : bipodModel)
         {
             bipodPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
+        if (!showAmmo)
             return;
 
         for (ModelRendererTurbo ammoBoxPart : ammoBoxModel)
@@ -46,6 +52,12 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
 
     public void renderGun(DeployedGun mg, float pitchDeg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
+        renderGun(mg.getReloadTimer() <= 0 && mg.hasAmmo(), pitchDeg, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    public void renderGun(boolean showAmmo, float pitchDeg, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
         float pitch = pitchDeg * Mth.DEG_TO_RAD;
 
         for (ModelRendererTurbo gunPart : gunModel)
@@ -54,7 +66,7 @@ public class ModelMG extends ModelBase implements IFlanTypeModel<GunType>
             gunPart.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
-        if (mg.getReloadTimer() > 0 || !mg.hasAmmo())
+        if (!showAmmo)
             return;
 
         for (ModelRendererTurbo ammoPart : ammoModel)

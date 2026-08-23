@@ -1,8 +1,9 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.config.ModClientConfig;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public enum EnumRenderPass
 
     public static final List<EnumRenderPass> ORDER = List.of(GLOW_ALPHA_NO_DEPTH_WRITE, GLOW_ALPHA, GLOW_ADDITIVE, DEFAULT);
 
-    public RenderType getRenderType(ResourceLocation texture, boolean translucent, boolean cull)
+    public RenderType getRenderType(Identifier texture, boolean translucent, boolean cull)
     {
         return switch(this)
         {
@@ -28,17 +29,17 @@ public enum EnumRenderPass
                 {
                     if (ModClientConfig.get().enableFastTranslucentRendering)
                         yield CustomRenderType.entityTranslucentUnsorted(texture, cull);
-                    yield cull ? RenderType.entityTranslucentCull(texture) : RenderType.entityTranslucent(texture);
+                    yield CustomRenderType.entityTranslucent(texture, cull);
                 }
                 if (cull)
-                    yield RenderType.entityCutout(texture);
+                    yield RenderTypes.entityCutoutCull(texture);
 
-                yield RenderType.entityCutoutNoCull(texture);
+                yield RenderTypes.entityCutout(texture);
             }
         };
     }
 
-    public RenderType getArmorRenderType(ResourceLocation texture, boolean translucent, boolean cull)
+    public RenderType getArmorRenderType(Identifier texture, boolean translucent, boolean cull)
     {
         return switch(this)
         {

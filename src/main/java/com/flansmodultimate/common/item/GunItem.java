@@ -34,10 +34,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -49,8 +50,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -103,9 +105,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Getter
     protected int impactZ;
 
-    public GunItem(GunType configType)
+    public GunItem(GunType configType, Properties properties)
     {
-        super(new Properties().stacksTo(1));
+        super(properties.stacksTo(1));
         this.configType = configType;
         shortname = configType.getShortName();
         gunItemHandler = new GunItemHandler(this);
@@ -148,21 +150,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     @Override
     @NotNull
-    public UseAnim getUseAnimation(@NotNull ItemStack stack)
+    public ItemUseAnimation getUseAnimation(@NotNull ItemStack stack)
     {
         return configType.getItemUseAction();
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull TooltipDisplay display,
+                                @NotNull Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = new ArrayList<>();
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         // Legendary crafter tag
         CompoundTag customTag = ItemStackData.copy(stack);
-        if (customTag.contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
+        if (customTag.contains(NBT_LEGENDARY_CRAFTER))
         {
-            String crafter = customTag.getString(NBT_LEGENDARY_CRAFTER);
+            String crafter = customTag.getString(NBT_LEGENDARY_CRAFTER).orElse(StringUtils.EMPTY);
             tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
         }
 
@@ -330,6 +334,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (zoomFactor != 1F)
                 tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
+        tooltipComponents.forEach(tooltipBuilder);
     }
 
     private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
@@ -407,7 +412,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player)
     {
         Level level = player.level();
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             BlockState state = level.getBlockState(pos);
             level.sendBlockUpdated(pos, state, state, 3);
@@ -437,7 +442,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     /**
      * Forbid attacking blocks with this item.
      */
-    @Override
     public boolean canAttackBlock(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player)
     {
         // Return false to prevent left-click block breaking with this item (even in survival).
@@ -449,12 +453,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      */
     @Override
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
 
         if (configType.isDeployable() && gunItemHandler.tryPlaceDeployable(level, player, stack))
-            return InteractionResultHolder.sidedSuccess(stack, false);
+            return InteractionResult.CONSUME;
 
         boolean dualWield = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof GunItem
             && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof GunItem;
@@ -468,7 +472,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
         }
 
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -481,11 +485,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
             b.add(entry.attribute(), entry.modifier(), entry.slot());
         b.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "knockback_resistance"), configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+            Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "knockback_resistance"), configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         b.add(Attributes.MOVEMENT_SPEED, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "movement_speed"), configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), EquipmentSlotGroup.MAINHAND);
+            Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "movement_speed"), configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), EquipmentSlotGroup.MAINHAND);
         b.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "attack_damage"), configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+            Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "attack_damage"), configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         return b.build();
     }
 
@@ -512,31 +516,27 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      * Generic update method. If we have an offhand weapon, it will also make calls for that.
      */
     @Override
-    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slotId, boolean isSelected)
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull ServerLevel level, @NotNull Entity entity, @Nullable EquipmentSlot slot)
     {
-        if (!(entity instanceof Player player))
+        if (!(entity instanceof ServerPlayer player) || (slot != EquipmentSlot.MAINHAND && slot != EquipmentSlot.OFFHAND))
             return;
 
-        // Only tick item if in hand
-        InteractionHand hand;
-        if (player.getMainHandItem() == stack)
-            hand = InteractionHand.MAIN_HAND;
-        else if (player.getOffhandItem() == stack)
-            hand = InteractionHand.OFF_HAND;
-        else
-            return;
+        InteractionHand hand = slot == EquipmentSlot.MAINHAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 
         boolean dualWield = !player.getMainHandItem().isEmpty() && !player.getOffhandItem().isEmpty();
         PlayerData data = PlayerData.getInstance(player);
 
-        if (level.isClientSide)
-            ClientHooks.GUN.tickGunItem(this, level, player, data, stack, hand, dualWield);
-        else
-            serverTick(level, (ServerPlayer) player, data, stack, hand);
+        serverTick(level, player, data, stack, hand);
 
         gunItemHandler.handleMinigunEffects(level, player, data, hand);
         gunItemHandler.checkForLockOn(level, player, data, hand);
         gunItemHandler.checkForMelee(level, player, data, stack);
+    }
+
+    public void clientInventoryTick(@NotNull Level level, @NotNull Player player, @NotNull ItemStack stack, @NotNull InteractionHand hand)
+    {
+        boolean dualWield = !player.getMainHandItem().isEmpty() && !player.getOffhandItem().isEmpty();
+        ClientHooks.GUN.tickGunItem(this, level, player, PlayerData.getInstance(player), stack, hand, dualWield);
     }
 
     protected void serverTick(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
@@ -583,7 +583,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         CompoundTag tag = ItemStackData.copy(stack);
         boolean dirty = false;
 
-        if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
+        if (tag.getList(NBT_AMMO).isEmpty())
         {
             ListTag ammoList = new ListTag();
             for (int j = 0; j < configType.getNumAmmoItemsInGun(stack); j++)
@@ -593,7 +593,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             dirty = true;
         }
 
-        if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
+        if (tag.getInt(IPaintableItem.NBT_PAINTJOB_ID).isEmpty())
         {
             tag.putInt(NBT_PAINTJOB_ID, configType.getDefaultPaintjob().getId());
             dirty = true;
@@ -617,7 +617,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
-        if (!tag.contains(nbt, Tag.TAG_LIST))
+        if (tag.getList(nbt).isEmpty())
         {
             ListTag list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
@@ -625,11 +625,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return ItemStack.EMPTY;
         }
 
-        ListTag list = tag.getList(nbt, Tag.TAG_COMPOUND);
+        ListTag list = tag.getListOrEmpty(nbt);
         if (id < 0 || id >= list.size())
             return ItemStack.EMPTY;
 
-        CompoundTag slotTag = list.getCompound(id);
+        CompoundTag slotTag = list.getCompoundOrEmpty(id);
         return ItemStackData.parse(registries, slotTag);
     }
 
@@ -645,9 +645,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         CompoundTag tag = ItemStackData.copy(gun);
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
-        if (tag.contains(nbt, Tag.TAG_LIST))
+        if (tag.getList(nbt).isPresent())
         {
-            list = tag.getList(nbt, Tag.TAG_COMPOUND);
+            list = tag.getListOrEmpty(nbt);
         }
         else
         {
@@ -709,6 +709,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (!tag.contains(NBT_PREFERRED_AMMO))
             setPreferredAmmo(gun, configType.getAmmo().iterator().next());
 
-        return tag.getString(NBT_PREFERRED_AMMO);
+        return tag.getString(NBT_PREFERRED_AMMO).orElse(StringUtils.EMPTY);
     }
 }

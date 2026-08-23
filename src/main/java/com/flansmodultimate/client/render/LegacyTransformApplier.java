@@ -16,14 +16,40 @@ import lombok.NoArgsConstructor;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LegacyTransformApplier
 {
-    public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    /** Submit a legacy model to the 26.1 extraction renderer. */
+    public static void submitModel(IModelBase model, InfoType infoType, Identifier texture, PoseStack poseStack,
+                                   SubmitNodeCollector collector, int packedLight, int packedOverlay,
+                                   float red, float green, float blue, float alpha)
+    {
+        poseStack.pushPose();
+        applyModelTransform(model, infoType, poseStack);
+
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
+        boolean cull = ModClientConfig.get().useCullingRendering(infoType);
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+        {
+            RenderType renderType = renderPass.getRenderType(texture, translucent, cull);
+            collector.submitCustomGeometry(poseStack, renderType, (submittedPose, vertexConsumer) -> {
+                PoseStack deferredPoseStack = new PoseStack();
+                deferredPoseStack.last().set(submittedPose);
+                renderModelLayer(model, deferredPoseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, renderPass);
+            });
+        }
+
+        poseStack.popPose();
+    }
+
+    public static void renderModel(IModelBase model, InfoType infoType, Identifier texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
         applyModelTransform(model, infoType, poseStack);

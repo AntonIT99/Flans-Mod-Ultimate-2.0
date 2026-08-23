@@ -12,7 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -68,7 +68,7 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
             attackCooldown--;
 
         LivingEntity target = getTarget();
-        if (!level().isClientSide && target != null && target.isAlive())
+        if (!level().isClientSide() && target != null && target.isAlive())
         {
             Vec3 wanted = target.getEyePosition().subtract(position()).normalize().scale(0.16D);
             setDeltaMovement(getDeltaMovement().scale(0.85D).add(wanted));
@@ -80,7 +80,7 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
     @Override
     public void performRangedAttack(@NotNull LivingEntity target, float distanceFactor)
     {
-        if (attackCooldown > 0 || level().isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
+        if (attackCooldown > 0 || level().isClientSide() || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
         getLookControl().setLookAt(target, 30.0F, 30.0F);
         if (ApocalypseGunHelper.shootLoadedGun(this, target))
@@ -90,7 +90,7 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
     @Override
     @Nullable
     @SuppressWarnings("deprecation") // NeoForge marks this as override-only; external callers use EventHooks.
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData)
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnData)
     {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         equipDefault(level.getRandom());
@@ -104,7 +104,7 @@ public class SkullDroneEntity extends Monster implements RangedAttackMob
     }
 
     @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, @NotNull DamageSource source)
+    public boolean causeFallDamage(double fallDistance, float multiplier, @NotNull DamageSource source)
     {
         return false;
     }

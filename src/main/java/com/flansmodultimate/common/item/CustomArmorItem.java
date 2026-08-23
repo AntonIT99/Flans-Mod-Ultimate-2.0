@@ -26,11 +26,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
+public class CustomArmorItem extends Item implements IFlanItem<ArmorType>
 {
     private static final int EFFECT_CHECK_PERIOD = 40; // every 2 seconds
     protected static final int EFFECT_DURATION = 600; // 30 seconds
@@ -63,22 +63,27 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     protected final ArmorType configType;
     protected final String shortname;
 
-    public CustomArmorItem(ArmorType configType)
+    public CustomArmorItem(ArmorType configType, Item.Properties properties)
     {
-        super(CustomArmorMaterial.create(configType), configType.getArmorItemType(), new Properties().durability(configType.getDurability()));
+        super(createProperties(configType, properties));
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
-    @Override
+    private static Item.Properties createProperties(ArmorType configType, Item.Properties properties)
+    {
+        return properties
+            .humanoidArmor(CustomArmorMaterial.create(configType), configType.getArmorItemType())
+            .durability(Math.max(1, configType.getDurability()));
+    }
+
     public int getEnchantmentValue(ItemStack stack)
     {
         if (!configType.isReadEnchantability())
             return ModCommonConfig.get().defaultArmorEnchantability();
-        return material.value().enchantmentValue();
+        return configType.getEnchantability();
     }
 
-    @Override
     public boolean isDamageable(ItemStack stack)
     {
         //0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config
@@ -86,7 +91,6 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         return (breakType == 2 && configType.hasDurability()) || breakType == 1;
     }
 
-    @Override
     public int getMaxDamage(ItemStack stack)
     {
         if (ModCommonConfig.get().breakableArmor() == 1)
@@ -97,8 +101,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.empty());
 
@@ -172,19 +179,22 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     private static AttributeModifier modifier(String path, double amount, AttributeModifier.Operation operation)
     {
-        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, path), amount, operation);
+        return new AttributeModifier(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, path), amount, operation);
     }
 
-    @Override
     public int getDefense()
     {
         return configType.getMinecraftArmorPoints();
     }
 
-    @Override
     public float getToughness()
     {
         return configType.getToughness();
+    }
+
+    public EquipmentSlot getEquipmentSlot()
+    {
+        return configType.getArmorItemType().getSlot();
     }
 
     public static void handleMobEffects(LivingEntity entity)
@@ -195,7 +205,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         // Early-out: no CustomArmorItem equipped => nothing to do, but we may need to remove previously applied armor effects (instant removal)
         boolean anyCustom = false;
-        for (ItemStack armor : entity.getArmorSlots())
+        for (ItemStack armor : armorStacks(entity))
         {
             if (armor.getItem() instanceof CustomArmorItem)
             {
@@ -219,7 +229,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         int regen = 0;
         Map<Holder<MobEffect>, MobEffectInstance> desiredExtra = new HashMap<>();
 
-        for (ItemStack armor : entity.getArmorSlots())
+        for (ItemStack armor : armorStacks(entity))
         {
             if (!(armor.getItem() instanceof CustomArmorItem armorItem))
                 continue;
@@ -391,7 +401,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         boolean waterWalk = false;
         boolean negateFall = false;
 
-        for (ItemStack armor : entity.getArmorSlots()) {
+        for (ItemStack armor : armorStacks(entity)) {
             if (armor.getItem() instanceof CustomArmorItem armorItem)
             {
                 waterWalk |= armorItem.configType.isOnWaterWalking();
@@ -414,7 +424,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public static void handleJumpModifier(LivingEntity entity)
     {
         float mul = 1F;
-        for (ItemStack armor : entity.getArmorSlots())
+        for (ItemStack armor : armorStacks(entity))
         {
             if (armor.getItem() instanceof CustomArmorItem armorItem)
                 mul *= armorItem.configType.getJumpModifier();
@@ -437,7 +447,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         double rSum = 0.0;
 
-        for (ItemStack stack : entity.getArmorSlots())
+        for (ItemStack stack : armorStacks(entity))
         {
             if (stack.getItem() instanceof CustomArmorItem armorItem)
             {
@@ -512,7 +522,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         float totalBulletDef = 0.0F;
 
         // Sum up defences from all 4 armor slots
-        for (ItemStack stack : entity.getArmorSlots())
+        for (ItemStack stack : armorStacks(entity))
         {
             if (!(stack.getItem() instanceof CustomArmorItem armorItem))
                 continue;
@@ -535,5 +545,14 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             finalDamage = 0.0F;
 
         event.setAmount(finalDamage);
+    }
+
+    private static List<ItemStack> armorStacks(LivingEntity entity)
+    {
+        return List.of(
+            entity.getItemBySlot(EquipmentSlot.HEAD),
+            entity.getItemBySlot(EquipmentSlot.CHEST),
+            entity.getItemBySlot(EquipmentSlot.LEGS),
+            entity.getItemBySlot(EquipmentSlot.FEET));
     }
 }

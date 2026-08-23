@@ -159,7 +159,7 @@ public final class ShootingHelper
 
         if (bulletHit instanceof DriveableHit driveableHit)
         {
-            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide())
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             AtomicBoolean isFriendly = new AtomicBoolean(false);
@@ -206,7 +206,7 @@ public final class ShootingHelper
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
         {
-            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide())
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             float prevPenetratingPower = penetratingPower;
@@ -225,17 +225,19 @@ public final class ShootingHelper
         {
             Entity entity = entityHit.getEntity();
 
-            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
+            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide())
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             if (owner instanceof Player)
                 lastHitPenAmount = 1F;
 
-            if (!level.isClientSide)
+            if (!level.isClientSide())
             {
                 float damage = ShootingHelper.getDamage(entity, bullet, shot);
 
-                if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+                if (level instanceof ServerLevel serverLevel
+                    && entity.hurtServer(serverLevel, shot.getDamageSource(level, bullet), damage)
+                    && entity instanceof LivingEntity living)
                 {
                     PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
@@ -266,7 +268,7 @@ public final class ShootingHelper
             penetratingPower = -1F;
 
         //Send hit marker, if player is present
-        if (!level.isClientSide && showHitMarker && playerOwner.isPresent())
+        if (!level.isClientSide() && showHitMarker && playerOwner.isPresent())
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
@@ -290,7 +292,7 @@ public final class ShootingHelper
 
             PenetrableBlock penetrableBlock = PenetrableBlock.get(state);
 
-            if (penetrableBlock != null && penetrableBlock.breaksOnPenetration() && !level.isClientSide)
+            if (penetrableBlock != null && penetrableBlock.breaksOnPenetration() && !level.isClientSide())
                 ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
 
             if (bullet != null)
@@ -315,7 +317,7 @@ public final class ShootingHelper
 
     public static void handleGlassBreak(Level level, BlockPos pos, BlockState state, Entity causingEntity, ShootableType type)
     {
-        if (level.isClientSide || !ModUtils.isGlass(state) || !type.isBreaksGlass() || !FlansMod.teamsManager.isCanBreakGlass())
+        if (level.isClientSide() || !ModUtils.isGlass(state) || !type.isBreaksGlass() || !FlansMod.teamsManager.isCanBreakGlass())
             return;
 
         ModUtils.destroyBlock((ServerLevel) level, pos, causingEntity, false);
@@ -323,7 +325,7 @@ public final class ShootingHelper
 
     private static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
     {
-        if (level.isClientSide || !type.isHitSoundEnable())
+        if (level.isClientSide() || !type.isHitSoundEnable())
             return;
 
         String hitToUse = resolveImpactSound(level, pos, state, state.getBlock(), type).orElse(null);
@@ -369,7 +371,7 @@ public final class ShootingHelper
 
     private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 shootingMotion, BulletType type, @Nullable Bullet bullet)
     {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         BlockPos pos = hitResult.getBlockPos();
@@ -452,7 +454,7 @@ public final class ShootingHelper
 
     public static void onDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
     {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         playDetonateSound(level, type, position);
@@ -464,7 +466,7 @@ public final class ShootingHelper
 
     public static void onBulletDeath(Level level, BulletType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
     {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         doExplosion(level, type, position, shootable, causingEntity);
@@ -509,7 +511,7 @@ public final class ShootingHelper
                             continue;
 
                         BlockPos pos = BlockPos.containing(position.x + i, position.y + j, position.z + k);
-                        if (level.isEmptyBlock(pos) && level.random.nextBoolean())
+                        if (level.isEmptyBlock(pos) && level.getRandom().nextBoolean())
                             level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
                     }
                 }
@@ -548,7 +550,8 @@ public final class ShootingHelper
         {
             if (shootable != null)
             {
-                shootable.spawnAtLocation(dropStack, 1.0F);
+                if (level instanceof ServerLevel serverLevel)
+                    shootable.spawnAtLocation(serverLevel, dropStack, 1.0F);
             }
             else
             {
@@ -561,7 +564,7 @@ public final class ShootingHelper
 
     private static void createShot(Level level, FiredShot shot, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
-        Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
+        Vec3 shootingVector = calculateShootingMotionVector(level.getRandom(), shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
 
         HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
         List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());

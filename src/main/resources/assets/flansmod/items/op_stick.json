@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "flansmodultimate:op_stick",
+    "ownership": "flansmod:item/op_stick_ownership",
+    "connecting": "flansmod:item/op_stick_connecting",
+    "mapping": "flansmod:item/op_stick_mapping",
+    "destruction": "flansmod:item/op_stick_destruction"
+  }
+}

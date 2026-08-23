@@ -7,8 +7,11 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -19,7 +22,7 @@ import java.util.Map;
 import java.util.Random;
 
 @SuppressWarnings({"unused", "java:S1104"})
-public abstract class ModelBase extends Model implements IModelBase
+public abstract class ModelBase extends Model<Unit> implements IModelBase
 {
     public int textureWidth = TEXTURE_WIDTH;
     public int textureHeight = TEXTURE_HEIGHT;
@@ -29,13 +32,13 @@ public abstract class ModelBase extends Model implements IModelBase
     @Getter
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     @Getter @Setter
-    private ResourceLocation texture;
+    private Identifier texture;
     @Getter @Setter
     private float scale = 1F;
 
     protected ModelBase()
     {
-        super(RenderType::entityTranslucent);
+        super(new ModelPart(List.of(), Map.of()), RenderTypes::entityTranslucent);
     }
 
     @Override
@@ -95,13 +98,4 @@ public abstract class ModelBase extends Model implements IModelBase
         }
     }
 
-    @Override
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int packedColor)
-    {
-        float alpha = ((packedColor >>> 24) & 0xFF) / 255F;
-        float red = ((packedColor >>> 16) & 0xFF) / 255F;
-        float green = ((packedColor >>> 8) & 0xFF) / 255F;
-        float blue = (packedColor & 0xFF) / 255F;
-        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-    }
 }

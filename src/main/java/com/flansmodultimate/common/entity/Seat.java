@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,8 +23,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -64,6 +68,15 @@ public class Seat extends Entity implements IControllable
     private int lastInputSequence;
     private long lastInputGameTime;
     private boolean receivedInputSequence;
+    private final InterpolationHandler interpolation = new InterpolationHandler(this, 0)
+    {
+        @Override
+        public void interpolateTo(Vec3 position, float yRot, float xRot)
+        {
+            if (driveable == null)
+                super.interpolateTo(position, yRot, xRot);
+        }
+    };
 
     public Seat(EntityType<?> entityType, Level level)
     {
@@ -186,13 +199,13 @@ public class Seat extends Entity implements IControllable
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
         // Proxy entities are noSave. Their parent owns all persistent state.
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
         // Proxy entities are noSave. Their parent owns all persistent state.
     }
@@ -232,14 +245,14 @@ public class Seat extends Entity implements IControllable
         if (passenger != null)
         {
             passenger.fallDistance = 0F;
-            if (!level().isClientSide)
+            if (!level().isClientSide())
                 driveable.markUsed();
         }
-        else if (!level().isClientSide && getInputMask() != 0)
+        else if (!level().isClientSide() && getInputMask() != 0)
         {
             entityData.set(DATA_INPUT_MASK, 0);
         }
-        if (passenger == null && level().isClientSide)
+        if (passenger == null && level().isClientSide())
             clientViewAimInitialized = false;
     }
 
@@ -275,19 +288,17 @@ public class Seat extends Entity implements IControllable
      * slightly different camera position every network tick.
      */
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    public InterpolationHandler getInterpolation()
     {
-        if (level().isClientSide && driveable != null)
-            return;
-        super.lerpTo(x, y, z, yaw, pitch, steps);
+        return interpolation;
     }
 
     @Override
-    public void lerpMotion(double x, double y, double z)
+    public void lerpMotion(Vec3 movement)
     {
-        if (level().isClientSide && driveable != null)
+        if (level().isClientSide() && driveable != null)
             return;
-        super.lerpMotion(x, y, z);
+        super.lerpMotion(movement);
     }
 
     @Override
@@ -297,9 +308,9 @@ public class Seat extends Entity implements IControllable
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
+        if (driveable == null || level().isClientSide())
             return driveable != null;
         EnumDriveablePart part = seatInfo == null ? EnumDriveablePart.CORE : seatInfo.getPart();
         return driveable.damagePart(part, amount, source);
@@ -307,13 +318,13 @@ public class Seat extends Entity implements IControllable
 
     @Override
     @NotNull
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
         if (driveable == null || !driveable.canPlayerAccess(player))
             return InteractionResult.PASS;
         if (getFirstPassenger() != null && getFirstPassenger() != player)
-            return InteractionResult.sidedSuccess(level().isClientSide);
-        if (level().isClientSide)
+            return level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        if (level().isClientSide())
             return InteractionResult.SUCCESS;
 
         if (player == getFirstPassenger())
@@ -323,7 +334,7 @@ public class Seat extends Entity implements IControllable
         }
         if (player.getVehicle() != null)
             player.stopRiding();
-        return player.startRiding(this, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return player.startRiding(this, true, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
     }
 
     @Override
@@ -468,7 +479,7 @@ public class Seat extends Entity implements IControllable
             return key == 10 && driveable != null && driveable.pressKey(key, player, isOnEvent);
         localInputMask |= input;
         entityData.set(DATA_INPUT_MASK, DriveableInput.sanitize(localInputMask));
-        if (!level().isClientSide && isOnEvent)
+        if (!level().isClientSide() && isOnEvent)
             return serverHandleKeyPress(key, player);
         return true;
     }

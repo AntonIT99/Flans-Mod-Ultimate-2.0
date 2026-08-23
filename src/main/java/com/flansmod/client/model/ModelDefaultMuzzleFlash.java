@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
 {
@@ -39,7 +39,7 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
     }
 
     @Override
-    public ResourceLocation getTexture()
+    public Identifier getTexture()
     {
         return FlansMod.defaultMuzzleFlashTexture;
     }

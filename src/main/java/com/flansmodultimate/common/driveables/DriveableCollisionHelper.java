@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -65,7 +66,7 @@ public final class DriveableCollisionHelper
 
     public void tick(Driveable driveable)
     {
-        if (driveable == null || driveable.level().isClientSide || driveable.isRemoved() || profile.isEmpty())
+        if (driveable == null || driveable.level().isClientSide() || driveable.isRemoved() || profile.isEmpty())
             return;
 
         DriveableType type = driveable.getConfigType();
@@ -260,6 +261,8 @@ public final class DriveableCollisionHelper
 
     private static void applyConfiguredImpactDamage(Driveable driveable, DriveableType type, LivingEntity candidate)
     {
+        if (!(driveable.level() instanceof ServerLevel serverLevel))
+            return;
         float throttle = Math.abs(driveable.getThrottle());
         if (!type.isCollisionDamageEnable() || throttle <= Math.max(0F, type.getCollisionDamageThrottle())
             || !canDamageCandidate(driveable, candidate))
@@ -273,7 +276,7 @@ public final class DriveableCollisionHelper
             : controller instanceof LivingEntity living
                 ? driveable.level().damageSources().mobAttack(living)
                 : driveable.level().damageSources().flyIntoWall();
-        candidate.hurt(source, amount);
+        candidate.hurtServer(serverLevel, source, amount);
     }
 
     private static boolean canDamageCandidate(Driveable driveable, LivingEntity candidate)

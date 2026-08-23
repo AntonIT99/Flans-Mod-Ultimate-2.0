@@ -42,12 +42,28 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 
     public void renderBase(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
+        renderBase(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+    }
+
+    public void renderBase(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     public void renderGun(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        float pitch = -aa.getGunPitch() * Mth.DEG_TO_RAD;
+        boolean[] hasAmmo = new boolean[ammoModel.length];
+        for (int i = 0; i < hasAmmo.length; i++)
+            hasAmmo[i] = aa.hasAmmo(i);
+        renderGun(aa.getGunPitch(), aa.getBarrelRecoil(), hasAmmo, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    public void renderGun(float gunPitch, float[] recoil, boolean[] hasAmmo, PoseStack poseStack, VertexConsumer vertexConsumer,
+                          int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+                          float scale, EnumRenderPass renderPass)
+    {
+        float pitch = -gunPitch * Mth.DEG_TO_RAD;
 
         renderParts(seatModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
@@ -68,18 +84,17 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
             part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
-        float[] recoil = aa.getBarrelRecoil();
         for (int i = 0; i < barrelModel.length; i++)
         {
             float barrelRecoil = i < recoil.length ? recoil[i] : 0F;
-            float x = -barrelRecoil * Mth.cos(-aa.getGunPitch() * Mth.DEG_TO_RAD) + barrelX;
-            float y = -barrelRecoil * Mth.sin(-aa.getGunPitch() * Mth.DEG_TO_RAD) + barrelY;
+            float x = -barrelRecoil * Mth.cos(-gunPitch * Mth.DEG_TO_RAD) + barrelX;
+            float y = -barrelRecoil * Mth.sin(-gunPitch * Mth.DEG_TO_RAD) + barrelY;
             renderBarrelPartArray(barrelModel[i], x, y, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
         for (int i = 0; i < ammoModel.length; i++)
         {
-            if (!aa.hasAmmo(i))
+            if (i >= hasAmmo.length || !hasAmmo[i])
                 continue;
             renderBarrelPartArray(ammoModel[i], barrelX, barrelY, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }

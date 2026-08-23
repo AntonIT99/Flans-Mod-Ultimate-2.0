@@ -16,6 +16,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,7 +56,7 @@ public class PowerCubeBlock extends BaseEntityBlock
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type)
     {
-        return level.isClientSide ? (tickerLevel, pos, blockState, blockEntity) -> {
+        return level.isClientSide() ? (tickerLevel, pos, blockState, blockEntity) -> {
             if (blockEntity instanceof PowerCubeBlockEntity cube)
                 PowerCubeBlockEntity.tick(cube);
         } : null;
@@ -83,18 +86,20 @@ public class PowerCubeBlock extends BaseEntityBlock
 
     @Override
     @NotNull
-    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos)
+    protected BlockState updateShape(@NotNull BlockState state, @NotNull LevelReader level, @NotNull ScheduledTickAccess ticks,
+                                     @NotNull BlockPos pos, @NotNull Direction direction, @NotNull BlockPos neighborPos,
+                                     @NotNull BlockState neighborState, @NotNull RandomSource random)
     {
         if (direction == Direction.DOWN && !canSurvive(state, level, pos))
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+        return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
     public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack)
     {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (!level.isClientSide)
+        if (!level.isClientSide())
         {
             ApocalypsePortalManager.tryActivatePortal(level, pos);
             ApocalypseBossFightManager.tryActivate(level, pos, placer);

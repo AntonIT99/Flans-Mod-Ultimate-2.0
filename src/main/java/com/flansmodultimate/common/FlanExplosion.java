@@ -36,6 +36,7 @@ import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -51,7 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FlanExplosion extends Explosion
+public class FlanExplosion extends ServerExplosion
 {
     protected static final double EXPLOSION_PARTICLE_RANGE = 256;
     protected static final float KNOCKBACK_MULTIPLAYER = 1F;
@@ -62,7 +63,7 @@ public class FlanExplosion extends Explosion
     protected final boolean canDamageSelf;
 
     // Core Context
-    protected final Level level;
+    protected final ServerLevel level;
     protected final Vec3 center;
     protected final int smokeCount;
     protected final int debrisCount;
@@ -105,7 +106,13 @@ public class FlanExplosion extends Explosion
 
     public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, Stats stats, boolean causesFire, boolean breaksBlocks, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
-        super(level, explosive, x, y, z, stats.explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
+        this(requireServerLevel(level), explosive, causingEntity, x, y, z, stats, causesFire, breaksBlocks, smokeCount, debrisCount, canDamageSelf);
+    }
+
+    private FlanExplosion(ServerLevel level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, Stats stats, boolean causesFire, boolean breaksBlocks, int smokeCount, int debrisCount, boolean canDamageSelf)
+    {
+        super(level, explosive, null, createDamageCalculator(explosive), new Vec3(x, y, z), stats.explosionRadius,
+            causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
         this.level = level;
         this.explosive = explosive;
@@ -121,52 +128,59 @@ public class FlanExplosion extends Explosion
         this.canDamageSelf = canDamageSelf;
 
         affectedBlockPositions = Lists.newArrayList();
-        damageCalculator = (explosive == null) ? new ExplosionDamageCalculator() : new EntityBasedExplosionDamageCalculator(explosive);
+        damageCalculator = createDamageCalculator(explosive);
 
         if (!EventHooks.onExplosionStart(level, this))
         {
             explode();
-            finalizeExplosion(true);
+            finishExplosion(true);
         }
+    }
+
+    private static ServerLevel requireServerLevel(Level level)
+    {
+        if (level instanceof ServerLevel serverLevel)
+            return serverLevel;
+        throw new IllegalArgumentException("FlanExplosion can only be created on the logical server");
+    }
+
+    private static ExplosionDamageCalculator createDamageCalculator(@Nullable Entity explosive)
+    {
+        return explosive == null ? new ExplosionDamageCalculator() : new EntityBasedExplosionDamageCalculator(explosive);
     }
 
     /**
      * Does the first part of the explosion (destroy blocks)
      */
     @Override
-    public void explode()
+    public int explode()
     {
         doBreakBlocks();
         doHurtEntities();
+        return affectedBlockPositions.size();
     }
 
     /**
      * Does the second part of the explosion (sound, particles, drop spawn)
      */
-    @Override
-    public void finalizeExplosion(boolean spawnParticles)
+    private void finishExplosion(boolean spawnParticles)
     {
-        if (level.isClientSide)
-            return;
-
-        ServerLevel sl = (ServerLevel) level;
-
         // Game event
         level.gameEvent(GameEvent.EXPLODE, BlockPos.containing(center),
             GameEvent.Context.of(explosive != null ? explosive : causingEntity));
 
         // Sound broadcast (server-side playSound with null player broadcasts)
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, ModCommonConfig.get().explosionSoundRange() / 16F, (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F);
+        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, ModCommonConfig.get().explosionSoundRange() / 16F, (1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F) * 0.7F);
 
         if (spawnParticles)
         {
             if (stats.explosionRadius >= 2.0F)
-                sl.sendParticles(ParticleTypes.EXPLOSION_EMITTER, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
+                level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
             else
-                sl.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
+                level.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
         }
 
-        if (interactsWithBlocks())
+        if (breaksBlocks)
         {
             for (BlockPos pos : getToBlow())
             {
@@ -191,7 +205,7 @@ public class FlanExplosion extends Explosion
             {
                 if (level.isEmptyBlock(pos)
                     && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)
-                    && level.random.nextInt(3) == 0)
+                    && level.getRandom().nextInt(3) == 0)
                 {
                     level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
                 }
@@ -212,13 +226,11 @@ public class FlanExplosion extends Explosion
         return hitPlayers;
     }
 
-    @Override
     public void clearToBlow()
     {
         affectedBlockPositions.clear();
     }
 
-    @Override
     @NotNull
     public List<BlockPos> getToBlow()
     {
@@ -242,7 +254,7 @@ public class FlanExplosion extends Explosion
 
         // A "ray energy" budget. Since you set power ∝ cbrt(W) and radius ∝ cbrt(W),
         // power * radius ∝ W^(2/3), which is already strongly scaling.
-        float rayStartBudget = stats.explosionPower * (0.7F + level.random.nextFloat() * 0.6F);
+        float rayStartBudget = stats.explosionPower * (0.7F + level.getRandom().nextFloat() * 0.6F);
 
         for (int j = 0; j < samples; ++j)
         {
@@ -314,14 +326,14 @@ public class FlanExplosion extends Explosion
         hitPlayers.clear();
 
         List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !e.ignoreExplosion(this));
-        EventHooks.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
+        EventHooks.onExplosionDetonate(level, this, entities, affectedBlockPositions);
 
         for (Entity e : entities)
         {
             double distance = e.getEyePosition().distanceTo(center);
 
             // occlusion
-            double seen = Explosion.getSeenPercent(center, e);
+            double seen = ServerExplosion.getSeenPercent(center, e);
             // blast falloff
             double blastFalloff = getBlastFalloff(distance, stats.blastRadius());
             // blast damage
@@ -454,7 +466,7 @@ public class FlanExplosion extends Explosion
             return;
 
         DamageSource src = FlanDamageSources.createDamageSource(level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
-        boolean hurt = e.hurt(src, damage);
+        boolean hurt = e.hurtServer(level, src, damage);
         if (hurt && causingEntity instanceof ServerPlayer sp)
             PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), sp);
     }
@@ -484,5 +496,55 @@ public class FlanExplosion extends Explosion
 
         if (e instanceof Player pl && !pl.isSpectator() && !(pl.getAbilities().flying && pl.getAbilities().instabuild))
             hitPlayers.put(pl, kbVec);
+    }
+
+    @Override
+    public ServerLevel level()
+    {
+        return level;
+    }
+
+    @Override
+    public Explosion.BlockInteraction getBlockInteraction()
+    {
+        return breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP;
+    }
+
+    @Override
+    @Nullable
+    public LivingEntity getIndirectSourceEntity()
+    {
+        return causingEntity;
+    }
+
+    @Override
+    @Nullable
+    public Entity getDirectSourceEntity()
+    {
+        return explosive;
+    }
+
+    @Override
+    public float radius()
+    {
+        return stats.explosionRadius;
+    }
+
+    @Override
+    public Vec3 center()
+    {
+        return center;
+    }
+
+    @Override
+    public boolean canTriggerBlocks()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean shouldAffectBlocklikeEntities()
+    {
+        return getBlockInteraction().shouldAffectBlocklikeEntities();
     }
 }

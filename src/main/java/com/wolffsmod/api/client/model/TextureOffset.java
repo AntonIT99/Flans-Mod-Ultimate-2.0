@@ -1,11 +1,8 @@
 package com.wolffsmod.api.client.model;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * @param textureOffsetX The x coordinate offset of the texture
  * @param textureOffsetY The y coordinate offset of the texture
  */
-@OnlyIn(Dist.CLIENT)
 public record TextureOffset(int textureOffsetX, int textureOffsetY) {}

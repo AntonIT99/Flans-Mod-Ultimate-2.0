@@ -26,6 +26,8 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +53,6 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
     {
         super(entityType, level);
         noPhysics = false;
-        noCulling = true;
     }
 
     public Parachute(Level level, ToolType type, Player player)
@@ -76,7 +77,7 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
     @Nullable
     public static Parachute spawnAndMount(Level level, Player player, ToolType type)
     {
-        if (level.isClientSide || !canUseParachute(player))
+        if (level.isClientSide() || !canUseParachute(player))
             return null;
 
         Parachute parachute = new Parachute(level, type, player);
@@ -86,7 +87,7 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
         if (player.getVehicle() != null)
             player.stopRiding();
 
-        if (!player.startRiding(parachute, true))
+        if (!player.startRiding(parachute, true, true))
         {
             parachute.discard();
             return null;
@@ -114,16 +115,16 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setShortName(tag.getString(NBT_TYPE_NAME));
+        setShortName(input.getString(NBT_TYPE_NAME).orElse(StringUtils.EMPTY));
         resolveTypeOrDiscard();
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
-        tag.putString(NBT_TYPE_NAME, getShortName());
+        output.putString(NBT_TYPE_NAME, getShortName());
     }
 
     @Override
@@ -138,7 +139,7 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
         }
 
         Entity rider = getFirstPassenger();
-        if (!level().isClientSide && (rider == null || rider.getVehicle() != this || !rider.isAlive()))
+        if (!level().isClientSide() && (rider == null || rider.getVehicle() != this || !rider.isAlive()))
         {
             discard();
             return;
@@ -170,7 +171,7 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
         setDeltaMovement(motionX, DESCENT_SPEED, motionZ);
         move(MoverType.SELF, getDeltaMovement());
 
-        if (!level().isClientSide && (onGround() || isInWater()))
+        if (!level().isClientSide() && (onGround() || isInWater()))
             discard();
     }
 
@@ -197,9 +198,10 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount)
+    public boolean hurtServer(@NotNull net.minecraft.server.level.ServerLevel level,
+                              @NotNull DamageSource source, float amount)
     {
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             discard();
         return true;
     }
@@ -210,7 +212,6 @@ public class Parachute extends Entity implements IEntityWithComplexSpawn, IFlanE
         fallDistance = 0.0F;
     }
 
-    @Override
     public ItemStack getPickedResult(HitResult target)
     {
         ToolType type = getConfigType();

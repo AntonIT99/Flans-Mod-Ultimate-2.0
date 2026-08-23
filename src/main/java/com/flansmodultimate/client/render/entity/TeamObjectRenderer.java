@@ -5,20 +5,20 @@ import com.flansmodultimate.common.entity.Flag;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 
 /** Lightweight textured recreation of the legacy flag and three-block flagpole model. */
-public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T>
+public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T, TeamObjectRenderer.State>
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/entity/teams/flagpole.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/entity/teams/flagpole.png");
 
     public TeamObjectRenderer(EntityRendererProvider.Context context)
     {
@@ -27,33 +27,50 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     }
 
     @Override
-    public void render(@NotNull T entity, float yaw, float partialTick, @NotNull PoseStack poseStack,
-                       @NotNull MultiBufferSource buffer, int packedLight)
+    public State createRenderState()
+    {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(T entity, State state, float partialTick)
+    {
+        super.extractRenderState(entity, state, partialTick);
+        state.isFlag = entity instanceof Flag;
+        state.colour = state.isFlag ? ((Flag)entity).getColour() : 0xFFFFFF;
+    }
+
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera)
     {
         poseStack.pushPose();
-        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-        if (entity instanceof Flag flag)
+        if (state.isFlag)
+            poseStack.mulPose(Axis.YP.rotationDegrees(180F - camera.yRot));
+
+        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, vertices) -> {
+            if (state.isFlag)
+            {
+                float red = (state.colour >> 16 & 255) / 255F;
+                float green = (state.colour >> 8 & 255) / 255F;
+                float blue = (state.colour & 255) / 255F;
+                quad(pose, vertices, -0.5F, -0.25F, 0F, 0.5F, 0.75F, 0F,
+                    0F, 0F, 0.25F, 0.5F, red, green, blue, state.lightCoords);
+            }
+            else
+            {
+                quad(pose, vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
+                    0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, state.lightCoords);
+            }
+        });
+        if (!state.isFlag)
         {
-            poseStack.mulPose(Axis.YP.rotationDegrees(180F - entityRenderDispatcher.camera.getYRot()));
-            int colour = flag.getColour();
-            float red = (colour >> 16 & 255) / 255F;
-            float green = (colour >> 8 & 255) / 255F;
-            float blue = (colour & 255) / 255F;
-            quad(poseStack.last(), vertices, -0.5F, -0.25F, 0F, 0.5F, 0.75F, 0F,
-                0F, 0F, 0.25F, 0.5F, red, green, blue, packedLight);
-        }
-        else
-        {
-            // Two crossed strips remain legible from every camera angle and use
-            // the same pole section of the original 64x32 texture atlas.
-            quad(poseStack.last(), vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
-                0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, packedLight);
             poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-            quad(poseStack.last(), vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
-                0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, packedLight);
+            collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, vertices) ->
+                quad(pose, vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
+                    0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, state.lightCoords));
         }
         poseStack.popPose();
-        super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
+        super.submit(state, poseStack, collector, camera);
     }
 
     private static void quad(PoseStack.Pose pose, VertexConsumer vertices,
@@ -74,10 +91,9 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
             .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0F, 0F, 1F);
     }
 
-    @NotNull
-    @Override
-    public ResourceLocation getTextureLocation(@NotNull T entity)
+    public static final class State extends EntityRenderState
     {
-        return TEXTURE;
+        private boolean isFlag;
+        private int colour;
     }
 }

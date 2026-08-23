@@ -16,6 +16,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
@@ -27,7 +28,7 @@ public final class DefaultAmmoCommand
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(Commands.literal("defaultammo")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .executes(context -> giveDefaultAmmo(context, 1))
             .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64))
                 .executes(context -> giveDefaultAmmo(context, IntegerArgumentType.getInteger(context, "amount")))

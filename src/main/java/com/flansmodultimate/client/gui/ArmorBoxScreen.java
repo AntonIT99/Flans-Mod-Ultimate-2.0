@@ -8,11 +8,13 @@ import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,9 +27,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
 
     public ArmorBoxScreen(ArmorBoxMenu menu, Inventory inv, Component title)
     {
-        super(menu, inv, title);
-        this.imageWidth = 176;
-        this.imageHeight = 182;
+        super(menu, inv, title, 176, 182);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         // forward:     x+89..99, y+87..97
         int x0 = leftPos;
         int y0 = topPos;
-        ResourceLocation guiTexture = menu.getBlock().getConfigType().getGuiTexture();
+        Identifier guiTexture = menu.getBlock().getConfigType().getGuiTexture();
 
         addRenderableWidget(new TextureRegionButton(x0 + 77, y0 + 87, 176, guiTexture,
             btn -> {
@@ -66,33 +66,32 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     }
 
     @Override
-    public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg, mouseX, mouseY, partialTick);
-        super.render(gg, mouseX, mouseY, partialTick);
-        renderTooltip(gg, mouseX, mouseY);
+        super.extractRenderState(gg, mouseX, mouseY, partialTick);
     }
 
     @Override
-    protected void renderBg(@NotNull GuiGraphics gg, float partialTick, int mouseX, int mouseY)
+    public void extractBackground(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY, float partialTick)
     {
+        super.extractBackground(gg, mouseX, mouseY, partialTick);
         ArmorBoxType type = menu.getBlock().getConfigType();
-        ResourceLocation guiTexture = type.getGuiTexture();
-        gg.blit(guiTexture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        Identifier guiTexture = type.getGuiTexture();
+        gg.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
 
-        gg.drawCenteredString(font, menu.getBlock().getName().getString(), leftPos + imageWidth / 2, topPos + 5, 0xFFFFFF);
+        gg.centeredText(font, menu.getBlock().getName().getString(), leftPos + imageWidth / 2, topPos + 5, 0xFFFFFF);
 
         // Grey out arrows like old GUI (draw overlay on top)
         if (page == 0)
-            gg.blit(guiTexture, leftPos + 77, topPos + 87, 176, 0, 10, 10);
+            gg.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos + 77, topPos + 87, 176, 0, 10, 10, 256, 256);
         if (page >= type.getPages().size() - 1)
-            gg.blit(guiTexture, leftPos + 89, topPos + 87, 186, 0, 10, 10);
+            gg.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos + 89, topPos + 87, 186, 0, 10, 10, 256, 256);
 
         drawRecipe(gg, type, page);
     }
 
     @Override
-    protected void renderLabels(@NotNull GuiGraphics gg, int mouseX, int mouseY)
+    protected void extractLabels(@NotNull GuiGraphicsExtractor gg, int mouseX, int mouseY)
     {
         // The armor box GUI draws its own title in renderBg and does not need the default inventory label.
     }
@@ -101,9 +100,9 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     private static final class TextureRegionButton extends Button
     {
         private final int textureU;
-        private final ResourceLocation texture;
+        private final Identifier texture;
 
-        private TextureRegionButton(int x, int y, int textureU, ResourceLocation texture, OnPress onPress)
+        private TextureRegionButton(int x, int y, int textureU, Identifier texture, OnPress onPress)
         {
             super(x, y, 10, 10, Component.empty(), onPress, DEFAULT_NARRATION);
             this.textureU = textureU;
@@ -111,13 +110,13 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         }
 
         @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
         {
-            graphics.blit(texture, getX(), getY(), textureU, 0, width, height);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, texture, getX(), getY(), textureU, 0, width, height, 256, 256);
         }
     }
 
-    private void drawRecipe(GuiGraphics gg, ArmorBoxType type, int pageIndex)
+    private void drawRecipe(GuiGraphicsExtractor gg, ArmorBoxType type, int pageIndex)
     {
         if (type.getPages().isEmpty())
             return;
@@ -126,7 +125,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
             return;
 
         // Center title
-        gg.drawCenteredString(font, currentPage.getName(), leftPos + 87, topPos + 25, 0xFFFFFF);
+        gg.centeredText(font, currentPage.getName(), leftPos + 87, topPos + 25, 0xFFFFFF);
 
         // 2x2 armour panels:
         // armour icon at (x+9+83*i, y+44+22*j)
@@ -144,8 +143,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                 int ay = topPos + 44 + 22 * j;
 
                 ModUtils.getItemStack(armorType).ifPresent(armorStack -> {
-                    gg.renderItem(armorStack, ax, ay);
-                    gg.renderItemDecorations(font, armorStack, ax, ay);
+                    gg.item(armorStack, ax, ay);
+                    gg.itemDecorations(font, armorStack, ax, ay);
                 });
 
                 List<ItemStack> req = currentPage.getRequiredStacks().get(idx);
@@ -162,8 +161,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                         ItemStack part = req.get(startPart + p);
                         int px = leftPos + 30 + p * 19 + 83 * i;
                         int py = topPos + 44 + 22 * j;
-                        gg.renderItem(part, px, py);
-                        gg.renderItemDecorations(font, part, px, py);
+                        gg.item(part, px, py);
+                        gg.itemDecorations(font, part, px, py);
                     }
                 }
             }
@@ -171,8 +170,11 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick)
     {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         if (button == 0 || button == 1)
         {
             int m = (int)mouseX - leftPos;
@@ -198,6 +200,6 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 }

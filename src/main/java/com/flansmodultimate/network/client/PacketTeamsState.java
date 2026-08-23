@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -92,7 +93,7 @@ public final class PacketTeamsState implements IClientPacket
                     teamChoices.add(new TeamChoice(id, team.getName(), team.getTeamColour()));
             }
             teamChoices.add(new TeamChoice(Team.SPECTATORS_ID, Team.SPECTATORS.getName(), Team.SPECTATORS.getTeamColour()));
-            if (viewer.hasPermissions(2))
+            if (viewer.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 teamChoices.add(new TeamChoice("$builder", "No Team / Builder", 0xB0B0B0));
             packet.teamChoices = List.copyOf(teamChoices);
         }

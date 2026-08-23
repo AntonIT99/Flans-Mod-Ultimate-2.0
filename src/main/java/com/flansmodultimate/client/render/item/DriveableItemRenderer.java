@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +42,7 @@ public final class DriveableItemRenderer
         }
 
         Paintjob paintjob = type.getPaintjob(stack);
-        ResourceLocation texture = paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
+        Identifier texture = paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
         int color = type.getColour();
         float red = (color >> 16 & 255) / 255F;
         float green = (color >> 8 & 255) / 255F;

@@ -70,7 +70,7 @@ public final class PlayerShootingHandler implements ShootingHandler
         if (gunType.isConsumeGunUponUse())
             player.setItemInHand(hand, ItemStack.EMPTY);
 
-        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? net.neoforged.fml.LogicalSide.CLIENT : net.neoforged.fml.LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player, level.isClientSide() ? net.neoforged.fml.LogicalSide.CLIENT : net.neoforged.fml.LogicalSide.SERVER);
         EnumFireMode mode = gunType.getFireMode(gunStack);
         
         if (mode == EnumFireMode.BURST)

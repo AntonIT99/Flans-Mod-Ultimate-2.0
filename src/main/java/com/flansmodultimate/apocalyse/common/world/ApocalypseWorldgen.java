@@ -17,11 +17,11 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -47,7 +47,7 @@ public final class ApocalypseWorldgen
             return;
 
         ChunkPos chunkPos = chunk.getPos();
-        RandomSource random = RandomSource.create(level.getSeed() ^ (chunkPos.x * 341873128712L) ^ (chunkPos.z * 132897987541L));
+        RandomSource random = RandomSource.create(level.getSeed() ^ (chunkPos.x() * 341873128712L) ^ (chunkPos.z() * 132897987541L));
         boolean apocalypse = level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL);
         if (apocalypse && !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
@@ -103,11 +103,11 @@ public final class ApocalypseWorldgen
     {
         if (!ModApocalypseConfig.apocalypseMobsEnabled() || !isClear(level, pos))
             return;
-        SurvivorEntity survivor = ApocalypseContent.survivor.get().create(level);
+        SurvivorEntity survivor = ApocalypseContent.survivor.get().create(level, EntitySpawnReason.CHUNK_GENERATION);
         if (survivor == null)
             return;
-        survivor.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
-        survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION, null);
+        survivor.snapTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.getRandom().nextFloat() * 360.0F, 0.0F);
+        survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.CHUNK_GENERATION, null);
         level.addFreshEntity(survivor);
     }
 
@@ -152,7 +152,7 @@ public final class ApocalypseWorldgen
 
     private static void generateSulphurPool(ServerLevel level, RandomSource random, BlockPos center)
     {
-        if (center.getY() <= level.getMinBuildHeight() + 2)
+        if (center.getY() <= level.getMinY() + 2)
             return;
         int radius = 3 + random.nextInt(3);
         for (int dx = -radius; dx <= radius; dx++)
@@ -179,16 +179,16 @@ public final class ApocalypseWorldgen
     {
         if (!isClear(level, base))
             return;
-        int height = 4 + level.random.nextInt(5);
+        int height = 4 + level.getRandom().nextInt(5);
         for (int y = 0; y < height; y++)
             level.setBlock(base.above(y), Blocks.OAK_LOG.defaultBlockState(), 2);
         for (Direction direction : Direction.Plane.HORIZONTAL)
         {
-            if (level.random.nextBoolean())
+            if (level.getRandom().nextBoolean())
             {
                 BlockPos branch = base.above(height - 1).relative(direction);
                 level.setBlock(branch, Blocks.OAK_LOG.defaultBlockState(), 2);
-                if (level.random.nextBoolean())
+                if (level.getRandom().nextBoolean())
                     level.setBlock(branch.below(), Blocks.COBWEB.defaultBlockState(), 2);
             }
         }
@@ -298,13 +298,13 @@ public final class ApocalypseWorldgen
         int x = chunkPos.getMinBlockX() + random.nextInt(16);
         int z = chunkPos.getMinBlockZ() + random.nextInt(16);
         int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-        return new BlockPos(x, Math.max(chunk.getMinBuildHeight() + 1, y), z);
+        return new BlockPos(x, Math.max(chunk.getMinY() + 1, y), z);
     }
 
     private static BlockPos surfacePos(ServerLevel level, int x, int z)
     {
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-        return new BlockPos(x, Math.max(level.getMinBuildHeight() + 1, y), z);
+        return new BlockPos(x, Math.max(level.getMinY() + 1, y), z);
     }
 
     private static boolean isClear(ServerLevel level, BlockPos pos)
@@ -314,7 +314,7 @@ public final class ApocalypseWorldgen
 
     private static Optional<Block> flanBlock(String path)
     {
-        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
+        Block block = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
         if (block == null || block == Blocks.AIR)
             return Optional.empty();
         return Optional.of(block);

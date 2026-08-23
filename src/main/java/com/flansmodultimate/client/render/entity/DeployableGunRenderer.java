@@ -8,103 +8,124 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
 {
-    public DeployableGunRenderer(EntityRendererProvider.Context ctx)
+    public DeployableGunRenderer(EntityRendererProvider.Context ctx) { super(ctx); }
+
+    @Override
+    protected AABB getBoundingBoxForCulling(DeployedGun gun)
     {
-        super(ctx);
+        double range = DeployedGun.getRenderDistance();
+        return new AABB(gun.getX() - range, gun.getY() - range, gun.getZ() - range,
+            gun.getX() + range, gun.getY() + range, gun.getZ() + range);
     }
 
     @Override
-    public void render(@NotNull DeployedGun deployedGun, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    public void extractRenderState(DeployedGun gun, State state, float partialTicks)
     {
-        ModelMG model = ModelCache.getOrLoadDeployableGunModel(deployedGun.getConfigType());
-        if (model == null)
+        super.extractRenderState(gun, state, partialTicks);
+        GunType type = gun.getConfigType();
+        if (type == null)
+        {
+            state.customData = null;
             return;
+        }
+        ModelMG model = ModelCache.getOrLoadDeployableGunModel(type);
+        if (model == null)
+        {
+            state.customData = null;
+            return;
+        }
 
-        GunType type = deployedGun.getConfigType();
-        float red = getRed(type);
-        float green = getGreen(type);
-        float blue = getBlue(type);
-        float modelScale = deployedGun.getConfigType().getModelScale();
-        ResourceLocation texture = deployedGun.getConfigType().getDeployableTexture();
-        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
-        boolean cull = ModClientConfig.get().useCullingRendering(type);
-
-        poseStack.pushPose();
-
-        float baseYaw = Direction.from2DDataValue(deployedGun.getGunDirection()).toYRot();
-        poseStack.mulPose(Axis.YP.rotationDegrees(180F - baseYaw));
-
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
-
-        float aimPitch = getAimPitch(deployedGun, partialTicks);
-        float aimWorldYaw = getAimWorldYaw(deployedGun, partialTicks, baseYaw);
-        float aimLocalYaw = Mth.wrapDegrees(aimWorldYaw - baseYaw);
-        
-        poseStack.mulPose(Axis.YP.rotationDegrees(-aimLocalYaw));
-
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
-
-        poseStack.popPose();
+        float baseYaw = Direction.from2DDataValue(gun.getGunDirection()).toYRot();
+        float aimPitch = getAimPitch(gun, partialTicks);
+        float aimLocalYaw = Mth.wrapDegrees(getAimWorldYaw(gun, partialTicks, baseYaw) - baseYaw);
+        state.customData = new RenderData(model, type, type.getDeployableTexture(), baseYaw, aimPitch, aimLocalYaw,
+            gun.getReloadTimer() <= 0 && gun.hasAmmo());
     }
 
-    private static float getAimPitch(@NotNull DeployedGun gun, float partialTicks)
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera)
+    {
+        if (!(state.customData instanceof RenderData data))
+            return;
+
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(data.type);
+        boolean cull = ModClientConfig.get().useCullingRendering(data.type);
+        float modelScale = data.type.getModelScale();
+        poseStack.pushPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(180F - data.baseYaw));
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(data.model))
+        {
+            collector.submitCustomGeometry(poseStack, renderPass.getRenderType(data.texture, translucent, cull), (pose, vertices) -> {
+                PoseStack deferred = poseStack(pose);
+                data.model.renderBipod(data.showAmmo, deferred, vertices, state.lightCoords, OverlayTexture.NO_OVERLAY,
+                    state.red, state.green, state.blue, state.alpha, modelScale, renderPass);
+            });
+        }
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(-data.aimLocalYaw));
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(data.model))
+        {
+            collector.submitCustomGeometry(poseStack, renderPass.getRenderType(data.texture, translucent, cull), (pose, vertices) -> {
+                PoseStack deferred = poseStack(pose);
+                data.model.renderGun(data.showAmmo, data.aimPitch, deferred, vertices, state.lightCoords,
+                    OverlayTexture.NO_OVERLAY, state.red, state.green, state.blue, state.alpha, modelScale, renderPass);
+            });
+        }
+        poseStack.popPose();
+        submitEntityFeatures(state, poseStack, collector, camera);
+    }
+
+    private static PoseStack poseStack(PoseStack.Pose pose)
+    {
+        PoseStack result = new PoseStack();
+        result.last().set(pose);
+        return result;
+    }
+
+    private static float getAimPitch(DeployedGun gun, float partialTicks)
     {
         Player gunner = getPlayerGunner(gun);
-
-        float pitchDeg;
-        if (gunner != null)
-            pitchDeg = Mth.lerp(partialTicks, gunner.xRotO, gunner.getXRot());
-        else
-            pitchDeg = Mth.lerp(partialTicks, gun.xRotO, gun.getXRot());
-
+        float pitch = gunner != null ? Mth.lerp(partialTicks, gunner.xRotO, gunner.getXRot())
+            : Mth.lerp(partialTicks, gun.xRotO, gun.getXRot());
         float top = gun.getConfigType().getTopViewLimit();
         float bottom = gun.getConfigType().getBottomViewLimit();
         if (top > bottom)
         {
-            float t = top; top = bottom;
-            bottom = t;
+            float swap = top;
+            top = bottom;
+            bottom = swap;
         }
-
-        return Mth.clamp(pitchDeg, top, bottom);
+        return Mth.clamp(pitch, top, bottom);
     }
 
-    private static float getAimWorldYaw(@NotNull DeployedGun gun, float partialTicks, float baseYaw)
+    private static float getAimWorldYaw(DeployedGun gun, float partialTicks, float baseYaw)
     {
-        Player player = getPlayerGunner(gun);
-
-        float viewYaw;
-        if (player != null)
-            viewYaw = Mth.rotLerp(partialTicks, player.yRotO, player.getYRot());
-        else
-            viewYaw = Mth.rotLerp(partialTicks, gun.yRotO, gun.getYRot());
-
-        float localYaw = Mth.wrapDegrees(viewYaw - baseYaw);
-        float side = gun.getConfigType().getSideViewLimit();
-        localYaw = Mth.clamp(localYaw, -side, side);
-
+        Player gunner = getPlayerGunner(gun);
+        float viewYaw = gunner != null ? Mth.rotLerp(partialTicks, gunner.yRotO, gunner.getYRot())
+            : Mth.rotLerp(partialTicks, gun.yRotO, gun.getYRot());
+        float localYaw = Mth.clamp(Mth.wrapDegrees(viewYaw - baseYaw),
+            -gun.getConfigType().getSideViewLimit(), gun.getConfigType().getSideViewLimit());
         return baseYaw + localYaw;
     }
 
-    @Nullable
-    private static Player getPlayerGunner(DeployedGun gun)
+    private static @Nullable Player getPlayerGunner(DeployedGun gun)
     {
-        if (gun.getFirstPassenger() instanceof Player p)
-            return p;
-        return null;
+        return gun.getFirstPassenger() instanceof Player player ? player : null;
     }
+
+    private record RenderData(ModelMG model, GunType type, Identifier texture, float baseYaw, float aimPitch,
+                              float aimLocalYaw, boolean showAmmo) { }
 }

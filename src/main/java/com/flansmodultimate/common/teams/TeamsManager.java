@@ -18,6 +18,7 @@ import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -25,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -187,7 +190,7 @@ public final class TeamsManager
             return;
 
         this.server = server;
-        savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData.FACTORY, TeamsSavedData.ID);
+        savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData.TYPE);
         loadRuntime(savedData.runtime);
         if (roundRunning)
             updateActiveChunkTickets(true);
@@ -586,7 +589,7 @@ public final class TeamsManager
 
     public boolean selectBuilder(ServerPlayer player)
     {
-        if (!player.hasPermissions(2))
+        if (!player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             return false;
         PlayerData data = PlayerData.getInstance(player);
         data.setBuilder(true);
@@ -699,7 +702,7 @@ public final class TeamsManager
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
             ServerLevel level = map == null ? null : getServer().getLevel(map.getDimension());
             if (level != null)
-                player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
+                player.teleportTo(level, position.x, position.y, position.z, Set.of(), player.getYRot(), player.getXRot(), false);
         });
         if (immediate)
             player.setHealth(player.getMaxHealth());
@@ -931,8 +934,8 @@ public final class TeamsManager
                     ServerLevel level = server.getLevel(map.getDimension());
                     if (level != null)
                     {
-                        ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
-                        NeoForgeChunkTickets.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
+                        ChunkPos chunk = ChunkPos.containing(BlockPos.containing(base.getTeamObjectPosition()));
+                        NeoForgeChunkTickets.force(level, base.getObjectId(), chunk.x(), chunk.z(), false, true);
                     }
                 }
                 map.removeBase(base.getObjectId());
@@ -1021,8 +1024,8 @@ public final class TeamsManager
         if (level == null)
             return;
         map.getBasePositions().forEach((owner, position) -> {
-            ChunkPos chunk = new ChunkPos(position);
-            NeoForgeChunkTickets.force(level, owner, chunk.x, chunk.z, add, true);
+            ChunkPos chunk = ChunkPos.containing(position);
+            NeoForgeChunkTickets.force(level, owner, chunk.x(), chunk.z(), add, true);
         });
     }
 
@@ -1063,62 +1066,62 @@ public final class TeamsManager
         if (tag.isEmpty())
             return;
 
-        enabled = !tag.contains(NBT_ENABLED) || tag.getBoolean(NBT_ENABLED);
-        roundRunning = tag.getBoolean(NBT_ROUND_RUNNING);
-        currentRoundId = tag.hasUUID(NBT_CURRENT_ROUND) ? tag.getUUID(NBT_CURRENT_ROUND) : null;
-        rotationIndex = tag.getInt(NBT_ROTATION_INDEX);
-        roundTimeLeftTicks = tag.getInt(NBT_TIME_LEFT);
-        roundElapsedTicks = tag.getInt(NBT_ELAPSED);
-        intermissionTicks = tag.getInt(NBT_INTERMISSION);
+        enabled = tag.getBooleanOr(NBT_ENABLED, true);
+        roundRunning = tag.getBooleanOr(NBT_ROUND_RUNNING, false);
+        currentRoundId = tag.read(NBT_CURRENT_ROUND, UUIDUtil.LENIENT_CODEC).orElse(null);
+        rotationIndex = tag.getIntOr(NBT_ROTATION_INDEX, 0);
+        roundTimeLeftTicks = tag.getIntOr(NBT_TIME_LEFT, 0);
+        roundElapsedTicks = tag.getIntOr(NBT_ELAPSED, 0);
+        intermissionTicks = tag.getIntOr(NBT_INTERMISSION, 0);
         voteOptionIds.clear();
 
-        for (Tag value : tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND))
+        for (Tag value : tag.getListOrEmpty(NBT_VOTE_OPTIONS))
         {
             CompoundTag option = (CompoundTag) value;
-            if (option.hasUUID(NBT_ID))
-                voteOptionIds.add(option.getUUID(NBT_ID));
+            option.read(NBT_ID, UUIDUtil.LENIENT_CODEC).ifPresent(voteOptionIds::add);
         }
 
         if (tag.contains(NBT_EXPLOSIONS))
-            explosionsBreakBlocks = tag.getBoolean(NBT_EXPLOSIONS);
+            explosionsBreakBlocks = tag.getBooleanOr(NBT_EXPLOSIONS, explosionsBreakBlocks);
         if (tag.contains(NBT_BREAK_GLASS))
-            canBreakGlass = tag.getBoolean(NBT_BREAK_GLASS);
+            canBreakGlass = tag.getBooleanOr(NBT_BREAK_GLASS, canBreakGlass);
         if (tag.contains(NBT_BREAK_GUNS))
-            canBreakGuns = tag.getBoolean(NBT_BREAK_GUNS);
+            canBreakGuns = tag.getBooleanOr(NBT_BREAK_GUNS, canBreakGuns);
         if (tag.contains(NBT_DRIVEABLES_BREAK_BLOCKS))
-            driveablesBreakBlocks = tag.getBoolean(NBT_DRIVEABLES_BREAK_BLOCKS);
+            driveablesBreakBlocks = tag.getBooleanOr(NBT_DRIVEABLES_BREAK_BLOCKS, driveablesBreakBlocks);
         if (tag.contains(NBT_BOMBS))
-            bombsEnabled = tag.getBoolean(NBT_BOMBS);
+            bombsEnabled = tag.getBooleanOr(NBT_BOMBS, bombsEnabled);
         if (tag.contains(NBT_SHELLS))
-            shellsEnabled = tag.getBoolean(NBT_SHELLS);
+            shellsEnabled = tag.getBooleanOr(NBT_SHELLS, shellsEnabled);
         if (tag.contains(NBT_BULLETS))
-            bulletsEnabled = tag.getBoolean(NBT_BULLETS);
+            bulletsEnabled = tag.getBooleanOr(NBT_BULLETS, bulletsEnabled);
         if (tag.contains(NBT_ADVENTURE))
-            forceAdventureMode = tag.getBoolean(NBT_ADVENTURE);
+            forceAdventureMode = tag.getBooleanOr(NBT_ADVENTURE, forceAdventureMode);
         if (tag.contains(NBT_ARMOUR_DROPS))
-            armourDrops = tag.getBoolean(NBT_ARMOUR_DROPS);
+            armourDrops = tag.getBooleanOr(NBT_ARMOUR_DROPS, armourDrops);
         if (tag.contains(NBT_FUEL))
-            vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
+            vehiclesNeedFuel = tag.getBooleanOr(NBT_FUEL, vehiclesNeedFuel);
         if (tag.contains(NBT_OVERRIDE_HUNGER))
-            overrideHunger = tag.getBoolean(NBT_OVERRIDE_HUNGER);
+            overrideHunger = tag.getBooleanOr(NBT_OVERRIDE_HUNGER, overrideHunger);
         if (tag.contains(NBT_BREAK_VEHICLES))
-            survivalCanBreakVehicles = tag.getBoolean(NBT_BREAK_VEHICLES);
+            survivalCanBreakVehicles = tag.getBooleanOr(NBT_BREAK_VEHICLES, survivalCanBreakVehicles);
         if (tag.contains(NBT_PLACE_VEHICLES))
-            survivalCanPlaceVehicles = tag.getBoolean(NBT_PLACE_VEHICLES);
+            survivalCanPlaceVehicles = tag.getBooleanOr(NBT_PLACE_VEHICLES, survivalCanPlaceVehicles);
         if (tag.contains(NBT_WEAPON_DROPS))
         {
-            int ordinal = tag.getInt(NBT_WEAPON_DROPS);
+            int ordinal = tag.getIntOr(NBT_WEAPON_DROPS, weaponDrops.ordinal());
             weaponDrops = EnumWeaponDrop.values()[Math.max(0, Math.min(EnumWeaponDrop.values().length - 1, ordinal))];
         }
 
-        mgLife = tag.contains(NBT_MG_LIFE) ? tag.getInt(NBT_MG_LIFE) : mgLife; planeLife = tag.contains(NBT_PLANE_LIFE) ? tag.getInt(NBT_PLANE_LIFE) : planeLife;
-        vehicleLife = tag.contains(NBT_VEHICLE_LIFE) ? tag.getInt(NBT_VEHICLE_LIFE) : vehicleLife; mechaLife = tag.contains(NBT_MECHA_LIFE) ? tag.getInt(NBT_MECHA_LIFE) : mechaLife;
-        aaLife = tag.contains(NBT_AA_LIFE) ? tag.getInt(NBT_AA_LIFE) : aaLife; voting = tag.contains(NBT_VOTING) && tag.getBoolean(NBT_VOTING);
-        roundsGenerator = tag.contains(NBT_ROUNDS_GENERATOR) && tag.getBoolean(NBT_ROUNDS_GENERATOR); currentLoadoutPoolId = tag.getString(NBT_LOADOUT_POOL);
-        experienceMultiplier = tag.contains(NBT_EXPERIENCE_MULTIPLIER) ? Math.max(0F, tag.getFloat(NBT_EXPERIENCE_MULTIPLIER)) : 1F;
+        mgLife = tag.getIntOr(NBT_MG_LIFE, mgLife); planeLife = tag.getIntOr(NBT_PLANE_LIFE, planeLife);
+        vehicleLife = tag.getIntOr(NBT_VEHICLE_LIFE, vehicleLife); mechaLife = tag.getIntOr(NBT_MECHA_LIFE, mechaLife);
+        aaLife = tag.getIntOr(NBT_AA_LIFE, aaLife); voting = tag.getBooleanOr(NBT_VOTING, false);
+        roundsGenerator = tag.getBooleanOr(NBT_ROUNDS_GENERATOR, false); currentLoadoutPoolId = tag.getStringOr(NBT_LOADOUT_POOL, "");
+        experienceMultiplier = Math.max(0F, tag.getFloatOr(NBT_EXPERIENCE_MULTIPLIER, 1F));
 
-        for (String key : tag.getCompound(NBT_SCORES).getAllKeys())
-            teamScores.put(key, tag.getCompound(NBT_SCORES).getInt(key));
+        CompoundTag scores = tag.getCompoundOrEmpty(NBT_SCORES);
+        for (String key : scores.keySet())
+            teamScores.put(key, scores.getIntOr(key, 0));
 
         for (com.flansmodultimate.common.teams.GameType type : com.flansmodultimate.common.teams.GameType.values())
             type.loadSettings(tag);
@@ -1135,7 +1138,7 @@ public final class TeamsManager
         if (currentRoundId == null)
             tag.remove(NBT_CURRENT_ROUND);
         else
-            tag.putUUID(NBT_CURRENT_ROUND, currentRoundId);
+            tag.store(NBT_CURRENT_ROUND, UUIDUtil.CODEC, currentRoundId);
 
         tag.putInt(NBT_ROTATION_INDEX, rotationIndex);
         tag.putInt(NBT_TIME_LEFT, roundTimeLeftTicks);
@@ -1146,7 +1149,7 @@ public final class TeamsManager
         for (UUID id : voteOptionIds)
         {
             CompoundTag option = new CompoundTag();
-            option.putUUID(NBT_ID, id);
+            option.store(NBT_ID, UUIDUtil.CODEC, id);
             voteOptions.add(option);
         }
 

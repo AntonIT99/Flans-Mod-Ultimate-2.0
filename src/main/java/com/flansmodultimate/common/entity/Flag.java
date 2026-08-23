@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,6 +26,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -40,8 +43,8 @@ public final class Flag extends Entity implements ITeamObject
     private static final String NBT_COLOUR = "colour";
     private static final String NBT_RETURN_TICKS = "return_ticks";
 
-    private static final EntityDataAccessor<Optional<UUID>> DATA_BASE = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.OPTIONAL_UUID);
-    private static final EntityDataAccessor<Optional<UUID>> DATA_CARRIER = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<String> DATA_BASE = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> DATA_CARRIER = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> DATA_HOME = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_TEAM = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_COLOUR = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.INT);
@@ -64,8 +67,8 @@ public final class Flag extends Entity implements ITeamObject
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_BASE, Optional.empty());
-        builder.define(DATA_CARRIER, Optional.empty());
+        builder.define(DATA_BASE, "");
+        builder.define(DATA_CARRIER, "");
         builder.define(DATA_HOME, true);
         builder.define(DATA_TEAM, 0);
         builder.define(DATA_COLOUR, 0xFFFFFF);
@@ -107,14 +110,14 @@ public final class Flag extends Entity implements ITeamObject
 
     @NotNull
     @Override
-    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
+    public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand, @NotNull Vec3 location)
     {
-        if (level().isClientSide)
+        if (level().isClientSide())
             return InteractionResult.SUCCESS;
         if (!(player instanceof ServerPlayer serverPlayer))
             return InteractionResult.PASS;
         ItemStack held = player.getItemInHand(hand);
-        if (held.getItem() instanceof ItemOpStick stick && serverPlayer.hasPermissions(2))
+        if (held.getItem() instanceof ItemOpStick stick && serverPlayer.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
         {
             stick.useOnTeamObject(serverPlayer, this, held);
             return InteractionResult.CONSUME;
@@ -125,21 +128,21 @@ public final class Flag extends Entity implements ITeamObject
 
     public void pickUp(ServerPlayer player)
     {
-        entityData.set(DATA_CARRIER, Optional.of(player.getUUID()));
+        entityData.set(DATA_CARRIER, player.getUUID().toString());
         entityData.set(DATA_HOME, false);
         returnTicks = 0;
     }
 
     public void drop(int returnTimeTicks)
     {
-        entityData.set(DATA_CARRIER, Optional.empty());
+        entityData.set(DATA_CARRIER, "");
         entityData.set(DATA_HOME, false);
         returnTicks = Math.max(1, returnTimeTicks);
     }
 
     public void resetToBase()
     {
-        entityData.set(DATA_CARRIER, Optional.empty());
+        entityData.set(DATA_CARRIER, "");
         entityData.set(DATA_HOME, true);
         returnTicks = 0;
         Flagpole base = getBase();
@@ -165,7 +168,7 @@ public final class Flag extends Entity implements ITeamObject
     @Nullable
     public UUID getCarrierId()
     {
-        return entityData.get(DATA_CARRIER).orElse(null);
+        return parseUuid(entityData.get(DATA_CARRIER));
     }
 
     public int getTeamId()
@@ -196,26 +199,32 @@ public final class Flag extends Entity implements ITeamObject
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setBaseId(tag.hasUUID(NBT_BASE) ? tag.getUUID(NBT_BASE) : null);
-        entityData.set(DATA_CARRIER, tag.hasUUID(NBT_CARRIER) ? Optional.of(tag.getUUID(NBT_CARRIER)) : Optional.empty());
-        entityData.set(DATA_HOME, tag.getBoolean(NBT_HOME)); setTeamId(tag.getInt(NBT_TEAM));
-        setColour(tag.contains(NBT_COLOUR) ? tag.getInt(NBT_COLOUR) : 0xFFFFFF); returnTicks = tag.getInt(NBT_RETURN_TICKS);
+        setBaseId(input.read(NBT_BASE, UUIDUtil.LENIENT_CODEC).orElse(null));
+        entityData.set(DATA_CARRIER, input.read(NBT_CARRIER, UUIDUtil.LENIENT_CODEC).map(UUID::toString).orElse(""));
+        entityData.set(DATA_HOME, input.getBooleanOr(NBT_HOME, true)); setTeamId(input.getIntOr(NBT_TEAM, 0));
+        setColour(input.getIntOr(NBT_COLOUR, 0xFFFFFF)); returnTicks = input.getIntOr(NBT_RETURN_TICKS, 0);
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected void addAdditionalSaveData(@NotNull ValueOutput output)
     {
         UUID baseId = getBaseId();
         UUID carrierId = getCarrierId();
 
         if (baseId != null)
-            tag.putUUID(NBT_BASE, baseId);
+            output.store(NBT_BASE, UUIDUtil.CODEC, baseId);
         if (carrierId != null)
-            tag.putUUID(NBT_CARRIER, carrierId);
+            output.store(NBT_CARRIER, UUIDUtil.CODEC, carrierId);
 
-        tag.putBoolean(NBT_HOME, isHome()); tag.putInt(NBT_TEAM, getTeamId()); tag.putInt(NBT_COLOUR, getColour()); tag.putInt(NBT_RETURN_TICKS, returnTicks);
+        output.putBoolean(NBT_HOME, isHome()); output.putInt(NBT_TEAM, getTeamId()); output.putInt(NBT_COLOUR, getColour()); output.putInt(NBT_RETURN_TICKS, returnTicks);
+    }
+
+    @Override
+    public boolean hurtServer(@NotNull ServerLevel level, @NotNull DamageSource source, float amount)
+    {
+        return false;
     }
 
     @Override
@@ -227,12 +236,6 @@ public final class Flag extends Entity implements ITeamObject
 
     @Override
     public boolean isPickable()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isInvulnerableTo(@NotNull DamageSource source)
     {
         return true;
     }
@@ -259,13 +262,13 @@ public final class Flag extends Entity implements ITeamObject
     @Nullable
     public UUID getBaseId()
     {
-        return entityData.get(DATA_BASE).orElse(null);
+        return parseUuid(entityData.get(DATA_BASE));
     }
 
     @Override
     public void setBaseId(@Nullable UUID id)
     {
-        entityData.set(DATA_BASE, Optional.ofNullable(id));
+        entityData.set(DATA_BASE, id == null ? "" : id.toString());
     }
 
     @Override
@@ -278,5 +281,20 @@ public final class Flag extends Entity implements ITeamObject
     public void destroyTeamObject()
     {
         discard();
+    }
+
+    @Nullable
+    private static UUID parseUuid(String value)
+    {
+        if (value.isEmpty())
+            return null;
+        try
+        {
+            return UUID.fromString(value);
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            return null;
+        }
     }
 }

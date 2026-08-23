@@ -4,7 +4,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 public record PenetrableBlock(double hardness, boolean breaksOnPenetration)
 {
-    private static final Map<ResourceLocation, PenetrableBlock> penetrableBlocks = new HashMap<>();
+    private static final Map<Identifier, PenetrableBlock> penetrableBlocks = new HashMap<>();
 
     @Nullable
     public static PenetrableBlock get(BlockState state)
@@ -20,7 +20,7 @@ public record PenetrableBlock(double hardness, boolean breaksOnPenetration)
         return penetrableBlocks.get(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
-    public static PenetrableBlock put(ResourceLocation rl, PenetrableBlock penetrableBlock)
+    public static PenetrableBlock put(Identifier rl, PenetrableBlock penetrableBlock)
     {
         return penetrableBlocks.put(rl, penetrableBlock);
     }

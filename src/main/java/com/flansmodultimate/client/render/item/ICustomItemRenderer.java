@@ -2,7 +2,6 @@ package com.flansmodultimate.client.render.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -14,17 +13,8 @@ public interface ICustomItemRenderer
 
     static void renderItemFallback(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack pose, MultiBufferSource buffers, int light, int overlay)
     {
-        var mc = Minecraft.getInstance();
-        var ir = mc.getItemRenderer();
-
-        CustomItemRenderers.SKIP_BEWLR.set(true);
-        try
-        {
-            ir.renderStatic(stack, itemDisplayContext, light, overlay, pose, buffers, null, 0);
-        }
-        finally
-        {
-            CustomItemRenderers.SKIP_BEWLR.set(false);
-        }
+        // Fallback selection is handled by LegacyItemModel before the deferred
+        // custom renderer is submitted. Calling ItemRenderer here would recurse
+        // back through the same item model on 26.1.
     }
 }

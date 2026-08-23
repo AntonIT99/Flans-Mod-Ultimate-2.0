@@ -20,7 +20,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -43,36 +43,39 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     protected final ToolType configType;
     protected final String shortname;
 
-    public ToolItem(ToolType configType)
+    public ToolItem(ToolType configType, Properties properties)
     {
-        super(createProperties(configType));
+        super(createProperties(configType, properties));
         this.configType = configType;
         shortname = configType.getShortName();
     }
 
-    private static Properties createProperties(ToolType type)
+    private static Properties createProperties(ToolType type, Properties properties)
     {
-        Properties properties = new Properties().stacksTo(1);
+        properties.stacksTo(1);
         if (type.getToolLife() > 0)
             properties.durability(type.getToolLife());
         return properties;
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltipBuilder, @NotNull TooltipFlag isAdvanced)
     {
+        List<Component> tooltipComponents = IFlanItem.tooltipList(tooltipBuilder);
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         CompoundTag tag = ItemStackData.copy(stack);
         if (tag.contains(NBT_KEY_STRING))
         {
-            tooltipComponents.add(Component.literal(tag.getString(NBT_KEY_STRING)).withStyle(ChatFormatting.AQUA));
+            tooltipComponents.add(Component.literal(tag.getStringOr(NBT_KEY_STRING, "")).withStyle(ChatFormatting.AQUA));
         }
     }
 
     @Override
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
+    public InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
 
@@ -80,20 +83,20 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             return super.use(level, player, hand);
 
         if (isDepleted(stack))
-            return InteractionResultHolder.fail(stack);
+            return InteractionResult.FAIL;
 
         // Parachute
         if (configType.isParachute())
         {
-            if (level.isClientSide)
-                return InteractionResultHolder.success(stack);
+            if (level.isClientSide())
+                return InteractionResult.SUCCESS;
 
             if (Parachute.spawnAndMount(level, player, configType) != null)
             {
                 consumeUse(stack, player);
-                return InteractionResultHolder.consume(stack);
+                return InteractionResult.CONSUME;
             }
-            return InteractionResultHolder.fail(stack);
+            return InteractionResult.FAIL;
         }
 
         // Remote detonator
@@ -108,49 +111,49 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         // Heal driveables
         if (configType.isHealDriveables())
         {
-            if (level.isClientSide)
-                return InteractionResultHolder.success(stack);
+            if (level.isClientSide())
+                return InteractionResult.SUCCESS;
 
             Driveable driveable = pickDriveableTarget(level, player, start, end);
             if (driveable != null && driveable.repairFromTool(player, configType.getHealAmount()))
             {
                 spawnRepairParticles(level, driveable);
                 consumeUse(stack, player);
-                return InteractionResultHolder.consume(stack);
+                return InteractionResult.CONSUME;
             }
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
 
         // Heal players
         if (configType.isHealPlayers())
         {
-            if (!level.isClientSide)
+            if (!level.isClientSide())
             {
                 LivingEntity target = pickLivingTarget(level, player, start, end);
                 target.heal(configType.getHealAmount());
                 spawnHealParticles(level, target);
                 consumeUse(stack, player);
-                return InteractionResultHolder.consume(stack);
+                return InteractionResult.CONSUME;
             }
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
 
         // Vehicle key binding / access check
         if (configType.isKey())
         {
-            if (level.isClientSide)
-                return InteractionResultHolder.success(stack);
+            if (level.isClientSide())
+                return InteractionResult.SUCCESS;
 
             Driveable driveable = pickDriveableTarget(level, player, start, end);
             if (driveable != null && driveable.bindOrCheckKey(player, stack))
             {
                 consumeUse(stack, player);
-                return InteractionResultHolder.consume(stack);
+                return InteractionResult.CONSUME;
             }
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
 
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
     }
 
     protected void spawnHealParticles(Level level, LivingEntity target)
@@ -165,14 +168,14 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
     }
 
-    protected InteractionResultHolder<ItemStack> doDetonateRemoteExplosives(Level level, Player player, ItemStack stack)
+    protected InteractionResult doDetonateRemoteExplosives(Level level, Player player, ItemStack stack)
     {
-        if (level.isClientSide)
-            return InteractionResultHolder.pass(stack);
+        if (level.isClientSide())
+            return InteractionResult.PASS;
 
         PlayerData data = PlayerData.getInstance(player);
         if (data.getRemoteExplosives().isEmpty())
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
 
         List<Grenade> remotes = data.getRemoteExplosives();
         for (Grenade g : remotes)
@@ -185,9 +188,9 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         if (configType.getToolLife() > 0 && configType.isDestroyOnEmpty() && stack.getDamageValue() >= configType.getToolLife())
         {
             stack.shrink(1);
-            return InteractionResultHolder.consume(stack);
+            return InteractionResult.CONSUME;
         }
-        return InteractionResultHolder.success(stack);
+        return InteractionResult.SUCCESS;
     }
 
     protected boolean hasFiniteUses()
@@ -222,7 +225,8 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
             .expandTowards(delta)
             .inflate(1.0D);
 
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, user, start, end, searchBox, e -> e instanceof LivingEntity living && living != user);
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, user, start, end, searchBox,
+            e -> e instanceof LivingEntity living && living != user, 0F);
         if (hit != null && hit.getEntity() instanceof LivingEntity living)
             chosen = living;
 
@@ -252,7 +256,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
 
         AABB proxySearch = new AABB(start, end).inflate(1D);
         EntityHitResult fallback = ProjectileUtil.getEntityHitResult(level, user, start, end, proxySearch,
-            entity -> entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel);
+            entity -> entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel, 0F);
         if (fallback == null)
             return best;
 

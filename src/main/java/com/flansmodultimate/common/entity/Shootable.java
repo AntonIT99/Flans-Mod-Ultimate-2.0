@@ -6,6 +6,7 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.ValueIOUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
@@ -20,12 +21,16 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -81,7 +86,7 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     {
         hitboxSize = Math.max(0.01F, hitboxSize);
         entityData.set(DATA_HITBOX_SIZE, hitboxSize);
-        if (!level().isClientSide)
+        if (!level().isClientSide())
             refreshDimensions();
     }
 
@@ -97,7 +102,7 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     {
         super.setDeltaMovement(deltaMovement);
         velocity = deltaMovement;
-        hasImpulse = true;
+        needsSync = true;
     }
 
     @Override
@@ -105,11 +110,11 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     {
         super.setDeltaMovement(pX, pY, pZ);
         velocity = new Vec3(pX, pY, pZ);
-        hasImpulse = true;
+        needsSync = true;
     }
 
     @Override
-    public void lerpMotion(double pX, double pY, double pZ)
+    public void lerpMotion(Vec3 movement)
     {
         // no-op: ignore vanilla client interpolation
     }
@@ -167,15 +172,33 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    protected final void readAdditionalSaveData(@NotNull ValueInput input)
     {
-        setShortName(tag.getString(NBT_TYPE_NAME));
+        readLegacySaveData(ValueIOUtils.toCompoundTag(input));
+    }
+
+    protected void readLegacySaveData(@NotNull CompoundTag tag)
+    {
+        setShortName(tag.getString(NBT_TYPE_NAME).orElse(StringUtils.EMPTY));
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    protected final void addAdditionalSaveData(@NotNull ValueOutput output)
+    {
+        CompoundTag tag = new CompoundTag();
+        addLegacySaveData(tag);
+        ValueIOUtils.storeCompoundTag(output, tag);
+    }
+
+    protected void addLegacySaveData(@NotNull CompoundTag tag)
     {
         tag.putString(NBT_TYPE_NAME, shortname);
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount)
+    {
+        return false;
     }
 
     protected void applyDragAndGravity()
@@ -206,7 +229,7 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     {
         ShootableType configType = getConfigType();
 
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         // Fuse

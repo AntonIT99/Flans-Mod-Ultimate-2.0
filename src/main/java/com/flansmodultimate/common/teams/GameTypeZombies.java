@@ -122,8 +122,8 @@ public final class GameTypeZombies extends GameType
     @Override
     public void loadSettings(CompoundTag tag)
     {
-        humanPrepTimeTicks = Math.max(0, tag.getInt(NBT_PREP_TIME));
-        friendlyFire = tag.getBoolean(NBT_FRIENDLY_FIRE);
+        humanPrepTimeTicks = Math.max(0, tag.getIntOr(NBT_PREP_TIME, humanPrepTimeTicks));
+        friendlyFire = tag.getBooleanOr(NBT_FRIENDLY_FIRE, false);
     }
 
     @Override

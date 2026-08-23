@@ -61,7 +61,7 @@ public final class CommonEventHandler
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers())
         {
-            if (!player.serverLevel().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL) || player.isSpectator())
+            if (!player.level().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL) || player.isSpectator())
                 continue;
             if (player.getRandom().nextInt(ModApocalypseConfig.apocalypseWanderingSurvivorRarity()) != 0)
                 continue;
@@ -80,8 +80,8 @@ public final class CommonEventHandler
     {
         if (!(event.getEntity() instanceof ServerPlayer player) || !ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
-        if (player.serverLevel().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL))
-            ApocalypseSavedData.get(player.serverLevel()).setDeathPoint(player.getUUID(), player.blockPosition());
+        if (player.level().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL))
+            ApocalypseSavedData.get((ServerLevel)player.level()).setDeathPoint(player.getUUID(), player.blockPosition());
     }
 
     @SubscribeEvent
@@ -92,24 +92,24 @@ public final class CommonEventHandler
             || !ModApocalypseConfig.apocalypseRespawnInApocalypse())
             return;
 
-        ServerLevel targetLevel = player.server.getLevel(ApocalypseContent.APOCALYPSE_LEVEL);
+        ServerLevel targetLevel = player.level().getServer().getLevel(ApocalypseContent.APOCALYPSE_LEVEL);
         if (targetLevel == null)
             return;
 
         ApocalypseSavedData.get(targetLevel).getDeathPoint(player.getUUID())
-            .flatMap(deathPoint -> ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModApocalypseConfig.apocalypseSpawnRadius(), targetLevel.random))
-            .ifPresent(pos -> player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, Collections.emptySet(), player.getYRot(), player.getXRot()));
+            .flatMap(deathPoint -> ApocalypseWorldgen.findSafeSurface(targetLevel, deathPoint, ModApocalypseConfig.apocalypseSpawnRadius(), targetLevel.getRandom()))
+            .ifPresent(pos -> player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, Collections.emptySet(), player.getYRot(), player.getXRot(), false));
     }
 
     private static void spawnWanderingSurvivor(ServerPlayer player)
     {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = (ServerLevel)player.level();
         AABB nearby = player.getBoundingBox().inflate(48.0D);
         if (level.getEntitiesOfClass(SurvivorEntity.class, nearby).size() >= 4)
             return;
 
         BlockPos center = player.blockPosition();
-        ApocalypseWorldgen.findSafeSurface(level, center, 32, level.random)
+        ApocalypseWorldgen.findSafeSurface(level, center, 32, level.getRandom())
             .filter(pos -> pos.distSqr(center) > 144.0D)
             .ifPresent(pos -> ApocalypseWorldgen.spawnSurvivor(level, pos));
     }

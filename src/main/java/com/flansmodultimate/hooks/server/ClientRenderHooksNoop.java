@@ -1,8 +1,6 @@
 package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.hooks.IClientRenderHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,12 +9,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
-    @Override
-    public IClientItemExtensions customItemExtensions()
-    {
-        return IClientItemExtensions.DEFAULT;
-    }
-
     @Override
     public void spawnParticle(String s, double x, double y, double z, float scale)
     {
