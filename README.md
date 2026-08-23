@@ -2,7 +2,7 @@
 
 Flan's Mod Ultimate 2 is an unofficial continuation of Flan's Mod. It loads and modernizes legacy Flan's Mod content packs, including weapons, ammo, armor, gun boxes, armor boxes, workbenches, paintjobs, sounds, particles, and related gameplay systems.
 
-The repository maintains two Minecraft targets. Choose the branch that matches the version and mod loader you want to develop for or run.
+The repository maintains three Minecraft targets. Choose the branch that matches the version and mod loader you want to develop for or run.
 
 ## Supported Versions
 
@@ -10,6 +10,7 @@ The repository maintains two Minecraft targets. Choose the branch that matches t
 | --- | --- | --- | --- | --- |
 | `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
+| `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
 
 The main mod ID is `flansmodultimate`. The project is in beta: some legacy systems are complete, while others remain in progress.
 
@@ -98,7 +99,7 @@ Legacy packs are loaded through the mod's content-loading system. For local deve
 
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
-- Keep loader-specific APIs, metadata, event registration, and networking appropriate to the checked-out branch.
+- Keep loader-specific APIs, metadata, event registration, networking, and Java toolchain appropriate to the checked-out branch. The 26.1.2 branch uses the modern NeoForge rendering/extraction APIs and Mojang's deobfuscated names.
 - `README.txt` contains legacy Forge MDK setup notes; use this file for the current project guidance.
 
 ## Documentation
