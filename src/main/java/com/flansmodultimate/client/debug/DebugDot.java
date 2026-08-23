@@ -2,12 +2,10 @@ package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -23,7 +21,7 @@ public class DebugDot extends DebugColor
     }
 
     @Override
-    public void render(@NotNull PoseStack pose, @NotNull MultiBufferSource buffers, @NotNull Camera cam)
+    public void submit(@NotNull PoseStack pose, @NotNull SubmitNodeCollector collector, @NotNull Camera cam)
     {
         if (!ModClient.isDebug() || position == null)
             return;
@@ -34,8 +32,8 @@ public class DebugDot extends DebugColor
         pose.translate(position.x - camPos.x, position.y - camPos.y, position.z - camPos.z);
 
         float h = (float) (SIZE * 0.5);
-        VertexConsumer vc = buffers.getBuffer(RenderTypes.lines());
-        ShapeRenderer.renderShape(pose, vc, Shapes.box(-h, -h, -h, h, h, h), 0D, 0D, 0D, packedColor(), 1F);
+        collector.submitShapeOutline(pose, Shapes.box(-h, -h, -h, h, h, h),
+            RenderTypes.lines(), packedColor(), 1F, false);
 
         pose.popPose();
 

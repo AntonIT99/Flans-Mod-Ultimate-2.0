@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.render.DeferredMultiBufferSubmitter;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -185,10 +184,9 @@ public final class ClientEventHandler
 
         if (ModClient.isDebug())
         {
-            var camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+            var camera = Minecraft.getInstance().gameRenderer.mainCamera();
             for (DebugColor debugEntity : DebugHelper.getActiveDebugEntities())
-                DeferredMultiBufferSubmitter.submit(event.getPoseStack(), event.getSubmitNodeCollector(),
-                    (pose, buffers) -> debugEntity.render(pose, buffers, camera));
+                debugEntity.submit(event.getPoseStack(), event.getSubmitNodeCollector(), camera);
         }
     }
 

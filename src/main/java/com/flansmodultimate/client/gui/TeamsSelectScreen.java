@@ -72,13 +72,13 @@ public final class TeamsSelectScreen extends Screen
     private void chooseTeam(String id)
     {
         PacketHandler.sendToServer(PacketTeamsAction.selectTeam(id));
-        minecraft.setScreen(null);
+        minecraft.gui.setScreen(null);
     }
 
     private void chooseClass(String id)
     {
         PacketHandler.sendToServer(PacketTeamsAction.selectClass(id));
-        minecraft.setScreen(null);
+        minecraft.gui.setScreen(null);
     }
 
     @Override

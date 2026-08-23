@@ -27,7 +27,7 @@ public final class GunInputState
         if (mc.player == null || mc.isPaused())
             return;
 
-        if (Minecraft.getInstance().screen == null)
+        if (Minecraft.getInstance().gui.screen() == null)
         {
             EnumMouseButton shootBtn = ModClientConfig.get().shootButton;
             EnumMouseButton shootOffBtn = ModClientConfig.get().shootButtonOffhand;

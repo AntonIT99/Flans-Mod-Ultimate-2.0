@@ -217,7 +217,7 @@ public final class ApocalypseWorldgen
 
     private static void generateFactory(ServerLevel level, RandomSource random, BlockPos origin)
     {
-        buildRoom(level, origin, 9, 3, 5, Blocks.GRAY_CONCRETE.defaultBlockState());
+        buildRoom(level, origin, 9, 3, 5, Blocks.CONCRETE.gray().defaultBlockState());
         for (int x = 1; x < 8; x += 2)
             level.setBlock(origin.offset(x, 1, 2), Blocks.CAULDRON.defaultBlockState(), 3);
         placeChest(level, random, origin.offset(7, 1, 3));
@@ -230,9 +230,9 @@ public final class ApocalypseWorldgen
             for (int z = -12; z <= 12; z++)
             {
                 BlockPos pos = surfacePos(level, origin.getX() + x, origin.getZ() + z).below();
-                level.setBlock(pos, Blocks.BLACK_CONCRETE.defaultBlockState(), 2);
+                level.setBlock(pos, Blocks.CONCRETE.black().defaultBlockState(), 2);
                 if (x == 0 && z % 4 == 0)
-                    level.setBlock(pos.above(), Blocks.WHITE_CARPET.defaultBlockState(), 2);
+                    level.setBlock(pos.above(), Blocks.CARPET.white().defaultBlockState(), 2);
             }
         }
     }

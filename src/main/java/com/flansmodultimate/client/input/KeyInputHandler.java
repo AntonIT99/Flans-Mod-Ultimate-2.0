@@ -117,7 +117,7 @@ public final class KeyInputHandler
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        boolean noScreen = mc.screen == null;
+        boolean noScreen = mc.gui.screen() == null;
 
         if (player != null && resolveControllable(player) != null)
         {

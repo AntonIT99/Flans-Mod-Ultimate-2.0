@@ -6,11 +6,11 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.platform.BlendFactor;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -30,7 +30,7 @@ public final class CustomRenderType
     private record TexCullKey(Identifier texture, boolean cull) {}
 
     private static final BlendFunction LEGACY_ADDITIVE = new BlendFunction(
-        SourceFactor.SRC_ALPHA, DestFactor.ONE, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+        BlendFactor.SRC_ALPHA, BlendFactor.ONE, BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA);
 
     private static final RenderPipeline EMISSIVE_ALPHA_DEPTH = emissivePipeline("emissive_alpha_depth", BlendFunction.TRANSLUCENT, true, false);
     private static final RenderPipeline EMISSIVE_ALPHA_DEPTH_CULL = emissivePipeline("emissive_alpha_depth_cull", BlendFunction.TRANSLUCENT, true, true);
@@ -83,7 +83,7 @@ public final class CustomRenderType
             .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/" + name))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(new ColorTargetState(blend))
             .withCull(cull)
             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, depthWrite))
@@ -96,7 +96,7 @@ public final class CustomRenderType
             .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/entity_translucent_cull"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .build();
     }

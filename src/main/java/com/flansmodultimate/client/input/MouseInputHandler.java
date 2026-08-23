@@ -53,7 +53,7 @@ public final class MouseInputHandler
 
     public static void handleMouseMove(double dx, double dy)
     {
-        if (Minecraft.getInstance().screen != null)
+        if (Minecraft.getInstance().gui.screen() != null)
             return;
 
         Player player = Minecraft.getInstance().player;

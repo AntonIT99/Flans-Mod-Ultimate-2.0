@@ -15,7 +15,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.joml.Quaternionf;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
@@ -49,7 +48,7 @@ public final class LegacyTransformApplier
         poseStack.popPose();
     }
 
-    public static void renderModel(IModelBase model, InfoType infoType, Identifier texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    public static void renderModel(IModelBase model, InfoType infoType, Identifier texture, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         poseStack.pushPose();
         applyModelTransform(model, infoType, poseStack);

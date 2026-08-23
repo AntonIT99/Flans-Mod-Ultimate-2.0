@@ -4,6 +4,7 @@ import com.flansmod.client.model.ModelDriveable;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.DriveableType;
@@ -15,7 +16,6 @@ import com.mojang.math.Axis;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -25,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DriveableItemRenderer
 {
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem)
             || !(driveableItem.useCustomRenderer(context)))

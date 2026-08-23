@@ -1,11 +1,11 @@
 package com.flansmodultimate.client.render.item;
 
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Adapts the legacy immediate item renderers to Minecraft 26.1's deferred
+ * Adapts the legacy immediate item renderers to Minecraft 26.2's feature
  * extraction/submission renderer. The discovery pass records the render types
  * requested by a renderer; each deferred callback then replays only its pass.
  */
@@ -44,7 +44,7 @@ public final class LegacyItemRenderBridge
             return;
 
         Set<RenderType> renderTypes = new LinkedHashSet<>();
-        MultiBufferSource discoveryBuffers = renderType -> {
+        RenderTypeBufferSource discoveryBuffers = renderType -> {
             renderTypes.add(renderType);
             return DISCARDING_CONSUMER;
         };
@@ -55,7 +55,7 @@ public final class LegacyItemRenderBridge
             collector.submitCustomGeometry(poseStack, renderType, (submittedPose, vertexConsumer) -> {
                 PoseStack deferredPose = new PoseStack();
                 deferredPose.last().set(submittedPose);
-                MultiBufferSource passBuffers = requestedType -> requestedType.equals(renderType)
+                RenderTypeBufferSource passBuffers = requestedType -> requestedType.equals(renderType)
                     ? vertexConsumer : DISCARDING_CONSUMER;
                 withOwner(owner, () -> renderer.renderItem(stack, context, deferredPose, passBuffers, light, overlay));
             });

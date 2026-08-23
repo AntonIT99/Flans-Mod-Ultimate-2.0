@@ -28,18 +28,18 @@ public final class LoadoutClientState
         Minecraft minecraft = Minecraft.getInstance();
         switch (update.getOpenScreen())
         {
-            case HUB -> minecraft.setScreen(new TeamsLoadoutHubScreen());
-            case CHOOSE -> minecraft.setScreen(new TeamsChooseLoadoutScreen());
+            case HUB -> minecraft.gui.setScreen(new TeamsLoadoutHubScreen());
+            case CHOOSE -> minecraft.gui.setScreen(new TeamsChooseLoadoutScreen());
             case EDIT -> {
-                var current = minecraft.screen instanceof TeamsLoadoutEditScreen editor ? editor.getSelectedSlot() : com.flansmodultimate.common.teams.LoadoutSlot.PRIMARY;
-                minecraft.setScreen(new TeamsLoadoutEditScreen(update.getEditLoadout(), current));
+                var current = minecraft.gui.screen() instanceof TeamsLoadoutEditScreen editor ? editor.getSelectedSlot() : com.flansmodultimate.common.teams.LoadoutSlot.PRIMARY;
+                minecraft.gui.setScreen(new TeamsLoadoutEditScreen(update.getEditLoadout(), current));
             }
-            case REWARD_BOX -> minecraft.setScreen(new TeamsRewardBoxScreen());
-            case MISSION_RESULTS -> minecraft.setScreen(new TeamsMissionResultsScreen());
+            case REWARD_BOX -> minecraft.gui.setScreen(new TeamsRewardBoxScreen());
+            case MISSION_RESULTS -> minecraft.gui.setScreen(new TeamsMissionResultsScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsLoadoutHubScreen || minecraft.screen instanceof TeamsChooseLoadoutScreen
-                    || minecraft.screen instanceof TeamsLoadoutEditScreen || minecraft.screen instanceof TeamsRewardBoxScreen
-                    || minecraft.screen instanceof TeamsMissionResultsScreen) minecraft.setScreen(null);
+                if (minecraft.gui.screen() instanceof TeamsLoadoutHubScreen || minecraft.gui.screen() instanceof TeamsChooseLoadoutScreen
+                    || minecraft.gui.screen() instanceof TeamsLoadoutEditScreen || minecraft.gui.screen() instanceof TeamsRewardBoxScreen
+                    || minecraft.gui.screen() instanceof TeamsMissionResultsScreen) minecraft.gui.setScreen(null);
             }
             case NONE -> {
                 // No-op

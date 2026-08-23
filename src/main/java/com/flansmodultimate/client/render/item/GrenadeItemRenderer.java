@@ -2,20 +2,20 @@ package com.flansmodultimate.client.render.item;
 
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GrenadeItemRenderer
 {
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (stack.getItem() instanceof GrenadeItem grenadeItem && grenadeItem.useCustomRenderer(context))
         {

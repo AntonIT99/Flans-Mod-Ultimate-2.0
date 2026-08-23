@@ -13,6 +13,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -33,7 +34,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
@@ -64,7 +64,7 @@ public final class GunItemRenderer
     private static final Vector3f VEC3_LOOK1_ANGLES = new Vector3f(0.0f, 70.0f, 0.0f);
     private static final Vector3f VEC3_LOOK2_ANGLES = new Vector3f(0.0f, -60.0f, 60.0f);
 
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (stack.getItem() instanceof GunItem gunItem && gunItem.useCustomRenderer(context) && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
         {
@@ -75,7 +75,7 @@ public final class GunItemRenderer
         ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
     }
 
-    public static void renderItem(ModelGun model, ItemStack stack, ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ModelGun model, ItemStack stack, ItemDisplayContext ctx, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         poseStack.pushPose();
         GunAnimations animations = ModClient.getGunAnimations(ctx);
@@ -105,7 +105,7 @@ public final class GunItemRenderer
      * transform, while retaining paintjobs, attachments and animated model parts.
      */
     public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations,
-                                      PoseStack poseStack, MultiBufferSource buffer,
+                                      PoseStack poseStack, RenderTypeBufferSource buffer,
                                       int packedLight, int packedOverlay)
     {
         if (model == null || stack.isEmpty() || !(stack.getItem() instanceof GunItem))
@@ -120,7 +120,7 @@ public final class GunItemRenderer
 
     private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations,
                                           @Nullable ItemDisplayContext ctx, PoseStack poseStack,
-                                          MultiBufferSource buffer, int packedLight, int packedOverlay)
+                                          RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         int color = model.getType().getColour();
         float red = (color >> 16 & 255) / 255F;
@@ -1010,7 +1010,7 @@ public final class GunItemRenderer
         return reloadRotate;
     }
 
-    private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
+    private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedOverlay)
     {
         ModelFlash flash = ModelCache.getOrLoadFlashModel(model.getType());
         AttachmentType barrelAttachment = model.getType().getBarrel(item);
@@ -1040,7 +1040,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         AttachmentType gripAttachment = model.getType().getGrip(stack);
         ItemStack gripItemStack = model.getType().getGripItemStack(stack);
@@ -1064,7 +1064,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         ModelCasing casing = ModelCache.getOrLoadCasingModel(model.getType());
         if (casing != null)
@@ -1088,7 +1088,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderMuzzleFlash(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
+    private static void renderMuzzleFlash(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedOverlay)
     {
         AttachmentType barrelAttachment = model.getType().getBarrel(stack);
         boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.getType().getFlashModelClassName())
@@ -1122,7 +1122,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         float smoothing = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
@@ -1203,7 +1203,7 @@ public final class GunItemRenderer
         poseStack.scale(modelScale, modelScale, modelScale);
     }
 
-    public static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (ModelCache.getOrLoadTypeModel(attachment) instanceof ModelAttachment modelAttachment)
         {
@@ -1219,7 +1219,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderFirstPersonArm(ModelGun model, GunAnimations anim, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderFirstPersonArm(ModelGun model, GunAnimations anim, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight)
     {
         if (!ModClientConfig.get().enableArms || !model.isHasArms())
             return;
@@ -1279,7 +1279,7 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderAnimArm(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderAnimArm(ModelGun model, GunAnimations animations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight)
     {
         if (!ModClientConfig.get().enableArms || !model.isHasArms())
             return;

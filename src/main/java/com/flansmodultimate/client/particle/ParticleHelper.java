@@ -154,7 +154,7 @@ public final class ParticleHelper
         double distantDensity = config == null ? 0.25D : config.distantParticleDensity;
         int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
 
-        Vec3 camera = minecraft.gameRenderer.getMainCamera().position();
+        Vec3 camera = minecraft.gameRenderer.mainCamera().position();
         double dx = x - camera.x;
         double dy = y - camera.y;
         double dz = z - camera.z;

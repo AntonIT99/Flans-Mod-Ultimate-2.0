@@ -73,7 +73,7 @@ public final class CreativeTabs
                 }).toList();
 
             if (itemsForIcon.isEmpty())
-                return new ItemStack(Items.WHITE_WOOL);
+                return new ItemStack(Items.WOOL.white());
 
             return new ItemStack(itemsForIcon.get(ThreadLocalRandom.current().nextInt(0, itemsForIcon.size())).get());
         };

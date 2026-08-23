@@ -81,22 +81,22 @@ public final class TeamsClientState
     {
         Minecraft minecraft = Minecraft.getInstance();
         snapshot = update;
-        if (update.getOpenScreen() == PacketTeamsState.OpenScreen.NONE && minecraft.screen instanceof TeamsSelectScreen)
+        if (update.getOpenScreen() == PacketTeamsState.OpenScreen.NONE && minecraft.gui.screen() instanceof TeamsSelectScreen)
             return;
         switch (update.getOpenScreen())
         {
-            case TEAM_SELECT -> minecraft.setScreen(new TeamsSelectScreen(false));
-            case CLASS_SELECT -> minecraft.setScreen(new TeamsSelectScreen(true));
-            case SCOREBOARD -> minecraft.setScreen(new TeamsScoreScreen());
-            case VOTING -> minecraft.setScreen(new TeamsVotingScreen());
+            case TEAM_SELECT -> minecraft.gui.setScreen(new TeamsSelectScreen(false));
+            case CLASS_SELECT -> minecraft.gui.setScreen(new TeamsSelectScreen(true));
+            case SCOREBOARD -> minecraft.gui.setScreen(new TeamsScoreScreen());
+            case VOTING -> minecraft.gui.setScreen(new TeamsVotingScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen
-                    || minecraft.screen instanceof TeamsVotingScreen)
-                    minecraft.setScreen(null);
+                if (minecraft.gui.screen() instanceof TeamsSelectScreen || minecraft.gui.screen() instanceof TeamsScoreScreen
+                    || minecraft.gui.screen() instanceof TeamsVotingScreen)
+                    minecraft.gui.setScreen(null);
             }
             case NONE -> {
-                if (minecraft.screen instanceof TeamsVotingScreen && update.getVoteOptions().isEmpty())
-                    minecraft.setScreen(null);
+                if (minecraft.gui.screen() instanceof TeamsVotingScreen && update.getVoteOptions().isEmpty())
+                    minecraft.gui.setScreen(null);
             }
         }
     }

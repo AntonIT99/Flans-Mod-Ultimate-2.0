@@ -62,7 +62,7 @@ public final class PacketBaseEditState implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        Minecraft.getInstance().setScreen(new TeamsBaseEditScreen(this));
+        Minecraft.getInstance().gui.setScreen(new TeamsBaseEditScreen(this));
     }
 
     public UUID getBaseId() { return baseId; }

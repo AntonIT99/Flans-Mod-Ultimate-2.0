@@ -568,7 +568,7 @@ public final class RecipeResolver
             case "nuggetgold", "nuggetelectrum", "nuggetconstantan", "nuggetsilver", "nuggetbronze" -> Items.GOLD_NUGGET;
             case "blockiron", "blocksteel", "blocknickel", "blocklead", "blocktin" -> Blocks.IRON_BLOCK;
             case "blockgold", "blockelectrum", "blockconstantan", "blocksilver", "blockbronze" -> Blocks.GOLD_BLOCK;
-            case "blockcopper" -> Blocks.COPPER_BLOCK;
+            case "blockcopper" -> Blocks.COPPER_BLOCK.weathering().unaffected();
             case "blockdiamond" -> Blocks.DIAMOND_BLOCK;
             case "blockemerald" -> Blocks.EMERALD_BLOCK;
             case "blockredstone" -> Blocks.REDSTONE_BLOCK;
@@ -644,22 +644,22 @@ public final class RecipeResolver
     {
         return switch (damage)
         {
-            case 1 -> Blocks.ORANGE_WOOL;
-            case 2 -> Blocks.MAGENTA_WOOL;
-            case 3 -> Blocks.LIGHT_BLUE_WOOL;
-            case 4 -> Blocks.YELLOW_WOOL;
-            case 5 -> Blocks.LIME_WOOL;
-            case 6 -> Blocks.PINK_WOOL;
-            case 7 -> Blocks.GRAY_WOOL;
-            case 8 -> Blocks.LIGHT_GRAY_WOOL;
-            case 9 -> Blocks.CYAN_WOOL;
-            case 10 -> Blocks.PURPLE_WOOL;
-            case 11 -> Blocks.BLUE_WOOL;
-            case 12 -> Blocks.BROWN_WOOL;
-            case 13 -> Blocks.GREEN_WOOL;
-            case 14 -> Blocks.RED_WOOL;
-            case 15 -> Blocks.BLACK_WOOL;
-            default -> Blocks.WHITE_WOOL;
+            case 1 -> Blocks.WOOL.orange();
+            case 2 -> Blocks.WOOL.magenta();
+            case 3 -> Blocks.WOOL.lightBlue();
+            case 4 -> Blocks.WOOL.yellow();
+            case 5 -> Blocks.WOOL.lime();
+            case 6 -> Blocks.WOOL.pink();
+            case 7 -> Blocks.WOOL.gray();
+            case 8 -> Blocks.WOOL.lightGray();
+            case 9 -> Blocks.WOOL.cyan();
+            case 10 -> Blocks.WOOL.purple();
+            case 11 -> Blocks.WOOL.blue();
+            case 12 -> Blocks.WOOL.brown();
+            case 13 -> Blocks.WOOL.green();
+            case 14 -> Blocks.WOOL.red();
+            case 15 -> Blocks.WOOL.black();
+            default -> Blocks.WOOL.white();
         };
     }
 
@@ -667,20 +667,20 @@ public final class RecipeResolver
     {
         return switch (damage)
         {
-            case 1 -> Items.RED_DYE;
-            case 2 -> Items.GREEN_DYE;
+            case 1 -> Items.DYE.red();
+            case 2 -> Items.DYE.green();
             case 3 -> Items.COCOA_BEANS;
             case 4 -> Items.LAPIS_LAZULI;
-            case 5 -> Items.PURPLE_DYE;
-            case 6 -> Items.CYAN_DYE;
-            case 7 -> Items.LIGHT_GRAY_DYE;
-            case 8 -> Items.GRAY_DYE;
-            case 9 -> Items.PINK_DYE;
-            case 10 -> Items.LIME_DYE;
-            case 11 -> Items.YELLOW_DYE;
-            case 12 -> Items.LIGHT_BLUE_DYE;
-            case 13 -> Items.MAGENTA_DYE;
-            case 14 -> Items.ORANGE_DYE;
+            case 5 -> Items.DYE.purple();
+            case 6 -> Items.DYE.cyan();
+            case 7 -> Items.DYE.lightGray();
+            case 8 -> Items.DYE.gray();
+            case 9 -> Items.DYE.pink();
+            case 10 -> Items.DYE.lime();
+            case 11 -> Items.DYE.yellow();
+            case 12 -> Items.DYE.lightBlue();
+            case 13 -> Items.DYE.magenta();
+            case 14 -> Items.DYE.orange();
             case 15 -> Items.BONE_MEAL;
             default -> Items.INK_SAC;
         };

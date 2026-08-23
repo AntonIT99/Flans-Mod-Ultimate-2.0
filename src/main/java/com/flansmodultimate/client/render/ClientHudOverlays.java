@@ -83,7 +83,7 @@ public final class ClientHudOverlays
         Identifier scopeTexture = null;
 
         boolean hasScope = ModClient.getCurrentScope() != null && ModClient.getCurrentScope().hasZoomOverlay();
-        boolean noScreen = Minecraft.getInstance().screen == null;
+        boolean noScreen = Minecraft.getInstance().gui.screen() == null;
         boolean zoomedIn = ModClient.getZoomProgress() > 0.8F;
 
         if (hasScope && noScreen && zoomedIn)
@@ -129,7 +129,7 @@ public final class ClientHudOverlays
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof AAGun aaGun))
+        if (player == null || mc.gui.hud.isHidden() || !(player.getVehicle() instanceof AAGun aaGun))
             return;
 
         AAGunType type = aaGun.getConfigType();
@@ -204,7 +204,7 @@ public final class ClientHudOverlays
 
     public static final GuiLayer DAMAGE_ABSORPTION = (g, deltaTracker) -> {
         Minecraft minecraft = Minecraft.getInstance();
-        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || minecraft.options.hideGui
+        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || minecraft.gui.hud.isHidden()
             || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer())
             return;
 
@@ -443,7 +443,7 @@ public final class ClientHudOverlays
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.options.hideGui)
+        if (player == null || mc.gui.hud.isHidden())
             return;
 
         Driveable driveable = KeyInputHandler.resolveDriveable(player);

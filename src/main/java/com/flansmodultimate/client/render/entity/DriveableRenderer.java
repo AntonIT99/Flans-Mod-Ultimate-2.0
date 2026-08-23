@@ -13,6 +13,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.DeferredMultiBufferSubmitter;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
@@ -36,7 +37,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -246,7 +246,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
     }
 
-    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
         if (data == null)
@@ -273,7 +273,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 
-    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight)
     {
         if (!armIntact || stack.isEmpty())
             return;
@@ -303,7 +303,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.popPose();
     }
 
-    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddon(ItemStack stack, float spinDegrees, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight)
     {
         if (!(stack.getItem() instanceof MechaAddonItem addon))
             return;

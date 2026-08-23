@@ -4,6 +4,7 @@ import com.flansmod.client.model.ModelMechaTool;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.RenderTypeBufferSource;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -12,7 +13,6 @@ import com.mojang.math.Axis;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MechaAddonItemRenderer
 {
-    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, RenderTypeBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (!(stack.getItem() instanceof MechaAddonItem mechaAddonItem)
             || !mechaAddonItem.useCustomRenderer(context)

@@ -332,7 +332,7 @@ public final class ShootingHelper
         if (hitToUse == null)
             return;
 
-        PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
+        PacketPlaySound.sendSoundPacket(Vec3.atCenterOf(pos), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
     }
 
     private static Optional<String> resolveImpactSound(Level level, BlockPos pos, BlockState state, Block block, BulletType type)

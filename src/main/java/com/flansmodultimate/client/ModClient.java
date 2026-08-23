@@ -177,7 +177,7 @@ public class ModClient
         isDebug = value;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null)
-            mc.gui.getChat().addClientSystemMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
+            mc.gui.hud.getChat().addClientSystemMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
     }
 
     public static boolean isMouseControlEnabled()
@@ -264,7 +264,7 @@ public class ModClient
         Player player = mc.player;
         Options opts = mc.options;
 
-        if (scopeTime > 0 || player == null || mc.screen != null || currentScope == desiredScope)
+        if (scopeTime > 0 || player == null || mc.gui.screen() != null || currentScope == desiredScope)
             return;
 
         if (!canUseScope(player))
@@ -708,7 +708,7 @@ public class ModClient
 
             // If the currently held item is not a gun or is the wrong gun, unscope
             // If we've opened a GUI page, or we switched weapons, close the current scope
-            boolean guiOpen = mc.screen != null;
+            boolean guiOpen = mc.gui.screen() != null;
             boolean notAGun = !(itemInHand instanceof GunItem);
             boolean differentScope = itemInHand instanceof GunItem gun && gun.getConfigType().getCurrentScope(stackInHand) != currentScope;
 

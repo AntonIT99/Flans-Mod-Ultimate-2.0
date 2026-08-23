@@ -2,15 +2,13 @@ package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +48,7 @@ public class DebugVector extends DebugColor
     }
 
     @Override
-    public void render(@NotNull PoseStack pose, @NotNull MultiBufferSource buffers, @NotNull Camera cam)
+    public void submit(@NotNull PoseStack pose, @NotNull SubmitNodeCollector collector, @NotNull Camera cam)
     {
         if (!ModClient.isDebug() || position == null || pointing == null)
             return;
@@ -74,8 +72,8 @@ public class DebugVector extends DebugColor
         pose.mulPose(new Quaternionf().rotationTo(from, to));
 
         // 3) draw a rectangular prism from x=[0..len], y,z=[-h..h]
-        VertexConsumer solid = buffers.getBuffer(RenderTypes.lines());
-        ShapeRenderer.renderShape(pose, solid, Shapes.box(0F, -h, -h, (float)len, h, h), 0D, 0D, 0D, packedColor(), 1F);
+        collector.submitShapeOutline(pose, Shapes.box(0F, -h, -h, (float)len, h, h),
+            RenderTypes.lines(), packedColor(), 1F, false);
 
         pose.popPose();
 

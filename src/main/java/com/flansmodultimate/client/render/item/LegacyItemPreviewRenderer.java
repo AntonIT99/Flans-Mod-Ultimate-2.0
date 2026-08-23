@@ -7,8 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -21,11 +20,6 @@ import org.jspecify.annotations.Nullable;
 /** Renders legacy 3D item models into a GUI picture-in-picture target. */
 public final class LegacyItemPreviewRenderer extends PictureInPictureRenderer<LegacyItemPreviewRenderer.State>
 {
-    public LegacyItemPreviewRenderer(MultiBufferSource.BufferSource bufferSource)
-    {
-        super(bufferSource);
-    }
-
     public static void submit(GuiGraphicsExtractor graphics, ItemStack stack,
                               int x0, int y0, int x1, int y1, float scale,
                               float xRotation, float yRotation)
@@ -48,20 +42,18 @@ public final class LegacyItemPreviewRenderer extends PictureInPictureRenderer<Le
     }
 
     @Override
-    protected void renderToTexture(State state, PoseStack poseStack)
+    protected void renderToTexture(State state, PoseStack poseStack, SubmitNodeCollector collector)
     {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+        minecraft.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
         poseStack.mulPose(Axis.XP.rotationDegrees(state.xRotation()));
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yRotation()));
         // The PIP base class negates Z. Match the legacy GUI transform's
         // (-scale, +scale, +scale) orientation before submitting the item.
         poseStack.scale(-1F, 1F, -1F);
 
-        FeatureRenderDispatcher dispatcher = minecraft.gameRenderer.getFeatureRenderDispatcher();
-        state.itemState().submit(poseStack, dispatcher.getSubmitNodeStorage(),
-            LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
-        dispatcher.renderAllFeatures();
+        state.itemState().submit(poseStack, collector, LightCoordsUtil.FULL_BRIGHT,
+            OverlayTexture.NO_OVERLAY, 0);
     }
 
     @Override

@@ -141,7 +141,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         GunItemHandler gunItemHandler = gunItem.getGunItemHandler();
 
         // Force release actions when entering a GUI
-        if (Minecraft.getInstance().screen != null && (data.isShooting(hand) || data.isSecondaryFunctionKeyPressed()))
+        if (Minecraft.getInstance().gui.screen() != null && (data.isShooting(hand) || data.isSecondaryFunctionKeyPressed()))
         {
             data.setShootKeyPressed(hand, false);
             data.setSecondaryFunctionKeyPressed(false);
@@ -265,7 +265,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             return;
 
         // Force release key when entering a GUI
-        if (Minecraft.getInstance().screen != null)
+        if (Minecraft.getInstance().gui.screen() != null)
         {
             if (deployedGun.isShootKeyPressed())
             {
@@ -295,7 +295,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
             return;
 
-        if (Minecraft.getInstance().screen != null)
+        if (Minecraft.getInstance().gui.screen() != null)
         {
             if (aaGun.isShootKeyPressed())
             {

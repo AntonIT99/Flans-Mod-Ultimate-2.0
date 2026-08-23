@@ -64,7 +64,7 @@ public class Team extends InfoType
         super.read(file);
         readIntValues("TeamColour", file, 3).ifPresent(values ->
             teamColour = (values[0] << 16) | (values[1] << 8) | values[2]);
-        textColour = parseFormatting(readValue("TextColour", textColour.getName(), file));
+        textColour = parseFormatting(readValue("TextColour", textColour.name(), file));
         allowedForRoundsGenerator = readValue("AllowedForRoundsGenerator", allowedForRoundsGenerator, file);
 
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");
@@ -138,7 +138,18 @@ public class Team extends InfoType
         if ("orange".equalsIgnoreCase(value))
             return ChatFormatting.GOLD;
         String normalized = value.replace("L", "LIGHT_").replace("Grey", "Gray").toUpperCase(Locale.ROOT);
-        ChatFormatting formatting = ChatFormatting.getByName(normalized);
-        return formatting != null && formatting.isColor() ? formatting : ChatFormatting.WHITE;
+        try
+        {
+            ChatFormatting formatting = ChatFormatting.valueOf(normalized);
+            return switch (formatting)
+            {
+                case OBFUSCATED, BOLD, STRIKETHROUGH, UNDERLINE, ITALIC, RESET -> ChatFormatting.WHITE;
+                default -> formatting;
+            };
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            return ChatFormatting.WHITE;
+        }
     }
 }

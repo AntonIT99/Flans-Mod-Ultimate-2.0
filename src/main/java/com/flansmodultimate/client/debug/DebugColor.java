@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -46,5 +46,5 @@ public abstract class DebugColor
 
     public abstract AABB getAABB();
 
-    public abstract void render(@NotNull PoseStack pose, @NotNull MultiBufferSource buffers, @NotNull Camera cam);
+    public abstract void submit(@NotNull PoseStack pose, @NotNull SubmitNodeCollector collector, @NotNull Camera cam);
 }

@@ -22,26 +22,26 @@ public final class LegacyDyeMapper
 
         return switch (k)
         {
-            case "black" -> Items.BLACK_DYE;
-            case "red" -> Items.RED_DYE;
-            case "green" -> Items.GREEN_DYE;
-            case "brown" -> Items.BROWN_DYE;
-            case "blue" -> Items.BLUE_DYE;
-            case "purple" -> Items.PURPLE_DYE;
-            case "cyan" -> Items.CYAN_DYE;
+            case "black" -> Items.DYE.black();
+            case "red" -> Items.DYE.red();
+            case "green" -> Items.DYE.green();
+            case "brown" -> Items.DYE.brown();
+            case "blue" -> Items.DYE.blue();
+            case "purple" -> Items.DYE.purple();
+            case "cyan" -> Items.DYE.cyan();
 
             // "silver" in old enums == light gray
-            case "silver", "lightgray", "lightgrey" -> Items.LIGHT_GRAY_DYE;
-            case "gray", "grey" -> Items.GRAY_DYE;
+            case "silver", "lightgray", "lightgrey" -> Items.DYE.lightGray();
+            case "gray", "grey" -> Items.DYE.gray();
 
             // old "lightBlue" (camelCase) -> modern LIGHT_BLUE
-            case "lightblue" -> Items.LIGHT_BLUE_DYE;
-            case "pink" -> Items.PINK_DYE;
-            case "lime" -> Items.LIME_DYE;
-            case "yellow" -> Items.YELLOW_DYE;
-            case "magenta" -> Items.MAGENTA_DYE;
-            case "orange" -> Items.ORANGE_DYE;
-            case "white" -> Items.WHITE_DYE;
+            case "lightblue" -> Items.DYE.lightBlue();
+            case "pink" -> Items.DYE.pink();
+            case "lime" -> Items.DYE.lime();
+            case "yellow" -> Items.DYE.yellow();
+            case "magenta" -> Items.DYE.magenta();
+            case "orange" -> Items.DYE.orange();
+            case "white" -> Items.DYE.white();
             default -> throw new IllegalArgumentException("Unknown legacy dye name: " + legacyName);
         };
     }
