@@ -1,0 +1,9 @@
+Name Clone 442th Attack Battalion Armor
+ShortName clone442Armor
+ItemID 31218
+Icon clone442armor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooper442chestplate
+Model mineworld.CloneChestplate212

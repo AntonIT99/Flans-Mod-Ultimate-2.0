@@ -1,0 +1,9 @@
+Name Rex's Clone Pants
+ShortName rexclonePants
+ItemID 31245
+Icon rexclonepants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture rexlegs
+Model mineworld.ClonePantsRex

@@ -1,0 +1,11 @@
+Name Clone 41st Elite Corps Helmet
+ShortName clone41Helmet
+ItemID 31220
+Icon clone41helmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture clonetrooper41helmet
+Model mineworld.CloneHelmet
+SmokeProtection True
+Overlay clonehelmet

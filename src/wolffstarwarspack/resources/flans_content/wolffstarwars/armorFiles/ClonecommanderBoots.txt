@@ -1,0 +1,9 @@
+Name Clone Commander Boots
+ShortName clonecommanderBoots
+ItemID 31227
+Icon clonecommanderboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooperlegs
+Model mineworld.CloneBoots

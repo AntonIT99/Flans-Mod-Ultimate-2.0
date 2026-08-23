@@ -1,0 +1,9 @@
+Name Clone Green Company Armor
+ShortName clone327Armor
+ItemID 31218
+Icon clone327armor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooper327chestplate
+Model mineworld.CloneChestplate

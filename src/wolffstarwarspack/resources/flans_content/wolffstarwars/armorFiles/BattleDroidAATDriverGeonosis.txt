@@ -1,0 +1,12 @@
+Name Battle Droid B1 AAT Driver Geonosis
+ShortName BattleDroidAATDriverGeonosis
+ItemID 31218
+Icon battledroidaatdrivergeonosis
+Colour 255 255 255
+Type Head
+Defence 0.4
+ArmourTexture battledroidaatdrivergeonosis
+Model mineworld.BattleDroid
+SmokeProtection False
+NightVision True
+Invisible True

@@ -1,0 +1,8 @@
+Name Jedi Boots
+ShortName JediCoat
+ItemID 31262
+Icon jedichestplate
+Colour 255 255 255
+Type Body
+Defence 0.4
+ArmourTexture jedi_layer

@@ -1,0 +1,9 @@
+Name Clone Shadow Trooper Boots
+ShortName cloneShadowBoots
+ItemID 31219
+Icon cloneshadowboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetroopershadowlegs
+Model mineworld.CloneBoots212

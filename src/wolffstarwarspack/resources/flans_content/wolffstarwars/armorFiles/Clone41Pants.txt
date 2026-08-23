@@ -1,0 +1,9 @@
+Name Clone 41st Elite Corps Pants
+ShortName clone41Pants
+ItemID 31221
+Icon clonetrooperpants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetrooperlegs
+Model mineworld.ClonePants

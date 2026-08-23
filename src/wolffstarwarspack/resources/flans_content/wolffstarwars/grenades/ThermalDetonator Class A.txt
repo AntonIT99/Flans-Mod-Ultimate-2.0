@@ -1,0 +1,48 @@
+////Name and icon
+Name Thermal Detonator Class A
+ShortName ThermalDetonatorclassA
+Icon itemthermaldetonatorclassa
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+ItemID 23712
+StackSize 4
+////Visuals
+Model mineworld.ThermalDetonator
+Texture thermaldetonatorclassa
+TrailParticles false
+//TrailParticleType <particleType>
+//ExplodeParticleType <particleType>
+SmokeTime 0
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+////Throwing
+ThrowDelay 10
+//ThrowSound <sound>
+ThrowSound detonator
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.8
+HitEntityDamage 1
+ThrowSpeed 3.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+DetonateWhenShot true
+PrimeDelay 0
+////Detonation
+Fuse 80
+FireRadius 0.0
+ExplosionRadius 16.0
+ExplosionBreaksBlocks true
+explosionDamageVsLiving = 500F
+explosionDamageVsDriveable = 500F
+//Detonate Sound <sound>
+DetonateSound detonator_explosion
+ModelScale 1.2

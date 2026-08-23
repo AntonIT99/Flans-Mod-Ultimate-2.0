@@ -1,0 +1,11 @@
+Name Clonetrooper Helmet
+ShortName stormtrooperHelmet
+ItemID 31252
+Icon stormtrooperhelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture stormtrooperhelmet
+Model mineworld.StormtrooperHelmet
+SmokeProtection True
+Overlay clonehelmet

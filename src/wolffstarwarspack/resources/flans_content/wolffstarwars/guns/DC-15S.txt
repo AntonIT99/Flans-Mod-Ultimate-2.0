@@ -1,0 +1,47 @@
+Name Blaster DC-15S
+ShortName blasterDC-15S
+//The ammo this gun uses (shortName)
+Ammo Dc15Ammo
+Ammo blasterStunAmmo
+Icon blasterdc-15s
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 31201
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 40
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 3
+//Damage in half hearts
+Damage 8
+//The higher this value, the more the bullets spread
+Accuracy 5
+//Time in ticks between rounds
+ShootDelay 4
+ShootSound dc15shoot
+//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+SoundLength 0
+DistortSound False
+ReloadSound MG42Reload
+Mode FullAuto
+BulletSpeed 3.0
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+Deployable False
+DeployableModel None
+Model mineworld.DC15S
+Texture skindc15s
+AllowAllAttachments true
+NumGenericAttachmentSlots 2
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+OneHanded True
+ShowDamage True
+ShowRecoil True
+ShowAccuracy True
+ShowReloadTime True
+//Muzzle Flashes
+FlashModel mineworld.MuzzleFlash
+FlashTexture sw_blueflash

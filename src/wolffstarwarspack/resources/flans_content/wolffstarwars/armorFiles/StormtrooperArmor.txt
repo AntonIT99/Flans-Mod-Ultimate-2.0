@@ -1,0 +1,9 @@
+Name ClonetrooperArmor
+ShortName stormtrooperArmor
+ItemID 31250
+Icon stormtrooperchest
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture stormtrooperchestplate
+Model mineworld.StormtrooperChest

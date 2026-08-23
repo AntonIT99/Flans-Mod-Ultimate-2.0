@@ -1,0 +1,9 @@
+Name Cody's Clone Armor
+ShortName codycloneArmor
+ItemID 31242
+Icon codyclonearmor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture codychestplate
+Model mineworld.CloneChestplateCody

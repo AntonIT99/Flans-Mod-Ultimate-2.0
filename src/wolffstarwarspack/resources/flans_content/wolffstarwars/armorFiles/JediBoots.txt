@@ -1,0 +1,11 @@
+Name Jedi Boots
+ShortName JediBootsPowered
+ItemID 31262
+Icon jediboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture jedi_layer
+MoveSpeedModifier 1.25
+JumpModifier 5.0
+NegateFallDamage True

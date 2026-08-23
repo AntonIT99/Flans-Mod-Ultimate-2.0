@@ -1,0 +1,11 @@
+Name Clone Commander Helmet
+ShortName clonecommanderHelmet
+ItemID 31228
+Icon clonecommanderhelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture clonetroopercommanderhelmet
+Model mineworld.CloneHelmet
+SmokeProtection True
+Overlay clonehelmet

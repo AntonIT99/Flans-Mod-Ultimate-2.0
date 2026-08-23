@@ -86,6 +86,9 @@ minecraft {
                 "flansmodultimate_officialpacks" {
                     source sourceSets.maybeCreate('officialpacks')
                 }
+                "flansmodultimate_wolff_starwars" {
+                    source sourceSets.maybeCreate('wolffstarwarspack')
+                }
             }
         }
 
@@ -125,6 +128,8 @@ configurations {
     packsRuntimeOnly.extendsFrom runtimeOnly
     officialpacksImplementation.extendsFrom implementation
     officialpacksRuntimeOnly.extendsFrom runtimeOnly
+    wolffstarwarspackImplementation.extendsFrom implementation
+    wolffstarwarspackRuntimeOnly.extendsFrom runtimeOnly
 }
 
 // Configure all runs with the following
@@ -159,6 +164,16 @@ sourceSets {
             srcDirs = ['src/officialpacks/resources']
             // Legacy pack bootstrap classes carry @Mod and must not be scanned as additional Forge mods.
             // They are not render models and are never loaded by the packaged-content provider.
+            exclude 'flans_models/**/common/*PackMod.class'
+        }
+    }
+    wolffstarwarspack {
+        java {
+            srcDirs = ['src/wolffstarwarspack/java']
+        }
+        resources {
+            srcDirs = ['src/wolffstarwarspack/resources']
+            // Legacy pack bootstrap classes carry @Mod and must not be scanned as additional Forge mods.
             exclude 'flans_models/**/common/*PackMod.class'
         }
     }
@@ -214,6 +229,7 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     officialpacksImplementation sourceSets.main.output
+    wolffstarwarspackImplementation sourceSets.main.output
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -340,9 +356,24 @@ def officialPacksJar = tasks.register('officialPacksJar', Jar) {
     }
 }
 
+def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] Wolff's Star Wars Pack")
+    archiveVersion.set('3.0')
+
+    from sourceSets.wolffstarwarspack.output
+
+    manifest {
+        attributes(
+            'Implementation-Title': 'wolffstarwarspack',
+            'Implementation-Version': '3.0'
+        )
+    }
+}
+
 artifacts {
     archives packsJar
     archives officialPacksJar
+    archives wolffStarWarsPackJar
 }
 
 // Example configuration to allow publishing using the maven-publish plugin

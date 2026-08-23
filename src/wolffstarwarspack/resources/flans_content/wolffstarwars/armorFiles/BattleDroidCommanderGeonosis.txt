@@ -1,0 +1,12 @@
+Name Battle Droid B1 Commander Geonosis
+ShortName BattleDroidCommanderGeonosis
+ItemID 31218
+Icon battledroidcommandergeonosis
+Colour 255 255 255
+Type Head
+Defence 0.4
+ArmourTexture battledroidcommandergeonosis
+Model mineworld.BattleDroidCommander
+SmokeProtection False
+NightVision True
+Invisible True
