@@ -1,0 +1,9 @@
+Name Clone Lieutnant Armor
+ShortName clonelieutnantARCArmor
+ItemID 31234
+Icon clonelieutnantarmor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooperlieutenantarcchestplate
+Model mineworld.CloneChestplateARC

@@ -71,6 +71,7 @@ Build the separate content-pack artifacts:
 ```powershell
 .\gradlew.bat packsJar
 .\gradlew.bat officialPacksJar
+.\gradlew.bat wolffStarWarsPackJar
 ```
 
 Build artifacts are written under `build/libs/`.

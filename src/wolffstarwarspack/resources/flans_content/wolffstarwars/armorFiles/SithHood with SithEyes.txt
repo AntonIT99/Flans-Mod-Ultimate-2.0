@@ -1,0 +1,9 @@
+Name Sith Boots
+ShortName SithHoodWithSithEyes
+ItemID 31262
+Icon sithhelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.05
+ArmourTexture sitheyes
+Model mineworld.SithHood

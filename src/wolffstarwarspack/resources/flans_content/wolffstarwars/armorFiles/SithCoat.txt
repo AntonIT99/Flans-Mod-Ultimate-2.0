@@ -1,0 +1,8 @@
+Name Sith Boots
+ShortName SithCoat
+ItemID 31262
+Icon sithchestplate
+Colour 255 255 255
+Type Body
+Defence 0.4
+ArmourTexture sith_layer

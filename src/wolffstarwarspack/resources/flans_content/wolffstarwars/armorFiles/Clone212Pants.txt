@@ -1,0 +1,9 @@
+Name Clone 212th Attack Battalion Pants
+ShortName clone212Pants
+ItemID 31221
+Icon clone212pants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetrooper212legs
+Model mineworld.ClonePants212

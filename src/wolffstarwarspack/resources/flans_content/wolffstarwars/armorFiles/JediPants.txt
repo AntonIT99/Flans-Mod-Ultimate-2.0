@@ -1,0 +1,8 @@
+Name Jedi Boots
+ShortName JediPants
+ItemID 31262
+Icon jedileggings
+Colour 255 255 255
+Type Pants
+Defence 0.3
+ArmourTexture jedi_layer

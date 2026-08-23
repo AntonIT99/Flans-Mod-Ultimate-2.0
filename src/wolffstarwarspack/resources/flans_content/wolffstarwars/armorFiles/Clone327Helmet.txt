@@ -1,0 +1,11 @@
+Name Clone Green Company Helmet
+ShortName clone327Helmet
+ItemID 31220
+Icon clone327helmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture clonetrooper327helmet
+Model mineworld.CloneHelmet
+SmokeProtection True
+Overlay clonehelmet

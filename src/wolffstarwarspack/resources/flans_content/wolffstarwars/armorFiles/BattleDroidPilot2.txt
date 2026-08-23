@@ -1,0 +1,12 @@
+Name Battle Droid B1 Pilot
+ShortName BattleDroidPilot2
+ItemID 31218
+Icon battledroidpilot2
+Colour 255 255 255
+Type Head
+Defence 0.4
+ArmourTexture battledroidpilot2
+Model mineworld.BattleDroid
+SmokeProtection False
+NightVision True
+Invisible True

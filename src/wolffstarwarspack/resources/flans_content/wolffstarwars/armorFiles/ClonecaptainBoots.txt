@@ -1,0 +1,9 @@
+Name Clone Captain Boots
+ShortName clonecaptainBoots
+ItemID 31219
+Icon clonecaptainboots
+Colour 255 255 255
+Type Boots
+Defence 0.05
+ArmourTexture clonetrooperlegs
+Model mineworld.CloneBoots

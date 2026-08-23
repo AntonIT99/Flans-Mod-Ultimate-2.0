@@ -1,0 +1,52 @@
+////Name and icon
+Name Thermal Detonator
+ShortName ThermalDetonator
+Icon itemthermaldetonator
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+ItemID 23712
+StackSize 4
+////Visuals
+Model mineworld.ThermalDetonator
+Texture thermaldetonator
+TrailParticles false
+//TrailParticleType <particleType>
+ExplodeParticles 0
+//ExplodeParticleType <particleType>
+SmokeTime 0
+//ExplodeParticleType hugeexplosion
+//ExplodeParticleType flame
+//ExplodeParticleType smoke
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+////Throwing
+ThrowDelay 8
+ThrowSound detonator
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.8
+HitEntityDamage 1
+ThrowSpeed 2.0
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+DetonateWhenShot true
+PrimeDelay 0
+////Detonation
+Fuse 80
+FireRadius 0.0
+ExplosionRadius 5.0
+ExplosionBreaksBlocks true
+explosionDamageVsLiving = 100F
+explosionDamageVsDriveable = 100F
+//Detonate Sound <sound>
+DetonateSound detonator_explosion
+ModelScale 1.2

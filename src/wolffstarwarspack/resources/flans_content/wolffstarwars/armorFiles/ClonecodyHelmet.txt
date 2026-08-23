@@ -1,0 +1,11 @@
+Name Cody's Clone Helmet
+ShortName codycloneHelmet
+ItemID 31244
+Icon codyclonehelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture codyhelmet
+Model mineworld.CloneHelmetCody
+SmokeProtection True
+Overlay clonehelmet

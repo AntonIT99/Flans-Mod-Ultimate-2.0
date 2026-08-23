@@ -1,0 +1,9 @@
+Name Sith Eyes
+ShortName SithEyes
+ItemID 31218
+Icon sitheye
+Colour 255 255 255
+Type Head
+Defence 0.0
+ArmourTexture sitheyes
+Model mineworld.Eyes

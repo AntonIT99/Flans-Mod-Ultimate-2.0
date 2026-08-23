@@ -1,0 +1,11 @@
+Name Rex's Clone Helmet
+ShortName rexcloneHelmet
+ItemID 31244
+Icon rexclonehelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.15
+ArmourTexture rexhelmet
+Model mineworld.CloneHelmetRex
+SmokeProtection True
+Overlay clonehelmet

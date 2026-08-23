@@ -1,0 +1,9 @@
+Name Clone Captain Pants
+ShortName clonecaptainARCPants
+ItemID 31221
+Icon clonecaptainpants
+Colour 255 255 255
+Type Pants
+Defence 0.15
+ArmourTexture clonetroopercaptainarclegs
+Model mineworld.ClonePantsRex

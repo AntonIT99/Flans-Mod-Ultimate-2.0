@@ -1,0 +1,9 @@
+Name Clone 212th Attack Battalion Armor
+ShortName clone212Armor
+ItemID 31218
+Icon clone212armor
+Colour 255 255 255
+Type Body
+Defence 0.25
+ArmourTexture clonetrooper212chestplate
+Model mineworld.CloneChestplate212
