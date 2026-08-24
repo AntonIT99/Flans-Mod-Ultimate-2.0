@@ -26,6 +26,6 @@ side="BOTH"
 [[dependencies.flansmodultimate_officialpacks]]
 modId="flansmodultimate"
 type="required"
-versionRange="[2.0-beta-5,)"
+versionRange="*"
 ordering="BEFORE"
 side="BOTH"
