@@ -57,13 +57,13 @@ public final class CustomRenderType
         PARTICLE_PREMULTIPLIED);
 
     private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key ->
-        createEntityType("entity_emissive_alpha", key.texture(), selectEmissivePipeline(key, false), false, false));
+        createEntityType("entity_emissive_alpha", key.texture(), selectEmissivePipeline(key, false), false, false, true));
     private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key ->
-        createEntityType("entity_emissive_additive", key.texture(), selectEmissivePipeline(key, true), false, false));
+        createEntityType("entity_emissive_additive", key.texture(), selectEmissivePipeline(key, true), false, false, true));
     private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_UNSORTED = Util.memoize(key ->
-        createEntityType("entity_translucent_unsorted", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, true, false));
+        createEntityType("entity_translucent_unsorted", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, true, true, false));
     private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_SORTED = Util.memoize(key ->
-        createEntityType("entity_translucent", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, true, true));
+        createEntityType("entity_translucent", key.texture(), key.cull() ? ENTITY_TRANSLUCENT_CULL : RenderPipelines.ENTITY_TRANSLUCENT, true, true, true));
     private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key ->
         key.cull() ? createArmorType("armor_cutout_cull", key.texture(), ARMOR_CUTOUT_CULL, false) : RenderTypes.armorCutoutNoCull(key.texture()));
     private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key ->
@@ -79,11 +79,13 @@ public final class CustomRenderType
 
     private static RenderPipeline emissivePipeline(String name, BlendFunction blend, boolean depthWrite, boolean cull)
     {
+        // Match the 1.20/1.21 position_color_tex_lightmap path: alpha-tested, but unaffected by
+        // cardinal lighting or entity overlays. The render type remains sorted for blending.
         return RenderPipeline.builder(RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(FlansMod.MOD_ID, "pipeline/" + name))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
+            .withShaderDefine("NO_CARDINAL_LIGHTING")
+            .withShaderDefine("NO_OVERLAY")
             .withColorTargetState(new ColorTargetState(blend))
             .withCull(cull)
             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, depthWrite))
@@ -122,15 +124,17 @@ public final class CustomRenderType
             : (key.cull() ? EMISSIVE_ALPHA_NO_DEPTH_CULL : EMISSIVE_ALPHA_NO_DEPTH);
     }
 
-    private static RenderType createEntityType(String name, Identifier texture, RenderPipeline pipeline, boolean useLightmap, boolean sortOnUpload)
+    private static RenderType createEntityType(String name, Identifier texture, RenderPipeline pipeline,
+                                               boolean useLightmap, boolean useOverlay, boolean sortOnUpload)
     {
         RenderSetup.RenderSetupBuilder setup = RenderSetup.builder(pipeline)
             .withTexture("Sampler0", texture)
-            .useOverlay()
             .affectsCrumbling()
             .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE);
         if (useLightmap)
             setup.useLightmap();
+        if (useOverlay)
+            setup.useOverlay();
         if (sortOnUpload)
             setup.sortOnUpload();
         return RenderType.create(name, setup.createRenderSetup());
