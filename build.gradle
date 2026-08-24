@@ -126,7 +126,7 @@ neoForge {
         "flansmodultimate_officialpacks" {
             sourceSet(sourceSets.officialpacks)
         }
-        "flansmodultimate_wolff_starwars" {
+        "flansmodultimate_wolffstarwars" {
             sourceSet(sourceSets.wolffstarwarspack)
         }
     }
