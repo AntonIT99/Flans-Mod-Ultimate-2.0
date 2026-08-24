@@ -11,6 +11,6 @@ public class StarWarsPackMod
 
     public StarWarsPackMod(FMLJavaModLoadingContext context)
     {
-        PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models", null);
+        PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models");
     }
 }
