@@ -16,10 +16,16 @@ import net.minecraft.world.entity.LivingEntity;
 @Mixin(HumanoidArmorLayer.class)
 public abstract class HumanoidArmorLayerMixin<T extends LivingEntity, M extends HumanoidModel<T>, A extends HumanoidModel<T>>
 {
-    @Inject(method = "renderArmorPiece", at = @At("HEAD"), cancellable = true)
-    private void skipCustomArmorRendering(PoseStack poseStack, MultiBufferSource pBuffer, T pLivingEntity, EquipmentSlot pSlot, int packedLight, A pModel, CallbackInfo ci)
+    @Inject(
+        method = "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private void skipCustomArmorRendering(PoseStack poseStack, MultiBufferSource buffer, T livingEntity, EquipmentSlot slot, int packedLight, A model,
+                                          float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch,
+                                          CallbackInfo ci)
     {
-        if (pLivingEntity.getItemBySlot(pSlot).getItem() instanceof CustomArmorItem)
+        if (livingEntity.getItemBySlot(slot).getItem() instanceof CustomArmorItem)
         {
             ci.cancel();
         }
