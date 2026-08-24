@@ -7,7 +7,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod(StarWarsPackMod.MOD_ID)
 public class StarWarsPackMod
 {
-    public static final String MOD_ID = "flansmodultimate_wolff_starwars";
+    public static final String MOD_ID = "flansmodultimate_wolffstarwars";
 
     public StarWarsPackMod(FMLJavaModLoadingContext context)
     {

@@ -86,7 +86,7 @@ minecraft {
                 "flansmodultimate_officialpacks" {
                     source sourceSets.maybeCreate('officialpacks')
                 }
-                "flansmodultimate_wolff_starwars" {
+                "flansmodultimate_wolffstarwars" {
                     source sourceSets.maybeCreate('wolffstarwarspack')
                 }
             }

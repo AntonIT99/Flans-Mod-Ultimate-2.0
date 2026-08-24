@@ -3,26 +3,27 @@ loaderVersion="36.2.0"
 license="MIT"
 
 [[mods]]
-modId="flansmodultimate_wolff_starwars"
+modId="flansmodultimate_wolffstarwars"
 version="3.0"
-displayName="Wolff's Star Wars Content for Flan's Mod Ultimate 2"
+displayName="Wolff's Star Wars Pack"
+logoFile="wolffstarwars.png"
 authors="Wolff"
 displayTest = "NONE"
 description=''''''
 
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
     modId="forge"
     mandatory=true
     versionRange="[47.4.0,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
     modId="flansmodultimate"
     mandatory=true
     versionRange="*"
