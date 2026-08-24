@@ -26,6 +26,8 @@ out/
 bin/
 !**/src/**/bin/
 
+logs/
+
 ### VS Code ###
 .vscode/
 

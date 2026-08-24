@@ -15,14 +15,7 @@ import net.neoforged.neoforgespi.language.IModFileInfo;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -36,6 +29,20 @@ public final class PackagedContentPackApi
 
     private PackagedContentPackApi()
     {
+    }
+
+    /**
+     * Registers packaged content without enforcing any logical packs.
+     *
+     * @param context packaging mod loading context
+     * @param modId packaging mod id
+     * @param contentRoot root containing one directory per logical pack
+     * @param modelsRoot root containing compiled legacy model classes
+     */
+    public static synchronized void register(ModContainer context, String modId,
+                                             String contentRoot, String modelsRoot)
+    {
+        register(context, modId, contentRoot, modelsRoot, Set.of());
     }
 
     /**

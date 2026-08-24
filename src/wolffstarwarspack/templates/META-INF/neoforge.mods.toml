@@ -1,27 +1,28 @@
 license="${mod_license}"
 
 [[mods]]
-modId="flansmodultimate_wolff_starwars"
+modId="flansmodultimate_wolffstarwars"
 version="3.0"
-displayName="Wolff's Star Wars Content for Flan's Mod Ultimate 2"
+displayName="Wolff's Star Wars Pack"
 authors="${mod_authors}"
+logoFile="wolffstarwars.png"
 description='''Bundled Wolff's Star Wars content pack for Flan's Mod Ultimate.'''
 
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
 modId="neoforge"
 type="required"
 versionRange="[${neo_version},)"
 ordering="NONE"
 side="BOTH"
 
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
 modId="minecraft"
 type="required"
 versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="BOTH"
 
-[[dependencies.flansmodultimate_wolff_starwars]]
+[[dependencies.flansmodultimate_wolffstarwars]]
 modId="${mod_id}"
 type="required"
 versionRange="[${mod_version},)"
