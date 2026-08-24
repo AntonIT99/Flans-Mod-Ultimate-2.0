@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -45,9 +46,9 @@ public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidM
         {
             ArmorType armorType = armorItem.getConfigType();
             Identifier texture = armorType.getTexture();
-            model.setupAnim(state);
-            model.setYoung(state.isBaby);
-            setModelPartVisibility(model, slot, state);
+            HumanoidPose pose = HumanoidPose.capture(getParentModel());
+            boolean young = state.isBaby;
+            boolean showHat = state instanceof AvatarRenderState avatar && avatar.showHat;
 
             boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
             boolean cull = ModClientConfig.get().useCullingRendering(armorType);
@@ -57,6 +58,9 @@ public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidM
                     (submittedPose, vertices) -> {
                         PoseStack deferred = new PoseStack();
                         deferred.last().set(submittedPose);
+                        pose.apply(model);
+                        model.setYoung(young);
+                        setModelPartVisibility(model, slot, showHat);
                         model.renderToBuffer(deferred, vertices, packedLight, overlay,
                             1F, 1F, 1F, 1F, renderPass);
                     });
@@ -64,7 +68,7 @@ public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidM
         }
     }
 
-    private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, S state)
+    private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, boolean showHat)
     {
         model.head.visible = false;
         model.hat.visible = false;
@@ -79,7 +83,7 @@ public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidM
             case HEAD ->
             {
                 model.head.visible = true;
-                model.hat.visible = state instanceof AvatarRenderState avatar && avatar.showHat;
+                model.hat.visible = showHat;
             }
             case CHEST ->
             {
@@ -102,6 +106,61 @@ public class CustomArmorLayer<S extends HumanoidRenderState, M extends HumanoidM
             {
                 // no-op
             }
+        }
+    }
+
+    /**
+     * The parent model has already been animated by {@link LivingEntityRenderer} before layers are submitted.
+     * Capturing that pose preserves its vanilla pivots and any renderer-specific proportions, which an empty
+     * custom model cannot reconstruct by running {@link HumanoidModel#setupAnim(HumanoidRenderState)} itself.
+     */
+    private record HumanoidPose(PartPose head, PartPose hat, PartPose body, PartPose rightArm,
+                                PartPose leftArm, PartPose rightLeg, PartPose leftLeg)
+    {
+        private static HumanoidPose capture(HumanoidModel<?> model)
+        {
+            return new HumanoidPose(
+                PartPose.capture(model.head),
+                PartPose.capture(model.hat),
+                PartPose.capture(model.body),
+                PartPose.capture(model.rightArm),
+                PartPose.capture(model.leftArm),
+                PartPose.capture(model.rightLeg),
+                PartPose.capture(model.leftLeg));
+        }
+
+        private void apply(ModelCustomArmour model)
+        {
+            head.apply(model.head);
+            hat.apply(model.hat);
+            body.apply(model.body);
+            rightArm.apply(model.rightArm);
+            leftArm.apply(model.leftArm);
+            rightLeg.apply(model.rightLeg);
+            leftLeg.apply(model.leftLeg);
+        }
+    }
+
+    private record PartPose(float x, float y, float z, float xRot, float yRot, float zRot,
+                            float xScale, float yScale, float zScale)
+    {
+        private static PartPose capture(ModelPart part)
+        {
+            return new PartPose(part.x, part.y, part.z, part.xRot, part.yRot, part.zRot,
+                part.xScale, part.yScale, part.zScale);
+        }
+
+        private void apply(ModelPart part)
+        {
+            part.x = x;
+            part.y = y;
+            part.z = z;
+            part.xRot = xRot;
+            part.yRot = yRot;
+            part.zRot = zRot;
+            part.xScale = xScale;
+            part.yScale = yScale;
+            part.zScale = zScale;
         }
     }
 }
