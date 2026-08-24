@@ -67,8 +67,9 @@ public class ModelCustomArmour extends HumanoidModel<HumanoidRenderState> implem
     private static ModelPart initRoot()
     {
         Map<String, ModelPart> children = new HashMap<>();
-        children.put("head", new ModelPart(new ArrayList<>(), new HashMap<>()));
-        children.put("hat", new ModelPart(new ArrayList<>(), new HashMap<>()));
+        Map<String, ModelPart> headChildren = new HashMap<>();
+        headChildren.put("hat", new ModelPart(new ArrayList<>(), new HashMap<>()));
+        children.put("head", new ModelPart(new ArrayList<>(), headChildren));
         children.put("body", new ModelPart(new ArrayList<>(), new HashMap<>()));
         children.put("right_arm", new ModelPart(new ArrayList<>(), new HashMap<>()));
         children.put("left_arm", new ModelPart(new ArrayList<>(), new HashMap<>()));
