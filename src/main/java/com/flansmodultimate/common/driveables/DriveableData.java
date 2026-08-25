@@ -1,23 +1,12 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.common.item.BulletItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.IPaintableItem;
-import com.flansmodultimate.common.item.MechaAddonItem;
-import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -26,6 +15,10 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +40,8 @@ public final class DriveableData implements Container
     private static final String NBT_PAINT = "paintjob_id";
     private static final String NBT_ITEMS = "items";
     private static final String NBT_PARTS = "parts";
+    private static final String NBT_AMMO_LAYOUT = "ammo_layout";
+    private static final int AMMO_LAYOUT_PASSENGER_FIRST = 1;
 
     @Getter private final DriveableType driveableType;
     @Getter private final int numAmmoSlots;
@@ -253,12 +248,8 @@ public final class DriveableData implements Container
     {
         if (slot < 0 || slot >= inventory.size() || stack == null || stack.isEmpty())
             return false;
-        if (slot < getBombInventoryStart())
-            return isGunAmmo(slot, stack);
-        if (slot < getMissileInventoryStart())
-            return isAmmo(stack, EnumWeaponType.BOMB, EnumWeaponType.MINE);
         if (slot < getCargoInventoryStart())
-            return isAmmo(stack, EnumWeaponType.MISSILE, EnumWeaponType.SHELL);
+            return allowsAmmunitionInput(driveableType.isFilterAmmunition(), stack.getItem() instanceof ShootableItem);
         if (slot < getMechaInventoryStart())
             return canPlaceCargo(stack);
         if (slot < getFuelSlot())
@@ -279,19 +270,9 @@ public final class DriveableData implements Container
         return stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL;
     }
 
-    private boolean isAmmo(ItemStack stack, EnumWeaponType first, EnumWeaponType second)
+    static boolean allowsAmmunitionInput(boolean filterAmmunition, boolean shootableItem)
     {
-        if (!(stack.getItem() instanceof BulletItem bulletItem))
-            return false;
-        BulletType bulletType = bulletItem.getConfigType();
-        EnumWeaponType weaponType = bulletType.getWeaponType();
-        return driveableType.isValidAmmo(bulletType) && (weaponType == first || weaponType == second);
-    }
-
-    private boolean isGunAmmo(int slot, ItemStack stack)
-    {
-        return stack.getItem() instanceof ShootableItem shootable
-            && driveableType.isValidGunAmmo(slot, shootable.getConfigType());
+        return !filterAmmunition || shootableItem;
     }
 
     private boolean canPlaceCargo(ItemStack stack)
@@ -314,6 +295,7 @@ public final class DriveableData implements Container
         data.putString(NBT_ENGINE, engineShortName);
         data.putFloat(NBT_FUEL, fuelInTank);
         data.putInt(NBT_PAINT, paintjobID);
+        data.putInt(NBT_AMMO_LAYOUT, AMMO_LAYOUT_PASSENGER_FIRST);
 
         ListTag itemTags = new ListTag();
         for (int slot = 0; slot < inventory.size(); slot++)
@@ -357,6 +339,7 @@ public final class DriveableData implements Container
         data.putString(NBT_ENGINE, engineShortName);
         data.putFloat(NBT_FUEL, fuelInTank);
         data.putInt(NBT_PAINT, paintjobID);
+        data.putInt(NBT_AMMO_LAYOUT, AMMO_LAYOUT_PASSENGER_FIRST);
 
         ListTag itemTags = new ListTag();
         for (int index = 0; index < getRenderSlotCount(); index++)
@@ -410,6 +393,7 @@ public final class DriveableData implements Container
             tag.remove(NBT_PAINT);
             tag.remove(NBT_ITEMS);
             tag.remove(NBT_PARTS);
+            tag.remove(NBT_AMMO_LAYOUT);
         }
         tag.remove(IPaintableItem.NBT_PAINTJOB_ID);
         tag.remove("Type");
@@ -458,10 +442,14 @@ public final class DriveableData implements Container
             : source.getInt("Paint");
 
         inventory.replaceAll(ignored -> ItemStack.EMPTY);
-        if (data.contains(NBT_ITEMS, Tag.TAG_LIST))
-            loadItemList(data.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
-        else if (hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST))
-            loadItemList(source.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
+        CompoundTag canonicalInventory = data.contains(NBT_ITEMS, Tag.TAG_LIST) ? data
+            : hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST) ? source : null;
+        if (canonicalInventory != null)
+        {
+            loadItemList(canonicalInventory.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
+            if (canonicalInventory.getInt(NBT_AMMO_LAYOUT) != AMMO_LAYOUT_PASSENGER_FIRST)
+                migratePilotFirstAmmoLayout();
+        }
         else
         {
             if (hasNestedData)
@@ -525,6 +513,33 @@ public final class DriveableData implements Container
         loadLegacyRange(data, "Cargo ", getCargoInventoryStart(), numCargoSlots);
         if (data.contains("Fuel", Tag.TAG_COMPOUND))
             putLoadedStack(getFuelSlot(), ItemStack.of(data.getCompound("Fuel")));
+    }
+
+    /**
+     * Canonical inventories written before the layout marker used pilot guns
+     * first. Remap that one historical 2.0 layout while leaving actual 1.7.10
+     * {@code Ammo n} data untouched, since it was already passenger-first.
+     */
+    private void migratePilotFirstAmmoLayout()
+    {
+        int pilotGuns = driveableType.getPilotGuns().size();
+        int passengerGuns = driveableType.getNumPassengerGunners();
+        int ammoSlots = pilotGuns + passengerGuns;
+        if (pilotGuns <= 0 || passengerGuns <= 0 || ammoSlots > numAmmoSlots)
+            return;
+
+        ArrayList<ItemStack> oldOrder = new ArrayList<>(ammoSlots);
+        for (int index = 0; index < ammoSlots; index++)
+            oldOrder.add(getAmmo(index));
+        for (int oldIndex = 0; oldIndex < ammoSlots; oldIndex++)
+            inventory.set(remapPilotFirstAmmoIndex(oldIndex, pilotGuns, passengerGuns), oldOrder.get(oldIndex));
+    }
+
+    static int remapPilotFirstAmmoIndex(int oldIndex, int pilotGuns, int passengerGuns)
+    {
+        if (oldIndex < 0 || pilotGuns < 0 || passengerGuns < 0 || oldIndex >= pilotGuns + passengerGuns)
+            return -1;
+        return oldIndex < pilotGuns ? passengerGuns + oldIndex : oldIndex - pilotGuns;
     }
 
     private void loadLegacyRange(CompoundTag data, String prefix, int offset, int length)

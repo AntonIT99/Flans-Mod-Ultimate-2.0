@@ -4,17 +4,12 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -24,6 +19,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -294,11 +291,10 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         return switch (page)
         {
             case MENU -> false;
-            // DriveableData performs the exact mounted-gun check for the
-            // mapped slot. Do not reject that gun's ammo via vehicle AddAmmo.
-            case GUNS -> stack.getItem() instanceof BulletItem;
-            case BOMBS -> isAmmo(stack, EnumWeaponType.BOMB) || isAmmo(stack, EnumWeaponType.MINE);
-            case MISSILES -> isAmmo(stack, EnumWeaponType.MISSILE) || isAmmo(stack, EnumWeaponType.SHELL);
+            // Legacy FilterAmmunitionInput accepts bullets and grenades in all
+            // weapon pages; when disabled it intentionally accepts any item.
+            case GUNS, BOMBS, MISSILES -> !driveable.getConfigType().isFilterAmmunition()
+                || stack.getItem() instanceof ShootableItem;
             case CARGO -> true;
             case FUEL -> stack.getItem() instanceof PartItem part
                 && part.getConfigType().getCategory() == PartType.Category.FUEL;
@@ -307,15 +303,6 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             case ADDONS -> true;
             case REPAIR -> false;
         };
-    }
-
-    private boolean isAmmo(ItemStack stack, EnumWeaponType weaponType)
-    {
-        if (!(stack.getItem() instanceof BulletItem bulletItem))
-            return false;
-        BulletType bullet = bulletItem.getConfigType();
-        return driveable != null && driveable.getConfigType().isValidAmmo(bullet)
-            && (bullet.getWeaponType() == weaponType || weaponType == EnumWeaponType.GUN && bullet.getWeaponType() == EnumWeaponType.NONE);
     }
 
     @Override

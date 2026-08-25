@@ -1,38 +1,19 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.common.driveables.CollisionBox;
-import com.flansmodultimate.common.driveables.CollisionMesh;
-import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
-import com.flansmodultimate.common.driveables.DriveableExplosion;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.ParticleEmitter;
-import com.flansmodultimate.common.driveables.PilotGun;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
@@ -701,25 +682,27 @@ public class DriveableType extends PaintableType
     }
 
     /**
-     * Resolves the mounted gun fed by an ammo inventory slot. The compact
-     * inventory stores pilot guns first, followed by passenger guns ordered by
-     * their automatically assigned gunner id.
+     * Resolves the mounted gun fed by an ammo inventory slot. Legacy driveable
+     * inventories store passenger guns first, ordered by their automatically
+     * assigned gunner id, followed by the pilot guns.
      */
     @Nullable
     public GunType getGunTypeForAmmoSlot(int ammoSlot)
     {
         if (ammoSlot < 0 || ammoSlot >= getNumAmmoSlots())
             return null;
-        if (ammoSlot < pilotGuns.size())
-            return pilotGuns.get(ammoSlot).getType();
-
-        int gunnerId = ammoSlot - pilotGuns.size();
-        for (SeatInfo seat : seats)
+        if (ammoSlot < numPassengerGunners)
         {
-            if (seat != null && seat.getGunnerID() == gunnerId)
-                return seat.getGunType();
+            for (SeatInfo seat : seats)
+            {
+                if (seat != null && seat.getGunnerID() == ammoSlot)
+                    return seat.getGunType();
+            }
+            return null;
         }
-        return null;
+
+        int pilotGunIndex = ammoSlot - numPassengerGunners;
+        return pilotGunIndex < pilotGuns.size() ? pilotGuns.get(pilotGunIndex).getType() : null;
     }
 
     /** The gun definition, rather than the vehicle AddAmmo list, owns this rule. */

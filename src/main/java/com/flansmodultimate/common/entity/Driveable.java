@@ -25,6 +25,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -37,6 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -809,6 +811,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (level().isClientSide)
         {
             tickClientDriveable();
+            emitPartParticles();
             return;
         }
 
@@ -1441,7 +1444,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (point.getRootPos() instanceof PilotGun pilotGun)
         {
-            int slot = configType.getPilotGuns().indexOf(pilotGun);
+            int pilotIndex = configType.getPilotGuns().indexOf(pilotGun);
+            if (pilotIndex < 0)
+                return null;
+            int slot = configType.getNumPassengerGunners() + pilotIndex;
             if (slot < 0 || slot >= driveableData.getNumAmmoSlots())
                 return null;
             ItemStack stack = driveableData.getAmmo(slot);
@@ -1453,7 +1459,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
         if (weapon == EnumWeaponType.GUN)
         {
-            for (int slot = 0; slot < configType.getPilotGuns().size(); slot++)
+            int firstPilotSlot = configType.getNumPassengerGunners();
+            for (int slot = firstPilotSlot; slot < firstPilotSlot + configType.getPilotGuns().size(); slot++)
             {
                 ItemStack stack = driveableData.getAmmo(slot);
                 GunType gunType = configType.getGunTypeForAmmoSlot(slot);
@@ -1695,7 +1702,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (passengerShootDelay[index] > 0 || !shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
                 continue;
 
-            int ammoSlot = configType.getPilotGuns().size() + Math.max(0, info.getGunnerID());
+            int ammoSlot = info.getGunnerID();
+            if (ammoSlot < 0)
+                continue;
             ItemStack ammo = driveableData.getAmmo(ammoSlot);
             if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable)
                 || !(shootable.getConfigType() instanceof BulletType bulletType))
@@ -1816,14 +1825,58 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             part.tick();
             if (!wasDestroyed && part.isDestroyed() || part.isDestroyed() && !destroyedParts.contains(part.getType()))
                 onPartDestroyed(part.getType());
-            if (part.isOnFire() && tickCount % 4 == 0)
+            updatePartEnvironment(part);
+        }
+    }
+
+    private void updatePartEnvironment(DriveablePart part)
+    {
+        CollisionBox box = part.getBox();
+        if (box == null)
+            return;
+        Vec3 centre = localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        BlockPos position = BlockPos.containing(centre);
+        if (part.isOnFire())
+        {
+            if (level().getFluidState(position).is(FluidTags.WATER)
+                || level().isRaining() && random.nextInt(40) == 0)
+                part.extinguish();
+        }
+        else if (level().getFluidState(position).is(FluidTags.LAVA))
+            part.damage(0F, true);
+    }
+
+    private void emitPartParticles()
+    {
+        if (driveableData == null)
+            return;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            CollisionBox box = part.getBox();
+            if (box == null)
+                continue;
+            if (part.isOnFire())
             {
-                CollisionBox box = part.getBox();
-                Vec3 position = box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
-                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_FLAME, position.x, position.y, position.z, 0D, 0.02D, 0D),
-                    position, 96D, level().dimension());
+                Vec3 position = randomPointInPart(box);
+                level().addParticle(ParticleTypes.FLAME, position.x, position.y, position.z, 0D, 0D, 0D);
+            }
+            if (part.getMaxHealth() > 0F && part.getHealth() > 0F
+                && part.getHealth() < part.getMaxHealth() * 0.5F)
+            {
+                Vec3 position = randomPointInPart(box);
+                level().addParticle(part.getHealth() < part.getMaxHealth() * 0.25F
+                        ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE,
+                    position.x, position.y, position.z, 0D, 0D, 0D);
             }
         }
+    }
+
+    private Vec3 randomPointInPart(CollisionBox box)
+    {
+        return localToWorld(
+            box.getX() + random.nextFloat() * box.getWidth(),
+            box.getY() + random.nextFloat() * box.getHeight(),
+            box.getZ() + random.nextFloat() * box.getDepth());
     }
 
     protected void syncChangedPartState()
