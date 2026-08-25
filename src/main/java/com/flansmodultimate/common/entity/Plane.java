@@ -1,22 +1,17 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumPlaneMode;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.types.PlaneType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -40,7 +35,8 @@ public class Plane extends Driveable
     {
         super(FlansMod.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
         setDriveableMode(type.getMode() == EnumPlaneMode.VTOL ? 0 : type.getMode().ordinal());
-        setGearDeployed(type.isHasGear());
+        // HasGear means retractable gear. Fixed landing gear is still always down.
+        setGearDeployed(true);
     }
 
     @Nullable
@@ -80,6 +76,8 @@ public class Plane extends Driveable
         advanceAnimations();
         updateThrottle(type);
 
+        if (!type.isHasGear())
+            setGearDeployed(true);
         if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F && isNearGround(10))
             setGearDeployed(true);
         if (type.isHasWing() && type.isFoldWingForLand() && isNearGround(10) && getThrottle() <= 0.4F)
@@ -110,8 +108,9 @@ public class Plane extends Driveable
             damagePart(isGearDeployed() ? EnumDriveablePart.CORE_WHEEL : EnumDriveablePart.CORE,
                 landingDamage, level().damageSources().fall());
         }
-        if (isEngineActive())
-            consumeFuel(Math.abs(getThrottle()) * Math.max(1, type.numEngines()));
+        if (isEngineActive() && hasWorkingPropeller(type))
+            consumeFuel(DriveableControlPhysics.aircraftFuelLoad(getThrottle(), configuredThrottlePower(type),
+                getEngineSpeed()));
     }
 
     @Override
@@ -125,12 +124,12 @@ public class Plane extends Driveable
         prevPropellerAngle = propellerAngle;
         propellerAngle = Mth.wrapDegrees(propellerAngle + 4F + Math.abs(getThrottle()) * 46F);
         int input = getInputMask();
-        float yawTarget = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT) * 20F;
-        float pitch = pitchInput(input) * 20F;
+        float yaw = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
+        float pitch = pitchInput(input);
         float roll = rollInput(input);
-        flapYaw = approach(flapYaw, yawTarget, 2.5F);
-        flapPitchLeft = approach(flapPitchLeft, pitch + roll * 15F, 2.5F);
-        flapPitchRight = approach(flapPitchRight, pitch - roll * 15F, 2.5F);
+        flapYaw = DriveableControlPhysics.dampedControl(flapYaw, yaw, 1F);
+        flapPitchLeft = DriveableControlPhysics.dampedControl(flapPitchLeft, pitch + roll, 1F);
+        flapPitchRight = DriveableControlPhysics.dampedControl(flapPitchRight, pitch - roll, 1F);
     }
 
     private void updateThrottle(PlaneType type)
@@ -139,9 +138,9 @@ public class Plane extends Driveable
         boolean powered = occupied && hasFuelForEngine() && hasWorkingPropeller(type);
         float throttle = getThrottle();
         if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD))
-            throttle += 0.012F * getEngineSpeed();
+            throttle += 0.002F;
         if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.BACKWARD))
-            throttle -= 0.018F * getEngineSpeed();
+            throttle -= 0.005F;
 
         if (!powered)
             throttle = approach(throttle, 0F, 0.008F);
@@ -150,8 +149,6 @@ public class Plane extends Driveable
             throttle = Mth.lerp(0.01F, throttle, 0.5F);
         if (isUnderWater() && !type.isWorksUnderWater())
             throttle = 0F;
-        else if (isInWater())
-            throttle = Math.min(throttle, Math.max(0F, type.getMaxThrottleInWater()));
         setThrottle(throttle);
     }
 
@@ -160,13 +157,21 @@ public class Plane extends Driveable
         int input = getInputMask();
         double speed = getDeltaMovement().horizontalDistance();
         float control = Mth.clamp((float) (speed / Math.max(0.05F, type.getTakeoffSpeed())), 0.15F, 1.25F);
-        float tail = isPartIntact(EnumDriveablePart.TAIL) ? 1F : type.isSpinWithoutTail() ? 0.2F : 0.45F;
+        boolean tailIntact = isPartIntact(EnumDriveablePart.TAIL);
         float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
         float pitchInput = pitchInput(input);
         float rollInput = rollInput(input);
-        float yawRate = yawInput * (yawInput > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier()) * control * tail;
+        float yawRate = tailIntact
+            ? yawInput * (yawInput > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier()) * control
+            : type.isSpinWithoutTail() ? 1.5F * type.getTurnRightModifier() * control : 0F;
         float pitchRate = pitchInput * (pitchInput > 0F ? type.getLookDownModifier() : type.getLookUpModifier()) * control;
         float desiredRoll = Mth.clamp(rollInput * 45F + yawInput * 22F, -70F, 70F);
+        float wingDamageRoll = Mth.clamp((float) speed * 18F, 0F, 35F);
+        if (!isPartIntact(EnumDriveablePart.LEFT_WING))
+            desiredRoll -= wingDamageRoll;
+        if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
+            desiredRoll += wingDamageRoll;
+        desiredRoll = Mth.clamp(desiredRoll, -80F, 80F);
         float rollRate = (desiredRoll - getRoll()) * 0.08F
             * (rollInput > 0F ? type.getRollRightModifier() : type.getRollLeftModifier());
         setOrientation(getYaw() + yawRate, getPitch() + pitchRate, getRoll() + rollRate);
@@ -174,8 +179,12 @@ public class Plane extends Driveable
         float wingEfficiency = wingEfficiency();
         double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
             * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
-        double poweredThrottle = isEngineActive() ? getThrottle() : 0D;
-        double targetSpeed = type.getMaxSpeed() * getEngineSpeed() * poweredThrottle * 0.42D * wingEfficiency * thrustToMass;
+        float poweredThrottle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
+        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(),
+            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater())
+            + poweredThrottle * getEngineSpeed();
+        double targetSpeed = type.getMaxSpeed() * propulsion * 0.42D * wingEfficiency
+            * intactPropellerFraction(type.getPropellers()) * thrustToMass;
         if (isWingFolded())
             targetSpeed *= 0.25D;
         Vec3 desired = flightForwardVector().scale(targetSpeed);
@@ -197,14 +206,14 @@ public class Plane extends Driveable
     {
         int input = getInputMask();
         float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        yawInput *= intactPropellerFraction(type.getHeliTailPropellers());
-        if (!isPartIntact(EnumDriveablePart.TAIL))
-            yawInput *= 0.2F;
+        float yawRate = isPartIntact(EnumDriveablePart.TAIL)
+            ? yawInput * intactPropellerFraction(type.getHeliTailPropellers()) * type.getTurnRightModifier()
+            : 10F * Math.max(0F, getThrottle());
         float pitchInput = pitchInput(input);
         float rollInput = rollInput(input);
         float desiredPitch = pitchInput * 22F;
         float desiredRoll = rollInput * 28F;
-        setOrientation(getYaw() + yawInput * type.getTurnRightModifier(),
+        setOrientation(getYaw() + yawRate,
             getPitch() + (desiredPitch - getPitch()) * 0.08F,
             getRoll() + (desiredRoll - getRoll()) * 0.08F);
 
@@ -213,7 +222,9 @@ public class Plane extends Driveable
         double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
             * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
         boolean powered = isEngineActive();
-        double verticalTarget = powered ? (getThrottle() - 0.48F) * 0.32D * getEngineSpeed() * rotorEfficiency * thrustToMass : -0.12D;
+        double rotorPower = (configuredThrottlePower(type) + getEngineSpeed()) / 4.5D;
+        double verticalTarget = powered ? (getThrottle() - 0.48F) * 0.32D * rotorPower
+            * rotorEfficiency * thrustToMass : -0.12D;
         Vec3 forward = flightForwardVector();
         Vec3 right = flightRightVector();
         Vec3 horizontalForward = new Vec3(forward.x, 0D, forward.z).normalize();
@@ -221,8 +232,8 @@ public class Plane extends Driveable
         double tiltForward = -getPitch() / 45D;
         double tiltRight = getRoll() / 45D;
         Vec3 desiredHorizontal = powered
-            ? horizontalForward.scale(tiltForward * type.getMaxSpeed() * 0.16D)
-                .add(horizontalRight.scale(tiltRight * type.getMaxSpeed() * 0.12D))
+            ? horizontalForward.scale(tiltForward * type.getMaxSpeed() * rotorPower * 0.16D)
+                .add(horizontalRight.scale(tiltRight * type.getMaxSpeed() * rotorPower * 0.12D))
             : Vec3.ZERO;
         Vec3 velocity = new Vec3(Mth.lerp(0.08D, current.x, desiredHorizontal.x), Mth.lerp(0.12D, current.y, verticalTarget),
             Mth.lerp(0.08D, current.z, desiredHorizontal.z));
@@ -239,7 +250,11 @@ public class Plane extends Driveable
         float pitchInput = pitchInput(input);
         setOrientation(getYaw() + yawInput * type.getTurnRightModifier(), getPitch() + pitchInput * type.getLookDownModifier(),
             getRoll() + rollInput * type.getRollRightModifier());
-        double thrust = type.getMaxSpeed() * (isEngineActive() ? getThrottle() : 0F) * getEngineSpeed() * 0.35D;
+        float poweredThrottle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
+        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(),
+            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater())
+            + poweredThrottle * getEngineSpeed();
+        double thrust = type.getMaxSpeed() * propulsion * intactPropellerFraction(type.getPropellers()) * 0.35D;
         Vec3 desired = flightForwardVector().scale(thrust);
         Vec3 velocity = getDeltaMovement().add(desired.subtract(getDeltaMovement()).scale(0.1D));
         return applyAerodynamicDrag(velocity, type);
@@ -250,7 +265,7 @@ public class Plane extends Driveable
         if (type.isFloatOnWater() && isInWater())
             return applyGravityAndBuoyancy(velocity, 0D);
         double factor = Mth.clamp(0.995D - Math.max(0F, type.getDrag() - 1F) * 0.01D, 0.82D, 0.998D);
-        double maximum = Math.max(0.2D, type.getMaxSpeed() * getEngineSpeed() * (type.isSupersonic() ? 1.5D : 1D));
+        double maximum = Math.max(0.2D, type.getMaxSpeed() * (type.isSupersonic() ? 1.5D : 1D));
         if (velocity.length() > maximum)
             velocity = velocity.normalize().scale(maximum);
         return velocity.scale(factor);
@@ -275,6 +290,13 @@ public class Plane extends Driveable
     {
         List<Propeller> relevant = getPlaneMode() == EnumPlaneMode.HELI ? type.getHeliPropellers() : type.getPropellers();
         return relevant.isEmpty() || relevant.stream().anyMatch(propeller -> isPartIntact(propeller.getPlanePart()));
+    }
+
+    private float configuredThrottlePower(PlaneType type)
+    {
+        if (getThrottle() < 0F)
+            return Math.max(0F, type.getMaxNegativeThrottle());
+        return isInWater() ? Math.max(0F, type.getMaxThrottleInWater()) : Math.max(0F, type.getMaxThrottle());
     }
 
     private float intactPropellerFraction(List<Propeller> propellers)

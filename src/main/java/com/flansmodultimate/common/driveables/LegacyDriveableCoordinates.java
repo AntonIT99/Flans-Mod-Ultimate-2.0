@@ -1,9 +1,8 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import org.jetbrains.annotations.NotNull;
-
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Converts coordinates authored for the 1.7.10 model basis into the modern
@@ -22,6 +21,29 @@ public final class LegacyDriveableCoordinates
     public static Vec3 toLocal(@NotNull Vector3f legacy)
     {
         return new Vec3(legacy.z, legacy.y, -legacy.x);
+    }
+
+    /** Legacy type-file X is the front/back coordinate after basis conversion. */
+    public static double legacyForwardCoordinate(@NotNull Vec3 local)
+    {
+        return -local.z;
+    }
+
+    /** Legacy type-file Z is the left/right coordinate after basis conversion. */
+    public static double legacyRightCoordinate(@NotNull Vec3 local)
+    {
+        return local.x;
+    }
+
+    /**
+     * Plane type files use the legacy flight-facing basis, while their model
+     * geometry faces the opposite X direction. Apply the horizontal half-turn
+     * already used by plane movement before passing an anchor to the shared
+     * driveable model transform.
+     */
+    public static Vec3 applyPlaneModelFacing(@NotNull Vec3 local)
+    {
+        return new Vec3(-local.x, local.y, -local.z);
     }
 
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */

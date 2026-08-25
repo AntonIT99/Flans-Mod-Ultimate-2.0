@@ -1,8 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
-import org.junit.jupiter.api.Test;
-
 import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -62,6 +61,35 @@ class LegacyDriveableCoordinatesTest
         Vec3 result = LegacyDriveableCoordinates.modelLocalToWorldDirection(legacyLateral, 0F, 0F, 0F);
 
         assertVector(result, 0D, 0D, 1D);
+    }
+
+    @Test
+    void planeFacingCorrectionTurnsTypeFileAnchorsAroundHorizontally()
+    {
+        Vec3 configured = LegacyDriveableCoordinates.toLocal(new Vec3(2D, 3D, 5D));
+        Vec3 result = LegacyDriveableCoordinates.applyPlaneModelFacing(configured);
+
+        assertVector(result, -5D, 3D, 2D);
+    }
+
+    @Test
+    void correctedPlaneForwardMatchesItsMovementFacing()
+    {
+        Vec3 configuredForward = LegacyDriveableCoordinates.applyPlaneModelFacing(
+            LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        Vec3 result = LegacyDriveableCoordinates.modelLocalToWorldDirection(
+            configuredForward, 0F, 0F, 0F);
+
+        assertVector(result, 1D, 0D, 0D);
+    }
+
+    @Test
+    void recoversLegacyWheelLongitudinalAndLateralCoordinates()
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(new Vec3(36D, 4D, -20D));
+
+        assertEquals(36D, LegacyDriveableCoordinates.legacyForwardCoordinate(local), EPSILON);
+        assertEquals(-20D, LegacyDriveableCoordinates.legacyRightCoordinate(local), EPSILON);
     }
 
     private static void assertVector(Vec3 actual, double x, double y, double z)

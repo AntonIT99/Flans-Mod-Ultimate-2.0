@@ -1,13 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.driveables.EnumMechaToolType;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -15,32 +9,23 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.EnumMovement;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.MechaItemType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,6 +39,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,9 +53,14 @@ import java.util.List;
 public class Mecha extends Driveable
 {
     private static final int JUMP_COOLDOWN = 20;
+    private static final String NBT_LEG_YAW = "LegsYaw";
+    private static final EntityDataAccessor<Float> DATA_LEG_YAW =
+        SynchedEntityData.defineId(Mecha.class, EntityDataSerializers.FLOAT);
 
     @Getter protected float legSwing;
     @Getter protected float prevLegSwing;
+    @Getter protected float legYaw;
+    @Getter protected float prevLegYaw;
     @Getter protected float shieldEnergy;
     private int jumpDelay;
     private int stompDelay;
@@ -74,6 +68,7 @@ public class Mecha extends Driveable
     private int lastShieldCapacity = -1;
     private boolean hipsStateInitialized;
     private boolean lastHipsIntact;
+    private boolean legYawInitialized;
     private final int[] toolCooldown = new int[2];
     private final int[] handGunCooldown = new int[2];
     private final int[] handGunHeldTicks = new int[2];
@@ -90,6 +85,32 @@ public class Mecha extends Driveable
                  @Nullable Player placer, ItemStack sourceStack)
     {
         super(FlansMod.mechaEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+    }
+
+    @Override
+    protected void defineSynchedData()
+    {
+        super.defineSynchedData();
+        entityData.define(DATA_LEG_YAW, 0F);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains(NBT_LEG_YAW, Tag.TAG_ANY_NUMERIC))
+        {
+            legYaw = prevLegYaw = Mth.wrapDegrees(tag.getFloat(NBT_LEG_YAW));
+            entityData.set(DATA_LEG_YAW, legYaw);
+            legYawInitialized = true;
+        }
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.addAdditionalSaveData(tag);
+        tag.putFloat(NBT_LEG_YAW, legYawInitialized ? legYaw : getYaw());
     }
 
     @Nullable
@@ -128,40 +149,31 @@ public class Mecha extends Driveable
         int input = getInputMask();
         float forwardInput = axis(input, DriveableInput.FORWARD, DriveableInput.BACKWARD);
         float sideInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        boolean alternateControls = getDriveableMode() != 0;
-        if (!alternateControls && Math.abs(sideInput) > 0.01F)
-        {
-            float modifier = sideInput > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier();
-            setOrientation(getYaw() + sideInput * type.getRotateSpeed() * 0.1F * modifier, 0F, 0F);
-            sideInput = 0F;
-        }
-
-        Vec3 intent = getForwardVector().multiply(1D, 0D, 1D).scale(forwardInput)
-            .add(getRightVector().multiply(1D, 0D, 1D).scale(sideInput));
-        if (intent.lengthSqr() > 1D)
-            intent = intent.normalize();
-        boolean canMove = getControllingEntity() != null && isEngineActive() && isPartIntact(EnumDriveablePart.HIPS);
-        double moveSpeed = type.getMoveSpeed() * getEngineSpeed() * speedMultiplier() * 0.215D;
+        Vec3 intent = MechaPhysics.movementIntent(getYaw() + getTurretYaw(), forwardInput, sideInput);
+        boolean walking = intent.lengthSqr() > 0.01D;
+        boolean canMove = getControllingEntity() != null && isEngineActive() && hasFuelForMovement()
+            && isPartIntact(EnumDriveablePart.HIPS);
+        double moveSpeed = MechaPhysics.movementSpeed(type.getMoveSpeed(), getEngineSpeed(), speedMultiplier());
         Vec3 current = getDeltaMovement();
-        Vec3 desired = canMove ? intent.scale(moveSpeed) : Vec3.ZERO;
-        double grip = onGround() ? 0.38D : 0.08D;
-        Vec3 velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
+        float rocketPower = Mth.clamp(jetPackPower(), 0.1F, 8F);
+        MechaItemType rocket = rocketPack();
+        Vec3 velocity = new Vec3(0D, current.y, 0D);
 
+        boolean rocketThrust = false;
         if (canMove && DriveableInput.isDown(input, DriveableInput.ASCEND))
         {
-            MechaItemType rocket = rocketPack();
             if (onGround() && jumpDelay <= 0)
             {
-                velocity = new Vec3(velocity.x, Math.max(velocity.y, type.getJumpVelocity()), velocity.z);
+                velocity = velocity.add(0D, type.getJumpVelocity(), 0D);
                 jumpDelay = JUMP_COOLDOWN;
-                consumeFuel(1F);
+                consumeFuel(20F);
             }
-            else if (!onGround() && rocket != null)
+            else if (!onGround() && rocket != null && hasFuelForAddon(10F * rocketPower))
             {
-                float power = Mth.clamp(jetPackPower(), 0.1F, 8F);
-                velocity = velocity.multiply(1D, 0.95D, 1D).add(0D, 0.07D * power, 0D);
+                rocketThrust = true;
+                velocity = velocity.multiply(1D, 0.95D, 1D).add(0D, 0.07D * rocketPower, 0D);
                 fallDistance = 0F;
-                consumeFuel(10F * power);
+                consumeAddonFuel(10F * rocketPower);
                 if (toolCooldown[0] <= 0 && StringUtils.isNotBlank(rocket.getSoundEffect()))
                 {
                     PacketPlaySound.sendSoundPacket(this, 64D, rocket.getSoundEffect(), false);
@@ -170,8 +182,16 @@ public class Mecha extends Driveable
             }
         }
 
-        if (isInWater() && shouldFloat())
-            velocity = velocity.multiply(0.89D, 0.89D, 0.89D).add(0D, 0.1D, 0D);
+        boolean boostedAirMovement = canMove && walking && !onGround() && rocket != null
+            && hasFuelForAddon(10F * rocketPower + engineFuelPerTick());
+        if (boostedAirMovement)
+            moveSpeed *= rocketPower;
+        Vec3 desired = canMove ? intent.scale(moveSpeed) : Vec3.ZERO;
+        // 1.7.10 rebuilt horizontal motion from the current input every tick.
+        velocity = new Vec3(desired.x, velocity.y, desired.z);
+
+        if (!rocketThrust && isInWater() && shouldFloat())
+            velocity = velocity.multiply(0.89D, 0.89D, 0.89D).add(0D, 0.06D, 0D);
         else
             velocity = applyGravityAndBuoyancy(velocity, 0.04D);
         double descent = velocity.y;
@@ -180,12 +200,17 @@ public class Mecha extends Driveable
             handleLanding(type, descent);
         fallDistance = descent < 0D ? fallDistance + (float) -descent : 0F;
 
-        setThrottle(intent.lengthSqr() > 0.01D && canMove ? (float) Math.copySign(Math.min(1D, intent.length()), forwardInput == 0F ? 1F : forwardInput) : 0F);
-        updateLegAnimation(type, intent.lengthSqr() > 0.01D && canMove);
+        setThrottle(walking && canMove ? MechaPhysics.throttle(forwardInput, sideInput) : 0F);
+        updateLegFacing(type, intent, walking && canMove);
+        updateLegAnimation(type, walking && canMove);
         useHandTool(EnumMechaSlotType.LEFT_TOOL, true, DriveableInput.isDown(input, DriveableInput.PRIMARY_FIRE));
         useHandTool(EnumMechaSlotType.RIGHT_TOOL, false, DriveableInput.isDown(input, DriveableInput.SECONDARY_FIRE));
-        if (canMove && intent.lengthSqr() > 0.01D)
-            consumeFuel(1F);
+        if (walking && canMove)
+        {
+            consumeFuel(20F);
+            if (boostedAirMovement)
+                consumeAddonFuel(10F * rocketPower);
+        }
     }
 
     @Override
@@ -195,8 +220,39 @@ public class Mecha extends Driveable
         if (type != null)
         {
             setMaxUpStep(Mth.clamp(type.getStepHeight(), 0F, 8F));
-            updateLegAnimation(type, Math.abs(getThrottle()) > 0.01F);
+            float forwardInput = axis(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD);
+            float sideInput = axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT);
+            Vec3 intent = MechaPhysics.movementIntent(getYaw() + getTurretYaw(), forwardInput, sideInput);
+            boolean walking = Math.abs(getThrottle()) > 0.01F && intent.lengthSqr() > 0.01D;
+            updateLegFacing(type, intent, walking);
+            updateLegAnimation(type, walking);
         }
+    }
+
+    private void updateLegFacing(MechaType type, Vec3 intent, boolean walking)
+    {
+        prevLegYaw = legYaw;
+        if (level().isClientSide)
+        {
+            float syncedYaw = entityData.get(DATA_LEG_YAW);
+            if (!legYawInitialized)
+                prevLegYaw = syncedYaw;
+            legYaw = syncedYaw;
+            legYawInitialized = true;
+            return;
+        }
+        if (!legYawInitialized)
+        {
+            legYaw = Mth.wrapDegrees(getYaw());
+            prevLegYaw = legYaw;
+            legYawInitialized = true;
+        }
+        if (walking)
+        {
+            float target = MechaPhysics.movementYaw(intent, legYaw);
+            legYaw = MechaPhysics.approachYaw(legYaw, target, type.getRotateSpeed());
+        }
+        entityData.set(DATA_LEG_YAW, legYaw);
     }
 
     @Override
@@ -815,13 +871,31 @@ public class Mecha extends Driveable
 
     private boolean hasFuelForAddon(float amount)
     {
-        return getControllingEntity() instanceof Player player && player.getAbilities().instabuild || getFuel() >= amount;
+        return !usesFuel() || getControllingEntity() instanceof Player player && player.getAbilities().instabuild
+            || getFuel() >= amount;
+    }
+
+    private boolean hasFuelForMovement()
+    {
+        return hasFuelForAddon(engineFuelPerTick());
+    }
+
+    private float engineFuelPerTick()
+    {
+        PartType engine = driveableData == null ? null : driveableData.getEngine();
+        return engine == null ? 1F : Math.max(0F, engine.getFuelConsumption());
     }
 
     private void consumeAddonFuel(float amount)
     {
-        if (!(getControllingEntity() instanceof Player player) || !player.getAbilities().instabuild)
-            setFuel(getFuel() - amount);
+        if (usesFuel() && (!(getControllingEntity() instanceof Player player) || !player.getAbilities().instabuild))
+            setFuel(Math.max(0F, getFuel() - Math.max(0F, amount)));
+    }
+
+    private boolean usesFuel()
+    {
+        return getConfigType() != null && getConfigType().getFuelTankSize() >= 0F
+            && FlansMod.teamsManager.isVehiclesNeedFuel();
     }
 
     private static float axis(int mask, int positive, int negative)

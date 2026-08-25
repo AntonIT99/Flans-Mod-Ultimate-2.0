@@ -4,25 +4,8 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.driveables.CollisionBox;
-import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveableExplosion;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.PilotGun;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.driveables.ShootPoint;
-import com.flansmodultimate.common.driveables.SuspensionPhysics;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -30,15 +13,7 @@ import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.DamageStats;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.PacketHandler;
@@ -49,15 +24,6 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -77,12 +43,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -94,17 +55,16 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Server-authoritative common runtime for planes, vehicles and mechas.
@@ -509,9 +469,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void setThrottle(float throttle)
     {
-        float maximum = configType == null ? 1F : Math.max(0F, configType.getMaxThrottle());
-        float reverse = configType == null ? 1F : Math.max(0F, configType.getMaxNegativeThrottle());
-        entityData.set(DATA_THROTTLE, Mth.clamp(Float.isFinite(throttle) ? throttle : 0F, -reverse, maximum));
+        float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
+        entityData.set(DATA_THROTTLE, DriveableControlPhysics.normalizedThrottle(throttle, reversePower));
     }
 
     protected void setTurretAim(float yaw, float pitch)
@@ -1549,8 +1508,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected Vec3 getShootOrigin(ShootPoint point)
     {
-        Vec3 root = LegacyDriveableCoordinates.toLocal(point.getRootPos().getPosition());
-        Vec3 offset = LegacyDriveableCoordinates.toLocal(point.getOffPos());
+        Vec3 root = configuredModelLocal(point.getRootPos().getPosition());
+        Vec3 offset = configuredModelLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
             return applyVehicleModelVerticalOffset(modelLocalToWorld(root.add(offset)));
@@ -1566,6 +1525,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public Vec3 getDebugShootOrigin(@NotNull ShootPoint point)
     {
         return getShootOrigin(point);
+    }
+
+    /** Returns the direction paired with a diagnostic muzzle position. */
+    public Vec3 getDebugShootDirection(@NotNull ShootPoint point, boolean secondary)
+    {
+        return getShootDirection(point, secondary);
     }
 
     /** Aligns model-anchored positions with the visual offset used by vehicles. */
@@ -1584,9 +1549,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         EnumDriveablePart part = point.getRootPos().getPart();
         if (fixed)
         {
-            Vec3 localDirection = LegacyDriveableCoordinates.toLocal(fixedAngle);
+            Vec3 localDirection = configuredModelLocal(fixedAngle);
             if (localDirection.lengthSqr() < 1.0E-8D)
-                localDirection = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+                localDirection = configuredModelLocal(new Vec3(1D, 0D, 0D));
             if (isTurretMountedPart(part))
             {
                 localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
@@ -1595,7 +1560,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
         if (isTurretMountedPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
-        return modelLocalDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
+        return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
 
     protected static boolean isTurretMountedPart(@Nullable EnumDriveablePart part)
@@ -1633,14 +1598,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (configType == null)
             return point;
-        Vec3 turretPivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+        Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
         Vec3 pitchPivot = modelBarrelPitchPivot == null ? turretPivot : modelBarrelPitchPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
         Vec3 pitched = rotateBarrelPitchLocal(point.subtract(pitchPivot), pitch).add(pitchPivot);
         Vec3 rotated = rotateTurretYawLocal(pitched.subtract(turretPivot), yaw).add(turretPivot);
-        Vec3 configuredOffset = LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+        Vec3 configuredOffset = configuredModelLocal(configType.getTurretOriginOffset());
         Vec3 originOffset = rotateTurretYawLocal(configuredOffset, yaw);
         return rotated.add(originOffset);
     }
@@ -1682,7 +1647,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
-        Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        Vec3 legacyForward = configuredModelLocal(new Vec3(1D, 0D, 0D));
         return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
     }
 
@@ -1698,7 +1663,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
-                Vec3 localDirection = LegacyDriveableCoordinates.toLocal(
+                Vec3 localDirection = configuredModelLocal(
                     new Vec3(particle.x(), particle.y(), particle.z()));
                 if (isTurretMountedPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
@@ -1771,9 +1736,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ? null : getPassengerShootOrigin(seat, info);
     }
 
+    /** Current passenger firing direction for client-side diagnostics. */
+    @Nullable
+    public Vec3 getPassengerShootDirection(int seatIndex)
+    {
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
+        return seat == null || info == null || info.getGunType() == null
+            ? null : aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+    }
+
     private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
     {
-        Vec3 muzzle = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
+        Vec3 muzzle = configuredModelLocal(info.getGunOrigin());
         int seatIndex = seat.getSeatIndex();
         Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
             ? modelPassengerGunAimPivots[seatIndex] : null;
@@ -2257,7 +2232,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         Vec3 localPosition = rotateLegacyModelVector(
             new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
-        localPosition = mirrorAroundLocalZAxis(localPosition);
+        localPosition = this instanceof Plane
+            ? LegacyDriveableCoordinates.applyPlaneModelFacing(localPosition)
+            : mirrorAroundLocalZAxis(localPosition);
         if (isTurretMountedPart(info.getPart()))
             localPosition = turretPointToLocal(localPosition, turretYaw,
                 info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F);
@@ -2270,7 +2247,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
         Vec3 rotatedOffset = rotateLegacyModelVector(
             new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
-        rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
+        rotatedOffset = this instanceof Plane
+            ? LegacyDriveableCoordinates.applyPlaneModelFacing(rotatedOffset)
+            : mirrorAroundLocalZAxis(rotatedOffset);
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
             float pitch = info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F;
@@ -2367,7 +2346,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
         if (DriveableInput.isDown(rising, DriveableInput.MENU) && player instanceof ServerPlayer serverPlayer)
             openDriveableMenu(serverPlayer);
-        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_GEAR))
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_GEAR)
+            && (!(configType instanceof PlaneType plane) || plane.isHasGear()))
             setGearDeployed(!isGearDeployed());
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_DOOR))
             setDoorOpen(!isDoorOpen());
@@ -2542,6 +2522,43 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return false;
         DriveablePart state = driveableData.getPart(part);
         return state != null && !state.isDestroyed();
+    }
+
+    /** Damage penalty used by legacy vehicle acceleration and maximum throttle. */
+    protected float getThrottleDamageNerf()
+    {
+        if (driveableData == null)
+            return 0F;
+        float engineNerf = destroyedPartFraction(EnumDriveablePart.getEngineRooms());
+        float boilerNerf = destroyedPartFraction(EnumDriveablePart.getBoilerRooms());
+        float nerf = Math.max(engineNerf, boilerNerf) * 0.8F;
+        if (isDefinedAndDestroyed(EnumDriveablePart.STERN))
+            nerf += 0.1F;
+        if (isDefinedAndDestroyed(EnumDriveablePart.BOW))
+            nerf += 0.1F;
+        return Mth.clamp(nerf, 0F, 1F);
+    }
+
+    private float destroyedPartFraction(@NotNull List<EnumDriveablePart> parts)
+    {
+        int defined = 0;
+        int destroyed = 0;
+        for (EnumDriveablePart part : parts)
+        {
+            DriveablePart state = driveableData.getPart(part);
+            if (state == null || state.getMaxHealth() <= 0F)
+                continue;
+            ++defined;
+            if (state.isDestroyed())
+                ++destroyed;
+        }
+        return defined == 0 ? 0F : (float) destroyed / defined;
+    }
+
+    private boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
+    {
+        DriveablePart state = driveableData.getPart(part);
+        return state != null && state.getMaxHealth() > 0F && state.isDestroyed();
     }
 
     /** Called by the shooting pipeline after a precise part ray hit. */
@@ -2855,6 +2872,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static Vec3 rotateLegacyModelVector(@NotNull Vec3 vector)
     {
         return LegacyDriveableCoordinates.toLocal(vector);
+    }
+
+    /** Converts a type-file vector to the model-local facing used by this driveable. */
+    private Vec3 configuredModelLocal(@NotNull Vec3 legacy)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
+        return this instanceof Plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
+    }
+
+    private Vec3 configuredModelLocal(@NotNull com.flansmod.common.vector.Vector3f legacy)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
+        return this instanceof Plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
     }
 
     /** Mirrors a legacy-derived seat point across the driveable's local Z axis. */
@@ -3273,8 +3303,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ++groundedWheelCount;
 
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
-            double forwardPosition = local.x;
-            double rightPosition = local.z;
+            double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
+            double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
             if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
             else { backHeight += surface; backX += forwardPosition; ++backCount; }
             if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }

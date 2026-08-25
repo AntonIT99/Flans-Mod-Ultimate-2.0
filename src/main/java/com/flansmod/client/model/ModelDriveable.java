@@ -15,10 +15,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 
@@ -74,6 +73,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         float leftTrackProgress,
         float rightTrackProgress,
         float legSwing,
+        float legYaw,
         AnimatedTransform wingTransform,
         AnimatedTransform wingWheelTransform,
         AnimatedTransform bodyWheelTransform,
@@ -87,7 +87,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     {
         public static final RenderState ITEM = new RenderState(
             0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F,
-            1F, 0F, 0F, 0F, 0F, 0F,
+            1F, 0F, 0F, 0F, 0F, 0F, 0F,
             AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
             AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
             LegAnimation.ZERO, 0, 0, false

@@ -2,25 +2,21 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -83,17 +79,21 @@ public class Vehicle extends Driveable
         {
             traction = 0F;
             setThrottle(approach(getThrottle(), 0F, 0.04F));
+            prevWheelYaw = wheelYaw;
+            wheelYaw = 0F;
         }
 
-        float waterLimit = isInWater() ? Math.min(Math.max(0F, type.getMaxThrottle()), Math.max(0F, type.getMaxThrottleInWater()))
-            : Math.max(0F, type.getMaxThrottle());
-        float effectiveThrottle = Mth.clamp(getThrottle(), -Math.max(0F, type.getMaxNegativeThrottle()),
-            waterLimit);
+        float throttleLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
+        float effectiveThrottle = Mth.clamp(getThrottle(), -throttleLimit, throttleLimit);
         if (!isEngineActive())
             effectiveThrottle = 0F;
-        double targetSpeed = effectiveThrottle * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
+        float propulsion = DriveableControlPhysics.directionalPropulsion(effectiveThrottle, type.getMaxThrottle(),
+            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater());
+        double targetSpeed = propulsion * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
         float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
-        float directionalThrottle = effectiveThrottle > 0F ? type.getMaxThrottle() : type.getMaxNegativeThrottle();
+        float directionalThrottle = effectiveThrottle > 0F
+            ? (isInWater() ? type.getMaxThrottleInWater() : type.getMaxThrottle())
+            : type.getMaxNegativeThrottle();
         double throttleModifier = tracked ? 1D : legacyThrottleCurve(effectiveThrottle);
         double velocityScale = (tracked ? 0.04D : 0.1D) * throttleModifier
             * Math.max(0F, directionalThrottle) * getEngineSpeed();
@@ -135,7 +135,7 @@ public class Vehicle extends Driveable
 
         harvestConfiguredBlocks();
         if (isEngineActive())
-            consumeFuel(Math.abs(effectiveThrottle));
+            consumeFuel(DriveableControlPhysics.vehicleFuelLoad(effectiveThrottle, type.getWheelPositions().size()));
     }
 
     @Override
@@ -143,7 +143,13 @@ public class Vehicle extends Driveable
     {
         VehicleType type = getVehicleType();
         if (type != null)
+        {
+            float steeringInput = isPartIntact(EnumDriveablePart.STEERING)
+                ? axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) : 0F;
+            prevWheelYaw = wheelYaw;
+            wheelYaw = DriveableControlPhysics.dampedControl(wheelYaw, steeringInput, 1F);
             advanceAnimations(type);
+        }
     }
 
     @Override
@@ -183,9 +189,11 @@ public class Vehicle extends Driveable
         float throttle = getThrottle();
         if (getControllingEntity() != null && hasFuelForEngine())
         {
+            float damageMultiplier = DriveableControlPhysics.damagedAccelerationMultiplier(getThrottleDamageNerf());
             float acceleration = type.isUseRealisticAcceleration()
                 ? Math.max(0.0005F, getEnginePower() / Math.max(1F, type.getMass()))
                 : 0.01F;
+            acceleration *= damageMultiplier;
             if (DriveableInput.isDown(input, DriveableInput.FORWARD))
             {
                 throttle += acceleration * (throttle < 0F ? type.getBrakingModifier() : 1F);
@@ -198,20 +206,22 @@ public class Vehicle extends Driveable
             }
         }
         if (DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND))
-            throttle = approach(throttle, 0F, Math.max(0.04F, type.getBrakingModifier() * 0.04F));
+            throttle = 0F;
         else if (type.isTank() && Math.abs(throttle) < 0.3F && Math.abs(axis(input, DriveableInput.RIGHT, DriveableInput.LEFT)) > 0F)
             throttle += Math.max(0F, type.getClutchBrake());
         else if (throttleDecayDelay > 0)
             --throttleDecayDelay;
         else
             throttle = approach(throttle, 0F, type.getThrottleDecay());
+        float damageLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
+        if (Math.abs(throttle) > damageLimit)
+            throttle = (Math.copySign(damageLimit, throttle) + throttle * 2F) / 3F;
         setThrottle(throttle);
 
-        float steeringTarget = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT) * 20F;
-        if (!isPartIntact(EnumDriveablePart.STEERING))
-            steeringTarget = 0F;
+        float steeringInput = isPartIntact(EnumDriveablePart.STEERING)
+            ? axis(input, DriveableInput.RIGHT, DriveableInput.LEFT) : 0F;
         prevWheelYaw = wheelYaw;
-        wheelYaw = approach(wheelYaw, steeringTarget, steeringTarget == 0F ? 2F : 1.5F);
+        wheelYaw = DriveableControlPhysics.dampedControl(wheelYaw, steeringInput, 1F);
     }
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)

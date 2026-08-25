@@ -55,8 +55,6 @@ public class ModelMecha extends ModelDriveable
                 red, green, blue, alpha, scale, renderPass);
 
         boolean hipsIntact = driveable.isPartIntact(EnumDriveablePart.HIPS);
-        if (hipsIntact)
-            renderPart(hipsModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         MechaType type = driveable.getConfigType() instanceof MechaType mechaType ? mechaType : null;
         if (driveable.isPartIntact(EnumDriveablePart.HEAD))
@@ -83,31 +81,13 @@ public class ModelMecha extends ModelDriveable
 
         if (hipsIntact)
         {
-            float legLength = type == null ? 1F : Math.max(0F, type.getLegLength());
-            renderSimpleLeg(leftLegModel, leftFootModel, legLength, leftSwing,
-                poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderSimpleLeg(rightLegModel, rightFootModel, legLength, rightSwing,
-                poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-
-            LegAnimation animation = state.legAnimation();
-            renderLimb(leftAnimLegUpperModel, leftLegUpperOrigin, Axis.ZP,
-                animation.angle(LegAnimation.LEFT_UPPER, state.partialTick()), poseStack, vertexConsumer,
+            poseStack.pushPose();
+            poseStack.mulPose(Axis.YP.rotationDegrees(-Mth.wrapDegrees(state.legYaw() - state.yaw())));
+            renderPart(hipsModel, poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+            renderLegs(type, state, leftSwing, rightSwing, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLimb(rightAnimLegUpperModel, rightLegUpperOrigin, Axis.ZP,
-                animation.angle(LegAnimation.RIGHT_UPPER, state.partialTick()), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLimb(leftAnimLegLowerModel, leftLegLowerOrigin, Axis.ZP,
-                animation.angle(LegAnimation.LEFT_LOWER, state.partialTick()), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLimb(rightAnimLegLowerModel, rightLegLowerOrigin, Axis.ZP,
-                animation.angle(LegAnimation.RIGHT_LOWER, state.partialTick()), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLimb(leftAnimFootModel, leftFootOrigin, Axis.ZP,
-                animation.angle(LegAnimation.LEFT_FOOT, state.partialTick()), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLimb(rightAnimFootModel, rightFootOrigin, Axis.ZP,
-                animation.angle(LegAnimation.RIGHT_FOOT, state.partialTick()), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            poseStack.popPose();
         }
 
         float aimPitch = type == null ? -state.turretPitch()
@@ -132,6 +112,37 @@ public class ModelMecha extends ModelDriveable
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.VEHICLE,
             poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
+    }
+
+    private void renderLegs(MechaType type, RenderState state, float leftSwing, float rightSwing,
+                            PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                            float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        float legLength = type == null ? 1F : Math.max(0F, type.getLegLength());
+        renderSimpleLeg(leftLegModel, leftFootModel, legLength, leftSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSimpleLeg(rightLegModel, rightFootModel, legLength, rightSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        LegAnimation animation = state.legAnimation();
+        renderLimb(leftAnimLegUpperModel, leftLegUpperOrigin, Axis.ZP,
+            animation.angle(LegAnimation.LEFT_UPPER, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(rightAnimLegUpperModel, rightLegUpperOrigin, Axis.ZP,
+            animation.angle(LegAnimation.RIGHT_UPPER, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(leftAnimLegLowerModel, leftLegLowerOrigin, Axis.ZP,
+            animation.angle(LegAnimation.LEFT_LOWER, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(rightAnimLegLowerModel, rightLegLowerOrigin, Axis.ZP,
+            animation.angle(LegAnimation.RIGHT_LOWER, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(leftAnimFootModel, leftFootOrigin, Axis.ZP,
+            animation.angle(LegAnimation.LEFT_FOOT, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(rightAnimFootModel, rightFootOrigin, Axis.ZP,
+            animation.angle(LegAnimation.RIGHT_FOOT, state.partialTick()), poseStack, vertexConsumer,
+            packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     private void renderSimpleLeg(ModelRendererTurbo[] leg, ModelRendererTurbo[] foot, float legLength,
