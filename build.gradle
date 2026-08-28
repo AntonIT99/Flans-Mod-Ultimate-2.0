@@ -67,6 +67,8 @@ minecraft {
         configureEach {
             workingDirectory project.file('run')
 
+            ideaModule "${project.name.replace('.', '_')}.main"
+
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
             // "SCAN": For mods scan.
@@ -78,6 +80,11 @@ minecraft {
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             property 'forge.logging.console.level', 'debug'
+
+            // Enable colored Forge/Minecraft console output in IntelliJ
+            property 'terminal.ansi', 'true'
+            property 'terminal.jline', 'true'
+            property 'terminal.keepMinecraftFormatting', 'true'
 
             mods {
                 "${mod_id}" {
