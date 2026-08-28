@@ -83,4 +83,19 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
             anAmmoModel.setRotationPoint(anAmmoModel.rotationPointX, -anAmmoModel.rotationPointY, -anAmmoModel.rotationPointZ);
         }
     }
+
+    protected void translate(ModelRendererTurbo[] model, float x, float y, float z)
+    {
+        for(ModelRendererTurbo anAttachmentModel : attachmentModel)
+        {
+            anAttachmentModel.rotationPointX += x;
+            anAttachmentModel.rotationPointY += y;
+            anAttachmentModel.rotationPointZ += z;
+        }
+    }
+
+    public void translateAll(float x, float y, float z)
+    {
+        translate(attachmentModel, x, y, z);
+    }
 }
