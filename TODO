@@ -1,11 +1,12 @@
 General:
 - Add translations in other languages
 - Fix gloves
-- Fix mecha inventory
-- driver positions is a bit too high, maybe also apply an offset?
+- Use special mecha inventory
 - collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
-- mecha item rendering in hand does not corresponding to normal rendering
 - general driveable item rendering has an offset
+- check auto landing gear, check toggle landing gear
+- check toggle doors
+- check propeller speed at standby as well as when moving
 
 Content Packs:
 WW2

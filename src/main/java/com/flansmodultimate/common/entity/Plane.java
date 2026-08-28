@@ -11,8 +11,10 @@ import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.types.PlaneType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -29,9 +31,19 @@ public class Plane extends Driveable
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(
         LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
     private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
+    /** Legacy gear toggle required clear air three blocks below the plane. */
+    private static final int GEAR_TOGGLE_CLEARANCE = 3;
+    /** Legacy landing automation scanned ten blocks below the plane. */
+    private static final int LANDING_APPROACH_CLEARANCE = 10;
+    /** Legacy automatic doors scanned three blocks below the plane. */
+    private static final int DOOR_CLEARANCE = 3;
+    /** Throttle at or below which the legacy plane counted as parked. */
+    private static final float PARKED_THROTTLE = 0.05F;
 
     @Getter protected float propellerAngle;
     @Getter protected float prevPropellerAngle;
+    @Getter protected float rotorAngle;
+    @Getter protected float prevRotorAngle;
     @Getter protected float flapYaw;
     @Getter protected float flapPitchLeft;
     @Getter protected float flapPitchRight;
@@ -41,6 +53,8 @@ public class Plane extends Driveable
     private float angularYaw;
     private float angularPitch;
     private float angularRoll;
+    /** Latches the one automatic door opening per landing, as in 1.7.10. */
+    private boolean doorsAutoOpened;
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -82,16 +96,112 @@ public class Plane extends Driveable
         return type.getMode();
     }
 
+    /**
+     * The legacy controller refused to cycle the gear unless the block three
+     * below the plane was air, so it can be neither retracted while parked nor
+     * raised during the flare.
+     */
     @Override
-    protected void toggleDriveableMode()
+    protected void toggleGear(@NotNull Player player)
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isHasGear())
+            return;
+        if (isNearGround(GEAR_TOGGLE_CLEARANCE))
+        {
+            player.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.gear.blocked"), true);
+            return;
+        }
+        setGearDeployed(!isGearDeployed());
+        player.displayClientMessage(Component.translatable(isGearDeployed()
+            ? "message.flansmodultimate.driveable.gear.down"
+            : "message.flansmodultimate.driveable.gear.up"), true);
+    }
+
+    /** Automatic deployment on a low, slow approach, announced as in 1.7.10. */
+    private void deployGearForLanding()
+    {
+        if (isGearDeployed())
+            return;
+        setGearDeployed(true);
+        if (getControllingEntity() instanceof Player pilot)
+            pilot.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.gear.auto_deploy"), true);
+    }
+
+    /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
+    @Override
+    public boolean canHitPart(@Nullable EnumDriveablePart part)
+    {
+        return isGearDeployed() || !EnumDriveablePart.isWheel(part);
+    }
+
+    @Override
+    protected void toggleDoor(@NotNull Player player)
+    {
+        super.toggleDoor(player);
+        PlaneType type = getPlaneType();
+        if (type != null && type.isHasDoor())
+            player.displayClientMessage(Component.translatable(isDoorOpen()
+                ? "message.flansmodultimate.driveable.door.open"
+                : "message.flansmodultimate.driveable.door.closed"), true);
+    }
+
+    @Override
+    protected void toggleDriveableMode(@NotNull Player player)
     {
         PlaneType type = getPlaneType();
         if (type == null)
             return;
         if (type.isHasWing() || type.isValkyrie())
+        {
             setWingFolded(!isWingFolded());
+            player.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.wings.switched"), true);
+        }
         if (type.getMode() == EnumPlaneMode.VTOL)
+        {
             setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
+            player.displayClientMessage(Component.translatable(getPlaneMode() == EnumPlaneMode.HELI
+                ? "message.flansmodultimate.driveable.mode.hover"
+                : "message.flansmodultimate.driveable.mode.plane"), true);
+        }
+    }
+
+    /** Wings are unfolded automatically for a low, slow approach, as in 1.7.10. */
+    private void extendWingsForLanding()
+    {
+        if (!isWingFolded())
+            return;
+        setWingFolded(false);
+        if (getControllingEntity() instanceof Player pilot)
+            pilot.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.wings.extending"), true);
+    }
+
+    /**
+     * Doors open themselves once the plane is parked, and are pulled shut again
+     * as soon as it is under power. The latch is what makes the manual toggle
+     * usable while parked, which is the only time the legacy toggle had any
+     * lasting effect on a plane that cannot fly with its doors open.
+     */
+    private void updateAutomaticDoors(PlaneType type)
+    {
+        if (!type.isHasDoor())
+            return;
+        if (type.isAutoOpenDoorsNearGround() && Math.abs(getThrottle()) <= PARKED_THROTTLE
+            && isNearGround(DOOR_CLEARANCE))
+        {
+            if (!doorsAutoOpened)
+                setDoorOpen(true);
+            doorsAutoOpened = true;
+        }
+        else if (!type.isFlyWithOpenDoor())
+        {
+            setDoorOpen(false);
+            doorsAutoOpened = false;
+        }
     }
 
     @Override
@@ -105,17 +215,13 @@ public class Plane extends Driveable
 
         if (!type.isHasGear())
             setGearDeployed(true);
-        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F && isNearGround(10))
-            setGearDeployed(true);
-        if (type.isHasWing() && type.isFoldWingForLand() && isNearGround(10) && getThrottle() <= 0.4F)
-            setWingFolded(false);
-        if (type.isHasDoor())
-        {
-            if (type.isAutoOpenDoorsNearGround() && isNearGround(3) && Math.abs(getThrottle()) <= 0.05F)
-                setDoorOpen(true);
-            else if (!type.isFlyWithOpenDoor() && Math.abs(getThrottle()) > 0.05F)
-                setDoorOpen(false);
-        }
+        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            deployGearForLanding();
+        if (type.isHasWing() && type.isFoldWingForLand() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            extendWingsForLanding();
+        updateAutomaticDoors(type);
 
         Vec3 velocity = switch (getPlaneMode())
         {
@@ -151,7 +257,12 @@ public class Plane extends Driveable
     private void advanceAnimations()
     {
         prevPropellerAngle = propellerAngle;
-        propellerAngle = Mth.wrapDegrees(propellerAngle + 4F + Math.abs(getThrottle()) * 46F);
+        prevRotorAngle = rotorAngle;
+        // Blades stand still on standby: the legacy plane advanced them only
+        // while the throttle was actually open.
+        float throttle = getThrottle();
+        propellerAngle = Mth.wrapDegrees(propellerAngle + LegacyPlanePhysics.propellerStep(throttle));
+        rotorAngle = Mth.wrapDegrees(rotorAngle + LegacyPlanePhysics.rotorStep(throttle));
         prevFlapYaw = flapYaw;
         prevFlapPitchLeft = flapPitchLeft;
         prevFlapPitchRight = flapPitchRight;

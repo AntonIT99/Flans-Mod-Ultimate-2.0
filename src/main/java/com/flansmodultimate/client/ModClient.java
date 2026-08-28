@@ -9,6 +9,7 @@ import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Driveable;
@@ -388,13 +389,15 @@ public class ModClient
         if (driveable == null || !(player.getVehicle() instanceof Seat seat))
             return;
 
-        boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
+        boolean fixedPlaneView = MountedCameraView.isViewLockedToDriveable(driveable, seat);
         float wrappedYaw = fixedPlaneView ? seat.getMountedForwardYaw() : seat.getMountedViewYaw();
         // Keep the equivalent angle nearest to the player's current rotation.
         // Assigning the wrapped value directly creates a 358-degree interpolation
         // jump whenever the mounted camera crosses from +180 to -180 degrees.
         float yaw = player.getYRot() + Mth.wrapDegrees(wrappedYaw - player.getYRot());
-        float pitch = fixedPlaneView ? Mth.clamp(driveable.getPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
+        float pitch = fixedPlaneView
+            ? Mth.clamp(driveable.getEntityFacingPitch(), -89.9F, 89.9F)
+            : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);
         player.yHeadRot += Mth.wrapDegrees(yaw - player.yHeadRot);

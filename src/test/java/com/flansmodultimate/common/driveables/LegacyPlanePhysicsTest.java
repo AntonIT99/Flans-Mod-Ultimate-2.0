@@ -53,4 +53,30 @@ class LegacyPlanePhysicsTest
         assertFalse(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.PLANE, 0.6D, 0.5F, -0.15D, 0.04D));
         assertFalse(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.HELI, 0.6D, 0.5F, 0.15D, 0.04D));
     }
+
+    @Test
+    void bladesStandStillOnStandby()
+    {
+        assertEquals(0F, LegacyPlanePhysics.propellerStep(0F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.rotorStep(0F), EPSILON);
+    }
+
+    @Test
+    void propellerSpinsUpSharplyOffIdleAndIgnoresThrottleSign()
+    {
+        // 1.5 radians per tick at full throttle, on a throttle^0.4 curve.
+        assertEquals(85.9437F, LegacyPlanePhysics.propellerStep(1F), 1.0E-3F);
+        assertEquals(65.1331F, LegacyPlanePhysics.propellerStep(0.5F), 1.0E-3F);
+        assertEquals(LegacyPlanePhysics.propellerStep(0.5F), LegacyPlanePhysics.propellerStep(-0.5F), EPSILON);
+        // A quarter throttle already turns the blades more than half as fast.
+        assertTrue(LegacyPlanePhysics.propellerStep(0.25F) > LegacyPlanePhysics.propellerStep(1F) * 0.5F);
+    }
+
+    @Test
+    void rotorTracksThrottleLinearlyAndFollowsItsSign()
+    {
+        assertEquals(65.4809F, LegacyPlanePhysics.rotorStep(1F), 1.0E-3F);
+        assertEquals(LegacyPlanePhysics.rotorStep(1F) * 0.5F, LegacyPlanePhysics.rotorStep(0.5F), 1.0E-3F);
+        assertEquals(-LegacyPlanePhysics.rotorStep(0.5F), LegacyPlanePhysics.rotorStep(-0.5F), EPSILON);
+    }
 }

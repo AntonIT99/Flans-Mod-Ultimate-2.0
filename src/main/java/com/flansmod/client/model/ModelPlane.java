@@ -279,8 +279,10 @@ public class ModelPlane extends ModelDriveable
                               float scale, EnumRenderPass renderPass)
     {
         PlaneType type = driveable.getConfigType() instanceof PlaneType planeType ? planeType : null;
+        // Rotors run off their own accumulator: the legacy plane advanced them
+        // linearly with throttle, while the propeller used a throttle^0.4 curve.
         float rotorAngle = driveable instanceof Plane plane
-            ? Mth.rotLerp(state.partialTick(), plane.getPrevPropellerAngle(), plane.getPropellerAngle())
+            ? Mth.rotLerp(state.partialTick(), plane.getPrevRotorAngle(), plane.getRotorAngle())
             : state.animationTime() * (18F + 34F * Math.abs(state.throttle()));
         for (int i = 0; i < heliMainRotorModels.length; i++)
         {

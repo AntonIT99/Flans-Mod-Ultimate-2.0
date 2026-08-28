@@ -77,8 +77,21 @@ public class PlaneType extends DriveableType
     protected final List<Propeller> propellers = new ArrayList<>();
     protected final List<Propeller> heliPropellers = new ArrayList<>();
     protected final List<Propeller> heliTailPropellers = new ArrayList<>();
-    protected boolean hasGear;
-    protected boolean hasDoor;
+    /**
+     * Legacy HasGear only chose whether the mount hint advertised the gear key;
+     * the gear itself was always retractable, so the great majority of type
+     * files never declare it. Defaulting to true keeps those planes working,
+     * while a pack that opts out with {@code HasGear False} (helicopter skids,
+     * fixed undercarriages) still keeps its gear planted.
+     */
+    protected boolean hasGear = true;
+    /**
+     * HasDoor is the same kind of legacy hint as {@link #hasGear}: it only chose
+     * whether the toggle printed a message, while the automatic door handling
+     * ran on every plane. No shipped type file declares it, so gating behaviour
+     * on it switches the doors off everywhere.
+     */
+    protected boolean hasDoor = true;
     protected boolean hasWing;
     protected boolean foldWingForLand;
     protected boolean flyWithOpenDoor;

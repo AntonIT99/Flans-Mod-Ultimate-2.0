@@ -185,6 +185,95 @@ class LegacyDriveableCoordinatesTest
         assertTrue(renderedFront.subtract(renderedRear).dot(renderedForward) > 0D);
     }
 
+    @Test
+    void mountedCameraBasisMatchesTheRenderedDriveableForEveryBasis()
+    {
+        float yaw = 35F;
+        float pitch = 20F;
+        float roll = 47F;
+        for (boolean planeFacing : new boolean[] { false, true })
+        {
+            LegacyDriveableCoordinates.ViewAngles view =
+                LegacyDriveableCoordinates.mountedViewAngles(yaw, pitch, roll, 0F, 0F, planeFacing);
+
+            assertVector(vanillaViewVector(view.pitch(), view.yaw()), renderedNose(yaw, pitch, roll, planeFacing));
+            assertVector(vanillaUpVector(view.pitch(), view.yaw(), view.roll()), renderedUp(yaw, pitch, roll));
+        }
+    }
+
+    @Test
+    void mountedCameraRollKeepsTheHorizonLevelWhileTheDriveableIsUpright()
+    {
+        for (boolean planeFacing : new boolean[] { false, true })
+        {
+            assertEquals(0F,
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 20F, 0F, 0F, 0F, planeFacing).roll(), EPSILON);
+        }
+    }
+
+    @Test
+    void mirroredDriveableBasesRollTheViewTheOppositeWay()
+    {
+        assertEquals(-25F, LegacyDriveableCoordinates.renderedViewRoll(25F, true), EPSILON);
+        assertEquals(25F, LegacyDriveableCoordinates.renderedViewRoll(25F, false), EPSILON);
+    }
+
+    @Test
+    void seatAimTurnsTheViewAroundTheDriveableAxesNotTheWorldAxes()
+    {
+        // Level driveable: aiming is a plain offset from the rendered forward.
+        for (boolean planeFacing : new boolean[] { false, true })
+        {
+            LegacyDriveableCoordinates.ViewAngles level =
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 0F, 0F, 40F, 15F, planeFacing);
+
+            assertEquals(LegacyDriveableCoordinates.renderedForwardYaw(35F, planeFacing) + 40F, level.yaw(), 1.0E-4D);
+            assertEquals(15F, level.pitch(), 1.0E-4D);
+            assertEquals(0F, level.roll(), 1.0E-4D);
+        }
+
+        // Rolled onto a wingtip, looking along that wing is looking straight
+        // down, which the additive angles this replaced could not express.
+        // Vanilla rejects an exactly vertical view, hence the 89.9 limit.
+        LegacyDriveableCoordinates.ViewAngles banked =
+            LegacyDriveableCoordinates.mountedViewAngles(0F, 0F, 90F, 90F, 0F, true);
+
+        assertEquals(89.9F, Math.abs(banked.pitch()), 1.0E-4D);
+    }
+
+    /** World direction of the rendered nose, in the basis the renderer uses. */
+    private static Vec3 renderedNose(float yaw, float pitch, float roll, boolean planeFacing)
+    {
+        Vec3 modelForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        if (planeFacing)
+            modelForward = LegacyDriveableCoordinates.applyPlaneModelFacing(modelForward);
+        return LegacyDriveableCoordinates.modelLocalToWorldDirection(modelForward, yaw, pitch, roll);
+    }
+
+    /** World direction of the rendered model's up axis, shared by every basis. */
+    private static Vec3 renderedUp(float yaw, float pitch, float roll)
+    {
+        return LegacyDriveableCoordinates.modelLocalToWorldDirection(
+            LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D)), yaw, pitch, roll);
+    }
+
+    /** Screen-up direction of a vanilla camera at these angles, in world space. */
+    private static Vec3 vanillaUpVector(float pitch, float yaw, float roll)
+    {
+        double pitchRadians = Math.toRadians(pitch);
+        double yawRadians = Math.toRadians(yaw);
+        double rollRadians = Math.toRadians(roll);
+        Vec3 unrolledUp = new Vec3(-Math.sin(pitchRadians) * Math.sin(yawRadians), Math.cos(pitchRadians),
+            Math.sin(pitchRadians) * Math.cos(yawRadians));
+        Vec3 screenRight = new Vec3(-Math.cos(yawRadians), 0D, -Math.sin(yawRadians));
+        return unrolledUp.scale(Math.cos(rollRadians)).add(screenRight.scale(Math.sin(rollRadians)));
+    }
+
+    private static void assertVector(Vec3 actual, Vec3 expected)
+    {
+        assertVector(actual, expected.x, expected.y, expected.z);
+    }
+
     private static void assertVector(Vec3 actual, double x, double y, double z)
     {
         assertEquals(x, actual.x, EPSILON);

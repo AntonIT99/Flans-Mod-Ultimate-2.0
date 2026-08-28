@@ -149,10 +149,15 @@ public class Seat extends Entity implements IControllable
         return driveable.getEntityFacingYaw();
     }
 
+    /**
+     * Rider look pitch. The driveable's own pitch has to be converted to the
+     * vanilla look basis first; non-plane models face the mirrored model axis,
+     * so their model pitch has the opposite sign to the rendered nose.
+     */
     public float getMountedViewPitch()
     {
         return driveable == null ? getXRot()
-            : Mth.clamp(driveable.getPitch() + getViewAimPitch(), -89.9F, 89.9F);
+            : Mth.clamp(driveable.getEntityFacingPitch() + getViewAimPitch(), -89.9F, 89.9F);
     }
 
     public int getInputMask()

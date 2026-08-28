@@ -7,12 +7,37 @@ public final class LegacyPlanePhysics
 {
     public static final float GRAVITY = 0.98F / 10F;
     public static final float MAX_FLAP_ANGLE = 20F;
+    private static final double PROPELLER_FULL_THROTTLE_RADIANS = 1.5D;
+    private static final double PROPELLER_THROTTLE_EXPONENT = 0.4D;
+    private static final double ROTOR_THROTTLE_DIVISOR = 7D;
+    /** The legacy renderer scaled the raw rotor accumulator by this factor. */
+    private static final double ROTOR_RENDER_SCALE = 1440D / Math.PI;
 
     private LegacyPlanePhysics() {}
 
     public static float flap(float current, float input)
     {
         return Mth.clamp((finite(current) + finite(input)) * 0.9F, -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+    }
+
+    /**
+     * Degrees a propeller turns in one tick. Blades stand still on standby and
+     * spin up sharply off idle, which is what the legacy throttle^0.4 curve
+     * describes; the propeller always turns the same way, even in reverse.
+     */
+    public static float propellerStep(float throttle)
+    {
+        float magnitude = Math.abs(finite(throttle));
+        return magnitude == 0F ? 0F
+            : (float) (Math.pow(magnitude, PROPELLER_THROTTLE_EXPONENT) * PROPELLER_FULL_THROTTLE_RADIANS
+                * (180D / Math.PI));
+    }
+
+    /** Degrees a rotor turns in one tick. Unlike the propeller this is linear and signed. */
+    public static float rotorStep(float throttle)
+    {
+        float rate = finite(throttle);
+        return rate == 0F ? 0F : (float) (rate / ROTOR_THROTTLE_DIVISOR * ROTOR_RENDER_SCALE);
     }
 
     public static ControlRates controlRates(EnumPlaneMode mode, float speed, float horizontalSpeed, float throttle,

@@ -1,6 +1,8 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.Seat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,8 +21,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Changes only Camera.setup's requested third-person distance. Camera still
- * passes this value through its vanilla getMaxZoom collision probes.
+ * Anchors the mounted camera to the driveable's own render transform, and
+ * changes only Camera.setup's requested third-person distance. Camera still
+ * passes that distance through its vanilla getMaxZoom collision probes.
  */
 @Mixin(Camera.class)
 public abstract class DriveableCameraMixin
@@ -30,9 +33,20 @@ public abstract class DriveableCameraMixin
     @Shadow
     protected abstract void setPosition(Vec3 position);
 
+    @Shadow
+    protected abstract void setRotation(float yaw, float pitch);
+
     /**
-     * Replace the nested player/seat tick anchor with the exact render-time
-     * driveable seat transform before vanilla applies third-person zoom.
+     * Replace the nested player/seat tick anchor and the rider's own rotation
+     * with the exact render-time driveable seat transform, before vanilla
+     * applies third-person zoom.
+     *
+     * <p>Both halves matter, and each one hides in the view the other breaks.
+     * Vanilla builds the third-person boom from the rider's rotation, which
+     * carries whatever mouse movement was folded into it since the last tick,
+     * so a detached camera swims around a steady plane. Vanilla also raises the
+     * eye along world up rather than along the driveable's up, which slides the
+     * first-person view out of a banking cockpit while the boom conceals it.</p>
      */
     @Inject(method = "setup", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/client/Camera;setPosition(DDD)V", shift = At.Shift.AFTER))
@@ -44,12 +58,22 @@ public abstract class DriveableCameraMixin
             || seat.getDriveable() == null)
             return;
 
-        Vec3 vanillaFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()),
-            Mth.lerp(partialTick, player.yo, player.getY()),
-            Mth.lerp(partialTick, player.zo, player.getZ()));
-        Vec3 riderFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(
-            seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
-        setPosition(riderFeet.add(position.subtract(vanillaFeet)));
+        // Vanilla stacks the eye height on world up. 1.7.10 instead placed the
+        // rider's eye at the seat anchor plus its whole offset rotated by the
+        // driveable, which is what keeps a pilot's head in the cockpit through
+        // a roll. Rotating only the seating offset and then rising along world
+        // up slides the eye more than a block sideways out of a banked plane,
+        // and the third person boom hides it, so it shows up in first person.
+        double vanillaFeetY = Mth.lerp(partialTick, player.yo, player.getY());
+        double eyeOffset = seat.getPassengerRidingOffset(player) + (position.y - vanillaFeetY);
+        setPosition(seat.getDriveable().getInterpolatedRiderWorldPosition(
+            seat.getSeatIndex(), eyeOffset, partialTick));
+
+        if (!MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
+            return;
+        LegacyDriveableCoordinates.ViewAngles view = MountedCameraView.resolve(player, partialTick);
+        if (view != null)
+            setRotation(view.yaw(), view.pitch());
     }
 
     @ModifyConstant(method = "setup", constant = @Constant(doubleValue = 4.0D))

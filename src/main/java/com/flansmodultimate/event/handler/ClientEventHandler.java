@@ -9,12 +9,11 @@ import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
@@ -50,6 +49,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -69,38 +69,21 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
     {
-        Player player = Minecraft.getInstance().player;
-        if (player == null)
+        Entity cameraEntity = event.getCamera().getEntity();
+        var view = MountedCameraView.resolve(cameraEntity, (float) event.getPartialTick());
+        if (view == null)
             return;
 
-        var controllable = KeyInputHandler.resolveControllable(player);
-        if (controllable == null)
-            return;
-
-        float partialTick = (float) event.getPartialTick();
-        var driveable = KeyInputHandler.resolveDriveable(player);
-        if (driveable != null && player.getVehicle() instanceof Seat seat)
+        // The reversed third person view turns the camera around, which swaps
+        // which way the driveable's roll leans on screen.
+        boolean frontView = Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT;
+        if (cameraEntity instanceof Player player && player.getVehicle() instanceof Seat seat
+            && MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
         {
-            boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
-            if (fixedPlaneView)
-            {
-                float cameraYaw = LegacyDriveableCoordinates.planeForwardYaw(
-                    Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
-                float cameraPitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
-                if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
-                {
-                    cameraYaw += 180F;
-                    cameraPitch = -cameraPitch;
-                }
-                event.setYaw(Mth.wrapDegrees(cameraYaw));
-                event.setPitch(Mth.clamp(cameraPitch, -89.9F, 89.9F));
-            }
+            event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
+            event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
         }
-
-        float roll = Mth.rotLerp(partialTick, controllable.getPrevPlayerRoll(), controllable.getPlayerRoll());
-        if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
-            roll = -roll;
-        event.setRoll(event.getRoll() + roll);
+        event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
     }
 
     @SubscribeEvent

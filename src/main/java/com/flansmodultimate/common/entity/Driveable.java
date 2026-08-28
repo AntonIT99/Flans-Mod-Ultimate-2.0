@@ -2482,20 +2482,40 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
         if (DriveableInput.isDown(rising, DriveableInput.MENU) && player instanceof ServerPlayer serverPlayer)
             openDriveableMenu(serverPlayer);
-        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_GEAR)
-            && (!(configType instanceof PlaneType plane) || plane.isHasGear()))
-            setGearDeployed(!isGearDeployed());
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_GEAR))
+            toggleGear(player);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_DOOR))
-            setDoorOpen(!isDoorOpen());
+            toggleDoor(player);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_MODE))
-            toggleDriveableMode();
+            toggleDriveableMode(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
     }
 
-    protected void toggleDriveableMode()
+    /** Landing gear toggle. Driveables without retractable gear ignore it. */
+    protected void toggleGear(@NotNull Player player)
+    {
+        setGearDeployed(!isGearDeployed());
+    }
+
+    /**
+     * Parts stowed inside the hull, such as retracted landing gear, are not
+     * exposed to bullets or repairs.
+     */
+    public boolean canHitPart(@Nullable EnumDriveablePart part)
+    {
+        return true;
+    }
+
+    /** Door toggle. Driveables without doors simply carry the flag. */
+    protected void toggleDoor(@NotNull Player player)
+    {
+        setDoorOpen(!isDoorOpen());
+    }
+
+    protected void toggleDriveableMode(@NotNull Player player)
     {
         setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
     }
@@ -2608,13 +2628,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     @Override
     public float getPlayerRoll()
     {
-        return getRoll();
+        return LegacyDriveableCoordinates.renderedViewRoll(getRoll(), this instanceof Plane);
     }
 
     @Override
     public float getPrevPlayerRoll()
     {
-        return prevRoll;
+        return LegacyDriveableCoordinates.renderedViewRoll(prevRoll, this instanceof Plane);
     }
 
     @Override
@@ -2733,7 +2753,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         for (DriveablePart part : driveableData.getParts().values())
         {
             CollisionBox box = part.getBox();
-            if (box == null)
+            if (box == null || !canHitPart(part.getType()))
                 continue;
             AABB aabb = box.asAabb();
             Optional<Vec3> intersection = aabb.contains(localOrigin) ? Optional.of(localOrigin) : aabb.clip(localOrigin, localEnd);

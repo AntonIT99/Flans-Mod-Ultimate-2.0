@@ -1,9 +1,8 @@
 package com.flansmodultimate.client.input;
 
 import com.flansmodultimate.api.IControllable;
-import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -156,10 +155,9 @@ public final class MouseInputHandler
 
     private static boolean isMouseFlightActive(Player player, Driveable driveable)
     {
-        if (!(driveable instanceof Plane) || !ModClient.isMouseControlEnabled())
-            return false;
-        return player.getVehicle() instanceof Seat seat && seat.isDriverSeat() && seat.getDriveable() == driveable
-            && seat.getRiddenByEntity() == player;
+        return player.getVehicle() instanceof Seat seat && seat.getDriveable() == driveable
+            && seat.getRiddenByEntity() == player
+            && MountedCameraView.isViewLockedToDriveable(driveable, seat);
     }
 
     private static float recenter(float control)

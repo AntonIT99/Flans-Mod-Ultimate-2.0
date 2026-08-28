@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.common.raytracing.RotatedAxes;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Mth;
@@ -77,6 +78,42 @@ public final class LegacyDriveableCoordinates
     {
         return renderedForwardPitch(entityPitch, planeModelFacing);
     }
+
+    /**
+     * Screen roll that keeps a rider's horizon locked to the rendered driveable.
+     *
+     * <p>The renderer applies model roll around model X, which is the same axis
+     * the camera looks along. A camera rolling with the driveable therefore has
+     * to rotate the image the opposite way. Non-plane models face the mirrored
+     * model X direction, which flips the sense of both their pitch and their
+     * roll relative to the view, exactly like {@link #renderedForwardPitch}.</p>
+     */
+    public static float renderedViewRoll(float driveableRoll, boolean planeModelFacing)
+    {
+        return planeModelFacing ? -driveableRoll : driveableRoll;
+    }
+
+    /**
+     * Composes a rider's local look rotation with the driveable orientation and
+     * returns the resulting vanilla camera angles. Adding the two sets of Euler
+     * angles instead only matches while the driveable is level; composing the
+     * rotations is what keeps first and third person aligned once it banks.
+     */
+    public static ViewAngles mountedViewAngles(float driveableYaw, float driveablePitch, float driveableRoll,
+                                                float aimYaw, float aimPitch, boolean planeModelFacing)
+    {
+        // Seat aim is authored in vanilla view space, so it needs the same basis
+        // conversion as the composed result before the two are multiplied.
+        RotatedAxes look = new RotatedAxes(aimYaw, renderedForwardPitch(aimPitch, planeModelFacing), 0F);
+        RotatedAxes global = new RotatedAxes(driveableYaw, driveablePitch, driveableRoll)
+            .findLocalAxesGlobally(look);
+        return new ViewAngles(renderedForwardYaw(global.getYaw(), planeModelFacing),
+            Mth.clamp(renderedForwardPitch(global.getPitch(), planeModelFacing), -89.9F, 89.9F),
+            Mth.wrapDegrees(renderedViewRoll(global.getRoll(), planeModelFacing)));
+    }
+
+    /** Vanilla camera angles: yaw and pitch aim the view, roll tilts the screen. */
+    public record ViewAngles(float yaw, float pitch, float roll) {}
 
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */
     public static Vec3 rotateBarrelPitchLocal(@NotNull Vec3 vector, float pitchDegrees)
