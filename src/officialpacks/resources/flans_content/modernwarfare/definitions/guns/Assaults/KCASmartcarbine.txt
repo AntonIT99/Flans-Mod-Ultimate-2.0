@@ -68,3 +68,4 @@ Paintjob kcasmartcarbine_stoic_blue kcasmartcarbine_stoic_blue blue 3
 Paintjob kcasmartcarbine_stoic_green kcasmartcarbine_stoic_green green 3
 Paintjob kcasmartcarbine_stoic_red kcasmartcarbine_stoic_red red 3
 Paintjob kcasmartcarbine_stoic_orange kcasmartcarbine_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

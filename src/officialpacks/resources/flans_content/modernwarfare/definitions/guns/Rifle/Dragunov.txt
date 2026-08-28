@@ -57,3 +57,4 @@ Paintjob dragunov_stoic_blue dragunov_stoic_blue blue 3
 Paintjob dragunov_stoic_green dragunov_stoic_green green 3
 Paintjob dragunov_stoic_red dragunov_stoic_red red 3
 Paintjob dragunov_stoic_orange dragunov_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

@@ -65,3 +65,4 @@ Paintjob galil_stoic_blue galil_stoic_blue blue 3
 Paintjob galil_stoic_green galil_stoic_green green 3
 Paintjob galil_stoic_red galil_stoic_red red 3
 Paintjob galil_stoic_orange galil_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

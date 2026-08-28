@@ -52,3 +52,4 @@ Paintjob kcasmart50_stoic_blue kcasmart50_stoic_blue blue 3
 Paintjob kcasmart50_stoic_green kcasmart50_stoic_green green 3
 Paintjob kcasmart50_stoic_red kcasmart50_stoic_red red 3
 Paintjob kcasmart50_stoic_orange kcasmart50_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

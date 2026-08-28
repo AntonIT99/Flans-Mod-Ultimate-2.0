@@ -65,3 +65,4 @@ Paintjob famas_stoic_blue famas_stoic_blue blue 3
 Paintjob famas_stoic_green famas_stoic_green green 3
 Paintjob famas_stoic_red famas_stoic_red red 3
 Paintjob famas_stoic_orange famas_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

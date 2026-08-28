@@ -65,3 +65,4 @@ Paintjob adar15_stoic_blue adar15_stoic_blue blue 3
 Paintjob adar15_stoic_green adar15_stoic_green green 3
 Paintjob adar15_stoic_red adar15_stoic_red red 3
 Paintjob adar15_stoic_orange adar15_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

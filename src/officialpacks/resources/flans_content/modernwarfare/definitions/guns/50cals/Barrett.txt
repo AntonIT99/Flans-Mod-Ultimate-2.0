@@ -52,3 +52,4 @@ Paintjob barrett_stoic_blue barrett_stoic_blue blue 3
 Paintjob barrett_stoic_green barrett_stoic_green green 3
 Paintjob barrett_stoic_red barrett_stoic_red red 3
 Paintjob barrett_stoic_orange barrett_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

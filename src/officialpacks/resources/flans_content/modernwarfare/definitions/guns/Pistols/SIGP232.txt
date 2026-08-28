@@ -61,3 +61,4 @@ Paintjob sigp232_stoic_blue sigp232_stoic_blue blue 2
 Paintjob sigp232_stoic_green sigp232_stoic_green green 2
 Paintjob sigp232_stoic_red sigp232_stoic_red red 2
 Paintjob sigp232_stoic_orange sigp232_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

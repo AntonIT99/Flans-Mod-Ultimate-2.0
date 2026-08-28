@@ -1,6 +1,6 @@
 Name SideWinder7 Ammo
 ShortName sidewinder7Ammo
-Model jamespostmodernweapons.Rocket
+Model mw.Rocket
 Texture Rocket
 //Colour of icon and model
 Colour 255 255 255

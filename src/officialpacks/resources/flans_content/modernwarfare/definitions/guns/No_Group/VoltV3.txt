@@ -50,3 +50,4 @@ ShowDamage true
 ShowRecoil true
 DistortSound True
 CanShootUnderwater False
+MuzzleFlashModel DefaultMuzzleFlash

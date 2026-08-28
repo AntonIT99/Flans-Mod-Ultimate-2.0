@@ -60,3 +60,4 @@ Paintjob eldiablo_stoic_blue eldiablo_stoic_blue blue 2
 Paintjob eldiablo_stoic_green eldiablo_stoic_green green 2
 Paintjob eldiablo_stoic_red eldiablo_stoic_red red 2
 Paintjob eldiablo_stoic_orange eldiablo_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

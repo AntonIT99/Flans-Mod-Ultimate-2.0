@@ -57,3 +57,4 @@ Paintjob pr3_stoic_blue pr3_stoic_blue blue 3
 Paintjob pr3_stoic_green pr3_stoic_green green 3
 Paintjob pr3_stoic_red pr3_stoic_red red 3
 Paintjob pr3_stoic_orange pr3_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

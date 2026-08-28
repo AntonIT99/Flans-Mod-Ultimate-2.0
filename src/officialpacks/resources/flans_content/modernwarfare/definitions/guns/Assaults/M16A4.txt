@@ -65,3 +65,4 @@ CanShootUnderwater False
 Paintjob M16A4_Orange M16A4_Orange orange 1 white 1
 Paintjob M16A4_Green M16A4_Green green 2
 Paintjob M16A4_Howl M16A4_Howl orange 1 red 2
+MuzzleFlashModel DefaultMuzzleFlash

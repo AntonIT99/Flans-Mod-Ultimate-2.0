@@ -55,3 +55,4 @@ Paintjob jury_stoic_blue jury_stoic_blue blue 2
 Paintjob jury_stoic_green jury_stoic_green green 2
 Paintjob jury_stoic_red jury_stoic_red red 2
 Paintjob jury_stoic_orange jury_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

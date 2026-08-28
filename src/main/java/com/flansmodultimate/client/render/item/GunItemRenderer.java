@@ -1092,7 +1092,7 @@ public final class GunItemRenderer
         AttachmentType barrelAttachment = model.getType().getBarrel(stack);
         boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.getType().getFlashModelClassName())
                 && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash())
-                && (StringUtils.isNotBlank(model.getType().getMuzzleFlashModelClassName()) || model.getClass().getName().contains("com.flansmod.modernweapons.client.model"));
+                && (StringUtils.isNotBlank(model.getType().getMuzzleFlashModelClassName()));
 
         if (isMuzzleFlashEnabled && animations.getMuzzleFlashTime() > 0 && !model.getType().getSecondaryFire(stack))
         {

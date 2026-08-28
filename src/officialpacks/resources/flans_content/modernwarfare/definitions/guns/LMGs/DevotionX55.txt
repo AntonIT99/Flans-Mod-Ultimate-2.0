@@ -64,3 +64,4 @@ Paintjob devotionx55_stoic_blue devotionx55_stoic_blue blue 3
 Paintjob devotionx55_stoic_green devotionx55_stoic_green green 3
 Paintjob devotionx55_stoic_red devotionx55_stoic_red red 3
 Paintjob devotionx55_stoic_orange devotionx55_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

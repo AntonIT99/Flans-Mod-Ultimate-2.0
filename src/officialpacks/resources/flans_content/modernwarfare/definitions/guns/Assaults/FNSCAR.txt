@@ -65,3 +65,4 @@ Paintjob fnscar_stoic_blue fnscar_stoic_blue blue 3
 Paintjob fnscar_stoic_green fnscar_stoic_green green 3
 Paintjob fnscar_stoic_red fnscar_stoic_red red 3
 Paintjob fnscar_stoic_orange fnscar_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

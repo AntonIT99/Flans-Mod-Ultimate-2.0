@@ -60,3 +60,4 @@ Paintjob colt45_stoic_blue m1911_stoic_blue blue 2
 Paintjob colt45_stoic_green m1911_stoic_green green 2
 Paintjob colt45_stoic_red m1911_stoic_red red 2
 Paintjob colt45_stoic_orange m1911_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

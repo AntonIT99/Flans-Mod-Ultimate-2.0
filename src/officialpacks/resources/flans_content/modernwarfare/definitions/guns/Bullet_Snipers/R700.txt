@@ -54,3 +54,4 @@ Paintjob r700_stoic_blue r700_stoic_blue blue 3
 Paintjob r700_stoic_green r700_stoic_green green 3
 Paintjob r700_stoic_red r700_stoic_red red 3
 Paintjob r700_stoic_orange r700_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

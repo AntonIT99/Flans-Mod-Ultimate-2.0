@@ -56,3 +56,4 @@ Paintjob skorpion_stoic_blue skorpion_stoic_blue blue 2
 Paintjob skorpion_stoic_green skorpion_stoic_green green 2
 Paintjob skorpion_stoic_red skorpion_stoic_red red 2
 Paintjob skorpion_stoic_orange skorpion_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

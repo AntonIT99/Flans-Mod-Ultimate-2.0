@@ -54,3 +54,4 @@ Paintjob m40a3_stoic_blue m40a3_stoic_blue blue 3
 Paintjob m40a3_stoic_green m40a3_stoic_green green 3
 Paintjob m40a3_stoic_red m40a3_stoic_red red 3
 Paintjob m40a3_stoic_orange m40a3_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

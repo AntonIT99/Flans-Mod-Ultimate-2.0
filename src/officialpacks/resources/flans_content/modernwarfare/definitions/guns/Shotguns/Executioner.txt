@@ -62,3 +62,4 @@ Paintjob executioner_stoic_blue executioner_stoic_blue blue 2
 Paintjob executioner_stoic_green executioner_stoic_green green 2
 Paintjob executioner_stoic_red executioner_stoic_red red 2
 Paintjob executioner_stoic_orange executioner_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

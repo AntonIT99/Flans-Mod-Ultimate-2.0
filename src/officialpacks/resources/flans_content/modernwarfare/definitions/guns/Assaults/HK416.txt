@@ -65,3 +65,4 @@ Paintjob hk416_stoic_blue hk416_stoic_blue blue 3
 Paintjob hk416_stoic_green hk416_stoic_green green 3
 Paintjob hk416_stoic_red hk416_stoic_red red 3
 Paintjob hk416_stoic_orange hk416_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

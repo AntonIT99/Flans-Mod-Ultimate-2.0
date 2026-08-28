@@ -65,3 +65,4 @@ Paintjob g36_stoic_blue g36_stoic_blue blue 3
 Paintjob g36_stoic_green g36_stoic_green green 3
 Paintjob g36_stoic_red g36_stoic_red red 3
 Paintjob g36_stoic_orange g36_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

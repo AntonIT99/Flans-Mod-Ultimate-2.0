@@ -56,3 +56,4 @@ Paintjob ntw20_stoic_blue ntw20_stoic_blue blue 3
 Paintjob ntw20_stoic_green ntw20_stoic_green green 3
 Paintjob ntw20_stoic_red ntw20_stoic_red red 3
 Paintjob ntw20_stoic_orange ntw20_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

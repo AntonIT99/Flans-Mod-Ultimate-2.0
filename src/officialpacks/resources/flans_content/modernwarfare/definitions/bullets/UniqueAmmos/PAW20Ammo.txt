@@ -9,7 +9,7 @@ MaxStackSize 2
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 8
 ////Visuals
-Model jamespostmodernweapons.RoundGrenade
+Model mw.RoundGrenade
 Texture RoundGrenade
 SmokeTrail True
 TrailParticles 1

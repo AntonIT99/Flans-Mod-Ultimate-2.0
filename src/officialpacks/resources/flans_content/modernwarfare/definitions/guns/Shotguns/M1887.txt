@@ -60,3 +60,4 @@ Paintjob M1887_Jungle M1887_Jungle green 1 brown 1
 Paintjob M1887_Birch M1887_Birch white 1 yellow 1
 //Description - note the ammo type
 Description Ammo Type : Shotgun
+MuzzleFlashModel DefaultMuzzleFlash

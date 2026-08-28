@@ -65,3 +65,4 @@ Paintjob mtar_stoic_blue mtar_stoic_blue blue 3
 Paintjob mtar_stoic_green mtar_stoic_green green 3
 Paintjob mtar_stoic_red mtar_stoic_red red 3
 Paintjob mtar_stoic_orange mtar_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

@@ -61,3 +61,4 @@ Paintjob kcasmartpistol_stoic_blue kcasmartpistol_stoic_blue blue 2
 Paintjob kcasmartpistol_stoic_green kcasmartpistol_stoic_green green 2
 Paintjob kcasmartpistol_stoic_red kcasmartpistol_stoic_red red 2
 Paintjob kcasmartpistol_stoic_orange kcasmartpistol_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

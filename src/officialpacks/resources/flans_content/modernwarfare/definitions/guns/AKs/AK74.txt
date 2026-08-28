@@ -53,3 +53,4 @@ Paintjob ak74_stoic_blue ak74_stoic_blue blue 3
 Paintjob ak74_stoic_green ak74_stoic_green green 3
 Paintjob ak74_stoic_red ak74_stoic_red red 3
 Paintjob ak74_stoic_orange ak74_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

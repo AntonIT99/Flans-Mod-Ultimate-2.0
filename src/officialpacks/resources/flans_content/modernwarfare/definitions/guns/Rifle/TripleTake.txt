@@ -56,3 +56,4 @@ Paintjob tripletake_stoic_blue tripletake_stoic_blue blue 3
 Paintjob tripletake_stoic_green tripletake_stoic_green green 3
 Paintjob tripletake_stoic_red tripletake_stoic_red red 3
 Paintjob tripletake_stoic_orange tripletake_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

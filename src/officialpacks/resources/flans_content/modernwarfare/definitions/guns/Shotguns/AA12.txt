@@ -61,3 +61,4 @@ Paintjob aa12_stoic_blue aa12_stoic_blue blue 3
 Paintjob aa12_stoic_green aa12_stoic_green green 3
 Paintjob aa12_stoic_red aa12_stoic_red red 3
 Paintjob aa12_stoic_orange aa12_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

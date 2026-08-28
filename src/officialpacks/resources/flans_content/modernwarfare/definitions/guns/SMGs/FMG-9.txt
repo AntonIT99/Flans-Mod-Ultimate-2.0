@@ -55,3 +55,4 @@ Paintjob fmg_stoic_blue fmg_stoic_blue blue 3
 Paintjob fmg_stoic_green fmg_stoic_green green 3
 Paintjob fmg_stoic_red fmg_stoic_red red 3
 Paintjob fmg_stoic_orange fmg_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

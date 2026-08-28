@@ -60,3 +60,4 @@ Paintjob usp_stoic_blue usp_stoic_blue blue 2
 Paintjob usp_stoic_green usp_stoic_green green 2
 Paintjob usp_stoic_red usp_stoic_red red 2
 Paintjob usp_stoic_orange usp_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

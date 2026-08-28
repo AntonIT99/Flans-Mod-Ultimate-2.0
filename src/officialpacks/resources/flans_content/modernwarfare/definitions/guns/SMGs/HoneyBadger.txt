@@ -56,3 +56,4 @@ Paintjob honeybadger_stoic_blue honeybadger_stoic_blue blue 3
 Paintjob honeybadger_stoic_green honeybadger_stoic_green green 3
 Paintjob honeybadger_stoic_red honeybadger_stoic_red red 3
 Paintjob honeybadger_stoic_orange honeybadger_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

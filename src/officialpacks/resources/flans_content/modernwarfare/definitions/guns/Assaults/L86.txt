@@ -70,3 +70,4 @@ Paintjob l86_stoic_blue l86_stoic_blue blue 3
 Paintjob l86_stoic_green l86_stoic_green green 3
 Paintjob l86_stoic_red l86_stoic_red red 3
 Paintjob l86_stoic_orange l86_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

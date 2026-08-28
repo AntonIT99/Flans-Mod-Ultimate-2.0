@@ -56,3 +56,4 @@ Paintjob rpd_stoic_blue rpd_stoic_blue blue 3
 Paintjob rpd_stoic_green rpd_stoic_green green 3
 Paintjob rpd_stoic_red rpd_stoic_red red 3
 Paintjob rpd_stoic_orange rpd_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

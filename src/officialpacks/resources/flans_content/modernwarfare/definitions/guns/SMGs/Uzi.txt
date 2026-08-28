@@ -56,3 +56,4 @@ Paintjob miniuzi_stoic_blue miniuzi_stoic_blue blue 2
 Paintjob miniuzi_stoic_green miniuzi_stoic_green green 2
 Paintjob miniuzi_stoic_red miniuzi_stoic_red red 2
 Paintjob miniuzi_stoic_orange miniuzi_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash

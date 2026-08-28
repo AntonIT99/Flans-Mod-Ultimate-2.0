@@ -52,3 +52,4 @@ Paintjob mastiff1218_stoic_blue mastiff1218_stoic_blue blue 3
 Paintjob mastiff1218_stoic_green mastiff1218_stoic_green green 3
 Paintjob mastiff1218_stoic_red mastiff1218_stoic_red red 3
 Paintjob mastiff1218_stoic_orange mastiff1218_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

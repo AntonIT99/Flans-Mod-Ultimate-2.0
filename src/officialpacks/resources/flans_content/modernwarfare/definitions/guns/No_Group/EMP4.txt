@@ -53,3 +53,4 @@ Paintjob emp4_stoic_blue emp4_stoic_blue blue 3
 Paintjob emp4_stoic_green emp4_stoic_green green 3
 Paintjob emp4_stoic_red emp4_stoic_red red 3
 Paintjob emp4_stoic_orange emp4_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash

@@ -62,3 +62,4 @@ Paintjob judge_stoic_blue judge_stoic_blue blue 2
 Paintjob judge_stoic_green judge_stoic_green green 2
 Paintjob judge_stoic_red judge_stoic_red red 2
 Paintjob judge_stoic_orange judge_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash
