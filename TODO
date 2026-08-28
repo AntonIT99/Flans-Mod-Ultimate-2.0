@@ -1,15 +1,22 @@
 General:
-- Check translations in other languages
+- Add translations in other languages
 - Fix gloves
+- Fix mecha inventory
+- driver positions is a bit too high, maybe also apply an offset?
+- collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
+- mecha item rendering in hand does not corresponding to normal rendering
+- general driveable item rendering has an offset
 
-TODO Content Packs:
+Content Packs:
+WW2
+- Fix Scope Attachment Points
+- Fix Barrel Attachment and Muzzle Flash
+- Remove Minigun Mode for some guns
+Modern Warfare
 - Fix G36C Model/Texture
 - Fix AK47 Paintjobs
-- Fix Scope Attachment Points in WW2 Improved Pack
-- Fix Barrel Attachment and Muzzle Flash
-- Remove Minigun Mode in WW2 Improved Pack
+Star Wars Pack
 - Add Idle Sound to Lightsabers
-- Set Penetration?
 
 Feature Ideas:
 - Block with GUI to convert bullets to magazines and vice versa + Mapping for bullets and magazines
@@ -18,4 +25,4 @@ Feature Ideas:
 - Switching Fire Mode Sound
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
-- Dynamic activation of Aiming Pose
+- Dynamic activation of Aiming Pose or in game configurable option

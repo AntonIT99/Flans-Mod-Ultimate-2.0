@@ -80,6 +80,13 @@ class DriveableCollisionProfileTest
     }
 
     @Test
+    void stationaryDeckCorrectsGravityPenetration()
+    {
+        assertEquals(0.0801D, DriveableCollisionHelper.supportVerticalCorrection(4D, 3.92D), EPSILON);
+        assertEquals(-0.0199D, DriveableCollisionHelper.supportVerticalCorrection(4D, 4.02D), EPSILON);
+    }
+
+    @Test
     void rotatesLegacyPartBoxesIntoTheModernDriveableBasis()
     {
         CollisionBox box = new CollisionBox(100F, 16F, 32F, 48F, 64F, 80F, 96F);

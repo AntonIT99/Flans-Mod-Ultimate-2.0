@@ -18,9 +18,10 @@ import net.minecraft.world.entity.player.Player;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MouseInputHandler
 {
-    private static final float FLIGHT_MOUSE_SENSITIVITY = 0.003F;
-    private static final float FLIGHT_CONTROL_RETURN = 0.86F;
-    private static final float CONTROL_DEADZONE = 0.002F;
+    private static final float FLIGHT_MOUSE_SENSITIVITY = 0.02F;
+    private static final float FLIGHT_CONTROL_RETURN = 0.9F;
+    private static final float MAX_FLAP_ANGLE = 20F;
+    private static final float CONTROL_DEADZONE = 0.01F;
 
     private static int flightDriveableId = -1;
     private static int viewSeatId = -1;
@@ -68,8 +69,12 @@ public final class MouseInputHandler
         if (isMouseFlightActive(player, driveable))
         {
             flightDriveableId = driveable.getId();
-            flightPitchControl = Mth.clamp(flightPitchControl + (float) dy * FLIGHT_MOUSE_SENSITIVITY, -1F, 1F);
-            flightRollControl = Mth.clamp(flightRollControl + (float) dx * FLIGHT_MOUSE_SENSITIVITY, -1F, 1F);
+            // Legacy mouse control directly deflected the pitch flaps and used
+            // opposite left/right flap motion for roll.
+            flightPitchControl = Mth.clamp(flightPitchControl - (float) dy * FLIGHT_MOUSE_SENSITIVITY,
+                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+            flightRollControl = Mth.clamp(flightRollControl + (float) dx * FLIGHT_MOUSE_SENSITIVITY,
+                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
             return;
         }
 

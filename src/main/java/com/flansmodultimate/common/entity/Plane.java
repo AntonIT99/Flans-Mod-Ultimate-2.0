@@ -1,17 +1,24 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.EnumPlaneMode;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
+import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.types.PlaneType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -24,6 +31,9 @@ public class Plane extends Driveable
     @Getter protected float flapYaw;
     @Getter protected float flapPitchLeft;
     @Getter protected float flapPitchRight;
+    private float angularYaw;
+    private float angularPitch;
+    private float angularRoll;
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -125,11 +135,23 @@ public class Plane extends Driveable
         propellerAngle = Mth.wrapDegrees(propellerAngle + 4F + Math.abs(getThrottle()) * 46F);
         int input = getInputMask();
         float yaw = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        float pitch = pitchInput(input);
-        float roll = rollInput(input);
-        flapYaw = DriveableControlPhysics.dampedControl(flapYaw, yaw, 1F);
-        flapPitchLeft = DriveableControlPhysics.dampedControl(flapPitchLeft, pitch + roll, 1F);
-        flapPitchRight = DriveableControlPhysics.dampedControl(flapPitchRight, pitch - roll, 1F);
+        float pitch = axis(input, DriveableInput.ASCEND, DriveableInput.DESCEND);
+        float roll = axis(input, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
+        flapYaw = LegacyPlanePhysics.flap(flapYaw, yaw);
+        if (isMouseControlEnabled())
+        {
+            float mousePitch = getFlightPitchControl();
+            float mouseRoll = getFlightRollControl();
+            flapPitchLeft = Mth.clamp(mousePitch - mouseRoll + pitch - roll,
+                -LegacyPlanePhysics.MAX_FLAP_ANGLE, LegacyPlanePhysics.MAX_FLAP_ANGLE);
+            flapPitchRight = Mth.clamp(mousePitch + mouseRoll + pitch + roll,
+                -LegacyPlanePhysics.MAX_FLAP_ANGLE, LegacyPlanePhysics.MAX_FLAP_ANGLE);
+        }
+        else
+        {
+            flapPitchLeft = LegacyPlanePhysics.flap(flapPitchLeft, pitch - roll);
+            flapPitchRight = LegacyPlanePhysics.flap(flapPitchRight, pitch + roll);
+        }
     }
 
     private void updateThrottle(PlaneType type)
@@ -154,92 +176,69 @@ public class Plane extends Driveable
 
     private Vec3 fixedWingPhysics(PlaneType type)
     {
-        int input = getInputMask();
-        double speed = getDeltaMovement().horizontalDistance();
-        float control = Mth.clamp((float) (speed / Math.max(0.05F, type.getTakeoffSpeed())), 0.15F, 1.25F);
-        boolean tailIntact = isPartIntact(EnumDriveablePart.TAIL);
-        float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        float pitchInput = pitchInput(input);
-        float rollInput = rollInput(input);
-        float yawRate = tailIntact
-            ? yawInput * (yawInput > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier()) * control
-            : type.isSpinWithoutTail() ? 1.5F * type.getTurnRightModifier() * control : 0F;
-        float pitchRate = pitchInput * (pitchInput > 0F ? type.getLookDownModifier() : type.getLookUpModifier()) * control;
-        float desiredRoll = Mth.clamp(rollInput * 45F + yawInput * 22F, -70F, 70F);
-        float wingDamageRoll = Mth.clamp((float) speed * 18F, 0F, 35F);
-        if (!isPartIntact(EnumDriveablePart.LEFT_WING))
-            desiredRoll -= wingDamageRoll;
-        if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
-            desiredRoll += wingDamageRoll;
-        desiredRoll = Mth.clamp(desiredRoll, -80F, 80F);
-        float rollRate = (desiredRoll - getRoll()) * 0.08F
-            * (rollInput > 0F ? type.getRollRightModifier() : type.getRollLeftModifier());
-        setOrientation(getYaw() + yawRate, getPitch() + pitchRate, getRoll() + rollRate);
-
-        float wingEfficiency = wingEfficiency();
-        double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
-            * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
-        float poweredThrottle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
-        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(),
-            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater())
-            + poweredThrottle * getEngineSpeed();
-        double targetSpeed = type.getMaxSpeed() * propulsion * 0.42D * wingEfficiency
-            * intactPropellerFraction(type.getPropellers()) * thrustToMass;
-        if (isWingFolded())
-            targetSpeed *= 0.25D;
-        Vec3 desired = flightForwardVector().scale(targetSpeed);
         Vec3 current = getDeltaMovement();
-        double steeringBlend = type.isNewFlightControl() ? 0.12D : 0.075D;
-        Vec3 velocity = current.add(desired.subtract(current).scale(steeringBlend));
-        double liftRatio = Mth.clamp(velocity.horizontalDistance() / Math.max(0.05D, type.getTakeoffSpeed()), 0D, 1.5D);
-        double wingLoading = Mth.clamp(type.getWingArea() * 1000F / Math.max(1F, type.getMass()), 0.1F, 4F);
-        double lift = 0.055D * type.getLift() * wingEfficiency * liftRatio * wingLoading;
-        velocity = velocity.add(0D, lift - 0.045D, 0D);
+        applyLegacyControls(type, current);
+        if (type.getPropellers().isEmpty())
+            return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
+
+        float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
+        float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
+            type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
+        float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag())
+            - (float)Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
+        double speed = Math.min(current.length(), type.isNewFlightControl() ? type.getMaxSpeed() : 2D);
+        double newSpeed = type.isNewFlightControl()
+            ? speed + throttle * type.getMaxThrust() / Math.max(1F, type.getMass())
+                * type.getPropellers().stream().filter(propeller -> isPartIntact(propeller.getPlanePart())).count()
+            : speed + thrust * 2F;
+        double correction = Mth.clamp(2D * Math.abs(throttle), 0D, 1.5D);
+        Vec3 forward = flightForwardVector();
+        Vec3 velocity = current.scale(1D - correction).add(forward.scale(correction * newSpeed));
+
+        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
+            + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        double lift = type.isNewFlightControl()
+            ? type.getLift() * speed * speed * 0.5D * type.getWingArea() * intactWings * 0.5D
+            : current.lengthSqr() * intactWings * 0.5D;
+        lift *= Math.abs(flightUpVector().y);
+        lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
+        velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
+        if (onGround())
+            velocity = new Vec3(velocity.x, -0.01D, velocity.z);
+        velocity = new Vec3(velocity.x * drag,
+            velocity.y * (velocity.y < 0D && drag < 1F ? 0.999D : drag), velocity.z * drag);
+        if (isWingFolded())
+            velocity = velocity.multiply(0.98D, 1D, 0.98D);
         if (onGround() && Math.abs(getThrottle()) < 0.1F)
             setPitch(Mth.lerp(0.12F, getPitch(), type.getRestingPitch()));
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
-        return applyAerodynamicDrag(velocity, type);
+        return velocity;
     }
 
     private Vec3 helicopterPhysics(PlaneType type)
     {
-        int input = getInputMask();
-        float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        float yawRate = isPartIntact(EnumDriveablePart.TAIL)
-            ? yawInput * intactPropellerFraction(type.getHeliTailPropellers()) * type.getTurnRightModifier()
-            : 10F * Math.max(0F, getThrottle());
-        float pitchInput = pitchInput(input);
-        float rollInput = rollInput(input);
-        float desiredPitch = pitchInput * 22F;
-        float desiredRoll = rollInput * 28F;
-        setOrientation(getYaw() + yawRate,
-            getPitch() + (desiredPitch - getPitch()) * 0.08F,
-            getRoll() + (desiredRoll - getRoll()) * 0.08F);
-
-        float rotorEfficiency = rotorEfficiency(type);
         Vec3 current = getDeltaMovement();
-        double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
-            * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
-        boolean powered = isEngineActive();
-        double rotorPower = (configuredThrottlePower(type) + getEngineSpeed()) / 4.5D;
-        double verticalTarget = powered ? (getThrottle() - 0.48F) * 0.32D * rotorPower
-            * rotorEfficiency * thrustToMass : -0.12D;
-        Vec3 forward = flightForwardVector();
-        Vec3 right = flightRightVector();
-        Vec3 horizontalForward = new Vec3(forward.x, 0D, forward.z).normalize();
-        Vec3 horizontalRight = new Vec3(right.x, 0D, right.z).normalize();
-        double tiltForward = -getPitch() / 45D;
-        double tiltRight = getRoll() / 45D;
-        Vec3 desiredHorizontal = powered
-            ? horizontalForward.scale(tiltForward * type.getMaxSpeed() * rotorPower * 0.16D)
-                .add(horizontalRight.scale(tiltRight * type.getMaxSpeed() * rotorPower * 0.12D))
-            : Vec3.ZERO;
-        Vec3 velocity = new Vec3(Mth.lerp(0.08D, current.x, desiredHorizontal.x), Mth.lerp(0.12D, current.y, verticalTarget),
-            Mth.lerp(0.08D, current.z, desiredHorizontal.z));
-        if (rotorEfficiency <= 0.05F)
-            velocity = velocity.add(0D, -0.06D, 0D);
-        return applyAerodynamicDrag(velocity, type);
+        applyLegacyControls(type, current);
+        if (type.getHeliPropellers().isEmpty())
+            return current.add(0D, -0.05D, 0D);
+        float rotorFraction = rotorEfficiency(type);
+        float throttle = isEngineActive() ? getThrottle() : 0F;
+        float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
+            type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * rotorFraction * 2F;
+        double upwardsForce = throttle * thrust + (0.05D - thrust * 0.5D);
+        if (throttle < 0.5F)
+            upwardsForce = 0.05D * throttle * 2D;
+        if (!isPartIntact(EnumDriveablePart.BLADES))
+            upwardsForce = 0D;
+        Vec3 up = flightUpVector();
+        if (throttle > 0.48F && throttle < 0.52F && up.y >= 0.7D)
+            upwardsForce = 0.05D / up.y;
+        Vec3 velocity = current.add(up.x * upwardsForce * 0.5D,
+            up.y * upwardsForce - 0.05D, up.z * upwardsForce * 0.5D);
+        float drag = LegacyPlanePhysics.drag(type.getDrag());
+        double horizontalDrag = 1D - (1D - drag) / 5D;
+        return new Vec3(velocity.x * horizontalDrag, velocity.y * drag, velocity.z * horizontalDrag);
     }
 
     private Vec3 sixDofPhysics(PlaneType type)
@@ -258,6 +257,47 @@ public class Plane extends Driveable
         Vec3 desired = flightForwardVector().scale(thrust);
         Vec3 velocity = getDeltaMovement().add(desired.subtract(getDeltaMovement()).scale(0.1D));
         return applyAerodynamicDrag(velocity, type);
+    }
+
+    private void applyLegacyControls(PlaneType type, Vec3 velocity)
+    {
+        float pitchControl = (flapPitchLeft + flapPitchRight) * 0.5F;
+        float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(getPlaneMode(),
+            (float)velocity.length(), (float)velocity.horizontalDistance(), getThrottle(), flapYaw,
+            pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(),
+            type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(),
+            type.getRollRightModifier());
+        float yawRate = rates.yaw();
+        float pitchRate = rates.pitch();
+        float rollRate = rates.roll();
+        if (getPlaneMode() == EnumPlaneMode.PLANE)
+        {
+            if (!isPartIntact(EnumDriveablePart.TAIL))
+            {
+                yawRate = 0F;
+                pitchRate = 0F;
+            }
+            if (!isPartIntact(EnumDriveablePart.LEFT_WING))
+                rollRate -= 2F * velocity.horizontalDistance();
+            if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
+                rollRate += 2F * velocity.horizontalDistance();
+        }
+        else if (getPlaneMode() == EnumPlaneMode.HELI && !isPartIntact(EnumDriveablePart.TAIL))
+        {
+            yawRate = 10F * getThrottle();
+        }
+
+        angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate);
+        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate);
+        angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate);
+        axes.rotateLocalYaw(angularYaw);
+        axes.rotateLocalPitch(angularPitch);
+        axes.rotateLocalRoll(-angularRoll);
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        angularYaw *= 0.99F;
+        angularPitch *= 0.99F;
+        angularRoll *= 0.99F;
     }
 
     private Vec3 applyAerodynamicDrag(Vec3 velocity, PlaneType type)
@@ -325,6 +365,11 @@ public class Plane extends Driveable
     private Vec3 flightRightVector()
     {
         return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(0D, 0D, 1D))).normalize();
+    }
+
+    private Vec3 flightUpVector()
+    {
+        return localDirectionToWorld(new Vec3(0D, 1D, 0D)).normalize();
     }
 
     private static float axis(int mask, int positive, int negative)

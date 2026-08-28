@@ -3,6 +3,7 @@ package com.flansmodultimate.common.driveables;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.hooks.ClientHooks;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -65,7 +66,7 @@ public final class DriveableCollisionHelper
 
     public void tick(Driveable driveable)
     {
-        if (driveable == null || driveable.level().isClientSide || driveable.isRemoved() || profile.isEmpty())
+        if (driveable == null || driveable.isRemoved() || profile.isEmpty())
             return;
 
         DriveableType type = driveable.getConfigType();
@@ -143,9 +144,11 @@ public final class DriveableCollisionHelper
 
         AABB query = new AABB(queryMinX, queryMinY, queryMinZ, queryMaxX, queryMaxY, queryMaxZ)
             .inflate(QUERY_MARGIN);
+        boolean clientSide = driveable.level().isClientSide;
         List<LivingEntity> candidates = driveable.level().getEntitiesOfClass(LivingEntity.class, query,
             candidate -> candidate.isAlive() && !candidate.isSpectator() && !candidate.noPhysics
-                && !candidate.isPassenger() && !driveable.isPartOfThis(candidate));
+                && !candidate.isPassenger() && !driveable.isPartOfThis(candidate)
+                && (!clientSide || ClientHooks.PLAYER.isLocalPlayer(candidate)));
         int count = Math.min(MAX_CANDIDATES, candidates.size());
         for (int index = 0; index < count; index++)
             handleCandidate(driveable, type, candidates.get(index));
@@ -253,7 +256,7 @@ public final class DriveableCollisionHelper
         {
             double distance = Math.min(MAX_SEPARATION_PER_TICK, Math.max(0D, bestDepth + 1.0E-4D));
             candidate.move(MoverType.SHULKER, new Vec3(pushX * distance, pushY * distance, pushZ * distance));
-            if (Math.abs(pushY) < 0.6D)
+            if (!driveable.level().isClientSide && Math.abs(pushY) < 0.6D)
                 applyConfiguredImpactDamage(driveable, type, candidate);
         }
     }
@@ -326,7 +329,13 @@ public final class DriveableCollisionHelper
                         double currentY = interpolate(currentVertices[shape], triangle, 1, barycentricScratch);
                         double currentZ = interpolate(currentVertices[shape], triangle, 2, barycentricScratch);
                         double deltaX = currentX - previousX;
-                        double deltaY = currentY - previousY;
+                        // Gravity can move the entity slightly into a stationary
+                        // deck before this helper ticks. Carrying it only by the
+                        // deck's transform (zero in that case) lets that error
+                        // accumulate until the entity falls through. Snap its
+                        // feet back to the current material surface as legacy
+                        // rider collision did.
+                        double deltaY = supportVerticalCorrection(currentY, foot);
                         double deltaZ = currentZ - previousZ;
                         double deltaLength = squaredDistance(0D, 0D, 0D, deltaX, deltaY, deltaZ);
                         double score = Math.abs(gap);
@@ -348,6 +357,13 @@ public final class DriveableCollisionHelper
                 }
             }
         }
+    }
+
+    static double supportVerticalCorrection(double surfaceY, double footY)
+    {
+        if (!Double.isFinite(surfaceY) || !Double.isFinite(footY))
+            return 0D;
+        return surfaceY - footY + 1.0E-4D;
     }
 
     static boolean barycentricXZ(double[] points, int[] triangle, double x, double z, double[] output)

@@ -28,6 +28,14 @@ class MechaPhysicsTest
     }
 
     @Test
+    void worldSpaceTorsoTargetsAreStableWhenPacketsAreRetried()
+    {
+        assertEquals(30F, MechaPhysics.relativeAimYaw(10F, 40F), EPSILON);
+        assertEquals(0F, MechaPhysics.relativeAimYaw(40F, 40F), EPSILON);
+        assertEquals(20F, MechaPhysics.relativeAimYaw(170F, -170F), EPSILON);
+    }
+
+    @Test
     void diagonalInputIsNormalizedWithoutReducingCardinalSpeed()
     {
         Vec3 diagonal = MechaPhysics.movementIntent(0F, 1F, 1F);

@@ -10,6 +10,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.GunItem;
@@ -81,7 +82,6 @@ public final class KeyInputHandler
     private static float lastFlightRoll;
     private static boolean lastMouseControl;
     private static boolean wasSneaking;
-    private static boolean inventoryActionQueued;
 
     private static KeyMapping key(String name, int keyCode)
     {
@@ -193,9 +193,8 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.EXIT;
             wasSneaking = sneaking;
 
-            if (driveableInventoryKey.consumeClick() || inventoryActionQueued)
+            if (driveableInventoryKey.consumeClick())
                 edgeMask |= DriveableInput.MENU;
-            inventoryActionQueued = false;
             if (gearKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_GEAR;
             if (doorKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_DOOR;
             if (modeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_MODE;
@@ -215,7 +214,11 @@ public final class KeyInputHandler
         float aimPitch;
         if (mount instanceof Seat seat)
         {
-            aimYaw = seat.getRequestedAimYaw();
+            // A mecha consumes relative look into its torso. Send the resulting
+            // world-space torso target so delayed retries remain idempotent.
+            aimYaw = driveable instanceof Mecha
+                ? Mth.wrapDegrees(driveable.getYaw() + seat.getRequestedAimYaw())
+                : seat.getRequestedAimYaw();
             aimPitch = seat.getRequestedAimPitch();
         }
         else
@@ -303,14 +306,7 @@ public final class KeyInputHandler
         lastMouseControl = false;
         ticksSinceInputPacket = INPUT_KEEPALIVE_TICKS;
         wasSneaking = false;
-        inventoryActionQueued = false;
         MouseInputHandler.resetFlightControls();
-    }
-
-    /** Called when vanilla tries to open the player inventory while mounted. */
-    public static void queueDriveableInventoryAction()
-    {
-        inventoryActionQueued = true;
     }
 
     @Nullable

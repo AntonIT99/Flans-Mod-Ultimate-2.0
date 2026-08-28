@@ -18,6 +18,14 @@ public final class MechaPhysics
         return Mth.wrapDegrees(torsoYaw + DRIVER_YAW_OFFSET);
     }
 
+    /** Converts an idempotent world-space torso target back to seat-relative aim. */
+    public static float relativeAimYaw(float torsoYaw, float targetTorsoYaw)
+    {
+        if (!Float.isFinite(torsoYaw) || !Float.isFinite(targetTorsoYaw))
+            return 0F;
+        return Mth.wrapDegrees(targetTorsoYaw - torsoYaw);
+    }
+
     /**
      * Converts normalized forward / strafe input into a horizontal world-space direction.
      * Mecha movement follows the torso aim just as the 1.7.10 torso axes followed the driver view.

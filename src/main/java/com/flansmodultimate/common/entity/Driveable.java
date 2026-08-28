@@ -4,8 +4,26 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.driveables.*;
-import com.flansmodultimate.common.guns.*;
+import com.flansmodultimate.common.driveables.CollisionBox;
+import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.driveables.DriveableExplosion;
+import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.PilotGun;
+import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.guns.FireableGun;
+import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -13,7 +31,15 @@ import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.DamageStats;
+import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.MechaType;
+import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.PacketHandler;
@@ -24,6 +50,15 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -45,7 +80,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -57,16 +97,17 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Server-authoritative common runtime for planes, vehicles and mechas.
@@ -485,8 +526,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void setFlightControls(float pitch, float roll, boolean mouseControl)
     {
-        entityData.set(DATA_FLIGHT_PITCH, Mth.clamp(Float.isFinite(pitch) ? pitch : 0F, -1F, 1F));
-        entityData.set(DATA_FLIGHT_ROLL, Mth.clamp(Float.isFinite(roll) ? roll : 0F, -1F, 1F));
+        float limit = this instanceof Plane ? 20F : 1F;
+        entityData.set(DATA_FLIGHT_PITCH, Mth.clamp(Float.isFinite(pitch) ? pitch : 0F, -limit, limit));
+        entityData.set(DATA_FLIGHT_ROLL, Mth.clamp(Float.isFinite(roll) ? roll : 0F, -limit, limit));
         entityData.set(DATA_MOUSE_CONTROL, mouseControl && this instanceof Plane);
     }
 
@@ -811,6 +853,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (level().isClientSide)
         {
             tickClientDriveable();
+            if (collisionHelper != null)
+                collisionHelper.tick(this);
             emitPartParticles();
             return;
         }

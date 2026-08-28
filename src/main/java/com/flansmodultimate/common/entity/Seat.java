@@ -44,6 +44,7 @@ public class Seat extends Entity implements IControllable
 
     private static final int MAX_ORPHAN_TICKS = 100;
     private static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
+    private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.2D;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -350,7 +351,9 @@ public class Seat extends Entity implements IControllable
 
     public double getPassengerRidingOffset(@NotNull Entity passenger)
     {
-        return passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
+        if (!(passenger instanceof Player))
+            return 0D;
+        return LEGACY_PLAYER_RIDING_OFFSET + (driveable instanceof Mecha ? MECHA_COCKPIT_RIDING_OFFSET : 0D);
     }
 
     @Override

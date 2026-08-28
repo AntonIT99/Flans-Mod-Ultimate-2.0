@@ -35,7 +35,6 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
@@ -47,7 +46,6 @@ import org.joml.Vector3f;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -347,18 +345,6 @@ public final class ClientEventHandler
                 event.setCanceled(true);
                 event.setSwingHand(false);
             }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onScreenOpening(ScreenEvent.Opening event)
-    {
-        Player player = Minecraft.getInstance().player;
-        if (player != null && event.getNewScreen() instanceof InventoryScreen
-            && KeyInputHandler.resolveDriveable(player) != null)
-        {
-            KeyInputHandler.queueDriveableInventoryAction();
-            event.setCanceled(true);
         }
     }
 

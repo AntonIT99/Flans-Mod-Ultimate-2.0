@@ -279,7 +279,9 @@ public class Mecha extends Driveable
     public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch,
                             float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
-        super.acceptInput(player, mask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, sequence);
+        float oldBodyYaw = getYaw();
+        float relativeAimYaw = MechaPhysics.relativeAimYaw(oldBodyYaw, aimYaw);
+        super.acceptInput(player, mask, relativeAimYaw, aimPitch, flightPitch, flightRoll, mouseControl, sequence);
         MechaType type = getMechaType();
         Seat seat = getSeat(player);
         if (type == null || seat == null || !seat.isDriverSeat())
@@ -287,7 +289,6 @@ public class Mecha extends Driveable
 
         // 1.7.10 consumed driver look yaw into the mecha's torso axes. Keeping it
         // as turret-relative yaw leaves the complete chassis fixed in world space.
-        float oldBodyYaw = getYaw();
         float relativeYaw = getTurretYaw();
         float bodyYaw = Mth.wrapDegrees(oldBodyYaw + relativeYaw);
         if (type.isLimitHeadTurn())

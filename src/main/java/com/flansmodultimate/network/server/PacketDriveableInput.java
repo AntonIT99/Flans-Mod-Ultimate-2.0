@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 public final class PacketDriveableInput implements IServerPacket
 {
     private static final float MAX_ABSOLUTE_AIM = 360_000F;
+    private static final float MAX_FLIGHT_CONTROL = 20F;
 
     private int driveableId;
     private int inputMask;
@@ -82,8 +83,8 @@ public final class PacketDriveableInput implements IServerPacket
         this.inputMask = DriveableInput.sanitize(inputMask);
         this.aimYaw = aimYaw;
         this.aimPitch = aimPitch;
-        this.flightPitch = Mth.clamp(flightPitch, -1F, 1F);
-        this.flightRoll = Mth.clamp(flightRoll, -1F, 1F);
+        this.flightPitch = Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL);
+        this.flightRoll = Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL);
         this.mouseControl = mouseControl;
         this.barrelPitchPivot = barrelPitchPivot;
         this.sequence = sequence;
@@ -96,8 +97,8 @@ public final class PacketDriveableInput implements IServerPacket
         data.writeVarInt(DriveableInput.sanitize(inputMask));
         data.writeFloat(aimYaw);
         data.writeFloat(aimPitch);
-        data.writeFloat(Mth.clamp(flightPitch, -1F, 1F));
-        data.writeFloat(Mth.clamp(flightRoll, -1F, 1F));
+        data.writeFloat(Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL));
+        data.writeFloat(Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL));
         data.writeBoolean(mouseControl);
         data.writeBoolean(barrelPitchPivot != null);
         if (barrelPitchPivot != null)
@@ -140,8 +141,9 @@ public final class PacketDriveableInput implements IServerPacket
                 driveable.setModelBarrelPitchPivot(barrelPitchPivot);
             else if (seat != null)
                 driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
-            driveable.acceptInput(player, inputMask, aimYaw, aimPitch, Mth.clamp(flightPitch, -1F, 1F),
-                Mth.clamp(flightRoll, -1F, 1F), mouseControl, sequence);
+            driveable.acceptInput(player, inputMask, aimYaw, aimPitch,
+                Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL),
+                Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL), mouseControl, sequence);
         }
     }
 }
