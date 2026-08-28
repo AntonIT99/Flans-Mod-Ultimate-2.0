@@ -10,6 +10,9 @@ public record CommonConfigSnapshot(
 
     boolean addAllPaintjobsToCreative,
     boolean validateContentReferencesOnWorldLoad,
+    String defaultVehicleEngine,
+    String defaultPlaneEngine,
+    String defaultMechaEngine,
 
     boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
@@ -84,7 +87,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 12;
+    public static final int CURRENT_VERSION = 13;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -92,6 +95,9 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.addAllPaintjobsToCreative);
         buf.writeBoolean(s.validateContentReferencesOnWorldLoad);
+        buf.writeUtf(s.defaultVehicleEngine, 32767);
+        buf.writeUtf(s.defaultPlaneEngine, 32767);
+        buf.writeUtf(s.defaultMechaEngine, 32767);
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
@@ -177,6 +183,9 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readUtf(32767),
+            buf.readUtf(32767),
+            buf.readUtf(32767),
 
             buf.readBoolean(),
             buf.readBoolean(),

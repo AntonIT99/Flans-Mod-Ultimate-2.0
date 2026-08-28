@@ -46,6 +46,12 @@ public interface IContentProvider
         return false;
     }
 
+    /** True for content bundled by the official-packs companion mod. */
+    default boolean isOfficial()
+    {
+        return false;
+    }
+
     /**
      * A packaged module may share one merged asset tree across several logical content providers.
      */

@@ -57,6 +57,7 @@ public class Seat extends Entity implements IControllable
     private boolean clientViewAimInitialized;
     private float clientViewAimYaw;
     private float clientViewAimPitch;
+    private float clientViewParentYaw;
 
     private int orphanTicks;
     private int localInputMask;
@@ -221,6 +222,7 @@ public class Seat extends Entity implements IControllable
         if (seatInfo == null && driveable.getConfigType() != null)
             seatInfo = driveable.getConfigType().getSeat(getSeatIndex());
 
+        consumeClientParentYaw();
         driveable.registerSeatProxy(this);
         snapToParent();
 
@@ -443,7 +445,25 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = getAimYaw();
         clientViewAimPitch = getAimPitch();
+        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
+    }
+
+    /** Removes torso rotation from relative aim so a mecha look input is consumed only once. */
+    public void consumeAimYaw(float yawDelta)
+    {
+        if (Float.isFinite(yawDelta))
+            entityData.set(DATA_AIM_YAW, Mth.wrapDegrees(getAimYaw() - yawDelta));
+    }
+
+    private void consumeClientParentYaw()
+    {
+        if (!level().isClientSide || !clientViewAimInitialized || driveable == null)
+            return;
+        float parentYaw = driveable.getYaw();
+        float yawDelta = Mth.wrapDegrees(parentYaw - clientViewParentYaw);
+        clientViewAimYaw = Mth.wrapDegrees(clientViewAimYaw - yawDelta);
+        clientViewParentYaw = parentYaw;
     }
 
     private void initializeClientViewAim()
@@ -457,6 +477,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = 0F;
         clientViewAimPitch = 0F;
+        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 

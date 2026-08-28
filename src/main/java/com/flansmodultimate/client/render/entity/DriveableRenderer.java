@@ -1,6 +1,10 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmod.client.model.*;
+import com.flansmod.client.model.GunAnimations;
+import com.flansmod.client.model.ModelDriveable;
+import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.ModelMecha;
+import com.flansmod.client.model.ModelMechaTool;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
@@ -20,11 +24,17 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.MechaItemType;
+import com.flansmodultimate.common.types.MechaType;
+import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -33,7 +43,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -111,7 +120,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
         double cameraDistance = Math.sqrt(entityRenderDispatcher.distanceToSqr(driveable));
 
-        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle ? 180F - yaw : -yaw;
+        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha
+            ? 180F - yaw : -yaw;
         boolean locallyControlled = Minecraft.getInstance().player != null
             && Minecraft.getInstance().player.getVehicle() == driveable;
         boolean intact = true;

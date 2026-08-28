@@ -26,12 +26,23 @@ public final class PackagedContentProvider implements IContentProvider
     private final String archiveModelsRoot;
     private final boolean archiveBacked;
     private final boolean indexAssetsForConflicts;
+    private final boolean official;
     private final String runId = UUID.randomUUID().toString();
 
     PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path,
                             Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
                             String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot,
                             boolean archiveBacked, boolean indexAssetsForConflicts)
+    {
+        this(name, conflictDisplayName, packId, path, developmentContentRoot, developmentAssetsRoot,
+            developmentModelsRoot, archiveContentRoot, archiveAssetsRoot, archiveModelsRoot,
+            archiveBacked, indexAssetsForConflicts, false);
+    }
+
+    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path,
+                            Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
+                            String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot,
+                            boolean archiveBacked, boolean indexAssetsForConflicts, boolean official)
     {
         this.name = Objects.requireNonNull(name);
         this.conflictDisplayName = Objects.requireNonNull(conflictDisplayName);
@@ -45,6 +56,7 @@ public final class PackagedContentProvider implements IContentProvider
         this.archiveModelsRoot = normalizeArchivePath(archiveModelsRoot);
         this.archiveBacked = archiveBacked;
         this.indexAssetsForConflicts = indexAssetsForConflicts;
+        this.official = official;
     }
 
     @Override
@@ -57,6 +69,12 @@ public final class PackagedContentProvider implements IContentProvider
     public boolean isPreprocessed()
     {
         return true;
+    }
+
+    @Override
+    public boolean isOfficial()
+    {
+        return official;
     }
 
     @Override

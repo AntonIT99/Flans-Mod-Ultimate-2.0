@@ -1,12 +1,22 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.item.BulletItem;
+import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.IPaintableItem;
+import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.item.PartItem;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -15,10 +25,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,7 +78,8 @@ public final class DriveableData implements Container
             mutableParts.put(part, new DriveablePart(part, driveableType.getHealth().get(part)));
         parts = Collections.unmodifiableMap(mutableParts);
 
-        PartType defaultEngine = PartType.getDefaultEngine(driveableType.getType());
+        PartType defaultEngine = PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(),
+            driveableType.getEngine());
         if (defaultEngine != null)
             engineShortName = defaultEngine.getShortName();
     }
@@ -115,7 +122,8 @@ public final class DriveableData implements Container
     public PartType getEngine()
     {
         InfoType resolved = InfoType.getInfoType(engineShortName, driveableType.getContentPack());
-        return resolved instanceof PartType partType ? partType : PartType.getDefaultEngine(driveableType.getType());
+        return resolved instanceof PartType partType ? partType
+            : PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(), driveableType.getEngine());
     }
 
     public int getAmmoInventoryStart() { return 0; }

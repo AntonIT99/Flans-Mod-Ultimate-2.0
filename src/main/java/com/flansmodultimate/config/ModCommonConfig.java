@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
+import com.flansmodultimate.common.types.EnumType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -34,6 +35,9 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
     private static final ForgeConfigSpec.BooleanValue VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
+    private static final ForgeConfigSpec.ConfigValue<String> DEFAULT_VEHICLE_ENGINE;
+    private static final ForgeConfigSpec.ConfigValue<String> DEFAULT_PLANE_ENGINE;
+    private static final ForgeConfigSpec.ConfigValue<String> DEFAULT_MECHA_ENGINE;
 
     private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
@@ -123,6 +127,15 @@ public final class ModCommonConfig
                 "Disabled by default because normal gameplay resolves these lazily.",
                 "Enable this while developing content packs or modpacks to log unresolved recipes and Box outputs at startup.")
             .define("validateContentReferencesOnWorldLoad", false);
+        DEFAULT_VEHICLE_ENGINE = builder
+            .comment("Optional default vehicle engine item shortname or item ID. Empty uses automatic selection.")
+            .define("defaultVehicleEngine", "");
+        DEFAULT_PLANE_ENGINE = builder
+            .comment("Optional default plane engine item shortname or item ID. Empty uses automatic selection.")
+            .define("defaultPlaneEngine", "");
+        DEFAULT_MECHA_ENGINE = builder
+            .comment("Optional default mecha engine item shortname or item ID. Empty uses automatic selection.")
+            .define("defaultMechaEngine", "");
         DISABLE_CROSSHAIR_FOR_GUNS = builder
             .comment("Disables crosshair for guns except melee weapons")
             .define("disableCrosshairForGuns", false);
@@ -356,6 +369,9 @@ public final class ModCommonConfig
 
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(),
             VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(),
+            DEFAULT_VEHICLE_ENGINE.get(),
+            DEFAULT_PLANE_ENGINE.get(),
+            DEFAULT_MECHA_ENGINE.get(),
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),
@@ -441,6 +457,20 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceDefenseAsModernArmor();
+    }
+
+    public static String defaultEngine(EnumType type)
+    {
+        CommonConfigSnapshot config = get();
+        if (config == null || type == null)
+            return "";
+        return switch (type)
+        {
+            case VEHICLE -> config.defaultVehicleEngine();
+            case PLANE -> config.defaultPlaneEngine();
+            case MECHA -> config.defaultMechaEngine();
+            default -> "";
+        };
     }
 
     public static boolean forceAllowAllAttachments()

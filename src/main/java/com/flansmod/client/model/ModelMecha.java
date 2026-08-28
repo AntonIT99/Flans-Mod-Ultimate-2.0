@@ -94,19 +94,17 @@ public class ModelMecha extends ModelDriveable
             : -Mth.clamp(state.turretPitch(), -type.getUpperArmLimit(), type.getLowerArmLimit());
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_ARM))
         {
-            renderLimb(leftArmModel, hipsAttachmentPoint, Axis.ZP, aimPitch, poseStack, vertexConsumer,
+            renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(),
+                type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
+                aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            if (!hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL))
-                renderLimb(leftHandModel, hipsAttachmentPoint, Axis.ZP, aimPitch, poseStack, vertexConsumer,
-                    packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM))
         {
-            renderLimb(rightArmModel, hipsAttachmentPoint, Axis.ZP, aimPitch, poseStack, vertexConsumer,
+            renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(),
+                type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
+                aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            if (!hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL))
-                renderLimb(rightHandModel, hipsAttachmentPoint, Axis.ZP, aimPitch, poseStack, vertexConsumer,
-                    packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.VEHICLE,
@@ -171,6 +169,29 @@ public class ModelMecha extends ModelDriveable
     {
         DriveableData data = driveable.getDriveableData();
         return data != null && !data.getMechaAddon(slot).isEmpty();
+    }
+
+    private void renderArm(ModelRendererTurbo[] arm, ModelRendererTurbo[] hand, Vector3f origin,
+                           Vector3f handModifier, float armLength, float aimPitch, boolean renderHand,
+                           PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                           float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        poseStack.pushPose();
+        translateToModelPoint(poseStack, origin);
+        // Legacy mecha arm models point down their local Y axis and are rotated forward from here.
+        poseStack.mulPose(Axis.ZP.rotationDegrees(90F + aimPitch));
+        renderPart(arm, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+        if (renderHand)
+        {
+            float modifierX = handModifier == null ? 0F : handModifier.x;
+            float modifierY = handModifier == null ? 0F : handModifier.y;
+            float modifierZ = handModifier == null ? 0F : handModifier.z;
+            poseStack.translate(modifierY, -armLength - modifierX, -modifierZ);
+            renderPart(hand, poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+        }
+        poseStack.popPose();
     }
 
     @Override

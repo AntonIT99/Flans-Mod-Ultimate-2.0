@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.driveables;
 
-import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
+
+import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -12,9 +13,18 @@ class MechaPhysicsTest
     @Test
     void forwardAndStrafeUseTheMechaAimBasis()
     {
-        assertVector(MechaPhysics.movementIntent(0F, 1F, 0F), -1D, 0D, 0D);
-        assertVector(MechaPhysics.movementIntent(0F, 0F, 1F), 0D, 0D, 1D);
-        assertVector(MechaPhysics.movementIntent(90F, 1F, 0F), 0D, 0D, -1D);
+        assertVector(MechaPhysics.movementIntent(0F, 1F, 0F), 0D, 0D, 1D);
+        assertVector(MechaPhysics.movementIntent(0F, -1F, 0F), 0D, 0D, -1D);
+        assertVector(MechaPhysics.movementIntent(0F, 0F, 1F), -1D, 0D, 0D);
+        assertVector(MechaPhysics.movementIntent(0F, 0F, -1F), 1D, 0D, 0D);
+        assertVector(MechaPhysics.movementIntent(90F, 1F, 0F), -1D, 0D, 0D);
+    }
+
+    @Test
+    void driverMovementUsesTheMountedCameraOffset()
+    {
+        assertEquals(90F, MechaPhysics.driverMovementYaw(0F), EPSILON);
+        assertEquals(-170F, MechaPhysics.driverMovementYaw(100F), EPSILON);
     }
 
     @Test
@@ -45,9 +55,9 @@ class MechaPhysicsTest
     @Test
     void movementDirectionConvertsBackToEntityYaw()
     {
-        assertEquals(0F, MechaPhysics.movementYaw(new Vec3(-1D, 0D, 0D), 45F), EPSILON);
-        assertEquals(90F, MechaPhysics.movementYaw(new Vec3(0D, 0D, -1D), 45F), EPSILON);
         assertEquals(-90F, MechaPhysics.movementYaw(new Vec3(0D, 0D, 1D), 45F), EPSILON);
+        assertEquals(0F, MechaPhysics.movementYaw(new Vec3(-1D, 0D, 0D), 45F), EPSILON);
+        assertEquals(-180F, MechaPhysics.movementYaw(new Vec3(1D, 0D, 0D), 45F), EPSILON);
     }
 
     @Test

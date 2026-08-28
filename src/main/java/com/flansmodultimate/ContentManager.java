@@ -281,6 +281,7 @@ public class ContentManager
     {
         Path tempRoot = flanFolder.getParent().resolve(".flantemp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
+        PartType.clearDefaultEngines();
 
         for (IContentProvider provider : contentPacks)
         {

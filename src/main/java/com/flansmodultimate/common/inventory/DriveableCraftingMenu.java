@@ -92,7 +92,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     {
         PartType engine = getBestEngine(type);
         if (engine == null)
-            engine = PartType.getDefaultEngine(type.getType());
+            engine = PartType.getDefaultEngine(type.getType(), type.getContentPack(), type.getEngine());
         return engine == null ? type.getDriveableRecipe() : getCompleteRecipe(type, engine);
     }
 
@@ -168,7 +168,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         if (best != null)
             return best;
 
-        PartType fallback = PartType.getDefaultEngine(type.getType());
+        PartType fallback = PartType.getDefaultEngine(type.getType(), type.getContentPack(), type.getEngine());
         return creative && fallback != null && fallback.worksWith(type.getType()) ? fallback : null;
     }
 

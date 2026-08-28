@@ -8,8 +8,15 @@ public final class MechaPhysics
 {
     /** Legacy mechas converted their configured blocks-per-second speed to blocks per tick with this factor. */
     public static final double LEGACY_SPEED_PER_TICK = 4.3D / 20D;
+    /** Mounted mecha cameras are defined ninety degrees clockwise from the legacy torso axes. */
+    public static final float DRIVER_YAW_OFFSET = 90F;
 
     private MechaPhysics() {}
+
+    public static float driverMovementYaw(float torsoYaw)
+    {
+        return Mth.wrapDegrees(torsoYaw + DRIVER_YAW_OFFSET);
+    }
 
     /**
      * Converts normalized forward / strafe input into a horizontal world-space direction.
@@ -23,10 +30,9 @@ public final class MechaPhysics
         double yaw = yawDegrees * Mth.DEG_TO_RAD;
         double sine = Math.sin(yaw);
         double cosine = Math.cos(yaw);
-        // Legacy local X (forward) converts to modern local -Z, while legacy
-        // local Z (right) converts to modern local +X.
-        Vec3 intent = new Vec3(-cosine * forwardInput - sine * strafeInput, 0D,
-            -sine * forwardInput + cosine * strafeInput);
+        // Minecraft yaw zero faces +Z. Its right vector is (-cos(yaw), 0, -sin(yaw)).
+        Vec3 intent = new Vec3(-sine * forwardInput - cosine * strafeInput, 0D,
+            cosine * forwardInput - sine * strafeInput);
         return intent.lengthSqr() > 1D ? intent.normalize() : intent;
     }
 
@@ -38,13 +44,14 @@ public final class MechaPhysics
             * Math.max(0D, addonMultiplier) * LEGACY_SPEED_PER_TICK;
     }
 
-    /** Returns the legacy mecha-body yaw that faces the supplied world direction. */
+    /** Returns the legacy +X-forward mecha-model yaw that faces the supplied world direction. */
     public static float movementYaw(Vec3 intent, float fallbackYaw)
     {
         if (intent == null || !Double.isFinite(intent.x) || !Double.isFinite(intent.z)
             || intent.x * intent.x + intent.z * intent.z < 1.0E-8D)
             return Mth.wrapDegrees(Float.isFinite(fallbackYaw) ? fallbackYaw : 0F);
-        return Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(-intent.z, -intent.x)));
+        float minecraftYaw = (float) Math.toDegrees(Math.atan2(-intent.x, intent.z));
+        return Mth.wrapDegrees(minecraftYaw - DRIVER_YAW_OFFSET);
     }
 
     /** Legacy RotateSpeed is an angular limit in degrees per tick, not a scaled steering input. */

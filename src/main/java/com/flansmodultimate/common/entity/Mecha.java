@@ -1,7 +1,14 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.EnumMechaSlotType;
+import com.flansmodultimate.common.driveables.EnumMechaToolType;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.MechaPhysics;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -9,12 +16,23 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.EnumMovement;
+import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.MechaItemType;
+import com.flansmodultimate.common.types.MechaType;
+import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import net.minecraftforge.common.MinecraftForge;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -25,7 +43,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,10 +61,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,7 +167,8 @@ public class Mecha extends Driveable
         int input = getInputMask();
         float forwardInput = axis(input, DriveableInput.FORWARD, DriveableInput.BACKWARD);
         float sideInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        Vec3 intent = MechaPhysics.movementIntent(getYaw() + getTurretYaw(), forwardInput, sideInput);
+        Vec3 intent = MechaPhysics.movementIntent(
+            MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
         boolean walking = intent.lengthSqr() > 0.01D;
         boolean canMove = getControllingEntity() != null && isEngineActive() && hasFuelForMovement()
             && isPartIntact(EnumDriveablePart.HIPS);
@@ -222,7 +241,8 @@ public class Mecha extends Driveable
             setMaxUpStep(Mth.clamp(type.getStepHeight(), 0F, 8F));
             float forwardInput = axis(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD);
             float sideInput = axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT);
-            Vec3 intent = MechaPhysics.movementIntent(getYaw() + getTurretYaw(), forwardInput, sideInput);
+            Vec3 intent = MechaPhysics.movementIntent(
+                MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
             boolean walking = Math.abs(getThrottle()) > 0.01F && intent.lengthSqr() > 0.01D;
             updateLegFacing(type, intent, walking);
             updateLegAnimation(type, walking);
@@ -262,10 +282,24 @@ public class Mecha extends Driveable
         super.acceptInput(player, mask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, sequence);
         MechaType type = getMechaType();
         Seat seat = getSeat(player);
-        if (type == null || !type.isLimitHeadTurn() || seat == null || !seat.isDriverSeat())
+        if (type == null || seat == null || !seat.isDriverSeat())
             return;
-        float limit = Mth.clamp(Math.abs(type.getLimitHeadTurnValue()), 0F, 180F);
-        setTurretAim(Mth.clamp(Mth.wrapDegrees(getTurretYaw()), -limit, limit), getTurretPitch());
+
+        // 1.7.10 consumed driver look yaw into the mecha's torso axes. Keeping it
+        // as turret-relative yaw leaves the complete chassis fixed in world space.
+        float oldBodyYaw = getYaw();
+        float relativeYaw = getTurretYaw();
+        float bodyYaw = Mth.wrapDegrees(oldBodyYaw + relativeYaw);
+        if (type.isLimitHeadTurn())
+        {
+            float limit = Mth.clamp(Math.abs(type.getLimitHeadTurnValue()), 0F, 180F);
+            bodyYaw = Mth.wrapDegrees(legYaw + Mth.clamp(Mth.wrapDegrees(bodyYaw - legYaw), -limit, limit));
+        }
+        float consumedYaw = Mth.wrapDegrees(bodyYaw - oldBodyYaw);
+        float pitch = getTurretPitch();
+        setOrientation(bodyYaw, 0F, 0F);
+        seat.consumeAimYaw(consumedYaw);
+        setTurretAim(Mth.wrapDegrees(relativeYaw - consumedYaw), pitch);
     }
 
     private void updateLegAnimation(MechaType type, boolean walking)

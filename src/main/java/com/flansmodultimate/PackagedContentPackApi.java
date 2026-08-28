@@ -15,7 +15,14 @@ import net.minecraftforge.forgespi.language.IModFileInfo;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -142,7 +149,7 @@ public final class PackagedContentPackApi
                 displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath,
                 definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
                 archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot,
-                archiveBacked, indexSharedAssets
+                archiveBacked, indexSharedAssets, "flansmodultimate_officialpacks".equals(modId)
             ));
             indexSharedAssets = false;
         }

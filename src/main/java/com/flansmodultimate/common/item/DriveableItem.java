@@ -4,6 +4,7 @@ import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.hooks.ClientHooks;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
@@ -138,14 +139,27 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
         DriveableData data = DriveableData.fromStack(configType, stack);
-        if (data.getEngine() != null)
-            tooltip.add(IFlanItem.statLine("Engine", data.getEngine().getName()));
-        if (configType.getFuelTankSize() > 0)
-            tooltip.add(IFlanItem.statLine("Fuel", IFlanItem.formatFloat(data.getFuelInTank()) + " / " + configType.getFuelTankSize()));
-        long damagedParts = data.getParts().values().stream()
-            .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
-        if (damagedParts > 0)
-            tooltip.add(Component.literal(damagedParts + " damaged part" + (damagedParts == 1 ? "" : "s")).withStyle(ChatFormatting.RED));
+
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
+        {
+            if (configType.getFuelTankSize() > 0)
+                tooltip.add(Component.literal("[Fuel] " + IFlanItem.formatFloat(data.getFuelInTank()) + "/" + configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
+
+            long damagedParts = data.getParts().values().stream()
+                .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
+            if (damagedParts > 0)
+                tooltip.add(Component.literal(damagedParts + " damaged part" + (damagedParts == 1 ? "" : "s")).withStyle(ChatFormatting.RED));
+
+            tooltip.add(Component.empty());
+
+            Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            tooltip.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+        }
+        else
+        {
+            if (data.getEngine() != null)
+                tooltip.add(IFlanItem.statLine("Engine", data.getEngine().getName()));
+        }
     }
 
     private boolean canPlayerPlace(Player player)
