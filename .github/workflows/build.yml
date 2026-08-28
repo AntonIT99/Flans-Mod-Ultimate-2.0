@@ -39,8 +39,11 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace --console=plain
+
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace
+        run: ./gradlew build -x test --stacktrace --console=plain
 
   build-1_21_1:
     if: github.ref_name == '1.21.1' || github.base_ref == '1.21.1'
@@ -66,8 +69,11 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace --console=plain
+
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace
+        run: ./gradlew build -x test --stacktrace --console=plain
 
   build-26_1_2:
     if: github.ref_name == '26.1.2' || github.base_ref == '26.1.2'
@@ -93,8 +99,11 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Test and build all artifacts
-        run: ./gradlew test build packsJar officialPacksJar --stacktrace --console=plain
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace --console=plain
+
+      - name: Build all artifacts
+        run: ./gradlew build packsJar officialPacksJar -x test --stacktrace --console=plain
 
   build-26_2:
     if: github.ref_name == '26.2' || github.base_ref == '26.2'
@@ -120,5 +129,8 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Test and build all artifacts
-        run: ./gradlew test build packsJar officialPacksJar --stacktrace --console=plain
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace --console=plain
+
+      - name: Build all artifacts
+        run: ./gradlew build packsJar officialPacksJar -x test --stacktrace --console=plain
