@@ -39,9 +39,31 @@ class SuspensionPhysicsTest
     }
 
     @Test
+    void tailDraggerPitchIncludesWheelMountHeights()
+    {
+        float pitch = SuspensionPhysics.supportAngle(0D, 3D, -0.3125D, true);
+
+        assertEquals(-5.946863F, pitch, 1.0E-5D);
+        double radians = Math.toRadians(pitch);
+        double frontHeight = -0.125D * Math.sin(radians) - 0.8125D * Math.cos(radians);
+        double tailHeight = -(-2.875D) * Math.sin(radians) - 0.5D * Math.cos(radians);
+        assertEquals(frontHeight, tailHeight, EPSILON);
+    }
+
+    @Test
+    void equalHeightVehicleWheelsFollowTerrainSlope()
+    {
+        float pitch = SuspensionPhysics.supportAngle(0.5D, 3D, 0D, false);
+
+        assertTrue(pitch > 0F);
+        assertEquals((float)Math.toDegrees(Math.asin(0.5D / 3D)), pitch, 1.0E-5D);
+    }
+
+    @Test
     void rejectsInvalidNumbersAtPhysicsBoundary()
     {
         assertEquals(0D, SuspensionPhysics.dampVerticalVelocity(Double.NaN, 1D, 0.5F, 1D), EPSILON);
         assertEquals(0F, SuspensionPhysics.terrainAngle(Double.POSITIVE_INFINITY, 1D), EPSILON);
+        assertEquals(0F, SuspensionPhysics.supportAngle(0D, Double.NaN, 0D, false), EPSILON);
     }
 }

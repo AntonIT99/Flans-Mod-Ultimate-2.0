@@ -120,7 +120,8 @@ public class Wheel extends Entity
         Vec3 position = driveable.getWheelWorldPosition(getWheelIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(driveable.getDeltaMovement());
-        setYRot(driveable.getYaw());
+        setYRot(driveable.getEntityFacingYaw());
+        setXRot(driveable.getEntityFacingPitch());
     }
 
     @Override

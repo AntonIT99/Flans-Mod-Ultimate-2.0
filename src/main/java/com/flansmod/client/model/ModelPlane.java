@@ -214,7 +214,7 @@ public class ModelPlane extends ModelDriveable
                 continue;
             int count = Math.max(1, propeller.length);
             for (int blade = 0; blade < propeller.length; blade++)
-                renderWithRotation(propeller[blade], blade * Mth.TWO_PI / count, 0F, 0F,
+                renderWithRotation(propeller[blade], RotationAxis.X, blade * Mth.TWO_PI / count,
                     poseStack, vertexConsumer, packedLight, packedOverlay,
                     red, green, blue, alpha, scale, renderPass);
         }
@@ -225,29 +225,27 @@ public class ModelPlane extends ModelDriveable
                                        float scale, EnumRenderPass renderPass)
     {
         float yawControl = driveable instanceof Plane plane
-            ? plane.getFlapYaw() * Mth.DEG_TO_RAD
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapYaw(), plane.getFlapYaw()) * Mth.DEG_TO_RAD
             : Mth.clamp(state.steeringAngle(), -30F, 30F) * Mth.DEG_TO_RAD;
         float leftPitch = driveable instanceof Plane plane
-            ? plane.getFlapPitchLeft() * Mth.DEG_TO_RAD : 0F;
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchLeft(), plane.getFlapPitchLeft()) * Mth.DEG_TO_RAD : 0F;
         float rightPitch = driveable instanceof Plane plane
-            ? plane.getFlapPitchRight() * Mth.DEG_TO_RAD : 0F;
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchRight(), plane.getFlapPitchRight()) * Mth.DEG_TO_RAD : 0F;
         if (driveable.isPartIntact(EnumDriveablePart.TAIL))
-            renderWithRotation(yawFlapModel, 0F, yawControl, 0F, poseStack, vertexConsumer,
+        {
+            renderWithRotationOffset(yawFlapModel, RotationAxis.Y, yawControl, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderWithRotationOffset(pitchFlapLeftModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderWithRotationOffset(pitchFlapRightModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        }
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
-        {
-            renderWithRotation(pitchFlapLeftModel, 0F, 0F, leftPitch, poseStack, vertexConsumer,
+            renderWithRotationOffset(pitchFlapLeftWingModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(pitchFlapLeftWingModel, 0F, 0F, leftPitch, poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
-        {
-            renderWithRotation(pitchFlapRightModel, 0F, 0F, rightPitch, poseStack, vertexConsumer,
+            renderWithRotationOffset(pitchFlapRightWingModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(pitchFlapRightWingModel, 0F, 0F, rightPitch, poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
     }
 
     private void renderPropellers(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
@@ -269,8 +267,8 @@ public class ModelPlane extends ModelDriveable
             int count = Math.max(1, propeller.length);
             for (int blade = 0; blade < propeller.length; blade++)
             {
-                renderWithRotation(propeller[blade],
-                    rotation + blade * Mth.TWO_PI / count, 0F, 0F, poseStack, vertexConsumer,
+                renderWithRotation(propeller[blade], RotationAxis.X,
+                    rotation + blade * Mth.TWO_PI / count, poseStack, vertexConsumer,
                     packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             }
         }
@@ -379,7 +377,23 @@ public class ModelPlane extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z,
+    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
+                                    PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                                    float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        renderWithRotation(parts, axis, angle, false, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    private void renderWithRotationOffset(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
+                                          PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                                          float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        renderWithRotation(parts, axis, angle, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle, boolean additive,
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
@@ -389,37 +403,59 @@ public class ModelPlane extends ModelDriveable
         {
             if (part == null)
                 continue;
-            float oldX = part.rotateAngleX;
-            float oldY = part.rotateAngleY;
-            float oldZ = part.rotateAngleZ;
-            part.rotateAngleX = x;
-            part.rotateAngleY = y;
-            part.rotateAngleZ = z;
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-            part.rotateAngleX = oldX;
-            part.rotateAngleY = oldY;
-            part.rotateAngleZ = oldZ;
+            float oldAngle = axis.get(part);
+            axis.set(part, additive ? oldAngle + angle : angle);
+            try
+            {
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+            }
+            finally
+            {
+                axis.set(part, oldAngle);
+            }
         }
     }
 
-    private void renderWithRotation(ModelRendererTurbo part, float x, float y, float z,
+    private void renderWithRotation(ModelRendererTurbo part, RotationAxis axis, float angle,
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (part == null)
             return;
-        float oldX = part.rotateAngleX;
-        float oldY = part.rotateAngleY;
-        float oldZ = part.rotateAngleZ;
-        part.rotateAngleX = x;
-        part.rotateAngleY = y;
-        part.rotateAngleZ = z;
-        part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-        part.rotateAngleX = oldX;
-        part.rotateAngleY = oldY;
-        part.rotateAngleZ = oldZ;
+        float oldAngle = axis.get(part);
+        axis.set(part, angle);
+        try
+        {
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+        }
+        finally
+        {
+            axis.set(part, oldAngle);
+        }
+    }
+
+    private enum RotationAxis
+    {
+        X
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleX; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleX = angle; }
+        },
+        Y
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleY; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleY = angle; }
+        },
+        Z
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleZ; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleZ = angle; }
+        };
+
+        abstract float get(ModelRendererTurbo part);
+        abstract void set(ModelRendererTurbo part, float angle);
     }
 
     private static Vector3f vectorAt(Vector3f[] vectors, int index)

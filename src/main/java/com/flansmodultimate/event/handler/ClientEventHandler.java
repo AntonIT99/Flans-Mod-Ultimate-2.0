@@ -11,6 +11,7 @@ import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Plane;
@@ -83,7 +84,8 @@ public final class ClientEventHandler
             boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
             if (fixedPlaneView)
             {
-                float cameraYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()) - 90F;
+                float cameraYaw = LegacyDriveableCoordinates.planeForwardYaw(
+                    Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
                 float cameraPitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
                 if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
                 {
@@ -372,8 +374,8 @@ public final class ClientEventHandler
         Vec3 renderedFeet = new Vec3(Mth.lerp((double) partialTick, player.xo, player.getX()),
             Mth.lerp((double) partialTick, player.yo, player.getY()),
             Mth.lerp((double) partialTick, player.zo, player.getZ()));
-        Vec3 seatFeet = seat.getDriveable().getInterpolatedSeatWorldPosition(seat.getSeatIndex(), partialTick)
-            .add(0D, seat.getPassengerRidingOffset(player), 0D);
+        Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(
+            seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         Vec3 correction = seatFeet.subtract(renderedFeet);
         event.getPoseStack().translate(correction.x, correction.y, correction.z);
     }

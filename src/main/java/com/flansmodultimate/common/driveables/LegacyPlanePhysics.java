@@ -65,6 +65,16 @@ public final class LegacyPlanePhysics
         return 0.01F * Math.max(0F, finite(configured) + finite(engineSpeed));
     }
 
+    public static boolean isLiftingOff(EnumPlaneMode mode, double horizontalSpeed, float takeoffSpeed,
+                                       double forwardVertical, double verticalSpeed)
+    {
+        if (mode != EnumPlaneMode.PLANE || !Double.isFinite(horizontalSpeed)
+            || !Double.isFinite(forwardVertical) || !Double.isFinite(verticalSpeed))
+            return false;
+        double requiredSpeed = Math.max(0.15D, finite(takeoffSpeed));
+        return horizontalSpeed >= requiredSpeed && forwardVertical > 0.02D && verticalSpeed > 0D;
+    }
+
     private static float finite(float value)
     {
         return Float.isFinite(value) ? value : 0F;

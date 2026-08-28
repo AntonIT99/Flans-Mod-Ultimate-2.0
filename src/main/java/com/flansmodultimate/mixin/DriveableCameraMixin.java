@@ -47,8 +47,8 @@ public abstract class DriveableCameraMixin
         Vec3 vanillaFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()),
             Mth.lerp(partialTick, player.yo, player.getY()),
             Mth.lerp(partialTick, player.zo, player.getZ()));
-        Vec3 riderFeet = seat.getDriveable().getInterpolatedSeatWorldPosition(seat.getSeatIndex(), partialTick)
-            .add(0D, seat.getPassengerRidingOffset(player), 0D);
+        Vec3 riderFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(
+            seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         setPosition(riderFeet.add(position.subtract(vanillaFeet)));
     }
 

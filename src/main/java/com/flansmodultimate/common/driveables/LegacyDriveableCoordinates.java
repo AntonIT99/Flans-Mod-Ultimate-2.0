@@ -1,8 +1,10 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Converts coordinates authored for the 1.7.10 model basis into the modern
@@ -44,6 +46,36 @@ public final class LegacyDriveableCoordinates
     public static Vec3 applyPlaneModelFacing(@NotNull Vec3 local)
     {
         return new Vec3(-local.x, local.y, -local.z);
+    }
+
+    /** Minecraft view yaw that points along the rendered plane's nose. */
+    public static float planeForwardYaw(float driveableYaw)
+    {
+        return renderedForwardYaw(driveableYaw, true);
+    }
+
+    /** Converts the simulation yaw to the vanilla entity yaw of the rendered nose/front. */
+    public static float renderedForwardYaw(float driveableYaw, boolean planeModelFacing)
+    {
+        return Mth.wrapDegrees(driveableYaw + (planeModelFacing ? -90F : 90F));
+    }
+
+    /** Inverse used when vanilla movement packets carry the aligned entity yaw. */
+    public static float driveableYawFromRenderedForward(float entityYaw, boolean planeModelFacing)
+    {
+        return Mth.wrapDegrees(entityYaw + (planeModelFacing ? 90F : -90F));
+    }
+
+    /** Vanilla look pitch matching the rendered model's longitudinal axis. */
+    public static float renderedForwardPitch(float driveablePitch, boolean planeModelFacing)
+    {
+        return planeModelFacing ? driveablePitch : -driveablePitch;
+    }
+
+    /** Pitch conversion is its own inverse. */
+    public static float driveablePitchFromRenderedForward(float entityPitch, boolean planeModelFacing)
+    {
+        return renderedForwardPitch(entityPitch, planeModelFacing);
     }
 
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */

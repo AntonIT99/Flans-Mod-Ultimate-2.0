@@ -31,6 +31,28 @@ public final class SuspensionPhysics
         return (float) clamp(Math.toDegrees(Math.atan2(heightDifference, Math.max(0.5D, distance))), -35D, 35D);
     }
 
+    /**
+     * Finds the rotation which puts two wheel groups on their sampled support
+     * heights. Unlike a terrain-only angle, this includes the difference in
+     * the wheels' authored Y positions, which makes tail-dragger aircraft rest
+     * on both their main gear and tail wheel on level ground.
+     */
+    public static float supportAngle(double supportHeightDifference, double axisDistance,
+                                     double mountHeightDifference, boolean invertRotation)
+    {
+        if (!Double.isFinite(supportHeightDifference) || !Double.isFinite(axisDistance)
+            || !Double.isFinite(mountHeightDifference))
+            return 0F;
+        double distance = Math.max(0.5D, Math.abs(axisDistance));
+        double radius = Math.hypot(distance, mountHeightDifference);
+        double supportAngle = Math.asin(clamp(supportHeightDifference / radius, -1D, 1D));
+        double mountAngle = Math.atan2(mountHeightDifference, distance);
+        double result = Math.toDegrees(supportAngle - mountAngle);
+        if (invertRotation)
+            result = -result;
+        return (float) clamp(result, -35D, 35D);
+    }
+
     public static float smoothTerrainAngle(float current, float target, float springStrength)
     {
         if (!Float.isFinite(current) || !Float.isFinite(target))

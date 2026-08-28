@@ -2,21 +2,26 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -102,8 +107,11 @@ public class Vehicle extends Driveable
             ? (float) Math.toDegrees(wheelYaw * steeringScale * velocityScale) : 0F;
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
-        setOrientation(getYaw() + yawDelta, approach(getPitch(), 0F, 0.8F),
-            type.isCanRoll() ? approach(getRoll(), 0F, 1F) : 0F);
+        boolean supported = onGround() || hasWheelContact();
+        float pitch = supported ? getPitch() : approach(getPitch(), 0F, 0.8F);
+        float roll = type.isCanRoll()
+            ? (supported ? getRoll() : approach(getRoll(), 0F, 1F)) : 0F;
+        setOrientation(getYaw() + yawDelta, pitch, roll);
 
         Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
         Vec3 transformedForward = localDirectionToWorld(legacyForward);

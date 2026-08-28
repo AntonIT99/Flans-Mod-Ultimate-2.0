@@ -201,6 +201,7 @@ public class ModelMecha extends ModelDriveable
     {
         super.render(driveableType, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
+        MechaType type = driveableType instanceof MechaType mechaType ? mechaType : null;
         renderPart(hipsModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(leftLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(rightLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -214,10 +215,14 @@ public class ModelMecha extends ModelDriveable
         renderPart(rightAnimFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(barrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPart(leftArmModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPart(rightArmModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPart(leftHandModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPart(rightHandModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(),
+            type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
+            0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+        renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(),
+            type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
+            0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
     }
 
     private void renderLimb(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees,

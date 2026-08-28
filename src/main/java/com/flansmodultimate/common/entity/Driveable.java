@@ -398,6 +398,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public float getYaw() { return useClientVisualTransform() ? clientVisualYaw : getSyncedYaw(); }
     public float getPitch() { return useClientVisualTransform() ? clientVisualPitch : getSyncedPitch(); }
     public float getRoll() { return useClientVisualTransform() ? clientVisualRoll : getSyncedRoll(); }
+    /** Vanilla entity rotations describe look direction; driveable angles retain the legacy model basis. */
+    public float getEntityFacingYaw() { return getEntityFacingYaw(getYaw()); }
+    public float getEntityFacingYaw(float driveableYaw)
+    {
+        return LegacyDriveableCoordinates.renderedForwardYaw(driveableYaw, this instanceof Plane);
+    }
+    public float getEntityFacingPitch() { return getEntityFacingPitch(getPitch()); }
+    public float getEntityFacingPitch(float driveablePitch)
+    {
+        return LegacyDriveableCoordinates.renderedForwardPitch(driveablePitch, this instanceof Plane);
+    }
+    /** Initial model pitch used when this driveable is placed in the world. */
+    public float getInitialPlacementPitch() { return 0F; }
     public float getThrottle() { return entityData.get(DATA_THROTTLE); }
     public float getTurretYaw() { return useClientVisualTransform() ? clientVisualTurretYaw : getSyncedTurretYaw(); }
     public float getTurretPitch() { return useClientVisualTransform() ? clientVisualTurretPitch : getSyncedTurretPitch(); }
@@ -475,7 +488,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         yaw = Mth.wrapDegrees(yaw);
         entityData.set(DATA_YAW, yaw);
-        setYRot(yaw);
+        setYRot(getEntityFacingYaw(yaw));
         axes.setAngles(yaw, getPitch(), getRoll());
     }
 
@@ -485,7 +498,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         pitch = Mth.clamp(pitch, -89.9F, 89.9F);
         entityData.set(DATA_PITCH, pitch);
-        setXRot(pitch);
+        setXRot(getEntityFacingPitch(pitch));
         axes.setAngles(getYaw(), pitch, getRoll());
     }
 
@@ -505,8 +518,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         entityData.set(DATA_YAW, Mth.wrapDegrees(yaw));
         entityData.set(DATA_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
         entityData.set(DATA_ROLL, Mth.wrapDegrees(roll));
-        setYRot(getYaw());
-        setXRot(getPitch());
+        setYRot(getEntityFacingYaw(getYaw()));
+        setXRot(getEntityFacingPitch(getPitch()));
         axes.setAngles(getYaw(), getPitch(), getRoll());
     }
 
@@ -789,8 +802,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         clientTargetX = x;
         clientTargetY = y;
         clientTargetZ = z;
-        clientTargetYaw = Mth.wrapDegrees(yaw);
-        clientTargetPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+        // Movement packets carry the aligned vanilla entity rotation. Keep the
+        // separately synced simulation angles in the legacy driveable basis.
+        clientTargetYaw = LegacyDriveableCoordinates.driveableYawFromRenderedForward(
+            yaw, this instanceof Plane);
+        clientTargetPitch = Mth.clamp(LegacyDriveableCoordinates.driveablePitchFromRenderedForward(
+            pitch, this instanceof Plane), -89.9F, 89.9F);
 
         double distanceSquared = distanceToSqr(x, y, z);
         if (teleport || !Double.isFinite(distanceSquared) || distanceSquared > 4096D)
@@ -800,8 +817,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             clientVisualPitch = clientTargetPitch;
             clientVisualRoll = clientTargetRoll;
             clientTransformLerpSteps = 0;
-            setYRot(clientVisualYaw);
-            setXRot(clientVisualPitch);
+            setYRot(getEntityFacingYaw(clientVisualYaw));
+            setXRot(getEntityFacingPitch(clientVisualPitch));
             axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
             return;
         }
@@ -930,8 +947,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         clientVisualRoll = clientTargetRoll = getSyncedRoll();
         clientVisualTurretYaw = clientTargetTurretYaw = getSyncedTurretYaw();
         clientVisualTurretPitch = clientTargetTurretPitch = getSyncedTurretPitch();
-        setYRot(clientVisualYaw);
-        setXRot(clientVisualPitch);
+        setYRot(getEntityFacingYaw(clientVisualYaw));
+        setXRot(getEntityFacingPitch(clientVisualPitch));
     }
 
     private void tickClientTransformInterpolation()
@@ -950,8 +967,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             + Mth.wrapDegrees(clientTargetRoll - clientVisualRoll) / (float) divisor);
         --clientTransformLerpSteps;
 
-        setYRot(clientVisualYaw);
-        setXRot(clientVisualPitch);
+        setYRot(getEntityFacingYaw(clientVisualYaw));
+        setXRot(getEntityFacingPitch(clientVisualPitch));
         axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
     }
 
@@ -2306,6 +2323,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return modelLocalToWorld(localPosition);
     }
 
+    /** Complete rider anchor, including the vanilla/legacy feet offset in model space. */
+    public Vec3 getRiderWorldPosition(int index, double ridingOffset)
+    {
+        return getSeatWorldPosition(index).add(
+            modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D)));
+    }
+
     /** Render-time seat anchor using the exact same transform as the model. */
     public Vec3 getInterpolatedSeatWorldPosition(int index, float partialTick)
     {
@@ -2323,6 +2347,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         float turretPitch = Mth.rotLerp(partial, prevTurretPitch, getTurretPitch());
         Vec3 localPosition = getSeatLocalPosition(info, turretYaw, turretPitch);
         return root.add(modelLocalDirectionToWorld(localPosition, yaw, pitch, roll));
+    }
+
+    /** Render-time rider anchor whose feet remain fixed relative to a banking aircraft. */
+    public Vec3 getInterpolatedRiderWorldPosition(int index, double ridingOffset, float partialTick)
+    {
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        float yaw = Mth.rotLerp(partial, prevYaw, getYaw());
+        float pitch = Mth.rotLerp(partial, prevPitch, getPitch());
+        float roll = Mth.rotLerp(partial, prevRoll, getRoll());
+        return getInterpolatedSeatWorldPosition(index, partial).add(
+            modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D), yaw, pitch, roll));
     }
 
     private Vec3 getSeatLocalPosition(@NotNull SeatInfo info, float turretYaw, float turretPitch)
@@ -2361,8 +2396,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         DriveablePosition wheel = configType == null ? null : configType.getWheelPosition(index);
         if (wheel == null)
             return position();
-        Vec3 local = LegacyDriveableCoordinates.toLocal(wheel.getPosition());
-        return localToWorld(local.x, local.y, local.z);
+        // WheelPosition uses the same legacy model coordinates as seats and
+        // collision points. In particular, planes need their model-facing
+        // half-turn; using the generic physics basis put their rear gear at
+        // the nose and also rotated wheel anchors incorrectly with pitch.
+        return applyVehicleModelVerticalOffset(
+            modelLocalToWorld(configuredModelLocal(wheel.getPosition())));
     }
 
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
@@ -3370,8 +3409,25 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
         double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
         double maximumCompression = Math.max(0.15D, step + 0.1D);
+        double minimumMountHeight = Double.POSITIVE_INFINITY;
+        double maximumMountHeight = Double.NEGATIVE_INFINITY;
+        for (DriveablePosition definition : configType.getWheelPositions())
+        {
+            if (definition != null && isPartIntact(definition.getPart()))
+            {
+                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y);
+                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y);
+            }
+        }
+        double mountHeightRange = Double.isFinite(minimumMountHeight)
+            ? maximumMountHeight - minimumMountHeight : 0D;
+        // A legacy wheel was an independently falling collision entity. Keep
+        // probing far enough below high-mounted tail gear to reproduce that
+        // behaviour while another wheel is supporting the driveable.
+        double poseProbeDroop = suspensionDroop + mountHeightRange + step + 0.45D;
         double supportError = 0D;
         double frontHeight = 0D, backHeight = 0D, leftHeight = 0D, rightHeight = 0D;
+        double frontMountHeight = 0D, backMountHeight = 0D, leftMountHeight = 0D, rightMountHeight = 0D;
         int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
         double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
 
@@ -3387,25 +3443,53 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 continue;
             Vec3 wheel = getWheelWorldPosition(index).add(horizontalPrediction);
             Vec3 rayStart = wheel.add(0D, step + 0.6D, 0D);
-            Vec3 rayEnd = wheel.add(0D, -suspensionDroop - 0.45D, 0D);
+            Vec3 rayEnd = wheel.add(0D, -poseProbeDroop - 0.45D, 0D);
             BlockHitResult hit = level().clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
             double desiredWheelY = surface + 0.375D;
             double error = desiredWheelY - wheel.y;
-            if (error < -suspensionDroop || error > maximumCompression)
+            if (error < -poseProbeDroop || error > maximumCompression)
                 continue;
-            supportError += error;
-            ++groundedWheelCount;
+            if (error >= -suspensionDroop)
+            {
+                supportError += error;
+                ++groundedWheelCount;
+            }
 
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
             double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
             double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
-            if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
-            else { backHeight += surface; backX += forwardPosition; ++backCount; }
-            if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }
-            else { leftHeight += surface; leftZ += rightPosition; ++leftCount; }
+            double mountHeight = definition.getPosition().y;
+            if (forwardPosition > 1.0E-4D)
+            {
+                frontHeight += surface;
+                frontMountHeight += mountHeight;
+                frontX += forwardPosition;
+                ++frontCount;
+            }
+            else if (forwardPosition < -1.0E-4D)
+            {
+                backHeight += surface;
+                backMountHeight += mountHeight;
+                backX += forwardPosition;
+                ++backCount;
+            }
+            if (rightPosition > 1.0E-4D)
+            {
+                rightHeight += surface;
+                rightMountHeight += mountHeight;
+                rightZ += rightPosition;
+                ++rightCount;
+            }
+            else if (rightPosition < -1.0E-4D)
+            {
+                leftHeight += surface;
+                leftMountHeight += mountHeight;
+                leftZ += rightPosition;
+                ++leftCount;
+            }
         }
         if (groundedWheelCount == 0)
             return velocity;
@@ -3418,7 +3502,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             double front = frontHeight / frontCount;
             double back = backHeight / backCount;
             double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            float targetPitch = -SuspensionPhysics.terrainAngle(front - back, length);
+            double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
+            float targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference,
+                this instanceof Plane);
             float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
             if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
@@ -3426,7 +3512,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;
                 double width = Math.max(0.5D, rightZ / rightCount - leftZ / leftCount);
-                float targetRoll = SuspensionPhysics.terrainAngle(right - left, width);
+                double lateralMountDifference = rightMountHeight / rightCount - leftMountHeight / leftCount;
+                float targetRoll = SuspensionPhysics.supportAngle(right - left, width,
+                    lateralMountDifference, this instanceof Plane);
                 roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), targetRoll, spring);
             }
             setOrientation(getYaw(), pitch, roll);

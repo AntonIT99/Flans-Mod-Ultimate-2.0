@@ -19,12 +19,16 @@ import net.minecraft.world.entity.player.Player;
 public final class MouseInputHandler
 {
     private static final float FLIGHT_MOUSE_SENSITIVITY = 0.02F;
+    private static final float FLIGHT_VIEW_TO_FLAP = FLIGHT_MOUSE_SENSITIVITY / 0.15F;
     private static final float FLIGHT_CONTROL_RETURN = 0.9F;
     private static final float MAX_FLAP_ANGLE = 20F;
     private static final float CONTROL_DEADZONE = 0.01F;
 
     private static int flightDriveableId = -1;
     private static int viewSeatId = -1;
+    private static float synchronizedFlightViewYaw;
+    private static float synchronizedFlightViewPitch;
+    private static boolean flightViewSynchronized;
     @Getter
     private static float flightPitchControl;
     @Getter
@@ -53,6 +57,31 @@ public final class MouseInputHandler
 
         flightPitchControl = recenter(flightPitchControl);
         flightRollControl = recenter(flightRollControl);
+        if (flightViewSynchronized && Minecraft.getInstance().screen == null)
+        {
+            float yawDelta = Mth.wrapDegrees(player.getYRot() - synchronizedFlightViewYaw);
+            float pitchDelta = player.getXRot() - synchronizedFlightViewPitch;
+            flightPitchControl = Mth.clamp(flightPitchControl - pitchDelta * FLIGHT_VIEW_TO_FLAP,
+                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+            flightRollControl = Mth.clamp(flightRollControl + yawDelta * FLIGHT_VIEW_TO_FLAP,
+                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+        }
+        flightViewSynchronized = false;
+    }
+
+    /** Records the exact view restored after vanilla mouse input so the next tick can recover its delta. */
+    @OnlyIn(Dist.CLIENT)
+    public static void endTick(Player player)
+    {
+        Driveable driveable = KeyInputHandler.resolveDriveable(player);
+        if (!isMouseFlightActive(player, driveable))
+        {
+            flightViewSynchronized = false;
+            return;
+        }
+        synchronizedFlightViewYaw = player.getYRot();
+        synchronizedFlightViewPitch = player.getXRot();
+        flightViewSynchronized = true;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -67,16 +96,7 @@ public final class MouseInputHandler
 
         Driveable driveable = KeyInputHandler.resolveDriveable(player);
         if (isMouseFlightActive(player, driveable))
-        {
-            flightDriveableId = driveable.getId();
-            // Legacy mouse control directly deflected the pitch flaps and used
-            // opposite left/right flap motion for roll.
-            flightPitchControl = Mth.clamp(flightPitchControl - (float) dy * FLIGHT_MOUSE_SENSITIVITY,
-                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
-            flightRollControl = Mth.clamp(flightRollControl + (float) dx * FLIGHT_MOUSE_SENSITIVITY,
-                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
             return;
-        }
 
         // Vanilla has already applied mouse sensitivity to the mounted player's
         // view. Vehicle seats consume that view delta in beginTick instead of
@@ -94,6 +114,7 @@ public final class MouseInputHandler
         flightDriveableId = -1;
         flightPitchControl = 0F;
         flightRollControl = 0F;
+        flightViewSynchronized = false;
     }
 
     private static void captureMountedSeatView(Player player, Driveable driveable)

@@ -2,7 +2,7 @@ package com.flansmodultimate.common.driveables;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class LegacyPlanePhysicsTest
 {
@@ -43,5 +43,14 @@ class LegacyPlanePhysicsTest
     {
         assertEquals(1F, LegacyPlanePhysics.approachMomentum(0F, 8F), EPSILON);
         assertEquals(7F, LegacyPlanePhysics.approachMomentum(8F, 0F), EPSILON);
+    }
+
+    @Test
+    void wheelSupportReleasesOnlyForARealFixedWingTakeoff()
+    {
+        assertTrue(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.PLANE, 0.6D, 0.5F, 0.15D, 0.04D));
+        assertFalse(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.PLANE, 0.4D, 0.5F, 0.15D, 0.04D));
+        assertFalse(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.PLANE, 0.6D, 0.5F, -0.15D, 0.04D));
+        assertFalse(LegacyPlanePhysics.isLiftingOff(EnumPlaneMode.HELI, 0.6D, 0.5F, 0.15D, 0.04D));
     }
 }

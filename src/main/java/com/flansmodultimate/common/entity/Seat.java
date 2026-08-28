@@ -138,7 +138,15 @@ public class Seat extends Entity implements IControllable
 
     public float getMountedViewYaw()
     {
-        return driveable == null ? getYRot() : Mth.wrapDegrees(driveable.getYaw() + 90F + getViewAimYaw());
+        return driveable == null ? getYRot() : Mth.wrapDegrees(getMountedForwardYaw() + getViewAimYaw());
+    }
+
+    /** World yaw of a rider looking straight along the rendered driveable. */
+    public float getMountedForwardYaw()
+    {
+        if (driveable == null)
+            return getYRot();
+        return driveable.getEntityFacingYaw();
     }
 
     public float getMountedViewPitch()
@@ -268,8 +276,8 @@ public class Seat extends Entity implements IControllable
         Vec3 position = driveable.getSeatWorldPosition(getSeatIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(Vec3.ZERO);
-        setYRot(Mth.wrapDegrees(driveable.getYaw() + 90F + getAimYaw()));
-        setXRot(getAimPitch());
+        setYRot(Mth.wrapDegrees(getMountedForwardYaw() + getAimYaw()));
+        setXRot(Mth.clamp(driveable.getEntityFacingPitch() + getAimPitch(), -89.9F, 89.9F));
     }
 
     /**
@@ -344,7 +352,10 @@ public class Seat extends Entity implements IControllable
         // EntityPlayer 1.7.10 contributed a -0.35 Y offset here, whereas the
         // modern default mount offset raises the player by about 0.45 blocks.
         double ridingOffset = getPassengerRidingOffset(passenger);
-        move.accept(passenger, getX(), getY() + ridingOffset, getZ());
+        Vec3 riderPosition = driveable == null
+            ? new Vec3(getX(), getY() + ridingOffset, getZ())
+            : driveable.getRiderWorldPosition(getSeatIndex(), ridingOffset);
+        move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
     }

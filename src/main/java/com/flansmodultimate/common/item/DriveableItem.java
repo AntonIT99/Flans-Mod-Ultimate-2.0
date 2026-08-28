@@ -93,7 +93,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         if (driveable == null)
             return null;
         driveable.setPos(x, y, z);
-        driveable.setYRot(yaw);
+        driveable.setOrientation(yaw, driveable.getInitialPlacementPitch(), 0F);
         if (!level.noCollision(driveable, driveable.getBoundingBox()))
         {
             driveable.discard();

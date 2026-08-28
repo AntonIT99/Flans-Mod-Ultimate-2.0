@@ -26,11 +26,18 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Plane extends Driveable
 {
+    private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(
+        LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+    private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
+
     @Getter protected float propellerAngle;
     @Getter protected float prevPropellerAngle;
     @Getter protected float flapYaw;
     @Getter protected float flapPitchLeft;
     @Getter protected float flapPitchRight;
+    @Getter protected float prevFlapYaw;
+    @Getter protected float prevFlapPitchLeft;
+    @Getter protected float prevFlapPitchRight;
     private float angularYaw;
     private float angularPitch;
     private float angularRoll;
@@ -44,6 +51,7 @@ public class Plane extends Driveable
                  @Nullable Player placer, ItemStack sourceStack)
     {
         super(FlansMod.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+        setOrientation(yaw, getInitialPlacementPitch(), 0F);
         setDriveableMode(type.getMode() == EnumPlaneMode.VTOL ? 0 : type.getMode().ordinal());
         // HasGear means retractable gear. Fixed landing gear is still always down.
         setGearDeployed(true);
@@ -53,6 +61,15 @@ public class Plane extends Driveable
     public PlaneType getPlaneType()
     {
         return getConfigType() instanceof PlaneType type ? type : null;
+    }
+
+    @Override
+    public float getInitialPlacementPitch()
+    {
+        PlaneType type = getPlaneType();
+        // Plane model facing reverses the simulation pitch sign. This is the
+        // modern equivalent of 1.7.10's one-time rotatePitch(restingPitch).
+        return type == null ? 0F : -type.getRestingPitch();
     }
 
     public EnumPlaneMode getPlaneMode()
@@ -107,7 +124,9 @@ public class Plane extends Driveable
             case PLANE -> fixedWingPhysics(type);
         };
         double descent = velocity.y;
-        if (isGearDeployed())
+        boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), velocity.horizontalDistance(),
+            type.getTakeoffSpeed(), flightForwardVector().y, velocity.y);
+        if (isGearDeployed() && !liftingOff)
             velocity = applyWheelContactPhysics(velocity, true);
         moveWithCollisions(velocity);
         if (verticalCollision && descent < -0.55D)
@@ -133,6 +152,9 @@ public class Plane extends Driveable
     {
         prevPropellerAngle = propellerAngle;
         propellerAngle = Mth.wrapDegrees(propellerAngle + 4F + Math.abs(getThrottle()) * 46F);
+        prevFlapYaw = flapYaw;
+        prevFlapPitchLeft = flapPitchLeft;
+        prevFlapPitchRight = flapPitchRight;
         int input = getInputMask();
         float yaw = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
         float pitch = axis(input, DriveableInput.ASCEND, DriveableInput.DESCEND);
@@ -203,14 +225,12 @@ public class Plane extends Driveable
         lift *= Math.abs(flightUpVector().y);
         lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
         velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
-        if (onGround())
+        if (onGround() && velocity.y <= 0D)
             velocity = new Vec3(velocity.x, -0.01D, velocity.z);
         velocity = new Vec3(velocity.x * drag,
             velocity.y * (velocity.y < 0D && drag < 1F ? 0.999D : drag), velocity.z * drag);
         if (isWingFolded())
             velocity = velocity.multiply(0.98D, 1D, 0.98D);
-        if (onGround() && Math.abs(getThrottle()) < 0.1F)
-            setPitch(Mth.lerp(0.12F, getPitch(), type.getRestingPitch()));
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
         return velocity;
@@ -352,14 +372,10 @@ public class Plane extends Driveable
         return Mth.clamp(1F - 0.05F * Math.max(0F, type.getEmptyDrag() - 1F), 0.7F, 1F);
     }
 
-    /**
-     * Plane models face the opposite legacy X direction from the extra-facing
-     * correction used by land vehicles. Reusing the vehicle axis here makes
-     * positive throttle propel the rendered plane tail-first.
-     */
+    /** Uses the rendered legacy-plane basis so pitch and roll tilt propulsion with the visible aircraft. */
     private Vec3 flightForwardVector()
     {
-        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(-1D, 0D, 0D))).normalize();
+        return modelLocalDirectionToWorld(MODEL_FLIGHT_FORWARD).normalize();
     }
 
     private Vec3 flightRightVector()
@@ -369,7 +385,7 @@ public class Plane extends Driveable
 
     private Vec3 flightUpVector()
     {
-        return localDirectionToWorld(new Vec3(0D, 1D, 0D)).normalize();
+        return modelLocalDirectionToWorld(MODEL_FLIGHT_UP).normalize();
     }
 
     private static float axis(int mask, int positive, int negative)

@@ -377,6 +377,7 @@ public class ModClient
             MouseInputHandler.handleMouseMove(dx, dy);
         KeyInputHandler.checkKeys();
         updateMountedPlayerView(player);
+        MouseInputHandler.endTick(player);
 
         DebugHelper.getActiveDebugEntities().forEach(DebugColor::tick);
     }
@@ -388,7 +389,7 @@ public class ModClient
             return;
 
         boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
-        float wrappedYaw = fixedPlaneView ? Mth.wrapDegrees(driveable.getYaw() - 90F) : seat.getMountedViewYaw();
+        float wrappedYaw = fixedPlaneView ? seat.getMountedForwardYaw() : seat.getMountedViewYaw();
         // Keep the equivalent angle nearest to the player's current rotation.
         // Assigning the wrapped value directly creates a 358-degree interpolation
         // jump whenever the mounted camera crosses from +180 to -180 degrees.
@@ -396,8 +397,21 @@ public class ModClient
         float pitch = fixedPlaneView ? Mth.clamp(driveable.getPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);
-        player.yHeadRot = yaw;
-        player.yBodyRot = yaw;
+        player.yHeadRot += Mth.wrapDegrees(yaw - player.yHeadRot);
+        if (driveable instanceof Plane)
+        {
+            // Keep the torso planted in the cockpit while allowing natural
+            // free-look. Past this angle the torso follows enough to prevent
+            // the head from twisting unrealistically through the body.
+            float forwardYaw = seat.getMountedForwardYaw();
+            float headOffset = Mth.clamp(Mth.wrapDegrees(yaw - forwardYaw), -75F, 75F);
+            float bodyTarget = yaw - headOffset;
+            player.yBodyRot += Mth.wrapDegrees(bodyTarget - player.yBodyRot);
+        }
+        else
+        {
+            player.yBodyRot += Mth.wrapDegrees(yaw - player.yBodyRot);
+        }
     }
 
     /** Handle flashlight block light override */

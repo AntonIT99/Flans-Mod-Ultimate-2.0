@@ -9,7 +9,8 @@
   "client": [
       "DriveableCameraMixin",
       "ForceDarkLightMixin",
-      "HumanoidArmorLayerMixin"
+      "HumanoidArmorLayerMixin",
+      "SeatedPlayerRendererMixin"
   ],
   "server": [
   ],
