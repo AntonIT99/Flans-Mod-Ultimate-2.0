@@ -6,4 +6,4 @@ Colour 255 255 255
 Type Boots
 Defence 0.05
 ArmourTexture stormtrooperlegs
-Model mineworld.StormtrooperBoots
+Model wolffstarwars.StormtrooperBoots

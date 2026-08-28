@@ -6,6 +6,6 @@ Colour 255 255 255
 Type Helmet
 Defence 0.15
 ArmourTexture clonetrooperiishockhelmet
-Model mineworld.CloneHelmetIIShock
+Model wolffstarwars.CloneHelmetIIShock
 SmokeProtection True
 Overlay clonehelmet

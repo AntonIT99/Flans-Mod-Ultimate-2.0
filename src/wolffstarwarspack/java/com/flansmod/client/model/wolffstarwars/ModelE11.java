@@ -7,7 +7,7 @@
 // Created on: 12.01.2026 - 01:39:03
 // Last changed on: 12.01.2026 - 01:39:03
 
-package com.flansmod.client.model.mineworld; //Path where the model is located
+package com.flansmod.client.model.wolffstarwars; //Path where the model is located
 
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.ModelGun;

@@ -1,0 +1,95 @@
+//Deobfuscated with https://github.com/SimplyProgrammer/Minecraft-Deobfuscator3000 using mappings "C:\Users\alpha\Documents\Minecraft\Dev Tools\Deobfuscator\Minecraft-Deobfuscator3000-1.2.3\1.7.10 stable mappings"!
+
+package com.flansmod.client.model.ww2;
+
+import com.flansmod.client.model.ModelPlane;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+
+public class ModelSpitfire extends ModelPlane {
+   public ModelSpitfire() {
+      int textureX = 256;
+      int textureY = 128;
+      this.bodyModel = new ModelRendererTurbo[4];
+      this.bodyModel[0] = new ModelRendererTurbo(this, 0, 104, textureX, textureY);
+      this.bodyModel[1] = new ModelRendererTurbo(this, 60, 76, textureX, textureY);
+      this.bodyModel[2] = new ModelRendererTurbo(this, 60, 76, textureX, textureY);
+      this.bodyModel[3] = new ModelRendererTurbo(this, 0, 76, textureX, textureY);
+      this.bodyModel[0].addBox(-3.0F, 0.0F, -31.0F, 20, 2, 20);
+      this.bodyModel[0].setPosition(0.0F, 5.0F, 21.0F);
+      this.bodyModel[1].addBox(-3.0F, -16.0F, -10.0F, 20, 16, 2);
+      this.bodyModel[1].setPosition(0.0F, 5.0F, 0.0F);
+      this.bodyModel[2].addBox(-17.0F, -16.0F, -10.0F, 20, 16, 2);
+      this.bodyModel[2].rotateAngleY = (float) Math.PI;
+      this.bodyModel[2].setPosition(0.0F, 5.0F, 0.0F);
+      this.bodyModel[3].addTrapezoid(-3.0F, -19.0F, -10.0F, 20, 8, 20, 0.0F, -3.0F, 4);
+      this.bodyWheelModel = new ModelRendererTurbo[4];
+      this.bodyWheelModel[0] = new ModelRendererTurbo(this, 116, 48, textureX, textureY);
+      this.bodyWheelModel[1] = new ModelRendererTurbo(this, 116, 48, textureX, textureY);
+      this.bodyWheelModel[2] = new ModelRendererTurbo(this, 200, 12, textureX, textureY);
+      this.bodyWheelModel[3] = new ModelRendererTurbo(this, 200, 12, textureX, textureY);
+      this.bodyWheelModel[0].addBox(-6.0F, 14.0F, 4.0F, 6, 6, 4, 0.0F);
+      this.bodyWheelModel[1].addBox(-6.0F, 14.0F, -8.0F, 6, 6, 4, 0.0F);
+      this.bodyWheelModel[2].addBox(-4.0F, 6.0F, 5.0F, 2, 8, 2, 0.0F);
+      this.bodyWheelModel[3].addBox(-4.0F, 6.0F, -7.0F, 2, 8, 2, 0.0F);
+      this.noseModel = new ModelRendererTurbo[2];
+      this.noseModel[0] = new ModelRendererTurbo(this, 0, 38, textureX, textureY);
+      this.noseModel[0].addTrapezoid(-51.0F, -16.0F, -10.0F, 48, 18, 20, 0.0F, -3.0F, 3);
+      this.noseModel[0].setPosition(0.0F, 5.0F, 0.0F);
+      this.noseModel[1] = new ModelRendererTurbo(this, 172, 12, textureX, textureY);
+      this.noseModel[1].addBox(0.0F, -2.0F, 0.0F, 4, 4, 4, 0.0F);
+      this.noseModel[1].setPosition(-55.0F, 0.0F, -2.0F);
+      this.tailModel = new ModelRendererTurbo[1];
+      this.tailModel[0] = new ModelRendererTurbo(this, 0, 0, textureX, textureY);
+      this.tailModel[0].addTrapezoid(17.0F, -16.0F, -10.0F, 76, 18, 20, 0.0F, -3.0F, 2);
+      this.tailModel[0].setPosition(0.0F, 5.0F, 0.0F);
+      this.tailWheelModel = new ModelRendererTurbo[2];
+      this.tailWheelModel[0] = new ModelRendererTurbo(this, 116, 48, textureX, textureY);
+      this.tailWheelModel[1] = new ModelRendererTurbo(this, 200, 12, textureX, textureY);
+      this.tailWheelModel[0].addBox(79.0F, 6.0F, -2.0F, 6, 6, 4, 0.0F);
+      this.tailWheelModel[1].addBox(81.0F, 0.0F, -1.0F, 2, 8, 2, 0.0F);
+      this.rightWingModel = new ModelRendererTurbo[3];
+      this.rightWingModel[0] = new ModelRendererTurbo(this, 58, 48, textureX, textureY);
+      this.rightWingModel[1] = new ModelRendererTurbo(this, 172, 0, textureX, textureY);
+      this.rightWingModel[2] = new ModelRendererTurbo(this, 192, 25, textureX, textureY);
+      this.rightWingModel[0].addBox(-25.0F, -2.0F, 0.0F, 32, 2, 78, 0.0F);
+      this.rightWingModel[0].setPosition(0.0F, 5.0F, 0.0F);
+      this.rightWingModel[1].addTrapezoid(-25.0F, 3.0F, 78.0F, 32, 2, 10, 0.0F, -1.0F, 1);
+      this.rightWingModel[2].addBox(-37.0F, 3.0F, 43.0F, 12, 2, 2, 0.0F);
+      this.leftWingModel = new ModelRendererTurbo[3];
+      this.leftWingModel[0] = new ModelRendererTurbo(this, 58, 48, textureX, textureY);
+      this.leftWingModel[1] = new ModelRendererTurbo(this, 172, 0, textureX, textureY);
+      this.leftWingModel[2] = new ModelRendererTurbo(this, 192, 25, textureX, textureY);
+      this.leftWingModel[0].addBox(-32.0F, -2.0F, -78.0F, 32, 2, 78);
+      this.leftWingModel[0].rotateAngleY = (float) Math.PI;
+      this.leftWingModel[0].setPosition(-25.0F, 5.0F, -78.0F);
+      this.leftWingModel[1].addTrapezoid(-32.0F, 3.0F, -88.0F, 32, 2, 10, 0.0F, -1.0F, 1);
+      this.leftWingModel[1].rotateAngleY = (float) Math.PI;
+      this.leftWingModel[1].setPosition(-25.0F, 0.0F, -166.0F);
+      this.leftWingModel[2].addBox(-37.0F, 3.0F, -45.0F, 12, 2, 2, 0.0F);
+      this.propellerModels = new ModelRendererTurbo[1][3];
+      this.propellerModels[0][0] = new ModelRendererTurbo(this, 192, 12, textureX, textureY);
+      this.propellerModels[0][1] = new ModelRendererTurbo(this, 192, 12, textureX, textureY);
+      this.propellerModels[0][2] = new ModelRendererTurbo(this, 192, 12, textureX, textureY);
+      this.propellerModels[0][0].addBox(-0.0F, -12.0F, -1.0F, 2, 11, 2, 0.0F);
+      this.propellerModels[0][1].addBox(-0.0F, -12.0F, -1.0F, 2, 11, 2, 0.0F);
+      this.propellerModels[0][2].addBox(-0.0F, -12.0F, -1.0F, 2, 11, 2, 0.0F);
+      this.propellerModels[0][0].setRotationPoint(-54.0F, 0.0F, 0.0F);
+      this.propellerModels[0][1].setRotationPoint(-54.0F, 0.0F, 0.0F);
+      this.propellerModels[0][2].setRotationPoint(-54.0F, 0.0F, 0.0F);
+      this.yawFlapModel = new ModelRendererTurbo[1];
+      this.yawFlapModel[0] = new ModelRendererTurbo(this, 220, 12, textureX, textureY);
+      this.yawFlapModel[0].addBox(0.0F, 0.0F, 0.0F, 16, 20, 2, 0.0F);
+      this.yawFlapModel[0].setPosition(76.0F, -22.0F, -1.0F);
+      this.pitchFlapLeftModel = new ModelRendererTurbo[1];
+      this.pitchFlapLeftModel[0] = new ModelRendererTurbo(this, 220, 12, textureX, textureY);
+      this.pitchFlapLeftModel[0].addBox(0.0F, 0.0F, 0.0F, 16, 22, 2, 0.0F);
+      this.pitchFlapLeftModel[0].rotateAngleX = 1.570796F;
+      this.pitchFlapLeftModel[0].setPosition(76.0F, 1.0F, -22.0F);
+      this.pitchFlapRightModel = new ModelRendererTurbo[1];
+      this.pitchFlapRightModel[0] = new ModelRendererTurbo(this, 220, 12, textureX, textureY);
+      this.pitchFlapRightModel[0].addBox(0.0F, 0.0F, 0.0F, 16, 22, 2, 0.0F);
+      this.pitchFlapRightModel[0].rotateAngleX = 1.570796F;
+      this.pitchFlapRightModel[0].setPosition(76.0F, 1.0F, 0.0F);
+      this.flipAll();
+   }
+}

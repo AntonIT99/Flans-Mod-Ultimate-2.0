@@ -6,6 +6,6 @@ Colour 255 255 255
 Type Helmet
 Defence 0.15
 ArmourTexture rexhelmet
-Model mineworld.CloneHelmetRex
+Model wolffstarwars.CloneHelmetRex
 SmokeProtection True
 Overlay clonehelmet

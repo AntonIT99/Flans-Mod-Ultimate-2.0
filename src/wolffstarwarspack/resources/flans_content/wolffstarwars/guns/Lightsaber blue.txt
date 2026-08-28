@@ -22,7 +22,7 @@ Mode SemiAuto
 //Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
 Scope None
 FOVZoomLevel 1.0
-Model mineworld.Lightsaber
+Model wolffstarwars.Lightsaber
 Texture lightsaberblue
 MeleeDamage 12
 OneHanded True

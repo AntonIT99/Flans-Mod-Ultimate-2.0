@@ -1,6 +1,6 @@
 Name DC-15 Ammo
 ShortName Dc15Ammo
-Model mineworld.LaserBeam
+Model wolffstarwars.LaserBeam
 //Colour of icon and model
 Colour 255 255 255
 ItemID 31208

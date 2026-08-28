@@ -6,4 +6,4 @@ Colour 255 255 255
 Type Head
 Defence 0.0
 ArmourTexture sitheyes
-Model mineworld.Eyes
+Model wolffstarwars.Eyes

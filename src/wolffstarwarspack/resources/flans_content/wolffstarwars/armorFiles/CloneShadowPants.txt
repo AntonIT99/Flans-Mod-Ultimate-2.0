@@ -6,4 +6,4 @@ Colour 255 255 255
 Type Pants
 Defence 0.15
 ArmourTexture clonetroopershadowlegs
-Model mineworld.ClonePants212
+Model wolffstarwars.ClonePants212

@@ -30,7 +30,7 @@ ZoomLevel 1.0
 FOVZoomLevel 1.25
 Deployable False
 DeployableModel None
-Model mineworld.DroidekaBlaster
+Model wolffstarwars.DroidekaBlaster
 Texture droidekablaster
 AllowAllAttachments true
 NumGenericAttachmentSlots 2

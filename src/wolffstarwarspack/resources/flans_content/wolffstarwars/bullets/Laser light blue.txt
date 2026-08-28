@@ -2,7 +2,7 @@ Name Light Blue Laser
 ShortName LightBlueLaser
 //The ammo this gun uses (shortName)
 Icon laserbluelight
-Model mineworld.LaserBeam
+Model wolffstarwars.LaserBeam
 //Colour of icon and model
 Colour 255 255 255
 ItemID 31208

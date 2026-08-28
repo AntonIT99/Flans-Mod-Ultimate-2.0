@@ -2,7 +2,7 @@ Name Black Laser
 ShortName BlackLaser
 //The ammo this gun uses (shortName)
 Icon laserblack
-Model mineworld.LaserBeam
+Model wolffstarwars.LaserBeam
 //Colour of icon and model
 Colour 255 255 255
 ItemID 31208

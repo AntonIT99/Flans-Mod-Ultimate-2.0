@@ -28,7 +28,7 @@ Deployable False
 DeployedModel None
 MeleeDamage 4
 //3D Model Settings
-Model mineworld.CloneRiotShield
+Model wolffstarwars.CloneRiotShield
 Texture skincloneriotshield
 //Shield Settings
 //Format is Shield <Defense> <xOrigin> <yOrigin> <zOrigin> <width> <height> <depth> (all in model coordinates)

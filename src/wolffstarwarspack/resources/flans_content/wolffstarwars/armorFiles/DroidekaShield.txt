@@ -6,7 +6,7 @@ Colour 255 255 255
 Type Body
 Defence 0.3
 ArmourTexture droidekashield
-Model mineworld.DroidekaShield
+Model wolffstarwars.DroidekaShield
 SmokeProtection True
 NightVision False
 KnockbackModifier 0.8

@@ -39,7 +39,7 @@ FOVZoomLevel 1.0
 Deployable False
 DeployedModel None
 //Model settings
-Model mineworld.Z6Blaster
+Model wolffstarwars.Z6Blaster
 Texture z6blaster
 ModelScale 1.0
 //Attachment Settings
@@ -58,5 +58,5 @@ ShowRecoil True
 ShowAccuracy True
 ShowReloadTime True
 //Muzzle Flashes
-FlashModel mineworld.MuzzleFlash
+FlashModel wolffstarwars.MuzzleFlash
 FlashTexture sw_blueflash

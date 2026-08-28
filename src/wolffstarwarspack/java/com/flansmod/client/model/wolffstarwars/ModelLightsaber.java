@@ -7,7 +7,7 @@
 // Created on: 31.10.2019 - 22:23:12
 // Last changed on: 31.10.2019 - 22:23:12
 
-package com.flansmod.client.model.mineworld;
+package com.flansmod.client.model.wolffstarwars;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;

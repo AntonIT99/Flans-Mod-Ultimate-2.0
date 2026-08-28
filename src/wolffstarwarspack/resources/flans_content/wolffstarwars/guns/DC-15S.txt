@@ -29,7 +29,7 @@ ZoomLevel 1.0
 FOVZoomLevel 1.25
 Deployable False
 DeployableModel None
-Model mineworld.DC15S
+Model wolffstarwars.DC15S
 Texture skindc15s
 AllowAllAttachments true
 NumGenericAttachmentSlots 2
@@ -43,5 +43,5 @@ ShowRecoil True
 ShowAccuracy True
 ShowReloadTime True
 //Muzzle Flashes
-FlashModel mineworld.MuzzleFlash
+FlashModel wolffstarwars.MuzzleFlash
 FlashTexture sw_blueflash

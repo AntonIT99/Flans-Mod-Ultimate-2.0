@@ -8,7 +8,7 @@ Colour 255 255 255
 ItemID 23698
 StackSize 5
 ////Visuals
-Model mineworld.SWMine
+Model wolffstarwars.SWMine
 Texture itemhx2mine
 TrailParticles false
 //TrailParticleType <particleType>

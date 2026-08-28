@@ -6,7 +6,7 @@ Colour 255 255 255
 Type Helmet
 Defence 0.2
 ArmourTexture shadowtrooperhelmet
-Model mineworld.ShadowtrooperHelmet
+Model wolffstarwars.ShadowtrooperHelmet
 SmokeProtection True
 Overlay clonehelmet
 NightVision True

@@ -6,4 +6,4 @@ Colour 255 255 255
 Type Body
 Defence 0.25
 ArmourTexture clonetrooper442chestplate
-Model mineworld.CloneChestplate212
+Model wolffstarwars.CloneChestplate212

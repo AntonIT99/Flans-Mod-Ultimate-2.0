@@ -6,7 +6,7 @@ Colour 255 255 255
 Type Head
 Defence 0.4
 ArmourTexture oom10
-Model mineworld.BattleDroid
+Model wolffstarwars.BattleDroid
 SmokeProtection False
 NightVision True
 Invisible True

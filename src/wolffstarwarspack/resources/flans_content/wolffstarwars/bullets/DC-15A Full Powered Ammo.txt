@@ -1,6 +1,6 @@
 Name DC-15A Full Powered Ammo
 ShortName Dc15afullAmmo
-Model mineworld.LaserBeam
+Model wolffstarwars.LaserBeam
 //Colour of icon and model
 Colour 255 255 255
 ItemID 31208

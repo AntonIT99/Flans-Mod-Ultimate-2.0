@@ -6,6 +6,6 @@ Colour 255 255 255
 Type Helmet
 Defence 0.15
 ArmourTexture clonetrooper212helmet
-Model mineworld.CloneHelmet212
+Model wolffstarwars.CloneHelmet212
 SmokeProtection True
 Overlay clonehelmet
