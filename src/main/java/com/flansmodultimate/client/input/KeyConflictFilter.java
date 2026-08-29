@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.input;
 
+import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,9 +23,10 @@ import net.minecraft.client.Options;
  * the ground vehicle binds and vanilla walking, neither of which a pilot can use
  * while flying.</p>
  *
- * <p>Only pairs where nothing is lost are hidden: either the two can never be
- * live together, or the displaced action has a bind of its own to reach it by.
- * A key that genuinely costs the player something still shows up.</p>
+ * <p>A pair is hidden when it cannot bite: the two are never live at the same
+ * moment, or the action being displaced is one this mod deliberately takes over
+ * while the player is at the controls. Anything a player would actually want to
+ * know about still shows up.</p>
  *
  * <p>This is presentation only. {@code KeyMapping.same} has exactly one caller
  * in the game, the row colouring in {@code KeyBindsList}, so nothing here can
@@ -34,49 +36,78 @@ import net.minecraft.client.Options;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KeyConflictFilter
 {
-    /** True when these two mappings can never be live at the same time. */
+    private static final String OURS_PREFIX = "key." + FlansMod.MOD_ID + ".";
+    /**
+     * Flan's Mod Reloaded, matched by the strings it registers rather than by
+     * its classes, so this stays a soft dependency: with the mod absent nothing
+     * ever matches and the code still runs.
+     */
+    private static final String RELOADED_CATEGORY = "key.categories.flansmod";
+    private static final String RELOADED_PREFIX = "key.flansmod.";
+
+    /** True when the controls screen has nothing worth reporting about this pair. */
     public static boolean cannotOverlap(KeyMapping one, KeyMapping other)
     {
-        IKeyConflictContext oneContext = one.getKeyConflictContext();
-        IKeyConflictContext otherContext = other.getKeyConflictContext();
-        boolean oneIsOurs = oneContext instanceof EnumKeyConflictContext;
-        boolean otherIsOurs = otherContext instanceof EnumKeyConflictContext;
+        boolean oneIsOurs = isOurs(one);
+        boolean otherIsOurs = isOurs(other);
 
-        // Never change how two unrelated mods' bindings are reported.
+        // Never change how two mappings we know nothing about are reported.
         if (!oneIsOurs && !otherIsOurs)
             return false;
-
         if (oneIsOurs && otherIsOurs)
+            return bothOurs(one, other);
+
+        return againstOutsider(oneIsOurs ? one : other, oneIsOurs ? other : one);
+    }
+
+    private static boolean bothOurs(KeyMapping one, KeyMapping other)
+    {
+        if (isDriveableBind(one) && isDriveableBind(other))
         {
             // Both sides declare when they are live, so believe them. This is
             // the pairing Forge's fallback gets wrong, and it is what lets the
-            // flight axes and the driving controls share W/A/S/D.
+            // flight controls and the driving controls share keys.
+            IKeyConflictContext oneContext = one.getKeyConflictContext();
+            IKeyConflictContext otherContext = other.getKeyConflictContext();
             return !oneContext.conflicts(otherContext) && !otherContext.conflicts(oneContext);
         }
-
-        // The other side is a mapping that claims to be live everywhere: either
-        // a vanilla one, which is universal, or one of ours that is in-game.
-        // Only the ones a rider cannot reach anyway are safe to hide.
-        KeyMapping outsider = oneIsOurs ? other : one;
-        IKeyConflictContext ourContext = oneIsOurs ? oneContext : otherContext;
-        return isInertWhileRiding(outsider)
-            || KeyInputHandler.isOnFootOnly(outsider)
-            || ourContext == EnumKeyConflictContext.PLANE && isFlownByAPlaneBind(outsider);
+        // checkKeys reads the gun binds only in the branch it takes when the
+        // player is at the controls of nothing, so those two never overlap.
+        return isDriveableBind(one) && KeyInputHandler.isOnFootOnly(other)
+            || isDriveableBind(other) && KeyInputHandler.isOnFootOnly(one);
     }
 
-    /**
-     * Vanilla actions a pilot reaches through a plane bind instead. A cockpit
-     * has its own inventory and drop binds, so whichever key a flight control
-     * takes, nothing is lost and there is nothing to warn about.
-     *
-     * <p>Deliberately limited to the plane context. In a ground vehicle these
-     * keys still do their vanilla job and have no stand-in, so a driving bind
-     * landing on one of them is a real clash and stays reported.</p>
-     */
-    private static boolean isFlownByAPlaneBind(KeyMapping mapping)
+    private static boolean againstOutsider(KeyMapping ours, KeyMapping outsider)
     {
-        Options options = Minecraft.getInstance().options;
-        return mapping == options.keyInventory || mapping == options.keyDrop;
+        // Flan's Mod Reloaded drives its own vehicles and its own weapons. Our
+        // driveable controls only answer while at the controls of one of ours,
+        // and our gun binds only while holding one of ours, so either way both
+        // mods can act on the same key without stepping on each other.
+        if (isFlansModReloaded(outsider))
+            return isDriveableBind(ours) || KeyInputHandler.isOnFootOnly(ours);
+
+        // Everything below is about giving up a vanilla action to a driveable.
+        // A bind of ours that is live on foot has no such claim to make.
+        if (!isDriveableBind(ours))
+            return false;
+
+        return isInertWhileRiding(outsider) || KeyInputHandler.isClaimableVanillaAction(outsider);
+    }
+
+    private static boolean isOurs(KeyMapping mapping)
+    {
+        return mapping.getName().startsWith(OURS_PREFIX);
+    }
+
+    private static boolean isDriveableBind(KeyMapping mapping)
+    {
+        return mapping.getKeyConflictContext() instanceof EnumKeyConflictContext;
+    }
+
+    private static boolean isFlansModReloaded(KeyMapping mapping)
+    {
+        return RELOADED_CATEGORY.equals(mapping.getCategory())
+            || mapping.getName().startsWith(RELOADED_PREFIX);
     }
 
     /**

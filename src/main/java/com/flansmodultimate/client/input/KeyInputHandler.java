@@ -1,7 +1,5 @@
 package com.flansmodultimate.client.input;
 
-import org.lwjgl.glfw.GLFW;
-
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelVehicle;
@@ -33,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
@@ -72,7 +70,7 @@ public final class KeyInputHandler
     private static final KeyMapping primaryKey = key("driveable.primary", InputConstants.KEY_V, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping secondaryKey = key("driveable.secondary", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
-    private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_LCONTROL, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_X, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
     // Ground vehicles and mechas. These default to the vanilla movement keys so
     // driving is unchanged, but they are explicit binds so the controls screen
@@ -88,21 +86,16 @@ public final class KeyInputHandler
     // how a player walks or drives.
     private static final KeyMapping pitchDownKey = key("plane.pitch_down", InputConstants.KEY_W, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping pitchUpKey = key("plane.pitch_up", InputConstants.KEY_S, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping yawLeftKey = key("plane.yaw_left", InputConstants.KEY_A, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping yawRightKey = key("plane.yaw_right", InputConstants.KEY_D, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping rollLeftKey = key("plane.roll_left", InputConstants.KEY_Q, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping rollRightKey = key("plane.roll_right", InputConstants.KEY_E, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    // InputConstants only names the numpad plus, so take both from GLFW.
-    private static final KeyMapping throttleUpKey = key("plane.throttle_up", GLFW.GLFW_KEY_KP_ADD, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping throttleDownKey = key("plane.throttle_down", GLFW.GLFW_KEY_KP_SUBTRACT, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping yawLeftKey = key("plane.yaw_left", InputConstants.KEY_Q, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping yawRightKey = key("plane.yaw_right", InputConstants.KEY_E, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping rollLeftKey = key("plane.roll_left", InputConstants.KEY_A, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping rollRightKey = key("plane.roll_right", InputConstants.KEY_D, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping throttleUpKey = key("plane.throttle_up", InputConstants.KEY_SPACE, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping throttleDownKey = key("plane.throttle_down", InputConstants.KEY_LCONTROL, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping controlModeKey = key("plane.control_mode", InputConstants.KEY_C, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping gearKey = key("plane.gear", InputConstants.KEY_G, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping modeKey = key("plane.mode", InputConstants.KEY_J, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    // Roll owns Q and E in a cockpit, which is where they are most useful. The
-    // two vanilla actions they displace get their own binds so a pilot can still
-    // reach them without giving up the ergonomic roll keys.
     private static final KeyMapping playerInventoryKey = key("plane.player_inventory", InputConstants.KEY_Z, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping dropItemKey = key("plane.drop_item", InputConstants.KEY_N, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
 
     /**
      * General binds that checkKeys only reads on foot, behind the gun branch.
@@ -116,7 +109,7 @@ public final class KeyInputHandler
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey,
         yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey,
-        controlModeKey, gearKey, modeKey, playerInventoryKey, dropItemKey,
+        controlModeKey, gearKey, modeKey, playerInventoryKey,
         driveableInventoryKey, primaryKey, secondaryKey, doorKey, flareKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey,
@@ -127,7 +120,7 @@ public final class KeyInputHandler
      * would fire the moment the player mounts. These are drained instead.
      */
     private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, doorKey,
-        flareKey, controlModeKey, gearKey, modeKey, playerInventoryKey, dropItemKey);
+        flareKey, controlModeKey, gearKey, modeKey, playerInventoryKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18};
 
@@ -141,6 +134,7 @@ public final class KeyInputHandler
     private static float lastFlightRoll;
     private static boolean lastMouseControl;
     private static boolean wasSneaking;
+    private static List<KeyMapping> claimableVanillaActions;
 
     private static KeyMapping key(String name, int keyCode, IKeyConflictContext context, String category)
     {
@@ -178,13 +172,14 @@ public final class KeyInputHandler
         event.register(gearKey);
         event.register(modeKey);
         event.register(playerInventoryKey);
-        event.register(dropItemKey);
     }
 
     /**
-     * Replays the two vanilla actions whose keys roll takes over in a cockpit.
-     * Mirrors what {@code Minecraft.handleKeybinds} does for them, since that is
-     * exactly the handling claimConflictingVanillaKeys suppressed.
+     * Gives the player's own inventory a way back into the cockpit, since a
+     * flight control may well have taken the vanilla key. Mirrors what
+     * {@code Minecraft.handleKeybinds} does, because that is exactly the
+     * handling claimConflictingVanillaKeys suppresses. The other claimed
+     * actions get no stand-in: none of them is worth a key in a cockpit.
      */
     private static void handleCockpitShortcuts(Minecraft mc, LocalPlayer player)
     {
@@ -199,11 +194,6 @@ public final class KeyInputHandler
                 mc.getTutorial().onOpenInventory();
                 mc.setScreen(new InventoryScreen(player));
             }
-        }
-        while (dropItemKey.consumeClick())
-        {
-            if (!player.isSpectator() && player.drop(Screen.hasControlDown()))
-                player.swing(InteractionHand.MAIN_HAND);
         }
     }
 
@@ -252,15 +242,38 @@ public final class KeyInputHandler
             return;
 
         List<KeyMapping> claimed = driveable instanceof Plane ? AIRCRAFT_BINDS : GROUND_BINDS;
-        for (KeyMapping vanilla : List.of(mc.options.keyInventory, mc.options.keyDrop,
-            mc.options.keySwapOffhand, mc.options.keyAdvancements, mc.options.keySocialInteractions))
+        for (KeyMapping vanilla : claimableVanillaActions())
         {
-            if (!vanilla.isUnbound() && isClaimedBy(vanilla, claimed))
-            {
-                // consumeClick drains one queued press at a time.
-                while (vanilla.consumeClick()) { /* claimed by the driveable bind */ }
-            }
+            if (vanilla.isUnbound() || !isClaimedBy(vanilla, claimed))
+                continue;
+            // consumeClick drains one queued press at a time; the hotbar
+            // activators are read as a held key instead, so clear that too.
+            while (vanilla.consumeClick()) { /* claimed by the driveable bind */ }
+            vanilla.setDown(false);
         }
+    }
+
+    /**
+     * Vanilla actions that a live driveable bind takes over. Everything here is
+     * switched off while the player is at the controls, which is also why the
+     * controls screen has nothing left to warn about for these keys.
+     */
+    private static List<KeyMapping> claimableVanillaActions()
+    {
+        if (claimableVanillaActions == null)
+        {
+            Options options = Minecraft.getInstance().options;
+            claimableVanillaActions = List.of(options.keyInventory, options.keyDrop,
+                options.keySwapOffhand, options.keyAdvancements, options.keySocialInteractions,
+                options.keySaveHotbarActivator, options.keyLoadHotbarActivator);
+        }
+        return claimableVanillaActions;
+    }
+
+    /** True for a vanilla action a driveable bind is allowed to take over. */
+    public static boolean isClaimableVanillaAction(KeyMapping mapping)
+    {
+        return claimableVanillaActions().contains(mapping);
     }
 
     private static boolean isClaimedBy(KeyMapping vanilla, List<KeyMapping> claimed)
