@@ -39,7 +39,7 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
         tooltipComponents.add(Component.empty());
 
         if (configType.isSilencer())
-            tooltipComponents.add(Component.literal("Silenced").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.silenced").withStyle(ChatFormatting.DARK_GREEN));
 
         if (configType.getShootDelayMultiplier() != 1F && configType.getShootDelayMultiplier() != 0F)
             tooltipComponents.add(IFlanItem.modifierLine("Fire Rate", 1F / configType.getShootDelayMultiplier(), false));

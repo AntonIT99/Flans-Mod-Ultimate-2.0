@@ -59,19 +59,27 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
 
         // vs Living: only show if explicitly configured AND different from base
         if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(label("vs_living"), formatFloat(damageStats.getDamageVsLiving(), 1)));
 
         // vs Player: inherits from vsLiving
         if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(label("vs_players"), formatFloat(damageStats.getDamageVsPlayer(), 1)));
 
         // vs Vehicle: inherits from base
         if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(label("vs_vehicles"), formatFloat(damageStats.getDamageVsVehicles(), 1)));
 
         // vs Plane: inherits from vsVehicle
         if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(label("vs_planes"), formatFloat(damageStats.getDamageVsPlanes(), 1)));
+    }
+
+    static MutableComponent label(String label)
+    {
+        String key = label.toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]+", "_")
+            .replaceAll("^_|_$", "");
+        return Component.translatable("tooltip.flansmodultimate." + key);
     }
 
     /**
@@ -79,8 +87,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static MutableComponent statLine(String label, String value)
     {
-        return Component.literal(label + ": ")
-            .withStyle(ChatFormatting.BLUE)
+        return label(label).withStyle(ChatFormatting.BLUE)
+            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
@@ -94,6 +102,14 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
             .append(label.copy().withStyle(ChatFormatting.BLUE))
             .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    static MutableComponent statLine(Component label, Component value)
+    {
+        return Component.empty()
+            .append(label.copy().withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
+            .append(value.copy().withStyle(ChatFormatting.GRAY));
     }
 
     /** Translatable form of {@link #indentedStatLine(String, String)}. */
@@ -120,7 +136,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         float deltaPercent = (value - 1F) * 100F;
         ChatFormatting color = ((deltaPercent >= 0F && !invertColor) || (deltaPercent < 0F && invertColor)) ? ChatFormatting.GREEN : ChatFormatting.RED;
         String sign = deltaPercent > 0F ? "+" : "";
-        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% " + label).withStyle(color);
+        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% ").withStyle(color)
+            .append(label(label).withStyle(color));
     }
 
     ThreadLocal<Map<Integer, DecimalFormat>> UP_TO_CACHE = ThreadLocal.withInitial(HashMap::new);

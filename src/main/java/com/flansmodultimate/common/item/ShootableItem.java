@@ -190,7 +190,8 @@ public abstract class ShootableItem extends Item
             if (stackCount > 1)
             {
                 int totalRounds = getTotalRounds(stack);
-                tooltipComponents.add(IFlanItem.statLine("Rounds", currentRounds + "/" + maxRounds + " (x" + stackCount + " = " + totalRounds + " total)"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.rounds"),
+                    Component.translatable("tooltip.flansmodultimate.rounds_total", currentRounds, maxRounds, stackCount, totalRounds)));
             }
             else
             {
@@ -209,7 +210,7 @@ public abstract class ShootableItem extends Item
         {
             if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.literal("Mass:").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.mass").append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().mass()) + "g").withStyle(ChatFormatting.GRAY)));
             }
@@ -223,7 +224,7 @@ public abstract class ShootableItem extends Item
         {
             if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.literal("Explosive Mass (TNT):").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.explosive_mass_tnt").append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().explosiveMass(), 3) + "kg").withStyle(ChatFormatting.GRAY)));
             }

@@ -32,6 +32,6 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
-        tooltipComponents.add(Component.literal("Place items on display").withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.item_holder").withStyle(ChatFormatting.DARK_AQUA));
     }
 }

@@ -117,17 +117,17 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             tooltipComponents.add(IFlanItem.modifierLine("Jump Height", configType.getJumpModifier(), false));
 
         if (configType.isSmokeProtection())
-            tooltipComponents.add(Component.literal("+Smoke Protection").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.smoke_protection").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isNightVision())
-            tooltipComponents.add(Component.literal("+Night Vision").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.night_vision").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isInvisible())
-            tooltipComponents.add(Component.literal("+Invisibility").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.invisibility").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isNegateFallDamage())
-            tooltipComponents.add(Component.literal("+Negates Fall Damage").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.negates_fall_damage").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isFireResistance())
-            tooltipComponents.add(Component.literal("+Fire Resistance").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.fire_resistance").withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isWaterBreathing())
-            tooltipComponents.add(Component.literal("+Water Breathing").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.water_breathing").withStyle(ChatFormatting.DARK_GREEN));
     }
 
     private static String formatAbsorption(double absorption)

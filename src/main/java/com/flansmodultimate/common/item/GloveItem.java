@@ -57,7 +57,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
-        tooltipComponents.add(Component.literal("Improves gun, sword or axe handling when enchanted and held in off hand").withStyle(ChatFormatting.DARK_AQUA));
-        tooltipComponents.add(Component.literal("Works with two-handed guns").withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.glove.handling").withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.glove.two_handed").withStyle(ChatFormatting.DARK_AQUA));
     }
 }

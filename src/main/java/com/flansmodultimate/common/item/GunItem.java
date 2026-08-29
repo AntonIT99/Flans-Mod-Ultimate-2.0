@@ -54,6 +54,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -165,11 +166,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
             String crafter = stack.getTag().getString(NBT_LEGENDARY_CRAFTER);
-            tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.legendary_skin_crafter", crafter).withStyle(ChatFormatting.GOLD));
         }
 
         if (configType.isDeployable())
-            tooltipComponents.add(Component.literal("[Deployable]").withStyle(ChatFormatting.YELLOW));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.deployable").withStyle(ChatFormatting.YELLOW));
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
@@ -179,7 +180,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 List<ItemStack> attachmentItems = configType.getCurrentAttachmentItems(stack);
 
                 if (!attachmentItems.isEmpty())
-                    tooltipComponents.add(Component.literal("Attachments").withStyle(ChatFormatting.YELLOW));
+                    tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.attachments").withStyle(ChatFormatting.YELLOW));
 
                 for (ItemStack attachmentItem : attachmentItems)
                     tooltipComponents.add(Component.literal(attachmentItem.getDisplayName().getString()).withStyle(ChatFormatting.AQUA));
@@ -218,7 +219,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             tooltipComponents.add(Component.empty());
 
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
         }
         else
         {
@@ -226,10 +227,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             AttachmentType barrel = configType.getBarrel(stack);
             if (barrel != null && barrel.isSilencer())
-                tooltipComponents.add(Component.literal("[Suppressed]").withStyle(ChatFormatting.YELLOW));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.suppressed").withStyle(ChatFormatting.YELLOW));
 
             if (configType.getSecondaryFire(stack))
-                tooltipComponents.add(Component.literal("[Underbarrel]").withStyle(ChatFormatting.YELLOW));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.underbarrel").withStyle(ChatFormatting.YELLOW));
 
             if (StringUtils.isNotBlank(originGunbox))
                 tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
@@ -256,14 +257,14 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 });
             if (configType.isShowDamage() && !ammoTypes.isEmpty())
             {
-                tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.damage").append(": ").withStyle(ChatFormatting.BLUE));
 
                 if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
                 {
-                    tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
-                        .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
-                        .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
-                        .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+                    tooltipComponents.add(Component.literal("  ").append(Component.translatable("tooltip.flansmodultimate.vs_living").withStyle(ChatFormatting.GREEN))
+                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_player").withStyle(ChatFormatting.RED))
+                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_vehicle").withStyle(ChatFormatting.AQUA))
+                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_plane").withStyle(ChatFormatting.LIGHT_PURPLE)));
                 }
 
                 if (ammoTypes.size() > 10)
@@ -297,9 +298,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
                 String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
 
-                tooltipComponents.add(Component.literal("Recoil Control: ").withStyle(ChatFormatting.BLUE));
-                tooltipComponents.add(Component.literal("  sprinting").withStyle(ChatFormatting.RED)
-                    .append(Component.literal(" crouching").withStyle(ChatFormatting.GREEN)));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.recoil_control").append(": ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.literal("  ").append(Component.translatable("tooltip.flansmodultimate.sprinting").withStyle(ChatFormatting.RED))
+                    .append(" ").append(Component.translatable("tooltip.flansmodultimate.crouching").withStyle(ChatFormatting.GREEN)));
                 tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
                     .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
@@ -323,7 +324,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + "rpm"));
 
             if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine("Mode", configType.getFireMode(stack).name().toLowerCase()));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.mode"),
+                    Component.translatable("tooltip.flansmodultimate.fire_mode." + configType.getFireMode(stack).name().toLowerCase(Locale.ROOT))));
 
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));

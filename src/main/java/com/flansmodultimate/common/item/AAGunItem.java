@@ -106,7 +106,7 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
             return;
         }
 
@@ -116,14 +116,14 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
 
         if (!ammoTypes.isEmpty())
         {
-            tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.damage").append(": ").withStyle(ChatFormatting.BLUE));
 
             if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
             {
-                tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
-                    .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+                tooltipComponents.add(Component.literal("  ").append(Component.translatable("tooltip.flansmodultimate.vs_living").withStyle(ChatFormatting.GREEN))
+                    .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_player").withStyle(ChatFormatting.RED))
+                    .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_vehicle").withStyle(ChatFormatting.AQUA))
+                    .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_plane").withStyle(ChatFormatting.LIGHT_PURPLE)));
             }
 
             for (ShootableType shootableType : ammoTypes)
@@ -171,11 +171,11 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
         if (configType.isSentry())
         {
             String targets = Stream.of(
-                    configType.isTargetMobs() ? "Mobs" : null,
-                    configType.isTargetPlayers() ? "Players" : null,
-                    configType.isTargetVehicles() ? "Vehicles" : null,
-                    configType.isTargetPlanes() ? "Planes" : null,
-                    configType.isTargetMechas() ? "Mechas" : null
+                    configType.isTargetMobs() ? Component.translatable("tooltip.flansmodultimate.target.mobs").getString() : null,
+                    configType.isTargetPlayers() ? Component.translatable("tooltip.flansmodultimate.target.players").getString() : null,
+                    configType.isTargetVehicles() ? Component.translatable("tooltip.flansmodultimate.target.vehicles").getString() : null,
+                    configType.isTargetPlanes() ? Component.translatable("tooltip.flansmodultimate.target.planes").getString() : null,
+                    configType.isTargetMechas() ? Component.translatable("tooltip.flansmodultimate.target.mechas").getString() : null
                 )
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(", "));

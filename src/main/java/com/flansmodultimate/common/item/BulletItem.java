@@ -39,7 +39,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
         }
         else
         {
@@ -47,14 +47,14 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
 
             if (configType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.literal("Rounds Mix: ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.rounds_mix").append(": ").withStyle(ChatFormatting.BLUE));
                 configType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " (" + round.count() + ")").withStyle(ChatFormatting.DARK_AQUA)));
             }
 
             if (configType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.literal("Muzzle Velocity:").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.muzzle_velocity").append(":").withStyle(ChatFormatting.BLUE));
                 configType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + "m/s").withStyle(ChatFormatting.GRAY)));
             }
@@ -63,7 +63,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
 
             if (configType.hasDifferentRounds() && configType.getPeriod().stream().anyMatch(round -> round.stats().penetrationAt100m() > 0F))
             {
-                tooltipComponents.add(Component.literal("Penetration At 100m:").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.penetration_at_100m").append(":").withStyle(ChatFormatting.BLUE));
                 configType.getPeriod().forEach(round -> {
                     if (round.stats().penetrationAt100m() > 0)
                         tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().penetrationAt100m()) + "mm").withStyle(ChatFormatting.GRAY));
@@ -75,13 +75,13 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             tooltipComponents.add(IFlanItem.statLine("Penetrating Power", IFlanItem.formatFloat(configType.getPenetratingPower())));
 
             if (hasLockOn())
-                tooltipComponents.add(IFlanItem.statLine("Guidance", "LockOn"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.guidance"), Component.translatable("tooltip.flansmodultimate.guidance.lock_on")));
             else if (configType.isManualGuidance())
-                tooltipComponents.add(IFlanItem.statLine("Guidance", "Manual"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.guidance"), Component.translatable("tooltip.flansmodultimate.guidance.manual")));
             else if (configType.isLaserGuidance())
-                tooltipComponents.add(IFlanItem.statLine("Guidance", "Laser"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.guidance"), Component.translatable("tooltip.flansmodultimate.guidance.laser")));
             else if (configType.getWeaponType() == EnumWeaponType.MISSILE)
-                tooltipComponents.add(IFlanItem.statLine("Guidance", "Unguided"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.guidance"), Component.translatable("tooltip.flansmodultimate.guidance.unguided")));
 
             if (hasLockOn() || configType.isLaserGuidance())
             {

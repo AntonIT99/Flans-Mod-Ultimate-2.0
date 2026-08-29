@@ -22,6 +22,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public final class ItemOpStick extends Item
@@ -179,7 +180,8 @@ public final class ItemOpStick extends Item
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag)
     {
-        tooltip.add(Component.literal("Mode: " + getMode(stack).displayName).withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Sneak + use to change mode").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.flansmodultimate.operator_stick.mode",
+            Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.translatable("tooltip.flansmodultimate.operator_stick.change_mode").withStyle(ChatFormatting.GRAY));
     }
 }
