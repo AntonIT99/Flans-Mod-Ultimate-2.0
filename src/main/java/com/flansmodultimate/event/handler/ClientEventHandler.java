@@ -89,8 +89,13 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
-        if (event.phase != TickEvent.Phase.END)
+        // Vanilla consumes its own key clicks later in the same tick, so a
+        // driveable bind has to claim a shared key before that happens.
+        if (event.phase == TickEvent.Phase.START)
+        {
+            KeyInputHandler.claimConflictingVanillaKeys();
             return;
+        }
 
         GunInputState.tick();
         ModClient.tick();
