@@ -70,12 +70,48 @@ public final class LegacyPlanePhysics
             finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity);
     }
 
+    /**
+     * Control rates for an aircraft running the real-world profile.
+     *
+     * <p>Identical in shape to {@link #controlRates}, but the speed-dependent
+     * sensitivity is supplied by the caller as a normalised authority in
+     * {@code [0, 1]} derived from the aircraft's own terminal speed, instead of
+     * the legacy curve's fixed 0.5 / 1 / 3 blocks-per-tick breakpoints. Those
+     * breakpoints assumed a two blocks-per-tick top speed and drop authority to
+     * zero above three, which is what made fast aircraft uncontrollable.
+     *
+     * <p>The legacy method is left exactly as it was; legacy aircraft never
+     * reach this one.
+     */
+    public static ControlRates derivedControlRates(float authority, float flapYaw, float flapPitch, float flapRoll,
+                                                   float turnLeft, float turnRight, float lookUp, float lookDown,
+                                                   float rollLeft, float rollRight)
+    {
+        float sensitivity = Mth.clamp(finite(authority), 0F, 1F) * 0.125F;
+        return new ControlRates(
+            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * sensitivity,
+            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity,
+            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity);
+    }
+
     public static float approachMomentum(float current, float target)
     {
-        if (!Float.isFinite(current) || !Float.isFinite(target))
+        return approachMomentum(current, target, 1F);
+    }
+
+    /**
+     * Angular momentum slew with a response multiplier. A multiplier of one is
+     * the legacy behaviour exactly; the real-world path passes a factor derived
+     * from wing span and mass so a heavy, long-winged aircraft rolls in more
+     * slowly than a light one.
+     */
+    public static float approachMomentum(float current, float target, float responseScale)
+    {
+        if (!Float.isFinite(current) || !Float.isFinite(target) || !Float.isFinite(responseScale))
             return 0F;
-        return Mth.clamp(current < target ? Math.min(target, current + 1F)
-            : Math.max(target, current - 1F), -20F, 20F);
+        float step = Math.max(0.05F, responseScale);
+        return Mth.clamp(current < target ? Math.min(target, current + step)
+            : Math.max(target, current - step), -20F, 20F);
     }
 
     public static float drag(float configuredDrag)

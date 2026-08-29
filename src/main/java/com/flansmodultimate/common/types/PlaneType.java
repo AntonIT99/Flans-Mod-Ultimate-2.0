@@ -5,6 +5,8 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -177,6 +179,23 @@ public class PlaneType extends DriveableType
         doorRot2 = readVector("DoorRotation2", doorRot2, file);
         doorRate = readVector("DoorRate", doorRate, file);
         doorRotRate = readVector("DoorRotRate", doorRotRate, file);
+
+        // Re-run finalization now that Mode, propellers and NewFlightControl are
+        // read, so physics resolution sees the complete definition.
+        finishDerivedValues();
+    }
+
+    @Override
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.AIRCRAFT;
+    }
+
+    @Override
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater,
+            newFlightControl, false);
     }
 
     private void readPropellers(String key, List<Propeller> destination, TypeFile file)

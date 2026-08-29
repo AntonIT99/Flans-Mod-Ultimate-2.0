@@ -1,0 +1,44 @@
+{
+    "M18 Hellcat": {
+        "properties": {
+            "RealMassKg": 17036,
+            "RealEnginePowerHp": 460,
+            "RealMaxSpeedKmh": "89",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "32",
+            "RealMaxSlopeDeg": "31"
+        },
+        "items": [
+            "44_m18hellcat"
+        ]
+    },
+
+    "Panzerkampfwagen VI Ausf. H1 Tiger": {
+        "properties": {
+            "RealMassKg": 57250,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": "45.4",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "9.2",
+            "RealMaxSlopeDeg": "35"
+        },
+        "items": [
+            "44_tiger1h"
+        ]
+    },
+
+    "Willys MB Jeep": {
+        "properties": {
+            "RealMassKg": 1475,
+            "RealEnginePowerHp": 54,
+            "RealMaxSpeedKmh": 105,
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": 29,
+            "RealMaxSlopeDeg": 31
+        },
+        "items": [
+            "44_willys30cal",
+            "44_willys50cal"
+        ]
+    }
+}

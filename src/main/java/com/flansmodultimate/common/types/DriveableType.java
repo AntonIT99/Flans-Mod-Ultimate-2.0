@@ -13,6 +13,14 @@ import com.flansmodultimate.common.driveables.ParticleEmitter;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.physics.EnumDriveType;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
+import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
+import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
@@ -196,6 +204,20 @@ public class DriveableType extends PaintableType
     protected boolean fancyCollision;
     private transient volatile DriveableCollisionProfile collisionProfile;
 
+    /**
+     * Optional real-world source data exactly as authored, in real-world units.
+     * Empty for every definition that declares no {@code Real*} key, which is what
+     * keeps such definitions on the legacy physics path.
+     */
+    protected RealWorldVehicleSpec realWorldSpec = RealWorldVehicleSpec.EMPTY;
+    /**
+     * Minecraft-scaled physics resolved from {@link #realWorldSpec}, existing
+     * geometry and the legacy fields. Never null: runtime code branches on
+     * {@link ResolvedVehiclePhysics#mode()} instead of null-checking.
+     */
+    protected ResolvedVehiclePhysics resolvedPhysics =
+        ResolvedVehiclePhysics.legacy(EnumVehicleCategory.OTHER, EnumDriveType.RWD);
+
     @Override
     protected void read(TypeFile file)
     {
@@ -209,7 +231,21 @@ public class DriveableType extends PaintableType
         readSounds(file);
         readCollisionMeshes(file);
         readParticles(file);
+        readRealWorldSpec(file);
         finishDerivedValues();
+    }
+
+    /**
+     * Reads the optional real-world keys. This touches no key that already
+     * existed, so legacy parsing is unchanged, and a malformed optional value is
+     * reported and dropped rather than aborting the content pack load.
+     */
+    private void readRealWorldSpec(TypeFile file)
+    {
+        RealWorldSpecReader.Result result = RealWorldSpecReader.read(file);
+        realWorldSpec = result.spec();
+        for (String warning : result.warnings())
+            logError(warning, file);
     }
 
     private void readSeats(TypeFile file)
@@ -654,7 +690,12 @@ public class DriveableType extends PaintableType
         forEachLine("AddEmitter", file, 10, parser);
     }
 
-    private void finishDerivedValues()
+    /**
+     * Finalization stage. Subclasses call this again after their own reads so
+     * that physics resolution sees the complete definition; every step here is
+     * idempotent, which is what makes the second call safe.
+     */
+    protected void finishDerivedValues()
     {
         if (bulletDetectionRadius < 0F)
         {
@@ -663,6 +704,60 @@ public class DriveableType extends PaintableType
                 bulletDetectionRadius = Math.max(bulletDetectionRadius, box.getRootPosition().length() + box.getRadius());
             bulletDetectionRadius += 1F;
         }
+        resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
+            deriveGeometry(), legacyPhysicsHints());
+    }
+
+    /** Which coupled real-world profile this type can qualify for. */
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.OTHER;
+    }
+
+    /** The legacy fields the resolver needs in order to pick its fallbacks. */
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater, false, false);
+    }
+
+    /**
+     * Derives physical dimensions from data the definition already declares, so
+     * no new parsing keys are needed for length, width, beam, wheelbase or track.
+     * Length, width and height come from the core collision box; the wheelbase and
+     * track come from the spread of the declared wheel positions, whose legacy X
+     * is the fore-aft axis and legacy Z the lateral one.
+     */
+    private VehicleGeometry deriveGeometry()
+    {
+        int wheelCount = 0;
+        for (DriveablePosition wheel : wheelPositions)
+        {
+            if (wheel != null)
+                ++wheelCount;
+        }
+        Float wheelbase = null;
+        Float trackWidth = null;
+        if (wheelCount >= 2)
+        {
+            float[] forward = new float[wheelCount];
+            float[] lateral = new float[wheelCount];
+            int index = 0;
+            for (DriveablePosition wheel : wheelPositions)
+            {
+                if (wheel == null)
+                    continue;
+                forward[index] = wheel.getPosition().x;
+                lateral[index] = wheel.getPosition().z;
+                ++index;
+            }
+            wheelbase = VehiclePhysicsResolver.deriveWheelbase(forward);
+            trackWidth = VehiclePhysicsResolver.deriveTrackWidth(lateral);
+        }
+
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        if (core == null)
+            return new VehicleGeometry(null, null, null, wheelbase, trackWidth);
+        return VehicleGeometry.fromCoreBox(core.getWidth(), core.getHeight(), core.getDepth(), wheelbase, trackWidth);
     }
 
     public List<BulletType> getAmmoTypes()

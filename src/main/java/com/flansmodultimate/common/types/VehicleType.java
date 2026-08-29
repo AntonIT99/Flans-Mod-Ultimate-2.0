@@ -2,6 +2,8 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -97,6 +99,27 @@ public class VehicleType extends DriveableType
         stompSoundFrontLeft = readSound("StompSoundFrontLeft", stompSoundFrontLeft, file);
         stompSoundBackRight = readSound("StompSoundBackRight", stompSoundBackRight, file);
         stompSoundBackLeft = readSound("StompSoundBackLeft", stompSoundBackLeft, file);
+
+        // Re-run finalization now that Tank, FourWheelDrive and the rest are read,
+        // so physics resolution sees the complete definition.
+        finishDerivedValues();
+    }
+
+    /**
+     * Boats are vehicles in this repository, so they share the ground category
+     * and reach the marine draft override through {@code FloatOnWater}.
+     */
+    @Override
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.GROUND;
+    }
+
+    @Override
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(tank, fourWheelDrive, maxNegativeThrottle, floatOnWater,
+            false, useRealisticAcceleration);
     }
 
     private void readSmokePoints(String key, TypeFile file)

@@ -1,0 +1,29 @@
+{
+    "Messerschmitt Bf 109 G-10": {
+        "properties": {
+            "RealMassKg": 3280,
+            "RealEnginePowerHp": 1800,
+            "RealMaxSpeedKmh": "685",
+            "RealWingSpanM": "9.97",
+            "RealWingAreaM2": "16.4",
+            "RealClimbRateMs": "17.2"
+        },
+        "items": [
+            "44_bf109g10"
+        ]
+    },
+
+    "Spitfire F Mk IX": {
+        "properties": {
+            "RealMassKg": 3370,
+            "RealEnginePowerHp": 1565,
+            "RealMaxSpeedKmh": "650",
+            "RealWingSpanM": "11.23",
+            "RealWingAreaM2": "22.48",
+            "RealClimbRateMs": "19.5"
+        },
+        "items": [
+            "44_spitfire"
+        ]
+    }
+}

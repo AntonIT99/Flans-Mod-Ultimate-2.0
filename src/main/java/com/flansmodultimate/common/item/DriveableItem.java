@@ -159,6 +159,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         {
             if (data.getEngine() != null)
                 tooltip.add(IFlanItem.statLine("Engine", data.getEngine().getName()));
+            DriveablePhysicsTooltip.append(configType, tooltip);
         }
     }
 

@@ -27,6 +27,11 @@ public final class ModCommonConfig
     public static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
     public static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
 
+    /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
+    public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
+    private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 10.0D;
+
     private static final int MIN_ENTITY_TRACKING_RANGE = 1;
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
@@ -108,6 +113,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_NUM_TYPES;
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
+
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_SPEED_SCALE;
 
     private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
 
@@ -352,6 +359,17 @@ public final class ModCommonConfig
             .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);
         builder.pop();
 
+        builder.push("Vehicle Physics Settings");
+        REALISTIC_VEHICLE_SPEED_SCALE = builder
+            .comment("Scale applied to real-world vehicle speeds declared with RealMaxSpeedKmh and RealMaxReverseSpeedKmh.",
+                "The mod treats 1 block as 1 metre and 20 ticks as 1 second, so km/h becomes blocks per tick as kmh / 72.",
+                "1.0 runs vehicles at their full real-world speed; 0.5 runs them at half speed.",
+                "Only speeds are scaled. Mass, engine power, thrust, wing area, slope and draft are never scaled.",
+                "Vehicles that declare no real-world parameters are unaffected.")
+            .defineInRange("realisticVehicleSpeedScale", DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE,
+                MIN_REALISTIC_VEHICLE_SPEED_SCALE, MAX_REALISTIC_VEHICLE_SPEED_SCALE);
+        builder.pop();
+
         builder.push("Enchantment Module");
         ENCHANTMENT_MODULE_ENABLED = builder
             .comment("Enable the Flan's Mod enchantment module (Steady, Nimble, Lumberjack, Duelist, Sharpshooter, Juggernaut)")
@@ -443,6 +461,8 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
+            REALISTIC_VEHICLE_SPEED_SCALE.get(),
+
             ENCHANTMENT_MODULE_ENABLED.get()
         );
     }
@@ -451,6 +471,17 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
+    }
+
+    /**
+     * The single place the realistic vehicle speed scale is read. Physics and item
+     * tooltips both go through here so they can never disagree, and a config that
+     * has not loaded yet falls back to the documented default rather than zero.
+     */
+    public static double realisticVehicleSpeedScale()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE : config.realisticVehicleSpeedScale();
     }
 
     public static boolean forceDefenseAsModernArmor()

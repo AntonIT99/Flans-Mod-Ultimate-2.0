@@ -19,6 +19,9 @@ import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.physics.MarineDraftPhysics;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -93,6 +96,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -3393,7 +3397,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (!Double.isFinite(velocity.x) || !Double.isFinite(velocity.y) || !Double.isFinite(velocity.z))
             velocity = Vec3.ZERO;
-        double maximum = 8D;
+        // A safety bound against runaway integration, not a top speed. Legacy
+        // driveables keep the historical eight blocks per tick exactly; only a
+        // type running the real-world profile gets the raised ceiling, which is
+        // high enough for jets and low enough to bound the collision sweep.
+        double maximum = configType == null
+            ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
+            : configType.getResolvedPhysics().movementClampBlocksPerTick();
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
         setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
@@ -3408,10 +3418,47 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (configType != null && configType.isFloatOnWater() && isInWater())
         {
-            double lift = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
-            return velocity.add(0D, lift, 0D).multiply(0.92D, 0.8D, 0.92D);
+            double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
+            ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
+            if (physics.hasDraft())
+            {
+                // A declared draft turns flotation into a restoring response that
+                // settles the hull at its real waterline. Without one the legacy
+                // constant lift is used unchanged.
+                double surface = findWaterSurfaceY();
+                if (Double.isFinite(surface))
+                {
+                    double corrected = MarineDraftPhysics.verticalVelocity(velocity.y,
+                        getBoundingBox().minY, surface, physics.draftM(), ceiling);
+                    return new Vec3(velocity.x, corrected, velocity.z).multiply(0.92D, 1D, 0.92D);
+                }
+            }
+            return velocity.add(0D, ceiling, 0D).multiply(0.92D, 0.8D, 0.92D);
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
+    }
+
+    /**
+     * World Y of the water surface directly above the hull, or {@code NaN} when
+     * none is found within the probe range. Bounded and chunk-guarded so it can
+     * never force a chunk load, matching {@link #isUnderWater()}.
+     */
+    private double findWaterSurfaceY()
+    {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int startY = Mth.floor(getBoundingBox().minY);
+        double surface = Double.NaN;
+        for (int offset = 0; offset <= VehiclePhysicsConstants.DRAFT_SURFACE_PROBE_BLOCKS; offset++)
+        {
+            cursor.set(getBlockX(), startY + offset, getBlockZ());
+            if (!level().hasChunkAt(cursor))
+                break;
+            FluidState fluid = level().getFluidState(cursor);
+            if (fluid.isEmpty())
+                break;
+            surface = startY + offset + fluid.getHeight(level(), cursor);
+        }
+        return surface;
     }
 
     /**
@@ -3451,10 +3498,15 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
         double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
 
+        // The historical 1.5 block look-ahead is correct only up to about
+        // 108 km/h. A type on the real-world profile probes as far as it can
+        // actually travel in a tick; legacy types keep the historical value.
+        double predictionCap = configType.getResolvedPhysics()
+            .wheelPredictionBlocks(ModCommonConfig.realisticVehicleSpeedScale());
         Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
         double predictionLength = horizontalPrediction.length();
-        if (predictionLength > 1.5D)
-            horizontalPrediction = horizontalPrediction.scale(1.5D / predictionLength);
+        if (predictionLength > predictionCap)
+            horizontalPrediction = horizontalPrediction.scale(predictionCap / predictionLength);
 
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {

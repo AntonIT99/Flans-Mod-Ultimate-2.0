@@ -84,10 +84,12 @@ public record CommonConfigSnapshot(
     List<String> digitalAmmoSupplyBlocks,
     int digitalAmmoSupplyAmount,
 
+    double realisticVehicleSpeedScale,
+
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 13;
+    public static final int CURRENT_VERSION = 14;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -173,6 +175,8 @@ public record CommonConfigSnapshot(
             buf.writeUtf(block, 32767);
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
+        buf.writeDouble(s.realisticVehicleSpeedScale);
+
         buf.writeBoolean(s.enchantmentModuleEnabled);
     }
 
@@ -256,6 +260,8 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
+
+            buf.readDouble(),
 
             buf.readBoolean()
         );

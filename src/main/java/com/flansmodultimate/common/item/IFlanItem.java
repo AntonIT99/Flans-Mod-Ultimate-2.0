@@ -85,6 +85,27 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
+     * Translatable form of {@link #statLine(String, String)}, for stat lines whose
+     * label has to be localized rather than baked in as English.
+     */
+    static MutableComponent statLine(Component label, String value)
+    {
+        return Component.empty()
+            .append(label.copy().withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    /** Translatable form of {@link #indentedStatLine(String, String)}. */
+    static MutableComponent indentedStatLine(Component label, String value)
+    {
+        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA)
+            .append(label.copy().withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    /**
      * Slightly indented stat line for sub-values (vs Living / vs Player / etc.)
      */
     static MutableComponent indentedStatLine(String label, String value)

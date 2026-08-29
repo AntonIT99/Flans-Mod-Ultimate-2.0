@@ -117,6 +117,10 @@ public class MechaType extends DriveableType
         legAnimSpeed = readValue("LegAnimSpeed", legAnimSpeed, file);
         restrictInventoryInput = readValue("RestrictInventoryInput", restrictInventoryInput, file);
         allowMechaToolsInRestrictedInv = readValue("AllowMechaToolsInRestrictedInv", allowMechaToolsInRestrictedInv, file);
+
+        // Mechas have no real-world profile of their own, but resolution still runs
+        // so the resolved state reflects the finished definition.
+        finishDerivedValues();
     }
 
     public float getLeftHandModifierX() { return leftHandModifier.x; }

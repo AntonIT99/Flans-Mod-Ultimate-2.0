@@ -8,6 +8,7 @@ import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.TeamsCommand;
+import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Driveable;
@@ -86,6 +87,7 @@ public final class CommonEventHandler
         DefaultAmmoCommand.register(event.getDispatcher());
         FMParticleCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
+        VehiclePhysicsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 

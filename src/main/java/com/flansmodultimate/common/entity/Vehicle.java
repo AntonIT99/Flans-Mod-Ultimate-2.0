@@ -7,7 +7,12 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
+import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -92,9 +97,37 @@ public class Vehicle extends Driveable
         float effectiveThrottle = Mth.clamp(getThrottle(), -throttleLimit, throttleLimit);
         if (!isEngineActive())
             effectiveThrottle = 0F;
-        float propulsion = DriveableControlPhysics.directionalPropulsion(effectiveThrottle, type.getMaxThrottle(),
-            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater());
-        double targetSpeed = propulsion * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
+        ResolvedVehiclePhysics physics = type.getResolvedPhysics();
+        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        float normalizedThrottle = DriveableControlPhysics.normalizedThrottle(effectiveThrottle,
+            type.getMaxNegativeThrottle());
+        double targetSpeed;
+        if (physics.hasGroundPropulsion())
+        {
+            // The real-world profile owns terminal speed outright. Throttle is
+            // reduced to the driver demand fraction, so MaxThrottle and the
+            // legacy 0.26 / 0.32 speed factors no longer scale it and cannot
+            // double-apply on top of the derived value.
+            double terminal = normalizedThrottle >= 0F
+                ? physics.maxSpeedBlocksPerTick(speedScale)
+                : reverseTerminalSpeed(type, physics, speedScale);
+            targetSpeed = normalizedThrottle * terminal * traction;
+        }
+        else
+        {
+            float propulsion = DriveableControlPhysics.directionalPropulsion(effectiveThrottle, type.getMaxThrottle(),
+                type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater());
+            targetSpeed = propulsion * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
+            // An authored reverse speed caps legacy propulsion rather than
+            // scaling it, so MaxNegativeThrottle is never applied twice.
+            if (physics.hasReverseSpeedOverride() && targetSpeed < 0D)
+                targetSpeed = Math.max(targetSpeed, -physics.reverseSpeedBlocksPerTick(speedScale));
+        }
+        // Slope limiting is independently usable: it applies whether propulsion
+        // is legacy or derived, and is inert when no limit was authored.
+        if (physics.hasSlopeLimit())
+            targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
+                Math.signum(normalizedThrottle), physics.maxSlopeDeg());
         float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
         float directionalThrottle = effectiveThrottle > 0F
             ? (isInWater() ? type.getMaxThrottleInWater() : type.getMaxThrottle())
@@ -119,11 +152,21 @@ public class Vehicle extends Driveable
         if (forward.lengthSqr() > 1.0E-8D)
             forward = forward.normalize();
         Vec3 current = getDeltaMovement();
-        Vec3 desired = forward.scale(targetSpeed);
         double grip = isInWater() ? 0.08D : (onGround() || hasWheelContact() ? 0.22D : 0.035D);
-        Vec3 velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
-        if (DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND))
-            velocity = velocity.multiply(0.55D, 1D, 0.55D);
+        boolean braking = DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND);
+        Vec3 velocity;
+        if (physics.hasGroundPropulsion())
+        {
+            velocity = derivedGroundVelocity(physics, current, forward, targetSpeed,
+                traction, grip, braking, speedScale);
+        }
+        else
+        {
+            Vec3 desired = forward.scale(targetSpeed);
+            velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
+            if (braking)
+                velocity = velocity.multiply(0.55D, 1D, 0.55D);
+        }
         velocity = applyVehicleVerticalPhysics(velocity, type);
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater());
@@ -198,9 +241,18 @@ public class Vehicle extends Driveable
         if (getControllingEntity() != null && hasFuelForEngine())
         {
             float damageMultiplier = DriveableControlPhysics.damagedAccelerationMultiplier(getThrottleDamageNerf());
-            float acceleration = type.isUseRealisticAcceleration()
-                ? Math.max(0.0005F, getEnginePower() / Math.max(1F, type.getMass()))
-                : 0.01F;
+            // Precedence: a complete real-world profile beats the legacy
+            // UseRealisticAcceleration experiment, which beats the fixed legacy
+            // rate. Under the profile this is only how fast the pedal travels;
+            // how fast the vehicle actually accelerates comes from the power
+            // model, not from a per-pack number.
+            float acceleration;
+            if (type.getResolvedPhysics().hasGroundPropulsion())
+                acceleration = VehiclePhysicsConstants.REAL_THROTTLE_RAMP_PER_TICK;
+            else if (type.isUseRealisticAcceleration())
+                acceleration = Math.max(0.0005F, getEnginePower() / Math.max(1F, type.getMass()));
+            else
+                acceleration = 0.01F;
             acceleration *= damageMultiplier;
             if (DriveableInput.isDown(input, DriveableInput.FORWARD))
             {
@@ -230,6 +282,56 @@ public class Vehicle extends Driveable
             ? axis(input, DriveableInput.RIGHT, DriveableInput.LEFT) : 0F;
         prevWheelYaw = wheelYaw;
         wheelYaw = DriveableControlPhysics.dampedControl(wheelYaw, steeringInput, 1F);
+    }
+
+    /**
+     * Longitudinal motion under the real-world profile.
+     *
+     * <p>The power model owns speed along the forward axis: available
+     * acceleration falls as the vehicle speeds up and reaches zero exactly at the
+     * authored top speed, so the vehicle approaches it without snapping and
+     * without overshooting at 20 Hz. Lateral slip keeps decaying at the existing
+     * grip constant, so terrain feel and drift are unchanged.
+     */
+    private Vec3 derivedGroundVelocity(ResolvedVehiclePhysics physics, Vec3 current, Vec3 forward,
+                                       double targetSpeed, float traction, double grip,
+                                       boolean braking, double speedScale)
+    {
+        Vec3 horizontal = new Vec3(current.x, 0D, current.z);
+        double forwardSpeed = horizontal.dot(forward);
+        Vec3 lateral = horizontal.subtract(forward.scale(forwardSpeed));
+
+        double terminal = physics.maxSpeedBlocksPerTick(speedScale);
+        double power = physics.effectivePowerWatts(getEngineSpeed());
+        double tractionFactor = physics.driveType().tractionFactor()
+            * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction);
+        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
+            forwardSpeed, power, physics.massKg(), terminal, tractionFactor);
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
+            forwardSpeed, power, physics.massKg(), terminal, braking);
+        double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed,
+            acceleration, deceleration);
+
+        Vec3 driven = forward.scale(newForwardSpeed).add(lateral.scale(1D - grip));
+        return new Vec3(driven.x, current.y, driven.z);
+    }
+
+    /**
+     * Reverse terminal speed under the real-world profile.
+     *
+     * <p>An authored RealMaxReverseSpeedKmh wins. Otherwise the definition's own
+     * forward-to-reverse throttle ratio is carried over, so a pack that always
+     * reversed at half speed still does. The MaxNegativeThrottle zero gate lives
+     * upstream in normalizedThrottle, so a vehicle that could never reverse still
+     * cannot.
+     */
+    private static double reverseTerminalSpeed(VehicleType type, ResolvedVehiclePhysics physics, double speedScale)
+    {
+        if (physics.hasReverseSpeedOverride())
+            return physics.reverseSpeedBlocksPerTick(speedScale);
+        float forwardPower = Math.max(1.0E-4F, type.getMaxThrottle());
+        float reversePower = Math.max(0F, type.getMaxNegativeThrottle());
+        return physics.maxSpeedBlocksPerTick(speedScale) * Math.min(1D, reversePower / forwardPower);
     }
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)
@@ -285,6 +387,13 @@ public class Vehicle extends Driveable
         VehicleType type = getVehicleType();
         if (type == null || type.getWheelPositions().isEmpty())
             return 1F;
+        // An explicit DriveType chooses which wheels drive; without one the
+        // legacy FourWheelDrive flag still decides, so inference alone can never
+        // change an existing pack's traction.
+        ResolvedVehiclePhysics physics = type.getResolvedPhysics();
+        boolean allWheelsDriven = physics.driveTypeExplicit()
+            ? physics.driveType().drivesAllWheels()
+            : type.isFourWheelDrive();
         int configured = 0;
         int intact = 0;
         int wheelIndex = 0;
@@ -293,7 +402,7 @@ public class Vehicle extends Driveable
             int currentIndex = wheelIndex++;
             if (wheel == null)
                 continue;
-            if (!type.isFourWheelDrive() && type.getWheelPositions().size() >= 4 && currentIndex >= 2)
+            if (!allWheelsDriven && type.getWheelPositions().size() >= 4 && currentIndex >= 2)
                 continue;
             ++configured;
             if (isPartIntact(wheel.getPart()))

@@ -8,7 +8,11 @@ import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -310,6 +314,11 @@ public class Plane extends Driveable
     private Vec3 fixedWingPhysics(PlaneType type)
     {
         Vec3 current = getDeltaMovement();
+        // Precedence: a complete real-world profile beats the legacy
+        // NewFlightControl experiment, which beats the legacy flight model.
+        // Helicopter, VTOL and six-DOF craft are untouched by the new path.
+        if (type.getResolvedPhysics().hasAircraftProfile())
+            return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
         applyLegacyControls(type, current);
         if (type.getPropellers().isEmpty())
             return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
@@ -345,6 +354,119 @@ public class Plane extends Driveable
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
         return velocity;
+    }
+
+    /**
+     * Fixed-wing flight derived from real-world data.
+     *
+     * <p>Thrust comes from the authored kilonewtons, or from shaft power through
+     * a propeller efficiency. Drag is calibrated so that full thrust exactly
+     * balances at the authored top speed, which makes {@code RealMaxSpeedKmh}
+     * authoritative without needing a separate clamp. Lift is derived from wing
+     * loading: the wing carries the aircraft at and above its reference airspeed
+     * and falls off with the square of speed below it, so a heavy wing sinks
+     * without a hard stall threshold. {@code RealClimbRateMs} enters only as a
+     * cap on how much excess lift may be converted into a sustained climb.
+     */
+    private Vec3 derivedFixedWingPhysics(PlaneType type, ResolvedVehiclePhysics physics, Vec3 current)
+    {
+        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double terminalBlocksPerTick = physics.maxSpeedBlocksPerTick(speedScale);
+        applyDerivedControls(type, physics, current, terminalBlocksPerTick);
+
+        if (type.getPropellers().isEmpty())
+            return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
+
+        float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
+        double airspeedBlocksPerTick = current.length();
+        double airspeedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(airspeedBlocksPerTick);
+        double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(terminalBlocksPerTick);
+
+        float engineModifier = getEngineSpeed();
+        double powerKw = physics.effectivePowerWatts(engineModifier) / VehiclePhysicsUnits.WATTS_PER_KILOWATT;
+        double thrustKn = physics.effectiveThrustKn(engineModifier);
+        double propellerFraction = intactPropellerFraction(type.getPropellers());
+        double referenceThrust = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, terminalMs, terminalMs);
+        double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
+            * throttle * propellerFraction;
+
+        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
+            airspeedMs, terminalMs, referenceThrust);
+        double newSpeed = Math.max(0D, airspeedBlocksPerTick
+            + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
+        newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));
+
+        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
+            + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        double liftFraction = AircraftPerformancePhysics.liftFraction(airspeedMs, physics.referenceSpeedMs(speedScale))
+            * intactWings * 0.5D;
+        Float climbRate = physics.source().aircraft().climbRateMs();
+        double excessAllowance = AircraftPerformancePhysics.maxExcessLiftFraction(
+            climbRate == null ? 0D : climbRate, terminalMs);
+        liftFraction = Math.min(liftFraction, 1D + excessAllowance);
+
+        // Velocity swings toward the nose in proportion to how much the wing is
+        // actually biting, so a stalled aircraft keeps its old momentum and
+        // mushes rather than pointing wherever the pilot aims.
+        Vec3 forward = flightForwardVector();
+        double alignment = Mth.clamp(0.12D + 0.6D * liftFraction, 0.05D, 0.85D);
+        Vec3 velocity = current.scale(1D - alignment).add(forward.scale(alignment * newSpeed));
+
+        double lift = liftFraction * LegacyPlanePhysics.GRAVITY * Math.abs(flightUpVector().y);
+        velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
+        if (onGround() && velocity.y <= 0D)
+            velocity = new Vec3(velocity.x, -0.01D, velocity.z);
+        // Retained legacy trims: folded wings and an unoccupied airframe still
+        // add drag, because neither is expressible in the real-world data.
+        if (isWingFolded())
+            velocity = velocity.multiply(0.98D, 1D, 0.98D);
+        if (getControllingEntity() == null)
+            velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+        return velocity;
+    }
+
+    /**
+     * Attitude integration for the derived model. Control authority is
+     * normalised against the aircraft's own terminal speed rather than the
+     * legacy fixed breakpoints, and the slew rate is scaled by a roll inertia
+     * factor derived from wing span and mass. The authored pitch, yaw and roll
+     * modifiers are retained unchanged as handling trims.
+     */
+    private void applyDerivedControls(PlaneType type, ResolvedVehiclePhysics physics, Vec3 velocity,
+                                      double terminalBlocksPerTick)
+    {
+        float pitchControl = (flapPitchLeft + flapPitchRight) * 0.5F;
+        float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
+        float authority = AircraftPerformancePhysics.normalizedControlAuthority(velocity.length(),
+            terminalBlocksPerTick);
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.derivedControlRates(authority, flapYaw,
+            pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(),
+            type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(),
+            type.getRollRightModifier());
+        float yawRate = rates.yaw();
+        float pitchRate = rates.pitch();
+        float rollRate = rates.roll();
+        if (!isPartIntact(EnumDriveablePart.TAIL))
+        {
+            yawRate = 0F;
+            pitchRate = 0F;
+        }
+        if (!isPartIntact(EnumDriveablePart.LEFT_WING))
+            rollRate -= 2F * velocity.horizontalDistance();
+        if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
+            rollRate += 2F * velocity.horizontalDistance();
+
+        float response = physics.rollInertiaFactor();
+        angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate, response);
+        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate, response);
+        angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate, response);
+        axes.rotateLocalYaw(angularYaw);
+        axes.rotateLocalPitch(angularPitch);
+        axes.rotateLocalRoll(-angularRoll);
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        angularYaw *= 0.99F;
+        angularPitch *= 0.99F;
+        angularRoll *= 0.99F;
     }
 
     private Vec3 helicopterPhysics(PlaneType type)
