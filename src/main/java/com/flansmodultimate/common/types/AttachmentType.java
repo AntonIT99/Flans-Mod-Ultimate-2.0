@@ -121,6 +121,7 @@ public class AttachmentType extends PaintableType implements IScope
     protected float minZoom = 1;
     protected float maxZoom = 4;
     protected float zoomAugment = 1;
+    protected boolean hasVariableZoom;
 
     @Override
     protected void read(TypeFile file)
@@ -182,6 +183,7 @@ public class AttachmentType extends PaintableType implements IScope
         minZoom = readValue("MinZoom", minZoom, file);
         maxZoom = readValue("MaxZoom", maxZoom, file);
         zoomAugment = readValue("ZoomAugment", zoomAugment, file);
+        hasVariableZoom = readValue("HasVariableZoom", hasVariableZoom, file);
         zoomFactor = readValue("ZoomLevel", zoomFactor, file);
         fovFactor = readValue("FOVZoomLevel", fovFactor, file);
 
@@ -202,6 +204,30 @@ public class AttachmentType extends PaintableType implements IScope
     public boolean hasZoomOverlay()
     {
         return getOverlay().isPresent();
+    }
+
+    @Override
+    public boolean hasVariableZoom()
+    {
+        return hasVariableZoom;
+    }
+
+    @Override
+    public float getMinZoom()
+    {
+        return minZoom;
+    }
+
+    @Override
+    public float getMaxZoom()
+    {
+        return maxZoom;
+    }
+
+    @Override
+    public float getZoomAugment()
+    {
+        return zoomAugment;
     }
 
     @Override

@@ -1072,6 +1072,30 @@ public class GunType extends PaintableType implements IScope
         return attachedScope == null ? this : attachedScope;
     }
 
+    @Override
+    public boolean hasVariableZoom()
+    {
+        return hasVariableZoom;
+    }
+
+    @Override
+    public float getMinZoom()
+    {
+        return minZoom;
+    }
+
+    @Override
+    public float getMaxZoom()
+    {
+        return maxZoom;
+    }
+
+    @Override
+    public float getZoomAugment()
+    {
+        return zoomAugment;
+    }
+
     /**
      * Returns all types of attachments currently attached to the specified gun
      */
@@ -1646,6 +1670,19 @@ public class GunType extends PaintableType implements IScope
     {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode);
+    }
+
+    public boolean canToggleSecondaryFire(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null && grip.secondaryFire;
+    }
+
+    @Nullable
+    public String getSecondaryFireToggleSound(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null ? grip.toggleSound : null;
     }
 
     /**

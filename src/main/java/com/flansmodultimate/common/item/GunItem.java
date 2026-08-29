@@ -6,8 +6,10 @@ import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFunction;
+import com.flansmodultimate.common.guns.ScopeZoom;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -77,6 +79,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_ACCESSORY = "accessory";
     public static final String NBT_SECONDARY_FIRE = "secondary_fire";
     public static final String NBT_GUN_MODE = "gun_mode";
+    public static final String NBT_CURRENT_ZOOM = "current_zoom";
     public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
     public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
     public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
@@ -325,7 +328,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.getKnockback() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
 
-            float zoomFactor = Math.max(configType.getCurrentScope(stack).getZoomFactor(), configType.getCurrentScope(stack).getFovFactor());
+            float scopeZoom = hasVariableZoom(stack) ? getCurrentVariableZoom(stack)
+                : configType.getCurrentScope(stack).getZoomFactor();
+            float zoomFactor = Math.max(scopeZoom, configType.getCurrentScope(stack).getFovFactor());
             if (zoomFactor != 1F)
                 tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
         }
@@ -701,8 +706,49 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         CompoundTag tag = gun.getOrCreateTag();
         if (!tag.contains(NBT_PREFERRED_AMMO))
-            setPreferredAmmo(gun, configType.getAmmo().iterator().next());
+        {
+            List<ShootableType> ammoTypes = configType.getAmmoTypes();
+            if (!ammoTypes.isEmpty())
+                setPreferredAmmo(gun, ammoTypes.get(0).getOriginalShortName());
+        }
 
         return tag.getString(NBT_PREFERRED_AMMO);
+    }
+
+    public boolean hasVariableZoom(ItemStack gun)
+    {
+        return configType.getCurrentScope(gun).hasVariableZoom();
+    }
+
+    public float getCurrentVariableZoom(ItemStack gun)
+    {
+        IScope scope = configType.getCurrentScope(gun);
+        if (!scope.hasVariableZoom())
+            return scope.getZoomFactor();
+
+        CompoundTag tag = gun.getOrCreateTag();
+        float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT)
+            ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.minimum(scope);
+        return ScopeZoom.clamp(current, scope);
+    }
+
+    public float changeVariableZoom(ItemStack gun, boolean increase)
+    {
+        IScope scope = configType.getCurrentScope(gun);
+        if (!scope.hasVariableZoom())
+            return scope.getZoomFactor();
+
+        float current = getCurrentVariableZoom(gun);
+        float next = ScopeZoom.next(current, scope, increase);
+        gun.getOrCreateTag().putFloat(NBT_CURRENT_ZOOM, next);
+        return next;
+    }
+
+    public void setCurrentVariableZoom(ItemStack gun, float zoom)
+    {
+        IScope scope = configType.getCurrentScope(gun);
+        if (!scope.hasVariableZoom() || !Float.isFinite(zoom))
+            return;
+        gun.getOrCreateTag().putFloat(NBT_CURRENT_ZOOM, ScopeZoom.clamp(zoom, scope));
     }
 }

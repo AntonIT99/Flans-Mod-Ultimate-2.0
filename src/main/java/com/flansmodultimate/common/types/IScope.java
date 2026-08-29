@@ -8,6 +8,14 @@ public interface IScope
 
     float getZoomFactor();
 
+    boolean hasVariableZoom();
+
+    float getMinZoom();
+
+    float getMaxZoom();
+
+    float getZoomAugment();
+
     boolean hasZoomOverlay();
 
     ResourceLocation getZoomOverlay();

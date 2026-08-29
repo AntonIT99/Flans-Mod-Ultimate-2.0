@@ -289,7 +289,8 @@ public class ModClient
         {
             // entering scope
             currentScope = desiredScope;
-            lastZoomLevel = desiredScope.getZoomFactor();
+            lastZoomLevel = gunItem.hasVariableZoom(gunStack)
+                ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
             lastFOVZoomLevel = desiredScope.getFovFactor();
 
             // save originals
@@ -297,7 +298,7 @@ public class ModClient
             originalCameraType = opts.getCameraType();
 
             // adjust sensitivity by sqrt(zoom)
-            double newSensitivity = originalMouseSensitivity / Math.sqrt(desiredScope.getZoomFactor());
+            double newSensitivity = originalMouseSensitivity / Math.sqrt(Math.max(0.01F, lastZoomLevel));
             opts.sensitivity().set(newSensitivity);
 
             // force first-person while scoped
@@ -749,6 +750,18 @@ public class ModClient
                 currentScope = null;
                 mc.options.sensitivity().set(originalMouseSensitivity);
                 mc.options.setCameraType(originalCameraType);
+            }
+            else if (itemInHand instanceof GunItem gunItem)
+            {
+                float desiredZoom = gunItem.hasVariableZoom(stackInHand)
+                    ? gunItem.getCurrentVariableZoom(stackInHand) : currentScope.getZoomFactor();
+                if (Math.abs(desiredZoom - lastZoomLevel) > 0.0001F)
+                {
+                    lastZoomLevel = desiredZoom;
+                    mc.options.sensitivity().set(originalMouseSensitivity
+                        / Math.sqrt(Math.max(0.01F, lastZoomLevel)));
+                    zoomProgress = Math.min(zoomProgress, 0.9F);
+                }
             }
         }
     }

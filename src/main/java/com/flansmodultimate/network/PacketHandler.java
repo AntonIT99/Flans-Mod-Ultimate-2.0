@@ -17,8 +17,11 @@ import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketGunFireModeClient;
 import com.flansmodultimate.network.client.PacketGunMeleeClient;
 import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
+import com.flansmodultimate.network.client.PacketGunPreferredAmmoClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
+import com.flansmodultimate.network.client.PacketGunSecondaryModeClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
+import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketParticle;
@@ -35,9 +38,12 @@ import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunInput;
+import com.flansmodultimate.network.server.PacketGunPreferredAmmo;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
+import com.flansmodultimate.network.server.PacketGunSecondaryMode;
 import com.flansmodultimate.network.server.PacketGunSpread;
+import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.network.server.PacketRequestDebug;
@@ -72,7 +78,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "7";
+    public static final String PROTOCOL = "8";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -108,9 +114,12 @@ public final class PacketHandler {
         registerS2C(PacketFlashBang.class);
         registerS2C(PacketGunFireModeClient.class);
         registerS2C(PacketGunMeleeClient.class);
+        registerS2C(PacketGunPreferredAmmoClient.class);
         registerS2C(PacketGunMuzzleFlash.class);
         registerS2C(PacketGunReloadClient.class);
         registerS2C(PacketGunShootClient.class);
+        registerS2C(PacketGunSecondaryModeClient.class);
+        registerS2C(PacketGunVariableZoomClient.class);
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
         registerS2C(PacketParticles.class);
@@ -129,9 +138,12 @@ public final class PacketHandler {
         registerC2S(PacketBuyWeapon.class);
         registerC2S(PacketGunFireMode.class);
         registerC2S(PacketGunInput.class);
+        registerC2S(PacketGunPreferredAmmo.class);
         registerC2S(PacketGunReload.class);
         registerC2S(PacketGunScopedState.class);
         registerC2S(PacketGunSpread.class);
+        registerC2S(PacketGunSecondaryMode.class);
+        registerC2S(PacketGunVariableZoom.class);
         registerC2S(PacketManualGuidance.class);
         registerC2S(PacketRequestDebug.class);
         registerC2S(PacketRequestDismount.class);

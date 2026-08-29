@@ -8,6 +8,7 @@ import com.flansmod.client.model.ModelVehicle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
@@ -20,6 +21,8 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunReload;
+import com.flansmodultimate.network.server.PacketGunSecondaryMode;
+import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketTeamsAction;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -62,6 +65,10 @@ public final class KeyInputHandler
     private static final KeyMapping reloadKey = key("reload", InputConstants.KEY_R, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping fireModeKey = key("fire_mode", InputConstants.KEY_B, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping lookAtGunKey = key("look_at_gun", InputConstants.KEY_M, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_P, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY_GENERAL);
     private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
@@ -106,7 +113,8 @@ public final class KeyInputHandler
      * Mounting a driveable takes the other branch, so these can share a key with
      * a driveable bind without either losing anything.
      */
-    private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey);
+    private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey,
+        preferredAmmoKey, secondaryModeKey, increaseZoomKey, decreaseZoomKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey,
         primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, doorKey, flareKey);
@@ -157,6 +165,10 @@ public final class KeyInputHandler
         event.register(reloadKey);
         event.register(fireModeKey);
         event.register(lookAtGunKey);
+        event.register(preferredAmmoKey);
+        event.register(secondaryModeKey);
+        event.register(increaseZoomKey);
+        event.register(decreaseZoomKey);
         event.register(debugKey);
         event.register(teamsMenuKey);
         event.register(teamsScoresKey);
@@ -326,6 +338,26 @@ public final class KeyInputHandler
                 if (fireModeKey.consumeClick())
                 {
                     doSwitchFireMode();
+                    return;
+                }
+                if (preferredAmmoKey.consumeClick())
+                {
+                    doOpenPreferredAmmoScreen();
+                    return;
+                }
+                if (secondaryModeKey.consumeClick())
+                {
+                    doToggleSecondaryMode();
+                    return;
+                }
+                if (increaseZoomKey.consumeClick())
+                {
+                    doChangeVariableZoom(true);
+                    return;
+                }
+                if (decreaseZoomKey.consumeClick())
+                {
+                    doChangeVariableZoom(false);
                     return;
                 }
                 if (lookAtGunKey.consumeClick())
@@ -561,6 +593,43 @@ public final class KeyInputHandler
     private static boolean canSwitchFireMode(ItemStack stack)
     {
         return stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().canSwitchFireMode(stack);
+    }
+
+    private static void doOpenPreferredAmmoScreen()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        InteractionHand hand = findGunHand(player, (gunItem, stack) -> !gunItem.getConfigType().getAmmoTypes().isEmpty());
+        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+            Minecraft.getInstance().setScreen(new GunAmmoSelectScreen(hand));
+    }
+
+    private static void doToggleSecondaryMode()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        InteractionHand hand = findGunHand(player,
+            (gunItem, stack) -> gunItem.getConfigType().canToggleSecondaryFire(stack));
+        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+            PacketHandler.sendToServer(new PacketGunSecondaryMode(hand));
+    }
+
+    private static void doChangeVariableZoom(boolean increase)
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        ItemStack stack = player.getMainHandItem();
+        if (stack.getItem() instanceof GunItem gunItem && gunItem.hasVariableZoom(stack))
+            PacketHandler.sendToServer(new PacketGunVariableZoom(InteractionHand.MAIN_HAND, increase));
+    }
+
+    @Nullable
+    private static InteractionHand findGunHand(Player player, java.util.function.BiPredicate<GunItem, ItemStack> predicate)
+    {
+        ItemStack main = player.getMainHandItem();
+        if (main.getItem() instanceof GunItem gunItem && predicate.test(gunItem, main))
+            return InteractionHand.MAIN_HAND;
+        ItemStack off = player.getOffhandItem();
+        if (off.getItem() instanceof GunItem gunItem && predicate.test(gunItem, off))
+            return InteractionHand.OFF_HAND;
+        return null;
     }
 
     private static boolean isGunContext()
