@@ -12,21 +12,28 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ZIP_ROOT = PROJECT_ROOT / "run" / "flan"
+SOURCE_ROOT = PROJECT_ROOT / "src"
 CONFIG_DIR = PROJECT_ROOT / "src" / "main" / "resources" / "config"
 OUTPUT_CSV = PROJECT_ROOT / "missing_shortnames.csv"
 
 FOLDER_TO_CATEGORY: Dict[str, str] = {
+    "aaguns": "aagun",
     "armorFiles": "armor",
     "guns": "gun",
     "grenades": "grenade",
     "bullets": "bullet",
+    "vehicles": "vehicle",
+    "planes": "plane",
 }
 
 CATEGORY_TO_JSON: Dict[str, str] = {
+    "aagun": "aagun_categories.json",
     "armor": "armor_categories.json",
     "gun": "gun_categories.json",
     "grenade": "grenade_categories.json",
     "bullet": "bullet_categories.json",
+    "vehicle": "vehicle_categories.json",
+    "plane": "plane_categories.json",
 }
 
 SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(\S+)\s*$", re.IGNORECASE)
@@ -48,12 +55,25 @@ def iter_zip_files(root: Path) -> Iterable[Path]:
     return sorted(p for p in root.rglob("*.zip") if p.is_file())
 
 
+def iter_flans_content_dirs(source_root: Path) -> Iterable[Path]:
+    if not source_root.exists():
+        return []
+    return sorted(
+        candidate
+        for source_folder in source_root.iterdir()
+        if source_folder.is_dir()
+        for candidate in [source_folder / "resources" / "flans_content"]
+        if candidate.is_dir()
+    )
+
+
 def is_txt_in_category(internal_path: str) -> Optional[str]:
     normalized_path = internal_path.replace("\\", "/")
     if not normalized_path.lower().endswith(".txt"):
         return None
+    parent_folders = {part.lower() for part in normalized_path.split("/")[:-1]}
     for folder, category in FOLDER_TO_CATEGORY.items():
-        if normalized_path.startswith(folder.rstrip("/") + "/"):
+        if folder.rstrip("/").lower() in parent_folders:
             return category
     return None
 
@@ -115,6 +135,41 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
     return results
 
 
+def read_loose_txt_shortnames(flans_content_dir: Path) -> List[ShortnameOrigin]:
+    results: List[ShortnameOrigin] = []
+    for txt_path in sorted(flans_content_dir.rglob("*.txt")):
+        if not txt_path.is_file():
+            continue
+
+        relative_path = txt_path.relative_to(flans_content_dir).as_posix()
+        category = is_txt_in_category(relative_path)
+        if not category:
+            continue
+
+        try:
+            try:
+                text = txt_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                text = txt_path.read_text(encoding="latin-1", errors="replace")
+        except Exception as error:
+            print(f"[WARN] Could not read {txt_path}: {error}", file=sys.stderr)
+            continue
+
+        full_name = extract_full_name_from_text(text)
+        for shortname in extract_shortnames_from_text(text):
+            results.append(
+                ShortnameOrigin(
+                    category=category,
+                    shortname_lower=shortname,
+                    full_name=full_name,
+                    zip_path=str(flans_content_dir.relative_to(PROJECT_ROOT)),
+                    internal_txt_path=relative_path,
+                )
+            )
+
+    return results
+
+
 def load_category_items(config_dir: Path, category: str) -> Set[str]:
     json_path = config_dir / CATEGORY_TO_JSON[category]
     if not json_path.exists():
@@ -144,6 +199,10 @@ def main() -> int:
 
     for zip_path in iter_zip_files(ZIP_ROOT):
         for origin in read_zip_txt_shortnames(zip_path):
+            origins_by_category[origin.category].append(origin)
+
+    for flans_content_dir in iter_flans_content_dirs(SOURCE_ROOT):
+        for origin in read_loose_txt_shortnames(flans_content_dir):
             origins_by_category[origin.category].append(origin)
 
     json_items_by_category = {
