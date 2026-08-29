@@ -44,6 +44,8 @@ public final class KeyConflictFilter
      */
     private static final String RELOADED_CATEGORY = "key.categories.flansmod";
     private static final String RELOADED_PREFIX = "key.flansmod.";
+    private static final String DRIVEABLE_PRIMARY_PREFIX = OURS_PREFIX + "driveable.primary";
+    private static final String DRIVEABLE_SECONDARY_PREFIX = OURS_PREFIX + "driveable.secondary";
 
     /** True when the controls screen has nothing worth reporting about this pair. */
     public static boolean cannotOverlap(KeyMapping one, KeyMapping other)
@@ -91,6 +93,12 @@ public final class KeyConflictFilter
         if (!isDriveableBind(ours))
             return false;
 
+        // Attack and use are the visible defaults for the driveable weapon
+        // mappings. ClientEventHandler suppresses their vanilla actions while
+        // mounted, so reporting these deliberate overlaps would be misleading.
+        if (isVanillaAttackOrUse(outsider))
+            return isDriveableWeaponBind(ours);
+
         return isInertWhileRiding(outsider) || KeyInputHandler.isClaimableVanillaAction(outsider);
     }
 
@@ -104,6 +112,17 @@ public final class KeyConflictFilter
         return mapping.getKeyConflictContext() instanceof EnumKeyConflictContext;
     }
 
+    private static boolean isDriveableWeaponBind(KeyMapping mapping)
+    {
+        return mapping.getName().startsWith(DRIVEABLE_PRIMARY_PREFIX)
+            || mapping.getName().startsWith(DRIVEABLE_SECONDARY_PREFIX);
+    }
+
+    private static boolean isVanillaAttackOrUse(KeyMapping mapping)
+    {
+        return "key.attack".equals(mapping.getName()) || "key.use".equals(mapping.getName());
+    }
+
     private static boolean isFlansModReloaded(KeyMapping mapping)
     {
         return RELOADED_CATEGORY.equals(mapping.getCategory())
@@ -112,8 +131,8 @@ public final class KeyConflictFilter
 
     /**
      * Vanilla controls that do nothing once the player is a passenger. Sneak is
-     * deliberately absent: it still dismounts. So are attack and use, which
-     * still fire a driveable's weapons.
+     * deliberately absent: it still dismounts. Attack and use are handled
+     * separately as explicit driveable weapon mappings.
      */
     private static boolean isInertWhileRiding(KeyMapping mapping)
     {

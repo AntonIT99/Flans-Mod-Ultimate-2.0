@@ -74,6 +74,30 @@ class KeyConflictFilterTest
         assertFalse(KeyConflictFilter.cannotOverlap(plane, anyDriveable));
     }
 
+    @Test
+    void driveableWeaponBindsDoNotReportTheirVanillaMouseDefaultsAsConflicts()
+    {
+        KeyMapping primary = mapping("key.flansmodultimate.driveable.primary",
+            EnumKeyConflictContext.DRIVEABLE, "key.categories.flansmodultimate.driveables");
+        KeyMapping secondaryAlternative = mapping("key.flansmodultimate.driveable.secondary_alternative",
+            EnumKeyConflictContext.DRIVEABLE, "key.categories.flansmodultimate.driveables");
+
+        assertTrue(KeyConflictFilter.cannotOverlap(primary,
+            mapping("key.attack", KeyConflictContext.UNIVERSAL, "key.categories.gameplay")));
+        assertTrue(KeyConflictFilter.cannotOverlap(secondaryAlternative,
+            mapping("key.use", KeyConflictContext.UNIVERSAL, "key.categories.gameplay")));
+    }
+
+    @Test
+    void otherDriveableBindsStillReportAConflictWithAttack()
+    {
+        KeyMapping door = mapping("key.flansmodultimate.driveable.door",
+            EnumKeyConflictContext.DRIVEABLE, "key.categories.flansmodultimate.driveables");
+
+        assertFalse(KeyConflictFilter.cannotOverlap(door,
+            mapping("key.attack", KeyConflictContext.UNIVERSAL, "key.categories.gameplay")));
+    }
+
     private static KeyMapping mapping(String name, IKeyConflictContext context, String category)
     {
         return new KeyMapping(name, context, InputConstants.Type.KEYSYM, ANY_KEY, category);

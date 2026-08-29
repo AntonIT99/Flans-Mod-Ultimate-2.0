@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.input;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelVehicle;
@@ -67,8 +69,10 @@ public final class KeyInputHandler
 
     // Every driveable: planes, ground vehicles and mechas alike.
     private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
-    private static final KeyMapping primaryKey = key("driveable.primary", InputConstants.KEY_V, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
-    private static final KeyMapping secondaryKey = key("driveable.secondary", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping primaryKey = mouseKey("driveable.primary", GLFW.GLFW_MOUSE_BUTTON_LEFT, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping primaryAlternativeKey = key("driveable.primary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping secondaryKey = mouseKey("driveable.secondary", GLFW.GLFW_MOUSE_BUTTON_RIGHT, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping secondaryAlternativeKey = key("driveable.secondary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_X, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
@@ -105,15 +109,17 @@ public final class KeyInputHandler
     private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey,
-        primaryKey, secondaryKey, doorKey, flareKey);
+        primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, doorKey, flareKey);
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey,
         yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey,
         controlModeKey, gearKey, modeKey, playerInventoryKey,
-        driveableInventoryKey, primaryKey, secondaryKey, doorKey, flareKey);
+        driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
+        doorKey, flareKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey,
-        steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, secondaryKey, doorKey, flareKey);
+        steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
+        secondaryKey, secondaryAlternativeKey, doorKey, flareKey);
     /**
      * Binds read with consumeClick. Forge gates isDown on the conflict context
      * but not consumeClick, so a press made outside the context stays queued and
@@ -141,6 +147,11 @@ public final class KeyInputHandler
         return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.KEYSYM, keyCode, category);
     }
 
+    private static KeyMapping mouseKey(String name, int button, IKeyConflictContext context, String category)
+    {
+        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.MOUSE, button, category);
+    }
+
     public static void registerKeys(RegisterKeyMappingsEvent event)
     {
         event.register(reloadKey);
@@ -152,7 +163,9 @@ public final class KeyInputHandler
         event.register(teamsClassKey);
         event.register(driveableInventoryKey);
         event.register(primaryKey);
+        event.register(primaryAlternativeKey);
         event.register(secondaryKey);
+        event.register(secondaryAlternativeKey);
         event.register(doorKey);
         event.register(flareKey);
         event.register(driveForwardKey);
@@ -381,9 +394,10 @@ public final class KeyInputHandler
                 if (brakeKey.isDown()) mask |= DriveableInput.ASCEND;
             }
 
-            // Support both the classic V/B binds and the normal attack/use buttons.
-            if (primaryKey.isDown() || mc.options.keyAttack.isDown()) mask |= DriveableInput.PRIMARY_FIRE;
-            if (secondaryKey.isDown() || mc.options.keyUse.isDown()) mask |= DriveableInput.SECONDARY_FIRE;
+            if (primaryKey.isDown() || primaryAlternativeKey.isDown())
+                mask |= DriveableInput.PRIMARY_FIRE;
+            if (secondaryKey.isDown() || secondaryAlternativeKey.isDown())
+                mask |= DriveableInput.SECONDARY_FIRE;
 
             boolean sneaking = mc.options.keyShift.isDown();
             if (sneaking && !wasSneaking)
