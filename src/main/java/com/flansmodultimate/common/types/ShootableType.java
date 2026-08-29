@@ -240,6 +240,11 @@ public abstract class ShootableType extends InfoType
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);
         hitBoxSize = readValue("HitBoxSize", hitBoxSize, file);
         mass = readValue("Mass", mass, file);
+        if (!Float.isFinite(mass) || mass < 0F)
+        {
+            logError("Mass must be a finite non-negative value in grams; kinetic damage will use the fixed fallback", file);
+            mass = 0F;
+        }
 
         //Hit stuff
         damage.setDamage(readValue("Damage", damage.getDamage(), file));
@@ -287,6 +292,11 @@ public abstract class ShootableType extends InfoType
         explosionBreaksBlocks = readValue("ExplosionsBreakBlocks", explosionBreaksBlocks, file);
 
         explosiveMass = readValue("ExplosiveMass", explosiveMass, file);
+        if (!Float.isFinite(explosiveMass) || explosiveMass < 0F)
+        {
+            logError("ExplosiveMass must be a finite non-negative value in kg TNT equivalent; ignoring it", file);
+            explosiveMass = 0F;
+        }
         explosionRadius = readValue("ExplosionRadius", explosionRadius, file);
         explosionRadius = readValue("Explosion", explosionRadius, file);
         explosionPower = readValue("ExplosionPower", explosionPower, file);
@@ -410,7 +420,9 @@ public abstract class ShootableType extends InfoType
     @SuppressWarnings("java:S1172")
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
-        return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage);
+        return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(),
+            getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage,
+            useNewExplosionSystem() ? getExplosiveMass() : 0F);
     }
 
     public float getDispersionForDisplay() {

@@ -6,6 +6,7 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.penetration.PenetrationCalculator;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
@@ -39,7 +40,10 @@ public class BulletType extends ShootableType
     protected float bulletSpeed;
     /** Penetration @ 0° Angle of Attack (mm) at 100m */
     @Getter
-    protected float penetrationAt100m; //TODO: implement a usage
+    protected float penetrationAt100m;
+    /** Retained speed at 100 m, precomputed once from the bullet's drag model. */
+    protected float referenceVelocityAt100m;
+    protected final List<Float> roundReferenceVelocitiesAt100m = new ArrayList<>();
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -190,6 +194,11 @@ public class BulletType extends ShootableType
             bulletSpeed = muzzleVelocity / 20F;
         speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
         penetrationAt100m = readValue("PenetrationAt100m", penetrationAt100m, file);
+        if (!Float.isFinite(penetrationAt100m) || penetrationAt100m < 0F)
+        {
+            logError("PenetrationAt100m must be a finite non-negative value in millimetres; ignoring it", file);
+            penetrationAt100m = 0F;
+        }
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
@@ -300,17 +309,12 @@ public class BulletType extends ShootableType
         {
             // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
             readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> {
-                if (round.length > 5)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, Float.parseFloat(round[5]))));
-                else if (round.length > 4)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, 0F)));
-                else if (round.length > 3)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), 0F, 0F)));
-                else if (round.length > 2)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), 0F, 0F, 0F)));
+                period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)));
             }));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
+
+        precomputePenetrationReferenceVelocities();
     }
 
     @Override
@@ -357,6 +361,73 @@ public class BulletType extends ShootableType
         return super.getMass();
     }
 
+    private RoundStats readRoundStats(String[] round, TypeFile file)
+    {
+        float roundMass = nonNegativeRoundValue(round, 2, "mass in grams", file);
+        float roundExplosiveMass = nonNegativeRoundValue(round, 3, "explosive mass in kg TNT equivalent", file);
+        float roundSpeed = nonNegativeRoundValue(round, 4, "muzzle velocity in m/s", file) / 20F;
+        float roundPenetration = nonNegativeRoundValue(round, 5, "penetration at 100 m in millimetres", file);
+        return new RoundStats(roundMass, roundExplosiveMass, roundSpeed, roundPenetration);
+    }
+
+    private float nonNegativeRoundValue(String[] round, int index, String description, TypeFile file)
+    {
+        if (index >= round.length)
+            return 0F;
+        float value;
+        try
+        {
+            value = Float.parseFloat(round[index]);
+        }
+        catch (NumberFormatException ex)
+        {
+            logError("AddRound " + description + " must be numeric; using zero", file);
+            return 0F;
+        }
+        if (Float.isFinite(value) && value >= 0F)
+            return value;
+        logError("AddRound " + description + " must be finite and non-negative; using zero", file);
+        return 0F;
+    }
+
+    public float getPenetrationAt100m(int shotsFired)
+    {
+        return hasDifferentRounds() ? statsForShot(shotsFired).penetrationAt100m() : penetrationAt100m;
+    }
+
+    public float getReferenceVelocityAt100m(int shotsFired)
+    {
+        if (!hasDifferentRounds())
+            return referenceVelocityAt100m;
+        int k = Math.floorMod(shotsFired, periodLength);
+        for (int index = 0; index < period.size(); index++)
+        {
+            RoundEntry round = period.get(index);
+            if (k < round.count())
+                return index < roundReferenceVelocitiesAt100m.size()
+                    ? roundReferenceVelocitiesAt100m.get(index) : 0F;
+            k -= round.count();
+        }
+        return 0F;
+    }
+
+    private void precomputePenetrationReferenceVelocities()
+    {
+        referenceVelocityAt100m = PenetrationCalculator.referenceVelocityAt100m(
+            getBulletSpeed(true), dragInAir);
+        roundReferenceVelocitiesAt100m.clear();
+        for (RoundEntry round : period)
+        {
+            float speed = round.stats().bulletSpeed();
+            if (speed <= 0F || !Float.isFinite(speed))
+                speed = DEFAULT_BULLET_SPEED;
+            if (speedMultiplier > 0F)
+                speed *= speedMultiplier;
+            roundReferenceVelocitiesAt100m.add(
+                PenetrationCalculator.referenceVelocityAt100m(speed, dragInAir));
+        }
+    }
+
     @Override
     public float getExplosiveMass()
     {
@@ -379,7 +450,10 @@ public class BulletType extends ShootableType
             DamageStats explosionBlastDamage = new DamageStats();
             explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(roundStats.explosiveMass)));
             explosionBlastDamage.calculate();
-            return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius, explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage);
+            return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
+                explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage,
+                Float.isFinite(roundStats.explosiveMass()) && roundStats.explosiveMass() > 0F
+                    ? roundStats.explosiveMass() : 0F);
         }
         return super.getExplosionStats(explosiveEntity);
     }

@@ -175,8 +175,8 @@ public final class DriveableCollisionProfile
         private Shape(EnumDriveablePart part, double[] vertices)
         {
             this.part = part == null ? EnumDriveablePart.CORE : part;
-            this.turret = isTurretPart(this.part);
-            this.barrel = this.part == EnumDriveablePart.BARREL;
+            this.turret = isTurretMountedPart(this.part);
+            this.barrel = isBarrelPart(this.part);
             this.vertices = vertices.clone();
 
             double localMinX = Double.POSITIVE_INFINITY;
@@ -233,12 +233,6 @@ public final class DriveableCollisionProfile
             return true;
         }
 
-        private static boolean isTurretPart(EnumDriveablePart part)
-        {
-            return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
-                || part.name().startsWith("TURRET_");
-        }
-
         double[] coordinates()
         {
             return vertices;
@@ -259,6 +253,19 @@ public final class DriveableCollisionProfile
         public double getMaxX() { return maxX; }
         public double getMaxY() { return maxY; }
         public double getMaxZ() { return maxZ; }
+    }
+
+    /** Shared turret classification for collision, projectile hits and armour precedence. */
+    public static boolean isTurretMountedPart(EnumDriveablePart part)
+    {
+        return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
+            || part != null && part.name().startsWith("TURRET_");
+    }
+
+    /** Damageable gun/barrel boxes follow both turret yaw and barrel pitch. */
+    public static boolean isBarrelPart(EnumDriveablePart part)
+    {
+        return part == EnumDriveablePart.BARREL;
     }
 
     /**

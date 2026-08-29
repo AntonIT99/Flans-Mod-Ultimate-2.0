@@ -1,6 +1,10 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.armor.ArmorPlate;
+import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
+import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.types.DamageStats;
@@ -85,13 +89,23 @@ public class FlanExplosion extends Explosion
      * @param blastDamage max damage dealt to entities within blast radius
      * @param fragDamage max damage dealt to entities within frag radius
      */
-    public record Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage, float fragRadius, float fragIntensity, DamageStats fragDamage)
+    public record Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
+                        float fragRadius, float fragIntensity, DamageStats fragDamage, float explosiveMassKg)
     {
+        public Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
+                     float fragRadius, float fragIntensity, DamageStats fragDamage)
+        {
+            this(explosionRadius, explosionPower, blastRadius, blastDamage,
+                fragRadius, fragIntensity, fragDamage, 0F);
+        }
+
         public Stats
         {
             // Ensure blastRadius >= explosionRadius
             if (blastRadius < explosionRadius)
                 blastRadius = explosionRadius;
+            if (!Float.isFinite(explosiveMassKg) || explosiveMassKg < 0F)
+                explosiveMassKg = 0F;
         }
     }
 
@@ -315,8 +329,16 @@ public class FlanExplosion extends Explosion
         List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !e.ignoreExplosion());
         ForgeEventFactory.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
 
+        Set<Driveable> handledDriveables = new HashSet<>();
         for (Entity e : entities)
         {
+            Driveable driveable = driveableOf(e);
+            if (driveable != null)
+            {
+                if (handledDriveables.add(driveable))
+                    applyVehicleDamage(driveable);
+                continue;
+            }
             double distance = e.getEyePosition().distanceTo(center);
 
             // occlusion
@@ -333,6 +355,49 @@ public class FlanExplosion extends Explosion
             applyDamage(e, explosionDamage);
             applyKnockback(e, seen, blastFalloff);
         }
+    }
+
+    private void applyVehicleDamage(Driveable driveable)
+    {
+        if (driveable == null || driveable.getConfigType() == null)
+            return;
+        VehicleExplosionTarget target = driveable.resolveExplosionTarget(center).orElse(null);
+        if (target == null)
+            return;
+
+        double distance = driveable.getEyePosition().distanceTo(center);
+        double seen = Explosion.getSeenPercent(center, driveable);
+        double blastFalloff = getBlastFalloff(distance, stats.blastRadius());
+        float existingBlast = distance <= stats.blastRadius()
+            ? (float) getBlastDamage(driveable, seen, blastFalloff) : 0F;
+        float existingFragmentation = distance <= stats.fragRadius()
+            ? (float) getFragDamage(driveable, seen, distance, stats.fragRadius(), stats.fragIntensity()) : 0F;
+
+        ArmorPlate plate = driveable.getConfigType().getResolvedArmor()
+            .plate(target.part(), target.facing()).authored();
+        Float explosiveMass = stats.explosiveMassKg() > 0F ? stats.explosiveMassKg() : null;
+        ExplosionVehicleDamageResolver.DamageChannels channels = ExplosionVehicleDamageResolver.resolve(
+            plate.thicknessMm(), explosiveMass, target.distanceMeters(), existingBlast, existingFragmentation,
+            ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
+
+        DamageSource source = FlanDamageSources.createDamageSource(
+            level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
+        boolean hurt = driveable.damagePart(target.part(), channels.totalDamage(), source);
+        if (hurt && causingEntity instanceof ServerPlayer player)
+            PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), player);
+        applyKnockback(driveable, seen, blastFalloff);
+    }
+
+    @Nullable
+    private static Driveable driveableOf(Entity entity)
+    {
+        if (entity instanceof Driveable driveable)
+            return driveable;
+        if (entity instanceof Wheel wheel)
+            return wheel.getDriveable();
+        if (entity instanceof Seat seat)
+            return seat.getDriveable();
+        return null;
     }
 
     protected AABB getHurtEntitiesAabb()

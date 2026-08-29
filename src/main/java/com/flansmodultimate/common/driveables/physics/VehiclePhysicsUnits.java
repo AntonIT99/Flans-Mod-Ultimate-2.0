@@ -35,8 +35,54 @@ public final class VehiclePhysicsUnits
     public static final double WATTS_PER_KILOWATT = 1000D;
     /** Newtons per kilonewton. */
     public static final double NEWTONS_PER_KILONEWTON = 1000D;
+    /** Kilowatts per mechanical horsepower (1 hp = 745.699872 W), the imperial unit engine parts are commonly rated in. */
+    public static final double KW_PER_HP = 0.745699872D;
+    /** Kilowatts per metric horsepower / Pferdestärke (1 PS = 75 kgf·m/s = 735.49875 W exactly). */
+    public static final double KW_PER_PS = 0.73549875D;
 
     private VehiclePhysicsUnits() {}
+
+    /**
+     * Converts mechanical horsepower to kilowatts, so {@code RealEnginePowerHp}
+     * can be stored internally in the same unit as {@code RealEnginePowerKw}. A
+     * non-finite or non-positive input yields zero rather than a poisoned
+     * physics value.
+     */
+    public static double hpToKw(double hp)
+    {
+        if (!Double.isFinite(hp) || hp <= 0D)
+            return 0D;
+        return hp * KW_PER_HP;
+    }
+
+    /** Inverse of {@link #hpToKw(double)}; used for debug and tooltip readouts. */
+    public static double kwToHp(double kw)
+    {
+        if (!Double.isFinite(kw) || kw <= 0D)
+            return 0D;
+        return kw / KW_PER_HP;
+    }
+
+    /**
+     * Converts metric horsepower / Pferdestärke to kilowatts, so
+     * {@code RealEnginePowerPS} can be stored internally in the same unit as
+     * {@code RealEnginePowerKw}. A non-finite or non-positive input yields zero
+     * rather than a poisoned physics value.
+     */
+    public static double psToKw(double ps)
+    {
+        if (!Double.isFinite(ps) || ps <= 0D)
+            return 0D;
+        return ps * KW_PER_PS;
+    }
+
+    /** Inverse of {@link #psToKw(double)}; used for debug and tooltip readouts. */
+    public static double kwToPs(double kw)
+    {
+        if (!Double.isFinite(kw) || kw <= 0D)
+            return 0D;
+        return kw / KW_PER_PS;
+    }
 
     /** Converts km/h to blocks per tick at scale 1.0. */
     public static double kmhToBlocksPerTick(double kmh)

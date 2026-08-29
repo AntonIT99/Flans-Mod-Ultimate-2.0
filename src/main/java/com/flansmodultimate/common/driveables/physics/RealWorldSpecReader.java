@@ -24,6 +24,8 @@ public final class RealWorldSpecReader
     public static final String KEY_MASS = "RealMassKg";
     public static final String KEY_MAX_SPEED = "RealMaxSpeedKmh";
     public static final String KEY_ENGINE_POWER = "RealEnginePowerKw";
+    public static final String KEY_ENGINE_POWER_HP = "RealEnginePowerHp";
+    public static final String KEY_ENGINE_POWER_PS = "RealEnginePowerPS";
     public static final String KEY_ENGINE_THRUST = "RealEngineThrustKn";
     // Aircraft keys.
     public static final String KEY_WING_SPAN = "RealWingSpanM";
@@ -66,7 +68,7 @@ public final class RealWorldSpecReader
 
         Float massKg = readPositive(file, KEY_MASS, warnings, "kilograms");
         Float maxSpeedKmh = readPositive(file, KEY_MAX_SPEED, warnings, "km/h");
-        Float enginePowerKw = readPositive(file, KEY_ENGINE_POWER, warnings, "kilowatts");
+        Float enginePowerKw = readEnginePowerKw(file, warnings);
         Float engineThrustKn = readPositive(file, KEY_ENGINE_THRUST, warnings, "kilonewtons");
 
         RealWorldVehicleSpec.Aircraft aircraft = new RealWorldVehicleSpec.Aircraft(
@@ -115,6 +117,30 @@ public final class RealWorldSpecReader
             return null;
         }
         return value;
+    }
+
+    /**
+     * Engine power accepts any of three units a reference book might list it in.
+     * {@code RealEnginePowerHp} (mechanical/imperial horsepower) and
+     * {@code RealEnginePowerPS} (metric horsepower / Pferdestärke) are both
+     * converted to kilowatts so the rest of the system only ever handles one
+     * unit internally. Following the same last-declared-wins convention the
+     * legacy alias readers use elsewhere in this codebase, each key overrides
+     * the ones before it in the priority order below when more than one is
+     * present: {@code RealEnginePowerKw} < {@code RealEnginePowerHp} <
+     * {@code RealEnginePowerPS}.
+     */
+    @Nullable
+    private static Float readEnginePowerKw(TypeFile file, List<String> warnings)
+    {
+        Float kw = readPositive(file, KEY_ENGINE_POWER, warnings, "kilowatts");
+        Float hp = readPositive(file, KEY_ENGINE_POWER_HP, warnings, "horsepower");
+        if (hp != null)
+            kw = (float) VehiclePhysicsUnits.hpToKw(hp);
+        Float ps = readPositive(file, KEY_ENGINE_POWER_PS, warnings, "metric horsepower (PS)");
+        if (ps != null)
+            kw = (float) VehiclePhysicsUnits.psToKw(ps);
+        return kw;
     }
 
     @Nullable
@@ -201,8 +227,8 @@ public final class RealWorldSpecReader
     /** Lower-cased key list, used by the debug command to echo what a pack declared. */
     public static List<String> allKeys()
     {
-        return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_THRUST,
-            KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
+        return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS,
+            KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
             KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_MAX_SLOPE, KEY_DRAFT);
     }
 

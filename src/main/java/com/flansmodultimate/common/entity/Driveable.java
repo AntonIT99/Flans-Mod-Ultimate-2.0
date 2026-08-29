@@ -12,6 +12,7 @@ import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
@@ -19,6 +20,9 @@ import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
+import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
+import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResolver;
 import com.flansmodultimate.common.driveables.physics.MarineDraftPhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
@@ -2722,9 +2726,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     /** Called by the shooting pipeline after a precise part ray hit. */
-    public ShootingHelper.HitData bulletHit(BulletType bulletType, DriveableHit hit, ShootingHelper.HitData hitData)
+    public ShootingHelper.HitData bulletHit(@Nullable FiredShot shot, BulletType bulletType, DriveableHit hit,
+                                            ShootingHelper.HitData hitData)
     {
-        if (bulletType == null || hit == null || driveableData == null)
+        if (bulletType == null || hit == null || driveableData == null || configType == null)
             return hitData;
         DriveablePart part = driveableData.getPart(hit.getPart());
         if (part == null)
@@ -2734,10 +2739,24 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         float resistance = part.getPenetrationResistance();
         float remainingPower = Math.max(0F, previousPower - resistance);
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
-        float damage = bulletType.getDamage().getDamageAgainstEntity(this) * Mth.clamp(previousPower, 0.1F, 1F);
+        int shotIndex = shot == null ? 0 : shot.getShot();
+        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(),
+            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg());
+        float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
+        boolean normalizedHealth = configType.getResolvedHealth().enabled();
+        float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
+            : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
+        float p100 = bulletType.getPenetrationAt100m(shotIndex);
+        VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
+            normalizedHealth, bulletType.getMass(shotIndex), selectedFixedDamage,
+            hit.getLocalProjectileDirection().length(), armorHit,
+            p100 > 0F && Float.isFinite(p100) ? p100 : null,
+            bulletType.getReferenceVelocityAt100m(shotIndex), ModCommonConfig.penetrationVelocityExponent());
+        boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
+            && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)
         {
-            part.damage(Math.max(0F, damage), bulletType.isSetEntitiesOnFire());
+            part.damage(resolvedDamage.damage(), bulletType.isSetEntitiesOnFire() && !armourBlocked);
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());
         }
@@ -2751,20 +2770,26 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return Collections.emptyList();
         Vec3 localOrigin = worldToLocal(origin);
         Vec3 localMotion = worldDirectionToLocal(motion);
-        Vec3 localEnd = localOrigin.add(localMotion);
-        double lengthSquared = localMotion.lengthSqr();
+        DriveableType type = getConfigType();
+        Vec3 turretPivot = type == null || type.getTurretOrigin() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(type.getTurretOrigin());
+        Vec3 turretOffset = type == null || type.getTurretOriginOffset() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset());
         List<BulletHit> hits = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
             CollisionBox box = part.getBox();
             if (box == null || !canHitPart(part.getType()))
                 continue;
-            AABB aabb = box.asAabb();
-            Optional<Vec3> intersection = aabb.contains(localOrigin) ? Optional.of(localOrigin) : aabb.clip(localOrigin, localEnd);
-            if (intersection.isEmpty())
+            DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(
+                box.asAabb(), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
+                turretPivot, turretOffset);
+            if (intersection == null)
                 continue;
-            float fraction = (float) Mth.clamp(intersection.get().subtract(localOrigin).dot(localMotion) / lengthSquared, 0D, 1D);
-            hits.add(new DriveableHit(this, part.getType(), fraction));
+            Vec3 worldHit = origin.add(motion.scale(intersection.fraction()));
+            hits.add(new DriveableHit(this, part.getType(), intersection.fraction(), worldHit,
+                intersection.position(), intersection.projectileDirection(), intersection.outwardNormal(),
+                intersection.facing()));
         }
         hits.sort(Comparator.naturalOrder());
         return hits;
@@ -2813,6 +2838,31 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             .filter(part -> part.getBox() != null)
             .min(Comparator.comparingDouble(part -> distanceSquaredToBox(local, part.getBox().asAabb())))
             .map(DriveablePart::getType);
+    }
+
+    /** Selects one nearest damageable collision surface so proxy entities cannot multiply explosion damage. */
+    public Optional<VehicleExplosionTarget> resolveExplosionTarget(@NotNull Vec3 worldPoint)
+    {
+        if (driveableData == null || configType == null)
+            return Optional.empty();
+        Vec3 hullLocalPoint = worldToLocal(worldPoint);
+        Vec3 turretPivot = configType.getTurretOrigin() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+        Vec3 turretOffset = configType.getTurretOriginOffset() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+        VehicleExplosionTarget best = null;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (part == null || part.getBox() == null || part.getMaxHealth() <= 0F || part.isDestroyed()
+                || !canHitPart(part.getType()))
+                continue;
+            DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
+                part.getBox().asAabb(), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
+                turretPivot, turretOffset);
+            if (best == null || surface.distance() < best.distanceMeters())
+                best = new VehicleExplosionTarget(part.getType(), surface.facing(), surface.distance());
+        }
+        return Optional.ofNullable(best);
     }
 
     public boolean repairFromTool(@NotNull Player player, int amount)

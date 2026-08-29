@@ -29,6 +29,11 @@ public final class ModCommonConfig
 
     /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
     public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
+    public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
+    public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
+    public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
+    public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 10.0D;
 
@@ -115,6 +120,11 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_SPEED_SCALE;
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_HEALTH_SCALE;
+    private static final ForgeConfigSpec.DoubleValue PENETRATION_VELOCITY_EXPONENT;
+    private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
+    private static final ForgeConfigSpec.DoubleValue ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
+    private static final ForgeConfigSpec.DoubleValue MINIMUM_BLAST_DISTANCE_METERS;
 
     private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
 
@@ -370,6 +380,26 @@ public final class ModCommonConfig
                 MIN_REALISTIC_VEHICLE_SPEED_SCALE, MAX_REALISTIC_VEHICLE_SPEED_SCALE);
         builder.pop();
 
+        builder.push("Vehicle Damage Settings");
+        REALISTIC_VEHICLE_HEALTH_SCALE = builder
+            .comment("Total HP scale for vehicles opting into UseRealisticVehicleHealth.",
+                "Total HP = scale * RealMassKg^(2/3). Legacy vehicles are unaffected.")
+            .defineInRange("realisticVehicleHealthScale", DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE, 0.01D, 1000D);
+        PENETRATION_VELOCITY_EXPONENT = builder
+            .comment("Global velocity exponent for PenetrationAt100m falloff: P(v) = P100 * (v / v100)^exponent.")
+            .defineInRange("penetrationVelocityExponent", DEFAULT_PENETRATION_VELOCITY_EXPONENT, 0.1D, 5D);
+        MAX_ARMOR_IMPACT_ANGLE_DEG = builder
+            .comment("Maximum impact angle used for effective armour thickness before grazing-angle capping.")
+            .defineInRange("maxArmorImpactAngleDeg", DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG, 0D, 89.9D);
+        ARMORED_BLAST_RESISTANCE_KPA_PER_MM = builder
+            .comment("Gameplay calibration: required blast pressure in kPa per millimetre of nominal armour.")
+            .defineInRange("armoredBlastResistanceKPaPerMm", DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM,
+                0.1D, 100000D);
+        MINIMUM_BLAST_DISTANCE_METERS = builder
+            .comment("Minimum physical distance used by armoured blast pressure calculations to avoid a singularity.")
+            .defineInRange("minimumBlastDistanceMeters", DEFAULT_MINIMUM_BLAST_DISTANCE_METERS, 0.01D, 100D);
+        builder.pop();
+
         builder.push("Enchantment Module");
         ENCHANTMENT_MODULE_ENABLED = builder
             .comment("Enable the Flan's Mod enchantment module (Steady, Nimble, Lumberjack, Duelist, Sharpshooter, Juggernaut)")
@@ -462,6 +492,11 @@ public final class ModCommonConfig
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
             REALISTIC_VEHICLE_SPEED_SCALE.get(),
+            REALISTIC_VEHICLE_HEALTH_SCALE.get(),
+            PENETRATION_VELOCITY_EXPONENT.get(),
+            MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
+            ARMORED_BLAST_RESISTANCE_KPA_PER_MM.get(),
+            MINIMUM_BLAST_DISTANCE_METERS.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get()
         );
@@ -482,6 +517,37 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE : config.realisticVehicleSpeedScale();
+    }
+
+    public static double realisticVehicleHealthScale()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE : config.realisticVehicleHealthScale();
+    }
+
+    public static double penetrationVelocityExponent()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_PENETRATION_VELOCITY_EXPONENT : config.penetrationVelocityExponent();
+    }
+
+    public static double maxArmorImpactAngleDeg()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG : config.maxArmorImpactAngleDeg();
+    }
+
+    public static double armoredBlastResistanceKPaPerMm()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM
+            : config.armoredBlastResistanceKPaPerMm();
+    }
+
+    public static double minimumBlastDistanceMeters()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MINIMUM_BLAST_DISTANCE_METERS : config.minimumBlastDistanceMeters();
     }
 
     public static boolean forceDefenseAsModernArmor()

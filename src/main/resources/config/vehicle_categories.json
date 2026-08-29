@@ -2,7 +2,7 @@
     "M18 Hellcat": {
         "properties": {
             "RealMassKg": 17036,
-            "RealEnginePowerHp": 460,
+            "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": "89",
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "32",
@@ -16,7 +16,7 @@
     "Panzerkampfwagen VI Ausf. H1 Tiger": {
         "properties": {
             "RealMassKg": 57250,
-            "RealEnginePowerHp": 650,
+            "RealEnginePowerPS": 650,
             "RealMaxSpeedKmh": "45.4",
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "9.2",

@@ -69,6 +69,43 @@ class VehiclePhysicsUnitsTest
     }
 
     @Test
+    void hpConvertsToKwAndBackUsingTheMechanicalHorsepowerDefinition()
+    {
+        assertEquals(0.745699872D, VehiclePhysicsUnits.hpToKw(1D), EPSILON);
+        assertEquals(993.35D, VehiclePhysicsUnits.hpToKw(1332D), 0.5D);
+        assertEquals(1332D, VehiclePhysicsUnits.kwToHp(993.35D), 0.5D);
+    }
+
+    @Test
+    void hpConversionRejectsInvalidInputsInsteadOfPoisoningPhysics()
+    {
+        assertEquals(0D, VehiclePhysicsUnits.hpToKw(0D), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.hpToKw(-1D), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.hpToKw(Double.NaN), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.kwToHp(0D), EPSILON);
+    }
+
+    @Test
+    void psConvertsToKwAndBackUsingTheMetricHorsepowerDefinition()
+    {
+        assertEquals(0.73549875D, VehiclePhysicsUnits.psToKw(1D), EPSILON);
+        assertEquals(993.0D, VehiclePhysicsUnits.psToKw(1350D), 0.5D);
+        assertEquals(1350D, VehiclePhysicsUnits.kwToPs(993.0D), 0.5D);
+        // PS is slightly larger than mechanical hp, so the same shaft power
+        // takes more PS than hp to express.
+        assertTrue(VehiclePhysicsUnits.kwToPs(993D) > VehiclePhysicsUnits.kwToHp(993D));
+    }
+
+    @Test
+    void psConversionRejectsInvalidInputsInsteadOfPoisoningPhysics()
+    {
+        assertEquals(0D, VehiclePhysicsUnits.psToKw(0D), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.psToKw(-1D), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.psToKw(Double.NaN), EPSILON);
+        assertEquals(0D, VehiclePhysicsUnits.kwToPs(0D), EPSILON);
+    }
+
+    @Test
     void derivedRatiosMatchTheirDefinitions()
     {
         // 993 kW over 2890 kg, the Spitfire figures used in the documentation.

@@ -2,7 +2,7 @@
     "Messerschmitt Bf 109 G-10": {
         "properties": {
             "RealMassKg": 3280,
-            "RealEnginePowerHp": 1800,
+            "RealEnginePowerPS": 1800,
             "RealMaxSpeedKmh": "685",
             "RealWingSpanM": "9.97",
             "RealWingAreaM2": "16.4",

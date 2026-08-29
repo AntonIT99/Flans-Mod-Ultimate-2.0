@@ -78,6 +78,59 @@ class RealWorldSpecReaderTest
     }
 
     @Test
+    void enginePowerHpIsConvertedToKilowatts()
+    {
+        // 993 kW is the Spitfire's rating; roughly 1332 hp is the horsepower
+        // figure most reference books actually print for the same engine.
+        RealWorldSpecReader.Result result = read("RealEnginePowerHp 1332");
+        assertEquals(993.35F, result.spec().enginePowerKw(), 0.5F);
+        assertFalse(result.hasWarnings());
+    }
+
+    @Test
+    void enginePowerHpOverridesEnginePowerKwWhenBothAreDeclared()
+    {
+        RealWorldSpecReader.Result result = read("RealEnginePowerKw 500", "RealEnginePowerHp 1332");
+        assertEquals(993.35F, result.spec().enginePowerKw(), 0.5F);
+    }
+
+    @Test
+    void enginePowerHpIsValidatedTheSameWayAsEnginePowerKw()
+    {
+        assertNull(read("RealEnginePowerHp not-a-number").spec().enginePowerKw());
+        assertNull(read("RealEnginePowerHp -5").spec().enginePowerKw());
+        assertNull(read("RealEnginePowerHp 0").spec().enginePowerKw());
+        assertTrue(read("RealEnginePowerHp not-a-number").hasWarnings());
+    }
+
+    @Test
+    void enginePowerPSIsConvertedToKilowatts()
+    {
+        // 993 kW is the Spitfire's rating; roughly 1350 PS is the metric
+        // horsepower figure a German-language reference would print for it.
+        RealWorldSpecReader.Result result = read("RealEnginePowerPS 1350");
+        assertEquals(993.0F, result.spec().enginePowerKw(), 0.5F);
+        assertFalse(result.hasWarnings());
+    }
+
+    @Test
+    void enginePowerPSOverridesBothEnginePowerKwAndEnginePowerHpWhenAllAreDeclared()
+    {
+        RealWorldSpecReader.Result result = read(
+            "RealEnginePowerKw 500", "RealEnginePowerHp 1332", "RealEnginePowerPS 1350");
+        assertEquals(993.0F, result.spec().enginePowerKw(), 0.5F);
+    }
+
+    @Test
+    void enginePowerPSIsValidatedTheSameWayAsEnginePowerKw()
+    {
+        assertNull(read("RealEnginePowerPS not-a-number").spec().enginePowerKw());
+        assertNull(read("RealEnginePowerPS -5").spec().enginePowerKw());
+        assertNull(read("RealEnginePowerPS 0").spec().enginePowerKw());
+        assertTrue(read("RealEnginePowerPS not-a-number").hasWarnings());
+    }
+
+    @Test
     void keysArMatchedCaseInsensitivelyLikeEveryOtherLegacyKey()
     {
         RealWorldSpecReader.Result result = read("realmasskg 2890", "REALMAXSPEEDKMH 635");

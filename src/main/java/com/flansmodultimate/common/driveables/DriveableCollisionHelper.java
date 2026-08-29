@@ -424,11 +424,8 @@ public final class DriveableCollisionHelper
                                   double offsetX, double offsetY, double offsetZ)
     {
         double yaw = turretYawDegrees * Math.PI / 180D;
-        double pitch = turretPitchDegrees * Math.PI / 180D;
         double yawCos = Math.cos(yaw);
         double yawSin = Math.sin(yaw);
-        double pitchCos = Math.cos(pitch);
-        double pitchSin = Math.sin(pitch);
         double rotatedOffsetX = offsetX * yawCos + offsetZ * yawSin;
         double rotatedOffsetZ = -offsetX * yawSin + offsetZ * yawCos;
         double[] source = shape.coordinates();
@@ -440,14 +437,13 @@ public final class DriveableCollisionHelper
             double localZ = source[point + 2];
             if (shape.isTurret())
             {
-                double relativeX = localX - pivotX;
-                double relativeY = localY - pivotY;
-                double relativeZ = localZ - pivotZ;
-                double pitchedX = relativeX * pitchCos + relativeY * pitchSin;
-                double pitchedY = -relativeX * pitchSin + relativeY * pitchCos;
-                localX = pitchedX * yawCos + relativeZ * yawSin + pivotX + rotatedOffsetX;
-                localY = pitchedY + pivotY + offsetY;
-                localZ = -pitchedX * yawSin + relativeZ * yawCos + pivotZ + rotatedOffsetZ;
+                Vec3 relative = new Vec3(localX - pivotX, localY - pivotY, localZ - pivotZ);
+                if (shape.isBarrel())
+                    relative = LegacyDriveableCoordinates.rotateBarrelPitchLocal(relative, turretPitchDegrees);
+                Vec3 rotated = LegacyDriveableCoordinates.rotateTurretYawLocal(relative, turretYawDegrees);
+                localX = rotated.x + pivotX + rotatedOffsetX;
+                localY = rotated.y + pivotY + offsetY;
+                localZ = rotated.z + pivotZ + rotatedOffsetZ;
             }
             pose.toWorld(localX, localY, localZ, output, point);
         }

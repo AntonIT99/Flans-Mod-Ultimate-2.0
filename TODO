@@ -7,8 +7,10 @@ General:
 - check auto landing gear, check toggle landing gear
 - check toggle doors
 - check propeller speed at standby as well as when moving
+- investigate the legacy penetration system
 
 Content Packs:
+- Rewrite the official packs with the new gun and vehicle systems
 WW2
 - Fix Scope Attachment Points
 - Fix Barrel Attachment and Muzzle Flash

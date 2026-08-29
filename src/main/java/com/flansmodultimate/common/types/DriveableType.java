@@ -13,6 +13,11 @@ import com.flansmodultimate.common.driveables.ParticleEmitter;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorResolver;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorSpecReader;
+import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.EnumDriveType;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
@@ -24,6 +29,7 @@ import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,6 +57,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public class DriveableType extends PaintableType
 {
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
+    /** Original, unscaled definitions retained so repeated finalization is idempotent. */
+    private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, DriveableExplosion> partDeathExplosions = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, List<RecipeIngredient>> partwiseRecipe = new EnumMap<>(EnumDriveablePart.class);
     protected final List<RecipeIngredient> driveableRecipe = new ArrayList<>();
@@ -218,6 +226,16 @@ public class DriveableType extends PaintableType
     protected ResolvedVehiclePhysics resolvedPhysics =
         ResolvedVehiclePhysics.legacy(EnumVehicleCategory.OTHER, EnumDriveType.RWD);
 
+    /** Optional authored armour. Missing entries remain distinct from explicit zero plates. */
+    protected VehicleArmorSpec armorSpec = VehicleArmorSpec.EMPTY;
+    /** Immutable definition-time armour table used by projectile and explosion hits. */
+    protected ResolvedVehicleArmor resolvedArmor = VehicleArmorResolver.resolve(VehicleArmorSpec.EMPTY, List.of());
+    /** Explicit opt-in; false preserves authored HP exactly. */
+    protected boolean useRealisticVehicleHealth;
+    /** Final normalized or legacy health allocation exposed to UI/debug consumers. */
+    protected VehicleHealthScaler.Result resolvedHealth =
+        VehicleHealthScaler.resolve(false, null, Map.of(), ModCommonConfig.DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE);
+
     @Override
     protected void read(TypeFile file)
     {
@@ -232,6 +250,7 @@ public class DriveableType extends PaintableType
         readCollisionMeshes(file);
         readParticles(file);
         readRealWorldSpec(file);
+        readArmorAndHealthSpec(file);
         finishDerivedValues();
     }
 
@@ -246,6 +265,20 @@ public class DriveableType extends PaintableType
         realWorldSpec = result.spec();
         for (String warning : result.warnings())
             logError(warning, file);
+    }
+
+    private void readArmorAndHealthSpec(TypeFile file)
+    {
+        VehicleArmorSpecReader.Result armorResult = VehicleArmorSpecReader.read(file);
+        armorSpec = armorResult.spec();
+        for (String warning : armorResult.warnings())
+            logError(warning, file);
+
+        useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
+        if (useRealisticVehicleHealth && realWorldSpec.massKg() == null)
+            logError("UseRealisticVehicleHealth requires a valid RealMassKg; authored hitbox health will be retained", file);
+        if (useRealisticVehicleHealth && health.values().stream().noneMatch(box -> box != null && box.getHealth() > 0F))
+            logError("UseRealisticVehicleHealth requires at least one positive hitbox health weight; authored health will be retained", file);
     }
 
     private void readSeats(TypeFile file)
@@ -697,6 +730,13 @@ public class DriveableType extends PaintableType
      */
     protected void finishDerivedValues()
     {
+        if (authoredHealth.isEmpty() && !health.isEmpty())
+            authoredHealth.putAll(health);
+        if (!authoredHealth.isEmpty())
+        {
+            health.clear();
+            health.putAll(authoredHealth);
+        }
         if (bulletDetectionRadius < 0F)
         {
             bulletDetectionRadius = 0F;
@@ -706,6 +746,11 @@ public class DriveableType extends PaintableType
         }
         resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
             deriveGeometry(), legacyPhysicsHints());
+        resolvedArmor = VehicleArmorResolver.resolve(armorSpec, authoredHealth.keySet());
+        resolvedHealth = VehicleHealthScaler.resolve(useRealisticVehicleHealth, realWorldSpec.massKg(),
+            authoredHealth, ModCommonConfig.realisticVehicleHealthScale());
+        health.clear();
+        health.putAll(resolvedHealth.boxes());
     }
 
     /** Which coupled real-world profile this type can qualify for. */

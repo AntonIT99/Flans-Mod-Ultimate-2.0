@@ -192,7 +192,8 @@ public final class ShootingHelper
                 penetratingPower = 0F;
             else
             {
-                HitData driveableHitData = driveableHit.getDriveable().bulletHit(bulletType, driveableHit, hitData);
+                HitData driveableHitData = driveableHit.getDriveable().bulletHit(
+                    shot, bulletType, driveableHit, hitData);
                 penetratingPower = driveableHitData.penetratingPower();
                 lastHitPenAmount = driveableHitData.lastHitPenAmount();
                 lastHitHeadshot = driveableHitData.lastHitHeadshot();
@@ -403,7 +404,7 @@ public final class ShootingHelper
         if (shootable != null && projectileMass > 0F)
         {
             // proportional to the square root of kinetic energy
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(projectileMass) * shootable.getDeltaMovement().length() * 20.0);
+            return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
         }
         else
         {
@@ -417,6 +418,19 @@ public final class ShootingHelper
             else
                 return baseDamage;
         }
+    }
+
+    /** Canonical kinetic damage formula shared by ordinary entities and normalized-health vehicles. */
+    public static float getKineticDamage(float projectileMassGrams, double velocityBlocksPerTick)
+    {
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
+            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+            return 0F;
+        double reference = ModCommonConfig.get() == null
+            ? 5D : ModCommonConfig.get().newDamageSystemDamageReference();
+        double damage = reference * 0.001D * Math.sqrt(projectileMassGrams)
+            * velocityBlocksPerTick * 20D;
+        return Double.isFinite(damage) && damage > 0D ? (float) Math.min(damage, Float.MAX_VALUE) : 0F;
     }
 
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)

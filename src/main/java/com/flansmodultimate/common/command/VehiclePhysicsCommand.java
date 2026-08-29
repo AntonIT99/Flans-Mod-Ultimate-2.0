@@ -1,5 +1,8 @@
 package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.common.driveables.armor.ArmorPlate;
+import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
@@ -134,6 +137,35 @@ public final class VehiclePhysicsCommand
             + " m, height = " + format(geometry.heightM()) + " m");
         send(context, ChatFormatting.GRAY, "  wheelbase = " + format(geometry.wheelbaseM())
             + " m, track = " + format(geometry.trackWidthM()) + " m");
+
+        send(context, ChatFormatting.AQUA, "-- armour and normalized health --");
+        VehicleArmorSpec armor = type.getArmorSpec();
+        if (armor.isEmpty())
+            send(context, ChatFormatting.GRAY, "  armour: none (all parts resolve to 0 mm)");
+        else
+        {
+            for (EnumArmorFacing facing : EnumArmorFacing.values())
+            {
+                ArmorPlate hull = armor.hull().get(facing);
+                ArmorPlate turret = armor.turret().get(facing);
+                if (hull != null)
+                    send(context, ChatFormatting.GRAY, "  hull " + facing.name().toLowerCase(Locale.ROOT)
+                        + " = " + plate(hull));
+                if (turret != null)
+                    send(context, ChatFormatting.GRAY, "  turret " + facing.name().toLowerCase(Locale.ROOT)
+                        + " = " + plate(turret));
+            }
+            armor.partOverrides().forEach((part, plate) -> send(context, ChatFormatting.GRAY,
+                "  part " + part.getShortName() + " = " + plate(plate)));
+        }
+        send(context, ChatFormatting.GRAY, "  RealMassKg = " + format(source.massKg()) + " kg");
+        send(context, ChatFormatting.GRAY, "  normalized health requested = "
+            + type.isUseRealisticVehicleHealth() + ", enabled = " + type.getResolvedHealth().enabled()
+            + ", total HP = " + format(type.getResolvedHealth().totalHp()));
+        type.getResolvedHealth().allocations().forEach((part, hp) -> {
+            if (hp > 0F)
+                send(context, ChatFormatting.GRAY, "    " + part.getShortName() + " = " + format(hp) + " HP");
+        });
         return 1;
     }
 
@@ -145,7 +177,9 @@ public final class VehiclePhysicsCommand
             return " (not a ground vehicle)";
         StringBuilder missing = new StringBuilder();
         appendMissing(missing, source.massKg(), RealWorldSpecReader.KEY_MASS);
-        appendMissing(missing, source.enginePowerKw(), RealWorldSpecReader.KEY_ENGINE_POWER);
+        if (source.enginePowerKw() == null)
+            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP
+                + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS);
         appendMissing(missing, source.maxSpeedKmh(), RealWorldSpecReader.KEY_MAX_SPEED);
         return missing.isEmpty() ? "" : " missing: " + missing;
     }
@@ -162,7 +196,8 @@ public final class VehiclePhysicsCommand
         appendMissing(missing, source.aircraft().wingSpanM(), RealWorldSpecReader.KEY_WING_SPAN);
         appendMissing(missing, source.aircraft().wingAreaM2(), RealWorldSpecReader.KEY_WING_AREA);
         if (source.enginePowerKw() == null && source.engineThrustKn() == null)
-            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " or " + RealWorldSpecReader.KEY_ENGINE_THRUST);
+            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " (or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP
+                + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS + ") or " + RealWorldSpecReader.KEY_ENGINE_THRUST);
         return missing.isEmpty() ? "" : " missing: " + missing;
     }
 
@@ -212,6 +247,12 @@ public final class VehiclePhysicsCommand
         if (!Double.isFinite(number))
             return "n/a";
         return String.format(Locale.ROOT, "%.4g", number);
+    }
+
+    private static String plate(ArmorPlate plate)
+    {
+        return format(plate.thicknessMm()) + " mm"
+            + (plate.slopeDeg() == 0F ? "" : " @ " + format(plate.slopeDeg()) + " deg");
     }
 
     @Nullable

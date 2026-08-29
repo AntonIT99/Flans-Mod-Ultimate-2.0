@@ -85,11 +85,16 @@ public record CommonConfigSnapshot(
     int digitalAmmoSupplyAmount,
 
     double realisticVehicleSpeedScale,
+    double realisticVehicleHealthScale,
+    double penetrationVelocityExponent,
+    double maxArmorImpactAngleDeg,
+    double armoredBlastResistanceKPaPerMm,
+    double minimumBlastDistanceMeters,
 
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 14;
+    public static final int CURRENT_VERSION = 15;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -176,6 +181,11 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
         buf.writeDouble(s.realisticVehicleSpeedScale);
+        buf.writeDouble(s.realisticVehicleHealthScale);
+        buf.writeDouble(s.penetrationVelocityExponent);
+        buf.writeDouble(s.maxArmorImpactAngleDeg);
+        buf.writeDouble(s.armoredBlastResistanceKPaPerMm);
+        buf.writeDouble(s.minimumBlastDistanceMeters);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
     }
@@ -261,6 +271,11 @@ public record CommonConfigSnapshot(
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
 
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readDouble(),
 
             buf.readBoolean()
