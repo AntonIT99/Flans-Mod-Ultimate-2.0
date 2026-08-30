@@ -90,6 +90,12 @@ public final class DriveableItemRenderer
         poseStack.translate(0.14F * side, -0.13F, -0.18F);
         poseStack.mulPose(Axis.YP.rotationDegrees(45F * side));
         poseStack.scale(0.4F, 0.4F, 0.4F);
+        poseStack.translate(-0.5F, 0.5F, 1F);
+        poseStack.mulPose(Axis.XP.rotationDegrees(-30F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(60F));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(0F));
+        float scale = 1.5F;
+        poseStack.scale(scale, scale, scale);
     }
 
     private static void thirdPerson(PoseStack poseStack, float side)
@@ -97,7 +103,6 @@ public final class DriveableItemRenderer
         poseStack.translate(-side / 16F, -0.125F, 0.625F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-180F));
         poseStack.mulPose(Axis.XP.rotationDegrees(90F));
-
         poseStack.translate(-0.0625F, 0.4375F, 0.0625F);
         poseStack.translate(0.25F, 0.1875F, -0.1875F);
         poseStack.scale(0.375F, 0.375F, 0.375F);
@@ -150,11 +155,7 @@ public final class DriveableItemRenderer
                 poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 135F : -45F));
                 poseStack.translate(0F, -0.05F, 0F);
             }
-            case FIXED ->
-            {
-                poseStack.mulPose(Axis.XP.rotationDegrees(15F));
-                poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 90F : 270F));
-            }
+            case FIXED -> poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 0F : 180F));
             default ->
             {
                 // no-op
