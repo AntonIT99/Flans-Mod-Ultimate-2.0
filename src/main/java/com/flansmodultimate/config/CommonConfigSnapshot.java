@@ -30,6 +30,7 @@ public record CommonConfigSnapshot(
     float armshotDamageModifier,
     float legshotModifier,
     float vehicleWheelSeatExplosionModifier,
+    boolean driveableCollisionsBreakBlocks,
 
     int breakableArmor,
     int defaultArmorDurability,
@@ -101,7 +102,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 19;
+    public static final int CURRENT_VERSION = 20;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -129,6 +130,7 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.armshotDamageModifier);
         buf.writeFloat(s.legshotModifier);
         buf.writeFloat(s.vehicleWheelSeatExplosionModifier);
+        buf.writeBoolean(s.driveableCollisionsBreakBlocks);
 
         buf.writeVarInt(s.breakableArmor);
         buf.writeVarInt(s.defaultArmorDurability);
@@ -231,6 +233,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readBoolean(),
 
             buf.readVarInt(),
             buf.readVarInt(),

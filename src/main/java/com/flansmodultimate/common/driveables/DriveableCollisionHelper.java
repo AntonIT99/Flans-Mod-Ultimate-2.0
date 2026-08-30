@@ -30,6 +30,7 @@ public final class DriveableCollisionHelper
     private static final double SUPPORT_ABOVE = 0.45D;
     private static final double SUPPORT_BELOW = 0.22D;
     private static final double LANDING_BELOW = 0.3D;
+    private static final double MAX_SWEPT_LANDING_BELOW = 1.5D;
     private static final double MAX_PLATFORM_DELTA = 3D;
     private static final double MAX_SEPARATION_PER_TICK = 0.75D;
     private static final double GEOMETRY_EPSILON = 1.0E-7D;
@@ -303,10 +304,32 @@ public final class DriveableCollisionHelper
     private void findSupport(LivingEntity candidate, SupportResult result)
     {
         AABB box = candidate.getBoundingBox();
-        double x = (box.minX + box.maxX) * 0.5D;
-        double z = (box.minZ + box.maxZ) * 0.5D;
+        double centreX = (box.minX + box.maxX) * 0.5D;
+        double centreZ = (box.minZ + box.maxZ) * 0.5D;
+        double sampleX = Math.max(0D, (box.maxX - box.minX) * 0.4D);
+        double sampleZ = Math.max(0D, (box.maxZ - box.minZ) * 0.4D);
         double foot = box.minY;
         double verticalMotion = candidate.getDeltaMovement().y;
+        // The old ellipsoid collision accepted contact anywhere under a
+        // player's feet. Sampling the centre alone lets a player fall through
+        // narrow hull edges even while most of their footprint is supported.
+        for (int sample = 0; sample < 5; sample++)
+        {
+            double x = centreX;
+            double z = centreZ;
+            if (sample > 0)
+            {
+                x += (sample == 1 || sample == 2) ? sampleX : -sampleX;
+                z += (sample == 1 || sample == 3) ? sampleZ : -sampleZ;
+            }
+            findSupportAt(x, z, foot, verticalMotion, candidate.onGround(), sample == 0 ? 0D : 0.02D, result);
+        }
+    }
+
+    private void findSupportAt(double x, double z, double foot, double verticalMotion, boolean onGround,
+                               double samplePenalty, SupportResult result)
+    {
+        double landingBelow = sweptLandingTolerance(verticalMotion);
         for (int shape = 0; shape < active.length; shape++)
         {
             if (!active[shape])
@@ -321,7 +344,7 @@ public final class DriveableCollisionHelper
                     double previousY = interpolate(previousVertices[shape], triangle, 1, barycentricScratch);
                     double gap = foot - previousY;
                     if (gap >= -SUPPORT_BELOW && gap <= SUPPORT_ABOVE
-                        && verticalMotion <= 0.5D && (candidate.onGround() || gap <= 0.14D || verticalMotion <= 0D))
+                        && verticalMotion <= 0.5D && (onGround || gap <= 0.14D || verticalMotion <= 0D))
                     {
                         double previousX = interpolate(previousVertices[shape], triangle, 0, barycentricScratch);
                         double previousZ = interpolate(previousVertices[shape], triangle, 2, barycentricScratch);
@@ -338,7 +361,7 @@ public final class DriveableCollisionHelper
                         double deltaY = supportVerticalCorrection(currentY, foot);
                         double deltaZ = currentZ - previousZ;
                         double deltaLength = squaredDistance(0D, 0D, 0D, deltaX, deltaY, deltaZ);
-                        double score = Math.abs(gap);
+                        double score = Math.abs(gap) + samplePenalty;
                         if (deltaLength <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA && score < result.score)
                             result.set(deltaX, deltaY, deltaZ, score);
                     }
@@ -347,16 +370,24 @@ public final class DriveableCollisionHelper
                 // Catch an entity landing on a deck that was not supporting it
                 // during the previous transform. This correction is vertical;
                 // subsequent ticks carry the entity with the material point.
-                if (!result.found && verticalMotion <= 0.1D
+                if (verticalMotion <= 0.1D
                     && barycentricXZ(currentVertices[shape], triangle, x, z, barycentricScratch))
                 {
                     double surfaceY = interpolate(currentVertices[shape], triangle, 1, barycentricScratch);
                     double gap = foot - surfaceY;
-                    if (gap >= -LANDING_BELOW && gap <= SUPPORT_ABOVE)
-                        result.set(0D, -gap + 1.0E-4D, 0D, Math.abs(gap) + 0.5D);
+                    double score = Math.abs(gap) + 0.5D + samplePenalty;
+                    if (gap >= -landingBelow && gap <= SUPPORT_ABOVE && score < result.score)
+                        result.set(0D, -gap + 1.0E-4D, 0D, score);
                 }
             }
         }
+    }
+
+    static double sweptLandingTolerance(double verticalMotion)
+    {
+        if (!Double.isFinite(verticalMotion))
+            return LANDING_BELOW;
+        return Math.min(MAX_SWEPT_LANDING_BELOW, Math.max(LANDING_BELOW, -verticalMotion + 0.1D));
     }
 
     static double supportVerticalCorrection(double surfaceY, double footY)

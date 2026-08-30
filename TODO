@@ -1,18 +1,18 @@
 General:
 - Fix gloves
-- investigate the legacy penetration system
+- Investigate the legacy penetration system
+- Implement FMU Style Hitmarkers
+- Investigate armored vehicles resistance to blast damage
 
 Driveables:
-- Use special mecha inventory
-- collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
-- Tank rendering still has issues with y axis
-- general driveable item rendering has some issues
-
-Planes:
-- Investigate Bf 109 yaw/roll
-- check toggle doors -> problem with door closed enforced for planes
-- check propeller speed at standby as well as when moving
-- planes should crash when brutal collision with the ground. By default no blocks destroyed but configurable
+- Ground vehicle still has issues with y positioning. Rendering issue or entity positioning issue?
+- Mecha yaw torso rotation no longer stops when the player has moved the mouse
+- Passenger guns shooting points set with "GunOrigin" are still not positioned correctly
+- Implement special mecha inventory
+- Driveable item rendering in hand has some issues
+- Check propeller speed at standby as well as when moving
+- Collision with player still problematic: player can not stand on top of a vehicle, the player currently get's pushed sidewards and downwards.
+- Plane don't crash when hitting the ground at high speed.
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

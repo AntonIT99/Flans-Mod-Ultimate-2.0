@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
+import com.flansmodultimate.common.driveables.PlaneCrashDamage;
 import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
 import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
@@ -61,6 +62,9 @@ public class Plane extends Driveable
     private float angularRoll;
     /** Latches the one automatic door opening per landing, as in 1.7.10. */
     private boolean doorsAutoOpened;
+    /** Prevents automatic closing from overriding a later manual reopen. */
+    private boolean doorsAutoCloseApplied;
+    private int crashImpactCooldown;
     /** Progressive throttle lever state. Transient, and tracked per side. */
     private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
 
@@ -198,18 +202,27 @@ public class Plane extends Driveable
     {
         if (!type.isHasDoor())
             return;
-        if (type.isAutoOpenDoorsNearGround() && Math.abs(getThrottle()) <= PARKED_THROTTLE
-            && isNearGround(DOOR_CLEARANCE))
+        boolean parkedNearGround = Math.abs(getThrottle()) <= PARKED_THROTTLE
+            && isNearGround(DOOR_CLEARANCE);
+        if (type.isAutoOpenDoorsNearGround() && parkedNearGround)
         {
             if (!doorsAutoOpened)
                 setDoorOpen(true);
             doorsAutoOpened = true;
         }
-        else if (!type.isFlyWithOpenDoor())
-        {
-            setDoorOpen(false);
+        else
             doorsAutoOpened = false;
+
+        if (!parkedNearGround && !type.isFlyWithOpenDoor())
+        {
+            // Close only once when leaving the parked condition. Reapplying
+            // this every tick used to undo a pilot's manual reopen immediately.
+            if (!doorsAutoCloseApplied)
+                setDoorOpen(false);
+            doorsAutoCloseApplied = true;
         }
+        else
+            doorsAutoCloseApplied = false;
     }
 
     @Override
@@ -218,6 +231,8 @@ public class Plane extends Driveable
         PlaneType type = getPlaneType();
         if (type == null)
             return;
+        if (crashImpactCooldown > 0)
+            --crashImpactCooldown;
         advanceAnimations();
         updateThrottle(type);
 
@@ -260,14 +275,7 @@ public class Plane extends Driveable
             // and treating an airborne aircraft as still rolling.
             clearWheelContact();
         moveWithCollisions(velocity);
-        if (verticalCollision && descent < -0.55D)
-        {
-            float landingDamage = (float) ((-descent - 0.45D) * 18D * Math.max(0F, type.getFallDamageFactor()));
-            if (!isGearDeployed())
-                landingDamage *= 2F;
-            damagePart(isGearDeployed() ? EnumDriveablePart.CORE_WHEEL : EnumDriveablePart.CORE,
-                landingDamage, level().damageSources().fall());
-        }
+        handleGroundImpact(type, descent);
         if (isEngineActive() && hasWorkingPropeller(type))
             consumeFuel(DriveableControlPhysics.aircraftFuelLoad(getThrottle(), configuredThrottlePower(type),
                 getEngineSpeed()));
@@ -705,6 +713,52 @@ public class Plane extends Driveable
         float keyboard = axis(mask, DriveableInput.DESCEND, DriveableInput.ASCEND);
         return isMouseControlEnabled()
             ? LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), keyboard) : keyboard;
+    }
+
+    private void handleGroundImpact(@NotNull PlaneType type, double descentVelocity)
+    {
+        if (crashImpactCooldown > 0 || descentVelocity >= -0.01D
+            || !verticalCollision && !isSupportedByGround())
+            return;
+
+        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(-descentVelocity,
+            Mth.clamp(getUpVector().y, -1D, 1D), type.getFallDamageFactor());
+        if (!impact.damaging())
+            return;
+
+        crashImpactCooldown = 12;
+        float damage = impact.damage() * (isGearDeployed() ? 1F : 1.35F);
+        if (isGearDeployed())
+        {
+            damageCrashPart(EnumDriveablePart.CORE_WHEEL, damage * 0.35F, impact.severity(), 0.2F, false);
+            damageCrashPart(EnumDriveablePart.LEFT_WING_WHEEL, damage * 0.25F, impact.severity(), 0.15F, false);
+            damageCrashPart(EnumDriveablePart.RIGHT_WING_WHEEL, damage * 0.25F, impact.severity(), 0.15F, false);
+            damageCrashPart(EnumDriveablePart.TAIL_WHEEL, damage * 0.2F, impact.severity(), 0.12F, false);
+        }
+
+        Vec3 forward = flightForwardVector();
+        double roll = getRoll();
+        EnumDriveablePart struckPart;
+        if (Math.abs(roll) >= Math.abs(getPitch()))
+            struckPart = roll >= 0D ? EnumDriveablePart.RIGHT_WING : EnumDriveablePart.LEFT_WING;
+        else
+            struckPart = forward.y < 0D ? EnumDriveablePart.NOSE : EnumDriveablePart.TAIL;
+        damageCrashPart(struckPart, damage * (0.45F + impact.severity() * 0.35F),
+            impact.severity(), 0.3F, true);
+        damageCrashPart(EnumDriveablePart.CORE, damage * 0.25F, impact.severity(), 0.06F, false);
+        handleCollisionPointImpacts(new Vec3(0D, descentVelocity, 0D));
+    }
+
+    private void damageCrashPart(@NotNull EnumDriveablePart partType, float flatDamage, float severity,
+                                 float healthFraction, boolean breakOnBrutalImpact)
+    {
+        var part = driveableData == null ? null : driveableData.getPart(partType);
+        if (part == null || part.isDestroyed())
+            return;
+        float amount = Math.max(flatDamage, part.getMaxHealth() * severity * healthFraction);
+        if (breakOnBrutalImpact && severity >= 0.9F)
+            amount = Math.max(amount, part.getHealth() + 1F);
+        damagePart(partType, amount, level().damageSources().flyIntoWall());
     }
 
     private float rollInput(int mask)

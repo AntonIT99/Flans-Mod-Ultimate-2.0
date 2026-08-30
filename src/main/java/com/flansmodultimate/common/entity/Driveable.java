@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
+import com.flansmodultimate.common.driveables.SeatCycle;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
@@ -1842,30 +1843,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
     {
         Vec3 muzzle = configuredModelLocal(info.getGunOrigin());
-        int seatIndex = seat.getSeatIndex();
-        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
-            ? modelPassengerGunAimPivots[seatIndex] : null;
-        if (pivot == null)
-            pivot = muzzle;
-
-        float pitch = seat.getAimPitch();
-        Vec3 aimedMuzzle;
-        Vec3 origin;
-        if (isTurretMountedPart(info.getPart()))
-        {
-            // Registered turret guns are rendered inside the driver's turret
-            // yaw, then apply their own relative yaw and pitch at their pivot.
-            float relativeYaw = Mth.wrapDegrees(seat.getAimYaw() - getTurretYaw());
-            aimedMuzzle = pivot.add(rotateTurretLocalDirection(muzzle.subtract(pivot), relativeYaw, pitch));
-            origin = turretPointToWorld(aimedMuzzle, getTurretYaw(), 0F);
-        }
-        else
-        {
-            aimedMuzzle = pivot.add(rotateTurretLocalDirection(
-                muzzle.subtract(pivot), seat.getAimYaw(), pitch));
-            origin = modelLocalToWorld(aimedMuzzle);
-        }
-        return applyVehicleModelVerticalOffset(origin);
+        // Legacy GunOrigin is an absolute driveable-local muzzle anchor. Aim
+        // rotates the shot direction, not this position. Moving it around a
+        // model-derived yaw/pitch pivot makes authored passenger gun positions
+        // drift and, for turret-mounted guns, applies the turret rotation twice.
+        Vec3 origin = applyVehicleModelVerticalOffset(modelLocalToWorld(muzzle));
+        Entity passenger = seat.getRiddenByEntity();
+        double riderOffset = passenger == null ? 0D : seat.getPassengerRidingOffset(passenger);
+        return origin.add(modelLocalDirectionToWorld(new Vec3(0D, riderOffset, 0D)));
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }
@@ -2483,6 +2468,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
         inputTimeout = 0;
         markUsed();
+        if (seat.isInputRising(DriveableInput.CHANGE_SEAT))
+        {
+            cycleSeat(player, seat);
+            return;
+        }
         if (!seat.isDriverSeat())
             return;
 
@@ -2632,6 +2622,22 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 return seat;
         }
         return seats.length == 0 ? null : seats[0];
+    }
+
+    /** Moves a rider to the next free, intact seat in definition order. */
+    public boolean cycleSeat(@NotNull ServerPlayer player, @NotNull Seat current)
+    {
+        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2)
+            return false;
+        int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index -> {
+            Seat candidate = seats[index];
+            return isUsableSeat(candidate) && candidate.getFirstPassenger() == null;
+        });
+        if (targetIndex < 0)
+            return false;
+        setInputMask(0);
+        setFlightControls(0F, 0F, isMouseControlEnabled());
+        return player.startRiding(seats[targetIndex], true);
     }
 
     @Override
@@ -3766,20 +3772,44 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             entity.push(push.x * 0.2D, Math.min(0.25D, horizontalSpeed * 0.1D), push.z * 0.2D);
         }
 
-        if (horizontalCollision && !configType.getCollisionPoints().isEmpty())
+        if ((horizontalCollision || verticalCollision) && !configType.getCollisionPoints().isEmpty())
+            handleCollisionPointImpacts(requestedVelocity);
+    }
+
+    protected void handleCollisionPointImpacts(@NotNull Vec3 impactVelocity)
+    {
+        if (configType == null || impactVelocity.lengthSqr() < 0.04D)
+            return;
+        double collisionSpeed = Math.max(horizontalCollision ? impactVelocity.horizontalDistance() : 0D,
+            verticalCollision ? Math.max(0D, -impactVelocity.y) : 0D);
+        if (collisionSpeed < 0.2D)
+            return;
+        for (DriveablePosition point : configType.getCollisionPoints())
         {
-            for (DriveablePosition point : configType.getCollisionPoints())
+            if (point == null)
+                continue;
+            Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
+            Vec3 world = localToWorld(local.x, local.y, local.z)
+                .add(impactVelocity.normalize().scale(0.2D));
+            BlockPos blockPos = BlockPos.containing(world);
+            if (level().getBlockState(blockPos).blocksMotion())
             {
-                if (point == null)
-                    continue;
-                Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
-                Vec3 world = localToWorld(local.x, local.y, local.z)
-                    .add(requestedVelocity.normalize().scale(0.2D));
-                BlockPos blockPos = BlockPos.containing(world);
-                if (level().getBlockState(blockPos).blocksMotion())
-                    damagePart(point.getPart(), (float) Math.min(20D, horizontalSpeed * 5D), level().damageSources().flyIntoWall());
+                damagePart(point.getPart(), (float) Math.min(40D, collisionSpeed * 8D), level().damageSources().flyIntoWall());
+                breakCollisionBlock(blockPos, collisionSpeed);
             }
         }
+    }
+
+    private void breakCollisionBlock(@NotNull BlockPos pos, double collisionSpeed)
+    {
+        if (!ModCommonConfig.driveableCollisionsBreakBlocks() || !(level() instanceof ServerLevel serverLevel))
+            return;
+        BlockState state = serverLevel.getBlockState(pos);
+        float hardness = state.getDestroySpeed(serverLevel, pos);
+        if (state.isAir() || hardness < 0F || hardness > Math.max(0.5D, collisionSpeed * 8D)
+            || serverLevel.getBlockEntity(pos) != null)
+            return;
+        ModUtils.destroyBlock(serverLevel, pos, getControllingEntity(), true);
     }
 
     /** Executes a bounded, permission-checked legacy harvester pass. */

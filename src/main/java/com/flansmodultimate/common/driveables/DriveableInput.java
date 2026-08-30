@@ -37,8 +37,10 @@ public final class DriveableInput
     public static final int THROTTLE_INCREASE = 1 << 19;
     /** Persistent ground-vehicle throttle lever, independent of the reverse pedal. */
     public static final int THROTTLE_DECREASE = 1 << 20;
+    /** Cycle to the next free, intact seat. The server selects the destination. */
+    public static final int CHANGE_SEAT = 1 << 21;
 
-    public static final int VALID_MASK = (1 << 21) - 1;
+    public static final int VALID_MASK = (1 << 22) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
         | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
         | THROTTLE_INCREASE | THROTTLE_DECREASE;

@@ -87,6 +87,14 @@ class DriveableCollisionProfileTest
     }
 
     @Test
+    void landingToleranceSweepsFastFallingEntitiesOntoDecks()
+    {
+        assertEquals(0.3D, DriveableCollisionHelper.sweptLandingTolerance(-0.08D), EPSILON);
+        assertEquals(0.9D, DriveableCollisionHelper.sweptLandingTolerance(-0.8D), EPSILON);
+        assertEquals(1.5D, DriveableCollisionHelper.sweptLandingTolerance(-3D), EPSILON);
+    }
+
+    @Test
     void rotatesLegacyPartBoxesIntoTheModernDriveableBasis()
     {
         CollisionBox box = new CollisionBox(100F, 16F, 32F, 48F, 64F, 80F, 96F);

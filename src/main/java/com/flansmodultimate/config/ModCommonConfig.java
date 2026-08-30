@@ -82,6 +82,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue ARMSHOT_DAMAGE_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue LEGSHOT_MODIFIER;
     private static final ForgeConfigSpec.DoubleValue VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER;
+    private static final ForgeConfigSpec.BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
 
     private static final ForgeConfigSpec.IntValue BREAKABLE_ARMOR;
     private static final ForgeConfigSpec.IntValue DEFAULT_ARMOR_DURABILITY;
@@ -228,6 +229,10 @@ public final class ModCommonConfig
         VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER = builder
             .comment("Proportion of damage from an explosion when it has hit a wheel or seat")
             .defineInRange("vehicleWheelSeatExplosionModifier", 1.0, 0.0, 1.0);
+        DRIVEABLE_COLLISIONS_BREAK_BLOCKS = builder
+            .comment("Whether driveables may destroy blocks when collision points strike them.",
+                "Disabled by default so aircraft crashes damage the aircraft without altering terrain.")
+            .define("driveableCollisionsBreakBlocks", false);
         builder.pop();
 
         builder.push("Armor Settings");
@@ -515,6 +520,7 @@ public final class ModCommonConfig
             ARMSHOT_DAMAGE_MODIFIER.get().floatValue(),
             LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(),
+            DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(),
 
             BREAKABLE_ARMOR.get(),
             DEFAULT_ARMOR_DURABILITY.get(),
@@ -681,6 +687,12 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE : config.realisticVehicleHealthScale();
+    }
+
+    public static boolean driveableCollisionsBreakBlocks()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.driveableCollisionsBreakBlocks();
     }
 
     public static double penetrationVelocityExponent()

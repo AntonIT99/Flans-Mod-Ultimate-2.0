@@ -1175,7 +1175,7 @@ public class DriveableType extends PaintableType
 
     private void readSeatVectorLines(String key, TypeFile file, SeatVectorSetter setter, boolean modelUnits)
     {
-        int minimumValues = key.equals("GunOrigin") ? 3 : 4;
+        int minimumValues = 4;
         forEachLine(key, file, minimumValues, values -> {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
