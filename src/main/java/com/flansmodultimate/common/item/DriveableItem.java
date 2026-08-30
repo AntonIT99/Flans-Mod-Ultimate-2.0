@@ -159,7 +159,9 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         }
         else
         {
+            tooltip.add(Component.empty());
             DriveablePhysicsTooltip.append(configType, tooltip);
+            DriveableWeaponTooltip.append(configType, tooltip);
         }
     }
 

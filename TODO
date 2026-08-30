@@ -3,8 +3,11 @@ General:
 - Investigate the legacy penetration system
 - Implement FMU Style Hitmarkers
 - Investigate armored vehicles resistance to blast damage
+- Update ConfigReference in Wiki
+- Check balance for the blast / frag radius
 
 Driveables:
+- Display hitboxes for driveables in debug mode
 - Ground vehicle still has issues with y positioning. Rendering issue or entity positioning issue?
 - Mecha yaw torso rotation no longer stops when the player has moved the mouse
 - Passenger guns shooting points set with "GunOrigin" are still not positioned correctly

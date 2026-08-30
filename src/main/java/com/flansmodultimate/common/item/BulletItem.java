@@ -69,7 +69,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
                         tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().penetrationAt100m()) + "mm").withStyle(ChatFormatting.GRAY));
                 });
             }
-            else if (configType.getBulletSpeed() > 0F)
+            else if (configType.getPenetrationAt100m() > 0F)
                 tooltipComponents.add(IFlanItem.statLine("Penetration At 100m", IFlanItem.formatFloat(configType.getPenetrationAt100m()) + "mm"));
 
             tooltipComponents.add(IFlanItem.statLine("Penetrating Power", IFlanItem.formatFloat(configType.getPenetratingPower())));

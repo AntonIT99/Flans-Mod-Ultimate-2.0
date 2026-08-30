@@ -31,7 +31,6 @@ class VehiclePhysicsResolverTest
         assertFalse(resolved.hasGroundPropulsion());
         assertFalse(resolved.hasAircraftProfile());
         assertFalse(resolved.hasReverseSpeedOverride());
-        assertFalse(resolved.hasSlopeLimit());
         assertFalse(resolved.hasDraft());
     }
 
@@ -122,19 +121,9 @@ class VehiclePhysicsResolverTest
     // -------------------------------------------------- independent overrides
 
     @Test
-    void slopeAloneGivesLegacyPropulsionWithASlopeLimit()
-    {
-        ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, spec(ground(null, null, 35F)), WHEELED);
-        assertEquals(EnumVehiclePhysicsMode.LEGACY_WITH_OVERRIDES, resolved.mode());
-        assertFalse(resolved.hasGroundPropulsion());
-        assertTrue(resolved.hasSlopeLimit());
-        assertEquals(35F, resolved.maxSlopeDeg());
-    }
-
-    @Test
     void reverseSpeedAloneGivesLegacyPropulsionWithAReverseCap()
     {
-        ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, spec(ground(null, 8F, null)), WHEELED);
+        ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, spec(ground(null, 8F)), WHEELED);
         assertEquals(EnumVehiclePhysicsMode.LEGACY_WITH_OVERRIDES, resolved.mode());
         assertFalse(resolved.hasGroundPropulsion());
         assertTrue(resolved.hasReverseSpeedOverride());
@@ -145,7 +134,7 @@ class VehiclePhysicsResolverTest
     @Test
     void aReverseCapNeverEnablesReverseOnAVehicleThatLegacyForbidsIt()
     {
-        ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, spec(ground(null, 8F, null)), NO_REVERSE);
+        ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, spec(ground(null, 8F)), NO_REVERSE);
         assertFalse(resolved.hasReverseSpeedOverride());
         assertEquals(EnumVehiclePhysicsMode.LEGACY, resolved.mode());
         assertEquals(0D, resolved.reverseSpeedBlocksPerTick(1D));
@@ -155,7 +144,7 @@ class VehiclePhysicsResolverTest
     void driveTypeAloneGivesLegacyPropulsionWithAnExplicitDriveLayout()
     {
         ResolvedVehiclePhysics resolved =
-            resolve(EnumVehicleCategory.GROUND, spec(ground(EnumDriveType.AWD, null, null)), WHEELED);
+            resolve(EnumVehicleCategory.GROUND, spec(ground(EnumDriveType.AWD, null)), WHEELED);
         assertEquals(EnumVehiclePhysicsMode.LEGACY_WITH_OVERRIDES, resolved.mode());
         assertFalse(resolved.hasGroundPropulsion());
         assertTrue(resolved.driveTypeExplicit());
@@ -179,7 +168,7 @@ class VehiclePhysicsResolverTest
     void anExplicitDriveTypeOverridesTheLegacyInference()
     {
         ResolvedVehiclePhysics resolved =
-            resolve(EnumVehicleCategory.GROUND, spec(ground(EnumDriveType.RWD, null, null)), TANK);
+            resolve(EnumVehicleCategory.GROUND, spec(ground(EnumDriveType.RWD, null)), TANK);
         assertEquals(EnumDriveType.RWD, resolved.driveType());
         assertTrue(resolved.driveTypeExplicit());
     }
@@ -196,21 +185,14 @@ class VehiclePhysicsResolverTest
     }
 
     @Test
-    void slopeLimitsDoNotApplyToAircraft()
-    {
-        assertFalse(resolve(EnumVehicleCategory.AIRCRAFT, spec(ground(null, null, 35F)), WHEELED).hasSlopeLimit());
-    }
-
-    @Test
     void overridesRemainActiveAlongsideACompleteProfile()
     {
         RealWorldVehicleSpec full = new RealWorldVehicleSpec(2400F, 113F, 140F, null,
-            RealWorldVehicleSpec.Aircraft.EMPTY, ground(EnumDriveType.AWD, 8F, 35F),
+            RealWorldVehicleSpec.Aircraft.EMPTY, ground(EnumDriveType.AWD, 8F),
             RealWorldVehicleSpec.Marine.EMPTY);
         ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, full, WHEELED);
         assertEquals(EnumVehiclePhysicsMode.REAL_WORLD_PROFILE, resolved.mode());
         assertTrue(resolved.hasGroundPropulsion());
-        assertTrue(resolved.hasSlopeLimit());
         assertTrue(resolved.hasReverseSpeedOverride());
         assertEquals(EnumDriveType.AWD, resolved.driveType());
     }
@@ -287,8 +269,8 @@ class VehiclePhysicsResolverTest
             RealWorldVehicleSpec.Aircraft.EMPTY, ground, RealWorldVehicleSpec.Marine.EMPTY);
     }
 
-    private static RealWorldVehicleSpec.Ground ground(EnumDriveType driveType, Float reverseKmh, Float slopeDeg)
+    private static RealWorldVehicleSpec.Ground ground(EnumDriveType driveType, Float reverseKmh)
     {
-        return new RealWorldVehicleSpec.Ground(driveType, reverseKmh, slopeDeg);
+        return new RealWorldVehicleSpec.Ground(driveType, reverseKmh);
     }
 }

@@ -52,14 +52,18 @@ public final class VehiclePhysicsConstants
 
     // ------------------------------------------------------------------- slope
 
-    /**
-     * Fraction of the configured maximum slope below which propulsion is
-     * unaffected. Between this and the limit, propulsion ramps down linearly so
-     * the vehicle bogs down instead of stopping dead.
-     */
-    public static final float SLOPE_FALLOFF_START = 0.7F;
-    /** Residual propulsion retained exactly at the slope limit, to avoid a hard zero. */
-    public static final float SLOPE_LIMIT_RESIDUAL = 0.05F;
+    /** Typical ground-vehicle power-to-weight ratio used to normalise climbing capability. */
+    public static final float SLOPE_REFERENCE_POWER_TO_WEIGHT_KW_PER_T = 30F;
+    /** Bounds prevent unusually weak or powerful content from producing absurd response angles. */
+    public static final float SLOPE_MIN_CAPABILITY = 0.5F;
+    public static final float SLOPE_MAX_CAPABILITY = 2F;
+    /** Full propulsion angle is this base plus the normalised capability times the following span. */
+    public static final float SLOPE_BASE_FALLOFF_DEG = 16F;
+    public static final float SLOPE_CAPABILITY_FALLOFF_DEG = 8F;
+    /** Degrees over which propulsion transitions from full power to the crawl floor. */
+    public static final float SLOPE_FALLOFF_SPAN_DEG = 20F;
+    /** Minimum uphill propulsion retained for block edges and very steep Minecraft terrain. */
+    public static final float SLOPE_CRAWL_PROPULSION = 0.2F;
 
     // ---------------------------------------------------------------- aircraft
 

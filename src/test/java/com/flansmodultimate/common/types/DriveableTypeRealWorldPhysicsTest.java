@@ -38,7 +38,6 @@ class DriveableTypeRealWorldPhysicsTest
         assertEquals(EnumVehicleCategory.GROUND, physics.category());
         assertFalse(physics.hasGroundPropulsion());
         assertFalse(physics.hasReverseSpeedOverride());
-        assertFalse(physics.hasSlopeLimit());
         assertFalse(physics.hasDraft());
         // The legacy fields themselves are untouched.
         assertEquals(0.45F, type.getMaxThrottle());
@@ -128,11 +127,6 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void independentOverridesActivateWithoutAPropulsionProfile()
     {
-        VehicleType slope = vehicle("RealMaxSlopeDeg 35");
-        assertEquals(EnumVehiclePhysicsMode.LEGACY_WITH_OVERRIDES, slope.getResolvedPhysics().mode());
-        assertFalse(slope.getResolvedPhysics().hasGroundPropulsion());
-        assertTrue(slope.getResolvedPhysics().hasSlopeLimit());
-
         VehicleType reverse = vehicle("MaxNegativeThrottle 0.25", "RealMaxReverseSpeedKmh 8");
         assertTrue(reverse.getResolvedPhysics().hasReverseSpeedOverride());
         assertFalse(reverse.getResolvedPhysics().hasGroundPropulsion());

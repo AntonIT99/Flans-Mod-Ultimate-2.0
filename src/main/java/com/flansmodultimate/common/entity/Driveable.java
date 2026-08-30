@@ -1492,12 +1492,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
             return false;
 
+        boolean pureGunType = configType.isReadWeaponsFromGunTypes();
+
         FireableGun fireable;
         int bulletCount;
         if (selection.gunType() != null)
         {
             fireable = new FireableGun(selection.gunType(), selection.stack());
-            if (configType.isRangingGun() && configType.getBulletSpeed() > 0F)
+            if (!pureGunType && configType.isRangingGun() && configType.getBulletSpeed() > 0F)
                 fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
                     configType.getBulletSpeed(), fireable.getSpreadPattern());
             bulletCount = Math.max(1, selection.gunType().getNumBullets(null, bulletType));
@@ -1510,7 +1512,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 Math.max(0.01F, speed), EnumSpreadPattern.CIRCLE);
             bulletCount = Math.max(1, bulletType.getNumBullets());
         }
-        if (selection.gunType() != null)
+        if (selection.gunType() != null && !pureGunType)
             fireable.multiplyDamage(secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary());
 
         Vec3 origin = getShootOrigin(point);

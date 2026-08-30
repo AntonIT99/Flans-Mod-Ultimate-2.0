@@ -128,11 +128,11 @@ public class Vehicle extends Driveable
             if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasReverseSpeedOverride() && targetSpeed < 0D)
                 targetSpeed = Math.max(targetSpeed, -physics.reverseSpeedBlocksPerTick(speedScale));
         }
-        // Slope limiting is independently usable: it applies whether propulsion
-        // is legacy or derived, and is inert when no limit was authored.
-        if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasSlopeLimit())
+        // A complete real-world ground profile derives a forgiving uphill response
+        // from power-to-weight and drive layout; legacy propulsion stays unchanged.
+        if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion())
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
-                Math.signum(normalizedThrottle), physics.maxSlopeDeg());
+                Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
         float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
         float directionalThrottle = effectiveThrottle > 0F
             ? (isInWater() ? type.getMaxThrottleInWater() : type.getMaxThrottle())

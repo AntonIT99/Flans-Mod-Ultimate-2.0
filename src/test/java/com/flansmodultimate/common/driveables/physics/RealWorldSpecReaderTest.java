@@ -59,7 +59,6 @@ class RealWorldSpecReaderTest
             "RealClimbRateMs 17.0",
             "DriveType TRACKED",
             "RealMaxReverseSpeedKmh 8",
-            "RealMaxSlopeDeg 35",
             "RealDraftM 1.5");
 
         assertEquals(2890F, result.spec().massKg());
@@ -71,7 +70,6 @@ class RealWorldSpecReaderTest
         assertEquals(17F, result.spec().aircraft().climbRateMs());
         assertEquals(EnumDriveType.TRACKED, result.spec().ground().driveType());
         assertEquals(8F, result.spec().ground().maxReverseSpeedKmh());
-        assertEquals(35F, result.spec().ground().maxSlopeDeg());
         assertEquals(1.5F, result.spec().marine().draftM());
         // Declaring both power and thrust is legal but worth a note.
         assertTrue(result.hasWarnings());
@@ -180,21 +178,20 @@ class RealWorldSpecReaderTest
     }
 
     @Test
-    void impossibleSlopesAreRejected()
-    {
-        assertEquals(35F, read("RealMaxSlopeDeg 35").spec().ground().maxSlopeDeg());
-        assertNull(read("RealMaxSlopeDeg 120").spec().ground().maxSlopeDeg());
-        assertNull(read("RealMaxSlopeDeg 0").spec().ground().maxSlopeDeg());
-        assertTrue(read("RealMaxSlopeDeg 120").hasWarnings());
-    }
-
-    @Test
     void unknownDriveTypesWarnAndFallBackWithoutCrashing()
     {
         RealWorldSpecReader.Result result = read("DriveType HOVERCRAFT");
         assertNull(result.spec().ground().driveType());
         assertEquals(1, result.warnings().size());
         assertTrue(result.spec().isEmpty());
+    }
+
+    @Test
+    void removedMaxSlopeKeyNoLongerActivatesPhysics()
+    {
+        RealWorldSpecReader.Result result = read("RealMaxSlopeDeg 35");
+        assertTrue(result.spec().isEmpty());
+        assertFalse(result.hasWarnings());
     }
 
     @Test

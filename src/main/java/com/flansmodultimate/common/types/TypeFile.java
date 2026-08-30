@@ -64,9 +64,9 @@ public class TypeFile
         return configMap.get(key.toLowerCase(Locale.ROOT));
     }
 
-    public void addCategoryConfigMap(Category category)
+    public void addCategoryConfigMap(Category category, String shortname)
     {
-        category.getProperties().forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).addAll(value));
+        category.getPropertiesFor(shortname).forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).addAll(value));
     }
 
     public String toString()

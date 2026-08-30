@@ -38,17 +38,16 @@ public record RealWorldVehicleSpec(
         }
     }
 
-    /** Ground-vehicle-only authored values. All three are independently usable. */
+    /** Ground-vehicle-only authored values. Both are independently usable. */
     public record Ground(
         @Nullable EnumDriveType driveType,
-        @Nullable Float maxReverseSpeedKmh,
-        @Nullable Float maxSlopeDeg)
+        @Nullable Float maxReverseSpeedKmh)
     {
-        public static final Ground EMPTY = new Ground(null, null, null);
+        public static final Ground EMPTY = new Ground(null, null);
 
         public boolean isEmpty()
         {
-            return driveType == null && maxReverseSpeedKmh == null && maxSlopeDeg == null;
+            return driveType == null && maxReverseSpeedKmh == null;
         }
     }
 

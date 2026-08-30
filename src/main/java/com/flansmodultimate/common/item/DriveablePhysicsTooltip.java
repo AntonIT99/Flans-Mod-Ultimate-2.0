@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
 import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
@@ -52,7 +51,6 @@ public final class DriveablePhysicsTooltip
         double speedScale = ModCommonConfig.realisticSpeedScale(resolved.category());
         double aircraftReferenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
 
-        tooltip.add(Component.empty());
         tooltip.add(IFlanItem.statLine(label("header"),
             Component.translatable(PREFIX + "mode." + resolved.mode().translationSuffix()).getString()));
 
@@ -70,58 +68,42 @@ public final class DriveablePhysicsTooltip
     {
         VehicleArmorSpec armor = type.getArmorSpec();
         VehicleHealthScaler.Result health = type.getResolvedHealth();
-        if ((armor == null || armor.isEmpty()) && health != null && !health.requested())
+        if ((armor == null || armor.isEmpty()) && (health == null || !health.enabled()))
             return;
 
-        tooltip.add(Component.empty());
-        tooltip.add(Component.literal("Vehicle armour and health").withStyle(ChatFormatting.GOLD));
-        if (armor != null)
-        {
-            appendPlateGroup("Hull", armor.hull(), tooltip);
-            appendPlateGroup("Turret", armor.turret(), tooltip);
-            for (Map.Entry<EnumDriveablePart, ArmorPlate> entry : armor.partOverrides().entrySet())
-                tooltip.add(IFlanItem.statLine(Component.literal("Part " + entry.getKey().getName()),
-                    formatPlate(entry.getValue())));
-        }
-
-        if (type.getRealWorldSpec().massKg() != null)
-            tooltip.add(IFlanItem.statLine(Component.literal("RealMassKg"),
-                formatMass(type.getRealWorldSpec().massKg())));
-        if (health != null)
-        {
-            tooltip.add(IFlanItem.statLine(Component.literal("Normalized health"),
-                health.enabled() ? "enabled" : health.requested() ? "requested; legacy fallback" : "disabled"));
-            if (health.enabled())
-            {
-                tooltip.add(IFlanItem.indentedStatLine(Component.literal("Derived total HP"),
-                    IFlanItem.formatFloat(health.totalHp(), 1)));
-                for (Map.Entry<EnumDriveablePart, Float> entry : health.allocations().entrySet())
-                {
-                    if (entry.getValue() > 0F)
-                        tooltip.add(IFlanItem.indentedStatLine(Component.literal(entry.getKey().getName()),
-                            IFlanItem.formatFloat(entry.getValue(), 1) + " HP"));
-                }
-            }
-        }
+        if (armor != null && !armor.isEmpty())
+            appendArmorSummary(armor, tooltip);
+        if (health != null && health.enabled())
+            tooltip.add(IFlanItem.statLine(Component.literal("Total HP"),
+                IFlanItem.formatFloat(health.totalHp(), 1)));
     }
 
-    private static void appendPlateGroup(String prefix, Map<EnumArmorFacing, ArmorPlate> plates,
-                                         List<Component> tooltip)
+    private static void appendArmorSummary(VehicleArmorSpec armor, List<Component> tooltip)
     {
-        for (EnumArmorFacing facing : EnumArmorFacing.values())
-        {
-            ArmorPlate plate = plates.get(facing);
-            if (plate != null)
-                tooltip.add(IFlanItem.statLine(Component.literal(prefix + " "
-                    + facing.name().toLowerCase(Locale.ROOT)), formatPlate(plate)));
-        }
+        tooltip.add(IFlanItem.statLine(label("armor.header").copy(), label("armor.facings")));
+        if (!armor.hull().isEmpty())
+            tooltip.add(IFlanItem.indentedStatLine(label("armor.hull"), formatArmorSummary(armor.hull())));
+        if (!armor.turret().isEmpty())
+            tooltip.add(IFlanItem.indentedStatLine(label("armor.turret"), formatArmorSummary(armor.turret())));
     }
 
-    private static String formatPlate(ArmorPlate plate)
+    static String formatArmorSummary(Map<EnumArmorFacing, ArmorPlate> plates)
     {
-        String value = IFlanItem.formatFloat(plate.thicknessMm(), 1) + " mm";
-        return plate.slopeDeg() == 0F ? value
-            : value + " @ " + IFlanItem.formatFloat(plate.slopeDeg(), 1) + " deg";
+        ArmorPlate side = plates.get(EnumArmorFacing.LEFT);
+        if (side == null)
+            side = plates.get(EnumArmorFacing.RIGHT);
+        return formatSummaryPlate(plates.get(EnumArmorFacing.FRONT)) + " / "
+            + formatSummaryPlate(side) + " / "
+            + formatSummaryPlate(plates.get(EnumArmorFacing.REAR)) + "\u00a0mm";
+    }
+
+    private static String formatSummaryPlate(ArmorPlate plate)
+    {
+        if (plate == null)
+            return "—";
+        String thickness = IFlanItem.formatFloat(plate.thicknessMm(), 1);
+        return plate.slopeDeg() == 0F ? thickness
+            : thickness + " (" + IFlanItem.formatFloat(plate.slopeDeg(), 1) + "°)";
     }
 
     // ------------------------------------------------------- real-world path
@@ -221,8 +203,6 @@ public final class DriveablePhysicsTooltip
         if (resolved.hasReverseSpeedOverride())
             tooltip.add(IFlanItem.statLine(label("reverseSpeed"),
                 IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0) + " km/h"));
-        if (resolved.hasSlopeLimit())
-            tooltip.add(IFlanItem.statLine(label("maxSlope"), IFlanItem.formatFloat(resolved.maxSlopeDeg(), 0) + "°"));
         if (resolved.hasDraft())
             tooltip.add(IFlanItem.statLine(label("draft"), IFlanItem.formatFloat(resolved.draftM(), 2) + " m"));
     }

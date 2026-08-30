@@ -25,12 +25,17 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 @NoArgsConstructor
-public class AAGunType extends InfoType
+public class AAGunType extends InfoType implements IAmmoGroupUser
 {
     public static final int MAX_BARRELS = 16;
 
     /** The ammo types used by this gun */
     protected Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is usable in this gun, exactly as if it had been listed individually.
+     */
+    protected Set<String> ammoGroups = new LinkedHashSet<>();
     protected int reloadTime;
     protected float recoil = 5F;
     protected float bulletSpread;
@@ -128,6 +133,7 @@ public class AAGunType extends InfoType
         barrelZ = new int[numBarrels];
         readBarrels(file);
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
+        ShootableType.readAmmoGroups(file, ammoGroups);
         readGunnerPosition(file);
     }
 
@@ -191,9 +197,11 @@ public class AAGunType extends InfoType
     {
         List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
         List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
-        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size());
+        List<ShootableType> ammoFromGroups = ShootableType.findAmmoTypesInGroups(ammoGroups);
+        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size() + ammoFromGroups.size());
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
+        ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
         return ammoTypes;
     }
 
@@ -201,7 +209,7 @@ public class AAGunType extends InfoType
     {
         if (!ammo.isEmpty())
             return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
-        return Optional.empty();
+        return getAmmoTypes().stream().findFirst();
     }
 
     public float getDamageForDisplay(ShootableType type)

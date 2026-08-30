@@ -6,7 +6,8 @@
             "RealMaxSpeedKmh": "89",
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "32",
-            "RealMaxSlopeDeg": "31"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
         },
         "items": [
             "44_m18hellcat"
@@ -20,10 +21,28 @@
             "RealMaxSpeedKmh": "45.4",
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "9.2",
-            "RealMaxSlopeDeg": "35"
+            "ShootDelayPrimarySeconds": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "ArmorFrontMm": "100 9",
+            "ArmorRearMm": "80 9",
+            "ArmorSideMm": 80,
+            "ArmorTopMm": 25,
+            "ArmorBottomMm": 25,
+            "TurretArmorFrontMm": 100,
+            "TurretArmorRearMm": 80,
+            "TurretArmorSideMm": 80,
+            "TurretArmorTopMm": 25,
+            "TurretArmorBottomMm": 25,
+            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "88mm KwK/Flak 36"
         },
         "items": [
-            "44_tiger1h"
+            "44_tiger1h",
+            "tiger",
+            "tiger131",
+            "tigersnow",
+            "tigeri"
         ]
     },
 
@@ -34,7 +53,8 @@
             "RealMaxSpeedKmh": 105,
             "DriveType": "AWD",
             "RealMaxReverseSpeedKmh": 29,
-            "RealMaxSlopeDeg": 31
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
         },
         "items": [
             "44_willys30cal",

@@ -419,7 +419,7 @@
             "FlakParticles": 0
         },
         "items": [
-            ""
+            "deserteagleammo"
         ]
     },
 
@@ -427,7 +427,6 @@
         "properties": {
             "Mass": 42.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0,
             "PenetrationAt100m": 20
         },
         "items": [
@@ -445,7 +444,6 @@
         "properties": {
             "Mass": 42.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0,
             "ExplosiveMass": 0.0013,
             "PenetrationAt100m": 20
         },
@@ -458,7 +456,6 @@
         "properties": {
             "Mass": 48.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0,
             "PenetrationAt100m": 22
         },
         "items": [
@@ -472,8 +469,7 @@
                 "Pzgr.L'Spur 1 38 0 750 30",
                 "Sprgr. 1 34 0.003 710 0"
             ],
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "FallSpeed": 1.0
         },
         "items": [
             "44_mg131ammo"
@@ -486,8 +482,7 @@
                 "Pzgr.L'Spur 1 72 0 850 30",
                 "Sprgr. 1 57 0.0046 960 0"
             ],
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "FallSpeed": 1.0
         },
         "items": [
             "mg151ammo"
@@ -498,7 +493,6 @@
         "properties": {
             "Mass": 110.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0,
             "ExplosiveMass": 0.0075,
             "PenetrationAt100m": 8
         },
@@ -511,7 +505,6 @@
         "properties": {
             "Mass": 120.0,
             "FallSpeed": 1.0,
-            "FlakParticles": 0,
             "ExplosiveMass": 0.0108,
             "PenetrationAt100m": 24
         },
@@ -526,11 +519,25 @@
                 "AP 1 162 0 800 45",
                 "HE 2 135 0.016 835 0"
             ],
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "FallSpeed": 1.0
         },
         "items": [
             "44_type98aaammo"
+        ]
+    },
+
+    "88mm PzGr. 39": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 10200,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.109,
+            "PenetrationAt100m": 162
+        },
+        "items": [
+            "ww2_shell_german88mmap",
+            "ww2_shell_german88mmkwk36ap",
+            "44_88apshell"
         ]
     }
 }

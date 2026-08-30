@@ -50,7 +50,7 @@ public final class CategoryManager
             return;
 
         for (Category category : itemCategories.get(shortname))
-            file.addCategoryConfigMap(category);
+            file.addCategoryConfigMap(category, shortname);
     }
 
     public static void loadAll()

@@ -6,55 +6,60 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The two independently usable overrides that change motion directly. Both must
- * be completely inert when their parameter is absent.
+ * Pure motion helpers for derived uphill response and authored marine draft.
  */
 class GroundSlopeAndDraftPhysicsTest
 {
     // -------------------------------------------------------------- slope
 
     @Test
-    void noSlopeLimitMeansNoEffectAtAnyPitch()
+    void invalidProfileInputsLeavePropulsionUntouched()
     {
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, 0F));
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, -10F));
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, Float.NaN));
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, 0F, EnumDriveType.RWD));
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, Float.NaN, EnumDriveType.RWD));
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 1F, 0.03F, null));
     }
 
     @Test
     void gentleClimbsAreUnaffected()
     {
-        // Full propulsion up to 70% of the limit.
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(20F, 1F, 35F));
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(24.4F, 1F, 35F));
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(20F, 1F, 0.03F, EnumDriveType.RWD));
     }
 
     @Test
     void propulsionRampsDownSmoothlyRatherThanCuttingOut()
     {
-        float atFalloff = GroundSlopePhysics.propulsionFactor(24.5F, 1F, 35F);
-        float midway = GroundSlopePhysics.propulsionFactor(30F, 1F, 35F);
-        float nearLimit = GroundSlopePhysics.propulsionFactor(34.9F, 1F, 35F);
+        float atFalloff = GroundSlopePhysics.propulsionFactor(23F, 1F, 0.03F, EnumDriveType.RWD);
+        float midway = GroundSlopePhysics.propulsionFactor(32F, 1F, 0.03F, EnumDriveType.RWD);
+        float steep = GroundSlopePhysics.propulsionFactor(60F, 1F, 0.03F, EnumDriveType.RWD);
         assertTrue(atFalloff > midway, "must fall monotonically");
-        assertTrue(midway > nearLimit);
-        assertTrue(nearLimit > 0F, "a residual keeps the ramp continuous");
-        assertEquals(0F, GroundSlopePhysics.propulsionFactor(35F, 1F, 35F));
-        assertEquals(0F, GroundSlopePhysics.propulsionFactor(60F, 1F, 35F));
+        assertTrue(midway > steep);
+        assertEquals(0.2F, steep, 1.0E-6F, "steep terrain retains crawl propulsion");
+    }
+
+    @Test
+    void powerToWeightAndDriveLayoutDetermineClimbingCapability()
+    {
+        float weakRwd = GroundSlopePhysics.propulsionFactor(30F, 1F, 0.015F, EnumDriveType.RWD);
+        float strongRwd = GroundSlopePhysics.propulsionFactor(30F, 1F, 0.06F, EnumDriveType.RWD);
+        float strongTracked = GroundSlopePhysics.propulsionFactor(30F, 1F, 0.06F, EnumDriveType.TRACKED);
+        assertTrue(strongRwd > weakRwd);
+        assertTrue(strongTracked >= strongRwd);
     }
 
     @Test
     void descendingAndStandingStillAreNeverLimited()
     {
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(-45F, 1F, 35F), "driving downhill is free");
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 0F, 35F), "no demand, no limit");
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(-45F, 1F, 0.03F, EnumDriveType.RWD));
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(45F, 0F, 0.03F, EnumDriveType.RWD));
     }
 
     @Test
     void reversingUpTheSameSlopeIsLimitedToo()
     {
         // Nose-down while reversing is still climbing.
-        assertEquals(0F, GroundSlopePhysics.propulsionFactor(-40F, -1F, 35F));
-        assertEquals(1F, GroundSlopePhysics.propulsionFactor(40F, -1F, 35F));
+        assertTrue(GroundSlopePhysics.propulsionFactor(-40F, -1F, 0.03F, EnumDriveType.RWD) < 1F);
+        assertEquals(1F, GroundSlopePhysics.propulsionFactor(40F, -1F, 0.03F, EnumDriveType.RWD));
     }
 
     // -------------------------------------------------------------- draft

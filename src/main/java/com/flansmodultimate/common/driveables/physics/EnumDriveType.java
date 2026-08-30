@@ -17,21 +17,23 @@ import java.util.Locale;
 public enum EnumDriveType
 {
     /** Rear wheel drive. Only the front wheel pair is treated as undriven. */
-    RWD(false, 0.85F),
+    RWD(false, 0.85F, 0.80F),
     /** Front wheel drive. */
-    FWD(false, 0.80F),
+    FWD(false, 0.80F, 0.85F),
     /** All wheel drive; the legacy {@code FourWheelDrive true} equivalent. */
-    AWD(true, 1F),
+    AWD(true, 1F, 1.05F),
     /** Continuous tracks; the legacy {@code Tank true} equivalent. */
-    TRACKED(true, 1.1F);
+    TRACKED(true, 1.1F, 1.25F);
 
     private final boolean drivesAllWheels;
     private final float tractionFactor;
+    private final float slopeTractionFactor;
 
-    EnumDriveType(boolean drivesAllWheels, float tractionFactor)
+    EnumDriveType(boolean drivesAllWheels, float tractionFactor, float slopeTractionFactor)
     {
         this.drivesAllWheels = drivesAllWheels;
         this.tractionFactor = tractionFactor;
+        this.slopeTractionFactor = slopeTractionFactor;
     }
 
     /** Whether every configured wheel contributes propulsion, as legacy {@code FourWheelDrive} did. */
@@ -47,6 +49,12 @@ public enum EnumDriveType
     public float tractionFactor()
     {
         return tractionFactor;
+    }
+
+    /** Gameplay traction contribution used by the derived uphill response. */
+    public float slopeTractionFactor()
+    {
+        return slopeTractionFactor;
     }
 
     /**

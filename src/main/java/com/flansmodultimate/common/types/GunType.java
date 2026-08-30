@@ -42,7 +42,7 @@ import java.util.Set;
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
-public class GunType extends PaintableType implements IScope
+public class GunType extends PaintableType implements IScope, IAmmoGroupUser
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
@@ -110,6 +110,12 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is usable in this gun, exactly as if it had been listed individually.
+     */
+    @Getter
+    protected Set<String> ammoGroups = new LinkedHashSet<>();
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -705,6 +711,7 @@ public class GunType extends PaintableType implements IScope
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
+        ShootableType.readAmmoGroups(file, ammoGroups);
 
         //Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
@@ -1037,7 +1044,7 @@ public class GunType extends PaintableType implements IScope
         {
             return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
         }
-        return Optional.empty();
+        return getAmmoTypes().stream().findFirst();
     }
 
     @Override
@@ -1056,9 +1063,11 @@ public class GunType extends PaintableType implements IScope
     {
         List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
         List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
-        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size());
+        List<ShootableType> ammoFromGroups = ShootableType.findAmmoTypesInGroups(ammoGroups);
+        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size() + ammoFromGroups.size());
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
+        ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
         return ammoTypes;
     }
 
@@ -1537,9 +1546,12 @@ public class GunType extends PaintableType implements IScope
     /**
      * Get the bullet speed of a specific gun, taking into account attachments
      */
-    public float getBulletSpeed(ItemStack stack)
+    public float getBulletSpeed(@Nullable ItemStack stack)
     {
         float stackBulletSpeed = bulletSpeed;
+
+        if (stack == null)
+            return stackBulletSpeed;
 
         if (getGrip(stack) != null && getSecondaryFire(stack))
             stackBulletSpeed = getGrip(stack).secondarySpeed;

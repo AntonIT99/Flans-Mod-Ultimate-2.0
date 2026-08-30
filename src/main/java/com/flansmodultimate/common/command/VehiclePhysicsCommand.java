@@ -89,7 +89,6 @@ public final class VehiclePhysicsCommand
                 send(context, ChatFormatting.GRAY, "  " + RealWorldSpecReader.KEY_DRIVE_TYPE
                     + " = " + source.ground().driveType());
             line(context, RealWorldSpecReader.KEY_MAX_REVERSE_SPEED, source.ground().maxReverseSpeedKmh(), "km/h");
-            line(context, RealWorldSpecReader.KEY_MAX_SLOPE, source.ground().maxSlopeDeg(), "deg");
             line(context, RealWorldSpecReader.KEY_DRAFT, source.marine().draftM(), "m");
         }
 
@@ -125,8 +124,8 @@ public final class VehiclePhysicsCommand
         send(context, ChatFormatting.GRAY, "  reverseOverride = " + (resolved.hasReverseSpeedOverride()
             ? format(resolved.reverseSpeedBlocksPerTick(speedScale)) + " blocks/tick"
             : "none (legacy MaxNegativeThrottle " + format(type.getMaxNegativeThrottle()) + ")"));
-        send(context, ChatFormatting.GRAY, "  slopeLimit = "
-            + (resolved.hasSlopeLimit() ? format(resolved.maxSlopeDeg()) + " deg" : "none"));
+        send(context, ChatFormatting.GRAY, "  uphillResponse = "
+            + (resolved.hasGroundPropulsion() ? "derived from powerToWeight and driveType" : "legacy"));
         send(context, ChatFormatting.GRAY, "  draft = "
             + (resolved.hasDraft() ? format(resolved.draftM()) + " m" : "none (legacy Buoyancy "
                 + format(type.getBuoyancy()) + ")"));

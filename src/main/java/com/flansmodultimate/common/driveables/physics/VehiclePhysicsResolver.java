@@ -14,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
  * would double-apply or contradict itself.
  *
  * <p>Independently usable parameters are handled separately and each takes effect
- * on its own, which is why a vehicle can be on legacy propulsion while still
- * honouring an authored slope limit.
+ * on its own. Uphill response is part of a complete ground profile because it is
+ * derived from that profile's mass and engine power rather than authored separately.
  *
  * <p>Fallback order, applied per value rather than globally:
  * <pre>
@@ -55,10 +55,9 @@ public final class VehiclePhysicsResolver
             driveType = inferredDriveType;
 
         Float reverseSpeedKmh = resolveReverseSpeed(source, hints);
-        Float slopeDeg = resolveSlope(source, resolvedCategory);
         Float draftM = resolveDraft(source, hints);
 
-        boolean anyOverride = driveTypeExplicit || reverseSpeedKmh != null || slopeDeg != null || draftM != null;
+        boolean anyOverride = driveTypeExplicit || reverseSpeedKmh != null || draftM != null;
         boolean profileActive = groundComplete || aircraftComplete;
 
         EnumVehiclePhysicsMode mode;
@@ -93,7 +92,7 @@ public final class VehiclePhysicsResolver
             groundComplete, aircraftComplete,
             powerKw, thrustKn, massKg, maxSpeedKmh,
             powerToWeight, thrustToWeight, wingLoading, rollInertia,
-            driveType, driveTypeExplicit, reverseSpeedKmh, slopeDeg, draftM);
+            driveType, driveTypeExplicit, reverseSpeedKmh, draftM);
     }
 
     /**
@@ -109,16 +108,6 @@ public final class VehiclePhysicsResolver
         if (!VehiclePhysicsUnits.isUsablePositive(authored) || !hints.allowsReverse())
             return null;
         return authored;
-    }
-
-    /** Slope limiting only applies to vehicles that drive on terrain. */
-    @Nullable
-    private static Float resolveSlope(RealWorldVehicleSpec source, EnumVehicleCategory category)
-    {
-        if (category != EnumVehicleCategory.GROUND)
-            return null;
-        Float authored = source.ground().maxSlopeDeg();
-        return VehiclePhysicsUnits.isUsablePositive(authored) ? authored : null;
     }
 
     /** Draft is only meaningful for a hull that actually floats. */

@@ -54,8 +54,11 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 /** Shared content definition for planes, vehicles and mechas. */
 @Getter
 @NoArgsConstructor
-public class DriveableType extends PaintableType
+public class DriveableType extends PaintableType implements IAmmoGroupUser
 {
+    /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
+    private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
+
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
     private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
@@ -65,7 +68,14 @@ public class DriveableType extends PaintableType
 
     protected boolean acceptAllAmmo = true;
     protected final Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is accepted by this driveable, exactly as if it had been listed with "AddAmmo".
+     */
+    protected final Set<String> ammoGroups = new LinkedHashSet<>();
     private volatile List<BulletType> resolvedAmmoTypes;
+    /** Ammo group revision the cache above was built from; groups can still grow while later packs load */
+    private volatile int resolvedAmmoGroupRevision;
 
     protected boolean harvestBlocks;
     protected final Set<String> materialsHarvested = new LinkedHashSet<>();
@@ -85,6 +95,14 @@ public class DriveableType extends PaintableType
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
     protected float shootDelaySecondary = -1F;
+    /**
+     * When true, a weapon bank whose shoot points mount a gun ignores its own
+     * ShootDelay/BulletSpeed/BulletSpread/damage-multiplier fields and reads them
+     * directly from the GunType referenced by that mount instead. This applies to
+     * both banks, so a fighter firing wing machine guns as its primary weapon and
+     * cannons as its secondary takes each bank's numbers from the mounted gun.
+     */
+    protected boolean readWeaponsFromGunTypes;
     protected float damageMultiplierPrimary = 1F;
     protected float damageMultiplierSecondary = 1F;
     protected EnumFireMode modePrimary = EnumFireMode.FULLAUTO;
@@ -514,6 +532,7 @@ public class DriveableType extends PaintableType
         acceptAllAmmo = readValue("AcceptAllAmmo", acceptAllAmmo, file);
         readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
             .map(String::trim).forEach(ammo::add));
+        ShootableType.readAmmoGroups(file, ammoGroups);
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
@@ -522,12 +541,12 @@ public class DriveableType extends PaintableType
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierSecondary = readValue("DamageMultiplierSecondary", damageMultiplierSecondary, file);
         damageMultiplierSecondary = readValue("DamageModifierSecondary", damageMultiplierSecondary, file);
-        shootDelayPrimary = aliasFloat(shootDelayPrimary, file, "ShootDelayPrimary", "ShellDelay", "BombDelay");
-        shootDelaySecondary = aliasFloat(shootDelaySecondary, file, "ShootDelaySecondary", "ShootDelay");
-        if (shootDelayPrimary < 0F)
-            shootDelayPrimary = Math.max(1F, 1200F / Math.max(1F, readValue("RoundsPerMinPrimary", 60F, file)));
-        if (shootDelaySecondary < 0F)
-            shootDelaySecondary = Math.max(1F, 1200F / Math.max(1F, readValue("RoundsPerMinSecondary", 60F, file)));
+        shootDelayPrimary = resolveShootDelay(file, shootDelayPrimary,
+            "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
+        shootDelaySecondary = resolveShootDelay(file, shootDelaySecondary,
+            "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        readWeaponsFromGunTypes = readValue("ReadSecondaryWeaponFromGunType", readWeaponsFromGunTypes, file);
+        readWeaponsFromGunTypes = readValue("ReadWeaponsFromGunTypes", readWeaponsFromGunTypes, file);
         placeTimePrimary = Math.max(0, readOptionalValue("PlaceTimePrimary", placeTimePrimary, file));
         placeTimeSecondary = Math.max(0, readOptionalValue("PlaceTimeSecondary", placeTimeSecondary, file));
         reloadTimePrimary = Math.max(0, readOptionalValue("ReloadTimePrimary", reloadTimePrimary, file));
@@ -807,8 +826,9 @@ public class DriveableType extends PaintableType
 
     public List<BulletType> getAmmoTypes()
     {
+        int revision = ShootableType.getAmmoGroupRevision();
         List<BulletType> cached = resolvedAmmoTypes;
-        if (cached != null)
+        if (cached != null && resolvedAmmoGroupRevision == revision)
             return cached;
 
         List<BulletType> result = new ArrayList<>();
@@ -818,8 +838,14 @@ public class DriveableType extends PaintableType
             if (resolved instanceof BulletType bulletType)
                 result.add(bulletType);
         }
+        for (ShootableType ammoInGroup : ShootableType.findAmmoTypesInGroups(ammoGroups))
+        {
+            if (ammoInGroup instanceof BulletType bulletType && !result.contains(bulletType))
+                result.add(bulletType);
+        }
         cached = List.copyOf(result);
         resolvedAmmoTypes = cached;
+        resolvedAmmoGroupRevision = revision;
         return cached;
     }
 
@@ -898,7 +924,29 @@ public class DriveableType extends PaintableType
 
     public float shootDelay(boolean secondaryWeapon)
     {
+        if (readWeaponsFromGunTypes)
+        {
+            GunType gunType = getPilotGunType(secondaryWeapon);
+            if (gunType != null)
+                return gunType.getShootDelay(null);
+        }
         return secondaryWeapon ? shootDelaySecondary : shootDelayPrimary;
+    }
+
+    /** The GunType referenced by the AddGun/PilotGun mount used for this weapon bank, if any. */
+    @Nullable
+    public GunType getPilotGunType(boolean secondaryWeapon)
+    {
+        for (ShootPoint point : shootPoints(secondaryWeapon))
+        {
+            if (point.getRootPos() instanceof PilotGun pilotGun)
+            {
+                GunType gunType = pilotGun.getType();
+                if (gunType != null)
+                    return gunType;
+            }
+        }
+        return null;
     }
 
     public String shootSound(boolean secondaryWeapon)
@@ -1365,6 +1413,39 @@ public class DriveableType extends PaintableType
     {
         Vector3f vector = readVector(key, null, file);
         return vector == null ? fallback : vector.scale(1F / 16F);
+    }
+
+    /**
+     * Resolves a weapon bank's shoot delay under a deliberate, descending
+     * precedence: an explicit delay in seconds first, then the rounds-per-minute
+     * rate, then the bank's own delay key, then the legacy delay keys it
+     * inherited. The first key actually present in the file wins, so a pack
+     * that carries several of them for backwards compatibility still gets the
+     * reading it intends.
+     *
+     * <p>{@link #aliasFloat} cannot express this, because it lets the
+     * <em>last</em> key present win.
+     */
+    private static float resolveShootDelay(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
+    {
+        Float seconds = readFloat(secondsKey, file);
+        if (seconds != null)
+            return Math.max(1F, seconds * 20F);
+        Float roundsPerMin = readFloat(roundsPerMinKey, file);
+        if (roundsPerMin != null)
+            return delayFromRoundsPerMin(roundsPerMin);
+        for (String key : delayKeys)
+        {
+            Float delay = readFloat(key, file);
+            if (delay != null)
+                return Math.max(1F, delay);
+        }
+        return current >= 0F ? current : delayFromRoundsPerMin(DEFAULT_ROUNDS_PER_MIN);
+    }
+
+    private static float delayFromRoundsPerMin(float roundsPerMin)
+    {
+        return Math.max(1F, 1200F / Math.max(1F, roundsPerMin));
     }
 
     private static float aliasFloat(float fallback, TypeFile file, String... keys)

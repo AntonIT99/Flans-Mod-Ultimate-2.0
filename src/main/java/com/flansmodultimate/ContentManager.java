@@ -9,10 +9,12 @@ import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.GunBoxType;
+import com.flansmodultimate.common.types.IAmmoGroupUser;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
@@ -459,6 +461,9 @@ public class ContentManager
         {
             for (InfoType config : providerConfigs)
             {
+                if (config instanceof IAmmoGroupUser ammoGroupUser)
+                    ShootableType.validateAmmoGroups(config, ammoGroupUser.getAmmoGroups());
+
                 if (config instanceof GunBoxType gunBoxType)
                 {
                     gunBoxType.validateRecipeIngredients();

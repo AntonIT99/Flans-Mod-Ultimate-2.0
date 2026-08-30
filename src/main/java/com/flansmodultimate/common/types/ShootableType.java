@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
@@ -10,13 +11,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +43,39 @@ public abstract class ShootableType extends InfoType
 
     @Getter
     private static final Map<String, List<ShootableType>> additionalAmmoMapping = new HashMap<>();
+
+    /**
+     * Ammo groups declared through "AddToAmmoGroup <group name>", keyed by the case insensitive group name.
+     * A group is declared the first time a shootable type refers to it; every later reference to the same
+     * name simply adds that shootable type to the existing group.
+     */
+    private static final Map<String, AmmoGroup> ammoGroups = new LinkedHashMap<>();
+    /**
+     * Incremented whenever a shootable type joins a group, so consumers caching resolved ammo lists can tell
+     * that a group grew after their cache was built.
+     */
+    @Getter
+    private static int ammoGroupRevision;
+
+    /** A named set of ammo items that guns, AA guns and driveables pull in with "UseAmmoGroup <group name>" */
+    public static final class AmmoGroup
+    {
+        /** The group name as written on the config line that declared it */
+        @Getter
+        private final String name;
+        private final List<ShootableType> members = new ArrayList<>();
+
+        private AmmoGroup(String name)
+        {
+            this.name = name;
+        }
+
+        @Unmodifiable
+        public List<ShootableType> getMembers()
+        {
+            return List.copyOf(members);
+        }
+    }
 
     public enum EnumFragType
     {
@@ -220,6 +259,7 @@ public abstract class ShootableType extends InfoType
         super.read(file);
 
         readLines("AddAmmoFor", file).ifPresent(lines -> lines.forEach(type -> additionalAmmoMapping.computeIfAbsent(type, key -> new ArrayList<>()).add(this)));
+        readValuesInLines("AddToAmmoGroup", file).ifPresent(lines -> lines.forEach(values -> joinAmmoGroup(values, file)));
 
         //Item Stuff
         maxStackSize = readValue("StackSize", maxStackSize, file);
@@ -427,6 +467,90 @@ public abstract class ShootableType extends InfoType
 
     public float getDispersionForDisplay() {
         return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
+    }
+
+    /**
+     * Registers this shootable type in the ammo group named by an "AddToAmmoGroup" line, declaring the group
+     * if this is the first type to mention it.
+     */
+    private void joinAmmoGroup(String[] values, TypeFile file)
+    {
+        String groupName = readAmmoGroupName("AddToAmmoGroup", values, file);
+        if (groupName == null)
+            return;
+
+        AmmoGroup group = ammoGroups.computeIfAbsent(normalizeAmmoGroupName(groupName), key -> new AmmoGroup(groupName));
+        if (!group.members.contains(this))
+        {
+            group.members.add(this);
+            ammoGroupRevision++;
+        }
+    }
+
+    /**
+     * Reads the "UseAmmoGroup" lines of a gun, AA gun or driveable into the given set. Group names may contain
+     * spaces, so the whole value of a line is kept as a single name.
+     */
+    public static void readAmmoGroups(TypeFile file, Set<String> groupNames)
+    {
+        readValuesInLines("UseAmmoGroup", file).ifPresent(lines -> lines.forEach(values -> {
+            String groupName = readAmmoGroupName("UseAmmoGroup", values, file);
+            if (groupName != null)
+                groupNames.add(groupName);
+        }));
+    }
+
+    @Nullable
+    private static String readAmmoGroupName(String key, String[] values, TypeFile file)
+    {
+        String groupName = String.join(StringUtils.SPACE, values);
+        if (groupName.isBlank())
+        {
+            logError(key + " is missing a group name", file);
+            return null;
+        }
+        return groupName;
+    }
+
+    public static String normalizeAmmoGroupName(String groupName)
+    {
+        return groupName.trim().toLowerCase(Locale.ROOT);
+    }
+
+    @Nullable
+    public static AmmoGroup getAmmoGroup(String groupName)
+    {
+        return ammoGroups.get(normalizeAmmoGroupName(groupName));
+    }
+
+    /**
+     * Resolves every ammo item belonging to the given groups, in declaration order and without duplicates.
+     * Unknown group names resolve to nothing here; they are reported once by {@link #validateAmmoGroups}
+     * because ammo lists are resolved lazily and repeatedly at runtime.
+     */
+    public static List<ShootableType> findAmmoTypesInGroups(Collection<String> groupNames)
+    {
+        Set<ShootableType> ammoInGroups = new LinkedHashSet<>();
+        for (String groupName : groupNames)
+        {
+            AmmoGroup group = getAmmoGroup(groupName);
+            if (group != null)
+                ammoInGroups.addAll(group.members);
+        }
+        return new ArrayList<>(ammoInGroups);
+    }
+
+    /**
+     * Reports "UseAmmoGroup" references that no ammo item ever joined. Must run once every content pack has
+     * been read, since a group may be declared by a pack loaded after the one using it.
+     */
+    public static void validateAmmoGroups(InfoType source, Collection<String> groupNames)
+    {
+        for (String groupName : groupNames)
+        {
+            if (getAmmoGroup(groupName) == null)
+                FlansMod.log.warn("UseAmmoGroup refers to unknown ammo group '{}' in {}", groupName, source);
+        }
     }
 
     public static List<ShootableType> findAmmoTypes(Set<String> shortnames, IContentProvider contentPack)

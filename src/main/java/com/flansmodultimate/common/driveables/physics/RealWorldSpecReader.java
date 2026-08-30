@@ -34,12 +34,8 @@ public final class RealWorldSpecReader
     // Ground keys.
     public static final String KEY_DRIVE_TYPE = "DriveType";
     public static final String KEY_MAX_REVERSE_SPEED = "RealMaxReverseSpeedKmh";
-    public static final String KEY_MAX_SLOPE = "RealMaxSlopeDeg";
     // Marine keys.
     public static final String KEY_DRAFT = "RealDraftM";
-
-    /** A slope steeper than this is a wall, not a gradient a vehicle can be graded against. */
-    private static final float MAX_SUPPORTED_SLOPE_DEG = 89F;
 
     private RealWorldSpecReader() {}
 
@@ -78,8 +74,7 @@ public final class RealWorldSpecReader
 
         RealWorldVehicleSpec.Ground ground = new RealWorldVehicleSpec.Ground(
             readDriveType(file, warnings),
-            readPositive(file, KEY_MAX_REVERSE_SPEED, warnings, "km/h"),
-            readSlope(file, warnings));
+            readPositive(file, KEY_MAX_REVERSE_SPEED, warnings, "km/h"));
 
         RealWorldVehicleSpec.Marine marine = new RealWorldVehicleSpec.Marine(
             readPositive(file, KEY_DRAFT, warnings, "metres"));
@@ -141,21 +136,6 @@ public final class RealWorldSpecReader
         if (ps != null)
             kw = (float) VehiclePhysicsUnits.psToKw(ps);
         return kw;
-    }
-
-    @Nullable
-    private static Float readSlope(TypeFile file, List<String> warnings)
-    {
-        Float slope = readPositive(file, KEY_MAX_SLOPE, warnings, "degrees");
-        if (slope == null)
-            return null;
-        if (slope > MAX_SUPPORTED_SLOPE_DEG)
-        {
-            warnings.add(KEY_MAX_SLOPE + " must be below " + MAX_SUPPORTED_SLOPE_DEG
-                + " degrees but was " + slope + "; ignoring it");
-            return null;
-        }
-        return slope;
     }
 
     @Nullable
@@ -229,7 +209,7 @@ public final class RealWorldSpecReader
     {
         return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS,
             KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
-            KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_MAX_SLOPE, KEY_DRAFT);
+            KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT);
     }
 
     /** Normalised form used when matching keys case-insensitively. */

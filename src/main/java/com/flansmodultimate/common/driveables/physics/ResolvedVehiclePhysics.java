@@ -43,8 +43,6 @@ public record ResolvedVehiclePhysics(
     boolean driveTypeExplicit,
     /** Authored reverse cap in km/h, or null to keep legacy reverse behaviour. */
     @Nullable Float maxReverseSpeedKmh,
-    /** Authored slope limit in degrees, or null for no slope limiting. */
-    @Nullable Float maxSlopeDeg,
     /** Authored draft in metres, or null to keep the legacy constant buoyancy. */
     @Nullable Float draftM)
 {
@@ -66,7 +64,7 @@ public record ResolvedVehiclePhysics(
         return new ResolvedVehiclePhysics(EnumVehiclePhysicsMode.LEGACY, category,
             RealWorldVehicleSpec.EMPTY, geometry == null ? VehicleGeometry.EMPTY : geometry,
             false, false, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F,
-            inferredDriveType, false, null, null, null);
+            inferredDriveType, false, null, null);
     }
 
     // ------------------------------------------------------------- predicates
@@ -86,11 +84,6 @@ public record ResolvedVehiclePhysics(
     public boolean hasReverseSpeedOverride()
     {
         return maxReverseSpeedKmh != null;
-    }
-
-    public boolean hasSlopeLimit()
-    {
-        return maxSlopeDeg != null;
     }
 
     public boolean hasDraft()
