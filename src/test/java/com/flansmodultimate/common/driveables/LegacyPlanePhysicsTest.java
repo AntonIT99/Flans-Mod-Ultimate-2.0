@@ -19,6 +19,32 @@ class LegacyPlanePhysicsTest
     }
 
     @Test
+    void mouseAndKeyboardUseTheSameStickAuthorityAndCanBeCombined()
+    {
+        assertEquals(1F, LegacyPlanePhysics.combinedControlInput(
+            LegacyPlanePhysics.MAX_FLAP_ANGLE, 0F), EPSILON);
+        assertEquals(1F, LegacyPlanePhysics.combinedControlInput(0F, 1F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.combinedControlInput(
+            LegacyPlanePhysics.MAX_FLAP_ANGLE, -1F), EPSILON,
+            "an opposite key must remain fully effective in mouse mode");
+        assertEquals(1F, LegacyPlanePhysics.combinedControlInput(
+            LegacyPlanePhysics.MAX_FLAP_ANGLE * 0.5F, 1F), EPSILON,
+            "combined inputs stay bounded to one stick");
+
+        float mouseFlap = 0F;
+        float keyboardFlap = 0F;
+        for (int tick = 0; tick < 100; tick++)
+        {
+            mouseFlap = LegacyPlanePhysics.flap(mouseFlap,
+                LegacyPlanePhysics.combinedControlInput(LegacyPlanePhysics.MAX_FLAP_ANGLE, 0F));
+            keyboardFlap = LegacyPlanePhysics.flap(keyboardFlap,
+                LegacyPlanePhysics.combinedControlInput(0F, 1F));
+        }
+        assertEquals(keyboardFlap, mouseFlap, EPSILON,
+            "mouse roll must not exceed the equivalent key-bound roll");
+    }
+
+    @Test
     void fixedWingControlAuthorityDependsOnAirspeed()
     {
         var stopped = LegacyPlanePhysics.controlRates(EnumPlaneMode.PLANE, 0F, 1F, 1F,

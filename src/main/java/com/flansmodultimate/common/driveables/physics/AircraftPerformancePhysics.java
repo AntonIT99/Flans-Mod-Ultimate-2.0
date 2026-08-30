@@ -294,6 +294,33 @@ public final class AircraftPerformancePhysics
     }
 
     /**
+     * Additional aerodynamic deceleration while changing attitude.
+     *
+     * <p>The simulation has no angle-of-attack or sideslip state, so ordinary
+     * calibrated straight-line drag cannot see a turn. Actual body-axis rates
+     * stand in for that missing state: yaw is weighted most heavily, pitch next,
+     * and roll least. The result scales with airspeed, as aerodynamic losses do,
+     * and shares the normal acceleration safety ceiling.
+     *
+     * @param yawDegPerTick actual local yaw rate in degrees per tick
+     * @param pitchDegPerTick actual local pitch rate in degrees per tick
+     * @param rollDegPerTick actual local roll rate in degrees per tick
+     */
+    public static double maneuverDecelerationMs2(double airspeedMs, float yawDegPerTick,
+                                                  float pitchDegPerTick, float rollDegPerTick)
+    {
+        if (!Double.isFinite(airspeedMs) || airspeedMs <= 0D)
+            return 0D;
+        double yawRate = radiansPerSecond(yawDegPerTick);
+        double pitchRate = radiansPerSecond(pitchDegPerTick);
+        double rollRate = radiansPerSecond(rollDegPerTick);
+        double dragRate = yawRate * VehiclePhysicsConstants.AIRCRAFT_YAW_MANEUVER_DRAG
+            + pitchRate * VehiclePhysicsConstants.AIRCRAFT_PITCH_MANEUVER_DRAG
+            + rollRate * VehiclePhysicsConstants.AIRCRAFT_ROLL_MANEUVER_DRAG;
+        return Math.min(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2, airspeedMs * dragRate);
+    }
+
+    /**
      * Self-correcting nose-down rate in degrees per tick for an aircraft that is
      * slow and nose-high.
      *
@@ -351,5 +378,11 @@ public final class AircraftPerformancePhysics
     private static boolean finitePositive(double value)
     {
         return Double.isFinite(value) && value > 0D;
+    }
+
+    private static double radiansPerSecond(float degreesPerTick)
+    {
+        return Float.isFinite(degreesPerTick)
+            ? Math.toRadians(Math.abs(degreesPerTick) * VehiclePhysicsUnits.TICKS_PER_SECOND) : 0D;
     }
 }

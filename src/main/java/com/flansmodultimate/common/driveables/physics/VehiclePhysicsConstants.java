@@ -126,6 +126,19 @@ public final class VehiclePhysicsConstants
     public static final float DERIVED_YAW_AUTHORITY_SCALE = 1.2F;
 
     /**
+     * Manoeuvre-drag weights applied to actual body-axis angular rates. Yaw is
+     * most expensive because it presents the fuselage to the airflow, pitch
+     * follows, and roll is cheapest while still carrying a measurable induced
+     * drag cost. Units are inverse radians.
+     */
+    public static final double AIRCRAFT_YAW_MANEUVER_DRAG = 0.045D;
+    public static final double AIRCRAFT_PITCH_MANEUVER_DRAG = 0.03D;
+    public static final double AIRCRAFT_ROLL_MANEUVER_DRAG = 0.012D;
+
+    /** Share of lateral cornering acceleration paid as longitudinal tyre / track scrub. */
+    public static final double GROUND_TURNING_RESISTANCE = 0.25D;
+
+    /**
      * Airspeed, as a fraction of the reference speed, below which the nose
      * starts dropping on its own. At the reference speed the wing is carrying
      * the aircraft, so nothing happens until it is meaningfully slower.

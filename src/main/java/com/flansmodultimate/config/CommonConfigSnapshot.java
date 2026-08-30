@@ -84,6 +84,8 @@ public record CommonConfigSnapshot(
     List<String> digitalAmmoSupplyBlocks,
     int digitalAmmoSupplyAmount,
 
+    boolean forceLegacyPlanePhysics,
+    boolean forceLegacyVehiclePhysics,
     double realisticAircraftReferenceSpeedScale,
     double realisticAircraftThrottleResponse,
     double realisticPlaneSpeedScale,
@@ -99,7 +101,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 18;
+    public static final int CURRENT_VERSION = 19;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -185,6 +187,8 @@ public record CommonConfigSnapshot(
             buf.writeUtf(block, 32767);
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
+        buf.writeBoolean(s.forceLegacyPlanePhysics);
+        buf.writeBoolean(s.forceLegacyVehiclePhysics);
         buf.writeDouble(s.realisticAircraftReferenceSpeedScale);
         buf.writeDouble(s.realisticAircraftThrottleResponse);
         buf.writeDouble(s.realisticPlaneSpeedScale);
@@ -281,6 +285,8 @@ public record CommonConfigSnapshot(
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
 
+            buf.readBoolean(),
+            buf.readBoolean(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

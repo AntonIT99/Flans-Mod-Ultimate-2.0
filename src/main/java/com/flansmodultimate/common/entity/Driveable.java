@@ -3490,6 +3490,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return scale >= 1D ? velocity : velocity.scale(scale);
     }
 
+    private static double movementClamp(ResolvedVehiclePhysics physics)
+    {
+        return ModCommonConfig.forceLegacyMovement(physics.category())
+            ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
+            : physics.movementClampBlocksPerTick();
+    }
+
     protected void moveWithCollisions(Vec3 velocity)
     {
         if (!Double.isFinite(velocity.x) || !Double.isFinite(velocity.y) || !Double.isFinite(velocity.z))
@@ -3500,7 +3507,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // high enough for jets and low enough to bound the collision sweep.
         double maximum = configType == null
             ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
-            : configType.getResolvedPhysics().movementClampBlocksPerTick();
+            : movementClamp(configType.getResolvedPhysics());
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
         setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
@@ -3517,7 +3524,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         {
             double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
             ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
-            if (physics.hasDraft())
+            if (!ModCommonConfig.forceLegacyMovement(physics.category()) && physics.hasDraft())
             {
                 // A declared draft turns flotation into a restoring response that
                 // settles the hull at its real waterline. Without one the legacy
@@ -3599,8 +3606,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // 108 km/h. A type on the real-world profile probes as far as it can
         // actually travel in a tick; legacy types keep the historical value.
         ResolvedVehiclePhysics resolvedPhysics = configType.getResolvedPhysics();
-        double predictionCap = resolvedPhysics.wheelPredictionBlocks(
-            ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()));
+        double predictionCap = ModCommonConfig.forceLegacyMovement(resolvedPhysics.category())
+            ? VehiclePhysicsConstants.LEGACY_WHEEL_PREDICTION_BLOCKS
+            : resolvedPhysics.wheelPredictionBlocks(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()));
         Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
         double predictionLength = horizontalPrediction.length();
         if (predictionLength > predictionCap)

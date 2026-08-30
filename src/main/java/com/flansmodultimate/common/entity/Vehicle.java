@@ -102,11 +102,12 @@ public class Vehicle extends Driveable
         if (!isEngineActive())
             effectiveThrottle = 0F;
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
+        boolean derivedPhysics = !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
         double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
         float normalizedThrottle = DriveableControlPhysics.normalizedThrottle(effectiveThrottle,
             type.getMaxNegativeThrottle());
         double targetSpeed;
-        if (physics.hasGroundPropulsion())
+        if (derivedPhysics)
         {
             // The real-world profile owns terminal speed outright. Throttle is
             // reduced to the driver demand fraction, so MaxThrottle and the
@@ -124,12 +125,12 @@ public class Vehicle extends Driveable
             targetSpeed = propulsion * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
             // An authored reverse speed caps legacy propulsion rather than
             // scaling it, so MaxNegativeThrottle is never applied twice.
-            if (physics.hasReverseSpeedOverride() && targetSpeed < 0D)
+            if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasReverseSpeedOverride() && targetSpeed < 0D)
                 targetSpeed = Math.max(targetSpeed, -physics.reverseSpeedBlocksPerTick(speedScale));
         }
         // Slope limiting is independently usable: it applies whether propulsion
         // is legacy or derived, and is inert when no limit was authored.
-        if (physics.hasSlopeLimit())
+        if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasSlopeLimit())
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
                 Math.signum(normalizedThrottle), physics.maxSlopeDeg());
         float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
@@ -159,10 +160,10 @@ public class Vehicle extends Driveable
         double grip = isInWater() ? 0.08D : (onGround() || hasWheelContact() ? 0.22D : 0.035D);
         boolean braking = DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND);
         Vec3 velocity;
-        if (physics.hasGroundPropulsion())
+        if (derivedPhysics)
         {
             velocity = derivedGroundVelocity(physics, current, forward, targetSpeed,
-                traction, grip, braking, speedScale);
+                traction, grip, braking, speedScale, yawDelta);
         }
         else
         {
@@ -175,9 +176,10 @@ public class Vehicle extends Driveable
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater());
         double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(
-            physics.hasGroundPropulsion(), type.getDrag());
+            derivedPhysics, type.getDrag());
         velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
-        velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
+        if (!ModCommonConfig.forceLegacyVehiclePhysics())
+            velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
         moveWithCollisions(velocity);
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
         {
@@ -263,7 +265,7 @@ public class Vehicle extends Driveable
             // how fast the vehicle actually accelerates comes from the power
             // model, not from a per-pack number.
             float acceleration;
-            if (type.getResolvedPhysics().hasGroundPropulsion())
+            if (!ModCommonConfig.forceLegacyVehiclePhysics() && type.getResolvedPhysics().hasGroundPropulsion())
                 acceleration = VehiclePhysicsConstants.REAL_THROTTLE_RAMP_PER_TICK;
             else if (type.isUseRealisticAcceleration())
                 acceleration = Math.max(0.0005F, getEnginePower() / Math.max(1F, type.getMass()));
@@ -324,7 +326,7 @@ public class Vehicle extends Driveable
      */
     private Vec3 derivedGroundVelocity(ResolvedVehiclePhysics physics, Vec3 current, Vec3 forward,
                                        double targetSpeed, float traction, double grip,
-                                       boolean braking, double speedScale)
+                                       boolean braking, double speedScale, float yawDelta)
     {
         Vec3 horizontal = new Vec3(current.x, 0D, current.z);
         double forwardSpeed = horizontal.dot(forward);
@@ -340,6 +342,7 @@ public class Vehicle extends Driveable
             forwardSpeed, power, physics.massKg(), terminal, braking);
         double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed,
             acceleration, deceleration);
+        newForwardSpeed = GroundPropulsionPhysics.applyTurningLoss(newForwardSpeed, yawDelta);
 
         Vec3 driven = forward.scale(newForwardSpeed).add(lateral.scale(1D - grip));
         return new Vec3(driven.x, current.y, driven.z);
@@ -420,7 +423,7 @@ public class Vehicle extends Driveable
         // legacy FourWheelDrive flag still decides, so inference alone can never
         // change an existing pack's traction.
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
-        boolean allWheelsDriven = physics.driveTypeExplicit()
+        boolean allWheelsDriven = !ModCommonConfig.forceLegacyVehiclePhysics() && physics.driveTypeExplicit()
             ? physics.driveType().drivesAllWheels()
             : type.isFourWheelDrive();
         int configured = 0;

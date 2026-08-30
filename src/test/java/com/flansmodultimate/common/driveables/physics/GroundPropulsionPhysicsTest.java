@@ -115,6 +115,19 @@ class GroundPropulsionPhysicsTest
     }
 
     @Test
+    void corneringBleedsForwardSpeedWithoutChangingDirection()
+    {
+        double speed = VehiclePhysicsUnits.kmhToBlocksPerTick(100D);
+        assertEquals(speed, GroundPropulsionPhysics.applyTurningLoss(speed, 0F), 1.0E-9D);
+        double gentle = GroundPropulsionPhysics.applyTurningLoss(speed, 0.5F);
+        double hard = GroundPropulsionPhysics.applyTurningLoss(speed, 2F);
+        assertTrue(gentle < speed);
+        assertTrue(hard < gentle);
+        assertEquals(-gentle, GroundPropulsionPhysics.applyTurningLoss(-speed, 0.5F), 1.0E-9D,
+            "reverse keeps its sign while paying the same cornering cost");
+    }
+
+    @Test
     void coastingDecaysTowardZeroAndBrakingIsFaster()
     {
         double terminal = VehiclePhysicsUnits.kmhToBlocksPerTick(113D, 1D);

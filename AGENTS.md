@@ -27,6 +27,8 @@ use modern render-state extraction and Mojang names; 26.2 uses feature rendering
   generator or its input instead.
 - Keep the main mod, bundled packs, and official packs as separate artifacts. Run
   `packsJar` and/or `officialPacksJar` when their inputs or packaging change.
+- For every feature or significant change, check whether the locally available wiki
+  repository should be updated too.
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 
 ## Build and Validation

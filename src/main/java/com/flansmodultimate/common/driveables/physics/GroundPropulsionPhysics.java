@@ -129,6 +129,28 @@ public final class GroundPropulsionPhysics
         return Math.max(0.75D, Math.min(0.995D, 0.98D - Math.max(0D, configured - 1D) * 0.01D));
     }
 
+    /**
+     * Longitudinal speed lost to tyre or track scrub while cornering. The body
+     * yaw rate produces lateral acceleration {@code v * omega}; a bounded share
+     * of that acceleration is paid from forward speed so steering no longer
+     * rotates a vehicle at its straight-line terminal speed for free.
+     */
+    public static double applyTurningLoss(double speedBlocksPerTick, float yawDegPerTick)
+    {
+        if (!Double.isFinite(speedBlocksPerTick) || !Float.isFinite(yawDegPerTick))
+            return 0D;
+        double speed = Math.abs(speedBlocksPerTick);
+        if (speed == 0D || yawDegPerTick == 0F)
+            return speedBlocksPerTick;
+        double speedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(speed);
+        double yawRadiansPerSecond = Math.toRadians(Math.abs(yawDegPerTick)
+            * VehiclePhysicsUnits.TICKS_PER_SECOND);
+        double decelerationMs2 = Math.min(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            speedMs * yawRadiansPerSecond * VehiclePhysicsConstants.GROUND_TURNING_RESISTANCE);
+        double loss = VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(decelerationMs2);
+        return Math.copySign(Math.max(0D, speed - loss), speedBlocksPerTick);
+    }
+
     private static boolean finitePositive(double value)
     {
         return Double.isFinite(value) && value > 0D;

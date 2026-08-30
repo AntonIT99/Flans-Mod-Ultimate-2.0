@@ -193,6 +193,30 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
+    void manoeuvresBleedSpeedAndYawCostsMoreThanRoll()
+    {
+        assertEquals(0D, AircraftPerformancePhysics.maneuverDecelerationMs2(100D, 0F, 0F, 0F), 1.0E-9D);
+        double yaw = AircraftPerformancePhysics.maneuverDecelerationMs2(100D, 1F, 0F, 0F);
+        double pitch = AircraftPerformancePhysics.maneuverDecelerationMs2(100D, 0F, 1F, 0F);
+        double roll = AircraftPerformancePhysics.maneuverDecelerationMs2(100D, 0F, 0F, 1F);
+        assertTrue(yaw > pitch);
+        assertTrue(pitch > roll);
+        assertEquals(yaw * 2D,
+            AircraftPerformancePhysics.maneuverDecelerationMs2(200D, 1F, 0F, 0F), 1.0E-9D,
+            "the same turn costs more energy at higher airspeed");
+    }
+
+    @Test
+    void manoeuvreLossIsBoundedAndRejectsInvalidState()
+    {
+        assertEquals(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            AircraftPerformancePhysics.maneuverDecelerationMs2(1000D, 20F, 20F, 20F), 1.0E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.maneuverDecelerationMs2(Double.NaN, 1F, 1F, 1F));
+        assertEquals(0D, AircraftPerformancePhysics.maneuverDecelerationMs2(100D,
+            Float.NaN, Float.NaN, Float.NaN));
+    }
+
+    @Test
     void degenerateInputsProduceZeroRatherThanNaN()
     {
         assertEquals(0D, AircraftPerformancePhysics.thrustNewtons(0D, 0D, 100D, TERMINAL_MS));

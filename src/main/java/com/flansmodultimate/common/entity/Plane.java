@@ -239,16 +239,18 @@ public class Plane extends Driveable
         };
         double descent = velocity.y;
         ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
-        double requiredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
+        boolean derivedAircraft = !ModCommonConfig.forceLegacyPlanePhysics() && resolvedPhysics.hasAircraftProfile();
+        double requiredTakeoffSpeed = derivedAircraft
             ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(
                 resolvedPhysics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()),
                     ModCommonConfig.realisticAircraftReferenceSpeedScale()), 1D)
             : type.getTakeoffSpeed();
-        double measuredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
+        double measuredTakeoffSpeed = derivedAircraft
             ? velocity.length() : velocity.horizontalDistance();
         boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), measuredTakeoffSpeed,
             requiredTakeoffSpeed, flightForwardVector().y, velocity.y);
-        velocity = enforceSpeedCap(velocity, ModCommonConfig.maxPlaneSpeedKmh());
+        if (!ModCommonConfig.forceLegacyPlanePhysics())
+            velocity = enforceSpeedCap(velocity, ModCommonConfig.maxPlaneSpeedKmh());
         if (isGearDeployed() && !liftingOff)
             velocity = applyWheelContactPhysics(velocity, true);
         else
@@ -296,12 +298,14 @@ public class Plane extends Driveable
         flapYaw = LegacyPlanePhysics.flap(flapYaw, yaw);
         if (isMouseControlEnabled())
         {
-            float mousePitch = getFlightPitchControl();
-            float mouseRoll = getFlightRollControl();
-            flapPitchLeft = Mth.clamp(mousePitch - mouseRoll + pitch - roll,
-                -LegacyPlanePhysics.MAX_FLAP_ANGLE, LegacyPlanePhysics.MAX_FLAP_ANGLE);
-            flapPitchRight = Mth.clamp(mousePitch + mouseRoll + pitch + roll,
-                -LegacyPlanePhysics.MAX_FLAP_ANGLE, LegacyPlanePhysics.MAX_FLAP_ANGLE);
+            // Mouse packets use flap-angle units while keys use a normalised
+            // axis. Combine them as equal stick inputs, then run both through
+            // the same legacy flap response so mouse roll cannot be more than
+            // twice as fast and WASD remains fully effective in mouse mode.
+            float combinedPitch = LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), pitch);
+            float combinedRoll = LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), roll);
+            flapPitchLeft = LegacyPlanePhysics.flap(flapPitchLeft, combinedPitch - combinedRoll);
+            flapPitchRight = LegacyPlanePhysics.flap(flapPitchRight, combinedPitch + combinedRoll);
         }
         else
         {
@@ -341,7 +345,7 @@ public class Plane extends Driveable
         // Precedence: a complete real-world profile beats the legacy
         // NewFlightControl experiment, which beats the legacy flight model.
         // Helicopter, VTOL and six-DOF craft are untouched by the new path.
-        if (type.getResolvedPhysics().hasAircraftProfile())
+        if (!ModCommonConfig.forceLegacyPlanePhysics() && type.getResolvedPhysics().hasAircraftProfile())
             return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
         applyLegacyControls(type, current);
         if (type.getPropellers().isEmpty())
@@ -428,6 +432,9 @@ public class Plane extends Driveable
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
             airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
             throttleDemand * propellerFraction);
+        accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            accelerationMs2 - AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs,
+                angularYaw, angularPitch, angularRoll));
         if (rolling)
             accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
         double newSpeed = Math.max(0D, airspeedBlocksPerTick
@@ -696,13 +703,15 @@ public class Plane extends Driveable
     private float pitchInput(int mask)
     {
         float keyboard = axis(mask, DriveableInput.DESCEND, DriveableInput.ASCEND);
-        return Mth.clamp(keyboard + (isMouseControlEnabled() ? getFlightPitchControl() : 0F), -1F, 1F);
+        return isMouseControlEnabled()
+            ? LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), keyboard) : keyboard;
     }
 
     private float rollInput(int mask)
     {
         float keyboard = axis(mask, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
-        return Mth.clamp(keyboard + (isMouseControlEnabled() ? getFlightRollControl() : 0F), -1F, 1F);
+        return isMouseControlEnabled()
+            ? LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), keyboard) : keyboard;
     }
 
     private static float approach(float value, float target, float amount)

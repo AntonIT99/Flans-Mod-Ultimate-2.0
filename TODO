@@ -3,13 +3,10 @@ General:
 - investigate the legacy penetration system
 
 Driveables:
-- alternative throttle control for ground vehicles: like planes but with Q (gear down) and E (gear up)
 - Use special mecha inventory
 - collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
 - Tank rendering still has issues with y axis
 - general driveable item rendering has some issues
-- Separate global configurable max speed scaling between planes and vehicles
-- 2 mod config option to enforce legacy physics (movements) for planes and vehicles globally, disregarding the new parameters entirely.
 
 Planes:
 - Investigate Bf 109 yaw/roll

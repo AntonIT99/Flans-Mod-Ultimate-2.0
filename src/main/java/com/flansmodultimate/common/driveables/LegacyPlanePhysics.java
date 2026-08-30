@@ -23,6 +23,19 @@ public final class LegacyPlanePhysics
     }
 
     /**
+     * Combines a mouse-stick deflection with a keyboard axis in the same
+     * normalised control range. Mouse packets carry a flap angle for historical
+     * compatibility, while a key contributes {@code -1}, {@code 0} or
+     * {@code 1}; normalising before combining prevents the mouse's 20-degree
+     * range from overpowering the keyboard's nine-degree steady deflection.
+     */
+    public static float combinedControlInput(float mouseDeflection, float keyboardInput)
+    {
+        float mouse = finite(mouseDeflection) / MAX_FLAP_ANGLE;
+        return Mth.clamp(mouse + finite(keyboardInput), -1F, 1F);
+    }
+
+    /**
      * Degrees a propeller turns in one tick. Blades stand still on standby and
      * spin up sharply off idle, which is what the legacy throttle^0.4 curve
      * describes; the propeller always turns the same way, even in reverse.

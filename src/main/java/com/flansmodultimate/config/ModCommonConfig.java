@@ -136,6 +136,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
 
+    private static final ForgeConfigSpec.BooleanValue FORCE_LEGACY_PLANE_PHYSICS;
+    private static final ForgeConfigSpec.BooleanValue FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_PLANE_SPEED_SCALE;
@@ -392,6 +394,15 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
+        FORCE_LEGACY_PLANE_PHYSICS = builder
+            .comment("Force all planes to use their legacy movement physics, even when Real* aircraft parameters are present.",
+                "This bypasses derived fixed-wing propulsion, lift, controls, manoeuvre drag, draft, movement scaling and speed caps.",
+                "Helicopter, VTOL and six-DOF movement is already legacy, but the switch also bypasses global movement caps for them.")
+            .define("forceLegacyPlanePhysics", false);
+        FORCE_LEGACY_VEHICLE_PHYSICS = builder
+            .comment("Force all ground and water vehicles to use their legacy movement physics, even when Real* vehicle parameters are present.",
+                "This bypasses derived propulsion, turning loss, slope and reverse overrides, draft, movement scaling and speed caps.")
+            .define("forceLegacyVehiclePhysics", false);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder
             .comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
                 "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
@@ -404,10 +415,10 @@ public final class ModCommonConfig
         REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = builder
             .comment("Exponent applied to the throttle lever before it scales real-world fixed-wing thrust.",
                 "Thrust is multiplied by throttle^n, so this changes how the lever maps onto power and speed.",
-                "1.0 is the physically realistic value and the default: the lever meters engine power directly,",
+                "1.0 is the physically realistic value: the lever meters engine power directly,",
                 "so half throttle really is half power. Because level-flight drag power rises with the cube of",
                 "speed, half power still gives about 79% of top speed, which is how real aircraft behave.",
-                "3.0 instead makes the lever linear in SPEED (half throttle = half top speed), which reads more",
+                "3.0 is the default and makes the lever linear in SPEED (half throttle = half top speed), which reads more",
                 "naturally on a HUD but is not physical: half throttle then produces only an eighth of rated power.",
                 "2.0 sits between the two. Values below 1.0 make the aircraft reach high speed even sooner.",
                 "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
@@ -558,6 +569,8 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
+            FORCE_LEGACY_PLANE_PHYSICS.get(),
+            FORCE_LEGACY_VEHICLE_PHYSICS.get(),
             REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE.get(),
             REALISTIC_AIRCRAFT_THROTTLE_RESPONSE.get(),
             REALISTIC_PLANE_SPEED_SCALE.get(),
@@ -578,6 +591,27 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
+    }
+
+    /** Whether all aircraft movement must ignore the real-world profile and global movement tuning. */
+    public static boolean forceLegacyPlanePhysics()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.forceLegacyPlanePhysics();
+    }
+
+    /** Whether all ground and water vehicle movement must ignore the real-world profile and global movement tuning. */
+    public static boolean forceLegacyVehiclePhysics()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.forceLegacyVehiclePhysics();
+    }
+
+    /** Category-aware legacy movement override used by shared driveable collision and flotation code. */
+    public static boolean forceLegacyMovement(@Nullable EnumVehicleCategory category)
+    {
+        return category == EnumVehicleCategory.AIRCRAFT ? forceLegacyPlanePhysics()
+            : category == EnumVehicleCategory.GROUND && forceLegacyVehiclePhysics();
     }
 
     /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */
