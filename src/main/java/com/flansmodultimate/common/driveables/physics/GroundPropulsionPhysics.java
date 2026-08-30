@@ -115,6 +115,20 @@ public final class GroundPropulsionPhysics
         return Math.max(target, current - budget);
     }
 
+    /**
+     * Horizontal drag applied after longitudinal integration. The derived model
+     * already contains resistance calibrated to the authored terminal speed, so
+     * applying the legacy per-tick multiplier as well would create a much lower
+     * second equilibrium. Legacy vehicles retain their historical multiplier.
+     */
+    public static double postIntegrationHorizontalDrag(boolean derivedGroundPropulsion, float legacyDrag)
+    {
+        if (derivedGroundPropulsion)
+            return 1D;
+        double configured = Float.isFinite(legacyDrag) ? Math.max(0F, legacyDrag) : 1D;
+        return Math.max(0.75D, Math.min(0.995D, 0.98D - Math.max(0D, configured - 1D) * 0.01D));
+    }
+
     private static boolean finitePositive(double value)
     {
         return Double.isFinite(value) && value > 0D;

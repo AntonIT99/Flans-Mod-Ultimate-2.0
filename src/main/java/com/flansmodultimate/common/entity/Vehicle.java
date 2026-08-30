@@ -170,7 +170,9 @@ public class Vehicle extends Driveable
         velocity = applyVehicleVerticalPhysics(velocity, type);
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater());
-        velocity = velocity.multiply(dragFactor(type), 1D, dragFactor(type));
+        double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(
+            physics.hasGroundPropulsion(), type.getDrag());
+        velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
         moveWithCollisions(velocity);
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
         {
@@ -501,8 +503,4 @@ public class Vehicle extends Driveable
         return value < target ? Math.min(target, value + amount) : Math.max(target, value - amount);
     }
 
-    private static double dragFactor(VehicleType type)
-    {
-        return Mth.clamp(0.98D - Math.max(0F, type.getDrag() - 1F) * 0.01D, 0.75D, 0.995D);
-    }
 }

@@ -84,6 +84,37 @@ class GroundPropulsionPhysicsTest
     }
 
     @Test
+    void hellcatScaleRuntimeIntegrationReachesAuthoredSpeedWithoutLegacyDrag()
+    {
+        double terminal = VehiclePhysicsUnits.kmhToBlocksPerTick(89D, 1D);
+        double powerW = VehiclePhysicsUnits.hpToKw(400D) * VehiclePhysicsUnits.WATTS_PER_KILOWATT;
+        double massKg = 17_036D;
+        double speed = 0D;
+        double oldDoubleDraggedSpeed = 0D;
+        for (int tick = 0; tick < 4000; tick++)
+        {
+            speed = integrateTick(speed, terminal, powerW, massKg,
+                GroundPropulsionPhysics.postIntegrationHorizontalDrag(true, 1F));
+            oldDoubleDraggedSpeed = integrateTick(oldDoubleDraggedSpeed, terminal, powerW, massKg,
+                GroundPropulsionPhysics.postIntegrationHorizontalDrag(false, 1F));
+        }
+
+        assertEquals(89D, VehiclePhysicsUnits.blocksPerTickToKmh(speed), 1D);
+        assertTrue(VehiclePhysicsUnits.blocksPerTickToKmh(oldDoubleDraggedSpeed) < 45D,
+            "the regression fixture must reproduce the much lower legacy-drag equilibrium");
+    }
+
+    @Test
+    void postIntegrationDragIsExclusiveToLegacyGroundPropulsion()
+    {
+        assertEquals(1D, GroundPropulsionPhysics.postIntegrationHorizontalDrag(true, 1F), 1.0E-9D);
+        assertEquals(1D, GroundPropulsionPhysics.postIntegrationHorizontalDrag(true, 12F), 1.0E-9D);
+        assertEquals(0.98D, GroundPropulsionPhysics.postIntegrationHorizontalDrag(false, 1F), 1.0E-9D);
+        assertEquals(0.97D, GroundPropulsionPhysics.postIntegrationHorizontalDrag(false, 2F), 1.0E-9D);
+        assertEquals(0.75D, GroundPropulsionPhysics.postIntegrationHorizontalDrag(false, 100F), 1.0E-9D);
+    }
+
+    @Test
     void coastingDecaysTowardZeroAndBrakingIsFaster()
     {
         double terminal = VehiclePhysicsUnits.kmhToBlocksPerTick(113D, 1D);
@@ -152,5 +183,16 @@ class GroundPropulsionPhysicsTest
         // real drivetrain or tyre could deliver.
         assertEquals(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             GroundPropulsionPhysics.accelerationMs2(0.5D, POWER_W, MASS_KG, TERMINAL_MS, 1D), 1.0E-9D);
+    }
+
+    private static double integrateTick(double speed, double terminal, double powerW,
+                                        double massKg, double postIntegrationDrag)
+    {
+        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
+            speed, powerW, massKg, terminal, 1.1D);
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
+            speed, powerW, massKg, terminal, false);
+        return GroundPropulsionPhysics.approach(speed, terminal, acceleration, deceleration)
+            * postIntegrationDrag;
     }
 }
