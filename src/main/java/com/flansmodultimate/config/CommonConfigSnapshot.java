@@ -85,6 +85,7 @@ public record CommonConfigSnapshot(
     int digitalAmmoSupplyAmount,
 
     double realisticVehicleSpeedScale,
+    double realisticAircraftReferenceSpeedScale,
     double realisticVehicleHealthScale,
     double penetrationVelocityExponent,
     double maxArmorImpactAngleDeg,
@@ -94,7 +95,7 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 15;
+    public static final int CURRENT_VERSION = 16;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -181,6 +182,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
         buf.writeDouble(s.realisticVehicleSpeedScale);
+        buf.writeDouble(s.realisticAircraftReferenceSpeedScale);
         buf.writeDouble(s.realisticVehicleHealthScale);
         buf.writeDouble(s.penetrationVelocityExponent);
         buf.writeDouble(s.maxArmorImpactAngleDeg);
@@ -271,6 +273,7 @@ public record CommonConfigSnapshot(
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
 
+            buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

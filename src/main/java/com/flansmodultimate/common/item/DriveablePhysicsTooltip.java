@@ -8,6 +8,7 @@ import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -26,13 +27,12 @@ import java.util.Map;
  * <p>Every number here comes from the same {@link ResolvedVehiclePhysics} the
  * runtime physics reads, so the tooltip cannot drift from the simulation.
  *
- * <p>Only authored real-world source values and independently-usable overrides
- * are shown here; a vehicle still on legacy physics is labelled as such and
- * shown the legacy fields that are genuinely driving it. Derived and
- * Minecraft-effective values (converted speeds, ratios such as power-to-weight,
- * and geometry derived from collision boxes and wheel positions) are
- * deliberately left out of the tooltip to keep it short — they remain fully
- * available through {@code /vehiclephysics}, which reads the same
+ * <p>Authored real-world source values, independently-usable overrides, and the
+ * minimum flight speed pilots need during play are shown here; a vehicle still
+ * on legacy physics is labelled as such and shown the legacy fields that are
+ * genuinely driving it. Other derived and Minecraft-effective values are left
+ * out to keep the tooltip short — they remain available through
+ * {@code /vehiclephysics}, which reads the same
  * {@link ResolvedVehiclePhysics}.
  */
 public final class DriveablePhysicsTooltip
@@ -50,13 +50,14 @@ public final class DriveablePhysicsTooltip
             return;
 
         double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double aircraftReferenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
 
         tooltip.add(Component.empty());
         tooltip.add(IFlanItem.statLine(label("header"),
             Component.translatable(PREFIX + "mode." + resolved.mode().translationSuffix()).getString()));
 
         if (resolved.hasGroundPropulsion() || resolved.hasAircraftProfile())
-            appendProfile(type, resolved, tooltip);
+            appendProfile(type, resolved, speedScale, aircraftReferenceSpeedScale, tooltip);
         else
             appendLegacyPropulsion(type, tooltip);
 
@@ -125,14 +126,14 @@ public final class DriveablePhysicsTooltip
 
     // ------------------------------------------------------- real-world path
 
-    private static void appendProfile(DriveableType type, ResolvedVehiclePhysics resolved, List<Component> tooltip)
+    private static void appendProfile(DriveableType type, ResolvedVehiclePhysics resolved, double speedScale,
+                                      double aircraftReferenceSpeedScale, List<Component> tooltip)
     {
         RealWorldVehicleSpec source = resolved.source();
 
-        // Authored real-world source values, in real-world units. Derived and
-        // Minecraft-effective values (effective speed, power-to-weight, wing
-        // loading, reference speed, …) are intentionally not shown here; see
-        // /vehiclephysics for those.
+        // Most lines are authored real-world source values. Minimum flight speed
+        // is the deliberate exception because pilots need the effective,
+        // server-configured threshold during ordinary play.
         tooltip.add(IFlanItem.statLine(label("mass"), formatMass(resolved.massKg())));
         if (resolved.baselineThrustKn() > 0F)
             tooltip.add(IFlanItem.statLine(label("engineThrust"), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1) + " kN"));
@@ -149,6 +150,10 @@ public final class DriveablePhysicsTooltip
                 tooltip.add(IFlanItem.statLine(label("wingArea"), IFlanItem.formatFloat(aircraft.wingAreaM2(), 2) + " m²"));
             if (aircraft.climbRateMs() != null)
                 tooltip.add(IFlanItem.statLine(label("climbRate"), IFlanItem.formatFloat(aircraft.climbRateMs(), 1) + " m/s"));
+            double minimumFlightSpeedKmh = resolved.referenceSpeedMs(
+                speedScale, aircraftReferenceSpeedScale) * VehiclePhysicsUnits.KMH_PER_METRE_PER_SECOND;
+            tooltip.add(IFlanItem.statLine(label("referenceSpeed"),
+                IFlanItem.formatDouble(minimumFlightSpeedKmh, 0) + " km/h"));
         }
 
         // Legacy fields that remain in force as deliberate gameplay trims.

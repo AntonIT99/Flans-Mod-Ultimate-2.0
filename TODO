@@ -1,14 +1,17 @@
 General:
-- Add translations in other languages
+- First person camera broken when using keyboard control in planes
 - Fix gloves
 - Use special mecha inventory
 - collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
-- general driveable item rendering has an offset
+- general driveable item rendering has some issues
 - check auto landing gear, check toggle landing gear
 - check toggle doors
 - check propeller speed at standby as well as when moving
+- alternative throttle control for ground vehicles: like planes
 - investigate the legacy penetration system
 - add a command to list and remove all driveables / deployable guns / aa guns in a defined radius or the whole world
+- planes should crash when brutal collision with the ground. By default no blocks destroyed but configurable.
+- investigate why planes can not be removed
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

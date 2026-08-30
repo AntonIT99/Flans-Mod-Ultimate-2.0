@@ -64,9 +64,22 @@ class AircraftPerformancePhysicsTest
     {
         // A very heavily loaded, slow aircraft would otherwise stall above its own top speed.
         double unclamped = AircraftPerformancePhysics.referenceSpeedMs(20_000D, 10D);
-        double clamped = AircraftPerformancePhysics.clampedReferenceSpeedMs(20_000D, 10D, 100D);
+        double clamped = AircraftPerformancePhysics.clampedReferenceSpeedMs(20_000D, 10D, 100D, 1D);
         assertTrue(clamped < unclamped);
         assertEquals(100D * VehiclePhysicsConstants.MAX_REFERENCE_SPEED_FRACTION, clamped, 1.0E-9D);
+    }
+
+    @Test
+    void configurableReferenceSpeedScaleShortensTakeoffWithoutChangingAircraftRelationships()
+    {
+        double physical = AircraftPerformancePhysics.referenceSpeedMs(MASS_KG, WING_AREA);
+        double arcade = AircraftPerformancePhysics.clampedReferenceSpeedMs(
+            MASS_KG, WING_AREA, TERMINAL_MS, 0.5D);
+        assertEquals(physical * 0.5D, arcade, 1.0E-9D);
+
+        double heavier = AircraftPerformancePhysics.clampedReferenceSpeedMs(
+            MASS_KG * 2D, WING_AREA, TERMINAL_MS, 0.5D);
+        assertTrue(heavier > arcade);
     }
 
     @Test

@@ -56,7 +56,7 @@
     "tooltip.flansmodultimate.physics.wingArea": "Flügelfläche",
     "tooltip.flansmodultimate.physics.wingLoading": "Flächenbelastung (kg/m²)",
     "tooltip.flansmodultimate.physics.climbRate": "Steigrate",
-    "tooltip.flansmodultimate.physics.referenceSpeed": "Referenzgeschwindigkeit (m/s)",
+    "tooltip.flansmodultimate.physics.referenceSpeed": "Mindestfluggeschwindigkeit",
     "tooltip.flansmodultimate.physics.driveType": "Antriebsart",
     "tooltip.flansmodultimate.physics.inferred": "(abgeleitet)",
     "tooltip.flansmodultimate.physics.reverseSpeed": "Rückwärtsgeschwindigkeit",

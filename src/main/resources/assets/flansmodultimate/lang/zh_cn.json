@@ -56,7 +56,7 @@
     "tooltip.flansmodultimate.physics.wingArea": "机翼面积",
     "tooltip.flansmodultimate.physics.wingLoading": "翼载 (kg/m²)",
     "tooltip.flansmodultimate.physics.climbRate": "爬升率",
-    "tooltip.flansmodultimate.physics.referenceSpeed": "参考空速 (m/s)",
+    "tooltip.flansmodultimate.physics.referenceSpeed": "最低飞行速度",
     "tooltip.flansmodultimate.physics.driveType": "驱动类型",
     "tooltip.flansmodultimate.physics.inferred": "(推断)",
     "tooltip.flansmodultimate.physics.reverseSpeed": "倒车速度",

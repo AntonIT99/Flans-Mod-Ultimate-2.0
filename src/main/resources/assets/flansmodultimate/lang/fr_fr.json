@@ -56,7 +56,7 @@
     "tooltip.flansmodultimate.physics.wingArea": "Surface alaire",
     "tooltip.flansmodultimate.physics.wingLoading": "Charge alaire (kg/m²)",
     "tooltip.flansmodultimate.physics.climbRate": "Vitesse ascensionnelle",
-    "tooltip.flansmodultimate.physics.referenceSpeed": "Vitesse de référence (m/s)",
+    "tooltip.flansmodultimate.physics.referenceSpeed": "Vitesse minimale de vol",
     "tooltip.flansmodultimate.physics.driveType": "Type de transmission",
     "tooltip.flansmodultimate.physics.inferred": "(déduit)",
     "tooltip.flansmodultimate.physics.reverseSpeed": "Vitesse en marche arrière",

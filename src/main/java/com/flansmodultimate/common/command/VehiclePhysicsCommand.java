@@ -63,13 +63,15 @@ public final class VehiclePhysicsCommand
         }
 
         double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double referenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
         ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
         RealWorldVehicleSpec source = type.getRealWorldSpec();
 
         send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " physics ===");
         send(context, ChatFormatting.WHITE, "mode: " + resolved.mode()
             + "  category: " + resolved.category()
-            + "  speedScale: " + format(speedScale));
+            + "  speedScale: " + format(speedScale)
+            + "  aircraftReferenceSpeedScale: " + format(referenceSpeedScale));
 
         send(context, ChatFormatting.AQUA, "-- authored source --");
         if (source.isEmpty())
@@ -108,7 +110,8 @@ public final class VehiclePhysicsCommand
             if (resolved.hasAircraftProfile())
             {
                 send(context, ChatFormatting.GRAY, "  wingLoading = " + format(resolved.wingLoadingKgPerM2()) + " kg/m2");
-                send(context, ChatFormatting.GRAY, "  referenceSpeed = " + format(resolved.referenceSpeedMs(speedScale)) + " m/s");
+                send(context, ChatFormatting.GRAY, "  referenceSpeed = "
+                    + format(resolved.referenceSpeedMs(speedScale, referenceSpeedScale)) + " m/s");
                 send(context, ChatFormatting.GRAY, "  rollInertiaFactor = " + format(resolved.rollInertiaFactor()));
             }
         }

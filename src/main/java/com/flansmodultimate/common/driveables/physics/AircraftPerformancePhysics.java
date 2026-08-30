@@ -79,13 +79,17 @@ public final class AircraftPerformancePhysics
     }
 
     /**
-     * Playability-clamped reference speed. Never allowed above
+     * Scaled and playability-clamped reference speed. The scale deliberately
+     * changes takeoff, low-speed lift and stall-like behaviour as one coherent
+     * quantity. The result is never allowed above
      * {@link VehiclePhysicsConstants#MAX_REFERENCE_SPEED_FRACTION} of terminal
      * speed, so no aircraft becomes impossible to keep airborne.
      */
-    public static double clampedReferenceSpeedMs(double massKg, double wingAreaM2, double terminalSpeedMs)
+    public static double clampedReferenceSpeedMs(double massKg, double wingAreaM2, double terminalSpeedMs,
+                                                  double referenceSpeedScale)
     {
-        double reference = referenceSpeedMs(massKg, wingAreaM2);
+        double scale = finitePositive(referenceSpeedScale) ? referenceSpeedScale : 1D;
+        double reference = referenceSpeedMs(massKg, wingAreaM2) * scale;
         if (reference <= 0D || !finitePositive(terminalSpeedMs))
             return reference;
         return Math.min(reference, terminalSpeedMs * VehiclePhysicsConstants.MAX_REFERENCE_SPEED_FRACTION);

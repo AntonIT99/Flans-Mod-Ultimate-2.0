@@ -234,8 +234,16 @@ public class Plane extends Driveable
             case PLANE -> fixedWingPhysics(type);
         };
         double descent = velocity.y;
-        boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), velocity.horizontalDistance(),
-            type.getTakeoffSpeed(), flightForwardVector().y, velocity.y);
+        ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
+        double requiredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
+            ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(
+                resolvedPhysics.referenceSpeedMs(ModCommonConfig.realisticVehicleSpeedScale(),
+                    ModCommonConfig.realisticAircraftReferenceSpeedScale()), 1D)
+            : type.getTakeoffSpeed();
+        double measuredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
+            ? velocity.length() : velocity.horizontalDistance();
+        boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), measuredTakeoffSpeed,
+            requiredTakeoffSpeed, flightForwardVector().y, velocity.y);
         if (isGearDeployed() && !liftingOff)
             velocity = applyWheelContactPhysics(velocity, true);
         moveWithCollisions(velocity);
@@ -398,7 +406,8 @@ public class Plane extends Driveable
 
         int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
             + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
-        double liftFraction = AircraftPerformancePhysics.liftFraction(airspeedMs, physics.referenceSpeedMs(speedScale))
+        double liftFraction = AircraftPerformancePhysics.liftFraction(airspeedMs,
+            physics.referenceSpeedMs(speedScale, ModCommonConfig.realisticAircraftReferenceSpeedScale()))
             * intactWings * 0.5D;
         Float climbRate = physics.source().aircraft().climbRateMs();
         double excessAllowance = AircraftPerformancePhysics.maxExcessLiftFraction(

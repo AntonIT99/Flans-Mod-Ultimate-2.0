@@ -29,6 +29,8 @@ public final class ModCommonConfig
 
     /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
     public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
+    public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.5D;
     public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
     public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
     public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
@@ -36,6 +38,8 @@ public final class ModCommonConfig
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 10.0D;
+    private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.1D;
+    private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 2.0D;
 
     private static final int MIN_ENTITY_TRACKING_RANGE = 1;
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
@@ -120,6 +124,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_SPEED_SCALE;
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_HEALTH_SCALE;
     private static final ForgeConfigSpec.DoubleValue PENETRATION_VELOCITY_EXPONENT;
     private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
@@ -378,6 +383,15 @@ public final class ModCommonConfig
                 "Vehicles that declare no real-world parameters are unaffected.")
             .defineInRange("realisticVehicleSpeedScale", DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE,
                 MIN_REALISTIC_VEHICLE_SPEED_SCALE, MAX_REALISTIC_VEHICLE_SPEED_SCALE);
+        REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder
+            .comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
+                "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
+                "0.5 halves the physically derived reference speed for shorter Minecraft runways; 1.0 keeps the physical result.",
+                "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
+            .defineInRange("realisticAircraftReferenceSpeedScale",
+                DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE,
+                MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE,
+                MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE);
         builder.pop();
 
         builder.push("Vehicle Damage Settings");
@@ -492,6 +506,7 @@ public final class ModCommonConfig
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
             REALISTIC_VEHICLE_SPEED_SCALE.get(),
+            REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE.get(),
             REALISTIC_VEHICLE_HEALTH_SCALE.get(),
             PENETRATION_VELOCITY_EXPONENT.get(),
             MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
@@ -517,6 +532,14 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE : config.realisticVehicleSpeedScale();
+    }
+
+    /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */
+    public static double realisticAircraftReferenceSpeedScale()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE
+            : config.realisticAircraftReferenceSpeedScale();
     }
 
     public static double realisticVehicleHealthScale()

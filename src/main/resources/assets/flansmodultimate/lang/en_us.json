@@ -103,7 +103,7 @@
     "tooltip.flansmodultimate.physics.wingArea": "Wing Area",
     "tooltip.flansmodultimate.physics.wingLoading": "Wing Loading (kg/m²)",
     "tooltip.flansmodultimate.physics.climbRate": "Climb Rate",
-    "tooltip.flansmodultimate.physics.referenceSpeed": "Reference Airspeed (m/s)",
+    "tooltip.flansmodultimate.physics.referenceSpeed": "Minimum Flight Speed",
     "tooltip.flansmodultimate.physics.driveType": "Drive Type",
     "tooltip.flansmodultimate.physics.inferred": "(inferred)",
     "tooltip.flansmodultimate.physics.reverseSpeed": "Reverse Speed",

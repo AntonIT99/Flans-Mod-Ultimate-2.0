@@ -191,16 +191,16 @@ public record ResolvedVehiclePhysics(
     // ------------------------------------------------------ derived aircraft
 
     /**
-     * Playability-clamped reference airspeed in m/s at which the wing carries the
-     * aircraft. Zero when no aircraft profile is active.
+     * Globally scaled and playability-clamped reference airspeed in m/s at which
+     * the wing carries the aircraft. Zero when no aircraft profile is active.
      */
-    public double referenceSpeedMs(double speedScale)
+    public double referenceSpeedMs(double speedScale, double referenceSpeedScale)
     {
         if (!hasAircraftProfile())
             return 0D;
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(maxSpeedBlocksPerTick(speedScale));
         Float wingArea = source.aircraft().wingAreaM2();
         return AircraftPerformancePhysics.clampedReferenceSpeedMs(massKg,
-            wingArea == null ? 0F : wingArea, terminalMs);
+            wingArea == null ? 0F : wingArea, terminalMs, referenceSpeedScale);
     }
 }
