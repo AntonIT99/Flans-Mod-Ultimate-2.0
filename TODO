@@ -7,18 +7,15 @@ Driveables:
 - Use special mecha inventory
 - collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
 - general driveable item rendering has some issues
-- add a command to list and remove all driveables / deployable guns / aa guns in a defined radius or the whole world
+- Add a command to list and remove all driveables / deployable guns / aa guns in a defined radius or the whole world
 - Separate global configurable max speed scaling between planes and vehicles
-- tank rendering still has issues with y axis
+- Tank rendering still has issues with y axis
 
 Planes:
 - First person camera broken when using keyboard control in planes
 - check toggle doors -> problem with door closed enforced for planes
 - check propeller speed at standby as well as when moving
-- planes have trouble to stop when landing
 - planes should crash when brutal collision with the ground. By default no blocks destroyed but configurable
-- plane acceleration is too high
-- investigate why planes can not be removed
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

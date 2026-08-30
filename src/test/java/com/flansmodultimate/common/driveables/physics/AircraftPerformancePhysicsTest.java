@@ -12,6 +12,7 @@ class AircraftPerformancePhysicsTest
     private static final double MASS_KG = 2890D;
     private static final double POWER_KW = 993D;
     private static final double WING_AREA = 22.48D;
+    private static final double SPAN_M = 11.23D;
     private static final double TERMINAL_MS = 635D / 3.6D;
 
     @Test
@@ -200,5 +201,48 @@ class AircraftPerformancePhysicsTest
         assertEquals(0D, AircraftPerformancePhysics.liftFraction(100D, 0D));
         assertEquals(1F, AircraftPerformancePhysics.rollInertiaFactor(0D, MASS_KG));
         assertEquals(0F, AircraftPerformancePhysics.normalizedControlAuthority(10D, 0D));
+    }
+
+    @Test
+    void inducedDragDominatesWellBelowTopSpeed()
+    {
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        double cruise = 300D / 3.6D;
+        double withSpan = AircraftPerformancePhysics.dragNewtons(cruise, MASS_KG, SPAN_M, TERMINAL_MS, reference);
+        double parasiticOnly = AircraftPerformancePhysics.dragNewtons(cruise, MASS_KG, 0D, TERMINAL_MS, reference);
+        assertTrue(withSpan > parasiticOnly * 1.5D,
+            "the wing pays a large induced-drag bill at manoeuvring speed");
+    }
+
+    @Test
+    void totalDragStillBalancesThrustAtTheAuthoredTopSpeed()
+    {
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        assertEquals(reference,
+            AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, MASS_KG, SPAN_M, TERMINAL_MS, reference), 1.0E-6D);
+        assertEquals(0D, AircraftPerformancePhysics.accelerationMs2(
+            reference, MASS_KG, TERMINAL_MS, TERMINAL_MS, reference, SPAN_M, 1D), 1.0E-9D);
+    }
+
+    @Test
+    void aCoastingAircraftAlwaysBleedsSpeed()
+    {
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        double cruise = 300D / 3.6D;
+        double coasting = AircraftPerformancePhysics.accelerationMs2(0D, MASS_KG, cruise,
+            TERMINAL_MS, reference, SPAN_M, 0D);
+        assertTrue(coasting <= -VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2,
+            "closing the throttle at 300 km/h must decelerate at least at the coasting floor");
+        // A stationary aircraft is untouched by the floor, so it can still taxi.
+        assertEquals(0D, AircraftPerformancePhysics.accelerationMs2(0D, MASS_KG, 0D,
+            TERMINAL_MS, reference, SPAN_M, 0D), 1.0E-9D);
+    }
+
+    @Test
+    void aVeryShortSpanAirframeKeepsAWellBehavedTopSpeed()
+    {
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        assertEquals(reference,
+            AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, 12_000D, 3D, TERMINAL_MS, reference), 1.0E-6D);
     }
 }

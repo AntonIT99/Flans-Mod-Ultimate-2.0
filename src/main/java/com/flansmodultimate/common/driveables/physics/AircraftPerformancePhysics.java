@@ -71,21 +71,111 @@ public final class AircraftPerformancePhysics
     }
 
     /**
-     * Longitudinal acceleration in m/s², using the same calibrated-drag approach
-     * as the ground model so the aircraft settles at its authored top speed.
+     * Induced-drag constant {@code k_i} in N·(m/s)², so that induced drag is
+     * {@code k_i / v²}.
+     *
+     * <p>This is the drag the wing pays for making lift, from the standard
+     * {@code D_i = 2 W² / (rho * pi * b² * e * v²)}. It is the term a single
+     * {@code k * v²} calibration misses entirely, and it is the dominant one at
+     * cruise: without it an aircraft flying well below its top speed sees almost
+     * no drag at all and never decelerates.
+     *
+     * @param massKg    aircraft mass in kilograms
+     * @param wingSpanM wing span in metres, or a non-positive value if unavailable
+     */
+    public static double inducedDragConstant(double massKg, double wingSpanM)
+    {
+        if (!finitePositive(massKg) || !finitePositive(wingSpanM))
+            return 0D;
+        double weight = massKg * VehiclePhysicsUnits.STANDARD_GRAVITY;
+        return 2D * weight * weight / (VehiclePhysicsUnits.AIR_DENSITY * Math.PI * wingSpanM * wingSpanM
+            * VehiclePhysicsConstants.OSWALD_EFFICIENCY);
+    }
+
+    /**
+     * Total aerodynamic drag in newtons at the given airspeed.
+     *
+     * <p>Drag is split into the two terms a real airframe actually has: a
+     * parasitic term rising with {@code v²} and an induced term falling with
+     * {@code 1 / v²}. The parasitic coefficient is back-solved so the two together
+     * equal the available thrust at the authored top speed, which keeps
+     * {@code RealMaxSpeedKmh} authoritative exactly as before while giving a
+     * realistic — and far larger — drag figure at cruise and manoeuvring speeds.
+     *
+     * @param wingSpanM wing span in metres; non-positive falls back to the pure {@code v²} model
+     */
+    public static double dragNewtons(double airspeedMs, double massKg, double wingSpanM,
+                                     double terminalSpeedMs, double referenceThrustNewtons)
+    {
+        if (!finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
+            return 0D;
+        double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
+        double terminalSquared = terminalSpeedMs * terminalSpeedMs;
+        // Never let the induced term eat the whole thrust budget: a very heavy,
+        // short-span airframe would otherwise leave no parasitic drag at all.
+        double induced = Math.min(inducedDragConstant(massKg, wingSpanM),
+            referenceThrustNewtons * VehiclePhysicsConstants.MAX_INDUCED_DRAG_SHARE * terminalSquared);
+        double parasiticCoefficient = (referenceThrustNewtons - induced / terminalSquared) / terminalSquared;
+        double drag = parasiticCoefficient * speed * speed;
+        if (induced > 0D)
+        {
+            // Below the knee the 1/v² term diverges; hold it flat and fade it
+            // out toward standstill instead. That is also where a real wing has
+            // departed into stall and is no longer making the lift being paid for.
+            double kneeSpeed = Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS,
+                terminalSpeedMs * VehiclePhysicsConstants.INDUCED_DRAG_KNEE_FRACTION);
+            double effective = Math.max(kneeSpeed, speed);
+            drag += induced / (effective * effective) * Math.min(1D, speed / kneeSpeed);
+        }
+        return drag;
+    }
+
+    /**
+     * Longitudinal acceleration in m/s² for a caller with no span data and no
+     * throttle position: the pure {@code v²} drag model, with no coasting floor.
      */
     public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs,
                                          double terminalSpeedMs, double referenceThrustNewtons)
     {
+        return accelerationMs2(thrustNewtons, massKg, airspeedMs, terminalSpeedMs, referenceThrustNewtons, 0D, 1D);
+    }
+
+    /**
+     * Longitudinal acceleration in m/s² from thrust against the two-term drag
+     * model, plus a coasting floor. Drag is still calibrated so full thrust at
+     * the authored top speed nets zero.
+     *
+     * <p>The floor stands in for the drag of an idled or windmilling propeller
+     * disc, which is substantial on a piston fighter and is not expressible in
+     * the authored data. It is gated on the throttle lever rather than on thrust,
+     * because that is what the propeller is actually responding to, and it ramps
+     * in with speed so it never pins a taxiing aircraft to the runway.
+     *
+     * @param throttleDemand the fraction of available thrust the lever is calling for
+     */
+    public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs,
+                                         double terminalSpeedMs, double referenceThrustNewtons,
+                                         double wingSpanM, double throttleDemand)
+    {
         if (!finitePositive(massKg) || !finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
-        // Drag is calibrated so that full thrust at terminal speed nets zero.
-        double dragCoefficient = referenceThrustNewtons / (terminalSpeedMs * terminalSpeedMs);
-        double drag = dragCoefficient * speed * speed;
-        double acceleration = (Math.max(0D, thrustNewtons) - drag) / massKg;
+        double thrust = Double.isFinite(thrustNewtons) ? Math.max(0D, thrustNewtons) : 0D;
+        double drag = dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons);
+        double acceleration = (thrust - drag) / massKg;
         if (!Double.isFinite(acceleration))
             return 0D;
+
+        // Idle or near-idle lever: guarantee a minimum bleed rate, ramped in
+        // with speed so a stationary aircraft is unaffected.
+        double demand = Double.isFinite(throttleDemand) ? throttleDemand : 1D;
+        if (demand <= VehiclePhysicsConstants.IDLE_THROTTLE_FRACTION)
+        {
+            double ramp = Math.min(1D, speed / Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS,
+                terminalSpeedMs * VehiclePhysicsConstants.COAST_DECELERATION_RAMP_FRACTION));
+            acceleration = Math.min(acceleration,
+                -VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2 * ramp);
+        }
         return Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             Math.min(acceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2));
     }

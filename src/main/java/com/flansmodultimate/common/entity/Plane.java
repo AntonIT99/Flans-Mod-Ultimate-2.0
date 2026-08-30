@@ -8,6 +8,7 @@ import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
 import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
@@ -59,6 +60,8 @@ public class Plane extends Driveable
     private float angularRoll;
     /** Latches the one automatic door opening per landing, as in 1.7.10. */
     private boolean doorsAutoOpened;
+    /** Progressive throttle lever state. Transient, and tracked per side. */
+    private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -304,10 +307,15 @@ public class Plane extends Driveable
         boolean occupied = getControllingEntity() != null;
         boolean powered = occupied && hasFuelForEngine() && hasWorkingPropeller(type);
         float throttle = getThrottle();
-        if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD))
-            throttle += 0.002F;
-        if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.BACKWARD))
-            throttle -= 0.005F;
+        // Holding the lever moves it progressively faster; a tap is still the
+        // authored fine step. Released or reversed, the ramp starts over.
+        int direction = powered
+            ? ThrottleLeverRamp.direction(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD) : 0;
+        float step = throttleRamp.advance(direction, ThrottleLeverRamp.PLANE_MAX_STEP_MULTIPLIER);
+        if (direction > 0)
+            throttle += 0.002F * step;
+        else if (direction < 0)
+            throttle -= 0.005F * step;
 
         if (!powered)
             throttle = approach(throttle, 0F, 0.008F);
@@ -402,8 +410,10 @@ public class Plane extends Driveable
         double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
             * throttleDemand * propellerFraction;
 
+        Float wingSpan = physics.source().aircraft().wingSpanM();
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
-            airspeedMs, terminalMs, referenceThrust);
+            airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
+            throttleDemand * propellerFraction);
         double newSpeed = Math.max(0D, airspeedBlocksPerTick
             + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
         newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));

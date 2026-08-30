@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
 import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
@@ -47,6 +48,8 @@ public class Vehicle extends Driveable
     @Getter protected float rightTrackProgress;
     private int throttleDecayDelay;
     private boolean fixedThrottle;
+    /** Progressive throttle lever state. Transient, and tracked per side. */
+    private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
     private final List<PendingSmoke> pendingSmoke = new ArrayList<>();
 
     public Vehicle(EntityType<?> entityType, Level level)
@@ -245,6 +248,11 @@ public class Vehicle extends Driveable
         boolean braking = DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND);
         boolean pedalInput = DriveableInput.isDown(input, DriveableInput.FORWARD | DriveableInput.BACKWARD);
         fixedThrottle = DriveableControlPhysics.fixedVehicleThrottle(fixedThrottle, canControl, braking, input);
+        // Advanced every tick, including the ones where nothing is held, so the
+        // ramp is counting an uninterrupted hold and nothing else.
+        int leverDirection = canControl && !pedalInput ? ThrottleLeverRamp.direction(input,
+            DriveableInput.THROTTLE_INCREASE, DriveableInput.THROTTLE_DECREASE) : 0;
+        float leverMultiplier = throttleRamp.advance(leverDirection, ThrottleLeverRamp.VEHICLE_MAX_STEP_MULTIPLIER);
         if (canControl)
         {
             float damageMultiplier = DriveableControlPhysics.damagedAccelerationMultiplier(getThrottleDamageNerf());
@@ -271,12 +279,16 @@ public class Vehicle extends Driveable
                 throttle -= acceleration * (throttle > 0F ? type.getBrakingModifier() : 1F);
                 throttleDecayDelay = 10;
             }
-            // The lever changes at the same authored rate as the pedals, but
-            // unlike them it retains the selected demand after release.
-            if (!pedalInput && DriveableInput.isDown(input, DriveableInput.THROTTLE_INCREASE))
-                throttle += acceleration * (throttle < 0F ? type.getBrakingModifier() : 1F);
-            if (!pedalInput && DriveableInput.isDown(input, DriveableInput.THROTTLE_DECREASE))
-                throttle -= acceleration * (throttle > 0F ? type.getBrakingModifier() : 1F);
+            // Unlike the pedals the lever retains the selected demand after
+            // release, so it travels on its own fine step rather than the
+            // pedal rate, and holding it moves it progressively faster. The
+            // ramp restarts as the lever passes through zero, so drive to
+            // reverse is never swept.
+            float leverStep = ThrottleLeverRamp.VEHICLE_LEVER_BASE_STEP * damageMultiplier * leverMultiplier;
+            if (leverDirection > 0)
+                throttle += leverStep * (throttle < 0F ? type.getBrakingModifier() : 1F);
+            else if (leverDirection < 0)
+                throttle -= leverStep * (throttle > 0F ? type.getBrakingModifier() : 1F);
         }
         if (braking)
             throttle = 0F;
@@ -289,6 +301,9 @@ public class Vehicle extends Driveable
         float damageLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         if (Math.abs(throttle) > damageLimit)
             throttle = (Math.copySign(damageLimit, throttle) + throttle * 2F) / 3F;
+        // Whatever moved the lever through zero — the driver, the brake, or the
+        // idle decay — the progressive step starts again from the base rate.
+        throttleRamp.resetOnZeroCrossing(getThrottle(), throttle);
         setThrottle(throttle);
 
         float steeringInput = isPartIntact(EnumDriveablePart.STEERING)
