@@ -1,0 +1,16 @@
+{
+  "block.flansmodapocalypse.blocklabstone": "Pietra da laboratorio",
+  "block.flansmodapocalypse.blockpowercube": "Cubo di energia",
+  "block.flansmodapocalypse.blocksulphur": "Blocco di zolfo",
+  "block.flansmodapocalypse.blocksulphuricacid": "Acido solforico",
+  "death.attack.sulphuric_acid": "%1$s si è dissolto nell'acido solforico",
+  "death.attack.sulphuric_acid.player": "%1$s si è dissolto nell'acido solforico combattendo contro %2$s",
+  "entity.flansmodapocalypse.autodrone": "Drone Teschio",
+  "entity.flansmodapocalypse.nukedrop": "Caduta nucleare",
+  "entity.flansmodapocalypse.skullboss": "Boss Teschio",
+  "entity.flansmodapocalypse.survivor": "Sopravvissuto",
+  "entity.flansmodapocalypse.teleporter": "Teletrasporto dell'Apocalisse",
+  "fluid.flansmodapocalypse.sulphuric_acid": "Acido solforico",
+  "item.flansmodapocalypse.flansulphur": "Zolfo",
+  "item.flansmodapocalypse.sulphuric_acid_bucket": "Secchio di acido solforico"
+}

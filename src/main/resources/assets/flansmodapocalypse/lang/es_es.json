@@ -1,0 +1,16 @@
+{
+  "block.flansmodapocalypse.blocklabstone": "Piedra de laboratorio",
+  "block.flansmodapocalypse.blockpowercube": "Cubo de energía",
+  "block.flansmodapocalypse.blocksulphur": "Bloque de azufre",
+  "block.flansmodapocalypse.blocksulphuricacid": "Ácido sulfúrico",
+  "death.attack.sulphuric_acid": "%1$s se disolvió en ácido sulfúrico",
+  "death.attack.sulphuric_acid.player": "%1$s se disolvió en ácido sulfúrico mientras luchaba contra %2$s",
+  "entity.flansmodapocalypse.autodrone": "Dron calavera",
+  "entity.flansmodapocalypse.nukedrop": "Caída nuclear",
+  "entity.flansmodapocalypse.skullboss": "Jefe calavera",
+  "entity.flansmodapocalypse.survivor": "Superviviente",
+  "entity.flansmodapocalypse.teleporter": "Teletransportador del apocalipsis",
+  "fluid.flansmodapocalypse.sulphuric_acid": "Ácido sulfúrico",
+  "item.flansmodapocalypse.flansulphur": "Azufre",
+  "item.flansmodapocalypse.sulphuric_acid_bucket": "Cubo de ácido sulfúrico"
+}

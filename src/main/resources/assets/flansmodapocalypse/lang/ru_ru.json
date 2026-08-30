@@ -1,0 +1,16 @@
+{
+  "block.flansmodapocalypse.blocklabstone": "Лабораторный камень",
+  "block.flansmodapocalypse.blockpowercube": "Энергетический куб",
+  "block.flansmodapocalypse.blocksulphur": "Блок серы",
+  "block.flansmodapocalypse.blocksulphuricacid": "Серная кислота",
+  "death.attack.sulphuric_acid": "%1$s растворился в серной кислоте",
+  "death.attack.sulphuric_acid.player": "%1$s растворился в серной кислоте во время боя с %2$s",
+  "entity.flansmodapocalypse.autodrone": "Дрон-Череп",
+  "entity.flansmodapocalypse.nukedrop": "Ядерный сброс",
+  "entity.flansmodapocalypse.skullboss": "Босс-Череп",
+  "entity.flansmodapocalypse.survivor": "Выживший",
+  "entity.flansmodapocalypse.teleporter": "Телепорт апокалипсиса",
+  "fluid.flansmodapocalypse.sulphuric_acid": "Серная кислота",
+  "item.flansmodapocalypse.flansulphur": "Сера",
+  "item.flansmodapocalypse.sulphuric_acid_bucket": "Ведро серной кислоты"
+}

@@ -1,0 +1,16 @@
+{
+  "block.flansmodapocalypse.blocklabstone": "실험실 돌",
+  "block.flansmodapocalypse.blockpowercube": "파워 큐브",
+  "block.flansmodapocalypse.blocksulphur": "황 블록",
+  "block.flansmodapocalypse.blocksulphuricacid": "황산",
+  "death.attack.sulphuric_acid": "%1$s이(가) 황산에 녹았습니다",
+  "death.attack.sulphuric_acid.player": "%1$s이(가) %2$s와 싸우는 동안 황산에 녹았습니다",
+  "entity.flansmodapocalypse.autodrone": "스컬 드론",
+  "entity.flansmodapocalypse.nukedrop": "핵폭탄 투하",
+  "entity.flansmodapocalypse.skullboss": "스컬 보스",
+  "entity.flansmodapocalypse.survivor": "생존자",
+  "entity.flansmodapocalypse.teleporter": "아포칼립스 텔레포터",
+  "fluid.flansmodapocalypse.sulphuric_acid": "황산",
+  "item.flansmodapocalypse.flansulphur": "황",
+  "item.flansmodapocalypse.sulphuric_acid_bucket": "황산 양동이"
+}
