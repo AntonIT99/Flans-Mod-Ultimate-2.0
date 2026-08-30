@@ -11,6 +11,7 @@
       "ForceDarkLightMixin",
       "HumanoidArmorLayerMixin",
       "KeyMappingConflictMixin",
+      "MountedRiderTurnMixin",
       "SeatedPlayerRendererMixin"
   ],
   "server": [

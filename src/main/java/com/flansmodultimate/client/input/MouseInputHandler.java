@@ -22,6 +22,8 @@ public final class MouseInputHandler
     private static final float FLIGHT_CONTROL_RETURN = 0.9F;
     private static final float MAX_FLAP_ANGLE = 20F;
     private static final float CONTROL_DEADZONE = 0.01F;
+    /** Degrees Entity.turn applies per unit of sensitivity scaled mouse movement. */
+    private static final float TURN_DEGREES_PER_UNIT = 0.15F;
 
     private static int flightDriveableId = -1;
     private static int viewSeatId = -1;
@@ -41,7 +43,7 @@ public final class MouseInputHandler
         if (!isMouseFlightActive(player, driveable))
         {
             resetFlightControls();
-            captureMountedSeatView(player, driveable);
+            bindMountedSeatView(player, driveable);
             return;
         }
 
@@ -97,15 +99,44 @@ public final class MouseInputHandler
         if (isMouseFlightActive(player, driveable))
             return;
 
-        // Vanilla has already applied mouse sensitivity to the mounted player's
-        // view. Vehicle seats consume that view delta in beginTick instead of
-        // relying on MouseHandler velocity, which may already have been reset.
+        // Seats take their look input straight from Entity.turn, which runs at
+        // frame rate instead of once per tick and carries vanilla sensitivity.
         if (player.getVehicle() instanceof Seat)
             return;
 
         IControllable controllable = KeyInputHandler.resolveControllable(player);
         if (controllable != null)
             controllable.onMouseMoved(dx, dy);
+    }
+
+    /**
+     * Turns a rider's free look while it is seated in a driveable.
+     *
+     * <p>Vanilla would add the delta to the rider's world yaw and pitch, but
+     * the rider looks out of a cockpit that pitches and rolls with the
+     * driveable, and the camera composes the seat aim with that orientation.
+     * Feeding world angles into a rolled frame is what makes mouse movement
+     * point the view somewhere other than where the screen says it should go,
+     * so the delta is applied to the seat's own aim instead. The rider's
+     * rotation follows from that aim once per tick.</p>
+     *
+     * @return whether the seat consumed the input and vanilla must not turn the rider
+     */
+    @OnlyIn(Dist.CLIENT)
+    public static boolean turnMountedRider(Player player, double yawDelta, double pitchDelta)
+    {
+        if (!(player.getVehicle() instanceof Seat seat) || seat.getRiddenByEntity() != player
+            || seat.getDriveable() == null)
+            return false;
+
+        // Mouse flight steers the aircraft rather than the view. That mode
+        // reads the vanilla view delta back in beginTick, so leave it alone.
+        if (MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
+            return false;
+
+        seat.applyClientAimDelta((float) yawDelta * TURN_DEGREES_PER_UNIT,
+            (float) pitchDelta * TURN_DEGREES_PER_UNIT);
+        return true;
     }
 
     public static void resetFlightControls()
@@ -116,7 +147,8 @@ public final class MouseInputHandler
         flightViewSynchronized = false;
     }
 
-    private static void captureMountedSeatView(Player player, Driveable driveable)
+    /** Adopts the aim the server holds for a seat the local player just took. */
+    private static void bindMountedSeatView(Player player, Driveable driveable)
     {
         if (!(player.getVehicle() instanceof Seat seat) || driveable == null
             || seat.getDriveable() != driveable || seat.getRiddenByEntity() != player)
@@ -129,27 +161,6 @@ public final class MouseInputHandler
         {
             viewSeatId = seat.getId();
             seat.synchronizeClientViewWithAim();
-            return;
-        }
-
-        float yawDelta = Mth.wrapDegrees(player.getYRot() - seat.getMountedViewYaw());
-        float mountedPitchBeforeInput = seat.getMountedViewPitch();
-        float pitchDelta = player.getXRot() - mountedPitchBeforeInput;
-        if (Math.abs(yawDelta) > 1.0E-4F || Math.abs(pitchDelta) > 1.0E-4F)
-        {
-            seat.applyClientAimDelta(yawDelta, pitchDelta);
-
-            // Vanilla has already added the complete mouse delta to both xRot
-            // and xRotO. If the seat rejects part of that delta at its pitch
-            // limit, leaving xRotO outside the limit makes rendering interpolate
-            // from the invalid angle back to the clamped one every frame.
-            float mountedPitchAfterInput = seat.getMountedViewPitch();
-            float appliedPitchDelta = mountedPitchAfterInput - mountedPitchBeforeInput;
-            if (Math.abs(pitchDelta - appliedPitchDelta) > 1.0E-4F)
-            {
-                player.setXRot(mountedPitchAfterInput);
-                player.xRotO = mountedPitchAfterInput;
-            }
         }
     }
 

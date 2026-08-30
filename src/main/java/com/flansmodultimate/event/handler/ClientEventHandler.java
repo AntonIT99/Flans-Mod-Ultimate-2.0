@@ -77,12 +77,8 @@ public final class ClientEventHandler
         // The reversed third person view turns the camera around, which swaps
         // which way the driveable's roll leans on screen.
         boolean frontView = Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT;
-        if (cameraEntity instanceof Player player && player.getVehicle() instanceof Seat seat
-            && MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
-        {
-            event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
-            event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
-        }
+        event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
+        event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
         event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
     }
 

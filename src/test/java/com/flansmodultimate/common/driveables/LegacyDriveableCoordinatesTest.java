@@ -241,6 +241,54 @@ class LegacyDriveableCoordinatesTest
         assertEquals(89.9F, Math.abs(banked.pitch()), 1.0E-4D);
     }
 
+    @Test
+    void aimYawPansTheViewAlongScreenRightWhateverTheDriveableBank()
+    {
+        // What a rider expects from a mouse: pushing it right moves the view
+        // towards the right hand side of the screen, and nowhere else, even
+        // when the cockpit is rolled and pitched away from the horizon.
+        for (float roll : new float[] { 0F, 45F, 90F, 145F, 180F, -70F })
+        {
+            LegacyDriveableCoordinates.ViewAngles before =
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 20F, roll, 0F, 0F, true);
+            LegacyDriveableCoordinates.ViewAngles after =
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 20F, roll, 2F, 0F, true);
+
+            Vec3 panned = vanillaViewVector(after.pitch(), after.yaw())
+                .subtract(vanillaViewVector(before.pitch(), before.yaw()));
+            Vec3 screenUp = vanillaUpVector(before.pitch(), before.yaw(), before.roll());
+            Vec3 screenRight = vanillaViewVector(before.pitch(), before.yaw()).cross(screenUp);
+
+            assertTrue(panned.dot(screenRight) > 0.02D,
+                "aim yaw should pan right on screen at roll " + roll);
+            assertEquals(0D, panned.dot(screenUp), 1.0E-3D,
+                "aim yaw should not tilt the view up or down at roll " + roll);
+        }
+    }
+
+    @Test
+    void aimPitchTiltsTheViewAlongScreenUpWhateverTheDriveableBank()
+    {
+        for (float roll : new float[] { 0F, 45F, 90F, 145F, 180F, -70F })
+        {
+            LegacyDriveableCoordinates.ViewAngles before =
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 20F, roll, 0F, 0F, true);
+            LegacyDriveableCoordinates.ViewAngles after =
+                LegacyDriveableCoordinates.mountedViewAngles(35F, 20F, roll, 0F, 2F, true);
+
+            Vec3 tilted = vanillaViewVector(after.pitch(), after.yaw())
+                .subtract(vanillaViewVector(before.pitch(), before.yaw()));
+            Vec3 screenUp = vanillaUpVector(before.pitch(), before.yaw(), before.roll());
+            Vec3 screenRight = vanillaViewVector(before.pitch(), before.yaw()).cross(screenUp);
+
+            // Vanilla pitch grows downwards, so a positive aim pitch looks down.
+            assertTrue(tilted.dot(screenUp) < -0.02D,
+                "aim pitch should tilt down on screen at roll " + roll);
+            assertEquals(0D, tilted.dot(screenRight), 1.0E-3D,
+                "aim pitch should not pan the view sideways at roll " + roll);
+        }
+    }
+
     /** World direction of the rendered nose, in the basis the renderer uses. */
     private static Vec3 renderedNose(float yaw, float pitch, float roll, boolean planeFacing)
     {

@@ -24,28 +24,29 @@ public final class ModCommonConfig
 {
     public static final ForgeConfigSpec configSpec;
 
-    private static final int DEFAULT_BULLET_TRACKING_RANGE = 128;
-    private static final int DEFAULT_GRENADE_TRACKING_RANGE = 64;
-    private static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
-    private static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
-
     /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
-    private static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
-    private static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
+    public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
     /** A throttle lever meters engine power, so the physical exponent is one. */
-    private static final double DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 3.0D;
-    private static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
-    private static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
-    private static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
-    private static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
-    private static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
+    public static final double DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 3.0D;
+    public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
+    public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
+    public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
+    public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
+    public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
+
     private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
     private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
+
+    private static final int DEFAULT_BULLET_TRACKING_RANGE = 128;
+    private static final int DEFAULT_GRENADE_TRACKING_RANGE = 64;
+    private static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
+    private static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
 
     private static final int MIN_ENTITY_TRACKING_RANGE = 1;
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;

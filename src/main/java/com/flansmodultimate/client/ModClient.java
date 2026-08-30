@@ -406,10 +406,13 @@ public class ModClient
         {
             // Keep the torso planted in the cockpit while allowing natural
             // free-look. Past this angle the torso follows enough to prevent
-            // the head from twisting unrealistically through the body.
-            float forwardYaw = seat.getMountedForwardYaw();
-            float headOffset = Mth.clamp(Mth.wrapDegrees(yaw - forwardYaw), -75F, 75F);
-            float bodyTarget = yaw - headOffset;
+            // the head from twisting unrealistically through the body. The
+            // twist is measured on the seat's own aim, because the world yaw
+            // the composed view lands on says nothing about how far the pilot
+            // turned inside a banked cockpit.
+            float aimYaw = fixedPlaneView ? 0F : Mth.wrapDegrees(seat.getViewAimYaw());
+            float torsoAimYaw = aimYaw - Mth.clamp(aimYaw, -75F, 75F);
+            float bodyTarget = driveable.getMountedViewAngles(torsoAimYaw, 0F).yaw();
             player.yBodyRot += Mth.wrapDegrees(bodyTarget - player.yBodyRot);
         }
         else

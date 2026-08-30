@@ -417,6 +417,20 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         return LegacyDriveableCoordinates.renderedForwardPitch(driveablePitch, this instanceof Plane);
     }
+
+    /**
+     * Vanilla camera angles of a rider looking with the given seat local aim.
+     *
+     * <p>Seat aim describes a rotation inside the driveable's own frame, so it
+     * has to be composed with the driveable orientation. Adding it to the
+     * facing angles instead only agrees while the driveable is level.</p>
+     */
+    public LegacyDriveableCoordinates.ViewAngles getMountedViewAngles(float aimYaw, float aimPitch)
+    {
+        return LegacyDriveableCoordinates.mountedViewAngles(getYaw(), getPitch(), getRoll(),
+            aimYaw, aimPitch, this instanceof Plane);
+    }
+
     /** Initial model pitch used when this driveable is placed in the world. */
     public float getInitialPlacementPitch() { return 0F; }
     public float getThrottle() { return entityData.get(DATA_THROTTLE); }

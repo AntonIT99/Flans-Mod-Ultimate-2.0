@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -58,7 +59,6 @@ public class Seat extends Entity implements IControllable
     private boolean clientViewAimInitialized;
     private float clientViewAimYaw;
     private float clientViewAimPitch;
-    private float clientViewParentYaw;
 
     private int orphanTicks;
     private int localInputMask;
@@ -136,9 +136,24 @@ public class Seat extends Entity implements IControllable
             || Math.abs(getRequestedAimPitch() - getAimPitch()) >= epsilon;
     }
 
+    /**
+     * World camera angles of the rider in this seat.
+     *
+     * <p>Aim is local to the driveable, so it is composed with the driveable
+     * orientation. Summing the two sets of Euler angles instead makes the aim
+     * turn around the world axes, which stops matching the rolled cockpit the
+     * rider actually sees as soon as the driveable leaves level flight.</p>
+     */
+    public LegacyDriveableCoordinates.ViewAngles getMountedView()
+    {
+        return driveable == null
+            ? new LegacyDriveableCoordinates.ViewAngles(getYRot(), getXRot(), 0F)
+            : driveable.getMountedViewAngles(getViewAimYaw(), getViewAimPitch());
+    }
+
     public float getMountedViewYaw()
     {
-        return driveable == null ? getYRot() : Mth.wrapDegrees(getMountedForwardYaw() + getViewAimYaw());
+        return getMountedView().yaw();
     }
 
     /** World yaw of a rider looking straight along the rendered driveable. */
@@ -149,15 +164,9 @@ public class Seat extends Entity implements IControllable
         return driveable.getEntityFacingYaw();
     }
 
-    /**
-     * Rider look pitch. The driveable's own pitch has to be converted to the
-     * vanilla look basis first; non-plane models face the mirrored model axis,
-     * so their model pitch has the opposite sign to the rendered nose.
-     */
     public float getMountedViewPitch()
     {
-        return driveable == null ? getXRot()
-            : Mth.clamp(driveable.getEntityFacingPitch() + getViewAimPitch(), -89.9F, 89.9F);
+        return getMountedView().pitch();
     }
 
     public int getInputMask()
@@ -236,7 +245,6 @@ public class Seat extends Entity implements IControllable
         if (seatInfo == null && driveable.getConfigType() != null)
             seatInfo = driveable.getConfigType().getSeat(getSeatIndex());
 
-        consumeClientParentYaw();
         driveable.registerSeatProxy(this);
         snapToParent();
 
@@ -281,8 +289,10 @@ public class Seat extends Entity implements IControllable
         Vec3 position = driveable.getSeatWorldPosition(getSeatIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(Vec3.ZERO);
-        setYRot(Mth.wrapDegrees(getMountedForwardYaw() + getAimYaw()));
-        setXRot(Mth.clamp(driveable.getEntityFacingPitch() + getAimPitch(), -89.9F, 89.9F));
+        LegacyDriveableCoordinates.ViewAngles view =
+            driveable.getMountedViewAngles(getAimYaw(), getAimPitch());
+        setYRot(view.yaw());
+        setXRot(view.pitch());
     }
 
     /**
@@ -464,7 +474,6 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = getAimYaw();
         clientViewAimPitch = getAimPitch();
-        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 
@@ -473,16 +482,6 @@ public class Seat extends Entity implements IControllable
     {
         if (Float.isFinite(yawDelta))
             entityData.set(DATA_AIM_YAW, Mth.wrapDegrees(getAimYaw() - yawDelta));
-    }
-
-    private void consumeClientParentYaw()
-    {
-        if (!level().isClientSide || !clientViewAimInitialized || driveable == null)
-            return;
-        float parentYaw = driveable.getYaw();
-        float yawDelta = Mth.wrapDegrees(parentYaw - clientViewParentYaw);
-        clientViewAimYaw = Mth.wrapDegrees(clientViewAimYaw - yawDelta);
-        clientViewParentYaw = parentYaw;
     }
 
     private void initializeClientViewAim()
@@ -496,7 +495,6 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = 0F;
         clientViewAimPitch = 0F;
-        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 

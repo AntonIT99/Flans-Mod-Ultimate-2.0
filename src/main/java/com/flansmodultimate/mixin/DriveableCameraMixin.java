@@ -69,8 +69,9 @@ public abstract class DriveableCameraMixin
         setPosition(seat.getDriveable().getInterpolatedRiderWorldPosition(
             seat.getSeatIndex(), eyeOffset, partialTick));
 
-        if (!MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
-            return;
+        // Build the boom from the same composed seat view this frame renders
+        // with. The rider's own rotation only catches up once per tick, so a
+        // boom hung off it lags both the driveable and the rider's own look.
         LegacyDriveableCoordinates.ViewAngles view = MountedCameraView.resolve(player, partialTick);
         if (view != null)
             setRotation(view.yaw(), view.pitch());
