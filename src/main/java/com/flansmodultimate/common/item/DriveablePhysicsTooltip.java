@@ -8,13 +8,10 @@ import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
-import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -27,14 +24,16 @@ import java.util.Map;
  * Renders the physics properties a driveable is <em>actually</em> using.
  *
  * <p>Every number here comes from the same {@link ResolvedVehiclePhysics} the
- * runtime physics reads, and speed conversions go through the same
- * {@link VehiclePhysicsUnits} helpers with the same config scale. No derivation
- * is repeated locally, so the tooltip cannot drift from the simulation.
+ * runtime physics reads, so the tooltip cannot drift from the simulation.
  *
- * <p>The three tiers are kept visually distinct: authored real-world source
- * values sit at the top level, derived and Minecraft-effective values are
- * indented beneath them, and a vehicle still on legacy physics is labelled as
- * such and shown the legacy fields that are genuinely driving it.
+ * <p>Only authored real-world source values and independently-usable overrides
+ * are shown here; a vehicle still on legacy physics is labelled as such and
+ * shown the legacy fields that are genuinely driving it. Derived and
+ * Minecraft-effective values (converted speeds, ratios such as power-to-weight,
+ * and geometry derived from collision boxes and wheel positions) are
+ * deliberately left out of the tooltip to keep it short — they remain fully
+ * available through {@code /vehiclephysics}, which reads the same
+ * {@link ResolvedVehiclePhysics}.
  */
 public final class DriveablePhysicsTooltip
 {
@@ -57,12 +56,11 @@ public final class DriveablePhysicsTooltip
             Component.translatable(PREFIX + "mode." + resolved.mode().translationSuffix()).getString()));
 
         if (resolved.hasGroundPropulsion() || resolved.hasAircraftProfile())
-            appendProfile(type, resolved, speedScale, tooltip);
+            appendProfile(type, resolved, tooltip);
         else
             appendLegacyPropulsion(type, tooltip);
 
-        appendIndependentOverrides(resolved, speedScale, tooltip);
-        appendGeometry(resolved.geometry(), tooltip);
+        appendIndependentOverrides(resolved, tooltip);
         appendSpeedScale(speedScale, resolved, tooltip);
         appendArmorAndHealth(type, tooltip);
     }
@@ -127,28 +125,20 @@ public final class DriveablePhysicsTooltip
 
     // ------------------------------------------------------- real-world path
 
-    private static void appendProfile(DriveableType type, ResolvedVehiclePhysics resolved,
-                                      double speedScale, List<Component> tooltip)
+    private static void appendProfile(DriveableType type, ResolvedVehiclePhysics resolved, List<Component> tooltip)
     {
         RealWorldVehicleSpec source = resolved.source();
 
-        // Tier 1: authored real-world source values, in real-world units.
+        // Authored real-world source values, in real-world units. Derived and
+        // Minecraft-effective values (effective speed, power-to-weight, wing
+        // loading, reference speed, …) are intentionally not shown here; see
+        // /vehiclephysics for those.
         tooltip.add(IFlanItem.statLine(label("mass"), IFlanItem.formatFloat(resolved.massKg(), 0)));
         if (resolved.baselineThrustKn() > 0F)
             tooltip.add(IFlanItem.statLine(label("engineThrust"), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1)));
         if (resolved.baselinePowerKw() > 0F)
             tooltip.add(IFlanItem.statLine(label("enginePower"), IFlanItem.formatFloat(resolved.baselinePowerKw(), 0)));
         tooltip.add(IFlanItem.statLine(label("maxSpeed"), IFlanItem.formatFloat(resolved.maxSpeedKmh(), 0)));
-
-        // Tier 2: values derived from those, and tier 3: the Minecraft speeds.
-        tooltip.add(IFlanItem.indentedStatLine(label("effectiveSpeed"),
-            IFlanItem.formatDouble(resolved.maxSpeedBlocksPerTick(speedScale), 2)));
-        if (resolved.powerToWeightKwPerKg() > 0F)
-            tooltip.add(IFlanItem.indentedStatLine(label("powerToWeight"),
-                IFlanItem.formatFloat(resolved.powerToWeightKwPerKg(), 3)));
-        if (resolved.thrustToWeight() > 0F)
-            tooltip.add(IFlanItem.indentedStatLine(label("thrustToWeight"),
-                IFlanItem.formatFloat(resolved.thrustToWeight(), 3)));
 
         if (resolved.hasAircraftProfile())
         {
@@ -159,10 +149,6 @@ public final class DriveablePhysicsTooltip
                 tooltip.add(IFlanItem.statLine(label("wingArea"), IFlanItem.formatFloat(aircraft.wingAreaM2(), 2)));
             if (aircraft.climbRateMs() != null)
                 tooltip.add(IFlanItem.statLine(label("climbRate"), IFlanItem.formatFloat(aircraft.climbRateMs(), 1)));
-            tooltip.add(IFlanItem.indentedStatLine(label("wingLoading"),
-                IFlanItem.formatFloat(resolved.wingLoadingKgPerM2(), 1)));
-            tooltip.add(IFlanItem.indentedStatLine(label("referenceSpeed"),
-                IFlanItem.formatDouble(resolved.referenceSpeedMs(speedScale), 1)));
         }
 
         // Legacy fields that remain in force as deliberate gameplay trims.
@@ -219,8 +205,7 @@ public final class DriveablePhysicsTooltip
 
     // -------------------------------------------------- independent overrides
 
-    private static void appendIndependentOverrides(ResolvedVehiclePhysics resolved, double speedScale,
-                                                   List<Component> tooltip)
+    private static void appendIndependentOverrides(ResolvedVehiclePhysics resolved, List<Component> tooltip)
     {
         if (resolved.category() == EnumVehicleCategory.GROUND)
         {
@@ -229,29 +214,12 @@ public final class DriveablePhysicsTooltip
                     + (resolved.driveTypeExplicit() ? "" : " " + translate("inferred"))));
         }
         if (resolved.hasReverseSpeedOverride())
-        {
             tooltip.add(IFlanItem.statLine(label("reverseSpeed"),
                 IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0)));
-            tooltip.add(IFlanItem.indentedStatLine(label("effectiveReverseSpeed"),
-                IFlanItem.formatDouble(resolved.reverseSpeedBlocksPerTick(speedScale), 2)));
-        }
         if (resolved.hasSlopeLimit())
             tooltip.add(IFlanItem.statLine(label("maxSlope"), IFlanItem.formatFloat(resolved.maxSlopeDeg(), 0)));
         if (resolved.hasDraft())
             tooltip.add(IFlanItem.statLine(label("draft"), IFlanItem.formatFloat(resolved.draftM(), 2)));
-    }
-
-    /** Dimensions are always derived, never authored, so they are always indented. */
-    private static void appendGeometry(@Nullable VehicleGeometry geometry, List<Component> tooltip)
-    {
-        if (geometry == null)
-            return;
-        if (geometry.lengthM() != null)
-            tooltip.add(IFlanItem.indentedStatLine(label("length"), IFlanItem.formatFloat(geometry.lengthM(), 2)));
-        if (geometry.widthM() != null)
-            tooltip.add(IFlanItem.indentedStatLine(label("width"), IFlanItem.formatFloat(geometry.widthM(), 2)));
-        if (geometry.wheelbaseM() != null)
-            tooltip.add(IFlanItem.indentedStatLine(label("wheelbase"), IFlanItem.formatFloat(geometry.wheelbaseM(), 2)));
     }
 
     /**
