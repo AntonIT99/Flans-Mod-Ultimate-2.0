@@ -208,6 +208,22 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     @Getter
     protected Seat[] seats = new Seat[0];
     @Getter
+    /**
+     * Height of a passenger gun's muzzle above its authored GunOrigin, in blocks.
+     *
+     * <p>Taken from the 1.7.10 firing path, which added
+     * {@code player.getMountedYOffset()} to the origin. That resolves to
+     * {@code height * 0.75} for a standing player, so 1.35. Checked against the
+     * Hellcat, whose {@code GunOrigin 1 6 18 -11} plus this lands 0.6 px from the
+     * centre of the barrel its model draws at rotation point Y -38.</p>
+     *
+     * <p>Held as a constant rather than read from the current occupant, which is
+     * what the legacy path did: a muzzle belongs to the vehicle, and should not
+     * move because a mob rather than a player took the seat, or because the
+     * gunner crouched.</p>
+     */
+    private static final double PASSENGER_GUN_MOUNTED_OFFSET = 1.35D;
+
     protected Wheel[] wheels = new Wheel[0];
     protected int groundedWheelCount;
     @Getter
@@ -1602,8 +1618,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected Vec3 getShootOrigin(ShootPoint point)
     {
-        Vec3 root = configuredModelLocal(point.getRootPos().getPosition());
-        Vec3 offset = configuredModelLocal(point.getOffPos());
+        Vec3 root = attachmentModelLocal(point.getRootPos().getPosition());
+        Vec3 offset = attachmentModelLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
             return applyVehicleModelVerticalOffset(modelLocalToWorld(root.add(offset)));
@@ -1633,7 +1649,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!(this instanceof Vehicle) || configType == null)
             return position;
         return position.add(modelLocalDirectionToWorld(new Vec3(0D,
-            Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
+            Vehicle.scaledModelVerticalOffset(configType.getModelScale()), 0D)));
     }
 
     protected Vec3 getShootDirection(ShootPoint point, boolean secondary)
@@ -1643,9 +1659,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         EnumDriveablePart part = point.getRootPos().getPart();
         if (fixed)
         {
-            Vec3 localDirection = configuredModelLocal(fixedAngle);
+            Vec3 localDirection = attachmentModelLocal(fixedAngle);
             if (localDirection.lengthSqr() < 1.0E-8D)
-                localDirection = configuredModelLocal(new Vec3(1D, 0D, 0D));
+                localDirection = attachmentModelLocal(new Vec3(1D, 0D, 0D));
             if (isTurretMountedPart(part))
             {
                 localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
@@ -1801,7 +1817,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
             FireableGun fireable = new FireableGun(gun, ammo);
             LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 origin = getPassengerShootOrigin(seat, info);
+            Vec3 origin = getPassengerShootOrigin(info);
             Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
             FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
             boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
@@ -1829,7 +1845,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : getPassengerShootOrigin(seat, info);
+            ? null : getPassengerShootOrigin(info);
     }
 
     /** Current passenger firing direction for client-side diagnostics. */
@@ -1842,17 +1858,18 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ? null : aimedDirection(seat.getAimYaw(), seat.getAimPitch());
     }
 
-    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
+    /**
+     * Muzzle position of a passenger's gun.
+     *
+     * <p>GunOrigin is authored in the same legacy frame as the seat it belongs
+     * to, so it takes the same basis conversion. Skipping the lateral mirror
+     * put every passenger gun on the wrong side of the hull, which is the
+     * long-standing "GunOrigin is not positioned correctly" fault.</p>
+     */
+    private Vec3 getPassengerShootOrigin(@NotNull SeatInfo info)
     {
-        Vec3 muzzle = configuredModelLocal(info.getGunOrigin());
-        // Legacy GunOrigin is an absolute driveable-local muzzle anchor. Aim
-        // rotates the shot direction, not this position. Moving it around a
-        // model-derived yaw/pitch pivot makes authored passenger gun positions
-        // drift and, for turret-mounted guns, applies the turret rotation twice.
-        Vec3 origin = applyVehicleModelVerticalOffset(modelLocalToWorld(muzzle));
-        Entity passenger = seat.getRiddenByEntity();
-        double riderOffset = passenger == null ? 0D : seat.getPassengerRidingOffset(passenger);
-        return origin.add(modelLocalDirectionToWorld(new Vec3(0D, riderOffset, 0D)));
+        Vec3 local = attachmentModelLocal(info.getGunOrigin()).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        return applyVehicleModelVerticalOffset(position().add(modelLocalDirectionToWorld(local)));
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }
@@ -2370,13 +2387,35 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D), yaw, pitch, roll));
     }
 
+    /**
+     * Basis conversion for a point authored as an attachment on the driveable:
+     * seat positions and their rotated offsets, passenger gun origins and the
+     * driveable's own shoot points. Aircraft take the model-facing half-turn,
+     * everything else the lateral mirror.
+     *
+     * <p>The mirror is the part that is easy to lose, because most content is
+     * symmetric about the centreline and so cannot show it. Where content is
+     * asymmetric it is unambiguous: the Hellcat authors its turret machine gun
+     * at {@code GunOrigin 1 6 18 -11} and the model draws that gun at model Z
+     * {@code +11}. Anything skipping the mirror lands on the wrong side of the
+     * hull by twice its lateral offset.</p>
+     */
+    private Vec3 attachmentModelLocal(@NotNull Vec3 legacy)
+    {
+        Vec3 local = rotateLegacyModelVector(legacy);
+        return this instanceof Plane
+            ? LegacyDriveableCoordinates.applyPlaneModelFacing(local)
+            : mirrorAroundLocalZAxis(local);
+    }
+
+    private Vec3 attachmentModelLocal(@NotNull com.flansmod.common.vector.Vector3f legacy)
+    {
+        return attachmentModelLocal(new Vec3(legacy.x, legacy.y, legacy.z));
+    }
+
     private Vec3 getSeatLocalPosition(@NotNull SeatInfo info, float turretYaw, float turretPitch)
     {
-        Vec3 localPosition = rotateLegacyModelVector(
-            new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
-        localPosition = this instanceof Plane
-            ? LegacyDriveableCoordinates.applyPlaneModelFacing(localPosition)
-            : mirrorAroundLocalZAxis(localPosition);
+        Vec3 localPosition = attachmentModelLocal(info.getPosition());
         if (isTurretMountedPart(info.getPart()))
             localPosition = turretPointToLocal(localPosition, turretYaw,
                 info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F);
@@ -2385,13 +2424,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // needs the same model-space correction, not only the driver.
         if (this instanceof Vehicle)
             localPosition = localPosition.add(0D,
-                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D);
+                Vehicle.scaledModelVerticalOffset(configType.getModelScale()), 0D);
 
-        Vec3 rotatedOffset = rotateLegacyModelVector(
-            new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
-        rotatedOffset = this instanceof Plane
-            ? LegacyDriveableCoordinates.applyPlaneModelFacing(rotatedOffset)
-            : mirrorAroundLocalZAxis(rotatedOffset);
+        Vec3 rotatedOffset = attachmentModelLocal(info.getRotatedOffset());
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
             float pitch = info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F;
@@ -2410,8 +2445,20 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // collision points. In particular, planes need their model-facing
         // half-turn; using the generic physics basis put their rear gear at
         // the nose and also rotated wheel anchors incorrectly with pitch.
-        return applyVehicleModelVerticalOffset(
-            modelLocalToWorld(configuredModelLocal(wheel.getPosition())));
+        Vec3 local = configuredModelLocal(wheel.getPosition());
+        if (this instanceof Vehicle)
+            local = local.add(0D, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0D);
+        // The renderer lowers the model and then scales the whole hierarchy, so
+        // a rendered wheel ends up at ModelScale times its authored offset from
+        // the entity origin. An unscaled anchor therefore rests the vehicle too
+        // low for a scale above 1 and too high for one below it.
+        return modelLocalToWorld(local.scale(modelScale()));
+    }
+
+    /** ModelScale as the renderer applies it, guarded against degenerate values. */
+    protected double modelScale()
+    {
+        return configType == null ? 1D : Math.max(1.0E-4D, configType.getModelScale());
     }
 
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
@@ -3123,8 +3170,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         return LegacyDriveableCoordinates.toLocal(vector);
     }
-
-    /** Converts a type-file vector to the model-local facing used by this driveable. */
+    /**
+     * Converts a type-file vector to the model-local facing used by this
+     * driveable, without the lateral mirror that {@link #attachmentModelLocal}
+     * applies.
+     *
+     * <p>Kept for the points where the mirror would be wrong or pointless: the
+     * synthetic forward vector, whose lateral component is zero either way; the
+     * turret pivot, which every pack puts on the centreline; and wheel anchors,
+     * which come in symmetric sets and whose left/right lever arms are derived
+     * in this same basis by {@code applyWheelContactPhysics}. Mirroring wheels
+     * alone would inverse the roll response on side slopes while moving nothing
+     * a player can see.</p>
+     */
     private Vec3 configuredModelLocal(@NotNull Vec3 legacy)
     {
         Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
@@ -3581,11 +3639,24 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
      */
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain)
     {
+        return applyWheelContactPhysics(velocity, alignToTerrain, 0D);
+    }
+
+    /**
+     * As above, told how much gravity was applied to {@code velocity} earlier in
+     * this tick so the suspension can hold the driveable up without the standing
+     * error a proportional response would otherwise need.
+     */
+    protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain, double appliedGravity)
+    {
         groundedWheelCount = 0;
         if (configType == null || configType.getWheelPositions().isEmpty())
             return velocity;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
+        // Anchors are scaled with the model, so every distance derived from the
+        // authored wheel coordinates has to be scaled alongside them.
+        double scale = modelScale();
         double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
         double maximumCompression = Math.max(0.15D, step + 0.1D);
         double minimumMountHeight = Double.POSITIVE_INFINITY;
@@ -3594,8 +3665,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         {
             if (definition != null && isPartIntact(definition.getPart()))
             {
-                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y);
-                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y);
+                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y * scale);
+                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y * scale);
             }
         }
         double mountHeightRange = Double.isFinite(minimumMountHeight)
@@ -3634,7 +3705,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
-            double desiredWheelY = surface + 0.375D;
+            double desiredWheelY = surface + wheelGroundClearance() * scale;
             double error = desiredWheelY - wheel.y;
             if (error < -poseProbeDroop || error > maximumCompression)
                 continue;
@@ -3644,10 +3715,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 ++groundedWheelCount;
             }
 
-            Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
+            Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition()).scale(scale);
             double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
             double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
-            double mountHeight = definition.getPosition().y;
+            double mountHeight = definition.getPosition().y * scale;
             if (forwardPosition > 1.0E-4D)
             {
                 frontHeight += surface;
@@ -3681,7 +3752,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return velocity;
 
         double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y,
-            supportError / groundedWheelCount, spring, velocity.horizontalDistance());
+            supportError / groundedWheelCount, spring, velocity.horizontalDistance(), appliedGravity);
 
         if (alignToTerrain && frontCount > 0 && backCount > 0)
         {
@@ -3706,6 +3777,30 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             setOrientation(getYaw(), pitch, roll);
         }
         return new Vec3(velocity.x, correctedY, velocity.z);
+    }
+
+    /**
+     * Height at which a wheel anchor rests above the surface below it, in model
+     * space and so before ModelScale is applied.
+     *
+     * <p>Packs disagree on what WheelPosition means, so this prefers the value
+     * measured from the type's own wheel and track collision boxes and only
+     * falls back to a convention when there are none to measure.</p>
+     */
+    protected double wheelGroundClearance()
+    {
+        float derived = configType == null ? Float.NaN : configType.getWheelContactClearance();
+        return Float.isNaN(derived) ? fallbackWheelGroundClearance() : derived;
+    }
+
+    /**
+     * Clearance for a type that declares no wheel or track collision box.
+     * Aircraft landing gear is authored on the strut, above the tyre's contact
+     * patch, so planes keep the historical value; {@link Vehicle} overrides it.
+     */
+    protected double fallbackWheelGroundClearance()
+    {
+        return 0.375D;
     }
 
     protected boolean hasWheelContact()
@@ -3766,6 +3861,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
+            // Shaped collision resolves living entities against actual hull
+            // surfaces. Applying this old coarse AABB push as well dislodges
+            // players who are already supported by a deck, even while parked.
+            if (entity instanceof LivingEntity && collisionHelper != null && collisionHelper.hasGeometry())
+                continue;
             if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D)
                 entity.hurt(level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
             Vec3 push = entity.position().subtract(position());

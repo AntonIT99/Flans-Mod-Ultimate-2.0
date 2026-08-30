@@ -10,7 +10,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "44_m18hellcat"
+            "44_m18hellcat",
+            "hellcat"
         ]
     },
 

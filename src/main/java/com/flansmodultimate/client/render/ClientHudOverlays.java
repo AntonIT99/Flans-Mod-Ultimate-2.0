@@ -12,6 +12,7 @@ import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -514,8 +515,14 @@ public final class ClientHudOverlays
 
         boolean isVehicle = driveable instanceof Vehicle;
         boolean isPlane = driveable instanceof Plane;
-        float yaw = isVehicle ? driveable.getTurretYaw() : driveable.getYaw();
-        float pitch = isVehicle ? -driveable.getTurretPitch() : -driveable.getPitch();
+        // Only the driver's aim reaches the turret. A passenger gunner traverses
+        // their own seat, so read the angles back from whichever seat the local
+        // player is actually sitting in.
+        Seat gunnerSeat = player.getVehicle() instanceof Seat seat && !seat.isDriverSeat() ? seat : null;
+        float yaw = gunnerSeat != null ? gunnerSeat.getAimYaw()
+            : isVehicle ? driveable.getTurretYaw() : driveable.getYaw();
+        float pitch = gunnerSeat != null ? -gunnerSeat.getAimPitch()
+            : isVehicle ? -driveable.getTurretPitch() : -driveable.getPitch();
         Component yawText = Component.translatable("hud.flansmodultimate.driveable.yaw", Math.round(yaw));
         Component pitchText = Component.translatable("hud.flansmodultimate.driveable.pitch", Math.round(pitch));
         VehicleType vehicleType = isVehicle ? ((Vehicle) driveable).getVehicleType() : null;

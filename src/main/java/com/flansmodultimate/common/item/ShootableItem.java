@@ -190,72 +190,72 @@ public abstract class ShootableItem extends Item
             if (stackCount > 1)
             {
                 int totalRounds = getTotalRounds(stack);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.rounds"),
-                    Component.translatable("tooltip.flansmodultimate.rounds_total", currentRounds, maxRounds, stackCount, totalRounds)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS),
+                    Component.translatable(TooltipKeys.ROUNDS_TOTAL, currentRounds, maxRounds, stackCount, totalRounds)));
             }
             else
             {
-                tooltipComponents.add(IFlanItem.statLine("Rounds", currentRounds + "/" + maxRounds));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS), currentRounds + "/" + maxRounds));
             }
         }
         else if (getConfigType().getRoundsPerItem() == 1)
         {
-            tooltipComponents.add(IFlanItem.statLine("Rounds", String.valueOf(stack.getCount())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS), String.valueOf(stack.getCount())));
         }
 
         if (getConfigType().getNumBullets() > 1)
-            tooltipComponents.add(IFlanItem.statLine("Shot", String.valueOf(getConfigType().getNumBullets())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOT), String.valueOf(getConfigType().getNumBullets())));
 
         if (getConfigType().useKineticDamageSystem())
         {
             if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.mass").append(":").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable(TooltipKeys.MASS).append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().mass()) + " g").withStyle(ChatFormatting.GRAY)));
             }
             else
-                tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + " g"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(getConfigType().getMass()) + " g"));
         }
         else
-            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
+            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), TooltipKeys.DAMAGE);
 
         if (getConfigType().useNewExplosionSystem())
         {
             if (getConfigType() instanceof BulletType bulletType && bulletType.hasDifferentRounds())
             {
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.explosive_mass_tnt").append(":").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable(TooltipKeys.EXPLOSIVE_MASS_TNT).append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
                     tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().explosiveMass(), 3) + " kg").withStyle(ChatFormatting.GRAY)));
             }
             else
-                tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + " kg"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSIVE_MASS_TNT), IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + " kg"));
         }
 
         if (getConfigType().getExplosionRadius() > 0F)
         {
-            tooltipComponents.add(IFlanItem.statLine("Explosion Radius", IFlanItem.formatFloat(getConfigType().getExplosionRadius(), 1)));
-            tooltipComponents.add(IFlanItem.statLine("Explosion Power", IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
-            tooltipComponents.add(IFlanItem.statLine("Explosion Blast Radius", IFlanItem.formatFloat(getConfigType().getBlastRadius(), 1)));
-            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionBlastDamage(), "Explosion Blast Damage");
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_RADIUS), IFlanItem.formatFloat(getConfigType().getExplosionRadius(), 1)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_POWER), IFlanItem.formatFloat(getConfigType().getExplosionPower(), 1)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_BLAST_RADIUS), IFlanItem.formatFloat(getConfigType().getBlastRadius(), 1)));
+            IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionBlastDamage(), TooltipKeys.EXPLOSION_BLAST_DAMAGE);
 
             if (getConfigType().getFragRadius() > 0F)
             {
-                tooltipComponents.add(IFlanItem.statLine("Explosion Frag Radius", IFlanItem.formatFloat(getConfigType().getFragRadius(), 1)));
-                IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionFragDamage(), "Explosion Frag Damage");
-                tooltipComponents.add(IFlanItem.statLine("Explosion Frag Intensity", IFlanItem.formatFloat(getConfigType().getFragIntensity(), 1)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_RADIUS), IFlanItem.formatFloat(getConfigType().getFragRadius(), 1)));
+                IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getExplosionFragDamage(), TooltipKeys.EXPLOSION_FRAG_DAMAGE);
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_INTENSITY), IFlanItem.formatFloat(getConfigType().getFragIntensity(), 1)));
             }
         }
 
         if (getConfigType().getFireRadius() > 0F)
         {
-            tooltipComponents.add(IFlanItem.statLine("Fire Radius", IFlanItem.formatFloat(getConfigType().getFireRadius(), 1)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RADIUS), IFlanItem.formatFloat(getConfigType().getFireRadius(), 1)));
         }
 
         if (getConfigType().getFallSpeed() > 1F || getConfigType().getFallSpeed() < 1F)
-            tooltipComponents.add(IFlanItem.statLine("Gravity Factor", IFlanItem.formatFloat(getConfigType().getFallSpeed())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.GRAVITY_FACTOR), IFlanItem.formatFloat(getConfigType().getFallSpeed())));
 
         if (getConfigType().getBulletSpread() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(getConfigType().getDispersionForDisplay()) + "°"));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(getConfigType().getDispersionForDisplay()) + "°"));
     }
 }

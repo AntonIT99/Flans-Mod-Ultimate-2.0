@@ -53,9 +53,16 @@ public final class DriveableItemRenderer
         poseStack.pushPose();
         applyDisplayTransform(context, type, poseStack);
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
+
+        // ModelScale was a root transform in the legacy entity renderers. Apply it
+        // to the complete preview hierarchy as well: attachment translations and
+        // procedural tank-track paths otherwise remain unscaled while their mesh
+        // parts are scaled, which distorts driveables in hand.
+        float modelScale = type.getModelScale();
+        poseStack.scale(modelScale, modelScale, modelScale);
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red, green, blue, 1F, type.getModelScale(), renderPass);
+            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }
         poseStack.popPose();
     }
@@ -79,7 +86,7 @@ public final class DriveableItemRenderer
                 poseStack.mulPose(Axis.ZP.rotationDegrees(15F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(15F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 90F : 270F));
-                poseStack.translate(0F, type instanceof MechaType ? 0.1F : 0.15F,
+                poseStack.translate(0F, type instanceof PlaneType ? 0.2F : type instanceof MechaType ? 0.1F : 0.15F,
                     type instanceof PlaneType ? 0.4F : -0.4F);
             }
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->

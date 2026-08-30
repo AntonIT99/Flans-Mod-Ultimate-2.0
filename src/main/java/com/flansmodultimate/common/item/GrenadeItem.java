@@ -84,7 +84,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
         }
         else
         {

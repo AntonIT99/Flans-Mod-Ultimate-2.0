@@ -143,19 +143,19 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             if (configType.getFuelTankSize() > 0)
-                tooltip.add(Component.translatable("tooltip.flansmodultimate.fuel", IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
+                tooltip.add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
             if (data.getEngine() != null)
-                tooltip.add(Component.translatable("tooltip.flansmodultimate.engine", data.getEngine().getName()).withStyle(ChatFormatting.DARK_BLUE));
+                tooltip.add(Component.translatable(TooltipKeys.ENGINE, data.getEngine().getName()).withStyle(ChatFormatting.DARK_BLUE));
 
             long damagedParts = data.getParts().values().stream()
                 .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
             if (damagedParts > 0)
-                tooltip.add(Component.translatable("tooltip.flansmodultimate.damaged_parts", damagedParts).withStyle(ChatFormatting.RED));
+                tooltip.add(Component.translatable(TooltipKeys.DAMAGED_PARTS, damagedParts).withStyle(ChatFormatting.RED));
 
             tooltip.add(Component.empty());
 
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltip.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
         }
         else
         {

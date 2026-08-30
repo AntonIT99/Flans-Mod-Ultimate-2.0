@@ -39,40 +39,40 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
         tooltipComponents.add(Component.empty());
 
         if (configType.isSilencer())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.silenced").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.SILENCED).withStyle(ChatFormatting.DARK_GREEN));
 
         if (configType.getShootDelayMultiplier() != 1F && configType.getShootDelayMultiplier() != 0F)
-            tooltipComponents.add(IFlanItem.modifierLine("Fire Rate", 1F / configType.getShootDelayMultiplier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.FIRE_RATE), 1F / configType.getShootDelayMultiplier(), false));
 
         if (configType.getDamageMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Damage", configType.getDamageMultiplier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.DAMAGE), configType.getDamageMultiplier(), false));
 
         if (configType.getRecoilMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Recoil", configType.getRecoilMultiplier(), true));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.RECOIL), configType.getRecoilMultiplier(), true));
 
         if (configType.getSpreadMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Bullet Spread", configType.getSpreadMultiplier(), true));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.BULLET_SPREAD), configType.getSpreadMultiplier(), true));
 
         if (configType.getReloadTimeMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Reload Time", configType.getReloadTimeMultiplier(), true));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.RELOAD_TIME), configType.getReloadTimeMultiplier(), true));
 
         if (configType.getBulletSpeedMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Bullet Speed", configType.getBulletSpeedMultiplier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.BULLET_SPEED), configType.getBulletSpeedMultiplier(), false));
 
         if (configType.getMeleeDamageMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Melee Damage", configType.getMeleeDamageMultiplier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), configType.getMeleeDamageMultiplier(), false));
 
         if (configType.getMoveSpeedMultiplier() != 1F)
-            tooltipComponents.add(IFlanItem.modifierLine("Move Speed", configType.getMoveSpeedMultiplier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.MOVE_SPEED), configType.getMoveSpeedMultiplier(), false));
 
         if (configType.isFlashlight())
         {
-            tooltipComponents.add(IFlanItem.statLine("Flashlight Strength", String.valueOf(configType.getFlashlightStrength())));
-            tooltipComponents.add(IFlanItem.statLine("Flashlight Range", String.valueOf(configType.getFlashlightRange())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FLASHLIGHT_STRENGTH), String.valueOf(configType.getFlashlightStrength())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FLASHLIGHT_RANGE), String.valueOf(configType.getFlashlightRange())));
         }
 
         float zoomFactor = Math.max(configType.getZoomFactor(), configType.getFovFactor());
         if (zoomFactor != 1F)
-            tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ZOOM_FACTOR), "x" + IFlanItem.formatFloat(zoomFactor)));
     }
 }

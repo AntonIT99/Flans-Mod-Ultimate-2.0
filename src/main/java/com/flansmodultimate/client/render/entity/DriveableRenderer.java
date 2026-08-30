@@ -151,7 +151,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // Keep this in model space so the correction follows terrain pitch and roll,
         // and is scaled along with legacy models that use ModelScale.
         if (driveable instanceof Vehicle)
-            poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
+            poseStack.translate(0F, Vehicle.scaledModelVerticalOffset(scale), 0F);
 
         // Legacy driveable renderers applied ModelScale to the complete model
         // hierarchy. Keep pivots, attachment points and procedural track paths

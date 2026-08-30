@@ -28,7 +28,9 @@ public final class DriveableCollisionHelper
     private static final double QUERY_MARGIN = 1.5D;
     private static final double MIN_DECK_NORMAL_Y = 0.35D;
     private static final double SUPPORT_ABOVE = 0.45D;
-    private static final double SUPPORT_BELOW = 0.22D;
+    // Match a normal player's step depth so walking onto a deck recovers to
+    // its top surface instead of selecting a side or downward separation face.
+    private static final double SUPPORT_BELOW = 0.75D;
     private static final double LANDING_BELOW = 0.3D;
     private static final double MAX_SWEPT_LANDING_BELOW = 1.5D;
     private static final double MAX_PLATFORM_DELTA = 3D;
@@ -63,6 +65,11 @@ public final class DriveableCollisionHelper
     public boolean matches(DriveableCollisionProfile candidate)
     {
         return profile == candidate;
+    }
+
+    public boolean hasGeometry()
+    {
+        return !profile.isEmpty();
     }
 
     public void tick(Driveable driveable)
@@ -343,8 +350,7 @@ public final class DriveableCollisionHelper
                 {
                     double previousY = interpolate(previousVertices[shape], triangle, 1, barycentricScratch);
                     double gap = foot - previousY;
-                    if (gap >= -SUPPORT_BELOW && gap <= SUPPORT_ABOVE
-                        && verticalMotion <= 0.5D && (onGround || gap <= 0.14D || verticalMotion <= 0D))
+                    if (isSupportContact(gap, verticalMotion, onGround))
                     {
                         double previousX = interpolate(previousVertices[shape], triangle, 0, barycentricScratch);
                         double previousZ = interpolate(previousVertices[shape], triangle, 2, barycentricScratch);
@@ -388,6 +394,13 @@ public final class DriveableCollisionHelper
         if (!Double.isFinite(verticalMotion))
             return LANDING_BELOW;
         return Math.min(MAX_SWEPT_LANDING_BELOW, Math.max(LANDING_BELOW, -verticalMotion + 0.1D));
+    }
+
+    static boolean isSupportContact(double gap, double verticalMotion, boolean onGround)
+    {
+        return Double.isFinite(gap) && Double.isFinite(verticalMotion)
+            && gap >= -SUPPORT_BELOW && gap <= SUPPORT_ABOVE
+            && verticalMotion <= 0.5D && (onGround || gap <= 0.14D || verticalMotion <= 0D);
     }
 
     static double supportVerticalCorrection(double surfaceY, double footY)

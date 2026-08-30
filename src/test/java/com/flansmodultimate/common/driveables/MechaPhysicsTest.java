@@ -36,6 +36,14 @@ class MechaPhysicsTest
     }
 
     @Test
+    void clientMouseAimIsConsumedAsTheTorsoTurns()
+    {
+        assertEquals(0F, MechaPhysics.consumeParentYaw(30F, 10F, 40F), EPSILON);
+        assertEquals(5F, MechaPhysics.consumeParentYaw(30F, 10F, 35F), EPSILON);
+        assertEquals(-10F, MechaPhysics.consumeParentYaw(10F, 170F, -170F), EPSILON);
+    }
+
+    @Test
     void diagonalInputIsNormalizedWithoutReducingCardinalSpeed()
     {
         Vec3 diagonal = MechaPhysics.movementIntent(0F, 1F, 1F);

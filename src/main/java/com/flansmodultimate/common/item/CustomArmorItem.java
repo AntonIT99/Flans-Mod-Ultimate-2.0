@@ -102,32 +102,32 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         double bulletAbsorption = configType.getBulletDefence();
 
         if (armorPoints > 0 || damageAbsorption <= 0.0)
-            tooltipComponents.add(IFlanItem.statLine("Armor Points", String.valueOf(armorPoints)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ARMOR_POINTS), String.valueOf(armorPoints)));
         if (damageAbsorption > 0.0)
-            tooltipComponents.add(IFlanItem.statLine("Damage Absorption", formatAbsorption(damageAbsorption)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DAMAGE_ABSORPTION), formatAbsorption(damageAbsorption)));
         if (Math.abs(bulletAbsorption - damageAbsorption) > 0.0001)
-            tooltipComponents.add(IFlanItem.statLine("Bullet Absorption", formatAbsorption(bulletAbsorption)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BULLET_ABSORPTION), formatAbsorption(bulletAbsorption)));
 
         if (configType.getDurability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Durability", IFlanItem.formatDouble(configType.getDurability())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DURABILITY), IFlanItem.formatDouble(configType.getDurability())));
         if (configType.getEnchantability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine("Enchantability", IFlanItem.formatDouble(getEnchantmentValue())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ENCHANTABILITY), IFlanItem.formatDouble(getEnchantmentValue())));
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0F)
-            tooltipComponents.add(IFlanItem.modifierLine("Jump Height", configType.getJumpModifier(), false));
+            tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.JUMP_HEIGHT), configType.getJumpModifier(), false));
 
         if (configType.isSmokeProtection())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.smoke_protection").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_SMOKE_PROTECTION).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isNightVision())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.night_vision").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_NIGHT_VISION).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isInvisible())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.invisibility").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_INVISIBILITY).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isNegateFallDamage())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.negates_fall_damage").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_NEGATES_FALL_DAMAGE).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isFireResistance())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.fire_resistance").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_FIRE_RESISTANCE).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isWaterBreathing())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.bonus.water_breathing").withStyle(ChatFormatting.DARK_GREEN));
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_WATER_BREATHING).withStyle(ChatFormatting.DARK_GREEN));
     }
 
     private static String formatAbsorption(double absorption)

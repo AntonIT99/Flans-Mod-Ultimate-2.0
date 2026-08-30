@@ -50,51 +50,32 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     /**
      * Adds explosion damage stats avoiding redundant lines.
      */
-    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseName)
+    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseKey)
     {
         final float EPS = 0.0001f;
 
         // Always show base explosion damage if it's meaningful
-        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage(), 1)));
+        tooltip.add(IFlanItem.statLine(Component.translatable(labelBaseKey), formatFloat(damageStats.getDamage(), 1)));
 
         // vs Living: only show if explicitly configured AND different from base
         if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine(label("vs_living"), formatFloat(damageStats.getDamageVsLiving(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_LIVING), formatFloat(damageStats.getDamageVsLiving(), 1)));
 
         // vs Player: inherits from vsLiving
         if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine(label("vs_players"), formatFloat(damageStats.getDamageVsPlayer(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_PLAYERS), formatFloat(damageStats.getDamageVsPlayer(), 1)));
 
         // vs Vehicle: inherits from base
         if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine(label("vs_vehicles"), formatFloat(damageStats.getDamageVsVehicles(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_VEHICLES), formatFloat(damageStats.getDamageVsVehicles(), 1)));
 
         // vs Plane: inherits from vsVehicle
         if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine(label("vs_planes"), formatFloat(damageStats.getDamageVsPlanes(), 1)));
-    }
-
-    static MutableComponent label(String label)
-    {
-        String key = label.toLowerCase(Locale.ROOT)
-            .replaceAll("[^a-z0-9]+", "_")
-            .replaceAll("^_|_$", "");
-        return Component.translatable("tooltip.flansmodultimate." + key);
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_PLANES), formatFloat(damageStats.getDamageVsPlanes(), 1)));
     }
 
     /**
-     * Helper to render "BlueLabel: gray value"
-     */
-    static MutableComponent statLine(String label, String value)
-    {
-        return label(label).withStyle(ChatFormatting.BLUE)
-            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
-            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
-    }
-
-    /**
-     * Translatable form of {@link #statLine(String, String)}, for stat lines whose
-     * label has to be localized rather than baked in as English.
+     * Helper to render "BlueLabel: gray value", label localized via a translation key.
      */
     static MutableComponent statLine(Component label, String value)
     {
@@ -112,7 +93,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
             .append(value.copy().withStyle(ChatFormatting.GRAY));
     }
 
-    /** Translatable form of {@link #indentedStatLine(String, String)}. */
+    /** Indented stat line whose label is localized via a translation key. */
     static MutableComponent indentedStatLine(Component label, String value)
     {
         return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA)
@@ -122,7 +103,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
-     * Slightly indented stat line for sub-values (vs Living / vs Player / etc.)
+     * Indented stat line for sub-values whose label is already resolved text
+     * (e.g. an item's localized display name), not a translation key.
      */
     static MutableComponent indentedStatLine(String label, String value)
     {
@@ -131,13 +113,14 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
-    static MutableComponent modifierLine(String label, float value, boolean invertColor)
+    /** Modifier line whose label is localized via a translation key. */
+    static MutableComponent modifierLine(Component label, float value, boolean invertColor)
     {
         float deltaPercent = (value - 1F) * 100F;
         ChatFormatting color = ((deltaPercent >= 0F && !invertColor) || (deltaPercent < 0F && invertColor)) ? ChatFormatting.GREEN : ChatFormatting.RED;
         String sign = deltaPercent > 0F ? "+" : "";
         return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% ").withStyle(color)
-            .append(label(label).withStyle(color));
+            .append(label.copy().withStyle(color));
     }
 
     ThreadLocal<Map<Integer, DecimalFormat>> UP_TO_CACHE = ThreadLocal.withInitial(HashMap::new);

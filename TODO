@@ -7,15 +7,15 @@ General:
 - Check balance for the blast / frag radius
 
 Driveables:
+- See if shooting points on vehicles can be directly inferred from models
+- Mecha does not rotate very smoothly
 - Display hitboxes for driveables in debug mode
-- Ground vehicle still has issues with y positioning. Rendering issue or entity positioning issue?
-- Mecha yaw torso rotation no longer stops when the player has moved the mouse
-- Passenger guns shooting points set with "GunOrigin" are still not positioned correctly
 - Implement special mecha inventory
-- Driveable item rendering in hand has some issues
+- Driveable item rendering in hand has not the same transformations
 - Check propeller speed at standby as well as when moving
-- Collision with player still problematic: player can not stand on top of a vehicle, the player currently get's pushed sidewards and downwards.
 - Plane don't crash when hitting the ground at high speed.
+- Collisions with players
+- y positioning of driveables (Check Tiger I of warfare 44)
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

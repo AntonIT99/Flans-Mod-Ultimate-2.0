@@ -40,6 +40,12 @@ public class Vehicle extends Driveable
     /** Model-space correction for legacy vehicle models, expressed in blocks. */
     public static final float VEHICLE_MODEL_VERTICAL_OFFSET = -5.5F / 16F;
 
+    /** World-space correction after the complete legacy model hierarchy is scaled. */
+    public static float scaledModelVerticalOffset(float modelScale)
+    {
+        return VEHICLE_MODEL_VERTICAL_OFFSET * modelScale;
+    }
+
     @Getter protected float wheelYaw;
     @Getter protected float prevWheelYaw;
     @Getter protected float wheelAngle;
@@ -67,6 +73,17 @@ public class Vehicle extends Driveable
     public VehicleType getVehicleType()
     {
         return getConfigType() instanceof VehicleType type ? type : null;
+    }
+
+    /**
+     * A ground vehicle with no wheel or track collision box to measure falls
+     * back to the official-pack convention, which puts WheelPosition on the
+     * contact plane itself rather than at an axle height above it.
+     */
+    @Override
+    protected double fallbackWheelGroundClearance()
+    {
+        return 0D;
     }
 
     @Override
@@ -174,7 +191,8 @@ public class Vehicle extends Driveable
         }
         velocity = applyVehicleVerticalPhysics(velocity, type);
         double descent = velocity.y;
-        velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater());
+        velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(),
+            verticalGravity(type));
         double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(
             derivedPhysics, type.getDrag());
         velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
@@ -366,6 +384,13 @@ public class Vehicle extends Driveable
         return physics.maxSpeedBlocksPerTick(speedScale) * Math.min(1D, reversePower / forwardPower);
     }
 
+    /** Per-tick downward velocity gravity contributes, shared with the suspension. */
+    private double verticalGravity(VehicleType type)
+    {
+        return type.isFloatOnWater() && isInWater()
+            ? 0D : Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D));
+    }
+
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)
     {
         if (type.isFloatOnWater() && isInWater())
@@ -373,8 +398,7 @@ public class Vehicle extends Driveable
             setOrientation(getYaw(), approach(getPitch(), 0F, 1.5F), approach(getRoll(), 0F, 1.5F));
             return applyGravityAndBuoyancy(velocity, 0D);
         }
-        double gravity = Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D));
-        velocity = applyGravityAndBuoyancy(velocity, gravity);
+        velocity = applyGravityAndBuoyancy(velocity, verticalGravity(type));
         if (velocity.y < -type.getMaxFallSpeed())
             velocity = new Vec3(velocity.x, -type.getMaxFallSpeed(), velocity.z);
         return velocity;

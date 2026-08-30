@@ -12,6 +12,22 @@ public final class SuspensionPhysics
     public static double dampVerticalVelocity(double velocity, double supportError, float springStrength,
                                               double horizontalSpeed)
     {
+        return dampVerticalVelocity(velocity, supportError, springStrength, horizontalSpeed, 0D);
+    }
+
+    /**
+     * As above, compensating for the gravity applied earlier in the same tick.
+     *
+     * <p>A purely proportional response can only hold a load up by keeping a
+     * standing error: the spring has to see the driveable sitting below its
+     * supports before it pushes hard enough to cancel the tick's gravity. That
+     * parks every vehicle a fraction of a pixel low. Feeding the same gravity
+     * forward makes zero support error the equilibrium instead, without
+     * changing how the response reacts to real terrain displacement.</p>
+     */
+    public static double dampVerticalVelocity(double velocity, double supportError, float springStrength,
+                                              double horizontalSpeed, double appliedGravity)
+    {
         if (!Double.isFinite(velocity) || !Double.isFinite(supportError) || !Double.isFinite(horizontalSpeed))
             return 0D;
 
@@ -19,8 +35,10 @@ public final class SuspensionPhysics
         double response = 0.16D + spring * 0.30D;
         double maximumRise = 0.16D + spring * 0.07D
             + Math.min(0.12D, Math.max(0D, horizontalSpeed) * 0.25D);
-        double targetVelocity = clamp(supportError * response, -0.18D, maximumRise);
         double damping = 0.62D + spring * 0.18D;
+        double gravity = Double.isFinite(appliedGravity) ? Math.max(0D, appliedGravity) : 0D;
+        double holdingVelocity = gravity * (1D - damping) / damping;
+        double targetVelocity = clamp(supportError * response + holdingVelocity, -0.18D, maximumRise);
         return velocity + (targetVelocity - velocity) * damping;
     }
 

@@ -166,11 +166,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
             String crafter = stack.getTag().getString(NBT_LEGENDARY_CRAFTER);
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.legendary_skin_crafter", crafter).withStyle(ChatFormatting.GOLD));
+            tooltipComponents.add(Component.translatable(TooltipKeys.LEGENDARY_SKIN_CRAFTER, crafter).withStyle(ChatFormatting.GOLD));
         }
 
         if (configType.isDeployable())
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.deployable").withStyle(ChatFormatting.YELLOW));
+            tooltipComponents.add(Component.translatable(TooltipKeys.DEPLOYABLE).withStyle(ChatFormatting.YELLOW));
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
@@ -180,7 +180,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 List<ItemStack> attachmentItems = configType.getCurrentAttachmentItems(stack);
 
                 if (!attachmentItems.isEmpty())
-                    tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.attachments").withStyle(ChatFormatting.YELLOW));
+                    tooltipComponents.add(Component.translatable(TooltipKeys.ATTACHMENTS).withStyle(ChatFormatting.YELLOW));
 
                 for (ItemStack attachmentItem : attachmentItems)
                     tooltipComponents.add(Component.literal(attachmentItem.getDisplayName().getString()).withStyle(ChatFormatting.AQUA));
@@ -219,7 +219,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             tooltipComponents.add(Component.empty());
 
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.hold_for_details", keyName).withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
         }
         else
         {
@@ -227,13 +227,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             AttachmentType barrel = configType.getBarrel(stack);
             if (barrel != null && barrel.isSilencer())
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.suppressed").withStyle(ChatFormatting.YELLOW));
+                tooltipComponents.add(Component.translatable(TooltipKeys.SUPPRESSED).withStyle(ChatFormatting.YELLOW));
 
             if (configType.getSecondaryFire(stack))
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.underbarrel").withStyle(ChatFormatting.YELLOW));
+                tooltipComponents.add(Component.translatable(TooltipKeys.UNDERBARREL).withStyle(ChatFormatting.YELLOW));
 
             if (StringUtils.isNotBlank(originGunbox))
-                tooltipComponents.add(IFlanItem.statLine("Box", originGunbox));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BOX), originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
             getBulletItemStackList(stack).stream()
@@ -257,14 +257,14 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 });
             if (configType.isShowDamage() && !ammoTypes.isEmpty())
             {
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.damage").append(": ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.translatable(TooltipKeys.DAMAGE).append(": ").withStyle(ChatFormatting.BLUE));
 
                 if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
                 {
-                    tooltipComponents.add(Component.literal("  ").append(Component.translatable("tooltip.flansmodultimate.vs_living").withStyle(ChatFormatting.GREEN))
-                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_player").withStyle(ChatFormatting.RED))
-                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_vehicle").withStyle(ChatFormatting.AQUA))
-                        .append(" ").append(Component.translatable("tooltip.flansmodultimate.vs_plane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+                    tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN))
+                        .append(" ").append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED))
+                        .append(" ").append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA))
+                        .append(" ").append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE)));
                 }
 
                 if (ammoTypes.size() > 10)
@@ -287,54 +287,54 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
-                tooltipComponents.add(IFlanItem.statLine("Melee Damage", IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
 
             if (configType.isShowRecoil())
             {
-                tooltipComponents.add(IFlanItem.statLine("Vertical Recoil", IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
-                tooltipComponents.add(IFlanItem.statLine("Horizontal Recoil", IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
                 String sprintingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, true, false));
                 String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
                 String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
 
-                tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.recoil_control").append(": ").withStyle(ChatFormatting.BLUE));
-                tooltipComponents.add(Component.literal("  ").append(Component.translatable("tooltip.flansmodultimate.sprinting").withStyle(ChatFormatting.RED))
-                    .append(" ").append(Component.translatable("tooltip.flansmodultimate.crouching").withStyle(ChatFormatting.GREEN)));
+                tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
+                tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED))
+                    .append(" ").append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
                 tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
                     .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
             }
 
             if (configType.isShowSpread())
-                tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
 
             if (configType.getSwitchDelay() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Switch Delay", IFlanItem.formatFloat(configType.getSwitchDelay())));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SWITCH_DELAY), IFlanItem.formatFloat(configType.getSwitchDelay())));
 
             if (configType.isShowReloadTime())
-                tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
 
             if (configType.isShowBulletSpeed()) {
                 float bulletSpeed = configType.getBulletSpeed(stack);
-                tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MUZZLE_VELOCITY), (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
             }
 
             if (configType.isShowShootDelay())
-                tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
 
             if (configType.isShowMode())
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable("tooltip.flansmodultimate.mode"),
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE),
                     Component.translatable("tooltip.flansmodultimate.fire_mode." + configType.getFireMode(stack).name().toLowerCase(Locale.ROOT))));
 
             if (configType.getKnockback() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Shooter Knockback", IFlanItem.formatFloat(configType.getKnockback())));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOOTER_KNOCKBACK), IFlanItem.formatFloat(configType.getKnockback())));
 
             float scopeZoom = hasVariableZoom(stack) ? getCurrentVariableZoom(stack)
                 : configType.getCurrentScope(stack).getZoomFactor();
             float zoomFactor = Math.max(scopeZoom, configType.getCurrentScope(stack).getFovFactor());
             if (zoomFactor != 1F)
-                tooltipComponents.add(IFlanItem.statLine("Zoom Factor", "x" + IFlanItem.formatFloat(zoomFactor)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ZOOM_FACTOR), "x" + IFlanItem.formatFloat(zoomFactor)));
         }
     }
 

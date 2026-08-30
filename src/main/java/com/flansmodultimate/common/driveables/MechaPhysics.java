@@ -26,6 +26,14 @@ public final class MechaPhysics
         return Mth.wrapDegrees(targetTorsoYaw - torsoYaw);
     }
 
+    /** Consumes client-visible torso motion from the relative mouse aim exactly once. */
+    public static float consumeParentYaw(float relativeAimYaw, float previousParentYaw, float parentYaw)
+    {
+        if (!Float.isFinite(relativeAimYaw) || !Float.isFinite(previousParentYaw) || !Float.isFinite(parentYaw))
+            return 0F;
+        return Mth.wrapDegrees(relativeAimYaw - Mth.wrapDegrees(parentYaw - previousParentYaw));
+    }
+
     /**
      * Converts normalized forward / strafe input into a horizontal world-space direction.
      * Mecha movement follows the torso aim just as the 1.7.10 torso axes followed the driver view.

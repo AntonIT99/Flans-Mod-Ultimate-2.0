@@ -57,7 +57,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
-        tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.glove.handling").withStyle(ChatFormatting.DARK_AQUA));
-        tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.glove.two_handed").withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable(TooltipKeys.GLOVE_HANDLING).withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable(TooltipKeys.GLOVE_TWO_HANDED).withStyle(ChatFormatting.DARK_AQUA));
     }
 }

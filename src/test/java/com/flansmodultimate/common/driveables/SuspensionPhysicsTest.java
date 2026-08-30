@@ -66,4 +66,43 @@ class SuspensionPhysicsTest
         assertEquals(0F, SuspensionPhysics.terrainAngle(Double.POSITIVE_INFINITY, 1D), EPSILON);
         assertEquals(0F, SuspensionPhysics.supportAngle(0D, Double.NaN, 0D, false), EPSILON);
     }
+
+    /** Settles a resting driveable and returns how far its wheel ends up from its supports. */
+    private static double settledSupportOffset(double gravity, boolean compensate)
+    {
+        double height = 0.5D;
+        double velocity = 0D;
+        for (int tick = 0; tick < 4000; tick++)
+        {
+            velocity = SuspensionPhysics.dampVerticalVelocity(velocity - gravity, -height, 0.5F, 0D,
+                compensate ? gravity : 0D);
+            height += velocity;
+        }
+        return height;
+    }
+
+    @Test
+    void proportionalResponseAloneParksTheDriveableBelowItsSupports()
+    {
+        // 0.175 Gravity, the stock vehicle value, becomes 0.014 per tick.
+        double offset = settledSupportOffset(0.014D, false);
+
+        assertTrue(offset < -0.018D, "expected a standing error, got " + offset);
+        assertTrue(offset > -0.019D, "expected a standing error, got " + offset);
+    }
+
+    @Test
+    void gravityCompensationSettlesExactlyOnTheSupports()
+    {
+        assertEquals(0D, settledSupportOffset(0.014D, true), 1.0E-9D);
+        assertEquals(0D, settledSupportOffset(0.08D, true), 1.0E-9D);
+    }
+
+    @Test
+    void gravityCompensationStillRejectsInvalidNumbers()
+    {
+        assertEquals(0D, SuspensionPhysics.dampVerticalVelocity(Double.NaN, 1D, 0.5F, 1D, 0.014D), EPSILON);
+        assertEquals(SuspensionPhysics.dampVerticalVelocity(0D, 1D, 0.5F, 1D, 0D),
+            SuspensionPhysics.dampVerticalVelocity(0D, 1D, 0.5F, 1D, Double.NaN), EPSILON);
+    }
 }

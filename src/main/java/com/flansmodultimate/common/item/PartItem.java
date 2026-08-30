@@ -39,6 +39,6 @@ public class PartItem extends Item implements IFlanItem<PartType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         if (configType.getCategory() == PartType.Category.FUEL)
-            tooltipComponents.add(IFlanItem.statLine("Fuel Stored", (configType.getFuel() - stack.getDamageValue()) + " / " + configType.getFuel()));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FUEL_STORED), (configType.getFuel() - stack.getDamageValue()) + " / " + configType.getFuel()));
     }
 }

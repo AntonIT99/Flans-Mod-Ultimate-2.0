@@ -5,6 +5,7 @@ import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.MechaPhysics;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -44,8 +45,28 @@ public class Seat extends Entity implements IControllable
     private static final EntityDataAccessor<Integer> DATA_INPUT_MASK = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
 
     private static final int MAX_ORPHAN_TICKS = 100;
-    private static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
-    private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.2D;
+    /**
+     * Where a rider's feet sit relative to their seat anchor, in blocks.
+     *
+     * <p>Derived from the 1.7.10 sources rather than estimated. {@code
+     * EntitySeat.onUpdate} placed the rider at {@code seat.posY +
+     * riddenByEntity.getYOffset()}, {@code EntityPlayer.getYOffset()} returned
+     * {@code yOffset - 0.5F} against a standing player's {@code yOffset} of
+     * {@code 1.62F}, and 1.7.10 hung a bounding box from {@code posY - yOffset},
+     * so the feet landed at {@code seat.posY + 1.12 - 1.62}. Modern {@code
+     * setPos} places the feet directly, which makes the same placement a flat
+     * -0.5. The vehicle model correction cancels: it is applied to the seat
+     * anchor and to the rendered model alike.</p>
+     */
+    static final double LEGACY_PLAYER_RIDING_OFFSET = -0.5D;
+    /**
+     * Extra drop for a mecha cockpit, on top of the shared rider offset.
+     *
+     * <p>Kept at the total it was tuned to by eye while the shared offset was
+     * 0.15 short, so correcting that offset does not silently sink every mecha
+     * pilot by the same amount.</p>
+     */
+    private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.05D;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -59,6 +80,7 @@ public class Seat extends Entity implements IControllable
     private boolean clientViewAimInitialized;
     private float clientViewAimYaw;
     private float clientViewAimPitch;
+    private float clientViewParentYaw;
 
     private int orphanTicks;
     private int localInputMask;
@@ -245,6 +267,7 @@ public class Seat extends Entity implements IControllable
         if (seatInfo == null && driveable.getConfigType() != null)
             seatInfo = driveable.getConfigType().getSeat(getSeatIndex());
 
+        consumeClientMechaParentYaw();
         driveable.registerSeatProxy(this);
         snapToParent();
 
@@ -421,11 +444,8 @@ public class Seat extends Entity implements IControllable
         float pitch = getAimPitch() + pitchDelta;
         if (info != null)
         {
-            if (info.getMinYaw() <= -359.9F && info.getMaxYaw() >= 359.9F)
-                yaw = Mth.wrapDegrees(yaw);
-            else
-                yaw = Mth.clamp(Mth.wrapDegrees(yaw), info.getMinYaw(), info.getMaxYaw());
-            pitch = Mth.clamp(pitch, info.getMinPitch(), info.getMaxPitch());
+            yaw = info.clampYaw(yaw);
+            pitch = info.clampPitch(pitch);
         }
         else
         {
@@ -466,11 +486,8 @@ public class Seat extends Entity implements IControllable
         float pitch = clientViewAimPitch + pitchDelta;
         if (info != null)
         {
-            if (info.getMinYaw() <= -359.9F && info.getMaxYaw() >= 359.9F)
-                yaw = Mth.wrapDegrees(yaw);
-            else
-                yaw = Mth.clamp(Mth.wrapDegrees(yaw), info.getMinYaw(), info.getMaxYaw());
-            pitch = Mth.clamp(pitch, info.getMinPitch(), info.getMaxPitch());
+            yaw = info.clampYaw(yaw);
+            pitch = info.clampPitch(pitch);
         }
         clientViewAimYaw = yaw;
         clientViewAimPitch = Mth.clamp(pitch, -89.9F, 89.9F);
@@ -480,6 +497,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = getAimYaw();
         clientViewAimPitch = getAimPitch();
+        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 
@@ -488,6 +506,16 @@ public class Seat extends Entity implements IControllable
     {
         if (Float.isFinite(yawDelta))
             entityData.set(DATA_AIM_YAW, Mth.wrapDegrees(getAimYaw() - yawDelta));
+    }
+
+    private void consumeClientMechaParentYaw()
+    {
+        if (!level().isClientSide || !clientViewAimInitialized || !isDriverSeat()
+            || !(driveable instanceof Mecha))
+            return;
+        float parentYaw = driveable.getYaw();
+        clientViewAimYaw = MechaPhysics.consumeParentYaw(clientViewAimYaw, clientViewParentYaw, parentYaw);
+        clientViewParentYaw = parentYaw;
     }
 
     private void initializeClientViewAim()
@@ -501,6 +529,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = 0F;
         clientViewAimPitch = 0F;
+        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 

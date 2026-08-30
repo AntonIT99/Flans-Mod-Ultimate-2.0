@@ -87,6 +87,15 @@ class DriveableCollisionProfileTest
     }
 
     @Test
+    void deckSupportWinsAcrossNormalPlayerStepDepth()
+    {
+        assertTrue(DriveableCollisionHelper.isSupportContact(-0.6D, -0.08D, false));
+        assertTrue(DriveableCollisionHelper.isSupportContact(0.2D, 0D, true));
+        assertFalse(DriveableCollisionHelper.isSupportContact(-0.8D, -0.08D, false));
+        assertFalse(DriveableCollisionHelper.isSupportContact(0D, 0.6D, false));
+    }
+
+    @Test
     void landingToleranceSweepsFastFallingEntitiesOntoDecks()
     {
         assertEquals(0.3D, DriveableCollisionHelper.sweptLandingTolerance(-0.08D), EPSILON);

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmod.common.vector.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;
@@ -10,6 +11,50 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LegacyDriveableCoordinatesTest
 {
     private static final double EPSILON = 1.0E-6D;
+
+    /**
+     * Mirrors what {@code Driveable.getPassengerShootOrigin} composes for a
+     * ground vehicle: the seat basis conversion, its lateral mirror, the muzzle
+     * height, then the shared model transform. The vehicle model correction is
+     * applied separately by the entity and is not part of this.
+     */
+    private static Vec3 passengerMuzzleOffset(Vector3f gunOrigin, float yaw, float pitch, float roll)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(gunOrigin);
+        local = new Vec3(-local.x, local.y + 1.35D, local.z);
+        return LegacyDriveableCoordinates.modelLocalToWorldDirection(local, yaw, pitch, roll);
+    }
+
+    @Test
+    void passengerGunOriginTakesTheSameLateralMirrorAsItsSeat()
+    {
+        // The Hellcat's turret MG: "GunOrigin 1 6 18 -11", in blocks.
+        Vector3f gunOrigin = new Vector3f(6F / 16F, 18F / 16F, -11F / 16F);
+
+        // Authored Z is -11px, and the mirror is what puts the muzzle on the
+        // +Z side of the hull where the modelled gun actually sits.
+        assertVector(passengerMuzzleOffset(gunOrigin, 0F, 0F, 0F), -0.375D, 2.475D, 0.6875D);
+        assertVector(passengerMuzzleOffset(gunOrigin, 90F, 0F, 0F), -0.6875D, 2.475D, -0.375D);
+    }
+
+    @Test
+    void passengerMuzzleRotatesRigidlyWithTheHull()
+    {
+        Vector3f gunOrigin = new Vector3f(6F / 16F, 18F / 16F, -11F / 16F);
+        Vec3 local = LegacyDriveableCoordinates.toLocal(gunOrigin);
+        double reach = new Vec3(-local.x, local.y + 1.35D, local.z).length();
+
+        // Whatever the hull is doing, the muzzle stays the same distance out.
+        assertEquals(reach, passengerMuzzleOffset(gunOrigin, 0F, 12F, 0F).length(), EPSILON);
+        assertEquals(reach, passengerMuzzleOffset(gunOrigin, 0F, 0F, 15F).length(), EPSILON);
+        assertEquals(reach, passengerMuzzleOffset(gunOrigin, 37F, 12F, 15F).length(), EPSILON);
+
+        // Hull pitch is rotation about the lateral axis, so it cannot move the
+        // muzzle sideways; hull roll is about the longitudinal axis, so it
+        // cannot move it fore and aft.
+        assertEquals(0.6875D, passengerMuzzleOffset(gunOrigin, 0F, 12F, 0F).z, EPSILON);
+        assertEquals(-0.375D, passengerMuzzleOffset(gunOrigin, 0F, 0F, 15F).x, EPSILON);
+    }
 
     @Test
     void pitchRotatesConvertedLegacyForwardAroundLocalXAxis()

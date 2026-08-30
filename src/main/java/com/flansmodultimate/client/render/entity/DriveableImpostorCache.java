@@ -328,7 +328,7 @@ public final class DriveableImpostorCache
         poseStack.pushPose();
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
         if (type instanceof VehicleType)
-            poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
+            poseStack.translate(0F, Vehicle.scaledModelVerticalOffset(type.getModelScale()), 0F);
         float scale = type.getModelScale();
         poseStack.scale(scale, scale, scale);
         for (EnumRenderPass renderPass : passes)

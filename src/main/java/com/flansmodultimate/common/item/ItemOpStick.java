@@ -180,8 +180,8 @@ public final class ItemOpStick extends Item
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag)
     {
-        tooltip.add(Component.translatable("tooltip.flansmodultimate.operator_stick.mode",
+        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_MODE,
             Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.translatable("tooltip.flansmodultimate.operator_stick.change_mode").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_CHANGE_MODE).withStyle(ChatFormatting.GRAY));
     }
 }

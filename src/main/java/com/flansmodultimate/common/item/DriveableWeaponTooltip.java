@@ -54,11 +54,11 @@ public final class DriveableWeaponTooltip
         String name = guns.isEmpty()
             ? translate("type." + type.weaponType(secondary).name().toLowerCase(Locale.ROOT))
             : joinNames(guns.stream().map(GunType::getName).toList());
-        tooltip.add(IFlanItem.statLine(label(secondary ? "secondary" : "primary"), name));
+        tooltip.add(IFlanItem.statLine(Component.translatable(secondary ? TooltipKeys.WEAPONS_SECONDARY : TooltipKeys.WEAPONS_PRIMARY), name));
 
         float delay = type.shootDelay(secondary);
         if (delay > 0F)
-            tooltip.add(IFlanItem.statLine(label("fireRate"),
+            tooltip.add(IFlanItem.statLine(Component.translatable(secondary ? TooltipKeys.WEAPONS_SECONDARY_FIRE_RATE : TooltipKeys.WEAPONS_PRIMARY_FIRE_RATE),
                 IFlanItem.formatFloat(1200F / delay, 1) + " rpm"));
     }
 
@@ -81,11 +81,6 @@ public final class DriveableWeaponTooltip
     private static String joinNames(List<String> names)
     {
         return String.join(", ", names);
-    }
-
-    private static Component label(String key)
-    {
-        return Component.translatable(PREFIX + key);
     }
 
     private static String translate(String key)

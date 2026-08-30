@@ -241,8 +241,8 @@ public class ModelVehicle extends ModelDriveable
             red, green, blue, alpha, scale, renderPass);
         renderPartAt(door2AnimModel, door2Attach, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
-        renderPartMatrix(leftAnimTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPartMatrix(rightAnimTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderTrackPreview(driveableType, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
         if (driveableType instanceof VehicleType vehicleType)
         {
             ensureTrackPaths(vehicleType);
@@ -251,6 +251,29 @@ public class ModelVehicle extends ModelDriveable
             renderFancyTrackPath(vehicleType, rightTrackPath, 0F, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
+    }
+
+    /** Draw the same stationary track frame that a newly placed vehicle uses. */
+    private void renderTrackPreview(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer,
+                                    int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+                                    float scale, EnumRenderPass renderPass)
+    {
+        int configuredFrames = driveableType == null ? Integer.MAX_VALUE : driveableType.getAnimFrames() + 1;
+        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, 0F);
+        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, 0F);
+        if (leftFrame >= 0)
+            renderPart(leftAnimTrackModel[leftFrame], poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+        if (rightFrame >= 0)
+            renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+
+        // Older content models expose the three animation frames as separate
+        // fields instead of the frame matrices above.
+        renderPart(selectFrame(0, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3),
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(selectFrame(0, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3),
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     public void renderTurret(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,

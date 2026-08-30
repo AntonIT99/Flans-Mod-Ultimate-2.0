@@ -42,6 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -150,6 +151,19 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
     protected final List<DriveablePosition> wheelPositions = new ArrayList<>();
     protected float wheelSpringStrength = 0.5F;
     protected float wheelStepHeight = 1F;
+    /**
+     * Vertical gap, in blocks, between the wheel anchors and the bottom of the
+     * geometry that actually meets the ground, or NaN when the type declares no
+     * wheel or track collision box to derive it from.
+     *
+     * <p>WheelPosition is only an anchor, and packs do not agree on where it
+     * sits: the official content puts it on the contact plane, while others put
+     * it an axle height above. The collision boxes of the wheel and track parts
+     * do describe the geometry that touches the ground, so the gap between the
+     * lowest of those and the lowest anchor is the clearance the suspension has
+     * to keep for the rendered model to rest on the surface.</p>
+     */
+    protected float wheelContactClearance = Float.NaN;
     protected boolean canRoll = true;
     protected final List<DriveablePosition> collisionPoints = new ArrayList<>();
     protected float drag = 1F;
@@ -763,6 +777,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
                 bulletDetectionRadius = Math.max(bulletDetectionRadius, box.getRootPosition().length() + box.getRadius());
             bulletDetectionRadius += 1F;
         }
+        deriveWheelContactClearance();
         resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
             deriveGeometry(), legacyPhysicsHints());
         resolvedArmor = VehicleArmorResolver.resolve(armorSpec, authoredHealth.keySet());
@@ -791,6 +806,49 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
      * track come from the spread of the declared wheel positions, whose legacy X
      * is the fore-aft axis and legacy Z the lateral one.
      */
+    /** Parts whose collision boxes describe where a driveable meets the ground. */
+    private static final Set<EnumDriveablePart> GROUND_CONTACT_PARTS = EnumSet.of(
+        EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.FRONT_WHEEL, EnumDriveablePart.BACK_WHEEL,
+        EnumDriveablePart.FRONT_LEFT_WHEEL, EnumDriveablePart.FRONT_RIGHT_WHEEL,
+        EnumDriveablePart.BACK_LEFT_WHEEL, EnumDriveablePart.BACK_RIGHT_WHEEL,
+        EnumDriveablePart.LEFT_TRACK, EnumDriveablePart.RIGHT_TRACK, EnumDriveablePart.TAIL_WHEEL,
+        EnumDriveablePart.LEFT_WING_WHEEL, EnumDriveablePart.RIGHT_WING_WHEEL, EnumDriveablePart.SKIDS);
+
+    /**
+     * Measures {@link #wheelContactClearance} from the authored geometry.
+     *
+     * <p>The contact plane is the lower of the two things a type declares about
+     * where it meets the ground: its wheel anchors and the bottoms of its wheel
+     * and track boxes. Taking the lower of the two is what makes the measurement
+     * safe against either one being authored loosely, since a box that stops
+     * short of the anchors is a tight box rather than a driveable that hovers.
+     * The upper bound then stops a single mis-authored box from levitating the
+     * whole driveable.</p>
+     */
+    private void deriveWheelContactClearance()
+    {
+        float lowestBox = Float.NaN;
+        for (Map.Entry<EnumDriveablePart, CollisionBox> entry : authoredHealth.entrySet())
+        {
+            if (!GROUND_CONTACT_PARTS.contains(entry.getKey()))
+                continue;
+            float bottom = entry.getValue().getY();
+            if (Float.isNaN(lowestBox) || bottom < lowestBox)
+                lowestBox = bottom;
+        }
+        float lowestAnchor = Float.NaN;
+        for (DriveablePosition wheel : wheelPositions)
+        {
+            if (wheel == null)
+                continue;
+            float anchor = wheel.getPosition().y;
+            if (Float.isNaN(lowestAnchor) || anchor < lowestAnchor)
+                lowestAnchor = anchor;
+        }
+        wheelContactClearance = Float.isNaN(lowestBox) || Float.isNaN(lowestAnchor)
+            ? Float.NaN : Math.max(0F, Math.min(0.5F, lowestAnchor - lowestBox));
+    }
+
     private VehicleGeometry deriveGeometry()
     {
         int wheelCount = 0;

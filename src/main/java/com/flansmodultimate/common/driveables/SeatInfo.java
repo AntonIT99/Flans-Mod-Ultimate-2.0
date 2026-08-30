@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
+
 /** Immutable-position, mutable-aim definition for a driver or passenger seat. */
 @Getter
 public final class SeatInfo
@@ -62,6 +64,39 @@ public final class SeatInfo
         this.gunName = StringUtils.defaultString(gunName);
         this.contentPack = contentPack;
         this.gunOrigin = new Vector3f(position.x, position.y, position.z);
+    }
+
+    /**
+     * Clamps an aim yaw into this seat's traverse arc.
+     *
+     * <p>The arc is measured from its own centre rather than being wrapped into
+     * [-180, 180) first. A rear-facing arc such as {@code 135 225} straddles
+     * that boundary, and wrapping first turns every yaw past 180 into a large
+     * negative one, which then clamps to the opposite end of the arc and snaps
+     * the gunner around. Working relative to the centre keeps the arc contiguous
+     * wherever it sits, and an arc of at least a full turn stays free.</p>
+     */
+    public float clampYaw(float yaw)
+    {
+        float halfSpan = (maxYaw - minYaw) * 0.5F;
+        if (halfSpan >= 180F)
+            return Mth.wrapDegrees(yaw);
+        float centre = (minYaw + maxYaw) * 0.5F;
+        return centre + Mth.clamp(Mth.wrapDegrees(yaw - centre), -halfSpan, halfSpan);
+    }
+
+    /**
+     * Clamps an aim pitch into this seat's elevation range.
+     *
+     * <p>Type files state the pair the gunner's way round: the negative number
+     * is how far the weapon depresses and the positive one how far it elevates,
+     * which is why {@code -15 25} means fifteen degrees down and twenty-five up.
+     * Aim pitch is carried in vanilla view space, where a positive angle points
+     * down, so the authored pair maps to {@code [-maxPitch, -minPitch]}.</p>
+     */
+    public float clampPitch(float pitch)
+    {
+        return Mth.clamp(pitch, -maxPitch, -minPitch);
     }
 
     public int getX() { return Math.round(position.x * 16F); }
