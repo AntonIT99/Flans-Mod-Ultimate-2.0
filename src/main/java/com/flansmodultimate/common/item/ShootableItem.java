@@ -212,10 +212,10 @@ public abstract class ShootableItem extends Item
             {
                 tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.mass").append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
-                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().mass()) + "g").withStyle(ChatFormatting.GRAY)));
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().mass()) + " g").withStyle(ChatFormatting.GRAY)));
             }
             else
-                tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + "g"));
+                tooltipComponents.add(IFlanItem.statLine("Mass", IFlanItem.formatFloat(getConfigType().getMass()) + " g"));
         }
         else
             IFlanItem.appendDamageStats(tooltipComponents, getConfigType().getDamage(), "Damage");
@@ -226,10 +226,10 @@ public abstract class ShootableItem extends Item
             {
                 tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.explosive_mass_tnt").append(":").withStyle(ChatFormatting.BLUE));
                 bulletType.getPeriod().forEach(round ->
-                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().explosiveMass(), 3) + "kg").withStyle(ChatFormatting.GRAY)));
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().explosiveMass(), 3) + " kg").withStyle(ChatFormatting.GRAY)));
             }
             else
-                tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + "kg"));
+                tooltipComponents.add(IFlanItem.statLine("Explosive Mass (TNT)", IFlanItem.formatFloat(getConfigType().getExplosiveMass(), 3) + " kg"));
         }
 
         if (getConfigType().getExplosionRadius() > 0F)

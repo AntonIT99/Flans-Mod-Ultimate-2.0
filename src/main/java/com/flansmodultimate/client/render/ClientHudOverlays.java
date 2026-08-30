@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -493,12 +494,7 @@ public final class ClientHudOverlays
             }
         }
 
-        float maximumForwardThrottle = Math.max(0.0001F, driveable.getConfigType().getMaxThrottle());
-        float maximumReverseThrottle = Math.max(0.0001F, driveable.getConfigType().getMaxNegativeThrottle());
-        float throttleRatio = driveable.getThrottle() >= 0F
-            ? driveable.getThrottle() / maximumForwardThrottle
-            : driveable.getThrottle() / maximumReverseThrottle;
-        int throttlePercent = Math.round(Mth.clamp(throttleRatio, -1F, 1F) * 100F);
+        int throttlePercent = DriveableControlPhysics.throttlePercent(driveable.getThrottle());
         double speed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().length() * 20D);
         g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.throttle", throttlePercent),
             LEGACY_HUD_LEFT, y, HUD_WHITE, false);

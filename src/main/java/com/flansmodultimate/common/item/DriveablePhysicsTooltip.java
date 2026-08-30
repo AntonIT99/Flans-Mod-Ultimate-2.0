@@ -85,7 +85,7 @@ public final class DriveablePhysicsTooltip
 
         if (type.getRealWorldSpec().massKg() != null)
             tooltip.add(IFlanItem.statLine(Component.literal("RealMassKg"),
-                IFlanItem.formatFloat(type.getRealWorldSpec().massKg(), 0) + " kg"));
+                formatMass(type.getRealWorldSpec().massKg())));
         if (health != null)
         {
             tooltip.add(IFlanItem.statLine(Component.literal("Normalized health"),
@@ -133,22 +133,22 @@ public final class DriveablePhysicsTooltip
         // Minecraft-effective values (effective speed, power-to-weight, wing
         // loading, reference speed, …) are intentionally not shown here; see
         // /vehiclephysics for those.
-        tooltip.add(IFlanItem.statLine(label("mass"), IFlanItem.formatFloat(resolved.massKg(), 0)));
+        tooltip.add(IFlanItem.statLine(label("mass"), formatMass(resolved.massKg())));
         if (resolved.baselineThrustKn() > 0F)
-            tooltip.add(IFlanItem.statLine(label("engineThrust"), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1)));
+            tooltip.add(IFlanItem.statLine(label("engineThrust"), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1) + " kN"));
         if (resolved.baselinePowerKw() > 0F)
-            tooltip.add(IFlanItem.statLine(label("enginePower"), IFlanItem.formatFloat(resolved.baselinePowerKw(), 0)));
-        tooltip.add(IFlanItem.statLine(label("maxSpeed"), IFlanItem.formatFloat(resolved.maxSpeedKmh(), 0)));
+            tooltip.add(IFlanItem.statLine(label("enginePower"), IFlanItem.formatFloat(resolved.baselinePowerKw(), 0) + " kW"));
+        tooltip.add(IFlanItem.statLine(label("maxSpeed"), IFlanItem.formatFloat(resolved.maxSpeedKmh(), 0) + " km/h"));
 
         if (resolved.hasAircraftProfile())
         {
             RealWorldVehicleSpec.Aircraft aircraft = source.aircraft();
             if (aircraft.wingSpanM() != null)
-                tooltip.add(IFlanItem.statLine(label("wingSpan"), IFlanItem.formatFloat(aircraft.wingSpanM(), 2)));
+                tooltip.add(IFlanItem.statLine(label("wingSpan"), IFlanItem.formatFloat(aircraft.wingSpanM(), 2) + " m"));
             if (aircraft.wingAreaM2() != null)
-                tooltip.add(IFlanItem.statLine(label("wingArea"), IFlanItem.formatFloat(aircraft.wingAreaM2(), 2)));
+                tooltip.add(IFlanItem.statLine(label("wingArea"), IFlanItem.formatFloat(aircraft.wingAreaM2(), 2) + " m²"));
             if (aircraft.climbRateMs() != null)
-                tooltip.add(IFlanItem.statLine(label("climbRate"), IFlanItem.formatFloat(aircraft.climbRateMs(), 1)));
+                tooltip.add(IFlanItem.statLine(label("climbRate"), IFlanItem.formatFloat(aircraft.climbRateMs(), 1) + " m/s"));
         }
 
         // Legacy fields that remain in force as deliberate gameplay trims.
@@ -166,13 +166,13 @@ public final class DriveablePhysicsTooltip
         if (type instanceof VehicleType vehicle)
         {
             if (vehicle.getTurnLeftModifier() != 1F || vehicle.getTurnRightModifier() != 1F)
-                tooltip.add(IFlanItem.indentedStatLine(label("legacy.steeringTrim"),
+                tooltip.add(IFlanItem.statLine(label("legacy.steeringTrim"),
                     IFlanItem.formatFloat(vehicle.getTurnLeftModifier(), 2) + " / "
                         + IFlanItem.formatFloat(vehicle.getTurnRightModifier(), 2)));
         }
         else if (type instanceof PlaneType plane)
         {
-            tooltip.add(IFlanItem.indentedStatLine(label("legacy.controlTrim"),
+            tooltip.add(IFlanItem.statLine(label("legacy.controlTrim"),
                 IFlanItem.formatFloat(plane.getTurnRightModifier(), 2) + " / "
                     + IFlanItem.formatFloat(plane.getLookUpModifier(), 2) + " / "
                     + IFlanItem.formatFloat(plane.getRollRightModifier(), 2)));
@@ -215,11 +215,11 @@ public final class DriveablePhysicsTooltip
         }
         if (resolved.hasReverseSpeedOverride())
             tooltip.add(IFlanItem.statLine(label("reverseSpeed"),
-                IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0)));
+                IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0) + " km/h"));
         if (resolved.hasSlopeLimit())
-            tooltip.add(IFlanItem.statLine(label("maxSlope"), IFlanItem.formatFloat(resolved.maxSlopeDeg(), 0)));
+            tooltip.add(IFlanItem.statLine(label("maxSlope"), IFlanItem.formatFloat(resolved.maxSlopeDeg(), 0) + "°"));
         if (resolved.hasDraft())
-            tooltip.add(IFlanItem.statLine(label("draft"), IFlanItem.formatFloat(resolved.draftM(), 2)));
+            tooltip.add(IFlanItem.statLine(label("draft"), IFlanItem.formatFloat(resolved.draftM(), 2) + " m"));
     }
 
     /**
@@ -234,6 +234,16 @@ public final class DriveablePhysicsTooltip
             return;
         tooltip.add(Component.translatable(PREFIX + "speedScale",
             IFlanItem.formatDouble(speedScale, 2)).withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    /**
+     * Masses above 1 t read easier in tons; lighter driveables stay in kg.
+     */
+    private static String formatMass(float massKg)
+    {
+        return massKg > 1000F
+            ? IFlanItem.formatFloat(massKg / 1000F, 1) + " t"
+            : IFlanItem.formatFloat(massKg, 0) + " kg";
     }
 
     private static Component label(String key)

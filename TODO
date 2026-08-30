@@ -8,6 +8,7 @@ General:
 - check toggle doors
 - check propeller speed at standby as well as when moving
 - investigate the legacy penetration system
+- add a command to list and remove all driveables / deployable guns / aa guns in a defined radius or the whole world
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

@@ -17,6 +17,19 @@ class DriveableControlPhysicsTest
     }
 
     @Test
+    void hudThrottleAlwaysSpansTheNormalizedMinusOneHundredToOneHundredRange()
+    {
+        assertEquals(100, DriveableControlPhysics.throttlePercent(1F));
+        assertEquals(68, DriveableControlPhysics.throttlePercent(0.68F));
+        assertEquals(0, DriveableControlPhysics.throttlePercent(0F));
+        assertEquals(-68, DriveableControlPhysics.throttlePercent(-0.68F));
+        assertEquals(-100, DriveableControlPhysics.throttlePercent(-1F));
+        assertEquals(100, DriveableControlPhysics.throttlePercent(4F));
+        assertEquals(-100, DriveableControlPhysics.throttlePercent(-4F));
+        assertEquals(0, DriveableControlPhysics.throttlePercent(Float.NaN));
+    }
+
+    @Test
     void appliesDirectionalAndWaterPropulsionAfterNormalizingInput()
     {
         assertEquals(0.6F, DriveableControlPhysics.directionalPropulsion(1F, 0.6F, 0.4F, 0.2F, false), EPSILON);

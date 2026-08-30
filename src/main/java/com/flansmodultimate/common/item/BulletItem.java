@@ -56,10 +56,10 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             {
                 tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.muzzle_velocity").append(":").withStyle(ChatFormatting.BLUE));
                 configType.getPeriod().forEach(round ->
-                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + "m/s").withStyle(ChatFormatting.GRAY)));
+                    tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(round.stats().bulletSpeed() * 20F) + " m/s").withStyle(ChatFormatting.GRAY)));
             }
             else if (configType.getBulletSpeed() > 0F)
-                tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + "m/s"));
+                tooltipComponents.add(IFlanItem.statLine("Muzzle Velocity", IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + " m/s"));
 
             if (configType.hasDifferentRounds() && configType.getPeriod().stream().anyMatch(round -> round.stats().penetrationAt100m() > 0F))
             {

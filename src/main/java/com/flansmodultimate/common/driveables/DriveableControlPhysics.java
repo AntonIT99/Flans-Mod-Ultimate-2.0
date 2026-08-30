@@ -20,6 +20,14 @@ public final class DriveableControlPhysics
         return clamp(throttle, minimum, 1F);
     }
 
+    /** HUD presentation of the normalized control range, independent of propulsion tuning. */
+    public static int throttlePercent(float throttle)
+    {
+        if (!Float.isFinite(throttle))
+            return 0;
+        return Math.round(clamp(throttle, -1F, 1F) * 100F);
+    }
+
     /** Signed propulsion after applying the configured forward / reverse / water power. */
     public static float directionalPropulsion(float throttle, float forwardPower, float reversePower,
                                                float waterPower, boolean inWater)
