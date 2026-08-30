@@ -62,7 +62,7 @@ def iter_flans_content_dirs(source_root: Path) -> Iterable[Path]:
         candidate
         for source_folder in source_root.iterdir()
         if source_folder.is_dir()
-        for candidate in [source_folder / "resources" / "flans_content"]
+        for candidate in [source_folder / "resources" / "flans_content" / "definitions"]
         if candidate.is_dir()
     )
 
