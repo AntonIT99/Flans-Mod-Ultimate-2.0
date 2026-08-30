@@ -4,12 +4,14 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -24,22 +26,28 @@ public final class ModCommonConfig
 {
     public static final ForgeConfigSpec configSpec;
 
-    /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
-    public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
     /** A throttle lever meters engine power, so the physical exponent is one. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 3.0D;
+    /** Per-class speed scales, at their neutral value unless an operator slows a class down. */
+    public static final double DEFAULT_REALISTIC_PLANE_SPEED_SCALE = 1.0D;
+    public static final double DEFAULT_REALISTIC_GROUND_VEHICLE_SPEED_SCALE = 1.0D;
+    /** Absolute speed ceilings, high enough by default to be inert until an operator lowers them. */
+    public static final double DEFAULT_MAX_PLANE_SPEED_KMH = 10000.0D;
+    public static final double DEFAULT_MAX_VEHICLE_SPEED_KMH = 10000.0D;
     public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
     public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
     public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
 
-    private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
-    private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
+    private static final double MIN_REALISTIC_CLASS_SPEED_SCALE = 0.1D;
+    private static final double MAX_REALISTIC_CLASS_SPEED_SCALE = 1.0D;
+    private static final double MIN_HARD_SPEED_CAP_KMH = 1.0D;
+    private static final double MAX_HARD_SPEED_CAP_KMH = 100000.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
     private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
 
@@ -128,9 +136,12 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_SUPPLY_AMOUNT;
 
-    private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_PLANE_SPEED_SCALE;
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_GROUND_VEHICLE_SPEED_SCALE;
+    private static final ForgeConfigSpec.DoubleValue MAX_PLANE_SPEED_KMH;
+    private static final ForgeConfigSpec.DoubleValue MAX_VEHICLE_SPEED_KMH;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_HEALTH_SCALE;
     private static final ForgeConfigSpec.DoubleValue PENETRATION_VELOCITY_EXPONENT;
     private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
@@ -381,16 +392,6 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
-        REALISTIC_VEHICLE_SPEED_SCALE = builder
-            .comment("Scale applied to real-world vehicle speeds declared with RealMaxSpeedKmh and RealMaxReverseSpeedKmh.",
-                "The mod treats 1 block as 1 metre and 20 ticks as 1 second, so km/h becomes blocks per tick as kmh / 72.",
-                "1.0 runs vehicles at their full real-world speed; 0.5 runs them at half speed.",
-                "Only speeds are scaled. Mass, engine power, thrust, wing area, slope and draft are never scaled.",
-                "Vehicles that declare no real-world parameters are unaffected.")
-            .defineInRange("realisticVehicleSpeedScale",
-                DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE,
-                MIN_REALISTIC_VEHICLE_SPEED_SCALE,
-                MAX_REALISTIC_VEHICLE_SPEED_SCALE);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder
             .comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
                 "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
@@ -414,6 +415,36 @@ public final class ModCommonConfig
                 DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE,
                 MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE,
                 MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE);
+        REALISTIC_PLANE_SPEED_SCALE = builder
+            .comment("Scale applied to the real-world speeds of aircraft, declared with RealMaxSpeedKmh and RealMaxReverseSpeedKmh.",
+                "The mod treats 1 block as 1 metre and 20 ticks as 1 second, so km/h becomes blocks per tick as kmh / 72.",
+                "1.0 runs aircraft at their full real-world speed and is the default; 0.5 runs them at half speed.",
+                "Only speeds are scaled. Mass, engine power, thrust, wing area, slope and draft are never scaled.",
+                "Top speed, reverse speed, climb rate and the derived stall reference speed all follow it together,",
+                "so a slowed aircraft still takes off and stalls at sensible fractions of its own top speed.",
+                "Aircraft that declare no real-world parameters are unaffected.")
+            .defineInRange("realisticPlaneSpeedScale", DEFAULT_REALISTIC_PLANE_SPEED_SCALE,
+                MIN_REALISTIC_CLASS_SPEED_SCALE, MAX_REALISTIC_CLASS_SPEED_SCALE);
+        REALISTIC_GROUND_VEHICLE_SPEED_SCALE = builder
+            .comment("Scale applied to the real-world speeds of ground and water vehicles.",
+                "As realisticPlaneSpeedScale, but for vehicles, and independent of it, so the two classes",
+                "can be tuned against each other. 1.0 is no scaling and the default.",
+                "Vehicles that declare no real-world parameters are unaffected.")
+            .defineInRange("realisticGroundVehicleSpeedScale", DEFAULT_REALISTIC_GROUND_VEHICLE_SPEED_SCALE,
+                MIN_REALISTIC_CLASS_SPEED_SCALE, MAX_REALISTIC_CLASS_SPEED_SCALE);
+        MAX_PLANE_SPEED_KMH = builder
+            .comment("Absolute speed ceiling for aircraft, in km/h. No plane may exceed it, whatever its pack",
+                "or physics profile says. This is an enforced cap on the resulting velocity, not a target speed:",
+                "an aircraft slower than the cap is completely unaffected by it.",
+                "The default is high enough to be inert; lower it to rein in a pack that authors absurd speeds.",
+                "Applies to every plane, including legacy ones, helicopters, VTOL and six-DOF craft.")
+            .defineInRange("maxPlaneSpeedKmh", DEFAULT_MAX_PLANE_SPEED_KMH,
+                MIN_HARD_SPEED_CAP_KMH, MAX_HARD_SPEED_CAP_KMH);
+        MAX_VEHICLE_SPEED_KMH = builder
+            .comment("Absolute speed ceiling for ground and water vehicles, in km/h. As maxPlaneSpeedKmh,",
+                "but for vehicles, and independent of it.")
+            .defineInRange("maxVehicleSpeedKmh", DEFAULT_MAX_VEHICLE_SPEED_KMH,
+                MIN_HARD_SPEED_CAP_KMH, MAX_HARD_SPEED_CAP_KMH);
         builder.pop();
 
         builder.push("Vehicle Damage Settings");
@@ -527,9 +558,12 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
-            REALISTIC_VEHICLE_SPEED_SCALE.get(),
             REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE.get(),
             REALISTIC_AIRCRAFT_THROTTLE_RESPONSE.get(),
+            REALISTIC_PLANE_SPEED_SCALE.get(),
+            REALISTIC_GROUND_VEHICLE_SPEED_SCALE.get(),
+            MAX_PLANE_SPEED_KMH.get(),
+            MAX_VEHICLE_SPEED_KMH.get(),
             REALISTIC_VEHICLE_HEALTH_SCALE.get(),
             PENETRATION_VELOCITY_EXPONENT.get(),
             MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
@@ -546,17 +580,6 @@ public final class ModCommonConfig
         return override != null ? override : instance.get();
     }
 
-    /**
-     * The single place the realistic vehicle speed scale is read. Physics and item
-     * tooltips both go through here so they can never disagree, and a config that
-     * has not loaded yet falls back to the documented default rather than zero.
-     */
-    public static double realisticVehicleSpeedScale()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE : config.realisticVehicleSpeedScale();
-    }
-
     /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */
     public static double realisticAircraftReferenceSpeedScale()
     {
@@ -570,6 +593,54 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE
             : config.realisticAircraftThrottleResponse();
+    }
+
+    /** Speed scale for real-world aircraft. */
+    public static double realisticPlaneSpeedScale()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_PLANE_SPEED_SCALE : config.realisticPlaneSpeedScale();
+    }
+
+    /** Speed scale for real-world ground and water vehicles. */
+    public static double realisticGroundVehicleSpeedScale()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_GROUND_VEHICLE_SPEED_SCALE
+            : config.realisticGroundVehicleSpeedScale();
+    }
+
+    /**
+     * The single place a real-world speed scale is read, selected by driveable
+     * class. Physics, item tooltips and the debug command all go through here,
+     * so top speed, reverse speed, climb rate, the derived stall reference speed
+     * and the wheel look-ahead can never disagree about how fast a driveable is
+     * meant to be, and a config that has not loaded yet falls back to the
+     * documented default rather than to zero.
+     *
+     * <p>Mechas, which have no real-world profile of their own, are unscaled.
+     */
+    public static double realisticSpeedScale(@Nullable EnumVehicleCategory category)
+    {
+        if (category == EnumVehicleCategory.AIRCRAFT)
+            return realisticPlaneSpeedScale();
+        if (category == EnumVehicleCategory.GROUND)
+            return realisticGroundVehicleSpeedScale();
+        return 1D;
+    }
+
+    /** Enforced ceiling on aircraft speed in km/h, independent of any pack or physics profile. */
+    public static double maxPlaneSpeedKmh()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_PLANE_SPEED_KMH : config.maxPlaneSpeedKmh();
+    }
+
+    /** Enforced ceiling on ground and water vehicle speed in km/h. */
+    public static double maxVehicleSpeedKmh()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_VEHICLE_SPEED_KMH : config.maxVehicleSpeedKmh();
     }
 
     public static double realisticVehicleHealthScale()

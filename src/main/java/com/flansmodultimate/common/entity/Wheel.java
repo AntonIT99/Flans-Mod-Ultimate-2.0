@@ -133,8 +133,14 @@ public class Wheel extends Entity
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
-            return driveable != null;
+        if (driveable == null)
+            return false;
+        // A click on the undercarriage is a click on the aircraft: offer the
+        // same pickup the hull would, before treating it as damage.
+        if (driveable.tryPickupOnAttack(source))
+            return true;
+        if (level().isClientSide)
+            return true;
         DriveablePosition definition = driveable.getConfigType() == null ? null : driveable.getConfigType().getWheelPosition(getWheelIndex());
         EnumDriveablePart part = definition == null ? EnumDriveablePart.CORE : definition.getPart();
         return driveable.damagePart(part, amount, source);

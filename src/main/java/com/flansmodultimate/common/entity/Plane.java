@@ -11,6 +11,7 @@ import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
 import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -240,15 +241,22 @@ public class Plane extends Driveable
         ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
         double requiredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
             ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(
-                resolvedPhysics.referenceSpeedMs(ModCommonConfig.realisticVehicleSpeedScale(),
+                resolvedPhysics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()),
                     ModCommonConfig.realisticAircraftReferenceSpeedScale()), 1D)
             : type.getTakeoffSpeed();
         double measuredTakeoffSpeed = resolvedPhysics.hasAircraftProfile()
             ? velocity.length() : velocity.horizontalDistance();
         boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), measuredTakeoffSpeed,
             requiredTakeoffSpeed, flightForwardVector().y, velocity.y);
+        velocity = enforceSpeedCap(velocity, ModCommonConfig.maxPlaneSpeedKmh());
         if (isGearDeployed() && !liftingOff)
             velocity = applyWheelContactPhysics(velocity, true);
+        else
+            // Wheel contact is only sampled while the gear is down and the
+            // aircraft is not lifting off. Clearing it on the other branch keeps
+            // the next tick from reading a stale contact from the takeoff roll
+            // and treating an airborne aircraft as still rolling.
+            clearWheelContact();
         moveWithCollisions(velocity);
         if (verticalCollision && descent < -0.55D)
         {
@@ -386,7 +394,7 @@ public class Plane extends Driveable
      */
     private Vec3 derivedFixedWingPhysics(PlaneType type, ResolvedVehiclePhysics physics, Vec3 current)
     {
-        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
         double terminalBlocksPerTick = physics.maxSpeedBlocksPerTick(speedScale);
         applyDerivedControls(type, physics, current, terminalBlocksPerTick);
 
@@ -394,7 +402,13 @@ public class Plane extends Driveable
             return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
-        double airspeedBlocksPerTick = current.length();
+        // On the wheels the aircraft rolls along its nose and neither gravity
+        // nor the wing may steer it. Measuring airspeed in three dimensions is
+        // right in flight, but on the ground the constant downward term would be
+        // fed back into forward motion by the alignment below, which is what
+        // made a parked aircraft creep away on its own.
+        boolean rolling = isSupportedByGround();
+        double airspeedBlocksPerTick = rolling ? current.horizontalDistance() : current.length();
         double airspeedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(airspeedBlocksPerTick);
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(terminalBlocksPerTick);
 
@@ -414,9 +428,16 @@ public class Plane extends Driveable
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
             airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
             throttleDemand * propellerFraction);
+        if (rolling)
+            accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
         double newSpeed = Math.max(0D, airspeedBlocksPerTick
             + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
         newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));
+        // A closed throttle below walking pace on the ground is parked. Without
+        // this floor the deceleration tail leaves a permanent crawl.
+        if (rolling && throttleDemand <= 0D && VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(newSpeed)
+            < VehiclePhysicsConstants.GROUND_PARKING_SPEED_MS)
+            newSpeed = 0D;
 
         int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
             + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
@@ -428,12 +449,27 @@ public class Plane extends Driveable
             climbRate == null ? 0D : climbRate, terminalMs);
         liftFraction = Math.min(liftFraction, 1D + excessAllowance);
 
-        // Velocity swings toward the nose in proportion to how much the wing is
-        // actually biting, so a stalled aircraft keeps its old momentum and
-        // mushes rather than pointing wherever the pilot aims.
         Vec3 forward = flightForwardVector();
-        double alignment = Mth.clamp(0.12D + 0.6D * liftFraction, 0.05D, 0.85D);
-        Vec3 velocity = current.scale(1D - alignment).add(forward.scale(alignment * newSpeed));
+        Vec3 velocity;
+        if (rolling)
+        {
+            // Rolling on the wheels: the aircraft tracks its nose in the
+            // horizontal plane only, and the vertical axis is left entirely to
+            // gravity, lift and the suspension.
+            Vec3 heading = new Vec3(forward.x, 0D, forward.z);
+            heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize()
+                : new Vec3(current.x, 0D, current.z);
+            heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize() : Vec3.ZERO;
+            velocity = heading.scale(newSpeed).add(0D, current.y, 0D);
+        }
+        else
+        {
+            // Velocity swings toward the nose in proportion to how much the wing
+            // is actually biting, so a stalled aircraft keeps its old momentum
+            // and mushes rather than pointing wherever the pilot aims.
+            double alignment = Mth.clamp(0.12D + 0.6D * liftFraction, 0.05D, 0.85D);
+            velocity = current.scale(1D - alignment).add(forward.scale(alignment * newSpeed));
+        }
 
         double lift = liftFraction * LegacyPlanePhysics.GRAVITY * Math.abs(flightUpVector().y);
         velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
@@ -486,7 +522,15 @@ public class Plane extends Driveable
         axes.rotateLocalYaw(angularYaw);
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
-        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        // A wing that has run out of speed stops holding the nose up. Simulation
+        // pitch is negative nose-up, so the correction is added, and it is only
+        // ever a bias back toward level: the pilot keeps full authority.
+        float pitch = axes.getPitch() + AircraftPerformancePhysics.stallRecoveryPitchDegrees(
+            VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(velocity.length()),
+            physics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(physics.category()),
+                ModCommonConfig.realisticAircraftReferenceSpeedScale()),
+            axes.getPitch());
+        setOrientation(axes.getYaw(), pitch, axes.getRoll());
         angularYaw *= 0.99F;
         angularPitch *= 0.99F;
         angularRoll *= 0.99F;

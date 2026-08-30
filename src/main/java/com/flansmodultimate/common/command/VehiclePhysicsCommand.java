@@ -62,9 +62,9 @@ public final class VehiclePhysicsCommand
             return 0;
         }
 
-        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
-        double referenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
         ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
+        double speedScale = ModCommonConfig.realisticSpeedScale(resolved.category());
+        double referenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
         RealWorldVehicleSpec source = type.getRealWorldSpec();
 
         send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " physics ===");

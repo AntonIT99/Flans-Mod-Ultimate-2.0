@@ -6,13 +6,13 @@ Driveables:
 - alternative throttle control for ground vehicles: like planes but with Q (gear down) and E (gear up)
 - Use special mecha inventory
 - collisions are good but not like in 1.7.10. For example, if I am standing on top of the mecha, I should not fall.
-- general driveable item rendering has some issues
-- Add a command to list and remove all driveables / deployable guns / aa guns in a defined radius or the whole world
-- Separate global configurable max speed scaling between planes and vehicles
 - Tank rendering still has issues with y axis
+- general driveable item rendering has some issues
+- Separate global configurable max speed scaling between planes and vehicles
+- 2 mod config option to enforce legacy physics (movements) for planes and vehicles globally, disregarding the new parameters entirely.
 
 Planes:
-- First person camera broken when using keyboard control in planes
+- Investigate Bf 109 yaw/roll
 - check toggle doors -> problem with door closed enforced for planes
 - check propeller speed at standby as well as when moving
 - planes should crash when brutal collision with the ground. By default no blocks destroyed but configurable

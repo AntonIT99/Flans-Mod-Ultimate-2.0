@@ -51,6 +51,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<GunType>
 {
+    private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
 
@@ -279,7 +280,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             Level level = level();
 
             // Only do "death drops" on the server, and not when the entity is merely being unloaded
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK)
+            if (!suppressRemovalDrops && !level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK)
             {
                 if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.SMART_DROPS)
                 {
@@ -299,6 +300,13 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         }
 
         super.remove(reason);
+    }
+
+    /** Removes this gun for an administrative cleanup without creating item drops. */
+    public void discardWithoutDrops()
+    {
+        suppressRemovalDrops = true;
+        discard();
     }
 
     @Override

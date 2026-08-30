@@ -136,4 +136,29 @@ class VehiclePhysicsUnitsTest
         assertFalse(VehiclePhysicsUnits.isUsablePositive(Float.POSITIVE_INFINITY));
         assertFalse(VehiclePhysicsUnits.isUsablePositive((Float) null));
     }
+
+    @Test
+    void theHardSpeedCapScalesOnlyWhatIsOverIt()
+    {
+        double cap = 1000D;
+        double under = VehiclePhysicsUnits.kmhToBlocksPerTick(900D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(under, cap), 1.0E-9D,
+            "a vehicle slower than the ceiling is untouched by it");
+        double over = VehiclePhysicsUnits.kmhToBlocksPerTick(2000D);
+        double scale = VehiclePhysicsUnits.speedCapScale(over, cap);
+        assertEquals(0.5D, scale, 1.0E-9D);
+        assertEquals(cap, VehiclePhysicsUnits.blocksPerTickToKmh(over * scale), 1.0E-6D,
+            "scaling by the factor lands exactly on the ceiling");
+    }
+
+    @Test
+    void anAbsentOrDegenerateSpeedCapDoesNothing()
+    {
+        double speed = VehiclePhysicsUnits.kmhToBlocksPerTick(2000D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(speed, 0D), 1.0E-9D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(speed, -5D), 1.0E-9D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(speed, Double.NaN), 1.0E-9D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(0D, 1000D), 1.0E-9D);
+        assertEquals(1D, VehiclePhysicsUnits.speedCapScale(Double.NaN, 1000D), 1.0E-9D);
+    }
 }

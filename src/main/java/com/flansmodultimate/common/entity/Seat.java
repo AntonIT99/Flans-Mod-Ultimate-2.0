@@ -325,8 +325,14 @@ public class Seat extends Entity implements IControllable
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
-            return driveable != null;
+        if (driveable == null)
+            return false;
+        // A click on the seat is a click on the aircraft: offer the same pickup
+        // the hull would, before treating it as damage.
+        if (driveable.tryPickupOnAttack(source))
+            return true;
+        if (level().isClientSide)
+            return true;
         EnumDriveablePart part = seatInfo == null ? EnumDriveablePart.CORE : seatInfo.getPart();
         return driveable.damagePart(part, amount, source);
     }

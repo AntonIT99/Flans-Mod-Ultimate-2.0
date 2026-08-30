@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * <p>Two rules shape this record. Static derivations that never change, such as
  * power to weight or wing loading, are computed here so no tick method repeats
  * them. Speed conversions are not baked in, because the global
- * {@code realisticVehicleSpeedScale} can change at runtime and the authored
+ * per-class realistic speed scale can change at runtime and the authored
  * real-world values must never be mutated; instead every speed accessor takes the
  * current scale and converts through {@link VehiclePhysicsUnits}. Runtime physics
  * and item tooltips call the same accessors, so they can never disagree.

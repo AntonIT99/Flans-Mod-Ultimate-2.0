@@ -102,6 +102,24 @@ public final class VehiclePhysicsUnits
         return kmh / KMH_TO_BLOCKS_PER_TICK_DIVISOR * sanitizeScale(speedScale);
     }
 
+    /**
+     * Factor that brings a speed in blocks per tick under an absolute ceiling
+     * expressed in km/h, or exactly one when it is already under.
+     *
+     * <p>Scaling a velocity by this preserves its direction, which is what makes
+     * it a speed limit rather than a per-axis clamp.
+     *
+     * @param capKmh the ceiling; a non-positive or non-finite value means no cap
+     */
+    public static double speedCapScale(double speedBlocksPerTick, double capKmh)
+    {
+        if (!Double.isFinite(capKmh) || capKmh <= 0D || !Double.isFinite(speedBlocksPerTick)
+            || speedBlocksPerTick <= 0D)
+            return 1D;
+        double cap = kmhToBlocksPerTick(capKmh);
+        return speedBlocksPerTick <= cap ? 1D : cap / speedBlocksPerTick;
+    }
+
     /** Inverse of {@link #kmhToBlocksPerTick(double)}; used for debug and tooltip readouts. */
     public static double blocksPerTickToKmh(double blocksPerTick)
     {

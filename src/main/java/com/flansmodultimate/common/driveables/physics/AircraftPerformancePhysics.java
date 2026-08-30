@@ -293,6 +293,61 @@ public final class AircraftPerformancePhysics
         return (float) Math.max(0D, Math.min(1D, authority));
     }
 
+    /**
+     * Self-correcting nose-down rate in degrees per tick for an aircraft that is
+     * slow and nose-high.
+     *
+     * <p>A real wing at too high an angle of attack stops carrying the aircraft
+     * and the nose falls of its own accord. The derived model has no angle of
+     * attack, so this stands in for it: below the reference airspeed the nose is
+     * eased back toward the horizon in proportion to both how slow the aircraft
+     * is and how steeply it is pointed up. The pilot keeps full authority — this
+     * is a bias on the attitude, not a takeover — but hanging on the propeller
+     * until the aircraft mushes into the ground is no longer possible.
+     *
+     * @param pitchDegrees the simulation pitch, where negative is nose up
+     * @return degrees to add to the pitch, always zero or positive, i.e. never
+     *         raising the nose and never pushing past level
+     */
+    public static float stallRecoveryPitchDegrees(double airspeedMs, double referenceSpeedMs, float pitchDegrees)
+    {
+        if (!finitePositive(referenceSpeedMs) || !Double.isFinite(airspeedMs) || !Float.isFinite(pitchDegrees))
+            return 0F;
+        // Only a nose-up attitude can be eased; a diving aircraft is recovering.
+        if (pitchDegrees >= 0F)
+            return 0F;
+        double onset = referenceSpeedMs * VehiclePhysicsConstants.STALL_RECOVERY_ONSET_FRACTION;
+        if (onset <= 0D)
+            return 0F;
+        double deficit = (onset - Math.max(0D, Math.abs(airspeedMs))) / onset;
+        if (deficit <= 0D)
+            return 0F;
+        double steepness = Math.min(1D, -pitchDegrees / VehiclePhysicsConstants.STALL_RECOVERY_FULL_PITCH_DEG);
+        double correction = VehiclePhysicsConstants.STALL_RECOVERY_MAX_DEG_PER_TICK
+            * Math.min(1D, deficit) * steepness;
+        // Never push the nose below the horizon in a single correction.
+        return (float) Math.min(correction, -pitchDegrees);
+    }
+
+    /**
+     * Deceleration in m/s² from the undercarriage while the aircraft is rolling
+     * on its wheels, on top of whatever aerodynamic drag it already has.
+     *
+     * <p>Rolling resistance is always present; wheel braking is added once the
+     * throttle is closed, which is what a pilot does on the landing roll. Neither
+     * is expressible in the authored real-world data.
+     *
+     * @param throttleDemand the fraction of available thrust the lever is calling for
+     */
+    public static double groundDecelerationMs2(double throttleDemand)
+    {
+        double demand = Double.isFinite(throttleDemand) ? Math.max(0D, throttleDemand) : 0D;
+        double deceleration = VehiclePhysicsConstants.GROUND_ROLLING_DECELERATION_MS2;
+        if (demand <= VehiclePhysicsConstants.IDLE_THROTTLE_FRACTION)
+            deceleration += VehiclePhysicsConstants.GROUND_BRAKING_DECELERATION_MS2;
+        return deceleration;
+    }
+
     private static boolean finitePositive(double value)
     {
         return Double.isFinite(value) && value > 0D;

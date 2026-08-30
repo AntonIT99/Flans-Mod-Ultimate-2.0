@@ -3,8 +3,9 @@ package com.flansmodultimate.common.driveables.physics;
 /**
  * Internal tuning constants for the real-world physics path.
  *
- * <p>These are deliberately not exposed in the TOML config. The only user facing
- * primary speed knob is {@code realisticVehicleSpeedScale}; the separate aircraft
+ * <p>These are deliberately not exposed in the TOML config. The user facing
+ * primary speed knobs are {@code realisticPlaneSpeedScale} and
+ * {@code realisticGroundVehicleSpeedScale}; the separate aircraft
  * reference-speed scale controls runway and low-speed behaviour. Everything here
  * is a shape constant that only makes sense to change alongside the formulas that
  * use it. Keeping them in one class stops magic numbers reappearing inside the

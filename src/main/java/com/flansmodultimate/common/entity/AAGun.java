@@ -55,6 +55,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<AAGunType>
 {
+    private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 128;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
 
@@ -471,7 +472,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             Level level = level();
             AAGunType type = getConfigType();
 
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
+            if (!suppressRemovalDrops && !level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
             {
                 if (type.isDropThis())
                     spawnAtLocation(ModUtils.getItemStack(type).orElse(ItemStack.EMPTY), 0F);
@@ -488,6 +489,13 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         }
 
         super.remove(reason);
+    }
+
+    /** Removes this gun for an administrative cleanup without creating item drops. */
+    public void discardWithoutDrops()
+    {
+        suppressRemovalDrops = true;
+        discard();
     }
 
     @Override

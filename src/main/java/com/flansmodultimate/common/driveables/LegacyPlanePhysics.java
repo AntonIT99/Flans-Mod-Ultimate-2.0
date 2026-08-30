@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
+
 import net.minecraft.util.Mth;
 
 /** Pure 1.7.10 aircraft control calculations used by the authoritative plane simulation. */
@@ -80,6 +82,11 @@ public final class LegacyPlanePhysics
      * breakpoints assumed a two blocks-per-tick top speed and drop authority to
      * zero above three, which is what made fast aircraft uncontrollable.
      *
+     * <p>The three axes are also scaled separately. The legacy model used one
+     * sensitivity for all of them, which left a fighter rolling at about twenty
+     * degrees per second; a real aircraft rolls fastest, pitches more slowly and
+     * yaws slowest, because the rudder is the smallest surface.
+     *
      * <p>The legacy method is left exactly as it was; legacy aircraft never
      * reach this one.
      */
@@ -89,9 +96,12 @@ public final class LegacyPlanePhysics
     {
         float sensitivity = Mth.clamp(finite(authority), 0F, 1F) * 0.125F;
         return new ControlRates(
-            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * sensitivity,
-            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity,
-            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity);
+            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight))
+                * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE,
+            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown))
+                * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
+            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight))
+                * sensitivity * VehiclePhysicsConstants.DERIVED_ROLL_AUTHORITY_SCALE);
     }
 
     public static float approachMomentum(float current, float target)

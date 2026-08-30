@@ -49,7 +49,7 @@ public final class DriveablePhysicsTooltip
         if (resolved == null)
             return;
 
-        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double speedScale = ModCommonConfig.realisticSpeedScale(resolved.category());
         double aircraftReferenceSpeedScale = ModCommonConfig.realisticAircraftReferenceSpeedScale();
 
         tooltip.add(Component.empty());

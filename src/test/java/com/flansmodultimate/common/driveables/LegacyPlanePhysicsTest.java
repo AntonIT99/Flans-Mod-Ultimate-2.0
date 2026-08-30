@@ -79,4 +79,35 @@ class LegacyPlanePhysicsTest
         assertEquals(LegacyPlanePhysics.rotorStep(1F) * 0.5F, LegacyPlanePhysics.rotorStep(0.5F), 1.0E-3F);
         assertEquals(-LegacyPlanePhysics.rotorStep(0.5F), LegacyPlanePhysics.rotorStep(-0.5F), EPSILON);
     }
+
+    @Test
+    void theDerivedControlRatesRollFasterThanTheyPitchOrYaw()
+    {
+        // Full stick deflection on all three axes, at full authority, with the
+        // default pack modifiers of one.
+        float deflection = LegacyPlanePhysics.MAX_FLAP_ANGLE;
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.derivedControlRates(
+            1F, deflection, deflection, deflection, 1F, 1F, 1F, 1F, 1F, 1F);
+        assertTrue(rates.roll() > rates.pitch(), "a real aircraft rolls faster than it pitches");
+        assertTrue(rates.pitch() > rates.yaw(), "and yaws slowest of all, on the smallest surface");
+        // Five degrees per tick is 100 degrees per second, which is where a
+        // wartime fighter actually sits; the unscaled model gave half of it.
+        assertEquals(5F, rates.roll(), 1.0E-4F);
+    }
+
+    @Test
+    void derivedControlAuthorityStillScalesTheWholeSetLinearly()
+    {
+        float deflection = LegacyPlanePhysics.MAX_FLAP_ANGLE;
+        LegacyPlanePhysics.ControlRates full = LegacyPlanePhysics.derivedControlRates(
+            1F, deflection, deflection, deflection, 1F, 1F, 1F, 1F, 1F, 1F);
+        LegacyPlanePhysics.ControlRates half = LegacyPlanePhysics.derivedControlRates(
+            0.5F, deflection, deflection, deflection, 1F, 1F, 1F, 1F, 1F, 1F);
+        assertEquals(full.roll() * 0.5F, half.roll(), 1.0E-5F);
+        assertEquals(full.pitch() * 0.5F, half.pitch(), 1.0E-5F);
+        assertEquals(full.yaw() * 0.5F, half.yaw(), 1.0E-5F);
+        LegacyPlanePhysics.ControlRates none = LegacyPlanePhysics.derivedControlRates(
+            0F, deflection, deflection, deflection, 1F, 1F, 1F, 1F, 1F, 1F);
+        assertEquals(0F, none.roll(), 1.0E-6F);
+    }
 }

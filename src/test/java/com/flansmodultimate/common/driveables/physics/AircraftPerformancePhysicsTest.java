@@ -245,4 +245,51 @@ class AircraftPerformancePhysicsTest
         assertEquals(reference,
             AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, 12_000D, 3D, TERMINAL_MS, reference), 1.0E-6D);
     }
+
+    @Test
+    void aSlowNoseHighAircraftLowersItsOwnNose()
+    {
+        double reference = 40D;
+        // Nose up and well below the reference speed: the nose comes down.
+        float correction = AircraftPerformancePhysics.stallRecoveryPitchDegrees(10D, reference, -40F);
+        assertTrue(correction > 0F, "simulation pitch is negative nose-up, so a correction is positive");
+        assertEquals(VehiclePhysicsConstants.STALL_RECOVERY_MAX_DEG_PER_TICK,
+            AircraftPerformancePhysics.stallRecoveryPitchDegrees(0D, reference, -40F), 1.0E-6F,
+            "stopped and very steep is the full correction");
+        // Shallower, or faster, is a proportionally gentler correction.
+        assertTrue(AircraftPerformancePhysics.stallRecoveryPitchDegrees(10D, reference, -10F) < correction);
+        assertTrue(AircraftPerformancePhysics.stallRecoveryPitchDegrees(30D, reference, -40F) < correction);
+    }
+
+    @Test
+    void theNoseIsNeverPushedDownWhenTheWingIsFlying()
+    {
+        double reference = 40D;
+        assertEquals(0F, AircraftPerformancePhysics.stallRecoveryPitchDegrees(60D, reference, -40F), 1.0E-6F,
+            "above the reference speed the wing is carrying the aircraft");
+        assertEquals(0F, AircraftPerformancePhysics.stallRecoveryPitchDegrees(5D, reference, 30F), 1.0E-6F,
+            "an aircraft already pointed down is recovering by itself");
+        assertEquals(0F, AircraftPerformancePhysics.stallRecoveryPitchDegrees(5D, 0D, -40F), 1.0E-6F,
+            "no reference speed means no correction");
+    }
+
+    @Test
+    void theStallCorrectionNeverPushesPastLevel()
+    {
+        // A nose barely above the horizon may only be brought to it, never past.
+        float correction = AircraftPerformancePhysics.stallRecoveryPitchDegrees(0D, 40D, -0.5F);
+        assertTrue(correction <= 0.5F, "the correction stops at level flight");
+    }
+
+    @Test
+    void wheelsBrakeTheAircraftOnlyWhenTheThrottleIsClosed()
+    {
+        double closed = AircraftPerformancePhysics.groundDecelerationMs2(0D);
+        double open = AircraftPerformancePhysics.groundDecelerationMs2(0.8D);
+        assertEquals(VehiclePhysicsConstants.GROUND_ROLLING_DECELERATION_MS2, open, 1.0E-9D,
+            "under power only rolling resistance applies");
+        assertEquals(VehiclePhysicsConstants.GROUND_ROLLING_DECELERATION_MS2
+            + VehiclePhysicsConstants.GROUND_BRAKING_DECELERATION_MS2, closed, 1.0E-9D);
+        assertTrue(closed > open, "closing the throttle on the roll-out brakes the aircraft");
+    }
 }

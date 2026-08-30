@@ -26,6 +26,7 @@ import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResol
 import com.flansmodultimate.common.driveables.physics.MarineDraftPhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -2831,16 +2832,33 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (isInvulnerableTo(source) || destroyed)
             return false;
-        Entity attacker = source.getEntity();
-        if (attacker instanceof Player player && getControllingEntity() == null && onGround()
-            && canPlayerAccess(player)
-            && (player.getAbilities().instabuild || FlansMod.teamsManager.isSurvivalCanBreakVehicles()))
-        {
-            if (!level().isClientSide)
-                pickupAsItem(player);
+        if (tryPickupOnAttack(source))
             return true;
-        }
         return damagePart(EnumDriveablePart.CORE, amount, source);
+    }
+
+    /**
+     * Picks the driveable up as an item when an eligible player strikes a parked
+     * one, and reports whether it did.
+     *
+     * <p>Seats and wheels are separate collision entities that forward damage
+     * straight to a part, so a click that lands on one of them used to skip this
+     * entirely. On a ground vehicle the hull is usually what gets hit; on an
+     * aircraft the seat and undercarriage proxies cover most of what a player
+     * can reach, which is why planes could not be picked up at all. Both proxies
+     * now offer the pickup first, exactly as the hull does.
+     */
+    protected boolean tryPickupOnAttack(@Nullable DamageSource source)
+    {
+        if (source == null || destroyed || getControllingEntity() != null || !isSupportedByGround())
+            return false;
+        if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
+            return false;
+        if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
+            return false;
+        if (!level().isClientSide)
+            pickupAsItem(player);
+        return true;
     }
 
     public Optional<EnumDriveablePart> findNearestPart(@NotNull Vec3 worldPoint)
@@ -3457,6 +3475,21 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return new Vec3(worldDirection.dot(getForwardVector()), worldDirection.dot(getUpVector()), worldDirection.dot(getRightVector()));
     }
 
+    /**
+     * Applies the operator's absolute speed ceiling, in km/h, to a velocity.
+     *
+     * <p>Unlike the movement clamp below this is a real speed limit rather than
+     * an integration guard: it is per-vehicle-class, configurable, and scales
+     * the whole vector so the direction of travel is preserved. It is inert
+     * while the driveable is slower than the configured ceiling, which at the
+     * default of 10000 km/h means always.
+     */
+    protected static Vec3 enforceSpeedCap(@NotNull Vec3 velocity, double capKmh)
+    {
+        double scale = VehiclePhysicsUnits.speedCapScale(velocity.length(), capKmh);
+        return scale >= 1D ? velocity : velocity.scale(scale);
+    }
+
     protected void moveWithCollisions(Vec3 velocity)
     {
         if (!Double.isFinite(velocity.x) || !Double.isFinite(velocity.y) || !Double.isFinite(velocity.z))
@@ -3565,8 +3598,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // The historical 1.5 block look-ahead is correct only up to about
         // 108 km/h. A type on the real-world profile probes as far as it can
         // actually travel in a tick; legacy types keep the historical value.
-        double predictionCap = configType.getResolvedPhysics()
-            .wheelPredictionBlocks(ModCommonConfig.realisticVehicleSpeedScale());
+        ResolvedVehiclePhysics resolvedPhysics = configType.getResolvedPhysics();
+        double predictionCap = resolvedPhysics.wheelPredictionBlocks(
+            ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()));
         Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
         double predictionLength = horizontalPrediction.length();
         if (predictionLength > predictionCap)
@@ -3661,6 +3695,24 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected boolean hasWheelContact()
     {
         return groundedWheelCount > 0;
+    }
+
+    /** Forgets the last wheel contact sample, for a tick that does not take one. */
+    protected void clearWheelContact()
+    {
+        groundedWheelCount = 0;
+    }
+
+    /**
+     * Whether the driveable is resting on the world at all.
+     *
+     * <p>Vanilla's {@code onGround} is only true when the collision body itself
+     * lands, which a driveable held clear of the terrain by its own suspension
+     * never does. Anything asking "is this thing on the ground" wants both.
+     */
+    public boolean isSupportedByGround()
+    {
+        return onGround() || hasWheelContact();
     }
 
     protected boolean isNearGround(int distance)

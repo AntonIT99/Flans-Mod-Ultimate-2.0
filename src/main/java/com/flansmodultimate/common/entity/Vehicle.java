@@ -102,7 +102,7 @@ public class Vehicle extends Driveable
         if (!isEngineActive())
             effectiveThrottle = 0F;
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
-        double speedScale = ModCommonConfig.realisticVehicleSpeedScale();
+        double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
         float normalizedThrottle = DriveableControlPhysics.normalizedThrottle(effectiveThrottle,
             type.getMaxNegativeThrottle());
         double targetSpeed;
@@ -177,6 +177,7 @@ public class Vehicle extends Driveable
         double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(
             physics.hasGroundPropulsion(), type.getDrag());
         velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
+        velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
         moveWithCollisions(velocity);
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
         {
