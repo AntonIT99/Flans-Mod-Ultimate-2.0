@@ -24,6 +24,69 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
+    void theDefaultThrottleResponseMetersEnginePowerDirectly()
+    {
+        // Exponent one is the physical value: the lever is linear in power, so
+        // half throttle really is half of the rated output.
+        assertEquals(0.5D, AircraftPerformancePhysics.throttleThrustFactor(0.5D, 1D), 1.0E-9D);
+        assertEquals(0.1D, AircraftPerformancePhysics.throttleThrustFactor(0.1D, 1D), 1.0E-9D);
+        assertEquals(1D, AircraftPerformancePhysics.throttleThrustFactor(1D, 1D), 1.0E-9D);
+    }
+
+    @Test
+    void anExponentOfThreeTradesPowerRealismForASpeedLinearLever()
+    {
+        // Half throttle then produces only an eighth of rated power, which is
+        // what makes the resulting top-speed fraction come out linear.
+        assertEquals(0.125D, AircraftPerformancePhysics.throttleThrustFactor(0.5D, 3D), 1.0E-9D);
+        assertEquals(0.001D, AircraftPerformancePhysics.throttleThrustFactor(0.1D, 3D), 1.0E-9D);
+        assertEquals(1D, AircraftPerformancePhysics.throttleThrustFactor(1D, 3D), 1.0E-9D);
+    }
+
+    @Test
+    void equilibriumSpeedFollowsTheCubeRootOfTheThrottleFactor()
+    {
+        // Thrust balances drag at v = Vmax * cbrt(throttle^n). At n = 1 that is
+        // the cube-root curve real aircraft follow; at n = 3 it collapses to a
+        // straight line, which is the whole point of the arcade preset.
+        for (double throttle : new double[] {0.1D, 0.25D, 0.5D, 0.75D})
+        {
+            assertEquals(Math.cbrt(throttle), equilibriumSpeedFraction(throttle, 1D), 1.0E-3D);
+            assertEquals(throttle, equilibriumSpeedFraction(throttle, 3D), 1.0E-3D);
+        }
+        assertEquals(1D, equilibriumSpeedFraction(1D, 1D), 1.0E-3D);
+        assertEquals(1D, equilibriumSpeedFraction(1D, 3D), 1.0E-3D);
+    }
+
+    /** Integrates a propeller aircraft to its steady speed, as a fraction of terminal speed. */
+    private static double equilibriumSpeedFraction(double throttle, double responseExponent)
+    {
+        double referenceThrust = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        double factor = AircraftPerformancePhysics.throttleThrustFactor(throttle, responseExponent);
+        double speed = 0.001D;
+        for (int tick = 0; tick < 200_000; tick++)
+        {
+            double thrust = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, speed, TERMINAL_MS) * factor;
+            double acceleration = AircraftPerformancePhysics.accelerationMs2(thrust, MASS_KG, speed,
+                TERMINAL_MS, referenceThrust);
+            speed = Math.max(0D, Math.min(TERMINAL_MS, speed + acceleration / 20D));
+        }
+        return speed / TERMINAL_MS;
+    }
+
+    @Test
+    void degenerateThrottleResponsesFallBackToTheLinearPowerLever()
+    {
+        assertEquals(0.4D, AircraftPerformancePhysics.throttleThrustFactor(0.4D, 0D), 1.0E-9D);
+        assertEquals(0.4D, AircraftPerformancePhysics.throttleThrustFactor(0.4D, -2D), 1.0E-9D);
+        assertEquals(0.4D, AircraftPerformancePhysics.throttleThrustFactor(0.4D, Double.NaN), 1.0E-9D);
+        // A wound-up lever never asks for more than full thrust.
+        assertEquals(1D, AircraftPerformancePhysics.throttleThrustFactor(1.5D, 1D), 1.0E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.throttleThrustFactor(-0.5D, 1D), 1.0E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.throttleThrustFactor(Double.NaN, 1D), 1.0E-9D);
+    }
+
+    @Test
     void propellerThrustFallsWithAirspeed()
     {
         double slow = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, 40D, TERMINAL_MS);

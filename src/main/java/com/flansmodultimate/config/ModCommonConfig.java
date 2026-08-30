@@ -22,30 +22,34 @@ import java.util.concurrent.atomic.AtomicReference;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonConfig
 {
-    public static final int DEFAULT_BULLET_TRACKING_RANGE = 128;
-    public static final int DEFAULT_GRENADE_TRACKING_RANGE = 64;
-    public static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
-    public static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
+    public static final ForgeConfigSpec configSpec;
+
+    private static final int DEFAULT_BULLET_TRACKING_RANGE = 128;
+    private static final int DEFAULT_GRENADE_TRACKING_RANGE = 64;
+    private static final int DEFAULT_DEPLOYED_GUN_TRACKING_RANGE = 64;
+    private static final int DEFAULT_AA_GUN_TRACKING_RANGE = 128;
 
     /** Real-world vehicle speeds run at their true value unless an operator scales them down. */
-    public static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    private static final double DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
-    public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.5D;
-    public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
-    public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
-    public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
-    public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
-    public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
+    private static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
+    /** A throttle lever meters engine power, so the physical exponent is one. */
+    private static final double DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 3.0D;
+    private static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
+    private static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
+    private static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
+    private static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
+    private static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     private static final double MIN_REALISTIC_VEHICLE_SPEED_SCALE = 0.05D;
-    private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 10.0D;
-    private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.1D;
-    private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 2.0D;
+    private static final double MAX_REALISTIC_VEHICLE_SPEED_SCALE = 1.0D;
+    private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
+    private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
+    private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
+    private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
 
     private static final int MIN_ENTITY_TRACKING_RANGE = 1;
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
-
-    public static final ForgeConfigSpec configSpec;
 
     private static final ForgeConfigSpec.BooleanValue ADD_ALL_PAINTJOBS_TO_CREATIVE;
     private static final ForgeConfigSpec.BooleanValue VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
@@ -125,6 +129,7 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
+    private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_HEALTH_SCALE;
     private static final ForgeConfigSpec.DoubleValue PENETRATION_VELOCITY_EXPONENT;
     private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
@@ -178,7 +183,7 @@ public final class ModCommonConfig
             .defineInRange("bonusRegenFoodLimit", 18, 0, 20);
         builder.pop();
 
-        builder.push("Entity Tracking Settings");
+        builder.push(ENTITY_TRACKING_CONFIG_SECTION);
         BULLET_TRACKING_RANGE = builder
             .comment("Server-side tracking range in blocks for bullets. Requires restart because entity types are registered during startup.")
             .defineInRange("bulletTrackingRange", DEFAULT_BULLET_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
@@ -381,8 +386,10 @@ public final class ModCommonConfig
                 "1.0 runs vehicles at their full real-world speed; 0.5 runs them at half speed.",
                 "Only speeds are scaled. Mass, engine power, thrust, wing area, slope and draft are never scaled.",
                 "Vehicles that declare no real-world parameters are unaffected.")
-            .defineInRange("realisticVehicleSpeedScale", DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE,
-                MIN_REALISTIC_VEHICLE_SPEED_SCALE, MAX_REALISTIC_VEHICLE_SPEED_SCALE);
+            .defineInRange("realisticVehicleSpeedScale",
+                DEFAULT_REALISTIC_VEHICLE_SPEED_SCALE,
+                MIN_REALISTIC_VEHICLE_SPEED_SCALE,
+                MAX_REALISTIC_VEHICLE_SPEED_SCALE);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder
             .comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
                 "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
@@ -392,6 +399,20 @@ public final class ModCommonConfig
                 DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE,
                 MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE,
                 MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE);
+        REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = builder
+            .comment("Exponent applied to the throttle lever before it scales real-world fixed-wing thrust.",
+                "Thrust is multiplied by throttle^n, so this changes how the lever maps onto power and speed.",
+                "1.0 is the physically realistic value and the default: the lever meters engine power directly,",
+                "so half throttle really is half power. Because level-flight drag power rises with the cube of",
+                "speed, half power still gives about 79% of top speed, which is how real aircraft behave.",
+                "3.0 instead makes the lever linear in SPEED (half throttle = half top speed), which reads more",
+                "naturally on a HUD but is not physical: half throttle then produces only an eighth of rated power.",
+                "2.0 sits between the two. Values below 1.0 make the aircraft reach high speed even sooner.",
+                "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
+            .defineInRange("realisticAircraftThrottleResponse",
+                DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE,
+                MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE,
+                MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE);
         builder.pop();
 
         builder.push("Vehicle Damage Settings");
@@ -507,6 +528,7 @@ public final class ModCommonConfig
 
             REALISTIC_VEHICLE_SPEED_SCALE.get(),
             REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE.get(),
+            REALISTIC_AIRCRAFT_THROTTLE_RESPONSE.get(),
             REALISTIC_VEHICLE_HEALTH_SCALE.get(),
             PENETRATION_VELOCITY_EXPONENT.get(),
             MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
@@ -540,6 +562,13 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE
             : config.realisticAircraftReferenceSpeedScale();
+    }
+
+    public static double realisticAircraftThrottleResponse()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE
+            : config.realisticAircraftThrottleResponse();
     }
 
     public static double realisticVehicleHealthScale()

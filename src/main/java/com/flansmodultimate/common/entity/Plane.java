@@ -395,8 +395,12 @@ public class Plane extends Driveable
         double thrustKn = physics.effectiveThrustKn(engineModifier);
         double propellerFraction = intactPropellerFraction(type.getPropellers());
         double referenceThrust = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, terminalMs, terminalMs);
+        // The lever meters power at the default exponent of one; the config can
+        // bend it toward a speed-linear response instead.
+        double throttleDemand = AircraftPerformancePhysics.throttleThrustFactor(throttle,
+            ModCommonConfig.realisticAircraftThrottleResponse());
         double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
-            * throttle * propellerFraction;
+            * throttleDemand * propellerFraction;
 
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
             airspeedMs, terminalMs, referenceThrust);

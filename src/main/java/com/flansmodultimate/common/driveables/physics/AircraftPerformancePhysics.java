@@ -20,6 +20,33 @@ public final class AircraftPerformancePhysics
     private AircraftPerformancePhysics() {}
 
     /**
+     * The fraction of available thrust the throttle lever is calling for.
+     *
+     * <p>The exponent decides what the lever actually meters. At the default of
+     * one it meters engine power directly, which is what a real throttle does:
+     * half throttle is half power. Because level-flight drag power rises with
+     * the cube of airspeed, that still yields roughly 79% of top speed, which is
+     * why an aircraft cruises fast on a modest power setting.
+     *
+     * <p>Raising the exponent trades that realism for a tidier readout. At three
+     * the lever becomes linear in speed instead — half throttle gives half of top
+     * speed — but the engine is then only producing an eighth of its rated power
+     * at that setting, which is not physical.
+     *
+     * @param throttle          driver demand, clamped into {@code [0, 1]}
+     * @param responseExponent  the configured exponent; one is the physical value
+     */
+    public static double throttleThrustFactor(double throttle, double responseExponent)
+    {
+        if (!Double.isFinite(throttle) || throttle <= 0D)
+            return 0D;
+        double demand = Math.min(1D, throttle);
+        if (!Double.isFinite(responseExponent) || responseExponent <= 0D || responseExponent == 1D)
+            return demand;
+        return Math.pow(demand, responseExponent);
+    }
+
+    /**
      * Thrust in newtons at the given airspeed.
      *
      * <p>Jet thrust is airspeed independent. Shaft power becomes thrust through
