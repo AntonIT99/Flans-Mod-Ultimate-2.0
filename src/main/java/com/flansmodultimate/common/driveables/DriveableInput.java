@@ -33,10 +33,15 @@ public final class DriveableInput
     public static final int BRAKE = 1 << 17;
     /** Client camera/controller scheme toggle. Synced for compatibility only. */
     public static final int CONTROL_MODE = 1 << 18;
+    /** Persistent ground-vehicle throttle lever, independent of the forward pedal. */
+    public static final int THROTTLE_INCREASE = 1 << 19;
+    /** Persistent ground-vehicle throttle lever, independent of the reverse pedal. */
+    public static final int THROTTLE_DECREASE = 1 << 20;
 
-    public static final int VALID_MASK = (1 << 19) - 1;
+    public static final int VALID_MASK = (1 << 21) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
-        | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE;
+        | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
+        | THROTTLE_INCREASE | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     public static int sanitize(int mask)

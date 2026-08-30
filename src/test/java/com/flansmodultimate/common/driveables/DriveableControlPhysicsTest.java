@@ -2,7 +2,7 @@ package com.flansmodultimate.common.driveables;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DriveableControlPhysicsTest
 {
@@ -61,5 +61,17 @@ class DriveableControlPhysicsTest
     {
         assertEquals(8F, DriveableControlPhysics.vehicleFuelLoad(1F, 4), EPSILON);
         assertEquals(3.6F, DriveableControlPhysics.aircraftFuelLoad(1F, 8F, 1F), EPSILON);
+    }
+
+    @Test
+    void vehicleThrottleLeverLatchesUntilAPedalTakesControlBack()
+    {
+        boolean fixed = DriveableControlPhysics.fixedVehicleThrottle(false, true, false,
+            DriveableInput.THROTTLE_INCREASE);
+        assertTrue(fixed);
+        assertTrue(DriveableControlPhysics.fixedVehicleThrottle(fixed, true, false, 0));
+        assertFalse(DriveableControlPhysics.fixedVehicleThrottle(fixed, true, false, DriveableInput.FORWARD));
+        assertFalse(DriveableControlPhysics.fixedVehicleThrottle(fixed, true, true, 0));
+        assertFalse(DriveableControlPhysics.fixedVehicleThrottle(fixed, false, false, 0));
     }
 }

@@ -2,6 +2,7 @@ package com.flansmodultimate.client.input;
 
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Vehicle;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +51,16 @@ public enum EnumKeyConflictContext implements IKeyConflictContext
             Driveable driveable = getRiddenDriveable();
             return driveable != null && !(driveable instanceof Plane);
         }
+    },
+
+    /** Live only in a ground vehicle, not in a plane or mecha. */
+    VEHICLE
+    {
+        @Override
+        public boolean isActive()
+        {
+            return getRiddenDriveable() instanceof Vehicle;
+        }
     };
 
     /**
@@ -67,8 +78,13 @@ public enum EnumKeyConflictContext implements IKeyConflictContext
     {
         if (other == KeyConflictContext.IN_GAME || other == this)
             return true;
-        // DRIVEABLE covers the other two, so it overlaps both.
-        return this == DRIVEABLE ? other instanceof EnumKeyConflictContext : other == DRIVEABLE;
+        if (!(other instanceof EnumKeyConflictContext context))
+            return false;
+        // DRIVEABLE covers every specialized context. VEHICLE is a subset of
+        // GROUND_DRIVEABLE, while neither can ever overlap PLANE.
+        return this == DRIVEABLE || context == DRIVEABLE
+            || this == GROUND_DRIVEABLE && context == VEHICLE
+            || this == VEHICLE && context == GROUND_DRIVEABLE;
     }
 
     @Nullable

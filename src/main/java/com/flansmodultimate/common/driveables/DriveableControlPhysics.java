@@ -61,6 +61,19 @@ public final class DriveableControlPhysics
         return 0.1F + 0.9F * (float) Math.sqrt(damagedThrottleLimit(damageNerf));
     }
 
+    /**
+     * Updates the ground-vehicle throttle lever mode. W/S are momentary pedals
+     * and always take control back; Q/E select and retain a fixed throttle.
+     */
+    public static boolean fixedVehicleThrottle(boolean fixed, boolean canControl, boolean braking, int input)
+    {
+        if (!canControl || braking || DriveableInput.isDown(input, DriveableInput.FORWARD | DriveableInput.BACKWARD))
+            return false;
+        if (DriveableInput.isDown(input, DriveableInput.THROTTLE_INCREASE | DriveableInput.THROTTLE_DECREASE))
+            return true;
+        return fixed;
+    }
+
     /** Load for the legacy per-wheel vehicle fuel burn used by Driveable.consumeFuel. */
     public static float vehicleFuelLoad(float throttle, int wheelCount)
     {

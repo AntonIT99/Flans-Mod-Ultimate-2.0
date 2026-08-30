@@ -46,6 +46,7 @@ public class Vehicle extends Driveable
     @Getter protected float leftTrackProgress;
     @Getter protected float rightTrackProgress;
     private int throttleDecayDelay;
+    private boolean fixedThrottle;
     private final List<PendingSmoke> pendingSmoke = new ArrayList<>();
 
     public Vehicle(EntityType<?> entityType, Level level)
@@ -240,7 +241,11 @@ public class Vehicle extends Driveable
     {
         int input = getInputMask();
         float throttle = getThrottle();
-        if (getControllingEntity() != null && hasFuelForEngine())
+        boolean canControl = getControllingEntity() != null && hasFuelForEngine();
+        boolean braking = DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND);
+        boolean pedalInput = DriveableInput.isDown(input, DriveableInput.FORWARD | DriveableInput.BACKWARD);
+        fixedThrottle = DriveableControlPhysics.fixedVehicleThrottle(fixedThrottle, canControl, braking, input);
+        if (canControl)
         {
             float damageMultiplier = DriveableControlPhysics.damagedAccelerationMultiplier(getThrottleDamageNerf());
             // Precedence: a complete real-world profile beats the legacy
@@ -266,14 +271,20 @@ public class Vehicle extends Driveable
                 throttle -= acceleration * (throttle > 0F ? type.getBrakingModifier() : 1F);
                 throttleDecayDelay = 10;
             }
+            // The lever changes at the same authored rate as the pedals, but
+            // unlike them it retains the selected demand after release.
+            if (!pedalInput && DriveableInput.isDown(input, DriveableInput.THROTTLE_INCREASE))
+                throttle += acceleration * (throttle < 0F ? type.getBrakingModifier() : 1F);
+            if (!pedalInput && DriveableInput.isDown(input, DriveableInput.THROTTLE_DECREASE))
+                throttle -= acceleration * (throttle > 0F ? type.getBrakingModifier() : 1F);
         }
-        if (DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND))
+        if (braking)
             throttle = 0F;
         else if (type.isTank() && Math.abs(throttle) < 0.3F && Math.abs(axis(input, DriveableInput.RIGHT, DriveableInput.LEFT)) > 0F)
             throttle += Math.max(0F, type.getClutchBrake());
         else if (throttleDecayDelay > 0)
             --throttleDecayDelay;
-        else
+        else if (!fixedThrottle)
             throttle = approach(throttle, 0F, type.getThrottleDecay());
         float damageLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         if (Math.abs(throttle) > damageLimit)
