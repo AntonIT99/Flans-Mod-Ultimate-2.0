@@ -7,6 +7,7 @@ import com.flansmodultimate.network.client.PacketBlockHitEffect;
 import com.flansmodultimate.network.client.PacketBulletTrail;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
@@ -105,6 +106,7 @@ public final class PacketHandler {
         registerS2C(PacketBulletTrail.class);
         registerS2C(PacketCancelGunReloadClient.class);
         registerS2C(PacketCancelSound.class);
+        registerS2C(PacketDriveableCrashFireball.class);
         registerS2C(PacketDriveableDamage.class);
         registerS2C(PacketDriveableRenderState.class);
         registerS2C(PacketExplodeParticles.class);

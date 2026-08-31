@@ -2,6 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableCrashExplosion;
+import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -17,6 +19,8 @@ import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +43,8 @@ public class Plane extends Driveable
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(
         LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
     private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
+    /** How far away the crash fireball is worth rendering, in blocks. */
+    private static final double CRASH_FIREBALL_VIEW_RANGE = 256D;
     /** Legacy gear toggle required clear air three blocks below the plane. */
     private static final int GEAR_TOGGLE_CLEARANCE = 3;
     /** Legacy landing automation scanned ten blocks below the plane. */
@@ -753,7 +759,42 @@ public class Plane extends Driveable
         damageCrashPart(struckPart(), loss);
         damageCrashPart(EnumDriveablePart.CORE, loss * 0.5F);
         if (impact.catastrophic())
+        {
+            explodeOnCrash(type, impact.severity());
             writeOffAirframe();
+        }
+    }
+
+    /**
+     * Spawns the fireball a written off airframe leaves behind, sized by what
+     * was left in the tank.
+     *
+     * <p>No official pack sets {@code IsExplosionWhenDestroyed}, so without this
+     * a plane driven into the ground at speed simply vanishes. A type that does
+     * configure its own death explosion is left alone: {@link #destroyDriveable}
+     * fires that one a moment later and its author's numbers should win.
+     */
+    private void explodeOnCrash(@NotNull PlaneType type, float severity)
+    {
+        if (type.isExplosionWhenDestroyed() && type.getDeathExplosionRadius() > 0F)
+            return;
+        DriveableCrashExplosion.Blast blast = DriveableCrashExplosion.evaluate(
+            type.getDeathExplosionRadius(), severity, fuelFraction(type));
+        if (!blast.happens())
+            return;
+        createExplosion(new DriveableExplosion(Math.max(type.getDeathFireRadius(), blast.fireRadius()),
+            blast.radius(), type.isDeathExplosionBreaksBlocks()), position());
+        // Sent on top of the blast's own visuals, which are sized by the radius
+        // that does harm and so always look far too small for an aircraft.
+        PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), blast.visualRadius()),
+            position(), CRASH_FIREBALL_VIEW_RANGE, level().dimension());
+    }
+
+    /** How full the tank was, where a type that carries no tank always has something to burn. */
+    private float fuelFraction(@NotNull PlaneType type)
+    {
+        float capacity = type.getFuelTankSize();
+        return capacity <= 0F ? 1F : Mth.clamp(getFuel() / capacity, 0F, 1F);
     }
 
     /** The part that met the ground first, from the attitude at impact. */
