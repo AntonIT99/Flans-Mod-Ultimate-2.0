@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
+import com.flansmodultimate.common.driveables.DriveableImpactDamage;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
@@ -3577,6 +3578,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
         setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
+        sweepCollisionPointImpacts(velocity);
         handleCollisionConsequences(velocity);
         if (horizontalCollision)
             setDeltaMovement(getDeltaMovement().multiply(0.2D, 1D, 0.2D));
@@ -3873,33 +3875,76 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 push = getForwardVector();
             entity.push(push.x * 0.2D, Math.min(0.25D, horizontalSpeed * 0.1D), push.z * 0.2D);
         }
-
-        if ((horizontalCollision || verticalCollision) && !configType.getCollisionPoints().isEmpty())
-            handleCollisionPointImpacts(requestedVelocity);
     }
 
-    protected void handleCollisionPointImpacts(@NotNull Vec3 impactVelocity)
+    /**
+     * Traces every configured collision point along the path it actually
+     * travelled this tick and damages whatever struck a block.
+     *
+     * <p>Ported from the legacy {@code checkForCollisions}. A driveable's entity
+     * box is deliberately compact - at most four blocks across, centred on the
+     * core - so a wingtip, a nose or a tail reaches well outside it. Only
+     * sweeping the authored points registers a wing clipping a hillside at all,
+     * and only sweeping them from where they were rather than testing where they
+     * are catches an aircraft fast enough to cross a block in one tick.
+     */
+    protected void sweepCollisionPointImpacts(@NotNull Vec3 impactVelocity)
     {
-        if (configType == null || impactVelocity.lengthSqr() < 0.04D)
+        if (level().isClientSide || destroyed || configType == null || driveableData == null)
             return;
-        double collisionSpeed = Math.max(horizontalCollision ? impactVelocity.horizontalDistance() : 0D,
-            verticalCollision ? Math.max(0D, -impactVelocity.y) : 0D);
-        if (collisionSpeed < 0.2D)
+        double speed = impactVelocity.length();
+        if (speed < DriveableImpactDamage.MIN_IMPACT_SPEED || configType.getCollisionPoints().isEmpty())
             return;
+        // Reach a little past the sweep: the move has already been stopped short
+        // by whatever was struck, leaving the point resting just shy of it.
+        Vec3 overshoot = impactVelocity.normalize().scale(0.2D);
         for (DriveablePosition point : configType.getCollisionPoints())
         {
             if (point == null)
                 continue;
+            DriveablePart part = driveableData.getPart(point.getPart());
+            if (part == null || part.isDestroyed() || part.getMaxHealth() <= 0F)
+                continue;
             Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
-            Vec3 world = localToWorld(local.x, local.y, local.z)
-                .add(impactVelocity.normalize().scale(0.2D));
-            BlockPos blockPos = BlockPos.containing(world);
-            if (level().getBlockState(blockPos).blocksMotion())
+            Vec3 from = previousLocalToWorld(local);
+            // A point that began the tick inside terrain is being dragged, not
+            // driven into it, and must not grind the part away while taxiing.
+            if (level().getBlockState(BlockPos.containing(from)).blocksMotion())
+                continue;
+            Vec3 to = localToWorld(local.x, local.y, local.z).add(overshoot);
+            BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, this));
+            if (hit.getType() != HitResult.Type.BLOCK)
+                continue;
+            BlockPos blockPos = hit.getBlockPos();
+            BlockState state = level().getBlockState(blockPos);
+            float fraction = DriveableImpactDamage.blockStrikeHealthFraction(
+                state.getDestroySpeed(level(), blockPos), speed);
+            if (fraction <= 0F)
+                continue;
+            float damage = part.getMaxHealth() * fraction;
+            // Legacy broke the block only when the part survived the strike; a
+            // part-killing strike instead produced a small impact explosion at
+            // the authored collision point. Configured part/core explosions are
+            // deliberately separate and may make the resulting crash larger.
+            boolean survives = damage < part.getHealth();
+            damagePart(point.getPart(), damage, level().damageSources().flyIntoWall());
+            if (survives)
+                breakCollisionBlock(blockPos, speed);
+            else
             {
-                damagePart(point.getPart(), (float) Math.min(40D, collisionSpeed * 8D), level().damageSources().flyIntoWall());
-                breakCollisionBlock(blockPos, collisionSpeed);
+                Vec3 centre = hit.getLocation();
+                level().explode(this, centre.x, centre.y, centre.z, 1F, false, Level.ExplosionInteraction.NONE);
+                if (destroyed)
+                    return;
             }
         }
+    }
+
+    /** The world position a hull-local point occupied at the start of this tick. */
+    protected Vec3 previousLocalToWorld(@NotNull Vec3 local)
+    {
+        return new Vec3(xo, yo, zo).add(localDirectionToWorld(local, prevYaw, prevPitch, prevRoll));
     }
 
     private void breakCollisionBlock(@NotNull BlockPos pos, double collisionSpeed)

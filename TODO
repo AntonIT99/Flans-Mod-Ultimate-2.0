@@ -4,7 +4,10 @@ General:
 - Implement FMU Style Hitmarkers
 - Investigate armored vehicles resistance to blast damage
 - Update ConfigReference in Wiki
-- Check balance for the blast / frag radius
+
+Game Balance:
+- Check if the kinetic damage of shells is proportional to tanks HPs
+- Check balance for the blast/frag radius/damage
 
 Driveables:
 - See if shooting points on vehicles can be directly inferred from models
@@ -13,9 +16,8 @@ Driveables:
 - Implement special mecha inventory
 - Driveable item rendering in hand has not the same transformations
 - Check propeller speed at standby as well as when moving
-- Plane don't crash when hitting the ground at high speed.
 - Collisions with players
-- y positioning of driveables (Check Tiger I of warfare 44)
+- y positioning of driveables (Check Tiger I of Warfare 44)
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

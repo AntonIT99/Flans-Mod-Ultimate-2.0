@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
@@ -252,7 +253,7 @@ public class Plane extends Driveable
             case SIXDOF -> sixDofPhysics(type);
             case PLANE -> fixedWingPhysics(type);
         };
-        double descent = velocity.y;
+        Vec3 impactVelocity = velocity;
         ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
         boolean derivedAircraft = !ModCommonConfig.forceLegacyPlanePhysics() && resolvedPhysics.hasAircraftProfile();
         double requiredTakeoffSpeed = derivedAircraft
@@ -275,7 +276,7 @@ public class Plane extends Driveable
             // and treating an airborne aircraft as still rolling.
             clearWheelContact();
         moveWithCollisions(velocity);
-        handleGroundImpact(type, descent);
+        handleGroundImpact(type, impactVelocity);
         if (isEngineActive() && hasWorkingPropeller(type))
             consumeFuel(DriveableControlPhysics.aircraftFuelLoad(getThrottle(), configuredThrottlePower(type),
                 getEngineSpeed()));
@@ -715,50 +716,69 @@ public class Plane extends Driveable
             ? LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), keyboard) : keyboard;
     }
 
-    private void handleGroundImpact(@NotNull PlaneType type, double descentVelocity)
+    /**
+     * Applies the legacy crash response to a touchdown or a ground strike.
+     *
+     * <p>Legacy Flan's ran this out of {@code fall()}, attacking the core with
+     * {@code -fallDistance * 50} every tick the aircraft was driven into the
+     * ground until it broke apart. The energy reaching the airframe is
+     * reproduced here as a share of each part's own health, so the outcome no
+     * longer depends on whether a pack authors parts at a few hundred hitpoints
+     * or a few thousand, and a bad enough impact writes the aircraft off outright
+     * instead of merely tearing the nose off a still flyable hull.
+     */
+    private void handleGroundImpact(@NotNull PlaneType type, @NotNull Vec3 impactVelocity)
     {
-        if (crashImpactCooldown > 0 || descentVelocity >= -0.01D
-            || !verticalCollision && !isSupportedByGround())
+        if (crashImpactCooldown > 0 || impactVelocity.y >= -0.01D
+            || !verticalCollision && !horizontalCollision && !isSupportedByGround())
             return;
 
-        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(-descentVelocity,
+        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(impactVelocity.length(), -impactVelocity.y,
             Mth.clamp(getUpVector().y, -1D, 1D), type.getFallDamageFactor());
         if (!impact.damaging())
             return;
 
         crashImpactCooldown = 12;
-        float damage = impact.damage() * (isGearDeployed() ? 1F : 1.35F);
+        // Landing gear is the only structure meant to meet the ground; putting
+        // the same energy through a belly or a wingtip costs more.
+        float loss = impact.healthFraction() * (isGearDeployed() ? 1F : 1.35F);
         if (isGearDeployed())
         {
-            damageCrashPart(EnumDriveablePart.CORE_WHEEL, damage * 0.35F, impact.severity(), 0.2F, false);
-            damageCrashPart(EnumDriveablePart.LEFT_WING_WHEEL, damage * 0.25F, impact.severity(), 0.15F, false);
-            damageCrashPart(EnumDriveablePart.RIGHT_WING_WHEEL, damage * 0.25F, impact.severity(), 0.15F, false);
-            damageCrashPart(EnumDriveablePart.TAIL_WHEEL, damage * 0.2F, impact.severity(), 0.12F, false);
+            damageCrashPart(EnumDriveablePart.CORE_WHEEL, loss * 0.7F);
+            damageCrashPart(EnumDriveablePart.LEFT_WING_WHEEL, loss * 0.5F);
+            damageCrashPart(EnumDriveablePart.RIGHT_WING_WHEEL, loss * 0.5F);
+            damageCrashPart(EnumDriveablePart.TAIL_WHEEL, loss * 0.4F);
         }
 
-        Vec3 forward = flightForwardVector();
-        double roll = getRoll();
-        EnumDriveablePart struckPart;
-        if (Math.abs(roll) >= Math.abs(getPitch()))
-            struckPart = roll >= 0D ? EnumDriveablePart.RIGHT_WING : EnumDriveablePart.LEFT_WING;
-        else
-            struckPart = forward.y < 0D ? EnumDriveablePart.NOSE : EnumDriveablePart.TAIL;
-        damageCrashPart(struckPart, damage * (0.45F + impact.severity() * 0.35F),
-            impact.severity(), 0.3F, true);
-        damageCrashPart(EnumDriveablePart.CORE, damage * 0.25F, impact.severity(), 0.06F, false);
-        handleCollisionPointImpacts(new Vec3(0D, descentVelocity, 0D));
+        damageCrashPart(struckPart(), loss);
+        damageCrashPart(EnumDriveablePart.CORE, loss * 0.5F);
+        if (impact.catastrophic())
+            writeOffAirframe();
     }
 
-    private void damageCrashPart(@NotNull EnumDriveablePart partType, float flatDamage, float severity,
-                                 float healthFraction, boolean breakOnBrutalImpact)
+    /** The part that met the ground first, from the attitude at impact. */
+    private EnumDriveablePart struckPart()
     {
-        var part = driveableData == null ? null : driveableData.getPart(partType);
-        if (part == null || part.isDestroyed())
+        if (Math.abs(getRoll()) >= Math.abs(getPitch()))
+            return getRoll() >= 0D ? EnumDriveablePart.RIGHT_WING : EnumDriveablePart.LEFT_WING;
+        return flightForwardVector().y < 0D ? EnumDriveablePart.NOSE : EnumDriveablePart.TAIL;
+    }
+
+    private void damageCrashPart(@NotNull EnumDriveablePart partType, float healthFraction)
+    {
+        DriveablePart part = driveableData == null ? null : driveableData.getPart(partType);
+        if (part == null || part.isDestroyed() || healthFraction <= 0F || part.getMaxHealth() <= 0F)
             return;
-        float amount = Math.max(flatDamage, part.getMaxHealth() * severity * healthFraction);
-        if (breakOnBrutalImpact && severity >= 0.9F)
-            amount = Math.max(amount, part.getHealth() + 1F);
-        damagePart(partType, amount, level().damageSources().flyIntoWall());
+        damagePart(partType, part.getMaxHealth() * healthFraction, level().damageSources().flyIntoWall());
+    }
+
+    /** Destroys the core, which takes the whole aircraft with it. */
+    private void writeOffAirframe()
+    {
+        DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
+        if (core == null || core.isDestroyed())
+            return;
+        damagePart(EnumDriveablePart.CORE, core.getHealth() + 1F, level().damageSources().flyIntoWall());
     }
 
     private float rollInput(int mask)

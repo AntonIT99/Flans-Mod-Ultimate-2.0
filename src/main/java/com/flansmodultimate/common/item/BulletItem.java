@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.hooks.ClientHooks;
 import lombok.Getter;
@@ -61,20 +60,6 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             }
             else if (configType.getBulletSpeed() > 0F)
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MUZZLE_VELOCITY), IFlanItem.formatFloat(configType.getBulletSpeed() * 20F, 3) + " m/s"));
-
-            if (configType.useKineticDamageSystem())
-            {
-                if (configType.hasDifferentRounds() && configType.getPeriod().stream().anyMatch(round -> round.stats().mass() > 0F && round.stats().bulletSpeed() > 0F))
-                {
-                    tooltipComponents.add(Component.translatable(TooltipKeys.DAMAGE).append(":").withStyle(ChatFormatting.BLUE));
-                    configType.getPeriod().forEach(round -> {
-                        if (round.stats().mass() > 0F && round.stats().bulletSpeed() > 0F)
-                            tooltipComponents.add(Component.literal("  " + round.name() + " " + IFlanItem.formatFloat(ShootingHelper.getKineticDamage(round.stats().mass(), round.stats().bulletSpeed()), 1)).withStyle(ChatFormatting.GRAY));
-                    });
-                }
-                else if (configType.getMass() > 0F && configType.getBulletSpeed() > 0F)
-                    tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DAMAGE), IFlanItem.formatFloat(ShootingHelper.getKineticDamage(configType.getMass(), configType.getBulletSpeed()), 1)));
-            }
 
             if (configType.hasDifferentRounds() && configType.getPeriod().stream().anyMatch(round -> round.stats().penetrationAt100m() > 0F))
             {

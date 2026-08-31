@@ -526,10 +526,67 @@
         ]
     },
 
-    "88mm PzGr. 39": {
+    "75mm Pzgr.39": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 6800,
+            "MuzzleVelocity": 770,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.029,
+            "PenetrationAt100m": 143
+        },
+        "items": [
+            "ww2_shell_german75mmkwk40ap",
+            "ww2_shell_german75mmap"
+        ]
+    },
+
+    "75mm Pzgr.40": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 4100,
+            "MuzzleVelocity": 990,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 177
+        },
+        "items": [
+            "ww2_shell_german75mmkwk40apcr"
+        ]
+    },
+
+    "75mm Sprgr.34": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 5700,
+            "MuzzleVelocity": 770,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.686,
+            "PenetrationAt100m": 10
+        },
+        "items": [
+            "ww2_shell_german75mmkwk40he"
+        ]
+    },
+
+    "75mm PzGr 39/42": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 42",
+            "Mass": 6800,
+            "MuzzleVelocity": 935,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.029,
+            "PenetrationAt100m": 188
+        },
+        "items": [
+            "ww2_shell_german75mmaplong"
+        ]
+    },
+
+    "88mm Pzgr.39": {
         "properties": {
             "AddToAmmoGroup": "88mm KwK/Flak 36",
             "Mass": 10200,
+            "MuzzleVelocity": 773,
             "FallSpeed": 1.0,
             "ExplosiveMass": 0.109,
             "PenetrationAt100m": 162
@@ -538,6 +595,90 @@
             "ww2_shell_german88mmap",
             "ww2_shell_german88mmkwk36ap",
             "44_88apshell"
+        ]
+    },
+
+    "88mm Pzgr.40": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 7300,
+            "MuzzleVelocity": 930,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 198
+        },
+        "items": [
+            "ww2_shell_german88mmkwk36apcr"
+        ]
+    },
+
+    "88mm Sprgr. L/4.5": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 9000,
+            "MuzzleVelocity": 820,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.9,
+            "PenetrationAt100m": 18
+        },
+        "items": [
+            "ww2_shell_german88mmhe",
+            "ww2_shell_german88mmkwk36he"
+        ]
+    },
+
+    "88mm Gr.39 Hl": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 7600,
+            "MuzzleVelocity": 600,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 1.1,
+            "PenetrationAt100m": 110
+        },
+        "items": [
+            "ww2_shell_german88mmkwk36heat"
+        ]
+    },
+
+    "88mm PzGr.39/43": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Pak 43",
+            "Mass": 10200,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.109,
+            "PenetrationAt100m": 234
+        },
+        "items": [
+            "ww2_shell_german88mmaplong"
+        ]
+    },
+
+    "128mm PzGr.": {
+        "properties": {
+            "AddToAmmoGroup": "128mm KwK/Pak 44",
+            "Mass": 26400,
+            "MuzzleVelocity": 930,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.786,
+            "PenetrationAt100m": 249
+        },
+        "items": [
+            "ww2_shell_german128mmap"
+        ]
+    },
+
+    "150mm Gr.36": {
+        "properties": {
+            "AddToAmmoGroup": "150mm sFH 18",
+            "Mass": 43500,
+            "MuzzleVelocity": 520,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 5.1,
+            "PenetrationAt100m": 41
+        },
+        "items": [
+            "ww2_shell_german150mmhe"
         ]
     }
 }
