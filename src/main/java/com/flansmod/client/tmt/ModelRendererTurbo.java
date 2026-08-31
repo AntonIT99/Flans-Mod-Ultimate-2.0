@@ -17,8 +17,11 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An extension to the ModelRenderer class. It basically is a copy to ModelRenderer,
@@ -2117,6 +2120,77 @@ public class ModelRendererTurbo extends ModelRenderer
         currentTextureGroup.texture = s;
     }
 
+
+    /**
+     * Re-normalises the baked UV coordinates of this part against the real size of the
+     * texture it is rendered with.
+     * <p>
+     * Model classes declare the texture size themselves and UVs are baked as
+     * {@code pixel / declaredSize} while the boxes are created. When the declared size does not
+     * match the actual image (a common mistake in converted packs, e.g. a model declaring
+     * 1024x1024 for a 1024x64 texture), every UV on that axis is off by a constant factor and
+     * the whole part samples the wrong place. As the error is a pure scale, the baked UVs can
+     * be corrected afterwards by multiplying them with {@code declaredSize / actualSize},
+     * instead of requiring the model class itself to be fixed.
+     * <p>
+     * The correction is only applied when exactly one of the two declared dimensions is wrong.
+     * When neither matches the image, the declared size is not a typo but a texture the model was
+     * simply never made for, and guessing what the pixel coordinates were meant to address would
+     * do more harm than good, so the declared size is kept as-is.
+     *
+     * @param actualWidth  real width of the texture in pixels
+     * @param actualHeight real height of the texture in pixels
+     * @return {@code true} when the UVs were rescaled
+     */
+    public boolean applyActualTextureSize(float actualWidth, float actualHeight)
+    {
+        if (actualWidth <= 0F || actualHeight <= 0F || textureWidth <= 0F || textureHeight <= 0F)
+            return false;
+
+        boolean widthMatches = textureWidth == actualWidth;
+        boolean heightMatches = textureHeight == actualHeight;
+
+        if (widthMatches && heightMatches)
+            return false;
+
+        // Neither dimension is right: this is not a single mistyped dimension, leave the model alone.
+        if (!widthMatches && !heightMatches)
+            return false;
+
+        float scaleU = textureWidth / actualWidth;
+        float scaleV = textureHeight / actualHeight;
+
+        textureWidth = actualWidth;
+        textureHeight = actualHeight;
+
+        // Faces share vertex instances, so every vertex may only be scaled once.
+        Set<PositionTextureVertex> scaledVertices = Collections.newSetFromMap(new IdentityHashMap<>());
+        scaleTextureCoordinates(faces, scaleU, scaleV, scaledVertices);
+        scaleTextureCoordinates(renderFaces, scaleU, scaleV, scaledVertices);
+        return true;
+    }
+
+    private static void scaleTextureCoordinates(TexturedPolygon[] polygons, float scaleU, float scaleV, Set<PositionTextureVertex> scaledVertices)
+    {
+        if (polygons == null)
+            return;
+
+        for (TexturedPolygon polygon : polygons)
+        {
+            if (polygon == null)
+                continue;
+
+            for (PositionTextureVertex vertex : polygon.vertexPositions)
+            {
+                if (vertex != null && scaledVertices.add(vertex))
+                {
+                    vertex.texturePositionX *= scaleU;
+                    vertex.texturePositionY *= scaleV;
+                }
+            }
+            polygon.invalidateCompiledVertices();
+        }
+    }
 
     /**
      * Renders the shape

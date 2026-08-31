@@ -30,6 +30,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.EnumSet;
@@ -58,6 +60,7 @@ public final class ModelCache
     public static void reload()
     {
         DriveableImpostorCache.clear();
+        ModelTextureFitter.clear();
         cache.clear();
         renderPassCache.clear();
         if (ModClientConfig.get().loadAllModelsInCache)
@@ -87,19 +90,19 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadTypeModel(InfoType type)
     {
-        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, null);
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, null, type.getTexture());
     }
 
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {
-        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, new ModelDefaultArmor(type.getArmorItemType()));
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName()), type, new ModelDefaultArmor(type.getArmorItemType()), type.getTexture());
     }
 
     @Nullable
     public static ModelMG getOrLoadDeployableGunModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null) instanceof ModelMG modelMG)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName()), gunType, null, gunType.getDeployableTexture()) instanceof ModelMG modelMG)
         {
             return modelMG;
         }
@@ -109,7 +112,7 @@ public final class ModelCache
     @Nullable
     public static ModelCasing getOrLoadCasingModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getCasingModelClassName(), null), gunType, null) instanceof ModelCasing modelCasing)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getCasingModelClassName(), null), gunType, null, gunType.getCasingTexture()) instanceof ModelCasing modelCasing)
         {
             return modelCasing;
         }
@@ -119,7 +122,7 @@ public final class ModelCache
     @Nullable
     public static ModelFlash getOrLoadFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null), gunType, null) instanceof ModelFlash modelFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null), gunType, null, gunType.getFlashTexture()) instanceof ModelFlash modelFlash)
         {
             return modelFlash;
         }
@@ -129,7 +132,7 @@ public final class ModelCache
     @Nullable
     public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), gunType, new ModelDefaultMuzzleFlash()) instanceof ModelMuzzleFlash modelMuzzleFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null), gunType, new ModelDefaultMuzzleFlash(), null) instanceof ModelMuzzleFlash modelMuzzleFlash)
         {
             return modelMuzzleFlash;
         }
@@ -139,6 +142,16 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
     {
+        return getOrLoadModel(modelCacheKey, type, defaultModel, type.getTexture());
+    }
+
+    /**
+     * @param texture the texture this model is rendered with, used to correct models declaring a
+     *                texture size that does not match it. Pass {@code null} to skip that correction.
+     */
+    @Nullable
+    public static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel, @Nullable ResourceLocation texture)
+    {
         if (StringUtils.isBlank(modelCacheKey.modelClassName()))
         {
             if (defaultModel != null)
@@ -147,7 +160,11 @@ public final class ModelCache
                 return null;
         }
 
-        return cache.computeIfAbsent(modelCacheKey, key -> Optional.ofNullable(loadModel(key.modelClassName(), type, defaultModel))).orElse(null);
+        return cache.computeIfAbsent(modelCacheKey, key -> {
+            IModelBase model = loadModel(key.modelClassName(), type, defaultModel);
+            ModelTextureFitter.fitToTexture(model, texture);
+            return Optional.ofNullable(model);
+        }).orElse(null);
     }
 
     /**
