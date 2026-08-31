@@ -210,12 +210,6 @@ sourceSets {
     }
 }
 
-// ForgeGradle adds this task for IntelliJ run configurations. Run the targeted cleanup after
-// IntelliJ Make and before Forge starts scanning the official-packs development mod root.
-tasks.matching { it.name == 'copyIntellijResources' }.configureEach {
-    dependsOn cleanOfficialPacksIntellijLegacyModClasses, syncOfficialPacksIntellijClasses
-}
-
 repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
