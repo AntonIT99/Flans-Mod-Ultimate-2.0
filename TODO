@@ -7,7 +7,10 @@ General:
 
 Game Balance:
 - Check if the kinetic damage of shells is proportional to tanks HPs
-- Check balance for the blast/frag radius/damage
+- Check balance for the blast/frag radius/damage (seems ok)
+- Check the possibilities to either increase the kinetic damage or decrease the HP of vehicles.
+- Maybe a global HP modifier would be a good idea since we have a global damage modifier.
+- For kinetic damage: use fixed muzzle velocity instead of actual velocity (since not reliable).
 
 Driveables:
 - See if shooting points on vehicles can be directly inferred from models

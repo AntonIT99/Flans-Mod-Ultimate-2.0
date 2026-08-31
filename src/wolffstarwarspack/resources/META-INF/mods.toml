@@ -5,7 +5,7 @@ license="All Rights Reserved"
 [[mods]]
 modId="flansmodultimate_wolffstarwars"
 version="3.0"
-displayName="Wolff's Star Wars Pack"
+displayName="Flan's Mod Wolff's Star Wars Pack"
 logoFile="wolffstarwars.png"
 authors="Wolff"
 displayTest = "NONE"
