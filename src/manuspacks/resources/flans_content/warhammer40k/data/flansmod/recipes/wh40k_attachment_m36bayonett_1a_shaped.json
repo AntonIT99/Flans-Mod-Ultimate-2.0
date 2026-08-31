@@ -1,1 +1,16 @@
-{}
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "..M",
+    "MMM",
+    "..M"
+  ],
+  "key": {
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_plasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:wh40k_attachment_m36bayonett_1a"
+  }
+}

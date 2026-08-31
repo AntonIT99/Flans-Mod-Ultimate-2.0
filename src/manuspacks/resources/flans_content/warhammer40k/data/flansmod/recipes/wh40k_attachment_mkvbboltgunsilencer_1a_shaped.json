@@ -1,1 +1,19 @@
-{}
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FFF",
+    "WWW",
+    "FFF"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:smp_part_mat_plate_plasteel"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "result": {
+    "item": "flansmod:wh40k_attachment_mkvbboltgunsilencer_1a"
+  }
+}
