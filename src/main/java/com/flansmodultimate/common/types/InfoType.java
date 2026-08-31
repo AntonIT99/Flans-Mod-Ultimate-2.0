@@ -211,13 +211,14 @@ public abstract class InfoType
 
                 for (int row = 0; row < 3; row++)
                 {
-                    String recipeRow = Objects.requireNonNullElse((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY, StringUtils.EMPTY);
+                    String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
                     if (hasRecipeContentAfterGrid(recipeRow))
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
                 addToRecipeGrid(recipePattern);
+                i += 3;
             }
             else if (split[0].equalsIgnoreCase("ShapelessRecipe"))
             {
@@ -247,9 +248,24 @@ public abstract class InfoType
 
     private static String padRecipeRow(String recipeRow)
     {
+        recipeRow = recipeRow.replace('.', ' ');
         if (recipeRow.length() >= 3)
             return recipeRow.substring(0, 3);
         return StringUtils.rightPad(recipeRow, 3);
+    }
+
+    /**
+     * Legacy content packs use both bare recipe rows and rows prefixed with
+     * {@code Recipe}. The latter must not be interpreted as a new declaration.
+     */
+    private static String getRecipeRow(String recipeRow)
+    {
+        String row = Objects.requireNonNullElse(recipeRow, StringUtils.EMPTY);
+        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length())
+            && row.length() > "Recipe".length()
+            && Character.isWhitespace(row.charAt("Recipe".length())))
+            return row.substring("Recipe".length() + 1);
+        return row;
     }
 
     private static boolean hasRecipeContentAfterGrid(String recipeRow)
