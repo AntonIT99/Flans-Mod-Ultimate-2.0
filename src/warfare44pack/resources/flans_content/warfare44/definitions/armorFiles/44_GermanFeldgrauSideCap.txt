@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German Feldgrau Side Cap
+ShortName 44_GermanFeldgrauSideCap
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanFeldgrauSideCap
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+
+
+//Visuals
+Model W44.GermanSideCap
+ArmorTexture Skin44_GermanFeldgrauSideCap
+
+
+//Armor Settings
+Defence 0.1
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

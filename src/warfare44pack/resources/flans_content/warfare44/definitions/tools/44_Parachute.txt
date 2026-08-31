@@ -1,0 +1,15 @@
+Name Parachute
+ShortName 44_Parachute
+Icon 44_Parachute
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+Heal false
+Repair false
+HealAmount 0
+ToolLife 1
+DestroyOnEmpty true
+StackSize 1
+//Parachute bits
+Parachute true
+Model W44.Parachute
+Texture Skin44_Parachute

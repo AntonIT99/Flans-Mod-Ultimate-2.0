@@ -1,0 +1,131 @@
+// ------------------------------------------------------ Naming ------------------------------------------------------
+Name P47-D Thunderbolt
+ShortName 44_P47D
+// ------------------------------------------------------ Visuals ------------------------------------------------------
+Icon 44_P47D
+Model W44.P47D
+Texture Skin44_P47D
+//Third Person Camera Distance
+CameraDistance 10.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 15.0
+// ------------------------------------------------------ Movement ------------------------------------------------------
+//Mode : One of Plane, Heli or VTOL. The VTOL has a toggle button that switches some model aesthetics and the flight mode
+Mode Plane
+//Throttle
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1.0
+TurnRightSpeed 1.0
+//Pitch modifiers
+LookUpSpeed 1.0
+LookDownSpeed 1.0
+//Roll modifiers
+RollLeftSpeed 1.5
+RollRightSpeed 1.5
+//Drag 1.0 is standard. Modify to make the plane / heli more or less sluggish
+Drag 1.0
+//Lift
+//Lift 2.5
+//Wheels
+NumWheels 3
+WheelPosition 0 26 -10 -54
+WheelPosition 1 26 -10 54
+WheelPosition 2 -113 22 0
+WheelSpringStrength 0.125
+//Propeller Positions
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 82 34 0 nose 44_Metal_Propeller
+// ------------------------------------------------------ Weaponry ------------------------------------------------------
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Gun
+Secondary Bomb
+//Time between shots in 1/20ths of seconds
+ShootDelayPrimary 3
+ShootDelaySecondary 50
+//Whether to alternate or fire all together
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary SemiAuto
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+AlternatePrimary False
+ShootPointPrimary 31 28 71 core 44_50Cal
+ShootPointPrimary 34 28 68 core 44_50Cal
+ShootPointPrimary 37 28 64 core 44_50Cal
+ShootPointPrimary 39 29 61 core 44_50Cal
+ShootPointPrimary 31 28 -71 core 44_50Cal
+ShootPointPrimary 34 28 -68 core 44_50Cal
+ShootPointPrimary 37 28 -64 core 44_50Cal
+ShootPointPrimary 39 29 -61 core 44_50Cal
+
+ShootPointSecondary 25 -5 0 core
+AddAmmo 44_250kg500lbBomb
+
+// ------------------------------------------------------ Inventory ------------------------------------------------------
+CargoSlots 30
+BombSlots 1
+MissileSlots 0
+AllowAllAmmo False
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 6000
+// ------------------------------------------------------ Passengers ------------------------------------------------------
+Pilot -12 36 0
+Passengers 0
+// ------------------------------------------------------ Sounds ------------------------------------------------------
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Plane50CalShoot
+ShootSoundSecondary BombDrop
+// ------------------------------------------------------ Recipe ------------------------------------------------------
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_AttackerAircraftBody 
+AddRecipeParts leftWing 4 44_50Cal
+AddRecipeParts rightWing 4 44_50Cal
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 white
+AddDye 8 green
+// ------------------------------------------------------ Health and hitboxes ------------------------------------------------------
+SetupPart core 550 -150 9 -17 220 48 34
+SetupPart rightWing 300 -45 17 17 58 22 105
+SetupPart leftWing 300 -45 17 -123 58 22 105
+BulletDetection 10
+//Collision points for breaking wings etc. upon crashing
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+BulletSpeed 12
+BulletSpread 4
+Description American Attack Aircraft__M2 Browning .50 Cal Ammo / 250kg/500lb Bomb__Year Introduced : 1944
+
+//1st gear change
+AddEmitter largesmoke 1 [48,35,15] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter largesmoke 1 [48,35,-15] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,-15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+//1st gear
+AddEmitter explode 1 [48,35,15] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter explode 1 [48,35,-15] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,-15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0

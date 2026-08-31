@@ -1,0 +1,9 @@
+Name Magazine
+ShortName 44_Magazine
+Icon 44_Magazine
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23279
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Misc
+StackSize 64

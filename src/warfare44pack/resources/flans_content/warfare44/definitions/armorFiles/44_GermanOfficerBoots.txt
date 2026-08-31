@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German Officer Boots
+ShortName 44_GermanOfficerBoots
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanOfficerBoots
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Boots
+
+
+//Visuals
+Model W44.GermanOfficerBoots
+ArmorTexture Skin44_GermanOfficer
+
+
+//Armor Settings
+Defence 0.1
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

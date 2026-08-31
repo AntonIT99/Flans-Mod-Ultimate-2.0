@@ -1,0 +1,20 @@
+Name Pistol Stock
+ShortName 44_PistolStock
+Icon 44_PistolStock
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType stock
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.8
+RecoilMultiplier 0.8
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+//Model
+Model W44.PistolStock
+Texture Skin44_PistolStock
+ModelScale 0.15
+
+Description Stock Attachment : _Luger _Mauser M712

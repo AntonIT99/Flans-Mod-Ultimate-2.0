@@ -1,0 +1,96 @@
+Name Soviet Weapon Box
+ShortName 44_SovietWeaponBox
+TopTexture 44_WeaponBoxTop
+SideTexture 44_SovietWeaponBox
+BottomTexture 44_WeaponBoxBottom
+GunBoxID 150
+Recipe I ingotIron L log F 44_SovietFlag
+LLL
+IFI
+LLL
+
+//Gui texture stuff
+GuiTexture gui/WeaponBoxSovietW44
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+NumGuns 20
+
+//
+SetPage Bolt-Rifles
+
+AddGun 44_MosinNagant 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_MosinNagantAmmo 3 ingotIron 2 gunpowder
+
+//
+SetPage SLR/ARs
+
+AddGun 44_SVT40 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_SVT40Ammo 1 44_Magazine 2 ingotIron 2 gunpowder
+
+AddGun 44_SKS 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_SKSAmmo 1 44_Magazine 2 ingotIron 2 gunpowder
+
+//
+SetPage SMGs
+
+AddGun 44_PPs43 1 44_Gun_Barrel 1 44_Receiver 5 ingotIron 1 44_Grip
+AddAmmo 44_PPs43Ammo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+AddGun 44_PPSh41 1 44_Gun_Barrel 1 44_Receiver 3 log 4 ingotIron 1 44_Grip
+AddAmmo 44_PPSh41Ammo 1 44_Magazine 4 ingotIron 1 gunpowder
+
+//
+SetPage MGs
+
+AddGun 44_DP28 1 44_Gun_Barrel 1 44_Receiver 2 log 10 ingotIron 1 44_Grip
+AddAmmo 44_DP28Ammo 5 ingotIron 5 gunpowder
+
+AddGun 44_DT28 1 44_Gun_Barrel 1 44_Receiver 10 ingotIron 1 44_Grip
+AddAmmo 44_DT28Ammo 4 ingotIron 4 gunpowder
+
+AddGun 44_BerezinUBMG 1 44_Gun_Barrel 1 44_Receiver 8 ingotIron 1 44_Grip
+AddAmmo 44_BerezinUBMGAmmo 1 44_Magazine 7 ingotIron 7 gunpowder
+
+//
+SetPage Side-Arms
+
+AddGun 44_TT33 1 44_Gun_Barrel 1 44_Receiver 1 ingotIron 1 44_Grip
+AddAmmo 44_TT33Ammo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+//
+SetPage Attachments
+
+AddGun 44_PUScope 2 44_Glass_Lens 3 ingotIron
+
+AddGun 44_OpticalSight 1 44_Glass_Lens 3 ingotIron
+
+AddGun 44_LensSight 2 44_Glass_Lens 1 ingotIron
+
+AddGun 44_HPBullet 4 ingotIron
+
+AddGun 44_FieldmodifiedRiflingBarrel 6 ingotIron
+
+AddGun 44_SmoothboreBarrel 6 ingotIron
+
+AddGun 44_StainlessSteelBarrel 6 ingotIron
+
+AddGun 44_MarksmanTrigger 1 ingotIron 44_Trigger
+
+AddGun 44_APBullet 4 ingotIron
+
+//
+SetPage Attachments 2
+
+AddGun 44_MatchTrigger 1 ingotIron 44_Trigger
+
+AddGun 44_PaddedStock 3 leather 2 ingotIron

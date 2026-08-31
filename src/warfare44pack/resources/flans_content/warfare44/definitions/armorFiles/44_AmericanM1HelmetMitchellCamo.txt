@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name American M1 Helmet Mitchell Camo
+ShortName 44_AmericanM1HelmetMitchellCamo
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_AmericanM1HelmetMitchellCamo
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+
+
+//Visuals
+Model W44.AmericanM1HelmetNoNetting
+ArmorTexture Skin44_AmericanM1HelmetMitchellCamo
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

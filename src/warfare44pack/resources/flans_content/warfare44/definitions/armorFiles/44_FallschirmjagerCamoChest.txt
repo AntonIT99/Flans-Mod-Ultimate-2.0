@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Fallschirmjager Camo Jacket
+ShortName 44_FallschirmjagerCamoChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_FallschirmjagerCamoChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.FallschirmjagerCamoChest
+ArmorTexture Skin44_FallschirmjagerCamo
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

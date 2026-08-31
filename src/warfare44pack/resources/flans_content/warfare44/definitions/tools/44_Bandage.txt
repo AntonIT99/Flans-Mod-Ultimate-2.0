@@ -1,0 +1,13 @@
+Name Bandage
+ShortName 44_Bandage
+Icon 44_Bandage
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+Heal true
+Repair false
+HealAmount 6
+ToolLife 1
+DestroyOnEmpty true
+StackSize 2
+
+RechargeRecipe 1 potion.8229

@@ -1,0 +1,110 @@
+//Naming
+Name Opelblitz
+ShortName 44_Opelblitz
+//Visuals
+Icon 44_Opelblitz
+Model W44.Opelblitz
+Texture Skin44_Opelblitz
+RotateWheels true
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0.95
+MaxNegativeThrottle 0.5
+//Steering modifiers
+TurnLeftSpeed 0.55
+TurnRightSpeed 0.55
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -28 -8 -18
+WheelPosition 1 -28 -8 18
+WheelPosition 2 40 -8 18
+WheelPosition 3 40 -8 -18
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive false
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1000
+//Inventory Slots
+CargoSlots 36
+ShellSlots 0
+//Driver and passenger positions
+Driver 23 12 -7
+RotatedDriverOffset 0 0 0
+Passengers 7
+Passenger 1 23 12 7 core
+Passenger 2 2 24 -14 core
+Passenger 3 2 24 14 core
+Passenger 4 -17 24 -14 core
+Passenger 5 -17 24 14 core
+Passenger 6 -36 24 -14 core
+Passenger 7 -36 24 14 core
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+StartSound JeepIdle
+StartSoundLength 7
+EngineSound Engine_LT_Truck
+EngineSoundLength 39
+ShootSound bullet
+ShellSound shell
+SoundsPlaceTimePrimary 60
+BackSound Engine_LT_Truck
+StartSoundRange 12
+EngineSoundRange 30
+BackSoundLength 31
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts backLeftWheel 1 44_Car_Wheel
+AddRecipeParts backRightWheel 1 44_Car_Wheel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 4 gray
+
+//Health and collision
+SetupPart core 300 -52 4 -18 116 40 36
+SetupPart SetupPart frontRightWheel 75 39 -10 13 20 19 6
+SetupPart frontLeftWheel 75 39 -10 -19 20 19 6
+SetupPart backRightWheel 75 -33 -10 9 20 19 10
+SetupPart backLeftWheel 75 -33 -10 -19 20 19 10
+
+BulletDetection 5
+Description German Transport Truck__Year Introduced : 1930
+
+CanRoll false
+
+//1st gear
+
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter largesmoke 3 [-35,-2,8] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-35,-2,8] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+
+IsExplosionWhenDestroyed true

@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name British British 40 Pattern Jacket
+ShortName 44_British40PatternChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_British40PatternChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.British40PatternChest
+ArmorTexture Skin44_British40Pattern
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

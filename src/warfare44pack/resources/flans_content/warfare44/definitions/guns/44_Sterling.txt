@@ -1,0 +1,64 @@
+Name Sterling L2A3 Mk.4
+ShortName 44_Sterling
+//The ammo this gun uses (shortName)
+Ammo 44_SterlingAmmo
+Icon 44_Sterling
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 60
+//The amount of gun recoil, all relative : Sterling = 1, Sterling = 3, SterlingSniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 3
+//Time in ticks between rounds
+RoundsPerMin 550
+ShootSound SterlingShoot
+ReloadSound StenReload
+Mode FullAuto
+EmptyClickSound emptyclick
+
+//Bullet speed, default 3.0
+BulletSpeed 15.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.Sterling
+Texture Skin44_Sterling
+ModelScale 0.22
+AllowAttachments 44_OpticalSight 44_Suppressor 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2.0
+DecreaseRecoilYaw 2.0
+
+Description British Sub Machine Gun
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 2
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

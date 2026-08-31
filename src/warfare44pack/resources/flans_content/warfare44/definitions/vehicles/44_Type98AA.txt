@@ -1,0 +1,104 @@
+//Naming
+Name Type 98 AA-Gun [20mm]
+ShortName 44_Type98AA
+//Visuals
+Icon 44_Type98AA
+Model W44.Type98AA
+Texture Skin44_Type98AA
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0
+MaxNegativeThrottle 0
+//Steering modifiers
+TurnLeftSpeed 0
+TurnRightSpeed 0
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -16 -10 -14
+WheelPosition 1 -16 -10 14
+WheelPosition 2 16 -10 14
+WheelPosition 3 16 -10 -14
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Tank mode activate
+Tank true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+//Inventory Slots
+CargoSlots 0
+ShellSlots 3
+//Driver and passenger positions
+Driver 0 1 0 -360 360 -5 85
+RotatedDriverOffset -20 0 -5
+Passengers 0
+//Delays are in ticks or 1/20ths of seconds
+AddAmmo 44_Type98AAAmmo
+AllowAllAmmo false
+ShootDelay 6
+ShellDelay 6
+//Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+ShootSoundPrimary 20mmCannonShoot
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 44_Metal_Tube 2 44_Car_Wheel
+AddRecipeParts core 8 ingotIron
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 3 gray
+//Health and collision
+SetupPart core 300 -41 -10 -26 75 35 52
+
+BulletDetection 7
+ModelScale 1
+Description Japanese Anti-Aircraft Gun__Uses Type 98 AA Ammo__Year Introduced : 1938
+
+//Barrel
+BarrelPosition 22 7 0
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+
+//Turret traverse speeds, yaw/pitch/z (z is unused, set to 0)
+DriverAimSpeed 1.35f 1.25f 0f
+
+//Set to true to adjust turret yaw before pitch
+DriverYawBeforePitch false
+
+//Turret traverse sounds
+
+//Enables traverse sounds for driver turret
+DriverTraverseSounds false
+
+PitchSound TurretTraverse1
+PitchSoundLength 61
+
+YawSound TurretTraverse2
+YawSoundLength 38
+
+BulletSpeed 12
+BulletSpread 2
+IsExplosionWhenDestroyed true

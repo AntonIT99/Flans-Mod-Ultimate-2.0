@@ -1,0 +1,39 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Japanese Type 98 Pants (Khaki)
+ShortName 44_JapaneseType98PantsKhaki
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_JapaneseType98PantsKhaki
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Pants
+
+
+//Visuals
+Model W44.JapaneseType98PantsKhaki
+ArmorTexture Skin44_JapaneseType98Khaki
+
+
+//Armor Settings
+Defence 0.1
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

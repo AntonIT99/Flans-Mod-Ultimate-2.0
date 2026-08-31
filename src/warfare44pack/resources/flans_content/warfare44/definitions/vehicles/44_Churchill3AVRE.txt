@@ -1,0 +1,290 @@
+//Naming
+Name Churchill Mk. III AVRE [290mm]
+ShortName 44_Churchill3AVRE
+//Visuals
+RotateWheels True
+Icon 44_Churchill3AVRE
+Model W44.Churchill3AVRE
+Texture Skin44_Churchill3AVRE
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0.46
+MaxNegativeThrottle 0.2518
+//Steering modifiers
+TurnLeftSpeed 0.23
+TurnRightSpeed 0.23
+ClutchBrake 0.0115
+
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+//Bouncy bouncy
+Bounciness 0.3
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Tank mode activate
+Tank true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+//Inventory Slots
+CargoSlots 20
+ShellSlots 5
+AllowAllAmmo false
+//Driver and passenger positions
+Driver 0 32 0 -18 18 -4 15
+RotatedDriverOffset -6 0 -10
+Passengers 1
+Passenger 1 38 1 6 core -10 10 -10 10 44_Bren PassengerGun1
+GunOrigin 1 120 -1 -8
+// X + 5 , -Y -20
+
+AddAmmo 44_HEMortarShell
+AddAmmo 44_LargeHEShell
+//Secondary gun
+//Delays are in ticks or 1/20ths of seconds
+AddGun 28 33 -5 turret 44_Bren
+ShootDelay 2
+ShellDelay 216
+
+VehicleGunReloadTick 40
+ShootReloadSound Breach
+//Sounds
+PlaceTimePrimary 80
+StartSound TankIdle3
+StartSoundLength 41
+EngineSound Engine_MT_M26
+EngineSoundLength 39
+BackSoundLength 39
+BackSound Engine_MT_M26
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+ShootSoundPrimary MortarShoot
+ShootSoundSecondary BrenShoot
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 44_Heavy_Tank_Turret 1 44_Vehicle_Seat
+AddRecipeParts core 1 44_Heavy_Tank_Chassis 1 44_Vehicle_Seat 4 44_Metal_Tube
+AddRecipeParts leftTrack 1 44_Tank_Track 3 44_Armor_Plate_Sheet
+AddRecipeParts rightTrack 1 44_Tank_Track 3 44_Armor_Plate_Sheet
+
+AddRecipeParts leftsideArmor 2 44_Reinforced_Plating
+AddRecipeParts rightsideArmor 2 44_Reinforced_Plating
+AddRecipeParts frontalArmor 8 44_Reinforced_Plating
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 8 green
+
+//Health and collision
+SetupPart core 2000 -72 2 -12 90 38 24
+SetupPart frontalArmor 2000 18 2 -17 39 35 34
+SetupPart rightsideArmor 1000 -72 2 -17 90 26 5
+SetupPart leftsideArmor 1000 -72 2 12 90 26 5
+SetupPart leftTrack 300 -72 -10 -28 141 38 11
+SetupPart rightTrack 300 -72 -10 17 141 38 11
+
+BulletDetection 5
+
+//Size Multiplier; scales up the model
+ModelScale 1
+Description British Heavy Tank__Uses : HE Mortar Shell_Large Cal. HE Tank Shell __Year Introduced : 1944
+BulletDetection 5
+
+CanRoll true
+
+//Turret Rotation stuff
+DriverAimSpeed 1.13 1.03 0
+Driver YawBeforePitch false
+DriverTraverseSounds true
+
+
+YawSound TurretTraverse1
+YawSoundLength 21
+
+PitchSound TurretTraverse2
+PitchSoundLength 20
+
+//Smoke effects
+
+//Barrel
+ShootParticlesSecondary crit 0.5 0 0
+BarrelPosition 40 31 0
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+
+//Basic emission
+AddEmitter smoke 1 [-53,25,2] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+AddEmitter smoke 1 [-53,25,-2] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+
+//Damage
+AddEmitter smoke 2 [-37,26,-22] [7,1,2] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-37,26,22] [7,1,2] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+
+AddEmitter largesmoke 3 [-37,26,-22] [7,1,2] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-37,26,22] [7,1,2] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+
+AddEmitter largesmoke 1 [-37,26,-22] [7,1,2] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-37,26,22] [7,1,2] [0,1.5,0] -1 1 0 0.25 core
+
+AddEmitter flame 1 [-37,26,-22] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-37,26,22] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+
+
+
+
+
+//1st gear change
+
+AddEmitter largesmoke 1 [-53,25,2] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+AddEmitter largesmoke 1 [-53,25,-2] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+//1st gear
+
+AddEmitter explode 1 [-53,25,2] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+AddEmitter explode 1 [-53,25,-2] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear change
+
+AddEmitter largesmoke 1 [-53,25,2] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+AddEmitter largesmoke 1 [-53,25,-2] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [-53,25,2] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+AddEmitter explode 1 [-53,25,-2] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+
+//3rd gear change
+
+AddEmitter largesmoke 1 [-53,25,2] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+AddEmitter largesmoke 1 [-53,25,-2] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+AddEmitter flame 1 [-53,25,2] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter flame 1 [-53,25,-2] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [-53,25,2] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter explode 1 [-53,25,-2] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter largesmoke 3 [-53,25,2] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+AddEmitter largesmoke 3 [-53,25,-2] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-53,25,2] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+AddEmitter largesmoke 1 [-53,25,-2] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
+
+AddEmitter flame 1 [-53,25,2] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+AddEmitter flame 1 [-53,25,-2] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+
+
+//Tracks
+
+RightLinkPoint [66,20,-21]
+RightLinkPoint [70,16,-21]
+RightLinkPoint [70,9.5,-21]
+RightLinkPoint [54,-3,-21]
+RightLinkPoint [42,-9,-21]
+RightLinkPoint [-45,-9,-21]
+RightLinkPoint [-51,-4,-21]
+RightLinkPoint [-68,10,-21]
+RightLinkPoint [-68,15,-21]
+RightLinkPoint [-63,17,-21]
+RightLinkPoint [-36,20,-21]
+RightLinkPoint [60,20,-21]
+
+
+TrackLinkLength 3
+LeftLinkPoint [66,20,21]
+LeftLinkPoint [70,16,21]
+LeftLinkPoint [70,9.5,21]
+LeftLinkPoint [54,-3,21]
+LeftLinkPoint [42,-9,21]
+LeftLinkPoint [-40,-9,21]
+LeftLinkPoint [-51,-4,21]
+LeftLinkPoint [-68,10,21]
+LeftLinkPoint [-68,15,21]
+LeftLinkPoint [-63,17,21]
+LeftLinkPoint [-36,20,21]
+LeftLinkPoint [60,20,21]
+
+BulletSpeed 5
+BulletSpread 5
+IsExplosionWhenDestroyed true

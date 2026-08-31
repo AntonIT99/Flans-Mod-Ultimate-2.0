@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German Pz.Grenadier Feldgrau Jacket
+ShortName 44_GermanPzGrenadierFeldgrauChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanPzGrenadierFeldgrauChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.GermanPzGrenadierChest
+ArmorTexture Skin44_PzGrenadierFeldgrau
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

@@ -1,0 +1,64 @@
+Name Kar98k
+ShortName 44_Kar98k
+//The ammo this gun uses (shortName)
+Ammo 44_Kar98kAmmo
+Icon 44_Kar98k
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 60
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 1
+//Time in ticks between rounds
+ShootDelay 42
+ShootSound Kar98kShoot
+ReloadSound Kar98kReload
+Mode SemiAuto
+EmptyClickSound emptyclick
+MoveSpeedModifier 0.85
+//Bullet speed, default 3.0
+BulletSpeed 18.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.Kar98k
+Texture Skin44_Kar98k
+ModelScale 0.25
+AllowAttachments 44_ZF4Scope 44_ZF39Scope 44_ZF41Scope 44_OpticalSight 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 8.0
+RandomRecoilRange 7
+RandomRecoilYawRange 0.75
+DecreaseRecoil 4.0
+DecreaseRecoilYaw 2.0
+
+Description German Bolt-Action Rifle
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 0
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

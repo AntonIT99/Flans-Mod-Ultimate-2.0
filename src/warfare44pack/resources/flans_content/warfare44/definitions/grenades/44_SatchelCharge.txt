@@ -1,0 +1,64 @@
+////Name and icon
+Name Satchel Charge
+ShortName 44_SatchelCharge
+Icon 44_SatchelCharge
+
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+
+////Item and recipe
+StackSize 1
+
+////Visuals
+Model W44.SatchelCharge
+Texture Skin44_SatchelCharge
+ModelScale 1
+TrailParticles true
+TrailParticleType smoke
+
+ExplodeParticles 5
+
+//ExplodeParticleType <particleType>
+SmokeTime 0
+
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+
+////Throwing
+ThrowDelay 45
+
+//ThrowSound
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.5
+HitEntityDamage 1
+ThrowSpeed 1.25
+FallSpeed 0.75
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.8
+Sticky false
+
+//BounceSound
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 145
+DetonateWhenShot true
+Remote false
+
+//DespawnTime 0
+PrimeDelay 0
+
+////Detonation
+FireRadius 0.0
+ExplosionRadius 7.0
+ExplosionDamageVsLiving 10.0
+ExplosionDamageVsPlane 100
+ExplosionDamageVsVehicle 5
+ExplosionBreaksBlocks true
+
+//DropItemOnDetonate <itemID.damage>
+//Detonate Sound <sound>
+////Misc

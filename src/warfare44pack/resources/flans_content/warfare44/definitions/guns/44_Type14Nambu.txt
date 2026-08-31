@@ -1,0 +1,64 @@
+Name Type 14 Nambu
+ShortName 44_Type14Nambu
+//The ammo this gun uses (shortName)
+Ammo 44_Type14NambuAmmo
+Icon 44_Type14Nambu
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 50
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, LugerSniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 6
+//Time in ticks between rounds
+ShootDelay 4
+ShootSound LugerShoot
+ReloadSound LugerReload
+Mode SemiAuto
+EmptyClickSound emptyclick
+
+//Bullet speed, default 3.0
+BulletSpeed 15.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.Type14Nambu
+Texture Skin44_Type14Nambu
+ModelScale 0.08
+AllowAttachments 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.75
+DecreaseRecoilYaw 2.0
+
+Description Japanese Pistol
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+OneHanded True
+//Server Stuff
+GunCategory 6
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

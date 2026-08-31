@@ -1,0 +1,265 @@
+//----------------------------Naming
+Name ZiS-30 [57mm]
+ShortName 44_ZiS30
+
+//----------------------------Visuals
+RotateWheels True
+Icon 44_ZiS30
+Model W44.ZiS30
+Texture Skin44_ZiS30
+
+//----------------------------Third Person Camera Distance
+CameraDistance 7.5
+
+//----------------------------Throttle
+MaxThrottle 0.85
+MaxNegativeThrottle 0.4805
+ClutchBrake 0.02125
+
+//----------------------------Steering modifiers
+TurnLeftSpeed 0.425
+TurnRightSpeed 0.425
+
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+
+//----------------------------Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+
+//Bouncy bouncy
+Bounciness 0.3
+
+//If true, then all wheels will apply drive forces
+//----------------------------Tank mode activate
+Tank true
+FourWheelDrive true
+
+//----------------------------Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+
+//----------------------------Inventory Slots
+CargoSlots 20
+ShellSlots 3
+AllowAllAmmo false
+
+//----------------------------Driver and passenger positions
+Driver 0 13 0 -30 30 -4 22
+RotatedDriverOffset -15 0 -6
+Passengers 1
+Passenger 1 24 -4 4 core -30 30 -15 15 44_DT28 PassengerGun1
+GunOrigin 1 40 -7 8
+// X + 5 , -Y -20
+//----------------------------Ammo
+AddAmmo 44_57APShell
+AddAmmo 44_SmallHEShell
+AllowAllAmmo False
+//Secondary gun
+//AddGun 25 29 6 turret None
+ShootDelay 2
+ShellDelay 104
+
+VehicleGunReloadTick 40
+ShootReloadSound Breach
+//----------------------------Sounds
+PlaceTimePrimary 80
+StartSound TankIdle1
+StartSoundLength 41
+EngineSound Engine_LT_BT
+EngineSoundLength 39
+BackSoundLength 39
+BackSound Engine_LT_BT
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+ShootSoundPrimary Shoot_57mm
+ShootSoundSecondary Mg34Shoot
+
+//----------------------------Recipe
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 44_Vehicle_Seat 1 44_Gun_Shield 1 44_Tank_Barrel
+AddRecipeParts core 1 44_Light_Tank_Chassis 1 44_Vehicle_Seat
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 2 green
+
+//Health and collision
+SetupPart core 750 -25 0 -14 68 40 28
+SetupPart leftTrack 300 -23 -10 -18 65 17 4
+SetupPart rightTrack 300 -23 -10 14 65 17 4
+
+BulletDetection 5
+
+//Size Multiplier; scales up the model
+ModelScale 1
+Description Soviet Light Tank Destroyer__Uses : 57mm AP Tank Shell_Small Cal. HE Tank Shell __Year Introduced : 1941
+BulletDetection 5
+
+//----------------------------Barrel
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+ShootParticlesSecondary crit 0.5 0 0
+BarrelPosition 85 26 0
+
+CanRoll true
+
+//----------------------------Smoke effects
+
+//----------------------------Basic emission
+AddEmitter smoke 1 [-25,16,0] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+//----------------------------Damage
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+
+
+//----------------------------Turret rotation stuff
+DriverAimSpeed 0.33 0.23 0
+
+DriverYawBeforePitch false
+
+DriverTraverseSounds false
+
+
+//----------------------------Exhaust Effects
+//1st gear change
+
+AddEmitter largesmoke 1 [-25,16,0] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+//1st gear
+
+AddEmitter explode 1 [-25,16,0] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear change
+
+AddEmitter largesmoke 1 [-25,16,0] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [-25,16,0] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+//3rd gear change
+
+AddEmitter largesmoke 1 [-25,16,0] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter flame 1 [-25,16,0] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [-25,16,0] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-25,16,0] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-25,16,0] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+AddEmitter flame 1 [-25,16,0] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+//----------------------------Tracks
+
+TrackLinkLength 3
+
+RightLinkPoint [39.8,6.6,-16]
+RightLinkPoint [42.8,3.6,-16]
+RightLinkPoint [42.8,-1.5,-16]
+RightLinkPoint [39.8,-4.5,-16]
+RightLinkPoint [39.8,-4.5,-16]
+RightLinkPoint [28,-9.5,-16]
+RightLinkPoint [-11,-9.5,-16]
+RightLinkPoint [-21,-4,-16]
+RightLinkPoint [-23,-1.5,-16]
+RightLinkPoint [-23,2,-16]
+RightLinkPoint [-21,4.2,-16]
+RightLinkPoint [-2,5,-16]
+RightLinkPoint [17,6.5,-16]
+RightLinkPoint [17,6.5,-16]
+RightLinkPoint [34,6.6,-16]
+
+LeftLinkPoint [39.8,6.6,16]
+LeftLinkPoint [42.8,3.6,16]
+LeftLinkPoint [42.8,-1.5,16]
+LeftLinkPoint [39.8,-4.5,16]
+LeftLinkPoint [39.8,-4.5,16]
+LeftLinkPoint [28,-9.5,16]
+LeftLinkPoint [-11,-9.5,16]
+LeftLinkPoint [-21,-4,16]
+LeftLinkPoint [-23,-1.5,16]
+LeftLinkPoint [-23,2,16]
+LeftLinkPoint [-21,4.2,16]
+LeftLinkPoint [-2,5,16]
+LeftLinkPoint [17,6.5,16]
+LeftLinkPoint [17,6.5,16]
+LeftLinkPoint [34,6.6,16]
+
+
+BulletSpeed 11
+BulletSpread 2
+IsExplosionWhenDestroyed true

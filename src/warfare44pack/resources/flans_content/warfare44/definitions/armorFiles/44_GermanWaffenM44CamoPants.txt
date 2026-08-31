@@ -1,0 +1,39 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Waffen M44Camo Pants
+ShortName 44_WaffenM44CamoPants
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_WaffenM44CamoPants
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Pants
+
+
+//Visuals
+Model W44.WaffenM44CamoPants
+ArmorTexture Skin44_WaffenM44Camo
+
+
+//Armor Settings
+Defence 0.1
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

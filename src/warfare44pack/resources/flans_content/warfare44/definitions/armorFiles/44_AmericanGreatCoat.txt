@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name American Great Coat
+ShortName 44_AmericanGreatCoat
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_AmericanGreatCoat
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.AmericanGreatCoat
+ArmorTexture Skin44_AmericanGreatCoat
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

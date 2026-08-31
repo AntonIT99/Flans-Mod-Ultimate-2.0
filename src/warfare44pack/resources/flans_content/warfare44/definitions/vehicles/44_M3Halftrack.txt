@@ -1,0 +1,151 @@
+//Naming
+Name SdKfz.251 Hanomag
+ShortName 44_M3Halftrack
+//Visuals
+Icon 44_M3Halftrack
+Model W44.M3Halftrack
+Texture Skin44_M3Halftrack
+RotateWheels true
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0.75
+MaxNegativeThrottle 0.45
+//Steering modifiers
+TurnLeftSpeed 0.45
+TurnRightSpeed 0.45
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -28 -8 -14
+WheelPosition 1 -28 -8 14
+WheelPosition 2 24 -8 14
+WheelPosition 3 24 -8 -14
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive false
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1000
+//Inventory Slots
+CargoSlots 36
+ShellSlots 0
+//Driver and passenger positions
+Driver 6 5 -7
+RotatedDriverOffset 0 0 0
+Passengers 5
+Passenger 1 6 5 7 core
+Passenger 2 -37 12 12 core
+Passenger 3 -23 13 -12 core
+Passenger 4 -7 28 8 core -50 50 -10 30 44_50Cal PassengerGun4
+Passenger 5 -47 18 -7 core 130 230 -20 20 44_30Cal PassengerGun5
+GunOrigin 4 9 15 8
+GunOrigin 5 -54 10 -7
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+PlaceTimePrimary 80
+StartSound TankIdle1
+StartSoundLength 41
+EngineSound TankRun1
+EngineSoundLength 39
+BackSoundLength 39
+BackSound Engine_TR_Halftrack
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary 50CalReload
+ReloadTimeSecondary 100
+SoundsPlaceTimePrimary 60
+BackSound Engine_TR_Halftrack
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundLength 61
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ShootSoundPrimary None
+ShootSoundSecondary None
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 4 green
+
+//Health and collision
+SetupPart core 750 -61 1 -20 110 28 40
+SetupPart frontRightWheel 75 32 -10 11 17 17 8
+SetupPart frontLeftWheel 75 32 -10 -19 17 17 8
+SetupPart rightTrack 300 -61 -10 9 60 19 8
+SetupPart leftTrack 300 -61 -10 -17 60 19 8
+
+BulletDetection 5
+Description American Halftrack__Year Introduced : 1943
+
+ModelScale 1.1
+
+//Turret traverse speeds, yaw/pitch/z (z is unused, set to 0)
+DriverAimSpeed 3.0f 3.0f 0f
+
+//Set to true to adjust turret yaw before pitch
+DriverYawBeforePitch false
+
+AddEmitter smoke 1 [-60,3,-8] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+//1st gear
+
+AddEmitter explode 1 [-60,3,-8] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [-60,3,-8] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [-60,3,-8] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter largesmoke 3 [-60,3,-8] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-60,3,-8] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+//----------------------------Tracks
+
+TrackLinkLength 3
+
+RightLinkPoint [-4,8,-13]
+RightLinkPoint [-1.3,6,-13]
+RightLinkPoint [-1.3,-2,-13]
+RightLinkPoint [-10,-8,-13]
+RightLinkPoint [-48,-8,-13]
+RightLinkPoint [-56.5,-2,-13]
+RightLinkPoint [-56.5,5,-13]
+RightLinkPoint [-53,8,-13]
+RightLinkPoint [-11,8,-13]
+RightLinkPoint [-6,8,-13]
+
+
+LeftLinkPoint [-4,8,13]
+LeftLinkPoint [-1.3,6,13]
+LeftLinkPoint [-1.3,-2,13]
+LeftLinkPoint [-10,-8,13]
+LeftLinkPoint [-48,-8,13]
+LeftLinkPoint [-56.5,-2,13]
+LeftLinkPoint [-56.5,5,13]
+LeftLinkPoint [-53,8,13]
+LeftLinkPoint [-11,8,13]
+LeftLinkPoint [-6,8,13]
+
+IsExplosionWhenDestroyed true

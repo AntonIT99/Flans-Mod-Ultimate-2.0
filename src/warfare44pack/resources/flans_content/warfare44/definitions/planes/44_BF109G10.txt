@@ -1,0 +1,144 @@
+// ------------------------------------------------------ Naming ------------------------------------------------------
+Name Messerschmitt BF-109 G-10
+ShortName 44_BF109G10
+// ------------------------------------------------------ Visuals ------------------------------------------------------
+Icon 44_BF109G10
+Model W44.BF109G10
+Texture Skin44_BF109G10
+//Third Person Camera Distance
+CameraDistance 10.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 15.0
+// ------------------------------------------------------ Movement ------------------------------------------------------
+//Mode : One of Plane, Heli or VTOL. The VTOL has a toggle button that switches some model aesthetics and the flight mode
+Mode Plane
+//Throttle
+MaxThrottle 2.5
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1.5
+TurnRightSpeed 1.5
+//Pitch modifiers
+LookUpSpeed 2
+LookDownSpeed 2
+//Roll modifiers
+RollLeftSpeed 2
+RollRightSpeed 2
+//Drag 1.0 is standard. Modify to make the plane / heli more or less sluggish
+Drag 1.0
+//Lift
+//Lift 2.5
+//Wheels
+NumWheels 3
+WheelPosition 0 16 -8 -27
+WheelPosition 1 16 -8 27
+WheelPosition 2 -91 15 0
+WheelSpringStrength 0.125
+//Propeller Positions
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 70 20 0 nose 44_Metal_Propeller
+// ------------------------------------------------------ Weaponry ------------------------------------------------------
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Gun
+Secondary Missile
+//Time between shots in 1/20ths of seconds
+ShootDelayPrimary 3
+ShootDelaySecondary 3
+//Whether to alternate or fire all together
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+AlternatePrimary False
+AlternateSecondary False
+
+ShootPointPrimary 47 34 4 nose 44_Mg131
+ShootPointPrimary 47 34 -4 nose 44_Mg131
+
+ShootPointSecondary 85 23 0 nose
+AddAmmo 44_20mmAircraftAmmo
+
+// ------------------------------------------------------ Inventory ------------------------------------------------------
+CargoSlots 30
+BombSlots 0
+MissileSlots 2
+AllowAllAmmo False
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 6000
+// ------------------------------------------------------ Passengers ------------------------------------------------------
+Pilot 1 20 0
+Passengers 0
+// ------------------------------------------------------ Sounds ------------------------------------------------------
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary PlaneMGShoot
+ShootSoundSecondary BF109_20mmShoot
+// ------------------------------------------------------ Recipe ------------------------------------------------------
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_FighterAircraftBody
+AddRecipeParts nose 2 44_Mg131 1 44_20mmCannon
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 gray
+AddDye 3 green
+// ------------------------------------------------------ Health and hitboxes ------------------------------------------------------
+SetupPart core 450 -150 9 -17 220 48 34
+SetupPart rightWing 275 -45 17 17 58 22 105
+SetupPart leftWing 275 -45 17 -123 58 22 105
+BulletDetection 10
+//Collision points for breaking wings etc. upon crashing
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 2.0
+CollisionDamageTimes 145
+
+BulletSpeed 12
+BulletSpread 4
+
+ModelScale 1.1
+Description German Fighter Aircraft__Uses Mg131 Ammo / 20mm Aircraft Ammo__Year Introduced : 1944
+
+//1st gear change
+AddEmitter largesmoke 1 [50,18,12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,18,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter largesmoke 1 [50,18,-12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,18,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+//1st gear
+AddEmitter explode 1 [50,18,12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,18,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter explode 1 [50,18,-12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,18,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+ShootParticlesSecondary crit 0.4 0 0
+ShootParticlesSecondary crit 0.4 -0.1 0
+ShootParticlesSecondary crit 0.4 0.1 0
+ShootParticlesSecondary crit 0.4 0 -0.1
+ShootParticlesSecondary crit 0.4 0 0.1
+ShootParticlesSecondary flansmod.fmflame 0 0 0
+
+
+//advpaintjob Settings
+//Format is "advpaintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+
+advpaintjob BlackAce BF109G10_AceDark BF109G10_AceDark black 8 yellow 2
+advpaintjob Trop BF109G10_Trop BF109G10_Trop yellow 8 silver 2
+advpaintjob ErichHartmann BF109G10_ErichHartmann BF109G10_ErichHartmann green 8 black 2 

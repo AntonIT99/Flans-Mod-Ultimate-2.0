@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="36.2.0"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate_warfare44"
+version="3.2"
+displayName="Warfare 44 Content Pack"
+logoFile=""
+authors="War_Monger / ww2destroyer"
+displayTest = "NONE"
+description=''''''
+
+[[dependencies.flansmodultimate_warfare44]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.4.0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_warfare44]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20,1.21)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_warfare44]]
+    modId="flansmodultimate"
+    mandatory=true
+    versionRange="*"
+    ordering="BEFORE"
+    side="BOTH"

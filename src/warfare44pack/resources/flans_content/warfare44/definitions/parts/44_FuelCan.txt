@@ -1,0 +1,10 @@
+Name Fuel Can
+ShortName 44_FuelCan
+Icon 44_FuelCan
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23290
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Fuel, Misc
+Category Fuel
+Fuel 1000
+StackSize 8

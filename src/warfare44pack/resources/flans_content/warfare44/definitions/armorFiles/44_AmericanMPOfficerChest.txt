@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name American MP Officer Jacket
+ShortName 44_AmericanMPOfficerChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_AmericanMPOfficerChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.AmericanMPOfficerChest
+ArmorTexture Skin44_AmericanMPOfficer
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German Palmenmuster Jacket
+ShortName 44_GermanPalmenmusterChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanPalmenmusterChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.GermanPalmenmusterChest
+ArmorTexture Skin44_GermanPalmenmusterChest
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

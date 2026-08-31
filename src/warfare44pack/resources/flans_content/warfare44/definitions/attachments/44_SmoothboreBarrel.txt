@@ -1,0 +1,21 @@
+Name Smoothbore Barrel
+ShortName 44_SmoothboreBarrel
+Icon 44_SmoothboreBarrel
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType barrel
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.15
+SpreadMultiplier 1.15
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+
+//ModeOverride SemiAuto
+
+Model W44.Barrel
+Texture None
+
+Description Barrel Attachment : _Decreases Accuracy by 15% _Increases Damage by 15%

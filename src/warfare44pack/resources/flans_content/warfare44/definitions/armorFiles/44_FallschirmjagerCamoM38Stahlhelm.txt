@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Fallschirmjager Camo M38 Stahlhelm
+ShortName 44_FallschirmjagerCamoM38Stahlhelm
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_FallschirmjagerCamoM38Stahlhelm
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+
+
+//Visuals
+Model W44.FallschirmjagerCamoM38Stahlhelm
+ArmorTexture Skin44_FallschirmjagerCamo
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

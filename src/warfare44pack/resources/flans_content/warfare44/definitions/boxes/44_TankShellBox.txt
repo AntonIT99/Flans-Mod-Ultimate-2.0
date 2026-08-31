@@ -1,0 +1,85 @@
+Name Tank Shell Box
+ShortName 44_TankShellBox
+TopTexture 44_WeaponBoxTop
+SideTexture 44_TankShellBox
+BottomTexture 44_WeaponBoxBottom
+GunBoxID 150
+Recipe I ingotIron L log F 44_GermanFlag
+LLL
+IFI
+LLL
+
+//Gui texture stuff
+GuiTexture gui/W44Template
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+NumGuns 30
+
+//
+SetPage Small Cal.
+
+AddGun 44_37APShell 1 gunpowder 1 ingotIron
+AddGun 44_47APShell 2 gunpowder 1 ingotIron
+AddGun 44_50APShell 2 gunpowder 1 ingotIron
+AddGun 44_57APShell 2 gunpowder 2 ingotIron
+AddGun 44_SmallHEShell 1 tnt 1 gunpowder 1 ingotIron
+
+//
+SetPage Flak
+AddGun 44_20mmAircraftAmmo 3 gunpowder 2 44_Magazine
+AddGun 44_37mmAircraftAmmo 4 gunpowder 2 44_Magazine
+AddGun 44_Flak37Ammo 3 gunpowder 1 44_Magazine
+AddGun 44_Bofors40mmAmmo 4 gunpowder 1 44_Magazine
+AddGun 44_20mmCannon 2 ingotIron 1 44_Tank_Barrel
+AddAmmo 44_20mmAmmo 1 gunpowder 1 ingotIron 1 44_Magazine
+AddGun 44_Type98AAAmmo 1 gunpowder 1 ingotIron 1 44_Magazine
+
+//
+SetPage Medium Cal.
+
+AddGun 44_75APShell 4 gunpowder 3 ingotIron
+AddGun 44_75APShellLong 4 gunpowder 4 ingotIron
+AddGun 44_76APShell 3 gunpowder 3 ingotIron
+AddGun 44_76APShellLong 4 gunpowder 4 ingotIron
+AddGun 44_85APShell 4 gunpowder 4 ingotIron
+AddGun 44_88APShell 5 gunpowder 4 ingotIron
+AddGun 44_MediumHEShell 3 tnt 3 gunpowder 2 ingotIron
+
+//
+SetPage Large Cal.
+
+AddGun 44_88APShellLong 5 gunpowder 5 ingotIron
+AddGun 44_90APShell 6 gunpowder 5 ingotIron
+AddGun 44_100APShell 6 gunpowder 6 ingotIron
+AddGun 44_MediumArtilleryHEShell 3 tnt 5 gunpowder 3 ingotIron
+AddGun 44_LargeHEShell 5 tnt 5 gunpowder 3 ingotIron
+
+//
+SetPage V Large Cal.
+
+AddGun 44_122APShell 8 gunpowder 8 ingotIron
+AddGun 44_HEMortarShell 6 tnt 4 gunpowder 2 ingotIron
+AddGun 44_VeryLargeHEShell 8 tnt 6 gunpowder 5 ingotIron
+
+//
+SetPage Misc Cal.
+
+AddGun 44_250kg500lbBomb 6 tnt 6 gunpowder 5 ingotIron
+AddGun 44_UnguidedRocket 1 tnt 1 gunpowder 2 ingotIron
+AddGun 44_Torpedo 1 tnt 1 44_Metal_Propeller 3 ingotIron
+
+//
+SetPage Turrets
+AddGun 44_37mmCannon 2 ingotIron 1 44_Tank_Barrel 1 44_Gun_Shield
+AddGun 44_47mmCannon 4 ingotIron 1 44_Tank_Barrel 1 44_Gun_Shield
+AddGun 44_75mmCannon 6 ingotIron 1 44_Tank_Barrel 1 44_Gun_Shield

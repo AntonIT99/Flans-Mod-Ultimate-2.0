@@ -1,0 +1,20 @@
+Name Pistol Barrel
+ShortName 44_PistolBarrel
+Icon 44_PistolBarrel
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType barrel
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.2
+SpreadMultiplier 0.5
+RecoilMultiplier 1.1
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+//Model
+Model W44.PistolBarrel
+Texture Skin44_PistolBarrel
+ModelScale 0.15
+
+Description Barrel Attachment : _Luger _Mauser M712

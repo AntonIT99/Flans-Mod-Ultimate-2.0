@@ -1,0 +1,22 @@
+Name Hollow Point Bullet
+ShortName 44_HPBullet
+Icon 44_HPBullet
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType generic
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.25
+SpreadMultiplier 1.1
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 0.9
+ReloadTimeMultiplier 1.0
+
+//ModeOverride SemiAuto
+
+//Model
+//Model None
+//Texture None
+
+Description Generic Attachment : _Increases Damage by 25% _Decreases Accuracy by 10% _Decreases Bullet Speed by 10%

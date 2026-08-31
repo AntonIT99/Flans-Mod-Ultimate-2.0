@@ -1,0 +1,12 @@
+Name MG Tripod
+ShortName 44_MG_Engine
+Icon 44_MG_Engine
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23275
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Engine
+EngineSpeed 0
+FuelConsumption 0
+WorksWith vehicles planes
+StackSize 4

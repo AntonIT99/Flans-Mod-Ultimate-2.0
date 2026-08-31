@@ -1,0 +1,59 @@
+////Name and icon
+Name M24 Stielhandgranate AT-Bundle
+ShortName 44_stielhandgranateATBundle
+Icon 44_StielhandgranateATBundle
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 4
+////Visuals
+Model W44.StielhandgranateATBundle
+Texture Skin44_StielhandgranateATBundle
+TrailParticles true
+TrailParticleType smoke
+ExplodeParticles 3
+//ExplodeParticleType <particleType>
+SmokeTime 0
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+////Throwing
+ThrowDelay 10
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.6
+HitEntityDamage 1
+ThrowSpeed 1.85
+FallSpeed 1.25
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 100
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionBreaksBlocks true
+//DropItemOnDetonate <itemID.damage>
+//Detonate Sound <sound>
+////Misc
+MeleeDamage 4
+
+////Detonation
+FireRadius 0.0
+ExplosionRadius 4
+ExplosionDamageVsLiving 10.0
+ExplosionDamageVsPlane 100
+ExplosionDamageVsVehicle 5
+ExplosionBreaksBlocks true
+
+
+Description German AT-Grenade

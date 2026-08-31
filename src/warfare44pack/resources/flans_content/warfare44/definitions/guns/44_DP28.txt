@@ -1,0 +1,66 @@
+Name DP28
+ShortName 44_DP28
+//The ammo this gun uses (shortName)
+Ammo 44_DP28Ammo
+Icon 44_DP28
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, DP28 = 3, DP28Sniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 4
+//Time in ticks between rounds
+RoundsPerMin 550
+ShootSound DP28Shoot
+ReloadSound Mg34Reload
+EmptyClickSound emptyclick
+
+Mode FullAuto
+EmptyClickSound emptyclick
+MoveSpeedModifier 0.35
+//Bullet speed, default 3.0
+BulletSpeed 15.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.DP28
+Texture Skin44_DP28
+ModelScale 0.25
+AllowAttachments 44_OpticalSight 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 8.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.5
+DecreaseRecoil 7.5
+DecreaseRecoilYaw 2.0
+
+Description Soviet Light Machine Gun
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 4
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

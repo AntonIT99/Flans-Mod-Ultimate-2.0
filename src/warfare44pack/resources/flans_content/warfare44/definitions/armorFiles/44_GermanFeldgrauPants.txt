@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German Feldgrau Pants
+ShortName 44_GermanFeldgrauPants
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanFeldgrauPants
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Pants
+
+
+//Visuals
+Model W44.GermanFeldgrauPants
+ArmorTexture Skin44_PzGrenadierFeldgrau
+
+
+//Armor Settings
+Defence 0.1
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

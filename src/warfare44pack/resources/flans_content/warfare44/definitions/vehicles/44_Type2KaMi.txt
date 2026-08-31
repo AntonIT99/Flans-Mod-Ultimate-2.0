@@ -1,0 +1,358 @@
+//----------------------------Naming
+Name Type 2 Ka-Mi [37mm]
+ShortName 44_Type2KaMi
+
+//----------------------------Visuals
+RotateWheels True
+Icon 44_Type2KaMi
+Model W44.Type2KaMi
+Texture Skin44_Type2KaMi
+
+//----------------------------Third Person Camera Distance
+CameraDistance 7.5
+
+//----------------------------Throttle
+MaxThrottle 0.79
+MaxNegativeThrottle 0.4607
+ClutchBrake 0.01975
+
+//----------------------------Steering modifiers
+TurnLeftSpeed 0.395
+TurnRightSpeed 0.395
+
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+
+//----------------------------Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+
+//Bouncy bouncy
+Bounciness 0.3
+
+//If true, then all wheels will apply drive forces
+//----------------------------Tank mode activate
+Tank true
+FourWheelDrive true
+
+//----------------------------Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+
+//----------------------------Inventory Slots
+CargoSlots 20
+ShellSlots 4
+AllowAllAmmo false
+
+//----------------------------Driver and passenger positions
+Driver 0 47 0 -360 360 -10 24
+RotatedDriverOffset -3 0 0
+Passengers 0
+//Passenger 1 34 0 7 core -10 10 -10 10 44_Type99 PassengerGun1
+//GunOrigin 1 26 -6 -4
+// X + 5 , -Y -20
+//----------------------------Ammo
+AddAmmo 44_37APShell
+AddAmmo 44_SmallHEShell
+AllowAllAmmo False
+//Secondary gun
+AddGun 24 35 -4 turret 44_Type99
+ShootDelay 3
+ShellDelay 105
+
+VehicleGunReloadTick 40
+ShootReloadSound Breach
+//----------------------------Sounds
+PlaceTimePrimary 80
+StartSound TankIdle1
+StartSoundLength 41
+EngineSound Engine_LT_LVT
+EngineSoundLength 39
+BackSoundLength 39
+BackSound Engine_LT_LVT
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+ShootSoundPrimary Shoot_37mm
+ShootSoundSecondary Type99Shoot
+
+//----------------------------Recipe
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 44_Medium_Tank_Turret 1 44_Vehicle_Seat
+AddRecipeParts core 1 44_Medium_Tank_Chassis 1 44_Vehicle_Seat
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 brown
+
+//Health and collision
+
+SetupPart core 800 -60 -2 -29 110 56 58
+SetupPart leftTrack 300 -60 -10 -27 104 24 9
+SetupPart rightTrack 300 -60 -10 18 104 24 9
+
+BulletDetection 2
+
+//Size Multiplier; scales up the model
+ModelScale 1.4
+Description Japanese Amphibious Light Tank__Uses : 37mm AP Tank Shell_Small Cal. HE Tank Shell __Year Introduced : 1942
+
+//----------------------------Barrel
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+ShootParticlesSecondary crit 0.5 0 0
+BarrelPosition 45 37 1
+
+CanRoll true
+
+//----------------------------Smoke effects
+
+//----------------------------Basic emission
+AddEmitter smoke 1 [-20.5,26,10] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter smoke 1 [-20.5,26,-10] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+//----------------------------Damage
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+
+
+//----------------------------Turret rotation stuff
+DriverAimSpeed 0.6 0.5 0
+
+DriverYawBeforePitch false
+
+DriverTraverseSounds true
+
+YawSound TurretTraverse1
+YawSoundLength 21
+
+PitchSound TurretTraverse2
+PitchSoundLength 20
+
+
+//----------------------------Exhaust Effects
+//1st gear change
+
+AddEmitter largesmoke 1 [-20.5,26,-10] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+
+//1st gear
+
+AddEmitter explode 1 [-20.5,26,-10] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+
+//2nd gear change
+
+AddEmitter largesmoke 1 [-20.5,26,-10] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+
+//2nd gear
+
+AddEmitter explode 1 [-20.5,26,-10] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+
+
+//3rd gear change
+
+AddEmitter largesmoke 1 [-20.5,26,-10] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+
+AddEmitter flame 1 [-20.5,26,-10] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+
+//3rd gear
+AddEmitter explode 1 [-20.5,26,-10] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+
+AddEmitter largesmoke 3 [-20.5,26,-10] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-20.5,26,-10] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+
+AddEmitter flame 1 [-20.5,26,-10] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+
+
+
+
+
+//1st gear change
+
+AddEmitter largesmoke 1 [-20.5,26,10] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+
+//1st gear
+
+AddEmitter explode 1 [-20.5,26,10] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+
+//2nd gear change
+
+AddEmitter largesmoke 1 [-20.5,26,10] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+
+//2nd gear
+
+AddEmitter explode 1 [-20.5,26,10] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+
+
+//3rd gear change
+
+AddEmitter largesmoke 1 [-20.5,26,10] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+
+AddEmitter flame 1 [-20.5,26,10] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+
+//3rd gear
+AddEmitter explode 1 [-20.5,26,10] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+
+AddEmitter largesmoke 3 [-20.5,26,10] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-20.5,26,10] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+
+AddEmitter flame 1 [-20.5,26,10] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+//----------------------------Tracks
+
+TrackLinkLength 4
+
+RightLinkPoint [28,9,-17]
+RightLinkPoint [31,6,-17]
+RightLinkPoint [31,2,-17]
+RightLinkPoint [28,-1,-17]
+RightLinkPoint [28,-1,-17]
+RightLinkPoint [16,-6,-17]
+RightLinkPoint [-40,-6,-17]
+RightLinkPoint [-40,-6,-17]
+RightLinkPoint [-42,-3,-17]
+RightLinkPoint [-42,1,-17]
+RightLinkPoint [-42,1,-17]
+RightLinkPoint [-39,4,-17]
+RightLinkPoint [-9,9,-17]
+RightLinkPoint [12,9,-17]
+RightLinkPoint [24,9,-17]
+
+LeftLinkPoint [28,9,17]
+LeftLinkPoint [31,6,17]
+LeftLinkPoint [31,2,17]
+LeftLinkPoint [28,-1,17]
+LeftLinkPoint [28,-1,17]
+LeftLinkPoint [16,-6,17]
+LeftLinkPoint [-40,-6,17]
+LeftLinkPoint [-40,-6,17]
+LeftLinkPoint [-42,-3,17]
+LeftLinkPoint [-42,1,17]
+LeftLinkPoint [-42,1,17]
+LeftLinkPoint [-39,4,17]
+LeftLinkPoint [-9,9,17]
+LeftLinkPoint [12,9,17]
+LeftLinkPoint [24,9,17]
+
+
+BulletSpeed 9
+BulletSpread 5
+IsExplosionWhenDestroyed true
+
+//advpaintjob Settings
+//Format is "advpaintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+
+advpaintjob Green 44_Type2KaMi_Green 44_Type2KaMi_Green green 5
+advpaintjob Gray 44_Type2KaMi_Gray 44_Type2KaMi_Gray cyan 5
+
+//Extras
+
+FlipLinkFix false
+FixTrackLink 4
+
+SquashMobs True
+
+
+Boat
+PlaceableOnLand True
+FloatOnLand true
+PlaceableOnWater True
+FloatOnWater True
+WheelStepHeight 2
+Buoyancy 0.6
+
+FloatOffset -1.2

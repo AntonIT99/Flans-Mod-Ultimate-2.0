@@ -1,0 +1,22 @@
+Name Marksman Trigger
+ShortName 44_MarksmanTrigger
+Icon 44_MarksmanTrigger
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType gadget
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.9
+RecoilMultiplier 1.05
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+
+//ModeOverride SemiAuto
+
+//Model
+//Model None
+//Texture None
+
+Description Gadget Attachment : _Increases Accuracy by 10% _Increases Recoil by 5%

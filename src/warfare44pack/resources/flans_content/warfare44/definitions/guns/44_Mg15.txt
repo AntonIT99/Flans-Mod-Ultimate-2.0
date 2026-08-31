@@ -1,0 +1,64 @@
+Name MG-15
+ShortName 44_Mg15
+//The ammo this gun uses (shortName)
+Ammo 44_Mg15Ammo
+Icon 44_Mg15
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mg15 = 3, Mg15Sniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 5
+//Time in ticks between rounds
+ShootDelay 2
+ShootSound SKSShoot
+ReloadSound Mg34Reload
+Mode FullAuto
+EmptyClickSound emptyclick
+MoveSpeedModifier 0.35
+//Bullet speed, default 3.0
+BulletSpeed 15.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.Mg15
+Texture Skin44_Mg15
+ModelScale 0.15
+AllowAttachments 44_ZF41Scope 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 8.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.5
+DecreaseRecoil 7.25
+DecreaseRecoilYaw 2.0
+
+Description German Light Machine Gun
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 4
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

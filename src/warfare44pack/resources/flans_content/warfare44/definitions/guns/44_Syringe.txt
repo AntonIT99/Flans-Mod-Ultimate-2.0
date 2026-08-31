@@ -1,0 +1,56 @@
+Name Medical Syringe
+ShortName 44_Syringe
+
+//The ammo this gun uses (shortName)
+Ammo 44_Morphine
+Icon 44_Syringe
+
+
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 30
+
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1
+
+//Damage in half hearts
+Damage 1
+
+//The higher this value, the more the bullets spread
+Accuracy 2
+
+//Time in ticks between rounds
+ShootDelay 30
+Mode SemiAuto
+
+//Bullet speed, default 3.0
+BulletSpeed 10.0
+
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+//Deployable Settings
+Deployable False
+DeployedModel None
+
+//Model settings
+Model W44.Syringe
+Texture Skin44_Syringe
+ModelScale 0.15
+
+//Attachment Settings
+AllowAllAttachments false
+
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+MoveSpeedModifier 1.0
+
+Description Uses : Tube of Morphine

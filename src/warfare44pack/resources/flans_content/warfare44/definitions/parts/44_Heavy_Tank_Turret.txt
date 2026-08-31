@@ -1,0 +1,9 @@
+Name Heavy Tank Turret
+ShortName 44_Heavy_Tank_Turret
+Icon 44_Heavy_Tank_Turret
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23458
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Turret
+StackSize 4

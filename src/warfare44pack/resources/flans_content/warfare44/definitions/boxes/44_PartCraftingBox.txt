@@ -1,0 +1,137 @@
+Name W44 Crafting Box
+ShortName 44_CraftingBox
+TopTexture 44_CraftingBoxTop
+SideTexture 44_CraftingBoxSide
+BottomTexture 44_CraftingBoxBottom
+GunBoxID 131
+Recipe I ingotIron B blockIron C workbench S stone
+ICI
+SSS
+BBB
+
+//Gui texture stuff
+GuiTexture gui/W44Template
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+NumGuns 64
+
+//
+SetPage Flags
+
+AddGun 44_AmericanFlag 1 cloth.11 3 cloth.0 5 cloth.14
+AddGun 44_GermanFlag 5 cloth.15 4 cloth.14
+AddGun 44_SovietFlag 8 cloth.14 1 cloth.4
+AddGun 44_BritishFlag 5 cloth.14 4 cloth.11
+AddGun 44_JapaneseFlag 8 cloth.0 1 cloth.14
+
+//
+SetPage Medical
+
+AddGun 44_Bandage 3 cloth
+AddGun 44_MedicalBag 5 cloth 2 potion.8229
+AddGun 44_MedicalKit 3 ingotIron 1 potion.8229
+AddGun 44_Syringe 3 glass 1 ingotIron
+AddAmmo 44_Morphine 1 glass 1 potion.8229
+
+//
+SetPage Tools
+
+AddGun 44_Binoculars 4 44_Glass_Lens 4 ingotIron
+AddGun 44_Parachute 3 cloth 4 string
+AddGun 44_RepairTool 4 coal 2 ingotIron
+AddGun 44_Wrench 3 ingotIron
+AddGun 44_AmmoBag 4 44_Magazine 3 gunpowder
+AddGun 44_SmallAmmoPouch 2 44_Magazine 1 gunpowder
+AddGun 44_BearTrap 5 ingotIron 1 44_Spring 1 44_Metal_Rod
+
+//
+SetPage Explosives
+
+AddGun 44_Dynamite 3 tnt 4 gunpowder
+AddAmmo 44_DynamiteDetonator 1 reddust 1 lever 2 ingotIron
+AddGun 44_LandMine 1 tnt 3 gunpowder 
+AddGun 44_SatchelCharge 2 tnt 3 gunpowder
+AddGun 44_TripMine 1 string 1 tnt 2 ingotIron
+AddGun 44_SMine 1 tnt 3 ingotIron
+
+//
+SetPage MiscCrafting
+
+AddGun 44_Metal_Rod 2 ingotIron
+AddGun 44_Crank_Shaft 1 44_Metal_Rod 2 ingotIron
+AddGun 44_Boat_Body 16 44_Armor_Plate_Sheet 2 44_Metal_Propeller 1 44_Glass_Windshield
+
+//
+SetPage Guns
+
+AddGun 44_Spring 1 ingotIron
+AddGun 44_Magazine 3 ingotIron 1 44_Spring
+AddGun 44_Trigger 1 ingotIron
+AddGun 44_Grip 3 ingotIron 1 44_Trigger
+AddGun 44_Gun_Barrel 2 ingotIron
+AddGun 44_Receiver 1 44_Spring 1 44_Metal_Rod 3 ingotIron
+AddGun 44_Glass_Lens 1 thinGlass 1 ingotIron
+
+//
+SetPage Planes
+
+AddGun 44_Metal_Propeller 3 44_Metal_Rod 3 ingotIron
+AddGun 44_Fuselage 2 ingotIron 4 44_Armor_Plate_Sheet
+AddGun 44_Tail 3 44_Armor_Plate_Sheet
+AddGun 44_Aircraft_Wing_Section 4 44_Armor_Plate_Sheet
+AddGun 44_Glass_Windshield 4 ingotIron 4 thinGlass 1 44_Vehicle_Seat
+AddGun 44_FighterAircraftBody 1 44_Fuselage 1 44_Tail 2 44_Car_Wheel 1 44_Glass_Windshield 8 ingotIron 2 44_Aircraft_Wing_Section
+AddGun 44_AttackerAircraftBody 2 44_Fuselage 1 44_Tail 2 44_Car_Wheel 2 44_Glass_Windshield 16 ingotIron 4 44_Aircraft_Wing_Section
+AddGun 44_BomberAircraftBody 3 44_Fuselage 1 44_Tail 2 44_Car_Wheel 3 44_Glass_Windshield 16 ingotIron 6 44_Aircraft_Wing_Section
+
+//
+SetPage Tanks-1
+
+AddGun 44_Engine_Piston 1 flintAndSteel 1 44_Crank_Shaft 1 44_Metal_Rod 2 ingotIron
+AddGun 44_Low_Powered_Engine 2 44_Engine_Piston 3 ingotIron
+AddGun 44_Medium_Powered_Engine 4 44_Engine_Piston 1 44_Low_Powered_Engine 6 ingotIron
+AddGun 44_High_Powered_Engine 6 44_Engine_Piston 2 44_Medium_Powered_Engine 9 ingotIron
+AddGun 44_MG_Engine 3 44_Metal_Rod 1 ingotIron
+AddGun 44_Gun_Shield 2 44_Armor_Plate_Sheet
+AddGun 44_Vehicle_Seat 3 leather 2 ingotIron
+AddGun 44_Armor_Plate_Sheet 1 44_Metal_Rod 4 ingotIron
+
+//
+SetPage Tanks-2
+
+AddGun 44_Reinforced_Plating 2 44_Metal_Rod 6 ingotIron
+AddGun 44_FuelCan 3 coal 1 ingotIron
+AddGun 44_Tank_Wheel 1 44_Metal_Rod 4 ingotIron
+AddGun 44_Track_Link 3 ingotIron
+AddGun 44_Tank_Track 3 44_Track_Link 3 44_Metal_Rod
+AddGun 44_Metal_Tube 4 ingotIron
+AddGun 44_Tank_Gun_Breach 1 trapdoor 4 ingotIron 1 lever
+AddGun 44_Muzzle_Brake 5 ingotIron
+
+//
+SetPage Tanks-3
+
+AddGun 44_Tank_Barrel 1 44_Tank_Gun_Breach 1 44_Metal_Tube 1 44_Muzzle_Brake
+AddGun 44_Metal_Turret 4 ingotIron 1 trapdoor
+AddGun 44_Light_Tank_Chassis 4 44_Tank_Wheel 8 ingotIron
+AddGun 44_Light_Tank_Turret 1 44_Metal_Turret 1 44_Tank_Barrel
+AddGun 44_Medium_Tank_Chassis 6 44_Tank_Wheel 2 44_Reinforced_Plating 10 ingotIron
+AddGun 44_Medium_Tank_Turret 1 44_Metal_Turret 1 44_Tank_Barrel 4 ingotIron
+AddGun 44_Heavy_Tank_Chassis 8 44_Tank_Wheel 4 44_Reinforced_Plating 12 ingotIron
+AddGun 44_Heavy_Tank_Turret 1 44_Metal_Turret 1 44_Tank_Barrel 3 44_Reinforced_Plating
+
+//
+SetPage Cars
+
+AddGun 44_Car_Wheel 1 44_Metal_Rod 4 leather
+AddGun 44_Car_Chassis 6 ingotIron 2 thinGlass 2 44_Metal_Rod

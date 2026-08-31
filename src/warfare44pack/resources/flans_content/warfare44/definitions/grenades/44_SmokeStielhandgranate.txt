@@ -1,0 +1,54 @@
+////Name and icon
+Name Nebelhandgranate39
+ShortName 44_Smokestielhandgranate
+Icon 44_SmokeStielhandgranate
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+////Item and recipe
+StackSize 4
+////Visuals
+Model W44.Stielhandgranate
+Texture Skin44_SmokeStielhandgranate
+TrailParticles false
+//TrailParticleType flansmod.fmsmoke
+ExplodeParticles 5
+ExplodeParticleType flansmod.Smoker1
+SmokeTime 250
+SmokeRadius 5
+SmokeParticleType flansmod.Smoker1
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+SpinWhenThrown true
+////Throwing
+ThrowDelay 10
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.7
+HitEntityDamage 1
+ThrowSpeed 1.5
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky false
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 100
+DetonateWhenShot true
+Remote false
+//DespawnTime 0
+PrimeDelay 0
+////Detonation
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+//DropItemOnDetonate <itemID.damage>
+//Detonate Sound <sound>
+////Misc
+MeleeDamage 4
+
+Description German Smoke Grenade

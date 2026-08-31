@@ -1,0 +1,140 @@
+//Naming
+Name ZiS-2 [57mm]
+ShortName 44_ZiS2
+//Visuals
+Icon 44_ZiS2
+Model W44.ZiS2
+Texture Skin44_ZiS23
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0
+MaxNegativeThrottle 0
+//Steering modifiers
+TurnLeftSpeed 0
+TurnRightSpeed 0
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -32 -10 -18
+WheelPosition 1 -32 -10 18
+WheelPosition 2 20 -10 18
+WheelPosition 3 20 -10 -18
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Tank mode activate
+Tank true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+//Inventory Slots
+CargoSlots 0
+ShellSlots 5
+AllowAllAmmo false
+//Driver and passenger positions
+Driver 0 -8 0 -16 16 -4 22
+RotatedDriverOffset -19 0 -6
+Passengers 0
+//Delays are in ticks or 1/20ths of seconds
+AddAmmo 44_57APShell
+AddAmmo 44_SmallHEShell
+AllowAllAmmo false
+ShootDelay 1
+ShellDelay 70
+
+VehicleGunReloadTick 40
+ShootReloadSound Breach
+//Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+ShootSoundPrimary Shoot_57mm
+DamageModifierPrimary 1
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_Tank_Barrel 1 44_Gun_Shield 2 44_Car_Wheel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 3 gray
+//Health and collision
+SetupPart core 300 -40 -8 -18 60 24 36
+BulletDetection 7
+ModelScale 1
+Description Soviet Field Gun__Uses : 57mm AP Tank Shell_Small Cal. HE Tank Shell __Year Introduced : 1941
+
+//Barrel
+BarrelPosition 70 6 0
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+//Turret traverse speeds, yaw/pitch/z (z is unused, set to 0)
+DriverAimSpeed 0.45f 0.35f 0f
+
+//Set to true to adjust turret yaw before pitch
+DriverYawBeforePitch true
+
+//Turret traverse sounds
+
+//Enables traverse sounds for driver turret
+DriverTraverseSounds false
+
+PitchSound TurretTraverse1
+PitchSoundLength 61
+
+YawSound TurretTraverse2
+YawSoundLength 38
+
+BulletSpeed 11
+BulletSpread 1
+IsExplosionWhenDestroyed true

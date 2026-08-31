@@ -1,0 +1,12 @@
+Name Dynamite Detonator
+ShortName 44_DynamiteDetonator
+Icon 44_DynamiteDetonator
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+Heal false
+Repair false
+ExplosiveRemote true
+HealAmount 0
+ToolLife 0
+DestroyOnEmpty true
+StackSize 1

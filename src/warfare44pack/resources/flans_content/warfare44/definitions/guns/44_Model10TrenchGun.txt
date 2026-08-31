@@ -1,0 +1,75 @@
+Name Model10 TrenchGun
+ShortName 44_Model10TrenchGun
+//The ammo this gun uses (shortName)
+Ammo 44_Model10TrenchGunAmmo
+Icon 44_Model10TrenchGun
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 93
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+//Number of bullet entities to create, useful for shotguns, defaults to 1
+NumBullets 5
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 8
+//Time in ticks between rounds
+ShootDelay 20
+ShootSound Model10TrenchGunShoot
+ReloadSound Model10TrenchGunReload
+Mode SemiAuto
+OneHanded False
+//Bullet speed, default 3.0
+BulletSpeed 12.0
+//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+//Deployable Settings
+Deployable False
+DeployedModel None
+//Model settings
+Model W44.Model10TrenchGun
+Texture Skin44_Model10TrenchGun
+ModelScale 0.25
+//Attachment Settings
+AllowAllAttachments false
+//List here all the attachments allowed on this gun by shortName and separated by spaces
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+MoveSpeedModifier 0.85
+
+//Recoil
+Recoil 6
+RandomRecoilRange 5
+RandomRecoilYawRange 0.75
+DecreaseRecoil 3.5
+DecreaseRecoilYaw 2.0
+
+Description American Pump Shotgun
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 5
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

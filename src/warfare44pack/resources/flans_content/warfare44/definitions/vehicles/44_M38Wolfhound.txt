@@ -1,0 +1,256 @@
+//----------------------------Naming
+Name M38 Wolfhound [75mm]
+ShortName 44_M38Wolfhound
+
+//----------------------------Visuals
+RotateWheels True
+Icon 44_M38Wolfhound
+Model W44.M38Wolfhound
+Texture Skin44_M38Wolfhound
+
+//----------------------------Third Person Camera Distance
+CameraDistance 7.5
+
+//----------------------------Throttle
+MaxThrottle 1.0
+MaxNegativeThrottle 0.6
+
+//----------------------------Steering modifiers
+TurnLeftSpeed 0.68
+TurnRightSpeed 0.68
+
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+
+//----------------------------Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+
+//Bouncy bouncy
+Bounciness 0.3
+
+//If true, then all wheels will apply drive forces
+//----------------------------Tank mode activate
+Tank false
+FourWheelDrive true
+
+//----------------------------Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+
+//----------------------------Inventory Slots
+CargoSlots 20
+ShellSlots 3
+AllowAllAmmo false
+
+//----------------------------Driver and passenger positions
+Driver 0 24 0 -360 360 -8 15
+RotatedDriverOffset -12 0 -7
+Passengers 0
+//Passenger 1 21 5 12 core -10 10 -10 10 44_30Cal PassengerGun1
+//GunOrigin 1 42 -12 15 
+// X + 5 , -Y -20
+//----------------------------Ammo
+AddAmmo 44_75APShell
+AddAmmo 44_MediumHEShell
+AllowAllAmmo False
+//Secondary gun
+AddGun 20 28 6 turret 44_30Cal
+AddGun -4 39 6 turret 44_50Cal
+ShootDelay 3
+ShellDelay 135
+
+VehicleGunReloadTick 40
+ShootReloadSound Breach
+//----------------------------Sounds
+StartSound JeepIdle
+StartSoundLength 7
+EngineSound Engine_LT_ArmoredCar
+EngineSoundLength 39
+ShootSoundPrimary Shoot_75mmUS
+ShootSoundSecondary 30CalShoot
+SoundsPlaceTimePrimary 60
+BackSound Engine_LT_ArmoredCar
+StartSoundRange 41
+EngineSoundRange 50
+BackSoundLength 61
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+//----------------------------Recipe
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
+AddRecipeParts core 1 44_Light_Tank_Chassis 1 44_Vehicle_Seat
+AddRecipeParts leftTrack 3 44_Car_Wheel
+AddRecipeParts rightTrack 3 44_Car_Wheel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 3 green
+
+//Health and collision
+SetupPart core 1200 -54 -4 -19 98 38 38
+SetupPart frontLeftWheel 50 17 -10 19 20 20 7
+SetupPart frontRightWheel 50 17 -10 -26 20 20 7
+SetupPart backLeftWheel 50 -43 -10 19 50 20 7
+SetupPart backRightWheel 50 -43 -10 -26 50 20 7
+
+BulletDetection 5
+
+//Size Multiplier; scales up the model
+ModelScale 1
+Description American Armored Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank Shell __Year Introduced : 1944
+BulletDetection 5
+
+//----------------------------Barrel
+
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+ShootParticlesSecondary crit 0.5 0 0
+BarrelPosition 50 26 0
+
+CanRoll true
+
+//----------------------------Smoke effects
+
+//----------------------------Basic emission
+AddEmitter smoke 1 [-52,16,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+//----------------------------Damage
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+
+
+//----------------------------Turret rotation stuff
+DriverAimSpeed 1.13 1.03 0
+
+DriverYawBeforePitch false
+
+DriverTraverseSounds true
+
+YawSound TurretTraverse1
+YawSoundLength 21
+
+PitchSound TurretTraverse2
+PitchSoundLength 20
+
+
+//----------------------------Exhaust Effects
+//1st gear change
+
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+
+//1st gear
+
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear change
+
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+
+//3rd gear change
+
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+
+AddEmitter flame 1 [-58,9,7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter largesmoke 3 [-58,9,7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+AddEmitter largesmoke 3 [-58,9,-7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
+
+AddEmitter flame 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+BulletSpeed 7
+BulletSpread 4
+IsExplosionWhenDestroyed true

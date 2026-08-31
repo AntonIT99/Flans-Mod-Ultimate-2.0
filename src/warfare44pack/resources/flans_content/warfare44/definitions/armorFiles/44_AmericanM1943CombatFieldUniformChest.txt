@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name American M-1943 Combat Field Uniform Jacket
+ShortName 44_AmericanM1943CombatFieldUniformChest
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_AmericanM1943CombatFieldUniformChest
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Body
+
+
+//Visuals
+Model W44.AmericanM1943CombatFieldUniformChest
+ArmorTexture Skin44_AmericanM1943CombatFieldUniform
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

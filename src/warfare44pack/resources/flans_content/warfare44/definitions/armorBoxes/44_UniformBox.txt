@@ -1,0 +1,137 @@
+Name W44 Uniform Box
+ShortName 44_UniformBox
+TopTexture 44_WeaponBoxTop
+SideTexture 44_UniformBox
+BottomTexture 44_WeaponBoxBottom
+Recipe I ingotIron L log C cloth
+LLL
+ICI
+LLL
+
+//AddArmour
+////American
+AddArmour American1941 American Uniform - 1941
+44_AmericanM1HelmetNoNetting ingotIron 5
+44_AmericanM1941CombatFieldUniformChest cloth.4 8 44_AmericanFlag 1
+44_AmericanM1941CombatFieldUniformPants cloth.13 7
+44_AmericanBoots leather 4
+
+AddArmour American1943 American Uniform - 1943
+44_AmericanM1HelmetNetting ingotIron 5 string 3
+44_AmericanM1943CombatFieldUniformChest cloth.13 8 44_AmericanFlag 1
+44_AmericanM1943CombatFieldUniformPants cloth.13 7
+44_AmericanBoots leather 4
+
+AddArmour AmericanAirborne American Uniform - Airborne
+44_AmericanM1HelmetNetting ingotIron 5 string 3
+44_AmericanM42AirborneChest cloth.13 8 44_AmericanFlag 1
+44_AmericanM42AirbornePants cloth.13 7
+44_AmericanBoots leather 4
+
+AddArmour AmericanWinter American Uniform - Winter
+44_AmericanM1HelmetMitchellCamo ingotIron 5 cloth.13 1
+44_AmericanGreatCoat cloth.12 8 44_AmericanFlag 1
+44_AmericanM1943CombatFieldUniformPants cloth.13 7
+44_AmericanBoots leather 4
+
+AddArmour AmericanMPOfficer American MP Officer
+44_AmericanMPOfficerHelmet ingotIron 5 cloth.13 1
+44_AmericanMPOfficerChest cloth.12 8 44_AmericanFlag 1
+44_AmericanM1943CombatFieldUniformPants cloth.13 7
+44_AmericanBoots leather 4
+
+////German
+AddArmour GermanFeldgrau1 German Uniform - Feldgrau (Helmet)
+44_GermanM42FeldgrauStahlhelm ingotIron 5
+44_GermanPzGrenadierFeldgrauChest cloth.7 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanFeldgrau2 German Uniform - Feldgrau (Hat)
+44_GermanM43FeldgrauHat cloth.7 4
+44_GermanPalmenmusterChest cloth.12 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanFeldgrau3 German Uniform - Feldgrau (Cap)
+44_GermanFeldgrauSideCap cloth.7 3
+44_GermanPzGrenadierFeldgrauChest cloth.7 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanLeibermuster1 German Uniform - Leibermuster (Helmet)
+44_GermanM42LeibermusterStahlhelm ingotIron 5 cloth.4 1
+44_GermanPzGrenadierLeibermusterChest cloth.4 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanLeibermuster2 German Uniform - Leibermuster (Hat)
+44_GermanM43LeibermusterHat cloth.4 4
+44_GermanPzGrenadierLeibermusterChest cloth.4 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanWinter German Uniform - Winter
+44_GermanOfficerHatFeldgrau cloth.7 4
+44_GermanM43GreatCoat cloth.7 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanOfficer German Uniform - Officer
+44_GermanOfficerHat cloth.15 4
+44_GermanOfficerChest cloth.15 8 44_GermanFlag 1
+44_GermanOfficerPants cloth.15 7
+44_GermanOfficerBoots leather 4
+
+AddArmour GermanWaffenM42 German Uniform - Waffen M42
+44_WaffenM42CamoStahlhelm ingotIron 5 cloth.13 1
+44_WaffenM42CamoChest cloth.13 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanWaffenM44 German Uniform - Waffen M44
+44_WaffenM44CamoStahlhelm ingotIron 5 cloth.12 1
+44_WaffenM44CamoChest cloth.12 8 44_GermanFlag 1
+44_WaffenM44CamoPants cloth.12 7
+44_GermanBoots leather 4
+
+AddArmour GermanFallschirmjager1 German Uniform - Fallschirmjager
+44_FallschirmjagerCamoM38Stahlhelm ingotIron 5 cloth.13 1
+44_FallschirmjagerCamoChest cloth.13 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanFallschirmjager2 German Uniform - Fallschirmjager (Sumpftarn)
+44_FallschirmjagerCamoM38Stahlhelm ingotIron 5 cloth.12 1
+44_GermanSumpftarnM43CamoSmock cloth.13 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+AddArmour GermanFallschirmjager3 German Uniform - Fallschirmjager (Splittermuster)
+44_FallschirmjagerCamoM38Stahlhelm ingotIron 5 cloth.12 1
+44_GermanSplittermusterCamoSmock cloth.13 8 44_GermanFlag 1
+44_GermanFeldgrauPants cloth.7 7
+44_GermanBoots leather 4
+
+///Soviet
+AddArmour SovietObr43 Soviet Uniform - Obr.43
+44_SovietSummerObr43Helmet ingotIron 5
+44_SovietSummerObr43Chest cloth.4 8 44_SovietFlag 1
+44_SovietSummerObr43Pants cloth.4 7
+44_SovietSummerObr43Boots leather 4
+
+///British
+AddArmour British40Pattern British Uniform - 40 Pattern
+44_BritishBrodieHelmet ingotIron 5
+44_British40PatternChest cloth.12 8 44_BritishFlag 1
+44_British40PatternPants cloth.12 7
+44_BritishBoots leather 4
+
+
+///Japan
+AddArmour JapaneseType98Khaki Japanese Uniform - Type 98 Chest (Khaki)
+44_JapaneseType3FieldCap cloth.4 4
+44_JapaneseType98ChestKhaki cloth.4 8 44_JapaneseFlag 1
+44_JapaneseType98PantsKhaki cloth.4 7
+44_JapaneseBoots leather 4
+http://minecraft.wikia.com/wiki/Data_Values

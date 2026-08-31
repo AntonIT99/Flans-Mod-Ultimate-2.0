@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name British Brodie Helmet
+ShortName 44_BritishBrodieHelmet
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_BritishBrodieHelmet
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+
+
+//Visuals
+Model W44.BritishBrodieHelmet
+ArmorTexture Skin44_British40Pattern
+
+
+//Armor Settings
+Defence 0.15
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

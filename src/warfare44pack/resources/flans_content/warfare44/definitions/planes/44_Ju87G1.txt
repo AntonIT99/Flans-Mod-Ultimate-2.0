@@ -1,0 +1,113 @@
+// ------------------------------------------------------ Naming ------------------------------------------------------
+Name JU-87 G1
+ShortName 44_Ju87G1
+// ------------------------------------------------------ Visuals ------------------------------------------------------
+Icon 44_Ju87G1
+Model W44.Ju87G1
+Texture Skin44_Ju87G1
+//Third Person Camera Distance
+CameraDistance 10.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 10.0
+// ------------------------------------------------------ Movement ------------------------------------------------------
+//Mode : One of Plane, Heli or VTOL. The VTOL has a toggle button that switches some model aesthetics and the flight mode
+Mode Plane
+//Throttle
+MaxThrottle 2.35
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1.0
+TurnRightSpeed 1.0
+//Pitch modifiers
+LookUpSpeed 1.35
+LookDownSpeed 1.35
+//Roll modifiers
+RollLeftSpeed 1.75
+RollRightSpeed 1.75
+//Drag 1.0 is standard. Modify to make the plane / heli more or less sluggish
+Drag 1.0
+//Lift
+//Lift 2.5
+//Wheels
+NumWheels 3
+WheelPosition 0 1 -11 -30
+WheelPosition 1 0 -11 30
+WheelPosition 2 -145 19 0
+WheelSpringStrength 0.125
+//Propeller Positions
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 -4 -19 -30 core 44_Metal_Propeller
+Propeller 1 -4 -19 30 core 44_Metal_Propeller
+Propeller 2 -50 -36 0 core 44_Metal_Propeller
+// ------------------------------------------------------ Weaponry ------------------------------------------------------
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary Missile
+Secondary None
+//Time between shots in 1/20ths of seconds
+ShootDelayPrimary 10
+//ShootDelaySecondary 0
+//Whether to alternate or fire all together
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+AlternatePrimary False
+AlternateSecondary True
+
+ShootPointPrimary 55 12 45 core 44_37mmCannon
+ShootPointPrimary 55 12 -45 core 44_37mmCannon
+
+// ------------------------------------------------------ Inventory ------------------------------------------------------
+CargoSlots 30
+BombSlots 0
+MissileSlots 0
+AllowAllAmmo False
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 6000
+// ------------------------------------------------------ Passengers ------------------------------------------------------
+Pilot -23 33 0
+Passengers 1
+Passenger 1 -41 31 0 core 140 220 -5 45 44_Mg15 PassengerGun1
+GunOrigin 1 -51 26 0
+// ------------------------------------------------------ Sounds ------------------------------------------------------
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Shoot_37mDE
+//ShootSoundSecondary 
+// ------------------------------------------------------ Recipe ------------------------------------------------------
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_AttackerAircraftBody
+AddRecipeParts rightWing 1 44_37mmCannon
+AddRecipeParts leftWing 1 44_37mmCannon
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 3 silver
+AddDye 6 green
+// ------------------------------------------------------ Health and hitboxes ------------------------------------------------------
+SetupPart core 500 -175 9 -17 230 48 34
+SetupPart rightWing 300 -69 20 9 74 25 140
+SetupPart leftWing 300 -69 20 -149 74 25 140
+BulletDetection 10
+//Collision points for breaking wings etc. upon crashing
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+BulletSpeed 12
+BulletSpread 4
+
+Description German Ground Attack Aircraft __Uses 37mm AP Tank Shell __Year Introduced : 1943

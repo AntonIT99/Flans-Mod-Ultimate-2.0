@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLL",
+    "IFI",
+    "LLL"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:44_japaneseflag"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:oak_log"
+    }
+  },
+  "result": {
+    "item": "flansmod:44_japaneseweaponbox"
+  }
+}

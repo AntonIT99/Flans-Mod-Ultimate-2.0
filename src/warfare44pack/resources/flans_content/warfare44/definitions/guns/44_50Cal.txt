@@ -1,0 +1,34 @@
+Name M2 Browning .50 Cal
+ShortName 44_50Cal
+//The ammo this gun uses (shortName)
+Ammo 44_50CalAmmo
+Icon 44_50Cal
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 7475
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 100
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 1
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 4
+//Time in ticks between rounds
+ShootDelay 3
+ShootSound Shoot_MG_M2HB
+//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+SoundLength 0
+DistortSound True
+ReloadSound Mg34Reload
+Mode FullAuto
+Scope None
+Deployable false
+BulletSpeed 15.0
+add these lines: 
+usableByMechas false
+UsableByMechas false
+UsableByPlayers false
+usableByPlayers false
+
+Description American HMG - Gun Recipe Part

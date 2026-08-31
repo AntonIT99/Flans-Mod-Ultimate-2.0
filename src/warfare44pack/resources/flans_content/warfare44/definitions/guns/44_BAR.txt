@@ -1,0 +1,64 @@
+Name BAR
+ShortName 44_BAR
+//The ammo this gun uses (shortName)
+Ammo 44_BARAmmo
+Icon 44_BAR
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 79
+//The amount of gun recoil, all relative : Sten = 1, BAR = 3, BARSniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+RoundsPerMin 500
+//Time in ticks between rounds
+ShootDelay 3
+ShootSound BARShoot
+ReloadSound BARReload
+Mode FullAuto
+//Modifiers
+MoveSpeedModifier 0.7
+//Bullet speed, default 3.0
+BulletSpeed 15.0
+Scope None
+Deployable False
+DeployedModel None
+Model W44.BAR
+Texture Skin44_BAR
+ModelScale 0.25
+AllowAttachments 44_OpticalSight 44_LensSight 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 2.0
+RandomRecoilRange 1
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1
+DecreaseRecoilYaw 2.0
+
+Description American Automatic Rifle
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 3
+
+//Bullet Casing
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

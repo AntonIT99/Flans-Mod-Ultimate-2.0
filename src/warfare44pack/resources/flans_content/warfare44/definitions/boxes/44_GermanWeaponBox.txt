@@ -1,0 +1,139 @@
+Name German Weapon Box
+ShortName 44_GermanWeaponBox
+TopTexture 44_WeaponBoxTop
+SideTexture 44_GermanWeaponBox
+BottomTexture 44_WeaponBoxBottom
+GunBoxID 150
+Recipe I ingotIron L log F 44_GermanFlag
+LLL
+IFI
+LLL
+
+//Gui texture stuff
+GuiTexture gui/WeaponBoxGermanW44
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+NumGuns 36
+
+//
+SetPage Bolt-Rifles
+
+AddGun 44_Kar98k 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_Kar98kAmmo 3 ingotIron 2 gunpowder
+
+//
+SetPage SLR/ARs
+
+AddGun 44_Modell1915 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_Modell1915Ammo 1 44_Magazine 2 ingotIron 2 gunpowder
+
+AddGun 44_G43 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_G43Ammo 1 44_Magazine 2 ingotIron 2 gunpowder
+
+AddGun 44_Fg42 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Grip
+AddAmmo 44_Fg42Ammo 1 44_Magazine 2 ingotIron 1 gunpowder
+
+AddGun 44_Stg44 1 44_Gun_Barrel 1 44_Receiver 2 log 5 ingotIron 1 44_Grip
+AddAmmo 44_Stg44Ammo 1 44_Magazine 4 ingotIron 1 gunpowder
+
+//
+SetPage SMGs
+
+AddGun 44_Mp40 1 44_Gun_Barrel 1 44_Receiver 5 ingotIron 1 44_Grip
+AddAmmo 44_Mp40Ammo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+//
+SetPage MGs
+
+AddGun 44_Mg34 1 44_Gun_Barrel 1 44_Receiver 2 log 10 ingotIron 1 44_Grip
+AddAmmo 44_Mg34Ammo 5 ingotIron 5 gunpowder
+
+AddGun 44_Mg42 1 44_Gun_Barrel 1 44_Receiver 2 log 10 ingotIron 1 44_Grip
+AddAmmo 44_Mg42Ammo 1 44_Magazine 7 ingotIron 7 gunpowder
+
+AddGun 44_Mg15 1 44_Gun_Barrel 1 44_Receiver 9 ingotIron 1 44_Grip
+AddAmmo 44_Mg15Ammo 1 44_Magazine 6 ingotIron 6 gunpowder
+
+AddGun 44_Mg26t 1 44_Gun_Barrel 1 44_Receiver 8 ingotIron 1 44_Grip
+AddAmmo 44_Mg26tAmmo 1 44_Magazine 4 ingotIron 3 gunpowder
+
+AddGun 44_Mg131 1 44_Gun_Barrel 1 44_Receiver 10 ingotIron
+AddAmmo 44_Mg131Ammo 1 44_Magazine 6 ingotIron 8 gunpowder
+
+AddGun 44_Mg17 1 44_Gun_Barrel 1 44_Receiver 2 ingotIron 1 44_Grip
+AddAmmo 44_Mg17Ammo 1 44_Magazine 7 ingotIron 7 gunpowder
+
+//
+SetPage Side-Arms
+
+AddGun 44_C96 1 44_Gun_Barrel 1 44_Receiver 2 ingotIron 1 44_Grip
+AddAmmo 44_C96Ammo 1 44_Magazine 2 ingotIron 2 gunpowder
+
+AddGun 44_Luger 1 44_Gun_Barrel 1 44_Receiver 1 ingotIron 1 44_Grip
+AddAmmo 44_LugerAmmo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+AddGun 44_PPk 1 44_Gun_Barrel 1 44_Receiver 1 ingotIron 1 44_Grip
+AddAmmo 44_PPkAmmo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+AddGun 44_German1915TrenchKnife 1 ingotIron 1 leather 1 44_Metal_Rod
+
+//
+SetPage Equipment
+
+AddGun 44_Panzerschreck 1 44_Metal_Tube 12 ingotIron 1 44_Trigger
+AddAmmo 44_PanzerschreckAmmo 6 ingotIron 10 gunpowder
+
+AddGun 44_PanzerFaust 1 44_Metal_Tube 2 ingotIron 1 44_Trigger
+AddAmmo 44_PanzerFaustAmmo 1 44_Metal_Rod 3 gunpowder
+
+AddGun 44_stielhandgranate 4 ingotIron 4 gunpowder 1 stick
+
+AddGun 44_Smokestielhandgranate 4 ingotIron 1 gunpowder 1 stick 1 dyePowder.15
+
+AddGun 44_stielhandgranateATBundle 8 ingotIron 6 gunpowder 1 stick
+
+//
+SetPage Attachments 1
+
+AddGun 44_PistolBarrel 2 log 1 44_Gun_Barrel
+
+AddGun 44_PistolStock 4 log
+
+AddGun 44_ZF39Scope 2 44_Glass_Lens 4 ingotIron
+
+AddGun 44_ZF41Scope 2 44_Glass_Lens 3 ingotIron
+
+AddGun 44_ZF4Scope 2 44_Glass_Lens 2 ingotIron
+
+AddGun 44_OpticalSight 1 44_Glass_Lens 3 ingotIron
+
+AddGun 44_LensSight 2 44_Glass_Lens 1 ingotIron
+
+AddGun 44_APBullet 4 ingotIron
+
+//
+SetPage Attachments 2
+
+AddGun 44_HPBullet 4 ingotIron
+
+AddGun 44_FieldmodifiedRiflingBarrel 6 ingotIron
+
+AddGun 44_SmoothboreBarrel 6 ingotIron
+
+AddGun 44_StainlessSteelBarrel 6 ingotIron
+
+AddGun 44_MarksmanTrigger 1 ingotIron 44_Trigger
+
+AddGun 44_MatchTrigger 1 ingotIron 44_Trigger
+
+AddGun 44_PaddedStock 3 leather 2 ingotIron

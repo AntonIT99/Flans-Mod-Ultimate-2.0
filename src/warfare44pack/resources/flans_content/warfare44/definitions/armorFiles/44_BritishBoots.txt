@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name British Boots
+ShortName 44_BritishBoots
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_BritishBoots
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Boots
+
+
+//Visuals
+Model W44.BritishBoots
+ArmorTexture Skin44_British40Pattern
+
+
+//Armor Settings
+Defence 0.1
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

@@ -1,0 +1,126 @@
+// ------------------------------------------------------ Naming ------------------------------------------------------
+Name B-17 G
+ShortName 44_B17G
+// ------------------------------------------------------ Visuals ------------------------------------------------------
+Icon 44_B17G
+Model W44.B17G
+Texture Skin44_B17G
+//Third Person Camera Distance
+CameraDistance 30.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 10.0
+// ------------------------------------------------------ Movement ------------------------------------------------------
+//Mode : One of Plane, Heli or VTOL. The VTOL has a toggle button that switches some model aesthetics and the flight mode
+Mode Plane
+//Throttle
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 0.85
+TurnRightSpeed 0.85
+//Pitch modifiers
+LookUpSpeed 0.8
+LookDownSpeed 0.65
+//Roll modifiers
+RollLeftSpeed 0.75
+RollRightSpeed 0.75
+//Drag 1.0 is standard. Modify to make the plane / heli more or less sluggish
+Drag 1.0
+//Lift
+//Lift 2.5
+//Wheels
+NumWheels 3
+WheelPosition 0 5 -9 -65
+WheelPosition 1 5 -9 65
+WheelPosition 2 -264 19 0
+WheelSpringStrength 0.125
+//Propeller Positions
+//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
+Propeller 0 -61 -41 -63 core 44_Metal_Propeller
+Propeller 1 -61 -41 63 core 44_Metal_Propeller
+Propeller 2 -50 -45 -139 core 44_Metal_Propeller
+Propeller 3 -50 -45 139 core 44_Metal_Propeller
+// ------------------------------------------------------ Weaponry ------------------------------------------------------
+//Weapon types. Options are Missile, Bomb, Gun, Shell, None
+Primary None
+Secondary Bomb
+//Time between shots in 1/20ths of seconds
+//ShootDelayPrimary 2
+ShootDelaySecondary 8
+//Whether to alternate or fire all together
+//Firing modes. One of SemiAuto, FullAuto or Minigun
+ModePrimary FullAuto
+ModeSecondary FullAuto
+//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
+AlternatePrimary False
+
+ShootPointSecondary 25 -5 0 core
+AddAmmo 44_250kg500lbBomb
+
+// ------------------------------------------------------ Inventory ------------------------------------------------------
+CargoSlots 30
+BombSlots 10
+MissileSlots 0
+AllowAllAmmo False
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 6000
+// ------------------------------------------------------ Passengers ------------------------------------------------------
+Pilot 32 59 -9
+Passengers 8
+Passenger 1 32 59 9 core
+Passenger 2 7 72 0 core -360 360 -3 38 44_50Cal PassengerGun2
+Passenger 3 -135 11 0 core -360 360 -55 3 44_50Cal PassengerGun3
+Passenger 4 -189 40 5 core 65 115 -18 18 44_50Cal PassengerGun4
+Passenger 5 -189 40 -5 core -115 -65 -18 18 44_50Cal PassengerGun5
+Passenger 6 -338 51 0 core 150 210 -25 25 44_50Cal PassengerGun6
+Passenger 7 -87 47 -13 core
+Passenger 8 86 39 0 core -45 45 -25 18 44_50Cal PassengerGun8
+
+GunOrigin 2 6 68 0
+GunOrigin 3 -136 1 0
+GunOrigin 4 -190 32 18
+GunOrigin 5 -190 32 -18
+GunOrigin 6 -360 35 0
+GunOrigin 8 87 8 0
+// X + 5 , -Y -20
+// ------------------------------------------------------ Sounds ------------------------------------------------------
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary PlaneMGShoot
+ShootSoundSecondary BombDrop
+// ------------------------------------------------------ Recipe ------------------------------------------------------
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_BomberAircraftBody
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 silver
+AddDye 8 green
+// ------------------------------------------------------ Health and hitboxes ------------------------------------------------------
+SetupPart core 600 -362 22 -30 480 75 60
+SetupPart rightWing 400 -98 32 24 123 30 308
+SetupPart leftWing 400 -98 32 -332 123 30 308
+BulletDetection 10
+//Collision points for breaking wings etc. upon crashing
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+BulletSpeed 12
+BulletSpread 4
+
+Description American Bomber__250kg/500lb Bomb__Year Introduced : 1945

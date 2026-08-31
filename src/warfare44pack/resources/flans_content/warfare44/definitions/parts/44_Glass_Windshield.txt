@@ -1,0 +1,9 @@
+Name Glass Windshield
+ShortName 44_Glass_Windshield
+Icon 44_Glass_Windshield
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23279
+//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
+Category Misc
+StackSize 64

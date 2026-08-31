@@ -96,6 +96,9 @@ minecraft {
                 "flansmodultimate_wolffstarwars" {
                     source sourceSets.maybeCreate('wolffstarwarspack')
                 }
+                "flansmodultimate_warfare44" {
+                    source sourceSets.maybeCreate('wolffstarwarspack')
+                }
             }
         }
 
@@ -135,6 +138,8 @@ configurations {
     packsManagerRuntimeOnly.extendsFrom runtimeOnly
     officialpacksImplementation.extendsFrom implementation
     officialpacksRuntimeOnly.extendsFrom runtimeOnly
+    warfare44packImplementation.extendsFrom implementation
+    warfare44packRuntimeOnly.extendsFrom runtimeOnly
     wolffstarwarspackImplementation.extendsFrom implementation
     wolffstarwarspackRuntimeOnly.extendsFrom runtimeOnly
 }
@@ -172,9 +177,14 @@ sourceSets {
         }
         resources {
             srcDirs = ['src/officialpacks/resources']
-            // Legacy pack bootstrap classes carry @Mod and must not be scanned as additional Forge mods.
-            // They are not render models and are never loaded by the packaged-content provider.
-            exclude 'flans_models/**/common/*PackMod.class'
+        }
+    }
+    warfare44pack {
+        java {
+            srcDirs = ['src/warfare44pack/java']
+        }
+        resources {
+            srcDirs = ['src/warfare44pack/resources']
         }
     }
     wolffstarwarspack {
@@ -183,28 +193,8 @@ sourceSets {
         }
         resources {
             srcDirs = ['src/wolffstarwarspack/resources']
-            // Legacy pack bootstrap classes carry @Mod and must not be scanned as additional Forge mods.
-            exclude 'flans_models/**/common/*PackMod.class'
         }
     }
-}
-
-// IntelliJ's incremental resource compiler does not remove files that later become excluded.
-// Forge scans every .class below a development mod root, so stale legacy @Mod bootstrap
-// classes would be interpreted as extra mods without matching mods.toml entries.
-def cleanOfficialPacksIntellijLegacyModClasses = tasks.register('cleanOfficialPacksIntellijLegacyModClasses', Delete) {
-    delete fileTree("$projectDir/out/officialpacks/resources/flans_models") {
-        include '**/common/*PackMod.class'
-    }
-}
-
-// IntelliJ can keep an older version of the submod entrypoint in its module output even when
-// ForgeGradle has compiled the current source. Copy the Gradle-compiled classes into the exact
-// development mod root used by the generated IntelliJ run configuration.
-def syncOfficialPacksIntellijClasses = tasks.register('syncOfficialPacksIntellijClasses', Copy) {
-    dependsOn tasks.named('compileOfficialpacksJava')
-    from sourceSets.officialpacks.output.classesDirs
-    into "$projectDir/out/officialpacks/classes"
 }
 
 // ForgeGradle adds this task for IntelliJ run configurations. Run the targeted cleanup after
@@ -240,6 +230,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     officialpacksImplementation sourceSets.main.output
     wolffstarwarspackImplementation sourceSets.main.output
+    warfare44packImplementation sourceSets.main.output
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -367,7 +358,7 @@ def officialPacksJar = tasks.register('officialPacksJar', Jar) {
 }
 
 def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Wolff's Star Wars Pack")
+    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Wolff's Star Wars Pack")
     archiveVersion.set('3.0')
 
     from sourceSets.wolffstarwarspack.output
@@ -380,10 +371,25 @@ def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
     }
 }
 
+def warfare44PackJar = tasks.register('warfare44Pack', Jar) {
+    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Warfare 44 Pack")
+    archiveVersion.set('3.2')
+
+    from sourceSets.warfare44pack.output
+
+    manifest {
+        attributes(
+                'Implementation-Title': 'warfare44',
+                'Implementation-Version': '3.2'
+        )
+    }
+}
+
 artifacts {
     archives packsManagerJar
     archives officialPacksJar
     archives wolffStarWarsPackJar
+    archives warfare44PackJar
 }
 
 // Example configuration to allow publishing using the maven-publish plugin

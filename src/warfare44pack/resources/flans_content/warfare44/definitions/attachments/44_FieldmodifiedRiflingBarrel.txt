@@ -1,0 +1,21 @@
+Name Field-modified Rifling Barrel
+ShortName 44_FieldmodifiedRiflingBarrel
+Icon 44_FieldmodifiedRiflingBarrel
+//The type of attachment defines what slot in the gun it takes. Types are "generic", "barrel", "scope", "stock" and "grip"
+AttachmentType barrel
+//If true, then this attachment will muffle all sounds from the gun. Needn't be a barrel attachment
+Silencer false
+//These multipliers stack between attachments and do what they say
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.15
+SpreadMultiplier 1.0
+RecoilMultiplier 1.1
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+
+//ModeOverride SemiAuto
+
+Model W44.Barrel
+Texture None
+
+Description Barrel Attachment : _Increases Damage by 15% _Increases Recoil by 10%

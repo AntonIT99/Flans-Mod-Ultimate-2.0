@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "M",
+    "T",
+    "G"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "M": {
+      "item": "flansmod:44_magazine"
+    }
+  },
+  "result": {
+    "item": "flansmod:44_bofors40mmammo",
+    "count": 2
+  }
+}

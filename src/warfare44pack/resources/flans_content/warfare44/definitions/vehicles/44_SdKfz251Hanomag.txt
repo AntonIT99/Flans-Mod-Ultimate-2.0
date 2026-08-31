@@ -1,0 +1,152 @@
+//Naming
+Name SdKfz.251 Hanomag
+ShortName 44_SdKfz251Hanomag
+//Visuals
+Icon 44_SdKfz251Hanomag
+Model W44.SdKfz251Hanomag
+Texture Skin44_SdKfz251Hanomag
+RotateWheels true
+//Third Person Camera Distance
+CameraDistance 7.5
+//Throttle
+MaxThrottle 0.75
+MaxNegativeThrottle 0.45
+//Steering modifiers
+TurnLeftSpeed 0.45
+TurnRightSpeed 0.45
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
+WheelPosition 0 -28 -8 -14
+WheelPosition 1 -28 -8 14
+WheelPosition 2 24 -8 14
+WheelPosition 3 24 -8 -14
+WheelSpringStrength 0.5
+//If true, then all wheels will apply drive forces
+FourWheelDrive false
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1000
+//Inventory Slots
+CargoSlots 36
+ShellSlots 0
+//Driver and passenger positions
+Driver -7 9 -8
+RotatedDriverOffset 0 0 0
+Passengers 5
+Passenger 1 -7 9 8 core
+Passenger 2 -17 21 0 core -40 40 -10 25 44_Mg34 PassengerGun2
+Passenger 3 -45 10 -8 core
+Passenger 4 -28 10 8 core
+Passenger 5 -53 21 0 core 130 230 -30 5 44_Mg34 PassengerGun5
+GunOrigin 2 -4 14 0
+GunOrigin 5 -67 14 0
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+PlaceTimePrimary 80
+StartSound TankIdle1
+StartSoundLength 41
+EngineSound Engine_TR_Halftrack
+EngineSoundLength 39
+BackSoundLength 39
+BackSound Engine_TR_Halftrack
+StartSoundRange 12
+EngineSoundRange 50
+BackSoundRange 25
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+ShootSoundPrimary None
+ShootSoundSecondary None
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 4 gray
+
+//advpaintjob Settings
+//Format is "advpaintjob iconName textureName requiredDyeAmount requiredDyeColour" Multiple colours may be listed in order, seperated by a space
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+
+advpaintjob Beige 44_SdKfz251Hanomag_Beige 44_SdKfz251Hanomag_Beige yellow 4
+
+
+//Health and collision
+SetupPart core 750 -70 1 -18 125 30 36
+SetupPart frontLeftWheel 75 37 -10 14 17 17 6
+SetupPart frontRightWheel 75 37 -10 -20 17 17 6
+SetupPart rightTrack 300 -55 -10 14 76 17 8
+SetupPart leftTrack 300 -55 -10 -22 76 17 8
+
+BulletDetection 5
+Description German Halftrack__Year Introduced : 1939
+
+ModelScale 1
+
+//Turret traverse speeds, yaw/pitch/z (z is unused, set to 0)
+DriverAimSpeed 3.0f 3.0f 0f
+
+//Set to true to adjust turret yaw before pitch
+DriverYawBeforePitch false
+
+AddEmitter smoke 1 [28,8,-23] [1,1,1] [0,0.5,0] -1 1 0 1 core
+
+//1st gear
+
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+
+//2nd gear
+
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+
+//3rd gear
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+
+AddEmitter largesmoke 3 [28,8,-23] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+
+//4th gear change
+
+AddEmitter largesmoke 1 [28,8,-23] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+
+//----------------------------Tracks
+
+TrackLinkLength 3
+
+RightLinkPoint [18,8,-19]
+RightLinkPoint [21.3,6,-19]
+RightLinkPoint [21.3,-2,-19]
+RightLinkPoint [9,-9,-19]
+RightLinkPoint [-50,-9,-19]
+RightLinkPoint [-54.5,-3,-19]
+RightLinkPoint [-54.5,5,-19]
+RightLinkPoint [-51,6,-19]
+RightLinkPoint [7,6,-19]
+RightLinkPoint [12,8,-19]
+RightLinkPoint [17,8,-19]
+
+
+LeftLinkPoint [18,8,19]
+LeftLinkPoint [21.3,6,19]
+LeftLinkPoint [21.3,-2,19]
+LeftLinkPoint [9,-9,19]
+LeftLinkPoint [-50,-9,19]
+LeftLinkPoint [-54.5,-3,19]
+LeftLinkPoint [-54.5,5,19]
+LeftLinkPoint [-51,6,19]
+LeftLinkPoint [7,6,19]
+LeftLinkPoint [12,8,19]
+LeftLinkPoint [17,8,19]
+IsExplosionWhenDestroyed true

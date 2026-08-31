@@ -1,0 +1,40 @@
+//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name German M43 Leibermuster Hat
+ShortName 44_GermanM43LeibermusterHat
+ItemID Your ID
+
+
+// Visuals
+ModelScale 1
+Icon 44_GermanM43LeibermusterHat
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Helmet
+
+
+//Visuals
+Model W44.GermanM43Hat
+ArmorTexture Skin44_GermanM43LeibermusterHat
+
+
+//Armor Settings
+Defence 0.1
+
+//Helmet Settings
+SmokeProtection false
+
+//------------------------------------------------

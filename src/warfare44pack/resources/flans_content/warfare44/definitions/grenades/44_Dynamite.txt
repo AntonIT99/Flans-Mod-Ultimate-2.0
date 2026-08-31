@@ -1,0 +1,63 @@
+////Name and icon
+Name Dynamite
+ShortName 44_Dynamite
+Icon 44_Dynamite
+
+//Colour in Red, Green, Blue, each going up to 255
+Colour 255 255 255
+
+////Item and recipe
+StackSize 1
+
+////Visuals
+Model W44.Dynamite
+Texture Skin44_Dynamite
+ModelScale 0.35
+TrailParticles false
+
+//TrailParticleType <particleType>
+ExplodeParticles 4
+
+//ExplodeParticleType <particleType>
+SmokeTime 0
+
+//SmokeParticleType <particleType>
+SpinWhenThrown true
+
+////Throwing
+ThrowDelay 20
+
+//ThrowSound <sound>
+//DropItemOnThrow <itemID.damage>
+////Physics
+DetonateOnImpact false
+Bounciness 0.5
+HitEntityDamage 1
+ThrowSpeed 1.25
+FallSpeed 0.75
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.8
+Sticky false
+
+//BounceSound <sound>
+////Detonation conditions
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+DetonateWhenShot true
+Remote true
+
+//DespawnTime 0
+PrimeDelay 0
+
+////Detonation
+FireRadius 0.0
+ExplosionRadius 6.0
+ExplosionDamageVsLiving 1.0
+ExplosionDamageVsPlane 150.0
+ExplosionDamageVsVehicle 4
+ExplosionBreaksBlocks true
+
+//DropItemOnDetonate <itemID.damage>
+//Detonate Sound <sound>
+////Misc

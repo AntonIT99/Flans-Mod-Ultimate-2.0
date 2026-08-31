@@ -1,0 +1,12 @@
+Name Wrench
+ShortName 44_Wrench
+Icon 44_Wrench
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 23463
+Heal false
+Repair true
+HealAmount 250
+ToolLife 65
+DestroyOnEmpty false
+StackSize 1
