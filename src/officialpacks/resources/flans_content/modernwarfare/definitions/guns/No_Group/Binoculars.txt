@@ -19,7 +19,7 @@ ShootDelay 0
 //ShootSound DesertEagleShoot
 //ReloadSound MWlugerReload
 Mode SemiAuto
-Scope Binoculars
+Scope officialpacks_binoculars
 ZoomLevel 16
 FOVZoomLevel 1.0
 Deployable False
