@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Tanktrack Parts
+ShortName SMP_Part_Misc_Part_Tanktrack
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Part_Tanktrack
+
+// Recipe
+Recipe P SMP_Part_Mat_Plate_Steel M SMP_Part_Mat_Block_Steel
+   
+ P 
+MPM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

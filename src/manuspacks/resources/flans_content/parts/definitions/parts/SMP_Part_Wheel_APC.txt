@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name APC Wheel
+ShortName SMP_Part_Wheel_APC
+
+// Visuals
+Icon Icon_SMP_Part_Wheel_APC
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel G SMP_Part_Mat_Block_Gummi
+GMG
+MMM
+GMG
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Wheel
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Helicopter Cockpit Frame
+ShortName SMP_Part_Cockpit_Heli
+
+// Visuals
+Icon Icon_SMP_Part_Cockpit_Heli
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Jet G glass C SMP_Part_Misc_Computer
+ GG
+CSS
+MMM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Cockpit
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

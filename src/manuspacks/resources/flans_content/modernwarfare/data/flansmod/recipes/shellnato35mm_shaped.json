@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B ",
+    "G ",
+    "SS"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_mat_block_aluminium"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_ammo_shell"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:shellnato35mm",
+    "count": 32
+  }
+}

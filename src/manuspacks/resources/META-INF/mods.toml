@@ -1,0 +1,30 @@
+modLoader="javafml"
+loaderVersion="36.2.0"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate_manuspacks"
+version="1.0"
+displayName="Flan's Mod Manus Content Packs"
+authors="Manus"
+displayTest = "NONE"
+description=''''''
+
+[[dependencies.flansmodultimate_manuspacks]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.4.0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_manuspacks]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20,1.21)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_manuspacks]]
+    modId="flansmodultimate"
+    mandatory=true
+    versionRange="*"
+    ordering="BEFORE"
+    side="BOTH"

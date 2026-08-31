@@ -1,0 +1,103 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Ikarus Z60
+ShortName DayZ_Vehicle_IkarusZ60_1A
+
+// Visuals
+Model Manus_DayZ.Vehicle.DayZ_Vehicle_IkarusZ60_1
+Icon Icon_DayZ_Vehicle_IkarusZ60_1A
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_DayZ_Vehicle_IkarusZ60_1A
+
+//Movement
+MaxThrottle 1
+MaxNegativeThrottle 0.2
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -41 -8 -20
+WheelPosition 1 -41 -8 20
+WheelPosition 2 61 -8 20
+WheelPosition 3 61 -8 -20
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 2000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Truck 25 SMP_Part_Mat_Plate_Steel 22 SMP_Part_Misc_Seat_Car
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Truck
+AddDye 5 white
+AddDye 10 gray
+
+//Driver and Passengers
+Driver 82 14 -12 -80 80 -45 45
+Passengers 22
+Passenger 1 64 19 -14 core -80 80 -45 45
+Passenger 2 64 19 14 core -80 80 -45 45
+Passenger 3 48 19 -14 core -80 80 -45 45
+Passenger 4 48 19 14 core -80 80 -45 45
+Passenger 5 32 19 -14 core -80 80 -45 45
+Passenger 6 32 19 14 core -80 80 -45 45
+Passenger 7 16 19 -14 core -80 80 -45 45
+Passenger 8 16 19 14 core -80 80 -45 45
+Passenger 9 0 19 -14 core -80 80 -45 45
+Passenger 10 0 19 14 core -80 80 -45 45
+Passenger 11 -16 19 -14 core -80 80 -45 45
+Passenger 12 -16 19 14 core -80 80 -45 45
+Passenger 13 -32 19 -14 core -80 80 -45 45
+Passenger 14 -32 19 14 core -80 80 -45 45
+Passenger 15 -48 19 -14 core -80 80 -45 45
+Passenger 16 -48 19 14 core -80 80 -45 45
+Passenger 17 -64 19 -14 core -80 80 -45 45
+Passenger 18 -64 19 14 core -80 80 -45 45
+Passenger 19 -80 19 -14 core -80 80 -45 45
+Passenger 20 -96 19 14 core -80 80 -45 45
+Passenger 21 -96 19 0 core -80 80 -45 45
+Passenger 22 -96 19 -14 core -80 80 -45 45
+
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+
+//Health and collision
+SetupPart frontRightWheel 100 50 -10 15 21 21 6
+SetupPart frontLeftWheel 100 50 -10 -21 21 21 6
+SetupPart backLeftWheel 100 -51 -10 -21 21 21 13
+SetupPart core 400 -102 -5 -23 200 51 46
+SetupPart backRightWheel 100 -51 -10 8 21 21 13
+BulletDetection 10
+
+//Misc
+CameraDistance 10
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+//------------------------------------------------

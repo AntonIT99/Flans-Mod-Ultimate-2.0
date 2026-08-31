@@ -1,0 +1,81 @@
+﻿//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name MK III Godwyn Pattern Bolt Pistol
+ShortName WH40K_Gun_MKIIIBoltpistol_1A
+
+
+// Visuals
+ModelScale 0.11
+Icon Icon_WH40K_Gun_MKIIIBoltpistol_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable False
+
+
+//Visual
+Model Manus_WH40K.Gun.WH40K_Gun_MKIIIBoltpistol_1
+AllowGripAttachments False
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_BoltPistolCal75
+
+
+//Attachments
+AllowAllAttachments False
+AllowAttachments MKVbBoltgunSilencer MKVbBoltgunScope MKVbBoltgunStock
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+
+
+//Weapon Settings
+Accuracy 4
+Mode FullAuto
+Recoil 2
+ReloadTime 40
+ShootDelay 10
+OneHanded True
+
+
+//Shield
+NumGenericAttachmentSlots 1
+
+
+//Zoom
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+
+//Melee
+
+
+//Deployable
+DeployedModel None
+Texture Skin_WH40K_Gun_MKIIIBoltpistol_1A
+
+
+//Sound
+DistortSound False
+ShootSound boltgun_fire
+ReloadSound boltgun_reload
+
+//------------------------------------------------

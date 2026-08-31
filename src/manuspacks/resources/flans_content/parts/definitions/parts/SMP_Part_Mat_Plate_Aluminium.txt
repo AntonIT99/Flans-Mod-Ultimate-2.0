@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Aluminium Plate
+ShortName SMP_Part_Mat_Plate_Aluminium
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Plate_Aluminium
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Aluminium
+   
+   
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

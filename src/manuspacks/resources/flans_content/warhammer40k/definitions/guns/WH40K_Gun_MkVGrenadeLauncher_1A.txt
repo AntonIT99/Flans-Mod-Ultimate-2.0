@@ -1,0 +1,79 @@
+﻿//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.1.1.4
+
+
+//---Standard-------------------------------------
+// Naming
+Name Mk V Cadia Pattern Grenade Launcher
+ShortName WH40K_Gun_MkVGrenadeLauncher_1A
+
+
+// Visuals
+Model Manus_WH40K.Gun.WH40K_Gun_MkVGrenadeLauncher_1
+ModelScale 0.08
+Icon Icon_WH40K_Gun_MkVGrenadeLauncher_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable False
+
+
+//Visual
+Texture Skin_WH40K_Gun_MkVGrenadeLauncher_1A
+DeployedModel None
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_MkVGrenadeLauncher
+
+
+//Attachments
+AllowAllAttachments False
+AllowAttachments WH40K_Attachment_M36Bayonett_1A
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 1
+
+
+//Weapon Settings
+Accuracy 4
+Mode FullAuto
+Recoil 2
+ReloadTime 40
+ShootDelay 10
+BulletSpeed 2
+
+//Shield
+
+
+//Zoom
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+
+//Melee
+
+
+//Deployable Settings
+
+
+//Sound
+ShootSound GrenadeLauncherShoot
+ReloadSound GrenadeLauncherReload
+
+//------------------------------------------------

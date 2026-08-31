@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Large Wing Frame
+ShortName SMP_Part_Wing_Large
+
+// Visuals
+Icon Icon_SMP_Part_Wing_Large
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+ PP
+ PP
+PMP
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Wing
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

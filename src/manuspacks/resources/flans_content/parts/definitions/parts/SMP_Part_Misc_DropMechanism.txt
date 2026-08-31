@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Drop Mechanism
+ShortName SMP_Part_Misc_DropMechanism
+
+// Visuals
+Icon Icon_SMP_Part_Misc_DropMechanism
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel D SMP_Part_Misc_DropMechanism
+ M 
+ D 
+P P
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

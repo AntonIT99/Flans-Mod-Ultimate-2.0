@@ -1,0 +1,69 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Russian 7.62mm Ammo for ShKAS - 1000 Bullet Box
+ShortName WW2_Ammo_ShKAS
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Ammo_ShKAS
+
+
+//Recipe
+
+
+//Misc
+description Amunition for ShKAS
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+
+
+//Damage
+Damage 1
+DamageVsLiving 10
+DamageVsVehicles 1
+DamageVsPlanes 8
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 0
+Fire 0
+FallSpeed 0.25
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail False
+
+
+//Sound
+HitSound bullet
+
+
+/Inventory
+MaxStackSize 1
+RoundsPerItem 1000
+
+//------------------------------------------------

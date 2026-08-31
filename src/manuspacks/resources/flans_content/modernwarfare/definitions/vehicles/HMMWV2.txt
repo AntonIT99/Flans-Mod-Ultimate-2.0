@@ -1,0 +1,73 @@
+//Naming
+Name M998 HMMWV with open load area
+ShortName HMMWV2
+ItemID 28101
+//Visuals
+Icon IconVehicleHMMWV2
+Model manus_modern_warfare.HMMWV2
+Texture SkinVehicleHMMWV
+RotateWheels True
+//Third Person Camera Distance
+CameraDistance 5.0
+//Throttle
+MaxThrottle 1.0
+MaxNegativeThrottle 0.5
+//Steering modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1500
+//Inventory Slots
+CargoSlots 18
+ShellSlots 0
+//Driver and passenger positions
+Driver 2 1 -9 -80 80 -45 45
+RotatedDriverOffset 0 0 0
+Passengers 3
+Passenger 1 2 1 9 core -80 80 -45 45
+Passenger 2 -12 1 -9 core -80 80 -45 45
+Passenger 3 -12 1 9 core -80 80 -45 45
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+ShootSound bullet
+ShellSound TankShell
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Chassis_Van 10 Mat_Plate_Steel 4 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 1 Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 Part_Wheel_Car
+AddRecipeParts backRightWheel 1 Part_Wheel_Car
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 green
+//Health and collision
+SetupPart frontLeftWheel 100 19 -10 14 14 14 5
+SetupPart backLeftWheel 100 -36 -10 14 14 14 5
+SetupPart frontRightWheel 100 19 -10 -19 14 14 5
+SetupPart backRightWheel 100 -36 -10 -19 14 14 5
+SetupPart core 300 -43 -2 -18 80 24 36
+BulletDetection 5
+WheelPosition 0 -29 -8 -18
+WheelPosition 1 -29 -8 18
+WheelPosition 2 26 -8 18
+WheelPosition 3 26 -8 -18

@@ -1,0 +1,69 @@
+//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Imperial Guard Heavy Bolter
+ShortName WH40K_MG_HeavyBolter_1A
+
+
+//Visuals
+Icon Icon_WH40K_MG_HeavyBolter_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable True
+
+
+//Visual
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_HeavyBolter
+
+
+//Attachments
+
+
+//Weapon Settings
+BulletSpeed 10.0
+Accuracy 6
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+ShootDelay 2
+
+
+//Melee
+
+
+//Deployable
+DeployedModel Manus_WH40K.MG.WH40K_MG_HeavyBolter_1
+DeployedTexture Skin_WH40K_MG_HeavyBolter_1A
+TopViewLimit 20
+BottomViewLimit 20
+SideViewLimit 45
+PivotHeight 0.5
+StandBackDistance 1.0
+
+
+//Sound
+DistortSound False
+ShootSound boltgun_fire
+ReloadSound boltgun_reload
+
+//------------------------------------------------

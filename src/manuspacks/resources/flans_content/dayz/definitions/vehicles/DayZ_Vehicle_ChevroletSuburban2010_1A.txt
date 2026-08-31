@@ -1,0 +1,85 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Chevrolet Suburban 2010 Black
+ShortName DayZ_Vehicle_ChevroletSuburban2010_1A
+
+// Visuals
+Model Manus_DayZ.Vehicle.DayZ_Vehicle_ChevroletSuburban2010_1
+Icon Icon_DayZ_Vehicle_ChevroletSuburban2010_1A
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_DayZ_Vehicle_ChevroletSuburban2010_1A
+
+//Movement
+MaxThrottle 1.5
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -35 -8 -20
+WheelPosition 1 -35 -8 20
+WheelPosition 2 35 -8 20
+WheelPosition 3 35 -8 -20
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Car 14 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 8 black
+
+//Driver and Passengers
+Driver 3 5 -9 -80 80 -45 45
+Passengers 5
+Passenger 1 3 5 9 core -80 80 -45 45
+Passenger 2 -15 5 -9 core -80 80 -45 45
+Passenger 3 -15 5 9 core -80 80 -45 45
+Passenger 4 -35 5 -8 core -80 80 -45 45
+Passenger 5 -35 5 8 core -80 80 -45 45
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+
+//Health and collision
+SetupPart core 250 -47 -1 -14 87 30 28
+SetupPart frontRightWheel 110 20 -10 -16 16 16 5
+SetupPart frontLeftWheel 110 20 -10 11 16 16 5
+SetupPart backLeftWheel 110 -36 -10 11 16 16 5
+SetupPart backRightWheel 110 -36 -10 -16 16 16 5
+BulletDetection 5
+
+//Misc
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+//------------------------------------------------

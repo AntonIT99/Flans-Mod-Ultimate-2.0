@@ -1,0 +1,30 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Space Fitted Engine
+ShortName SMP_Part_Engine_SpaceEngine
+
+// Visuals
+Icon Icon_SMP_Part_Engine_SpaceEngine
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_PlaSteel T SMP_Part_Propeller_TurbineSpace I SMP_Part_Misc_EngineIgnition
+MMM
+TTI
+MMM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 3.0
+FuelConsumption 3.0
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+//------------------------------------------------

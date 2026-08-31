@@ -1,0 +1,168 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.3
+
+
+//---Standard-------------------------------------
+//Naming
+Name Messerschmidt Me 262A Schwalbe, KG(J)54
+ShortName WW2_Plane_ME262A_1A
+
+
+//Visuals
+Model Manus_WW2.Plane.WW2_Plane_ME262A_1
+Icon Icon_WW2_Plane_ME262A_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_ME262A_1A
+
+
+//Movement
+MaxThrottle 6.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -36 -8 -24
+WheelPosition 1 -36 -8 24
+WheelPosition 2 42 -8 0
+WheelSpringStrength 0.125
+
+
+//Inventory Slots
+FuelTankSize 6000
+BombSlots 3
+CargoSlots 0
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane
+AddDye 5 green
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Bomb_German50kg
+Primary Gun
+ModePrimary FullAuto
+AlternatePrimary False
+ShootPointPrimary 52 34 4 core WW2_MG_MK108FF_1A
+ShootPointPrimary 52 34 -4 core WW2_MG_MK108FF_1A
+ShootPointPrimary 52 31 8 core WW2_MG_MK108FF_1A
+ShootPointPrimary 52 31 -8 core WW2_MG_MK108FF_1A
+ShootPointSecondary -35 0 0 core
+ShootDelayPrimary 7
+Secondary Bomb
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootDelaySecondary 100
+
+
+//Driver and Passengers
+Pilot -38 25 0
+Passengers 0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+
+//Health and collision
+SetupPart core 200 -75 17 -16 105 23 32
+SetupPart nose 100 30 17 -10 20 18 20
+SetupPart tail 200 -149 22 -10 73 17 20
+SetupPart rightWing 100 -58 19 16 42 9 109
+SetupPart leftWing 100 -58 19 -125 42 9 109
+SetupPart coreWheel 80 36 -10 -3 13 30 6
+SetupPart rightWingWheel 80 -43 -10 22 14 30 8
+SetupPart leftWingWheel 80 -43 -10 -30 14 30 8
+CollisionPoint 40 27 0 nose
+CollisionPoint -78 27 0 tail
+CollisionPoint -94 27 0 tail
+CollisionPoint -110 27 0 tail
+CollisionPoint -126 27 0 tail
+CollisionPoint -142 27 0 tail
+CollisionPoint -142 43 0 tail
+CollisionPoint -142 59 0 tail
+CollisionPoint -31 23 26 rightWing
+CollisionPoint -31 23 42 rightWing
+CollisionPoint -31 23 58 rightWing
+CollisionPoint -36 25 74 rightWing
+CollisionPoint -40 26 90 rightWing
+CollisionPoint -45 26 106 rightWing
+CollisionPoint -47 28 122 rightWing
+CollisionPoint -31 23 -26 leftWing
+CollisionPoint -31 23 -42 leftWing
+CollisionPoint -36 25 -74 leftWing
+CollisionPoint -31 23 -58 leftWing
+CollisionPoint -40 26 -90 leftWing
+CollisionPoint -45 26 -106 leftWing
+CollisionPoint -48 28 -122 leftWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 10.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 2
+LookUpSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+TurnLeftSpeed 2
+TurnRightSpeed 2
+
+
+//Sound
+PropSound propSound
+PropSoundLength 30
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 0.0
+
+
+//Propeller
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
+Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
+Propeller 2 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
+Propeller 3 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
+
+//------------------------------------------------

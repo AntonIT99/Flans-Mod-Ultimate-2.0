@@ -1,0 +1,154 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name A6M Zero - Grey Red Color
+ShortName WW2_Plane_A6M_1A
+
+
+//Visuals
+Model Manus_WW2.Plane.WW2_Plane_A6M_1
+Icon Icon_WW2_Plane_A6M_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_A6M_1A
+
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 11 -8 -35
+WheelPosition 1 11 -8 35
+WheelPosition 2 -121 17 0
+WheelSpringStrength 0.125
+
+
+//Inventory Slots
+FuelTankSize 6000
+BombSlots 3
+CargoSlots 0
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 5 white
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Bomb_German50kg
+Primary Gun
+ModePrimary FullAuto
+AlternatePrimary False
+ShootPointPrimary 48 38 3 core WW2_MG_Type97_1A
+ShootPointPrimary 48 38 -3 core WW2_MG_Type97_1A
+ShootPointPrimary 17 21 31 rightWing WW2_MG_Type99_1A
+ShootPointPrimary 17 21 -31 leftWing WW2_MG_Type99_1A
+ShootDelayPrimary 7
+Secondary Bomb
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootPointSecondary 0 -10 0
+ShootDelaySecondary 100
+
+
+//Driver and Passengers
+Pilot -13 26 0
+Passengers 0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+
+//Health and collision
+SetupPart core 200 -41 14 -11 80 25 22
+SetupPart tail 100 -121 14 -11 80 25 22
+SetupPart rightWing 100 -27 18 11 40 10 108
+SetupPart leftWing 100 -27 18 -119 40 10 108
+SetupPart topWing 100 -125 32 -1 34 25 2
+SetupPart nose 100 39 21 -5 11 10 10
+SetupPart tailWheel 100 -123 16 -1 5 3 2
+SetupPart leftWingWheel 100 5 -10 -37 12 28 5
+SetupPart rightWingWheel 100 5 -10 32 12 28 5
+CollisionPoint 42 25 0 nose
+CollisionPoint -65 26 0 tail
+CollisionPoint -93 26 0 tail
+CollisionPoint -115 26 0 tail
+CollisionPoint 0 19 26 rightWing
+CollisionPoint 0 21 56 rightWing
+CollisionPoint 0 25 86 rightWing
+CollisionPoint 0 19 -26 leftWing
+CollisionPoint 0 21 -56 leftWing
+CollisionPoint 0 25 -86 leftWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 10.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 2
+LookUpSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+TurnLeftSpeed 2
+TurnRightSpeed 2
+
+
+//Sound
+PropSound propSound
+PropSoundLength 30
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 9.0
+
+
+//Propeller
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+//------------------------------------------------

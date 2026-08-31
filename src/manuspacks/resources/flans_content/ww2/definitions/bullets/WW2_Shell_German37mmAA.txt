@@ -1,0 +1,76 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 37mm L/57 Flak Shell
+ShortName WW2_Shell_German37mmAA
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German37mmAA
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F 
+GGG
+SSS
+RecipeOutput 12
+
+
+//Misc
+description Amunition for Bordkanone BK37
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+DamageVsLiving 400
+DamageVsVehicles 400
+DamageVsPlanes 20
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 2
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke
+
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 12
+RoundsPerItem 12
+
+//------------------------------------------------

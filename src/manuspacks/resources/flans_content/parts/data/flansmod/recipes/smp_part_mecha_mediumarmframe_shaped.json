@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    "  H",
+    "IHI"
+  ],
+  "key": {
+    "H": {
+      "item": "flansmod:smp_part_misc_hydraulics"
+    },
+    "I": {
+      "item": "flansmod:smp_part_mat_block_durasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mecha_mediumarmframe"
+  }
+}

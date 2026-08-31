@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "MPM",
+    "MMM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_misc_part_mechanical"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_enginemotorblock"
+  }
+}

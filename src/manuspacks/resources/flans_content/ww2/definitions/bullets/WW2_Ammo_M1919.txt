@@ -1,0 +1,72 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Uk .303 Ammo for Browning Mk II - 400 Bullet Box
+ShortName WW2_Ammo_M1919
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Ammo_M1919
+
+
+//Recipe
+
+
+//Misc
+description Amunition for Browning Mk II
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+
+
+//Damage
+Damage 1
+DamageVsLiving 11
+DamageVsVehicles 1
+DamageVsPlanes 9
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 0
+Fire 0
+FallSpeed 0.25
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail False
+
+
+//Sound
+HitSound MediumImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true
+
+
+/Inventory
+MaxStackSize 1
+RoundsPerItem 400
+
+//------------------------------------------------

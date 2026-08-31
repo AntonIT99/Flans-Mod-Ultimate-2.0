@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Mecha Hydraulics
+ShortName SMP_Part_Misc_Hydraulics
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Hydraulics
+
+// Recipe
+Recipe I SMP_Part_Mat_Plate_DuraSteel W bucketWater P pistonBase
+IPI
+IWI
+IPI
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

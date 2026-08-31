@@ -1,0 +1,81 @@
+//Naming
+Name MiG 15 Fagot
+ShortName MIG15
+ItemID 28180
+//Visuals
+Icon IconPlaneMIG15
+Model manus_modern_warfare.MIG15
+Texture SkinPlaneMIG15
+//Third Person Camera Distance
+CameraDistance 10.0
+//Throttle
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 2
+TurnRightSpeed 2
+//Pitch modifiers
+LookUpSpeed 2
+LookDownSpeed 2
+//Roll modifiers
+RollLeftSpeed 2
+RollRightSpeed 2
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 0.98
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 3.2
+//Mass (In tons)
+Mass 2.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 5000
+AddGun 36 21 2 nose BrowningM2HB
+AddGun 36 21 -2 nose BrowningM2HB
+ShootDelay 5
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 3
+//Propeller Positions
+Propeller 0 0 0 0 nose Part_Propeller_TurbineJet
+//Passengers
+Pilot -4 7 0
+Passengers 0
+//Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Jet 6 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 3 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Jet 5 Mat_Plate_Steel
+AddRecipeParts leftWing 1 27030_Part_Wing_Jet 6 Mat_Plate_Steel
+AddRecipeParts rightWing 1 27030_Part_Wing_Jet 6 Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 Part_Wheel_Plane
+AddRecipeParts coreWheel 1 Part_Wheel_Plane
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 5 gray
+SetupPart nose 50 14 -1 -11 22 22 22
+SetupPart core 250 -27 -1 -11 41 22 22
+SetupPart coreWheel 50 9 -10 -3 11 9 6
+SetupPart tail 120 -97 -1 -11 70 22 22
+SetupPart rightWingWheel 50 -41 -10 -34 11 18 4
+SetupPart leftWingWheel 50 -41 -10 30 11 18 4
+SetupPart rightWing 100 -53 8 -80 47 4 69
+SetupPart leftWing 100 -53 8 11 47 4 69
+BulletDetection 25
+HasGear True

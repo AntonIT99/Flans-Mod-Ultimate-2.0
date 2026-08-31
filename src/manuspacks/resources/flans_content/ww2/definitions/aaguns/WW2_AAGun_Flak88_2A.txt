@@ -1,0 +1,66 @@
+﻿//---Standard AAGun Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Flak 88mm Anti tank
+ShortName WW2_AAGun_Flak88_2A
+
+
+//Visuals
+Model Manus_WW2.AAGun.WW2_AAGun_Flak88_2
+Icon Icon_WW2_AAGun_Flak88_2A
+
+
+//Recipe
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Steel L SMP_Part_Misc_Seat_Car A SMP_Part_Mat_Armor_Steel
+  B
+LMA
+M M
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---AA Gun---------------------------------------
+//Visuals
+Texture Skin_WW2_AAGun_Flak88_2A
+
+
+//Ammo
+Ammo WW2_Shell_German88mmAP
+Ammo WW2_Shell_German88mmHE
+
+
+// Sentry Settings
+
+
+//Gunner
+GunnerPos 3 30 -16
+
+
+//Limits
+BottomViewLimit 0
+TopViewLimit 75
+
+
+//Gun Settings
+Accuracy 6
+NumBarrels 1
+Barrel 0 88 40 0
+Damage 1
+FireAlternately True
+Health 100
+Recoil 5
+ReloadTime 100
+ShootDelay 10
+
+
+//Sounds
+ReloadSound mp44Reload
+ShootSound AAfire
+
+//------------------------------------------------

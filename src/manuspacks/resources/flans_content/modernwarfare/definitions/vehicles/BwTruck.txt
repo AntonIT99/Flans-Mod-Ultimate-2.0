@@ -1,0 +1,77 @@
+//Naming
+Name German Army Truck
+ShortName BwTruck
+ItemID 28110
+//Visuals
+Icon IconVehicleBwTruck
+Model manus_modern_warfare.BwTruck
+Texture SkinVehicleBwTruck
+RotateWheels True
+//Third Person Camera Distance
+CameraDistance 5.0
+//Throttle
+MaxThrottle 0.9
+MaxNegativeThrottle 0.5
+//Steering modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 1500
+//Inventory Slots
+CargoSlots 36
+ShellSlots 0
+//Driver and passenger positions
+Driver 12 15 -9 -80 80 -45 45
+RotatedDriverOffset 0 0 0
+Passengers 7
+Passenger 1 12 15 9 core -80 80 -45 45
+Passenger 2 -20 16 7 core 60 160 -45 45
+Passenger 3 -40 16 7 core 60 160 -45 45
+Passenger 4 -60 16 7 core 60 160 -45 45
+Passenger 5 -20 16 -7 core -160 -60 -45 45
+Passenger 6 -40 16 -7 core -160 -60 -45 45
+Passenger 7 -60 16 -7 core -160 -60 -45 45
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 999
+ShellDelay 999
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+ShootSound bullet
+ShellSound TankShell
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Chassis_Truck 30 Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 Part_Wheel_Truck
+AddRecipeParts frontRightWheel 1 Part_Wheel_Truck
+AddRecipeParts backLeftWheel 1 Part_Wheel_Truck
+AddRecipeParts backRightWheel 1 Part_Wheel_Truck
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 green
+//Health and collision
+SetupPart frontLeftWheel 100 -4 -10 14 16 16 6
+SetupPart frontRightWheel 100 -4 -10 -20 16 16 6
+SetupPart backLeftWheel 100 -55 -10 14 16 16 6
+SetupPart backRightWheel 100 -55 -10 -20 16 16 6
+SetupPart core 250 -73 0 -19 102 40 38
+BulletDetection 5
+WheelPosition 0 -47 -8 -19
+WheelPosition 1 -47 -8 19
+WheelPosition 2 4 -8 19
+WheelPosition 3 4 -8 -19

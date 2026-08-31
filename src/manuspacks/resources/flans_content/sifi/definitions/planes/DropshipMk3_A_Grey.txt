@@ -1,0 +1,90 @@
+//Naming
+Name Dropship Mk.3 - Grey Skin
+ShortName DropshipMk3_A_Grey
+ItemID 28670
+//Visuals
+Icon IconPlaneDropshipMk3_A_Grey
+Model manus_sifi.DropshipMk3_A
+Texture SkinPlaneDropshipMk3_Grey
+//Third Person Camera Distance
+CameraDistance 15.0
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 3.0
+TurnRightSpeed 3.0
+//Pitch modifiers
+LookUpSpeed 2.8
+LookDownSpeed 2.8
+//Roll modifiers
+RollLeftSpeed 2.6
+RollRightSpeed 2.6
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 5.0
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 4.0
+//Mass (In tons)
+Mass 3.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 30.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 10000
+ShootDelay 7
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 12
+BombSlots 0
+//Propeller Positions
+Propeller 0 0 0 0 leftWing Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
+//Passengers
+Pilot 55 14 -11 -80 80 -45 45
+Passengers 9
+//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
+Passenger 1 55 14 11 core -100 100 -50 10 ColonialBlasterCannon TurretGun
+Passenger 2 25 13 -15 core 60 120 -45 45
+Passenger 3 25 13 15 core -120 -60 -45 45
+Passenger 4 -2 7 -18 core -140 -40 -45 45 ColonialBlasterCannon SideGunLeft
+Passenger 5 -2 7 18 core 40 140 -45 45 ColonialBlasterCannon SideGunRight
+Passenger 6 -26 13 -15 core 60 120 -45 45
+Passenger 7 -26 13 15 core -120 -60 -45 45
+Passenger 8 -44 13 -15 core 60 120 -45 45
+Passenger 9 -44 13 15 core -120 -60 -45 45
+//Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Civil 15 Mat_Plate_Aluminium
+AddRecipeParts nose 1 Part_Nose_Plane 4 Mat_Plate_Aluminium
+AddRecipeParts tail 1 Part_Tail_Civil 8 Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 Part_Wing_Civil 10 Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 Part_Wing_Civil 10 Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 1 Part_Wheel_Plane 2 Mat_Plate_Steel
+AddRecipeParts rightWingWheel 1 Part_Wheel_Plane 2 Mat_Plate_Steel
+AddRecipeParts coreWheel 1 Part_Wheel_Plane 1 Mat_Plate_Steel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 white
+SetupPart rightWing 100 -66 20 -82 80 17 59
+SetupPart nose 100 66 6 -21 18 14 42
+SetupPart tail 100 -93 0 -23 44 44 46
+SetupPart coreWheel 100 19 -10 -4 20 10 8
+SetupPart leftWingWheel 100 -57 -10 23 22 16 14
+SetupPart core 100 -49 0 -23 115 40 46
+SetupPart leftWing 100 -66 20 23 80 17 59
+SetupPart rightWingWheel 100 -57 -10 -37 22 16 14
+BulletDetection 25
+HasGear True
+ModelScale 1.2

@@ -1,0 +1,86 @@
+//Naming
+Name GTK Boxer with with 20mm Cannon
+ShortName Boxer4
+ItemID 28123
+//Visuals
+Icon IconVehicleBoxer4
+Model manus_modern_warfare.Boxer4
+Texture SkinVehicleBoxer
+RotateWheels True
+//Third Person Camera Distance
+CameraDistance 10
+//Throttle
+MaxThrottle 0.8
+MaxNegativeThrottle 0.5
+//Steering modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Bouncy bouncy
+Bounciness 0.3
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Tank mode activate
+Tank false
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 2000
+//Inventory Slots
+CargoSlots 18
+ShellSlots 5
+//Driver and passenger positions
+Driver 42 9 9 -360 360 -10 20
+RotatedDriverOffset 0 0 0
+Passengers 7
+Passenger 1 38 7 -9 core -80 80 -45 45
+Passenger 2 -14 7 -8 core 60 160 -45 45
+Passenger 3 -29 7 -8 core 60 160 -45 45
+Passenger 4 -44 7 -8 core 60 160 -45 45
+Passenger 5 -14 7 8 core -160 -60 -45 45
+Passenger 6 -29 7 8 core -160 -60 -45 45
+Passenger 7 -44 7 8 core -160 -60 -45 45
+BarrelPosition 0 44 0
+//Secondary gun
+
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 5
+ShellDelay 110
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+ShootSound bullet
+ShellSound TankShell
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 Part_Turret_APC 8 Mat_Armor_Steel
+AddRecipeParts core 1 Part_Chassis_APC 10 Mat_Plate_Steel 15 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
+AddRecipeParts frontRightWheel 2 Part_Wheel_APC
+AddRecipeParts backLeftWheel 2 Part_Wheel_APC
+AddRecipeParts backRightWheel 2 Part_Wheel_APC
+Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 green
+//Health and collision
+SetupPart turret 250 -17 32 -13 33 14 26
+SetupPart core 400 -55 0 -22 127 31 44
+SetupPart frontRightWheel 200 10 -10 -24 50 22 7
+SetupPart frontLeftWheel 200 10 -10 17 50 22 7
+SetupPart backLeftWheel 200 -48 -10 17 48 22 7
+SetupPart backRightWheel 200 -48 -10 -24 48 22 7
+BulletDetection 7
+WheelPosition 0 -37 -8 -23
+WheelPosition 1 -37 -8 23
+WheelPosition 2 49 -8 23
+WheelPosition 3 49 -8 -23

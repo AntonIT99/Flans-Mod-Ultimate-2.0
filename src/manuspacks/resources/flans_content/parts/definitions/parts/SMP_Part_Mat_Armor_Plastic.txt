@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plastic Armorplate
+ShortName SMP_Part_Mat_Armor_Plastic
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Armor_Plastic
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Plastic P SMP_Part_Mat_Plate_Plastic
+   
+PPP
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

@@ -1,0 +1,80 @@
+﻿//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.1.1.4
+
+
+//---Standard-------------------------------------
+// Naming
+Name M38 Kantrael Pattern Laspistol
+ShortName WH40K_Gun_M38Laspistol_1A
+
+
+// Visuals
+Model Manus_WH40K.Gun.WH40K_Gun_M38Laspistol_1
+ModelScale 0.11
+Icon Icon_WH40K_Gun_M38Laspistol_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable False
+
+
+//Visual
+Texture Skin_WH40K_Gun_M38Laspistol_1A
+DeployedModel None
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_PowerpackLasgun
+
+
+//Attachments
+AllowAllAttachments False
+AllowAttachments M36LasgunGrip
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 1
+
+
+//Weapon Settings
+Accuracy 5
+Mode FullAuto
+OneHanded True
+Recoil 2
+ReloadTime 40
+ShootDelay 10
+
+
+//Shield
+
+
+//Zoom
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+
+
+//Melee
+
+
+//Deployable Settings
+
+
+//Sound
+ShootSound LasGun_fire
+ReloadSound boltgun_reload
+
+//------------------------------------------------

@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Artillery Barrel
+ShortName SMP_Part_Misc_Barrel_Artillery
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Barrel_Artillery
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel C SMP_Part_Misc_Computer
+M  
+ MC
+  M
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

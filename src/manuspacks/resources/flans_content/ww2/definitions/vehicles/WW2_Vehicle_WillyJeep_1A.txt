@@ -1,0 +1,92 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name M38 Willys Jeep
+ShortName WW2_Vehicle_WillyJeep_1A
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_WillyJeep_1
+Icon Icon_WW2_Vehicle_WillyJeep_1A
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_WillyJeep_1A
+
+//Movement
+MaxThrottle 1
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -19 -8 -15
+WheelPosition 1 -19 -8 15
+WheelPosition 2 20 -8 15
+WheelPosition 3 20 -8 -15
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Car 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Truck
+AddDye 5 green
+
+//Driver and Passengers
+Driver -7 0 -9
+Passengers 2
+Passenger 1 -7 0 9 core
+Passenger 2 -21 11 0 core -50 50 -10 30 WW2_MG_BrowningM2_1A M2
+GunOrigin 2 -25 22 0
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+
+//Health and collision
+SetupPart core 200 -30 -2 -15 55 13 30
+SetupPart frontRightWheel 100 13 -10 -16 14 14 4
+SetupPart frontLeftWheel 100 13 -10 12 14 14 4
+SetupPart backRightWheel 100 -27 -10 -16 14 14 4
+SetupPart backLeftWheel 100 -27 -10 12 14 14 4
+BulletDetection 5
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Sound
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+SquashMobs True
+//------------------------------------------------

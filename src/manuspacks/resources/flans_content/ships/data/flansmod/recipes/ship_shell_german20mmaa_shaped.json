@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "flansmod:smp_part_misc_ammo_shell"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:ship_shell_german20mmaa",
+    "count": 32
+  }
+}

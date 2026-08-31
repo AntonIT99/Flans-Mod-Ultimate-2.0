@@ -1,0 +1,131 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Jagdpanzer VI - Jagdtiger
+ShortName WW2_Vehicle_Jagdtiger_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_Jagdtiger_1
+Icon Icon_WW2_Vehicle_Jagdtiger_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_Jagdtiger_1A
+
+
+//Movement
+MaxThrottle 0.4
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -44 -8 -38
+WheelPosition 1 -44 -8 38
+WheelPosition 2 51 -8 38
+WheelPosition 3 51 -8 -38
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 3000
+CargoSlots 0
+ShellSlots 5
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 20 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 24 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Shell_German128mmAP
+AddAmmo 44_128APShell
+BarrelPosition 0 34 0
+ShellDelay 210
+ShootDelay 5
+
+
+//Driver and Passengers
+Driver 0 37 7 0 0 -10 20
+RotatedDriverOffset 0 0 0
+Passengers 1
+Passenger 1 35 16 12 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+GunOrigin 1 65 20 14
+
+
+//Sounds
+PlaceTimePrimary 80
+StartSound TankIdle3
+StartSoundLength 41
+EngineSound TankRun3
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack3
+StartSoundRange 12
+EngineSoundRange 22
+BackSoundRange 10
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+
+//Health and collision
+SetupPart core 8400 -76 -5 -22 146 33 44
+SetupPart turret 9000 -32 28 -26 60 20 52
+SetupPart leftTrack 400 -65 -10 22 130 26 17
+SetupPart rightTrack 400 -65 -10 -39 130 26 17
+BulletDetection 7
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 7.5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShootSoundPrimary 152mmShoot
+ShootSoundSecondary Mg34Shoot
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

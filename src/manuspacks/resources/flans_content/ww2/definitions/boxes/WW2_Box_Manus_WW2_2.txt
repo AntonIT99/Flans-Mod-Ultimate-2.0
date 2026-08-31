@@ -1,0 +1,39 @@
+Name Manus WW2 Plane Weapon Box
+ShortName WW2_Box_Manus_WW2_2
+TopTexture boxTop
+SideTexture Skin_WW2_Box2
+BottomTexture boxBottom
+GunBoxID 161
+Recipe I SMP_Part_Mat_Block_Steel B dyePowder.4 R dyePowder.1
+III
+RRR
+III
+
+NumGuns 11
+AddGun WW2_MG_MG532_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MG532 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddAltAmmo WW2_Bomb_USA50kg 10 gunpowder 1 SMP_Part_Misc_Ammo_BombBody
+AddGun WW2_MG_MKII_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MKII 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddAltAmmo WW2_Missle_USAHVAR 1 gunpowder 1 SMP_Part_Misc_Ammo_MissileBody
+AddGun WW2_MG_MG17_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MG17 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddAltAmmo WW2_Bomb_German50kg 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_MG151_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MG151 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddAltAmmo WW2_Bomb_German250kg 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_MGFF_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MGFF 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_MK108_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_MK108 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_BordkanoneBK37_1A 18 SMP_Part_Mat_Block_Steel 12 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Shell_German37mmAA 5 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_Type97_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_Type97 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_Type99_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_Type99 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_ShKAS_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_ShKAS 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddAltAmmo WW2_Bomb_USSR50kg 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_WJa23_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
+AddAmmo WW2_Ammo_WJa23 2 SMP_Part_Mat_Plate_Steel 1 gunpowder

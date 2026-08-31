@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Helicopter Skids
+ShortName SMP_Part_Wheel_Heli
+
+// Visuals
+Icon Icon_SMP_Part_Wheel_Heli
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+M M
+PPP
+   
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Wheel
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

@@ -1,0 +1,36 @@
+Name NATO 30mm Shell
+ShortName ShellNATO30mm
+Model Bullet
+//Colour of icon and model
+Colour 255 255 255
+ItemID 28259
+Icon IconAmmoNATO30mm
+//How affected by gravity the bullet is
+FallSpeed 0.25
+//The number of rounds each item has. Limited to 32000.
+RoundsPerItem 150
+//The maximum stack size of a stack of these
+MaxStackSize 1
+//The damage multiplier caused by the bullet on hitting an entity
+Damage 100
+DamageVsVehicles 100
+//Size of explosion caused
+Explosion 0
+//True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
+ExplodeOnImpact True
+Fuse 0
+FlakParticles 0
+//Amount of fire to spread on exploding; for each increment, it will increase the dimensions of the burning area by 2. i.e. 1 will burn a 3x3 square, 2 will burn a 5x5 square
+Fire 0
+BreaksGlass True
+//Size of box to check for entities to hit / detonate
+HitBoxSize 1.0
+HitSound bomb
+//Whether or not the bullet can travel through an entity having hit it
+Penetrates False
+SmokeTrail True
+//True if this is a bomb
+Bomb False
+Shell True
+RecipeOutput 32
+Description Amunition for GAU-8/A Avenger

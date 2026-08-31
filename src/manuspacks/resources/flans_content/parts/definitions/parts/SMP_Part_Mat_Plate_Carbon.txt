@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Carbon Plate
+ShortName SMP_Part_Mat_Plate_Carbon
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Plate_Carbon
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Carbon
+   
+   
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

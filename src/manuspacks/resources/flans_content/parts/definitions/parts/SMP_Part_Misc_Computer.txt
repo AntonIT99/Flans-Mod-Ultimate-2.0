@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Computer
+ShortName SMP_Part_Misc_Computer
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Computer
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Plastic E SMP_Part_Misc_Part_Electronic G glass
+MGM
+EEE
+MEM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

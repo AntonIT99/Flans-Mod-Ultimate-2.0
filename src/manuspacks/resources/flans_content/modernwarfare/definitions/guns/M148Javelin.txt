@@ -1,0 +1,42 @@
+Name M-148 Javelin
+ShortName M148Javelin
+//The ammo this gun uses (shortName)
+Ammo AmmoNATOM148Javelin
+Icon IconGunM148Javelin
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+ItemID 28296
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 120
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+Recoil 10
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 3
+//Time in ticks between rounds
+ShootDelay 1
+//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+//SoundLength 21
+//Whether or not to distort the sound. This works well for single shots but not for loops
+DistortSound False
+ShootSound RPGShoot
+ReloadSound bazookaReload
+Mode SemiAuto
+Scope M148Javelin
+Deployable False
+//-----------------------------------------------------------------------------
+//All the following is for deployables only. Other guns do not need any of this
+//-----------------------------------------------------------------------------
+//Place the compiled model class in the models folder
+DeployedModel manus_modern_warfare.M148Javelin
+//Place the texture .png in the skins folder
+DeployedTexture SkinGunM148Javelin
+//The length from the bipod to the trigger of the gun. Deployables only.
+StandBackDistance 0.8
+//Degrees above and below level that the gun can work within. 90 degrees is vertical
+TopViewLimit 30
+BottomViewLimit 30
+SideViewLimit 45
+//The height of the pivot above the block the gun is on.
+PivotHeight 0.75

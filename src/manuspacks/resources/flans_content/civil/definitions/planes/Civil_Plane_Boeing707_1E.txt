@@ -1,0 +1,195 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Boeing 707 - Fly Hellas
+ShortName Civil_Plane_Boeing707_1E
+
+
+//Visuals
+Model Manus_Civil.Plane.Civil_Plane_Boeing707_1
+Icon Icon_Civil_Plane_Boeing707_1E
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Civil_Plane_Boeing707_1E
+
+
+//Movement
+MaxThrottle 4.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -111 -8 -72
+WheelPosition 1 -111 -8 72
+WheelPosition 2 235 -8 0
+WheelSpringStrength 0.125
+
+
+//Inventory Slots
+FuelTankSize 32000
+BombSlots 0
+CargoSlots 64
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Civil 50 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts tail 1 SMP_Part_Tail_Civil 30 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 SMP_Part_Wing_Civil 40 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 SMP_Part_Wing_Civil 40 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 4 SMP_Part_Wheel_Plane 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWingWheel 4 SMP_Part_Wheel_Plane 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 2 SMP_Part_Wheel_Plane 5 SMP_Part_Mat_Plate_Steel
+AddDye 20 orange
+AddDye 10 blue
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+Primary None
+ModePrimary FullAuto
+AlternatePrimary False
+ShootDelayPrimary 0
+Secondary None
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootPointSecondary 0 -10 0
+ShootDelaySecondary 20
+
+
+//Driver and Passengers
+Pilot 292 71 -12 -80 80 -45 45
+Passengers 13
+Passenger 1 292 71 -12 core -80 80 -45 45
+Passenger 2 171 64 -32 core -80 80 -45 45
+Passenger 3 147 64 -32 core -80 80 -45 45
+Passenger 4 123 64 -32 core -80 80 -45 45
+Passenger 5 99 64 -32 core -80 80 -45 45
+Passenger 6 75 64 -32 core -80 80 -45 45
+Passenger 7 51 64 -32 core -80 80 -45 45
+Passenger 8 171 64 32 core -80 80 -45 45
+Passenger 9 147 64 32 core -80 80 -45 45
+Passenger 10 123 64 32 core -80 80 -45 45
+Passenger 11 99 64 32 core -80 80 -45 45
+Passenger 12 75 64 32 core -80 80 -45 45
+Passenger 13 51 64 32 core -80 80 -45 45
+
+
+//Sounds
+StartSound viper
+StartSoundLength 20
+ShootSoundSecondary bomb
+
+
+//Health and collision
+SetupPart core 400 -312 20 -42 633 96 84
+SetupPart nose 100 320 36 -21 36 45 42
+SetupPart tail 300 -570 20 -42 258 96 84
+SetupPart leftWing 300 -297 33 42 371 51 400
+SetupPart rightWing 300 -297 33 -442 371 51 400
+SetupPart coreWheel 100 224 -12 -10 18 18 20
+SetupPart leftWingWheel 100 -136 -12 61 50 20 20
+SetupPart rightWingWheel 100 -136 -12 -81 50 20 20
+CollisionPoint 336 58 0 nose
+CollisionPoint -330 90 0 tail
+CollisionPoint -360 90 0 tail
+CollisionPoint -390 90 0 tail
+CollisionPoint -420 90 0 tail
+CollisionPoint -450 90 0 tail
+CollisionPoint -480 90 0 tail
+CollisionPoint -510 90 0 tail
+CollisionPoint -540 90 0 tail
+CollisionPoint -490 130 0 tail
+CollisionPoint -490 160 0 tail
+CollisionPoint -490 190 0 tail
+CollisionPoint -490 210 0 tail
+CollisionPoint -35 47 60 rightWing
+CollisionPoint -55 49 90 rightWing
+CollisionPoint -75 51 120 rightWing
+CollisionPoint -95 53 150 rightWing
+CollisionPoint -115 55 180 rightWing
+CollisionPoint -135 57 210 rightWing
+CollisionPoint -155 59 240 rightWing
+CollisionPoint -175 61 270 rightWing
+CollisionPoint -195 63 300 rightWing
+CollisionPoint -215 65 330 rightWing
+CollisionPoint -235 67 360 rightWing
+CollisionPoint -255 69 390 rightWing
+CollisionPoint -275 71 410 rightWing
+CollisionPoint -295 73 440 rightWing
+CollisionPoint -35 47 -60 leftWing
+CollisionPoint -55 49 -90 leftWing
+CollisionPoint -75 51 -120 leftWing
+CollisionPoint -95 53 -150 leftWing
+CollisionPoint -115 55 -180 leftWing
+CollisionPoint -135 57 -210 leftWing
+CollisionPoint -155 59 -240 leftWing
+CollisionPoint -175 61 -270 leftWing
+CollisionPoint -195 63 -300 leftWing
+CollisionPoint -215 65 -330 leftWing
+CollisionPoint -235 67 -360 leftWing
+CollisionPoint -255 69 -390 leftWing
+CollisionPoint -275 71 -410 leftWing
+CollisionPoint -295 73 -440 leftWing
+BulletDetection 25
+
+
+//Misc
+CameraDistance 60.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 0.4
+LookUpSpeed 0.4
+RollLeftSpeed 0.4
+RollRightSpeed 0.4
+TurnLeftSpeed 0.4
+TurnRightSpeed 0.4
+
+
+//Sound
+PropSound viper
+PropSoundLength 49
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineCivil
+Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineCivil
+Propeller 2 0 0 0 rightWing SMP_Part_Propeller_TurbineCivil
+Propeller 3 0 0 0 rightWing SMP_Part_Propeller_TurbineCivil
+
+//------------------------------------------------

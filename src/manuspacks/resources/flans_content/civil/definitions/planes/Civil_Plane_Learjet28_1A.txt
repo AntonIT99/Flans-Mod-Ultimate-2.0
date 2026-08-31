@@ -1,0 +1,157 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Learjet 28
+ShortName Civil_Plane_Learjet28_1A
+
+
+//Visuals
+Model Manus_Civil.Plane.Civil_Plane_Learjet28_1
+Icon Icon_Civil_Plane_Learjet28_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Civil_Plane_Learjet28_1A
+
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -24 -8 -24
+WheelPosition 1 -24 -8 24
+WheelPosition 2 73 -8 0
+WheelSpringStrength 0.125
+
+
+//Inventory Slots
+FuelTankSize 16000
+BombSlots 0
+CargoSlots 32
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Civil 15 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 4 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts tail 1 SMP_Part_Tail_Civil 8 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane 1 SMP_Part_Mat_Plate_Steel
+AddDye 10 white
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+Primary None
+ModePrimary FullAuto
+AlternatePrimary False
+ShootDelayPrimary 0
+Secondary None
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootPointSecondary 0 -10 0
+ShootDelaySecondary 20
+
+
+//Driver and Passengers
+Pilot 72 2 -7 -80 80 -45 45
+Passengers 7
+Passenger 1 72 2 7 core -80 80 -45 45
+Passenger 2 50 2 -7 core -80 80 -45 45
+Passenger 3 50 2 7 core -80 80 -45 45
+Passenger 4 29 2 -7 core -80 80 -45 45
+Passenger 5 29 2 7 core -80 80 -45 45
+Passenger 6 5 2 -7 core -80 80 -45 45
+Passenger 7 5 2 7 core -80 80 -45 45
+
+
+//Sounds
+StartSound viper
+StartSoundLength 20
+ShootSoundSecondary bomb
+
+
+//Health and collision
+SetupPart nose 100 74 -4 -16 28 19 31
+SetupPart core 250 -31 -4 -16 120 35 31
+SetupPart rightWing 150 -48 -1 -116 53 2 101
+SetupPart leftWing 150 -48 -1 16 53 2 101
+SetupPart coreWheel 50 84 -14 -1 7 7 2
+SetupPart leftWingWheel 50 -31 -16 26 7 7 6
+SetupPart rightWingWheel 50 -31 -16 -32 7 7 6
+SetupPart tail 150 -146 -3 -16 115 35 31
+CollisionPoint 93 5 0 nose
+CollisionPoint -40 5 0 tail
+CollisionPoint -70 5 0 tail
+CollisionPoint -100 5 0 tail
+CollisionPoint -25 0 21 rightWing
+CollisionPoint -25 0 52 rightWing
+CollisionPoint -25 0 82 rightWing
+CollisionPoint -25 0 102 rightWing
+CollisionPoint -25 0 -21 leftWing
+CollisionPoint -25 0 -52 leftWing
+CollisionPoint -25 0 -82 leftWing
+CollisionPoint -25 0 -102 leftWing
+BulletDetection 25
+
+
+//Misc
+CameraDistance 20.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 1
+LookUpSpeed 1
+RollLeftSpeed 1
+RollRightSpeed 1
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+PropSound viper
+PropSoundLength 49
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 0 0 0 rightWing SMP_Part_Propeller_TurbineCivil
+Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineCivil
+
+//------------------------------------------------

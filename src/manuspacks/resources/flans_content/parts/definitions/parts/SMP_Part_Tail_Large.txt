@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Large Tail Frame
+ShortName SMP_Part_Tail_Large
+
+// Visuals
+Icon Icon_SMP_Part_Tail_Large
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+  P
+MMP
+MM 
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Tail
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

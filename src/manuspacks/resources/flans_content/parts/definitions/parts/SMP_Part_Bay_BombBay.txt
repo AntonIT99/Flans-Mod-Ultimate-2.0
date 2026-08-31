@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Bomb Bay Frame
+ShortName SMP_Part_Bay_BombBay
+
+// Visuals
+Icon Icon_SMP_Part_Bay_BombBay
+
+// Recipe
+Recipe D SMP_Part_Misc_DropMechanism P SMP_Part_Mat_Plate_Steel
+PPP
+ D 
+PPP
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Bay
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

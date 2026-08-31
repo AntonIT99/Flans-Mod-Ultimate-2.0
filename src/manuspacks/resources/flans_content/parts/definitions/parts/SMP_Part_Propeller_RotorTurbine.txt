@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Turbine Blades
+ShortName SMP_Part_Propeller_RotorTurbine
+
+// Visuals
+Icon Icon_SMP_Part_Propeller_RotorTurbine
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Titan P SMP_Part_Mat_Plate_Titan A SMP_Part_Mat_Block_Aluminium
+MPM
+PAP
+MPM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Propeller
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

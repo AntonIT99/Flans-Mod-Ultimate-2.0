@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "SSS",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_seat_passenger"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_bay_passengerbay"
+  }
+}

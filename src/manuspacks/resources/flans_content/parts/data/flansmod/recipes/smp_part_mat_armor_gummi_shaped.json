@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "MMM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_gummi"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_gummi"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_armor_gummi",
+    "count": 3
+  }
+}

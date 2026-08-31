@@ -1,0 +1,80 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Green Formula 1 Racer
+ShortName Civil_Vehicle_F1_1C
+
+// Visuals
+Model Manus_Civil.Vehicle.Civil_Vehicle_F1_1
+Icon Icon_Civil_Vehicle_F1_1C
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Civil_Vehicle_F1_1C
+
+//Movement
+MaxThrottle 2.5
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -32 -8 -17
+WheelPosition 1 -32 -8 17
+WheelPosition 2 31 -8 17
+WheelPosition 3 31 -8 -17
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 0
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Car 8 SMP_Part_Mat_Plate_Titan
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 5 lime
+
+//Driver and Passengers
+Driver -6 -7 0 -80 80 -45 45
+Passengers 0
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+
+//Health and collision
+SetupPart frontRightWheel 100 26 -10 -17 10 10 8
+SetupPart core 150 -46 -11 -16 90 12 32
+SetupPart frontLeftWheel 100 27 -10 9 10 10 8
+SetupPart backLeftWheel 100 -37 -10 9 10 10 8
+SetupPart backRightWheel 100 -37 -10 -17 10 10 8
+BulletDetection 5
+
+//Misc
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+//------------------------------------------------

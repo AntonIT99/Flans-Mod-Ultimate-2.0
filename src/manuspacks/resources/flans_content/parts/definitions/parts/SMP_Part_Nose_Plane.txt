@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plane Nose Frame
+ShortName SMP_Part_Nose_Plane
+
+// Visuals
+Icon Icon_SMP_Part_Nose_Plane
+
+// Recipe
+Recipe P SMP_Part_Mat_Plate_Steel
+ PP
+P  
+ PP
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

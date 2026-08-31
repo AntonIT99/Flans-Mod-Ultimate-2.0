@@ -1,0 +1,30 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Military Engine Mk. 2
+ShortName SMP_Part_Engine_MilEngineMk2
+
+// Visuals
+Icon Icon_SMP_Part_Engine_MilEngineMk2
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Titan T SMP_Part_Propeller_TurbineJet I SMP_Part_Misc_EngineIgnition
+MMM
+TTI
+MMM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 2.3
+FuelConsumption 2.3
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+//------------------------------------------------

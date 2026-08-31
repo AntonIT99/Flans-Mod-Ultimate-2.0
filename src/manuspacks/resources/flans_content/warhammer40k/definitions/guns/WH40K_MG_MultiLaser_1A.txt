@@ -1,0 +1,69 @@
+//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Vulture Multi-Laser
+ShortName WH40K_MG_MultiLaser_1A
+
+
+//Visuals
+Icon Icon_WH40K_MG_MultiLaser_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable True
+
+
+//Visual
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_MultiLaser_1
+
+
+//Attachments
+
+
+//Weapon Settings
+BulletSpeed 10.0
+Accuracy 2
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+ShootDelay 4
+
+
+//Melee
+
+
+//Deployable
+DeployedModel Manus_WH40K.MG.WH40K_MG_MultiLaser_1
+DeployedTexture Skin_WH40K_MG_MultiLaser_1A
+TopViewLimit 0
+BottomViewLimit 0
+SideViewLimit 0
+PivotHeight 0.5
+StandBackDistance 1.3
+
+
+//Sound
+DistortSound False
+ShootSound LasGun_fire
+ReloadSound BrowningReload
+
+//------------------------------------------------

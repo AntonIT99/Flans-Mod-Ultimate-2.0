@@ -1,0 +1,76 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 150mm sFH 18/1 L/30 HE Shell
+ShortName WW2_Shell_German150mmHE
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German150mmHE
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+GGG
+GGG
+SSS
+RecipeOutput 3
+
+
+//Misc
+description Amunition for Panzerhaubitze Hummel
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1
+DamageVsLiving 2500
+DamageVsVehicles 2500
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 8
+Fire 0
+FallSpeed 3
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 15
+TrailParticleType flansmod.fmflame
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

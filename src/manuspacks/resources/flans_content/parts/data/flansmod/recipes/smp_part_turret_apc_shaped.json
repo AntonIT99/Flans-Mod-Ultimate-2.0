@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BAA",
+    "MMM"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:smp_part_mat_armor_steel"
+    },
+    "B": {
+      "item": "flansmod:smp_part_misc_barrel_aagun"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_turret_apc"
+  }
+}

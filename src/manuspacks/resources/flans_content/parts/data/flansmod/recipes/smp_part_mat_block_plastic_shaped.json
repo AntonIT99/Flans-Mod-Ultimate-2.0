@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GMG"
+  ],
+  "key": {
+    "G": {
+      "item": "flansmod:smp_part_mat_block_gummi"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_barrel_oil"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_block_plastic",
+    "count": 4
+  }
+}

@@ -1,0 +1,75 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 20mm L/65 Flak Shell
+ShortName Ships_Shell_German20mmAA
+
+
+//Visuals
+model Bullet
+Icon Icon_Ships_Shell_German20mmAA
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+   
+GGG
+SSS
+RecipeOutput 32
+
+
+//Misc
+description Amunition for 2 cm Flak
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 20
+DamageVsVehicles 20
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 1
+Fire 0
+FallSpeed 1
+Fuse 200
+HasLight True
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail False
+
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 64
+RoundsPerItem 20
+
+//------------------------------------------------

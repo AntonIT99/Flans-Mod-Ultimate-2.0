@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Kart Chassis Frame
+ShortName SMP_Part_Chassis_Kart
+
+// Visuals
+Icon Icon_SMP_Part_Chassis_Kart
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Steel F SMP_Part_Fuel_FuelCan
+  F
+MMM
+   
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Chassis
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

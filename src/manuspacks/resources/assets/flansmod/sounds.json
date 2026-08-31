@@ -1,0 +1,314 @@
+{
+  "aafire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:aafire"
+    ]
+  },
+  "barreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:barreload"
+    ]
+  },
+  "bazookareload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bazookareload"
+    ]
+  },
+  "boltgun_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:boltgun_fire"
+    ]
+  },
+  "boltgun_fire2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:boltgun_fire2"
+    ]
+  },
+  "boltgun_reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:boltgun_reload"
+    ]
+  },
+  "bomb": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bomb"
+    ]
+  },
+  "bullet": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullet"
+    ]
+  },
+  "chainsword_idle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:chainsword_idle"
+    ]
+  },
+  "chainsword_swing": {
+    "category": "player",
+    "sounds": [
+      "flansmod:chainsword_swing"
+    ]
+  },
+  "colonialblaster_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:colonialblaster_fire"
+    ]
+  },
+  "cylonblaster_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:cylonblaster_fire"
+    ]
+  },
+  "engine": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine"
+    ]
+  },
+  "gatling": {
+    "category": "player",
+    "sounds": [
+      "flansmod:gatling"
+    ]
+  },
+  "grenadelauncherreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:grenadelauncherreload"
+    ]
+  },
+  "grenadelaunchershoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:grenadelaunchershoot"
+    ]
+  },
+  "helo": {
+    "category": "player",
+    "sounds": [
+      "flansmod:helo"
+    ]
+  },
+  "imperiallaser_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:imperiallaser_fire"
+    ]
+  },
+  "lancasterprop": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lancasterprop"
+    ]
+  },
+  "lasgun_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lasgun_fire"
+    ]
+  },
+  "laspistol_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:laspistol_fire"
+    ]
+  },
+  "lightsaber_idle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lightsaber_idle"
+    ]
+  },
+  "lightsaber_swing": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lightsaber_swing"
+    ]
+  },
+  "lkw_lauf": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lkw_lauf"
+    ]
+  },
+  "lkw_start": {
+    "category": "player",
+    "sounds": [
+      "flansmod:lkw_start"
+    ]
+  },
+  "m1887reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1887reload"
+    ]
+  },
+  "m1887shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:m1887shoot"
+    ]
+  },
+  "planeshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:planeshoot"
+    ]
+  },
+  "propsound": {
+    "category": "player",
+    "sounds": [
+      "flansmod:propsound"
+    ]
+  },
+  "propstart": {
+    "category": "player",
+    "sounds": [
+      "flansmod:propstart"
+    ]
+  },
+  "rebellaser_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rebellaser_fire"
+    ]
+  },
+  "rocketfire1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocketfire1"
+    ]
+  },
+  "rocketfire2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rocketfire2"
+    ]
+  },
+  "rpgshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:rpgshoot"
+    ]
+  },
+  "tank1shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tank1shoot"
+    ]
+  },
+  "tank2shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tank2shoot"
+    ]
+  },
+  "tank3shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tank3shoot"
+    ]
+  },
+  "tank4shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tank4shoot"
+    ]
+  },
+  "tankidle": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankidle"
+    ]
+  },
+  "tankmove": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankmove"
+    ]
+  },
+  "tankshell": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankshell"
+    ]
+  },
+  "turbolaser": {
+    "category": "player",
+    "sounds": [
+      "flansmod:turbolaser"
+    ]
+  },
+  "turbolaser_fire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:turbolaser_fire"
+    ]
+  },
+  "viper": {
+    "category": "player",
+    "sounds": [
+      "flansmod:viper"
+    ]
+  },
+  "browningreload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:browningreload"
+    ]
+  },
+  "browningshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:browningshoot"
+    ]
+  },
+  "bullethit": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullethit"
+    ]
+  },
+  "flak": {
+    "category": "player",
+    "sounds": [
+      "flansmod:flak"
+    ]
+  },
+  "flakvierlingshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:flakvierlingshoot"
+    ]
+  },
+  "mg42reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg42reload"
+    ]
+  },
+  "mg42shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mg42shoot"
+    ]
+  },
+  "mp44reload": {
+    "category": "player",
+    "sounds": [
+      "flansmod:mp44reload"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name AA Gun Barrel
+ShortName SMP_Part_Misc_Barrel_AAGun
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Barrel_AAGun
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel
+M  
+ M 
+  M
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

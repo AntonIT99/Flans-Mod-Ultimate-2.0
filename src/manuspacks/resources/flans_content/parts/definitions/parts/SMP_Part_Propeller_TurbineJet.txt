@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Jet Turbine
+ShortName SMP_Part_Propeller_TurbineJet
+
+// Visuals
+Icon Icon_SMP_Part_Propeller_TurbineJet
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Aluminium A SMP_Part_Mat_Armor_Aluminium R SMP_Part_Propeller_RotorTurbine
+AMA
+MRM
+AMA
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Propeller
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

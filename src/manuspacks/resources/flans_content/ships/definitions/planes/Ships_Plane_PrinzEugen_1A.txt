@@ -1,0 +1,198 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.3
+
+
+//---Standard-------------------------------------
+// Naming
+Name Prinz Eugen
+ShortName Ships_Plane_PrinzEugen_1A
+
+
+// Visuals
+Model Manus_Ships.Plane.Ships_Plane_PrinzEugen_1
+ModelScale 1
+Icon Icon_Ships_Plane_PrinzEugen_1A
+
+
+//Recipe
+
+
+//Misc
+Boat True
+PlaceableOnLand False
+PlaceableOnWater True
+FloatOnWater true
+Buoyancy 0.05
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Ships_Plane_PrinzEugen_1A
+
+
+//Movement
+MaxThrottle 0.3
+MaxNegativeThrottle 0.1
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -36 -8 -24
+WheelPosition 1 -36 -8 24
+WheelPosition 2 42 -8 0
+WheelSpringStrength 0.0
+
+
+//Inventory Slots
+FuelTankSize 60000
+BombSlots 0
+CargoSlots 0
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 64 SMP_Part_Mat_Plate_Steel 64 SMP_Part_Mat_Plate_Steel 64 SMP_Part_Mat_Plate_Steel
+AddDye 50 gray
+AddDye 10 red
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Bomb_German50kg
+Primary Gun
+ModePrimary FullAuto
+AlternatePrimary False
+ShootPointSecondary -35 0 0 core
+ShootDelayPrimary 7
+Secondary Bomb
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootDelaySecondary 100
+
+
+//Driver and Passengers
+Pilot 807 285 0
+Passengers 23
+Passenger 1 1231 191 0 core -90 90 0 30 Ships_MG_20cmGun_1A PassengerGun1
+Passenger 2 997 247 0 core -90 90 0 30 Ships_MG_20cmGun_1A PassengerGun2
+Passenger 3 -1079 247 0 core 90 270 0 30 Ships_MG_20cmGun_1A PassengerGun3
+Passenger 4 -1315 191 0 core 90 270 0 30 Ships_MG_20cmGun_1A PassengerGun4
+Passenger 5 599 222 -178 core -90 90 0 50 Ships_MG_10cmGun_1A PassengerGun5
+Passenger 6 599 222 178 core -90 90 0 50 Ships_MG_10cmGun_1A PassengerGun6
+Passenger 7 -326 168 -164 core -90 90 0 50 Ships_MG_10cmGun_1A PassengerGun7
+Passenger 8 -326 172 164 core -90 90 0 50 Ships_MG_10cmGun_1A PassengerGun8
+Passenger 9 -703 222 -177 core 90 270 0 50 Ships_MG_10cmGun_1A PassengerGun9
+Passenger 10 -703 222 177 core 90 270 0 50 Ships_MG_10cmGun_1A PassengerGun10
+Passenger 11 827 193 -102 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun11
+Passenger 12 827 193 102 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun12
+Passenger 13 671 235 -107 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun13
+Passenger 14 671 235 107 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun14
+Passenger 15 464 316 28 core -100 100 0 70 Ships_MG_2cmGun_1A PassengerGun15
+Passenger 16 364 527 -38 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun16
+Passenger 17 364 527 38 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun17
+Passenger 18 166 275 -53 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun18
+Passenger 19 166 275 53 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun19
+Passenger 20 -572 239 90 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun20
+Passenger 21 -572 239 -90 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun21
+Passenger 22 -841 239 -77 core -180 0 0 70 Ships_MG_2cmGun_1A PassengerGun22
+Passenger 23 -841 239 77 core 0 180 0 70 Ships_MG_2cmGun_1A PassengerGun23
+GunOrigin 1 -1231 -179 0
+GunOrigin 2 -997 -235 0
+GunOrigin 3 1079 -235 0
+GunOrigin 4 1315 -179 0
+GunOrigin 5 -599 -222 -178
+GunOrigin 6 -599 -222 178
+GunOrigin 7 326 -172 -164
+GunOrigin 8 326 -172 164
+GunOrigin 9 703 -222 -177
+GunOrigin 10 703 -222 177
+GunOrigin 11 -874 -212 -102
+GunOrigin 12 -874 -212 102
+GunOrigin 13 -710 -253 -112
+GunOrigin 14 -710 -253 112
+GunOrigin 15 -490 -335 0
+GunOrigin 16 -320 -546 -65
+GunOrigin 17 -320 -546 65
+GunOrigin 18 -138 -294 -86
+GunOrigin 19 -138 -294 86
+GunOrigin 20 618 -259 90
+GunOrigin 21 618 -259 -90
+GunOrigin 22 884 -259 -77
+GunOrigin 23 884 -259 77
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+
+//Health and collision
+//SetupPart core 100000 -1500 -109 -250 3000 429 500
+CollisionPoint 40 27 0 nose
+CollisionPoint -78 27 0 tail
+CollisionPoint -94 27 0 tail
+CollisionPoint -110 27 0 tail
+CollisionPoint -126 27 0 tail
+CollisionPoint -142 27 0 tail
+CollisionPoint -142 43 0 tail
+CollisionPoint -142 59 0 tail
+CollisionPoint -31 23 26 rightWing
+CollisionPoint -31 23 42 rightWing
+CollisionPoint -31 23 58 rightWing
+CollisionPoint -36 25 74 rightWing
+CollisionPoint -40 26 90 rightWing
+CollisionPoint -45 26 106 rightWing
+CollisionPoint -47 28 122 rightWing
+CollisionPoint -31 23 -26 leftWing
+CollisionPoint -31 23 -42 leftWing
+CollisionPoint -36 25 -74 leftWing
+CollisionPoint -31 23 -58 leftWing
+CollisionPoint -40 26 -90 leftWing
+CollisionPoint -45 26 -106 leftWing
+CollisionPoint -48 28 -122 leftWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 100.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 0
+LookUpSpeed 0
+RollLeftSpeed 0
+RollRightSpeed 0
+TurnLeftSpeed 0.1
+TurnRightSpeed 0.1
+
+
+//Sound
+PropSound propSound
+PropSoundLength 30
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 0.0
+
+
+//Propeller
+
+
+//------------------------------------------------

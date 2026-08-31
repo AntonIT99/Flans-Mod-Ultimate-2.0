@@ -1,0 +1,22 @@
+Name Manus WW2 Box
+ShortName WW2_Box_Manus_WW2_1
+TopTexture boxTop
+SideTexture Skin_WW2_Box1
+BottomTexture boxBottom
+GunBoxID 160
+Recipe I SMP_Part_Mat_Block_Steel B dyePowder.4 R dyePowder.1
+III
+IRI
+III
+
+NumGuns 6
+AddGun WW2_MG_MG42Lafette_1A 8 SMP_Part_Mat_Block_Steel 2 log
+AddAmmo WW2_Ammo_German792mm 3 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_MG42ZB_1A 8 SMP_Part_Mat_Block_Steel 2 log
+AddGun WW2_MG_MG81ZB_1A 10 SMP_Part_Mat_Block_Steel
+AddGun WW2_MG_BrowningM1919_1A 10 SMP_Part_Mat_Block_Steel
+AddAmmo WW2_Ammo_USACal30 3 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_BrowningM2_1A 14 SMP_Part_Mat_Block_Steel
+AddAmmo WW2_Ammo_USACal50 3 SMP_Part_Mat_Plate_Steel 1 gunpowder
+AddGun WW2_MG_DP28_1A 8 SMP_Part_Mat_Block_Steel 2 log
+AddAmmo WW2_Ammo_USSR762mm 3 SMP_Part_Mat_Plate_Steel 1 gunpowder

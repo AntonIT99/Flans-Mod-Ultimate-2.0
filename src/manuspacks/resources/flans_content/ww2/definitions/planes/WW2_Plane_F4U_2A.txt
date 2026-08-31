@@ -1,0 +1,170 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.7
+
+
+//---Standard-------------------------------------
+// Naming
+Name Vought F4U-4 Corsair -  VBF-10 "The Twilight Warriors"
+ShortName WW2_Plane_F4U_2A
+
+
+// Visuals
+Model Manus_WW2.Plane.WW2_Plane_F4U_2
+ModelScale 1
+Icon Icon_WW2_Plane_F4U_2A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_F4U_2A
+
+
+//Movement
+MaxThrottle 2.5
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 30 -8 -36
+WheelPosition 1 30 -8 36
+WheelPosition 2 -94 13 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo largeBomb
+AddAmmo smallBomb
+AddAmmo napalm
+
+
+//Weapons
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 5
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 32 21 48 rightWing WW2_MG_MG532_1A
+ShootPointPrimary 32 21 -48 leftWing WW2_MG_MG532_1A
+ShootPointPrimary 32 21 51 rightWing WW2_MG_MG532_1A
+ShootPointPrimary 32 21 -51 leftWing WW2_MG_MG532_1A
+ShootPointPrimary 32 21 54 rightWing WW2_MG_MG532_1A
+ShootPointPrimary 32 21 -54 leftWing WW2_MG_MG532_1A
+ShootPointSecondary 0 -10 0
+
+
+//Driver and Passengers
+Pilot -22 34 0
+Passengers 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 1
+MissileSlots 0
+FuelTankSize 5000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 blue
+
+
+//Health and Collision
+SetupPart core 200 -78 20 -13 136 31 26
+SetupPart tail 150 -115 20 -6 36 49 10
+SetupPart nose 100 58 20 -13 7 26 26
+SetupPart rightWing 100 -23 20 13 53 11 107
+SetupPart leftWing 100 -23 20 -120 53 11 107
+SetupPart leftWingWheel 50 22 -10 -38 15 28 7
+SetupPart rightWingWheel 50 22 -10 31 15 28 7
+SetupPart tailWheel 50 -96 11 -2 7 13 4
+CollisionPoint 61 34 0 nose
+CollisionPoint -80 34 0 tail
+CollisionPoint -96 34 0 tail
+CollisionPoint -112 34 0 tail
+CollisionPoint 10 26 16 rightWing
+CollisionPoint 10 19 32 rightWing
+CollisionPoint 10 21 48 rightWing
+CollisionPoint 10 24 64 rightWing
+CollisionPoint 10 26 80 rightWing
+CollisionPoint 10 29 96 rightWing
+CollisionPoint 10 31 112 rightWing
+CollisionPoint 10 26 -16 leftWing
+CollisionPoint 10 19 -32 leftWing
+CollisionPoint 10 21 -48 leftWing
+CollisionPoint 10 24 -64 leftWing
+CollisionPoint 10 26 -80 leftWing
+CollisionPoint 10 29 -96 leftWing
+CollisionPoint 10 31 -112 leftWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 10.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+BombSound bomb
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+
+//Sound
+PropSoundLength 30
+PropSound propSound
+ShootSound PlaneShoot
+BombSound bomb
+
+//------------------------------------------------

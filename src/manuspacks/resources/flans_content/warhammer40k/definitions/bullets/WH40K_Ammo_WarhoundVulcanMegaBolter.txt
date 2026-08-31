@@ -1,0 +1,83 @@
+﻿//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Warhound Titan Vulcan Mega Bolter Ammo
+ShortName WH40K_Ammo_WarhoundVulcanMegaBolter
+
+
+// Visuals
+model Manus_WH40K.Misc.WH40K_Misc_TitanBolt_1
+Icon Icon_WH40K_Ammo_WarhoundVulcanMegaBolter
+
+
+// Recipe
+
+
+//Misc
+description Ammo for Warhound Vulcan Mega Bolter
+
+//------------------------------------------------
+
+//--Shootable-------------------------------------
+//Visuals
+
+//Damage
+HitBoxSize 0.1
+DamageVsLiving 50
+DamageVsPlayer 50
+
+
+//Ammo Settings
+RoundsPerItem 5000
+FallSpeed 0
+DamageVsVehicles 50
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Fire 0
+Explosion 1
+
+
+//Drop Item
+MaxStackSize 1
+
+
+//Inventory
+
+
+//Sound
+
+
+//Particle
+SmokeTrail False
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_TitanBolt_1
+Texture Skin_WH40K_Bullet_TitanBolt_1A
+HasLight True
+
+
+// Bullet Type
+
+
+//Bullet Behavior
+Penetrates False
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+
+
+//Sound
+HitSound bullet
+
+//------------------------------------------------

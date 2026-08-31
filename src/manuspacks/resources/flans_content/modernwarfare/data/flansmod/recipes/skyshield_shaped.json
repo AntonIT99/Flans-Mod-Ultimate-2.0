@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  B",
+    "LM ",
+    "MMM"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_misc_barrel_aagun"
+    },
+    "L": {
+      "item": "flansmod:smp_part_misc_seat_car"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_aluminium"
+    }
+  },
+  "result": {
+    "item": "flansmod:skyshield"
+  }
+}

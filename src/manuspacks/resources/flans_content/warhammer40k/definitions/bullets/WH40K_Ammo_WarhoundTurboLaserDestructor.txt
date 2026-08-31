@@ -1,0 +1,83 @@
+﻿//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Warhound Titan Turbo Laser Destructor Ammo
+ShortName WH40K_Ammo_WarhoundTurboLaserDestructor
+
+
+// Visuals
+model Manus_WH40K.Misc.WH40K_Misc_TitanLaser_1
+Icon Icon_WH40K_Ammo_WarhoundTurboLaserDestructor
+
+
+// Recipe
+
+
+//Misc
+description Ammo for Warhound Turbo Laser Destructor
+
+//------------------------------------------------
+
+//--Shootable-------------------------------------
+//Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_TitanLaser_1
+Texture Skin_WH40K_Bullet_TitanLaser_1A
+HasLight True
+
+//Damage
+HitBoxSize 0.1
+DamageVsLiving 200
+DamageVsPlayer 200
+
+
+//Ammo Settings
+RoundsPerItem 5000
+FallSpeed 0
+DamageVsVehicles 500
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Fire 2
+Explosion 0
+
+
+//Drop Item
+MaxStackSize 1
+
+
+//Inventory
+
+
+//Sound
+
+
+//Particle
+SmokeTrail False
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+
+
+// Bullet Type
+
+
+//Bullet Behavior
+Penetrates False
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+
+
+//Sound
+HitSound bullet
+
+//------------------------------------------------

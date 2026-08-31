@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "MMM",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_plastic"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_part_electronic",
+    "count": 4
+  }
+}

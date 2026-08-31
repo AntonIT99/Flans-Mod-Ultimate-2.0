@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Gummi Armorplate
+ShortName SMP_Part_Mat_Armor_Gummi
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Armor_Gummi
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Gummi P SMP_Part_Mat_Plate_Gummi
+   
+PPP
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

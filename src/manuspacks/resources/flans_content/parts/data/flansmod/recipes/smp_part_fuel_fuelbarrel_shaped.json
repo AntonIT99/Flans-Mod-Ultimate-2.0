@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MM"
+  ],
+  "key": {
+    "M": {
+      "item": "flansmod:smp_part_mat_barrel_oil"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_fuel_fuelbarrel"
+  }
+}

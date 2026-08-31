@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plane Passenger Seat
+ShortName SMP_Part_Misc_Seat_Passenger
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Seat_Passenger
+
+// Recipe
+Recipe S SMP_Part_Misc_Seat_Plane
+   
+   
+SSS
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

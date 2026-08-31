@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Tent
+ShortName SMP_Part_Misc_Tent
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Tent
+
+// Recipe
+Recipe L leaves S stick
+LLL
+S S
+S S
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

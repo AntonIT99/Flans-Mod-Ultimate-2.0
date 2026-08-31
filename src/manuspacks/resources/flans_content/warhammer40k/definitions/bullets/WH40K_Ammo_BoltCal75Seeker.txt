@@ -1,0 +1,87 @@
+﻿//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name .75cal Boltgun Ammo - Seeker Round
+ShortName WH40K_Ammo_BoltCal75Seeker
+
+
+// Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_BoltBullet_1
+Icon Icon_WH40K_Ammo_BoltCal75Seeker
+
+
+// Recipe
+
+
+//Misc
+description Ammo for Mk5b Boltgun
+
+//------------------------------------------------
+
+//--Shootable-------------------------------------
+//Visuals
+Texture Skin_WH40K_Bullet_BoltBullet_1A
+
+
+//Damage
+HitBoxSize 0.1
+DamageVsLiving 20
+DamageVsPlayer 20
+
+
+//Ammo Settings
+RoundsPerItem 10
+FallSpeed 0.25
+DamageVsVehicles 10
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Fire 0
+Explosion 1
+
+
+//Drop Item
+MaxStackSize 3
+
+
+//Inventory
+
+
+//Sound
+
+
+//Particle
+SmokeTrail True
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+HasLight True
+
+
+// Bullet Type
+
+
+//Bullet Behavior
+Penetrates False
+
+
+//Lock On
+LockOnToDriveables True
+LockOnToPlayers True
+LockOnToLivings True
+MaxLockOnAngle 20
+
+
+//Parctical
+FlakParticles 0
+
+
+//Sound
+HitSound bullet
+
+//------------------------------------------------

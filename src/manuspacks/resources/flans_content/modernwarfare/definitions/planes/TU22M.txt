@@ -1,0 +1,83 @@
+//Naming
+Name Tupolev Tu-22M Backfire
+ShortName TU22M
+ItemID 28200
+//Visuals
+Icon IconPlaneTU22M
+Model manus_modern_warfare.TU22M
+Texture SkinPlaneTU22M
+//Third Person Camera Distance
+CameraDistance 10.0
+//Throttle
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Pitch modifiers
+LookUpSpeed 1
+LookDownSpeed 1
+//Roll modifiers
+RollLeftSpeed 1
+RollRightSpeed 1
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 9.0
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 16.7
+//Mass (In tons)
+Mass 16.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 80.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 32000
+//AddGun 106 12 -2 nose GAU8
+ShootDelay 5
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 16
+//Propeller Positions
+Propeller 0 0 0 0 core Part_Propeller_TurbineJet
+Propeller 1 0 0 0 core Part_Propeller_TurbineJet
+//Passengers
+Pilot 230 42 -8
+Passengers 1
+//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
+Passenger 1 230 42 8 core
+//Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Large 16 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 10 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Large 25 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Large 30 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Large 30 Mat_Plate_Steel
+AddRecipeParts leftWingWheel 6 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 6 Part_Wheel_Plane
+AddRecipeParts coreWheel 2 Part_Wheel_Plane
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 25 cyan
+SetupPart nose 200 259 22 -16 80 32 32
+SetupPart core 600 -149 22 -16 408 48 32
+SetupPart tail 400 -293 22 -36 144 48 72
+SetupPart coreWheel 100 170 -10 -6 12 32 12
+SetupPart leftWingWheel 100 -97 -10 71 36 40 12
+SetupPart rightWing 300 -145 30 -262 85 6 226
+SetupPart leftWing 300 -145 30 36 85 6 226
+SetupPart rightWingWheel 100 -97 -10 -83 36 40 12
+BulletDetection 25
+HasGear True

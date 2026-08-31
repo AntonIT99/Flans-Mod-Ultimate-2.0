@@ -1,0 +1,29 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name V4 Engine
+ShortName SMP_Part_Engine_V4
+
+// Visuals
+Icon Icon_SMP_Part_Engine_V4
+
+// Recipe
+Recipe P SMP_Part_Misc_EnginePiston I SMP_Part_Misc_EngineIgnition M SMP_Part_Misc_EngineMotorblock
+PP 
+PP 
+MI 
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 1.0
+FuelConsumption 1.0
+PartBoxRecipe
+StackSize 4
+//------------------------------------------------

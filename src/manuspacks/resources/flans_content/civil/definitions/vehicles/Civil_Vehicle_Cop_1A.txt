@@ -1,0 +1,83 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Police Car
+ShortName Civil_Vehicle_Cop_1A
+
+// Visuals
+Model Manus_Civil.Vehicle.Civil_Vehicle_Cop_1
+Icon Icon_Civil_Vehicle_Cop_1A
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Civil_Vehicle_Cop_1A
+
+//Movement
+MaxThrottle 1.3
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -22 -8 -16
+WheelPosition 1 -22 -8 16
+WheelPosition 2 22 -8 16
+WheelPosition 3 22 -8 -16
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Car 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 5 black
+
+//Driver and Passengers
+Driver 6 -4 -7 -80 80 -45 45
+Passengers 3
+Passenger 1 6 -4 7 core -80 80 -45 45
+Passenger 2 -12 -4 -7 core -80 80 -45 45
+Passenger 3 -12 -4 7 core -80 80 -45 45
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+
+//Health and collision
+SetupPart core 200 -36 -6 -16 74 14 32
+SetupPart frontRightWheel 100 17 -10 -16 8 8 2
+SetupPart backRightWheel 100 -25 -10 -16 8 8 2
+SetupPart backLeftWheel 100 -25 -10 14 8 8 2
+SetupPart frontLeftWheel 100 17 -10 14 8 8 2
+BulletDetection 5
+
+//Misc
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+//------------------------------------------------

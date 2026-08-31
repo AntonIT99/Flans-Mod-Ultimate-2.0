@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name PlaSteel Plate
+ShortName SMP_Part_Mat_Plate_PlaSteel
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Plate_PlaSteel
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_PlaSteel
+   
+   
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

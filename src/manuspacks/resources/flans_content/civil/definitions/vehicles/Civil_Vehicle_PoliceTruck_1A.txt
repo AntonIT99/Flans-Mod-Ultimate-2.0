@@ -1,0 +1,87 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Police Truck
+ShortName Civil_Vehicle_PoliceTruck_1A
+
+// Visuals
+Model Manus_Civil.Vehicle.Civil_Vehicle_PoliceTruck_1
+Icon Icon_Civil_Vehicle_PoliceTruck_1A
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_Civil_Vehicle_PoliceTruck_1A
+
+//Movement
+MaxThrottle 1.2
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -28 -8 -17
+WheelPosition 1 -28 -8 17
+WheelPosition 2 28 -8 17
+WheelPosition 3 28 -8 -17
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Van 10 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 8 white
+
+//Driver and Passengers
+Driver 8 3 -9 -80 80 -45 45
+Passengers 7
+Passenger 1 8 3 9 core -80 80 -45 45
+Passenger 2 -7 5 9 core -160 -60 -45 45
+Passenger 3 -21 5 9 core -160 -60 -45 45
+Passenger 4 -35 5 9 core -160 -60 -45 45
+Passenger 5 -7 5 -9 core 60 160 -45 45
+Passenger 6 -21 5 -9 core 60 160 -45 45
+Passenger 7 -35 5 -9 core 60 160 -45 45
+
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+
+//Health and collision
+SetupPart frontRightWheel 100 22 -10 -19 12 12 5
+SetupPart backRightWheel 100 -34 -10 -19 12 12 5
+SetupPart frontLeftWheel 100 22 -10 14 12 12 5
+SetupPart backLeftWheel 100 -34 -10 14 12 12 5
+SetupPart core 250 -43 -3 -17 81 33 34
+BulletDetection 5
+
+//Misc
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+//------------------------------------------------

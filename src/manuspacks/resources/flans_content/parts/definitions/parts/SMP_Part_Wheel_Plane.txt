@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plane Wheel
+ShortName SMP_Part_Wheel_Plane
+
+// Visuals
+Icon Icon_SMP_Part_Wheel_Plane
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Aluminium G SMP_Part_Mat_Block_Gummi
+GGG
+GMG
+GGG
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Wheel
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

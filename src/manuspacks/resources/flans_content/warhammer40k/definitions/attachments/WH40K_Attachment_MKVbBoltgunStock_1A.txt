@@ -1,0 +1,59 @@
+﻿//---Standard Attachment Config for Flans Mod-----
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+name Stock for MK Vb Godwyn pattern Boltgun
+ShortName WH40K_Attachment_MKVbBoltgunStock_1A
+
+
+// Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_3
+ModelScale 0.11
+Icon Icon_WH40K_Attachment_MKVbBoltgunStock_1A
+
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_PlaSteel
+Recipe ..M
+Recipe MMM
+Recipe ..M
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Guns Attachment------------------------------
+//Type
+AttachmentType stock
+
+
+//Silencer
+ModelScale 0.11
+
+
+//Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_3
+
+
+//Multiplier
+SpreadMultiplier 0.8
+DamageMultiplier 1.0
+RecoilMultiplier 0.5
+MeleeDamageMultiplier 1.0
+
+
+//Light
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+Silencer False
+
+
+//Zoom
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+
+//------------------------------------------------

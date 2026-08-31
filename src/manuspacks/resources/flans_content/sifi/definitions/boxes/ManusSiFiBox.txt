@@ -1,0 +1,30 @@
+Name Manus SiFi Box
+ShortName ManusSiFiBox
+TopTexture boxTop
+SideTexture SkinManusSiFiBox
+BottomTexture boxBottom
+GunBoxID 162
+Recipe I ingotIron B dyePowder.4 R dyePowder.1
+IRI
+RRR
+IRI
+//AddGun shortName amountOf item
+//AddAmmo must come immediately after AddGun for them to be in the same slot
+//The names of the items / blocks are those in the code, with some exceptions such as iron (ingotIron) and gunpowder (sulphur)
+//And with parts from this mod, they are the shortName of the item
+//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+//NumGuns must come before all the addGun lines and must be correct.
+NumGuns 13
+AddGun ImperialLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackImperialLaserCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun RebelLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackRebelLaserCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun ColonialBlasterCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackColonialBlasterCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun CylonBlasterCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackCylonBlasterCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun LargeMechLaserCannon 25 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackLargeMechLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 3 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_A 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_B 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_C 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic

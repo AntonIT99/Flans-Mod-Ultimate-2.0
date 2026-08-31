@@ -1,0 +1,29 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name V12 Engine
+ShortName SMP_Part_Engine_V12
+
+// Visuals
+Icon Icon_SMP_Part_Engine_V12
+
+// Recipe
+Recipe M SMP_Part_Engine_V6
+MM 
+   
+   
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 1.6
+FuelConsumption 1.6
+PartBoxRecipe
+StackSize 4
+//------------------------------------------------

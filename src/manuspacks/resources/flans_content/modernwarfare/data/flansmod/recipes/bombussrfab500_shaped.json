@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " F ",
+    "TTT",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_misc_ammo_bombbody"
+    },
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "F": {
+      "item": "flansmod:smp_part_misc_ammo_fuse"
+    }
+  },
+  "result": {
+    "item": "flansmod:bombussrfab500",
+    "count": 2
+  }
+}

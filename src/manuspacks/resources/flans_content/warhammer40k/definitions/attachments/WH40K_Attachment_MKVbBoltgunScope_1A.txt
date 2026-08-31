@@ -1,0 +1,56 @@
+﻿//---Standard Attachment Config for Flans Mod-----
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+name Scope for MK Vb Godwyn pattern Boltgun
+ShortName WH40K_Attachment_MKVbBoltgunScope_1A
+
+// Visuals
+Icon Icon_WH40K_Attachment_MKVbBoltgunScope_1A
+
+
+// Recipe
+Recipe R redstone M SMP_Part_Mat_Plate_PlaSteel G thinGlass
+Recipe ...
+Recipe GRG
+Recipe MMM
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Guns Attachment------------------------------
+//Type
+AttachmentType sights
+
+
+//Silencer
+ModelScale 0.11
+
+
+//Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_1
+
+
+//Multiplier
+SpreadMultiplier 0.5
+DamageMultiplier 1.0
+RecoilMultiplier 0.8
+MeleeDamageMultiplier 1.0
+
+
+//Light
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+Silencer False
+
+
+//Zoom
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 2.5
+ZoomOverlay GUI_WH40K_MKVbBoltgunScope
+//------------------------------------------------

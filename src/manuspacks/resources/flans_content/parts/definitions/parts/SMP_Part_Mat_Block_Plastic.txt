@@ -1,0 +1,26 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plastic Block
+ShortName SMP_Part_Mat_Block_Plastic
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Block_Plastic
+
+// Recipe
+Recipe M SMP_Part_Mat_Barrel_Oil G SMP_Part_Mat_Block_Gummi
+GMG
+   
+   
+RecipeOutput 4
+
+//Misc
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

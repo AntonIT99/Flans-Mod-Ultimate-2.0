@@ -1,0 +1,132 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.2.2.2
+
+
+//---Standard-------------------------------------
+// Naming
+Name Imperial Guard Baneblade
+ShortName WH40K_Vehicle_Baneblade_1A
+
+
+// Visuals
+Model Manus_WH40K.Vehicle.WH40K_Vehicle_Baneblade_1
+ModelScale 1
+Icon Icon_WH40K_Vehicle_Baneblade_1A
+
+
+// Recipe
+
+
+//Misc
+Description Superheavy Imperial Tank
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Model Manus_WH40K.Vehicle.WH40K_Vehicle_Baneblade_1
+Texture Skin_WH40K_Vehicle_Baneblade_1A
+
+
+//Movement
+MaxThrottle 0.65
+MaxNegativeThrottle 0.45
+
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -42 -8 -65
+WheelPosition 1 -42 -8 65
+WheelPosition 2 100 -8 65
+WheelPosition 3 100 -8 -65
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Floating
+
+
+//Ammo
+AddAmmo WH40K_Shell_BanebladeAP
+
+
+//Weapons
+ShootPointPrimary -79 89 -11 turret
+AddGun 8 34 8 turret WH40K_MG_HeavyBolter_1A
+BarrelPosition 25 34 0
+ShootDelay 5
+ShellDelay 100
+
+
+//Driver and Passengers
+Driver 0 97 0 -360 360 -10 30
+RotatedDriverOffset 4 0 12
+Passengers 6
+Passenger 1 71 52 -38 core -10 10 0 60 WH40K_MG_BanebladeDemolisherCannon_1A PassengerGun1
+Passenger 2 95 30 5 core -20 20 -5 35 WH40K_MG_HeavyBolter_1A PassengerGun2
+Passenger 3 50 31 -86 core -90 0 -45 20 WH40K_MG_HeavyBolter_1A PassengerGun3
+Passenger 4 50 31 53 core 0 90 -45 20 WH40K_MG_HeavyBolter_1A PassengerGun4
+Passenger 5 0 63 74 core 0 180 -10 30 WH40K_MG_LasCannon_1A PassengerGun5
+Passenger 6 0 64 -108 core -180 0 -10 30 WH40K_MG_LasCannon_1A PassengerGun6
+GunOrigin 1 104 34 -38
+GunOrigin 2 64 38 5
+GunOrigin 3 6 30 -113
+GunOrigin 4 6 30 79
+GunOrigin 5 0 51 74
+GunOrigin 6 0 51 -108
+
+
+//Inventory Slots
+ShellSlots 5
+FuelTankSize 20000
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 64 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 32 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack 32 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack 32 SMP_Part_Mat_Block_PlaSteel
+AddDye 20 green
+
+
+//Health and Collision
+SetupPart core 5000 -104 17 -26 245 60 86
+SetupPart turret 3000 -65 77 -38 108 28 76
+SetupPart rightTrack 3000 -79 -9 -69 225 73 43
+SetupPart leftTrack 3000 -79 -9 60 225 73 43
+BulletDetection 7
+
+
+//Misc
+CameraDistance 7.5
+
+
+//Sounds
+StartSound TankIdle
+StartSoundLength 20
+EngineSound TankMove
+EngineSoundLength 60
+ShootSoundPrimary TankShell
+ShootSoundSecondary boltgun_fire
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 0.3
+TurnRightSpeed 0.3
+FourWheelDrive True
+
+
+//Misc
+Tank True
+ShootDelay 1
+ShellDelay 100
+
+
+//Sound
+
+//------------------------------------------------

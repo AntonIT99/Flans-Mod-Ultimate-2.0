@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Mechanical Parts
+ShortName SMP_Part_Misc_Part_Mechanical
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Part_Mechanical
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel
+ M 
+M M
+ M 
+RecipeOutput 4
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

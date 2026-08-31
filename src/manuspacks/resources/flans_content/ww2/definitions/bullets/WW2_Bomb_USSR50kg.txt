@@ -1,0 +1,78 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Russian 50kg Bomb
+ShortName WW2_Bomb_USSR50kg
+
+
+//Visuals
+model Bomb
+Icon Icon_WW2_Bomb_USSR50kg
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_BombBody G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F 
+G G
+ S 
+RecipeOutput 4
+
+//Misc
+RecipeOutput 4
+
+
+//Misc
+
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bomb
+
+
+// Bullet Type
+Bomb True
+
+
+//Damage
+Damage 50
+DamageVsVehicles 50
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 3
+Fire 0
+SetEntitiesOnFire False
+FallSpeed 1.0
+Fuse 200
+HasLight False
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.75
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail False
+
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 4
+RoundsPerItem 1
+
+//------------------------------------------------

@@ -1,0 +1,70 @@
+//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name MG42 Zweibein
+ShortName WW2_MG_MG42ZB_1A
+
+
+//Visuals
+Icon Icon_WW2_MG_MG42ZB_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable True
+
+
+//Visual
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WW2_Ammo_German792mm
+Ammo mg42Ammo250
+
+
+//Attachments
+
+
+//Weapon Settings
+BulletSpeed 10.0
+Accuracy 4
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+ShootDelay 1
+
+
+//Melee
+
+
+//Deployable
+DeployedModel Manus_WW2.MG.WW2_MG_MG42ZB_1
+DeployedTexture Skin_WW2_MG_MG42ZB_1A
+TopViewLimit 30
+BottomViewLimit 10
+SideViewLimit 45
+PivotHeight 0.375
+StandBackDistance 1.3
+
+
+//Sound
+DistortSound False
+ShootSound MG42Shoot
+ReloadSound MG42Reload
+
+//------------------------------------------------

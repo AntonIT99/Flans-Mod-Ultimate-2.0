@@ -1,0 +1,59 @@
+﻿//---Standard Attachment Config for Flans Mod-----
+//Created by Minecraft-SMP Toolbox 2.1.1.4
+
+
+//---Standard-------------------------------------
+// Naming
+Name Bayonett for M36 Lasgun
+ShortName WH40K_Attachment_M36Bayonett_1A
+
+
+// Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_M36Bayonett_1
+ModelScale 0.13
+Icon Icon_WH40K_Attachment_M36Bayonett_1A
+
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_PlaSteel
+Recipe ..M
+Recipe MMM
+Recipe ..M
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Guns Attachment------------------------------
+//Type
+AttachmentType grip
+
+
+//Visuals
+Texture Skin_WH40K_Gun_M36Lasgun_1A
+
+
+//Multiplier
+DamageMultiplier 1.0
+MeleeDamageMultiplier 3.0
+BulletSpeedMultiplier 1.0
+RecoilMultiplier 0.5
+ReloadTimeMultiplier 1.0
+SpreadMultiplier 0.8
+
+
+//Silencer
+Silencer False
+
+
+//Light
+
+
+//Zoom and Scope
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+ZoomOverlay None
+
+//------------------------------------------------

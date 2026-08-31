@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Car Chassis Frame
+ShortName SMP_Part_Chassis_Car
+
+// Visuals
+Icon Icon_SMP_Part_Chassis_Car
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car G glass
+ G 
+MSM
+ M 
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Chassis
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

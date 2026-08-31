@@ -1,0 +1,121 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Renault FT-17
+ShortName WW2_Vehicle_Renault17_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_RenaultFT17_1
+Icon Icon_WW2_Vehicle_RenaultFT17_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_RenaultFT17_1A
+
+
+//Movement
+MaxThrottle 0.4
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -24 -8 -17
+WheelPosition 1 -24 -8 17
+WheelPosition 2 18 -8 17
+WheelPosition 3 18 -8 -17
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 0
+ShellSlots 2
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 10 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 5 gray
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo shell
+AddGun 10 24 -2 turret WW2_MG_BrowningM1919_1A
+BarrelPosition 0 34 0
+ShellDelay 110
+ShootDelay 1
+
+
+//Driver and Passengers
+Driver 0 18 0 -360 360 -10 25
+RotatedDriverOffset -2 0 -1
+Passengers 0
+
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+ShellSound TankShell
+
+
+//Health and collision
+SetupPart turret 100 -11 19 -12 22 9 24
+SetupPart leftTrack 100 -35 -10 11 70 22 7
+SetupPart core 200 -48 -3 -11 80 21 22
+SetupPart rightTrack 100 -35 -10 -18 70 22 7
+BulletDetection 5
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShellSound TankShell
+ShootSound MG42Shoot
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

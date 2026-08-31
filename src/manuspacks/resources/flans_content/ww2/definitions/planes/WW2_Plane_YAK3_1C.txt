@@ -1,0 +1,159 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.7
+
+
+//---Standard-------------------------------------
+// Naming
+Name Yakovlev Yak-3 - 940. IAP
+ShortName WW2_Plane_YAK3_1C
+
+
+// Visuals
+Model Manus_WW2.Plane.WW2_Plane_YAK3_1neu
+ModelScale 1
+Icon Icon_WW2_Plane_YAK3_1C
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+Texture Skin_WW2_Plane_YAK3_1C
+
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 14 -8 -33
+WheelPosition 1 14 -8 33
+WheelPosition 2 -89 15 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo WW2_Bomb_USSR50kg
+
+
+//Weapons
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 3
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 68 34 4 core WW2_MG_MG532_1A
+ShootPointPrimary 68 34 -4 core WW2_MG_MG532_1A
+ShootPointPrimary 68 27 0 nose WW2_MG_MKII_1A
+ShootPointPrimary 0 -10 0 
+
+
+//Driver and Passengers
+Pilot -11 21 0
+Passengers 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 3
+MissileSlots 0
+FuelTankSize 6000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 gray
+
+
+//Health and Collision
+SetupPart core 100 -76 13 -9 125 25 18
+SetupPart tail 100 -110 19 -4 33 25 8
+SetupPart nose 100 49 21 -6 10 12 12
+SetupPart rightWing 100 -19 13 9 35 9 80
+SetupPart leftWing 100 -19 13 -89 35 9 80
+SetupPart leftWingWheel 100 7 -10 -35 14 26 6
+SetupPart rightWingWheel 100 7 -10 29 14 26 6
+SetupPart tailWheel 100 -91 13 -2 7 7 4
+CollisionPoint 52 28 0 nose
+CollisionPoint -80 30 0 tail
+CollisionPoint -96 30 0 tail
+CollisionPoint -96 46 0 tail
+CollisionPoint 0 17 15 rightWing
+CollisionPoint 0 18 32 rightWing
+CollisionPoint 0 19 48 rightWing
+CollisionPoint 0 20 64 rightWing
+CollisionPoint 0 21 80 rightWing
+CollisionPoint 0 17 -15 leftWing
+CollisionPoint 0 18 -32 leftWing
+CollisionPoint 0 19 -48 leftWing
+CollisionPoint 0 20 -64 leftWing
+CollisionPoint 0 21 -80 leftWing
+BulletDetection 11
+
+
+//Misc
+CameraDistance 10.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode PLANE
+
+
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 10.0
+
+
+//Propeller
+Propeller 0 0 0 0 core SMP_Part_Propeller_RotorPlane
+
+
+//Sound
+PropSoundLength 30
+PropSound propSound
+
+//------------------------------------------------

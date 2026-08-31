@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Fuel Canister
+ShortName SMP_Part_Fuel_FuelCan
+
+// Visuals
+Icon Icon_SMP_Part_Fuel_FuelCan
+
+// Recipe
+Recipe F SMP_Part_Fuel_FuelBarrel
+FF 
+   
+   
+RecipeOutput 8
+
+//Misc
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Fuel
+Fuel 2000
+PartBoxRecipe
+StackSize 8
+//------------------------------------------------

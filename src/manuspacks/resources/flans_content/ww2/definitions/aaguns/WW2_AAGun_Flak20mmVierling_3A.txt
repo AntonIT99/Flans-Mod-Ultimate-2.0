@@ -1,0 +1,75 @@
+﻿//---Standard AAGun Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Manned Flakvierling-38 20mm AA Gun
+ShortName WW2_AAGun_Flak20mmVierling_3A
+
+
+//Visuals
+Model Manus_WW2.AAGun.WW2_AAGun_Flak20mmVierling_3
+Icon Icon_WW2_AAGun_Flak20mmVierling_3A
+
+
+//Recipe
+B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Steel L SMP_Part_Misc_Seat_Car P SMP_Part_Misc_Part_Mechanical A SMP_Part_Mat_Armor_Steel
+  B
+LPA
+MAM
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---AA Gun---------------------------------------
+//Visuals
+Texture Skin_WW2_AAGun_Flak20mmVierling_3A
+
+
+//Ammo
+Ammo WW2_Shell_German20mmAA
+
+
+// Sentry Settings
+TargetMechas True
+TargetMobs True
+TargetPlanes True
+TargetPlayers False
+TargetVehicles False
+TargetRange 40
+
+
+//Gunner
+GunnerPos 21 30 0
+
+
+//Limits
+BottomViewLimit 0
+TopViewLimit 75
+
+
+//Gun Settings
+Accuracy 6
+NumBarrels 4
+Barrel 0 45 18 6
+Barrel 1 45 22 6
+Barrel 2 45 22 -6
+Barrel 3 45 18 -6
+Damage 10
+FireAlternately True
+FireAlternately False
+Health 100
+Recoil 5
+ReloadTime 100
+ShootDelay 5
+
+
+//Sounds
+ReloadSound mp44Reload
+ShootSound AAfire
+
+//------------------------------------------------

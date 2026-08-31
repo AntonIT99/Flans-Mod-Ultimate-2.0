@@ -1,0 +1,30 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Twin Ion Engine
+ShortName SMP_Part_Engine_TIEEngine
+
+// Visuals
+Icon Icon_SMP_Part_Engine_TIEEngine
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_PlaSteel T SMP_Part_Propeller_TurbineSpace I SMP_Part_Misc_EngineIgnition
+MIM
+TTT
+MIM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 3.0
+FuelConsumption 3.0
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+//------------------------------------------------

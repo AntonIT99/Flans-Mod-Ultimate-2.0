@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Fuse
+ShortName SMP_Part_Misc_Ammo_Fuse
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Ammo_Fuse
+
+// Recipe
+Recipe P SMP_Part_Misc_Part_Mechanical M SMP_Part_Mat_Block_Steel
+ M 
+MPM
+   
+RecipeOutput 16
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

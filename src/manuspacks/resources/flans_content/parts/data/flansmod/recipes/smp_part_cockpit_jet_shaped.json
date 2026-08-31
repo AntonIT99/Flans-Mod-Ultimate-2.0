@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " GG",
+    "CSM",
+    "MMM"
+  ],
+  "key": {
+    "C": {
+      "item": "flansmod:smp_part_misc_computer"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_seat_jet"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_cockpit_jet"
+  }
+}

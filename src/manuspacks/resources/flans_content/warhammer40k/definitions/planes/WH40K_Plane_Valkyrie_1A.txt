@@ -1,0 +1,189 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.2.2.2
+
+
+//---Standard-------------------------------------
+// Naming
+Name Valkyrie Dropship - Weapons Set 1
+ShortName WH40K_Plane_Valkyrie_1A
+
+
+// Visuals
+Model Manus_WH40K.Plane.WH40K_Plane_Valkyrie_1
+ModelScale 1
+Icon Icon_WH40K_Plane_Valkyrie_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Model Manus_WH40K.Plane.WH40K_Plane_Valkyrie_1
+Texture Skin_WH40K_Plane_Valkyrie_1A
+
+
+//Movement
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 -38 -8 -113
+WheelPosition 1 -38 -8 113
+WheelPosition 2 66 -8 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo WH40K_Ammo_GuidedMissile
+
+
+//Weapons
+Primary GUN
+Secondary MISSILE
+ShootPointPrimary 84 28 20 core WH40K_MG_LasCannon_2A
+ShootPointSecondary 7 23 77 rightWing
+ShootPointSecondary 7 23 -77 leftWing
+ShootDelayPrimary 2
+ShootDelaySecondary 20
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FULLAUTO
+ModeSecondary FULLAUTO
+ShootSoundPrimary LasGun_fire
+ShootSoundSecondary RocketFire1
+
+
+
+//Driver and Passengers
+Pilot 14 48 0
+Passengers 9
+Passenger 1 53 32 0 core 0 0 0 0 
+Passenger 2 -20 17 -6 core
+Passenger 3 -20 17 6 core
+Passenger 4 -37 17 -6 core
+Passenger 5 -37 17 6 core
+Passenger 6 -54 17 -6 core
+Passenger 7 -54 17 6 core
+Passenger 8 -71 17 -6 core
+Passenger 9 -71 17 6 core
+GunOrigin 1 -90 -1 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 0
+MissileSlots 8
+FuelTankSize 6000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 15 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 25 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightWingWheel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftWingWheel 5 SMP_Part_Mat_Block_PlaSteel
+AddDye 10 green
+AddDye 5 gray
+
+
+//Health and Collision
+SetupPart core 350 -99 8 -16 196 62 39
+SetupPart tail 150 -270 69 -52 26 37 104
+SetupPart rightWing 200 -99 32 28 95 23 78
+SetupPart leftWing 200 -99 32 -106 95 23 78
+SetupPart rightWingWheel 200 -52 -10 103 52 10 20
+SetupPart leftWingWheel 200 -52 -10 -123 52 10 20
+CollisionPoint -120 63 42 tail
+CollisionPoint -150 67 42 tail
+CollisionPoint -180 71 42 tail
+CollisionPoint -210 77 42 tail
+CollisionPoint -240 83 42 tail
+CollisionPoint -228 81 30 tail
+CollisionPoint -228 81 0 tail
+CollisionPoint -231 63 60 tail
+CollisionPoint -228 96 55 tail
+CollisionPoint -120 63 -42 tail
+CollisionPoint -150 67 -42 tail
+CollisionPoint -180 71 -42 tail
+CollisionPoint -210 77 -42 tail
+CollisionPoint -240 83 -42 tail
+CollisionPoint -228 81 -30 tail
+CollisionPoint -231 63 -60 tail
+CollisionPoint -228 96 -55 tail
+CollisionPoint -26 49 50 rightWing
+CollisionPoint -26 46 80 rightWing
+CollisionPoint -26 41 96 rightWing
+CollisionPoint -26 25 112 rightWing
+CollisionPoint -26 11 128 rightWing
+CollisionPoint -26 49 -50 leftWing
+CollisionPoint -26 46 -80 leftWing
+CollisionPoint -26 41 -96 leftWing
+CollisionPoint -26 25 -112 leftWing
+CollisionPoint -26 11 -128 leftWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 15.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 60
+ShootSoundPrimary M60Shoot
+ShootSoundSecondary RocketFire2
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode VTOL
+
+
+//Visuals
+HasGear True
+
+
+//Movement
+TurnLeftSpeed 4
+TurnRightSpeed 4
+LookUpSpeed 4
+LookDownSpeed 4
+RollLeftSpeed 4
+RollRightSpeed 4
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 -12 -66 24 core SMP_Part_Propeller_TurbineSpace
+Propeller 1 -12 -66 -24 core SMP_Part_Propeller_TurbineSpace
+Propeller 2 100 -66 -24 core SMP_Part_Propeller_TurbineSpace
+Propeller 3 100 -66 24 core SMP_Part_Propeller_TurbineSpace
+HeliPropeller 0 1 -51 0 core SMP_Part_Propeller_TurbineSpace
+HeliPropeller 1 146 -51 0 core SMP_Part_Propeller_TurbineSpace
+
+
+//Sound
+PropSoundLength 47
+PropSound JetEngine2
+
+//------------------------------------------------

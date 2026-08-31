@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " M",
+    " M",
+    "MM"
+  ],
+  "key": {
+    "M": {
+      "item": "flansmod:smp_part_mat_block_gummi"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_seat_jet"
+  }
+}

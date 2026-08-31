@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Gummi Plate
+ShortName SMP_Part_Mat_Plate_Gummi
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Plate_Gummi
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Gummi
+   
+   
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

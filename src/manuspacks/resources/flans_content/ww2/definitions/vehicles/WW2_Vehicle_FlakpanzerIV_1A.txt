@@ -1,0 +1,136 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Flakpanzer IV - Wirbelwind
+ShortName WW2_Vehicle_FlakpanzerIV_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_FlakpanzerIV_1
+Icon Icon_WW2_Vehicle_FlakpanzerIV_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_FlakpanzerIV_1A
+
+
+//Movement
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -35 -8 -28
+WheelPosition 1 -35 -8 28
+WheelPosition 2 46 -8 28
+WheelPosition 3 46 -8 -28
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 10
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 6 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo Shell20mmAA
+AddAmmo 44_20mmAircraftAmmo
+
+BarrelPosition 0 40 0
+ShellDelay 1
+ShootDelay 1
+BarrelPosition 0 40 0
+
+
+//Driver and Passengers
+Driver 0 34 0 -360 360 -5 85
+RotatedDriverOffset -23 0 0
+Passengers 1
+Passenger 1 31 12 12 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+GunOrigin 1 48 18 12
+
+
+//----------------------------Sounds
+PlaceTimePrimary 80
+StartSound TankIdle2
+StartSoundLength 41
+EngineSound TankRun2
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack2
+StartSoundRange 12
+EngineSoundRange 22
+BackSoundRange 10
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot
+
+
+//Health and collision
+SetupPart core 3000 -48 -2 -20 111 27 40
+SetupPart turret 800 -31 26 -25 54 20 50
+SetupPart leftTrack 300 -55 -10 22 110 22 8
+SetupPart rightTrack 300 -55 -10 -30 110 22 8
+BulletDetection 7
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 7.5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

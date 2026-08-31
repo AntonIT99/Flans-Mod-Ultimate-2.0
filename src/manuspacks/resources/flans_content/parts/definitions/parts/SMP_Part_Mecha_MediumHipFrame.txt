@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Medium Mecha Hip Frame
+ShortName SMP_Part_Mecha_MediumHipFrame
+
+// Visuals
+Icon Icon_SMP_Part_Mecha_MediumHipFrame
+
+// Recipe
+Recipe I SMP_Part_Mat_Block_DuraSteel R redstone H SMP_Part_Misc_Hydraulics D diamond
+III
+IHI
+   
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 16
+//------------------------------------------------

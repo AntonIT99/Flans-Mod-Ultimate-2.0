@@ -1,0 +1,98 @@
+﻿//---Standard Grenade Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.2.2.1
+
+
+//---Standard-------------------------------------
+// Naming
+Name Impact Grenade for Mk5 Grenade Launcher
+ShortName WH40K_Grenade_MkVGrenadeLauncher
+
+
+// Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_GunGrenade_1
+Colour 255 255 255
+Icon Icon_WH40K_Grenade_MkVGrenadeLauncher
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//--Shootable-------------------------------------
+//Visuals
+Texture Skin_WH40K_Bullet_GunGrenade_1A
+
+
+//Damage
+HitEntityDamage 1
+
+
+//Ammo Settings
+FallSpeed 1.0
+ThrowSpeed 3.0
+HitBoxSize 0.5
+BreaksGlass True
+Fuse 40
+DetonateOnImpact True
+
+
+//Fire
+FireRadius 0.0
+
+
+//Explosin
+ExplosionRadius 4.0
+ExplosionBreaksBlocks True
+
+
+//Drop Item
+
+
+//Inventory
+StackSize 16
+
+
+//Particle
+TrailParticles False
+
+
+//Sound
+
+//------------------------------------------------
+
+//---Grenade--------------------------------------
+//Damage
+MeleeDamage 4
+
+
+//Throwing
+ThrowDelay 10
+SpinWhenThrown True
+CanThrow False
+Bounciness 0.8
+
+
+//Particals and Smoke
+ExplodeParticles 0
+SmokeTime 0
+
+
+//Misc
+PenetratesBlocks False
+Sticky False
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+DetonateWhenShot True
+PrimeDelay 0
+Remote False
+
+
+//Deployable Bags
+
+
+//Sound
+
+//------------------------------------------------

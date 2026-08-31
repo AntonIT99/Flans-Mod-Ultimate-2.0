@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Quad Chassis Frame
+ShortName SMP_Part_Chassis_Quad
+
+// Visuals
+Icon Icon_SMP_Part_Chassis_Quad
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Steel S stick
+S  
+MMM
+ M 
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Chassis
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

@@ -1,0 +1,168 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.6
+
+
+//---Standard-------------------------------------
+// Naming
+Name North American P-51 Mustang - B7-H
+ShortName WW2_Plane_P51_1B
+
+
+// Visuals
+Model Manus_WW2.Plane.WW2_Plane_P51_1
+ModelScale 1
+Icon Icon_WW2_Plane_P51_1B
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_P51_1B
+
+
+//Movement
+MaxThrottle 3.5
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 12 -8 -36
+WheelPosition 1 12 -8 36
+WheelPosition 2 -87 15 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo WW2_Bomb_UK50kg
+
+
+//Weapons
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 6
+ShootDelaySecondary 80
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 11 21 -42 leftWing WW2_MG_MG532_1A
+ShootPointPrimary 11 22 -46 leftWing WW2_MG_MG532_1A
+ShootPointPrimary 11 22 -50 leftWing WW2_MG_MG532_1A
+ShootPointPrimary 11 21 42 rightWing WW2_MG_MG532_1A
+ShootPointPrimary 11 22 46 rightWing WW2_MG_MG532_1A
+ShootPointPrimary 11 22 50 rightWing WW2_MG_MG532_1A
+ShootPointSecondary -10 -5 0 core
+
+
+//Driver and Passengers
+Pilot -17 26 0
+Passengers 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 4
+MissileSlots 0
+FuelTankSize 4000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 green
+
+
+//Health and Collision
+SetupPart core 200 -75 14 -10 127 28 20
+SetupPart tail 200 -125 24 -5 50 28 10
+SetupPart nose 100 52 22 -8 15 16 16
+SetupPart rightWing 100 -22 16 10 27 12 103
+SetupPart leftWing 100 -22 16 -113 27 12 103
+SetupPart leftWingWheel 50 5 -10 -38 14 26 5
+SetupPart rightWingWheel 50 5 -10 33 14 26 5
+SetupPart tailWheel 50 -89 14 -1 6 10 2
+
+CollisionPoint 59 30 0 nose
+CollisionPoint -76 30 0 tail
+CollisionPoint -92 30 0 tail
+CollisionPoint -108 30 0 tail
+CollisionPoint -121 36 0 tail
+CollisionPoint -121 52 0 tail
+CollisionPoint -3 21 -24 leftWing
+CollisionPoint -3 22 -40 leftWing
+CollisionPoint -3 23 -56 leftWing
+CollisionPoint -3 24 -72 leftWing
+CollisionPoint -3 25 -88 leftWing
+CollisionPoint -3 26 -104 leftWing
+CollisionPoint -3 21 24 rightWing
+CollisionPoint -3 22 40 rightWing
+CollisionPoint -3 23 56 rightWing
+CollisionPoint -3 24 72 rightWing
+CollisionPoint -3 25 88 rightWing
+CollisionPoint -3 26 104 rightWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 10.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 13.0
+
+
+//Propeller
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+
+//Sound
+PropSoundLength 30
+PropSound propSound
+
+//------------------------------------------------

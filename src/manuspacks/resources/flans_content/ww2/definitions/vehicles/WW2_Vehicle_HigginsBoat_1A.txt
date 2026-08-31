@@ -1,0 +1,107 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name LCVP 2 - Higgins Boat
+ShortName WW2_Vehicle_HigginsBoat_1A
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_HigginsBoat_1
+Icon Icon_WW2_Vehicle_HigginsBoat_1A
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_HigginsBoat_1A
+
+Boat True
+PlaceableOnLand False
+PlaceableOnWater True
+FloatOnWater true
+Buoyancy 0.05
+
+//Movement
+MaxThrottle 1
+MaxNegativeThrottle 0.2
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -143 -8 -40
+WheelPosition 1 -143 -8 40
+WheelPosition 2 105 -8 40
+WheelPosition 3 105 -8 -40
+WheelRadius 1
+SpringStrength 0.0
+
+//Inventory Slots
+FuelTankSize 2500
+CargoSlots 0
+
+//Recipe
+AddRecipeParts core 80 SMP_Part_Mat_Plate_Steel
+AddDye 12 gray
+
+//Driver and Passengers
+Driver -63 14 -19
+RotatedDriverOffset 0 0 0
+Passengers 20
+Passenger 1 -111 18 -22 core -50 50 0 45 WW2_MG_BrowningM1919_1A Gun0
+GunOrigin 1 -87 32 -23
+Passenger 2 -111 18 22 core -50 50 0 45 WW2_MG_BrowningM1919_1A Gun1
+GunOrigin 2 -87 32 23
+Passenger 3 -28 0 16 core
+Passenger 4 -12 0 16 core
+Passenger 5 4 0 16 core
+Passenger 6 20 0 16 core
+Passenger 7 36 0 16 core
+Passenger 8 52 0 16 core
+Passenger 9 68 0 16 core
+Passenger 10 84 0 16 core
+Passenger 11 100 0 16 core
+Passenger 12 -28 0 -16 core
+Passenger 13 -12 0 -16 core
+Passenger 14 4 0 -16 core
+Passenger 15 20 0 -16 core
+Passenger 16 36 0 -16 core
+Passenger 17 52 0 -16 core
+Passenger 18 68 0 -16 core
+Passenger 19 84 0 -16 core
+Passenger 20 100 0 -16 core
+
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+
+//Health and collision
+SetupPart core 2500 -152 -23 -43 270 47 86
+BulletDetection 5
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+SquashMobs True
+//------------------------------------------------

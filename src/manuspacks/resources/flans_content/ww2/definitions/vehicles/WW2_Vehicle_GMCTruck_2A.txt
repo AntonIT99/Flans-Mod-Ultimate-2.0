@@ -1,0 +1,93 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name GMC Truck open Back
+ShortName WW2_Vehicle_GMCTruck_2A
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_GMCTruck_2
+Icon Icon_WW2_Vehicle_GMCTruck_2A
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_GMCTruck_2A
+
+//Movement
+MaxThrottle 1
+MaxNegativeThrottle 0.2
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -36 -8 -14
+WheelPosition 1 -36 -8 14
+WheelPosition 2 29 -8 14
+WheelPosition 3 29 -8 -14
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1500
+CargoSlots 24
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Truck 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Truck
+AddRecipeParts backLeftWheel 4 SMP_Part_Wheel_Truck
+AddRecipeParts backRightWheel 4 SMP_Part_Wheel_Truck
+AddDye 12 green
+
+//Driver and Passengers
+Driver 8 0 -8
+Passengers 7
+Passenger 1 8 0 8 core
+Passenger 2 -12 6 -10 core 60 160 -45 45
+Passenger 3 -12 6 10 core -160 -60 -45 45
+Passenger 4 -28 6 -10 core 60 160 -45 45
+Passenger 5 -28 6 10 core -160 -60 -45 45
+Passenger 6 -44 6 -10 core 60 160 -45 45
+Passenger 7 -44 6 10 core -160 -60 -45 45
+
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+
+//Health and collision
+SetupPart core 300 -54 2 -18 95 21 36
+SetupPart frontRightWheel 100 23 -10 -15 12 12 5
+SetupPart frontLeftWheel 100 23 -10 10 12 12 5
+SetupPart backRightWheel 100 -41 -10 -15 24 12 5
+SetupPart backLeftWheel 100 -41 -10 10 24 12 5
+BulletDetection 5
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+SquashMobs True
+//------------------------------------------------

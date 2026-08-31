@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name APC Turret Frame
+ShortName SMP_Part_Turret_APC
+
+// Visuals
+Icon Icon_SMP_Part_Turret_APC
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel A SMP_Part_Mat_Armor_Steel B SMP_Part_Misc_Barrel_AAGun
+   
+BAA
+MMM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Turret
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

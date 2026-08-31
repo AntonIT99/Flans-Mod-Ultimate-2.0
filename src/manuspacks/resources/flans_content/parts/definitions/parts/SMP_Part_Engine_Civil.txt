@@ -1,0 +1,30 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Civil Jet Engine
+ShortName SMP_Part_Engine_Civil
+
+// Visuals
+Icon Icon_SMP_Part_Engine_Civil
+
+// Recipe
+Recipe M SMP_Part_Mat_Plate_Steel T SMP_Part_Propeller_TurbineCivil I SMP_Part_Misc_EngineIgnition
+MMM
+ TI
+MMM
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Engine
+EngineSpeed 2.0
+FuelConsumption 2.0
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+//------------------------------------------------

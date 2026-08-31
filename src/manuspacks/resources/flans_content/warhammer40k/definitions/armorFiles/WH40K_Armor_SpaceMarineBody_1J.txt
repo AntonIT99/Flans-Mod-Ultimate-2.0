@@ -1,0 +1,37 @@
+﻿//---Standard Armor Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.1.1
+
+
+//---Standard-------------------------------------
+// Naming
+Name Angry Marines Space Marine Body Armor
+ShortName WH40K_Armor_SpaceMarineBody_1J
+
+
+// Visuals
+Model Manus_WH40K.Armor.WH40K_Armor_SpaceMarineBody_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_SpaceMarineBody_1J
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Armor----------------------------------------
+//Type
+Type Chest
+
+//Visuals
+ArmourTexture Skin_WH40K_Armor_SpaceMarine_1J
+
+
+//Armor Settings
+Defence 0.4
+
+//Helmet Settings
+
+//------------------------------------------------

@@ -1,0 +1,81 @@
+//Naming
+Name F-22 Raptor
+ShortName F22
+ItemID 28182
+//Visuals
+Icon IconPlaneF22
+Model manus_modern_warfare.F22
+Texture SkinPlaneF22
+//Third Person Camera Distance
+CameraDistance 10.0
+//Throttle
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 2
+TurnRightSpeed 2
+//Pitch modifiers
+LookUpSpeed 2
+LookDownSpeed 2
+//Roll modifiers
+RollLeftSpeed 2
+RollRightSpeed 2
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 0.98
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 3.2
+//Mass (In tons)
+Mass 2.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 6000
+AddGun 129 7 0 nose GAU4
+ShootDelay 5
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 4
+//Propeller Positions
+Propeller 0 0 0 0 core Part_Propeller_TurbineJet
+Propeller 1 0 0 0 core Part_Propeller_TurbineJet
+//Passengers
+Pilot 73 12 0
+Passengers 0
+//Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Jet 12 Mat_Plate_Carbon
+AddRecipeParts nose 1 Part_Nose_Plane 4 Mat_Plate_Carbon
+AddRecipeParts tail 1 Part_Tail_Jet 12 Mat_Plate_Carbon
+AddRecipeParts leftWing 1 27030_Part_Wing_Jet 10 Mat_Plate_Carbon
+AddRecipeParts rightWing 1 27030_Part_Wing_Jet 10 Mat_Plate_Carbon
+AddRecipeParts leftWingWheel 1 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 Part_Wheel_Plane
+AddRecipeParts coreWheel 1 Part_Wheel_Plane
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 gray
+SetupPart nose 100 93 7 -8 36 16 16
+SetupPart coreWheel 50 50 -10 -3 8 14 6
+SetupPart leftWingWheel 50 -28 -10 15 10 20 10
+SetupPart tail 200 -80 4 -24 49 19 48
+SetupPart core 400 -31 4 -24 124 19 48
+SetupPart rightWing 150 -56 16 -85 87 1 61
+SetupPart leftWing 150 -56 16 24 87 1 61
+SetupPart rightWingWheel 50 -28 -10 -25 10 20 10
+BulletDetection 25
+HasGear True

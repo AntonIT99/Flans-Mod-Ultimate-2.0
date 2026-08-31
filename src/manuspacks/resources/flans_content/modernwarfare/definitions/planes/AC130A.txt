@@ -1,0 +1,92 @@
+//Naming
+Name AC-130A Spectre
+ShortName AC130A
+ItemID 28212
+//Visuals
+Icon IconPlaneAC130A
+Model manus_modern_warfare.AC130A
+Texture SkinPlaneAC130A
+//Third Person Camera Distance
+CameraDistance 60.0
+//Throttle
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Pitch modifiers
+LookUpSpeed 1
+LookDownSpeed 1
+//Roll modifiers
+RollLeftSpeed 1
+RollRightSpeed 1
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 9.0
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 16.7
+//Mass (In tons)
+Mass 16.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 80.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 32000
+ShootDelay 7
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 0
+//Propeller Positions
+Propeller 0 0 0 0 leftWing Part_Propeller_RotorPlane
+Propeller 1 0 0 0 leftWing Part_Propeller_RotorPlane
+Propeller 2 0 0 0 rightWing Part_Propeller_RotorPlane
+Propeller 3 0 0 0 rightWing Part_Propeller_RotorPlane
+//Passengers
+Pilot 146 24 -9
+Passengers 7
+//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
+Passenger 1 146 24 9 core
+Passenger 2 -84 9 17 core 60 120 -40 10 HKGMG HKGMG1
+Passenger 3 -84 9 -17 core -120 -60 -40 10 HKGMG HKGMG2
+Passenger 4 58 9 17 core 60 120 -40 10 M134 M134a
+Passenger 5 58 9 -17 core -120 -60 -40 10 M134 M134b
+Passenger 6 94 9 17 core 60 120 -40 10 M134 M134c
+Passenger 7 94 9 -17 core -120 -60 -40 10 M134 M134d
+//Sounds
+StartSound propStart
+StartSoundLength 20
+PropSound LancasterProp
+PropSoundLength 49
+ShootSound PlaneShoot
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Large 12 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 6 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Large 16 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Large 20 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Large 20 Mat_Plate_Steel
+AddRecipeParts leftWingWheel 4 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 4 Part_Wheel_Plane
+AddRecipeParts coreWheel 2 Part_Wheel_Plane
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 25 gray
+SetupPart nose 200 170 8 -12 24 24 24
+SetupPart core 600 -94 -2 -31 264 64 62
+SetupPart coreWheel 100 114 -10 -6 16 16 12
+SetupPart leftWingWheel 100 -51 -10 32 44 8 7
+SetupPart rightWingWheel 100 -51 -10 -39 44 8 7
+SetupPart tail 400 -272 -2 -31 178 64 62
+SetupPart rightWing 300 -70 54 -336 80 8 304
+SetupPart leftWing 300 -70 54 31 80 8 304
+BulletDetection 25
+HasGear True
+HasDoor True
+ModelScale 1

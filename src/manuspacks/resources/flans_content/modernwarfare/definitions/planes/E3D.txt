@@ -1,0 +1,91 @@
+//Naming
+Name E-3D AWACS
+ShortName E3D
+ItemID 28215
+//Visuals
+Icon IconPlaneE3D
+Model manus_modern_warfare.E3D
+Texture SkinPlaneE3D
+//Third Person Camera Distance
+CameraDistance 60.0
+//Throttle
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Pitch modifiers
+LookUpSpeed 1
+LookDownSpeed 1
+//Roll modifiers
+RollLeftSpeed 1
+RollRightSpeed 1
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 9.0
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 16.7
+//Mass (In tons)
+Mass 16.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 80.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 32000
+ShootDelay 7
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 0
+//Propeller Positions
+Propeller 0 0 0 0 leftWing Part_Propeller_TurbineJet
+Propeller 1 0 0 0 leftWing Part_Propeller_TurbineJet
+Propeller 2 0 0 0 rightWing Part_Propeller_TurbineJet
+Propeller 3 0 0 0 rightWing Part_Propeller_TurbineJet
+//Passengers
+Pilot 292 71 -12 -80 80 -45 45
+Passengers 4
+//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
+Passenger 1 292 71 -12 core -80 80 -45 45
+Passenger 2 76 68 -3 core 135 225 -45 45
+Passenger 3 30 68 -3 core -80 80 -45 45
+Passenger 4 112 68 19 core 45 135 -45 45
+//Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Large 50 Mat_Plate_Aluminium
+AddRecipeParts nose 1 Part_Nose_Plane 10 Mat_Plate_Aluminium
+AddRecipeParts tail 1 Part_Tail_Large 30 Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 Part_Wing_Large 40 Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 Part_Wing_Large 40 Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 4 Part_Wheel_Plane 8 Mat_Plate_Steel
+AddRecipeParts rightWingWheel 4 Part_Wheel_Plane 8 Mat_Plate_Steel
+AddRecipeParts coreWheel 2 Part_Wheel_Plane 5 Mat_Plate_Steel
+AddRecipeParts bay 10 27092_Part_Misc_Radar
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 25 gray
+SetupPart core 600 -312 20 -42 633 96 84
+SetupPart nose 200 320 36 -21 36 45 42
+SetupPart tail 400 -570 20 -42 258 96 84
+SetupPart leftWing 300 -297 33 42 371 51 400
+SetupPart rightWing 300 -297 33 -442 371 51 400
+SetupPart coreWheel 100 224 -12 -10 18 18 20
+SetupPart leftWingWheel 100 -136 -12 61 50 20 20
+SetupPart rightWingWheel 100 -136 -12 -81 50 20 20
+SetupPart bay 100 -350 208 -104 208 24 208
+BulletDetection 25
+HasGear True
+HasDoor True
+ModelScale 1

@@ -1,0 +1,59 @@
+﻿//---Standard Attachment Config for Flans Mod-----
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+name Silencer for MK Vb Godwyn pattern Boltgun
+ShortName WH40K_Attachment_MKVbBoltgunSilencer_1A
+
+
+// Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_2
+ModelScale 0.11
+Icon Icon_WH40K_Attachment_MKVbBoltgunSilencer_1A
+
+
+// Recipe
+Recipe W cloth F SMP_Part_Mat_Plate_PlaSteel
+Recipe FFF
+Recipe WWW
+Recipe FFF
+RecipeOutput 1
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Guns Attachment------------------------------
+//Type
+AttachmentType barrel
+
+
+//Silencer
+ModelScale 0.11
+
+
+//Visuals
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_2
+
+
+//Multiplier
+SpreadMultiplier 1.0
+DamageMultiplier 0.8
+RecoilMultiplier 1.0
+MeleeDamageMultiplier 1.0
+
+
+//Light
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+Silencer True
+
+
+//Zoom
+BulletSpeedMultiplier 0.9
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+
+//------------------------------------------------

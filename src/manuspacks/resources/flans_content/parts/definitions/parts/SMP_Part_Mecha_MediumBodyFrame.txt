@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Medium Mecha Body Frame
+ShortName SMP_Part_Mecha_MediumBodyFrame
+
+// Visuals
+Icon Icon_SMP_Part_Mecha_MediumBodyFrame
+
+// Recipe
+Recipe G glass R SMP_Part_Misc_Seat_Jet H SMP_Part_Misc_Hydraulics B SMP_Part_Mat_Block_DuraSteel
+GGG
+GRG
+HBH
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 16
+//------------------------------------------------

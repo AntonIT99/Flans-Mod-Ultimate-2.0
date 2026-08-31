@@ -1,0 +1,81 @@
+//Naming
+Name Madcat Omnimech
+ShortName Madcat
+ItemID 28630
+//Visuals
+Icon IconMechMadcat
+Model manus_sifi.Madcat
+Texture SkinMechMadcat
+//Third Person Camera Distance
+CameraDistance 18.0
+//Driver and passenger positions
+Driver 0 205 0
+Passengers 0
+//Offset of driver from the point of rotation
+RotatedDriverOffset 24 0 0
+//Speed Modifier, 1 is player speed
+MoveSpeed 1
+//YOffset
+YOffset 0
+//Fuel Tank Size
+FuelTankSize 20000
+//Inventory Slots
+CargoSlots 0
+//How quickly the legs react to a change in direction
+RotateSpeed 20
+//Will it squash puny mobs?
+SquashMobs true
+//Step Height (Integer) and Jump Height (Float)
+StepHeight 2
+JumpHeight 2
+//Arm origins used to rotate arm models and calculate position of held item / tool (positions in model co-ordinates)
+LeftArmOrigin -26.4 157.2 -99.6
+RightArmOrigin -26.4 157.2 99.6
+//LeftArmOrigin -22 131 -83
+//RightArmOrigin -22 131 83
+//Arm lengths used to determine where the held items appear (Again in model co-ords)
+ArmLength 30
+LegLength 148
+//The scale multiplier for rendering the items and tools being held (1 will automatically scale with model)
+HeldItemScale 1
+AddGun 62 131 83 leftArm LargeMechLaserCannon
+AddGun 62 131 -83 rightArm LargeMechLaserCannon
+//Recipe
+//Each section of the mecha may have many parts
+//The sections are core, leftArm, rightArm, hips, head
+AddRecipeParts core 1 Mecha_MediumBodyFrame 40 Mat_Armor_DuraSteel
+AddRecipeParts leftArm 1 Mecha_MediumArmFrame 20 Mat_Armor_DuraSteel
+AddRecipeParts rightArm 1 Mecha_MediumArmFrame 20 Mat_Armor_DuraSteel
+AddRecipeParts hips 2 Mecha_MediumLegFrame 1 Mecha_MediumHipFrame 40 Mat_Armor_DuraSteel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 30 gray
+//Health and collision
+
+SetupPart leftArm 2000 -54 121 80 102 46 35
+
+SetupPart hips 4000 -30 140 -70 60 28 139
+
+SetupPart core 4000 -86 173 -32 158 77 65
+
+SetupPart rightArm 2000 -54 121 -116 102 46 35
+
+BulletDetection 8
+//Height and Width for world collision
+Height 96
+Width 56
+//Height of chassis above the ground
+ChassisHeight 123
+//The amount of damage the mecha should take from falling
+FallDamageMultiplier 2.0
+//Whether to actually take fall damage. Can be overriden by upgrades
+TakeFallDamage true
+//The size of explosion to create per distance fallen upon hitting the ground
+BlockDamageFromFalling 2.0
+//Whether to actually damage the ground. Can be overridden by upgrades
+DamageBlocksFromFalling false
+//Size Multiplier; scales up the model
+ModelScale 1.2
+LegSwingLimit 5
+LimitHeadTurn True 70
+UpperArmLimit 20
+LowerArmLimit 60

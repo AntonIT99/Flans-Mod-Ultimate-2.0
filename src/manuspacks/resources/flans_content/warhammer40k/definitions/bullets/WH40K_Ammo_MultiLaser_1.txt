@@ -1,0 +1,68 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Powerpack for Vulture Multi-Laser - 150 Rounds
+ShortName WH40K_Ammo_MultiLaser_1
+
+
+//Visuals
+model Manus_WH40K.Misc.WH40K_Misc_LaserSmall_1
+Icon Icon_WH40K_Ammo_LasCannon
+
+
+//Recipe
+
+
+//Misc
+description Amunition for Vulture Multi Laser
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_LaserSmall_1
+Texture Skin_WH40K_Bullet_Laser_1C
+
+// Bullet Type
+
+
+//Damage
+Damage 25
+DamageVsVehicles 25
+
+
+//Bullet Behavior
+ExplodeOnImpact False
+Explosion 0
+Fire 0
+FallSpeed 0.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+HasLight True
+SetEntitiesOnFire False
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail False
+
+
+//Sound
+HitSound bullet
+
+
+/Inventory
+MaxStackSize 3
+RoundsPerItem 150
+
+//------------------------------------------------

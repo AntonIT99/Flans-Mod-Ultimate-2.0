@@ -1,0 +1,82 @@
+//Naming
+Name AH-1Z Super Cobra - Green
+ShortName AH1ZGreen
+ItemID 28220
+//Visuals
+Icon IconPlaneAH1ZGreen
+Model manus_modern_warfare.AH1Z
+Texture SkinPlaneAH1ZGreen
+//Third Person Camera Distance
+CameraDistance 5.0
+//Throttle
+MaxThrottle 2.0
+MaxNegativeThrottle 0.0
+//Yaw modifiers
+TurnLeftSpeed 10
+TurnRightSpeed 10
+//Pitch modifiers
+LookUpSpeed 1
+LookDownSpeed 1
+//Roll modifiers
+RollLeftSpeed 1
+RollRightSpeed 1
+//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
+Drag 0.98
+//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
+Lift 3.2
+//Mass (In tons)
+Mass 2.7
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 1.0
+//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
+RestingPitch 0.0
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 4000
+AddGun 13 1 -27 leftWing M148JavelinDep
+AddGun 13 1 27 rightWing M148JavelinDep
+ShootDelay 7
+//Bombs (Bomb delay is in 1/20ths of seconds)
+BombDelay 1
+BombPosition 7 -10 0
+//Inventory Slots
+CargoSlots 0
+BombSlots 0
+//Propeller Positions
+Propeller 0 0 0 0 core Part_Propeller_RotorHeli
+Propeller 1 0 0 0 tail Part_Propeller_RotorHeli
+//Passengers
+Pilot 13 7 0
+Passengers 1
+//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
+Passenger 1 32 2 0 nose -100 100 -50 10 M134 TURRET
+//Sounds
+StartSound propStart
+StartSoundLength 20
+PropSound LancasterProp
+PropSoundLength 49
+ShootSound gatling
+BombSound bomb
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts core 1 Part_Cockpit_Heli 8 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 4 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Heli 12 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Heli 3 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Heli 3 Mat_Plate_Steel
+AddRecipeParts coreWheel 10 Mat_Plate_Steel
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 green
+SetupPart nose 100 46 -3 -9 20 20 18
+SetupPart core 400 -26 -3 -10 72 34 20
+SetupPart tail 300 -104 -3 -9 78 23 18
+SetupPart leftWing 300 -14 -2 10 26 12 21
+SetupPart coreWheel 100 -24 -10 -20 51 10 40
+SetupPart rightWing 300 -14 -2 -31 26 12 21
+BulletDetection 25
+HasGear True
+HasDoor True
+ModelScale 1

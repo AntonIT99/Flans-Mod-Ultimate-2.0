@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CMC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:coal"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_aluminium"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_block_carbon",
+    "count": 3
+  }
+}

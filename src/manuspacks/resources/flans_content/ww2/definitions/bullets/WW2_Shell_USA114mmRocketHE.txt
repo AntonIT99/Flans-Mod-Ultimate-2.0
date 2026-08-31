@@ -1,0 +1,74 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name US M8A1 114mm Rocket
+ShortName WW2_Shell_USA114mmRocketHE
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_USA114mmRocketHE
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
+ F 
+PGP
+ S 
+RecipeOutput 3
+
+
+//Misc
+description Amunition for M1A1 Tank with Calliope
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1000
+DamageVsVehicles 1000
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 4
+Fire 0
+FallSpeed 3
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 60
+RoundsPerItem 1
+
+//------------------------------------------------

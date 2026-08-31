@@ -1,0 +1,36 @@
+Name XX-9 Turbo Laser Turret
+ShortName XX9
+//The ammo this gun uses (shortName)
+Ammo AmmoPowerpackXX9
+Icon IconAAGunXX9
+ItemID 28648
+Model manus_sifi.XX9
+//Place the texture .png in the skins folder
+Texture SkinAAGunXX9
+NumBarrels 2
+Barrel 0 125 66 25
+Barrel 1 125 66 -25
+FireAlternately True
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 60
+Health 300
+//The amount of gun recoil
+Recoil 4
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 1
+//Time in ticks between rounds
+ShootDelay 10
+ShootSound turbolaser_fire
+ReloadSound mp44Reload
+//The position of the player relative to the pivot
+GunnerPos 20 103 0
+//Degrees above and below level that the gun can work within. 90 degrees is vertical
+TopViewLimit 80
+BottomViewLimit 0
+RecipeOutput 1
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Plate_PlaSteel L SMP_Part_Misc_Seat_Car
+MLB
+M M 
+MMM

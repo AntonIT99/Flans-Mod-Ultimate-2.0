@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Jet Wing Frame
+ShortName SMP_Part_Wing_Jet
+
+// Visuals
+Icon Icon_SMP_Part_Wing_Jet
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+  P
+ PP
+PMP
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Wing
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

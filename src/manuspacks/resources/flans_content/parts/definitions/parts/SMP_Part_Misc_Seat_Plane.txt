@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Plane Seat
+ShortName SMP_Part_Misc_Seat_Plane
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Seat_Plane
+
+// Recipe
+Recipe L leather M SMP_Part_Mat_Block_Gummi
+ L 
+ L 
+MM 
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

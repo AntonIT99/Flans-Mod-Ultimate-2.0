@@ -1,0 +1,76 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Russian 122mm M-30S L/23 HE Shell
+ShortName WW2_Shell_USSR122mmHE
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_USSR122mmHE
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+GFG
+GGG
+SSS
+RecipeOutput 3
+
+
+//Misc
+description Amunition for SU-122 Tank
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 50
+DamageVsLiving 2000
+DamageVsVehicles 2000
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 7
+Fire 0
+FallSpeed 3
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 12
+TrailParticleType flansmod.fmflame
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

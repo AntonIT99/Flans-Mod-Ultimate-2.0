@@ -1,0 +1,93 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name VW Type 82 Kubelwagen
+ShortName WW2_Vehicle_VWType82_1A
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_VWType82_1
+Icon Icon_WW2_Vehicle_VWType82_1A
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_VWType82_1A
+
+//Movement
+MaxThrottle 1
+MaxNegativeThrottle 0.5
+Drag 1
+
+//Wheels
+NumWheels 4
+WheelPosition 0 -21 -8 -15
+WheelPosition 1 -21 -8 15
+WheelPosition 2 21 -8 15
+WheelPosition 3 21 -8 -15
+WheelRadius 1
+SpringStrength 0.5
+
+//Inventory Slots
+FuelTankSize 1000
+CargoSlots 18
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Chassis_Car 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 5 gray
+
+//Driver and Passengers
+Driver 3 -2 -7
+Passengers 2
+Passenger 1 3 -2 7 core
+Passenger 2 -12 3 0 core -50 50 0 45 WW2_MG_MG42ZB_1A MG42
+GunOrigin 2 -9 18 0
+
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+
+//Health and collision
+SetupPart core 200 -33 -4 -13 63 13 26
+SetupPart backRightWheel 100 -27 -10 -16 12 12 3
+SetupPart backLeftWheel 100 -27 -10 13 12 12 3
+SetupPart frontLeftWheel 100 15 -10 13 12 12 3
+SetupPart frontRightWheel 100 15 -10 -16 12 12 3
+BulletDetection 5
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 5
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+//Movement
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+//Sound
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+SquashMobs True
+//------------------------------------------------

@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Aluminium Armorplate
+ShortName SMP_Part_Mat_Armor_Aluminium
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Armor_Aluminium
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Aluminium P SMP_Part_Mat_Plate_Aluminium
+   
+PPP
+MMM
+RecipeOutput 3
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

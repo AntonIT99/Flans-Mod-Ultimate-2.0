@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Empty Shell
+ShortName SMP_Part_Misc_Ammo_Shell
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Ammo_Shell
+
+// Recipe
+Recipe P SMP_Part_Mat_Plate_Steel M SMP_Part_Mat_Block_Steel
+P P
+P P
+MMM
+RecipeOutput 32
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

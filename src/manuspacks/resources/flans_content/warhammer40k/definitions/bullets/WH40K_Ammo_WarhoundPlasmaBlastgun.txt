@@ -1,0 +1,83 @@
+﻿//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Warhound Titan Plasma Blastgun Ammo
+ShortName WH40K_Ammo_WarhoundPlasmaBlastgun
+
+
+// Visuals
+model Manus_WH40K.Misc.WH40K_Misc_TitanPlasmaBall_1
+Icon Icon_WH40K_Ammo_WarhoundPlasmaBlastgun
+
+
+// Recipe
+
+
+//Misc
+description Ammo for Warhound Titan Plasma Blastgun
+
+//------------------------------------------------
+
+//--Shootable-------------------------------------
+//Visuals
+
+//Damage
+HitBoxSize 0.1
+DamageVsLiving 250
+DamageVsPlayer 250
+
+
+//Ammo Settings
+RoundsPerItem 5000
+FallSpeed 0
+DamageVsVehicles 250
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Fire 3
+Explosion 0
+
+
+//Drop Item
+MaxStackSize 1
+
+
+//Inventory
+
+
+//Sound
+
+
+//Particle
+SmokeTrail False
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Manus_WH40K.Misc.WH40K_Misc_TitanPlasmaBall_1
+Texture Skin_WH40K_Bullet_TitanPlasmaBall_1A
+HasLight True
+
+
+// Bullet Type
+
+
+//Bullet Behavior
+Penetrates False
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+
+
+//Sound
+HitSound bullet
+
+//------------------------------------------------

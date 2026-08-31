@@ -99,6 +99,9 @@ minecraft {
                 "flansmodultimate_warfare44" {
                     source sourceSets.maybeCreate('wolffstarwarspack')
                 }
+                "flansmodultimate_manuspacks" {
+                    source sourceSets.maybeCreate('flansmodultimate_manuspacks')
+                }
             }
         }
 
@@ -142,6 +145,8 @@ configurations {
     warfare44packRuntimeOnly.extendsFrom runtimeOnly
     wolffstarwarspackImplementation.extendsFrom implementation
     wolffstarwarspackRuntimeOnly.extendsFrom runtimeOnly
+    manuspacksImplementation.extendsFrom implementation
+    manuspacksRuntimeOnly.extendsFrom runtimeOnly
 }
 
 // Configure all runs with the following
@@ -177,6 +182,14 @@ sourceSets {
         }
         resources {
             srcDirs = ['src/officialpacks/resources']
+        }
+    }
+    manuspacks {
+        java {
+            srcDirs = ['src/manuspacks/java']
+        }
+        resources {
+            srcDirs = ['src/manuspacks/resources']
         }
     }
     warfare44pack {
@@ -229,6 +242,7 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     officialpacksImplementation sourceSets.main.output
+    manuspacksImplementation sourceSets.main.output
     wolffstarwarspackImplementation sourceSets.main.output
     warfare44packImplementation sourceSets.main.output
 
@@ -357,6 +371,20 @@ def officialPacksJar = tasks.register('officialPacksJar', Jar) {
     }
 }
 
+def manusPacksJar = tasks.register('manusPacksJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Manus Packs")
+    archiveVersion.set('1.0')
+
+    from sourceSets.manuspacks.output
+
+    manifest {
+        attributes(
+                'Implementation-Title': 'manuspacks',
+                'Implementation-Version': '1.0'
+        )
+    }
+}
+
 def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
     archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Wolff's Star Wars Pack")
     archiveVersion.set('3.0')
@@ -388,6 +416,7 @@ def warfare44PackJar = tasks.register('warfare44Pack', Jar) {
 artifacts {
     archives packsManagerJar
     archives officialPacksJar
+    archives manusPacksJar
     archives wolffStarWarsPackJar
     archives warfare44PackJar
 }

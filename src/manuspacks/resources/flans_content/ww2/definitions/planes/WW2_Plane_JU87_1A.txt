@@ -1,0 +1,155 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Junkers JU 87 Stuka
+ShortName WW2_Plane_JU87_1A
+
+
+//Visuals
+Model Manus_WW2.Plane.WW2_Plane_JU87_1
+Icon Icon_WW2_Plane_JU87_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_JU87_1A
+
+
+//Movement
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 22 -8 -26
+WheelPosition 1 22 -8 26
+WheelPosition 2 -96 22 0
+WheelSpringStrength 0.125
+
+
+//Inventory Slots
+FuelTankSize 6000
+BombSlots 3
+CargoSlots 0
+MissileSlots 0
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Large 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 10 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Large 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Large 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 8 green
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+Primary Gun
+ModePrimary FullAuto
+AlternatePrimary False
+ShootPointPrimary 27 23 -26 leftWing WW2_MG_MG42ZB_1A
+ShootPointPrimary 27 23 26 rightWing WW2_MG_MG42ZB_1A
+ShootDelayPrimary 7
+Secondary Bomb
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootPointSecondary 0 -12 0
+ShootDelaySecondary 100
+
+
+//Driver and Passengers
+Pilot 7 26 0
+Passengers 1
+Passenger 1 -08 26 0 core 150 210 0 50 WW2_MG_MG81ZB_1A MG81
+GunOrigin 1 -30 43 0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+
+//Health and collision
+SetupPart core 300 -36 22 -8 101 20 16
+SetupPart nose 100 25 25 -5 12 10 10
+SetupPart tail 150 -92 25 -8 56 17 16
+SetupPart leftWing 120 -26 23 8 52 4 105
+SetupPart rightWing 120 -26 23 -113 52 4 105
+SetupPart leftWingWheel 50 14 -10 24 13 13 4
+SetupPart rightWingWheel 50 14 -10 -28 13 13 4
+SetupPart tailWheel 50 -99 17 -1 5 5 2
+CollisionPoint 69 30 0 nose
+CollisionPoint -39 30 0 tail
+CollisionPoint -60 30 0 tail
+CollisionPoint -80 30 0 tail
+CollisionPoint -100 30 0 tail
+CollisionPoint 4 23 18 rightWing
+CollisionPoint 9 25 49 rightWing
+CollisionPoint 9 28 79 rightWing
+CollisionPoint 13 32 109 rightWing
+CollisionPoint 4 23 -18 leftWing
+CollisionPoint 9 25 -49 leftWing
+CollisionPoint 9 28 -79 leftWing
+CollisionPoint 13 32 -109 leftWing
+BulletDetection 25
+
+
+//Misc
+CameraDistance 15.0
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+LookDownSpeed 2
+LookUpSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+TurnLeftSpeed 2
+TurnRightSpeed 2
+
+
+//Sound
+PropSound propSound
+PropSoundLength 30
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+//------------------------------------------------

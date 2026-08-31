@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MIM",
+    "TTT",
+    "MIM"
+  ],
+  "key": {
+    "T": {
+      "item": "flansmod:smp_part_propeller_turbinespace"
+    },
+    "I": {
+      "item": "flansmod:smp_part_misc_engineignition"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_plasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_engine_tieengine"
+  }
+}

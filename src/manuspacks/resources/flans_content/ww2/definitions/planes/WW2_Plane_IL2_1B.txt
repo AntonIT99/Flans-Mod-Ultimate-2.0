@@ -1,0 +1,172 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.7
+
+
+//---Standard-------------------------------------
+// Naming
+Name Ilyushin Il-2 - 505. ShAP - Guns and Missiles
+ShortName WW2_Plane_IL2_1B
+
+
+// Visuals
+Model Manus_WW2.Plane.WW2_Plane_IL2_1
+ModelScale 1
+Icon Icon_WW2_Plane_IL2_1B
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+Texture Skin_WW2_Plane_IL2_1B
+
+
+//Movement
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+NumWheels 3
+WheelPosition 0 20 -8 -35
+WheelPosition 1 20 -8 35
+WheelPosition 2 -150 23 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo WW2_Missle_USSRRS82
+
+
+//Weapons
+Primary Gun
+Secondary Missile
+ShootDelayPrimary 3
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 40 28 55 rightWing WW2_MG_ShKAS_1A
+ShootPointPrimary 40 28 -55 leftWing WW2_MG_ShKAS_1A
+ShootPointPrimary 58 21 55 rightWing WW2_MG_WJa23_1A
+ShootPointPrimary 58 21 -55 leftWing WW2_MG_WJa23_1A
+ShootPointSecondary 40 21 74 rightWing
+ShootPointSecondary 40 21 -74 leftWing
+
+
+//Driver and Passengers
+Pilot -11 21 0
+Passengers 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 3
+MissileSlots 0
+FuelTankSize 6000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 gray
+
+
+//Health and Collision
+SetupPart core 350 -62 20 -10 124 24 20
+SetupPart tail 250 -155 23 -7 93 21 20
+SetupPart nose 150 62 25 -7 12 14 14
+SetupPart rightWing 200 -34 20 10 45 14 132
+SetupPart leftWing 200 -34 20 -142 45 14 132
+SetupPart leftWingWheel 100 12 -10 -39 16 30 10
+SetupPart rightWingWheel 100 12 -10 29 16 30 10
+SetupPart tailWheel 100 -154 22 -2 13 10 4
+
+CollisionPoint 67 32 0 nose
+CollisionPoint -64 34 0 tail
+CollisionPoint -80 34 0 tail
+CollisionPoint -96 34 0 tail
+CollisionPoint -112 34 0 tail
+CollisionPoint -128 34 0 tail
+CollisionPoint -144 34 0 tail
+CollisionPoint -7 27 16 rightWing
+CollisionPoint -7 29 32 rightWing
+CollisionPoint -7 30 48 rightWing
+CollisionPoint -7 31 64 rightWing
+CollisionPoint -7 31 80 rightWing
+CollisionPoint -7 32 96 rightWing
+CollisionPoint -7 33 112 rightWing
+CollisionPoint -7 34 128 rightWing
+CollisionPoint -7 27 -16 leftWing
+CollisionPoint -7 29 -32 leftWing
+CollisionPoint -7 30 -48 leftWing
+CollisionPoint -7 31 -64 leftWing
+CollisionPoint -7 31 -80 leftWing
+CollisionPoint -7 32 -96 leftWing
+CollisionPoint -7 33 -112 leftWing
+CollisionPoint -7 34 -128 leftWing
+BulletDetection 11
+
+
+//Misc
+CameraDistance 10.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode PLANE
+
+
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 10.0
+
+
+//Propeller
+Propeller 0 0 0 0 core SMP_Part_Propeller_RotorPlane
+
+
+//Sound
+PropSoundLength 30
+PropSound propSound
+
+//------------------------------------------------

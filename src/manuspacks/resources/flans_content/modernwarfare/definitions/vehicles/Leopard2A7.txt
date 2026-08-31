@@ -1,0 +1,74 @@
+//Naming
+Name Leopard 2 - Version A7+ PSO
+ShortName Leopard2A7
+ItemID 28141
+//Visuals
+Icon IconVehicleLeopard2A7
+Model manus_modern_warfare.Leopard2A7
+Texture SkinVehicleLeopard2A7
+RotateWheels True
+//Third Person Camera Distance
+CameraDistance 7.5
+MaxThrottle 0.7
+MaxNegativeThrottle 0.3
+//Steering modifiers
+TurnLeftSpeed 1
+TurnRightSpeed 1
+//Drag
+Drag 1.0
+//Mass (In tons)
+Mass 1.0
+//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
+MomentOfInertia 10.0
+//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
+Bounciness 0.3
+//For calculating whether wheels are on the ground or not for driving
+WheelRadius 1.0
+//Bouncy bouncy
+Bounciness 0.3
+//If true, then all wheels will apply drive forces
+FourWheelDrive true
+//Tank mode activate
+Tank true
+//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+FuelTankSize 3000
+//Inventory Slots
+CargoSlots 0
+ShellSlots 6
+//Driver and passenger positions
+Driver 0 21 0 -360 360 -10 20
+RotatedDriverOffset 0 0 0
+Passengers 0
+BarrelPosition 0 21 0
+//Secondary gun
+
+//Delays are in ticks or 1/20ths of seconds
+ShootDelay 5
+ShellDelay 110
+//Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105
+ShootSound bullet
+ShellSound TankShell
+//Recipe
+//Each section of the plane may have many parts
+//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
+//rightWing, nose, turret, coreWheel, core
+AddRecipeParts turret 1 Part_Turret_Tank 18 Mat_Armor_Steel
+AddRecipeParts core 1 Part_Chassis_Tank 25 Mat_Armor_Steel
+AddRecipeParts leftTrack 1 Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 Part_Wheel_Tanktrack
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+AddDye 10 orange
+//Health and collision
+SetupPart turret 500 -48 19 -24 80 13 48
+SetupPart leftTrack 400 -50 -10 17 100 20 10
+SetupPart rightTrack 400 -50 -10 -27 100 20 10
+SetupPart core 800 -64 -2 -26 114 20 52
+BulletDetection 7
+WheelPosition 0 -46 -8 -26
+WheelPosition 1 -46 -8 26
+WheelPosition 2 37 -8 26
+WheelPosition 3 37 -8 -26

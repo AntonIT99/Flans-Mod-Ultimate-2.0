@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MM"
+  ],
+  "key": {
+    "M": {
+      "item": "flansmod:smp_part_engine_v6"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_engine_v12"
+  }
+}

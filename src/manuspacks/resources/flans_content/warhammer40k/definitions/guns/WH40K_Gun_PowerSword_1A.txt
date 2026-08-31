@@ -1,0 +1,81 @@
+﻿//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Ingelldina Pattern Power Sword
+ShortName WH40K_Gun_PowerSword_1A
+
+
+// Visuals
+ModelScale 0.08
+Icon Icon_WH40K_Gun_PowerSword_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable False
+
+
+//Visual
+Model Manus_WH40K.Gun.WH40K_Gun_PowerSword_1
+
+
+//Damage
+Damage 0
+
+
+//Ammo
+
+
+//Attachments
+AllowAllAttachments False
+AllowAttachments M36LasgunGrip
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 1
+
+
+//Weapon Settings
+Accuracy 0
+Mode SemiAuto
+Recoil 0
+ReloadTime 0
+ShootDelay 15
+OneHanded True
+
+
+//Shield
+
+
+//Zoom
+Scope None
+FOVZoomLevel 1.0
+
+
+//Melee
+MeleeDamage 20
+
+
+//Deployable
+Texture Skin_WH40K_Gun_PowerSword_1A
+
+
+//Sound
+//MeleeSound chainsword_swing
+//IdleSound chainsword_idle
+//IdleSoundLength 60
+//ShootSound lightsaber_swing
+//ReloadSound boltgun_reload
+
+//------------------------------------------------

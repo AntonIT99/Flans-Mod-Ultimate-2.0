@@ -1,0 +1,123 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name M4A1 Sherman
+ShortName WW2_Vehicle_M4A1_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_M4A1_1
+Icon Icon_WW2_Vehicle_M4A1_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_M4A1_1A
+
+
+//Movement
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -35 -8 -25
+WheelPosition 1 -35 -8 25
+WheelPosition 2 42 -8 25
+WheelPosition 3 42 -8 -25
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 green
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Shell_USA75mmAP
+AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
+BarrelPosition 0 35 0
+ShellDelay 110
+ShootDelay 5
+
+
+//Driver and Passengers
+Driver 0 33 0 -360 360 -10 20
+RotatedDriverOffset -8 0 7
+Passengers 1
+Passenger 1 26 15 14 core -30 30 -10 10 WW2_MG_BrowningM1919_1A FrontMG
+GunOrigin 1 49 18 10
+
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+ShellSound TankShell
+
+
+//Health and collision
+SetupPart turret 400 -25 29 -20 41 14 40
+SetupPart core 500 -53 -4 -16 104 32 32
+SetupPart leftTrack 200 -53 -10 17 106 23 9
+SetupPart rightTrack 200 -53 -10 -26 106 23 9
+BulletDetection 7
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 7.5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShellSound TankShell
+ShootSound bullet
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

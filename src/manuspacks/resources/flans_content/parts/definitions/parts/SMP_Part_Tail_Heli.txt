@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Helicopter Tail Frame
+ShortName SMP_Part_Tail_Heli
+
+// Visuals
+Icon Icon_SMP_Part_Tail_Heli
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+  P
+MMP
+   
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Tail
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

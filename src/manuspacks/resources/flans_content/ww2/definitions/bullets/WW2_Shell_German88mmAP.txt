@@ -1,0 +1,82 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 88mm KwK 36 L/56 AP Shell
+ShortName WW2_Shell_German88mmAP
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German88mmAP
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
+ F 
+PGP
+SSS
+RecipeOutput 3
+
+
+//Misc
+description Amunition for Flak 88mm, Tiger I Tank and Jagdpanther Tank
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 1
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 9
+TrailParticleType flansmod.fmflame
+HasLight True
+HasSubmunitions true
+Submunition 44_88Sub
+NumSubmunitions 4
+SubmunitionDelay 0
+SubmunitionSpread 0
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

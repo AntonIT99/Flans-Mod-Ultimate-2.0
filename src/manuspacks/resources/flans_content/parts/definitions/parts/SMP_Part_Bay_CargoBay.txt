@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Cargo Transport Bay Frame
+ShortName SMP_Part_Bay_CargoBay
+
+// Visuals
+Icon Icon_SMP_Part_Bay_CargoBay
+
+// Recipe
+Recipe C chest P SMP_Part_Mat_Plate_Steel
+PPP
+CCC
+PPP
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Bay
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

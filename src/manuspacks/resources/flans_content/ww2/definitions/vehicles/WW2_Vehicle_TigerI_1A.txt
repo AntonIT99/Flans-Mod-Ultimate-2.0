@@ -1,0 +1,133 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name Panzerkampfwagen VI Tiger - Version E
+ShortName WW2_Vehicle_TigerI_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_TigerI_1
+Icon Icon_WW2_Vehicle_TigerI_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_TigerI_1A
+
+
+//Movement
+MaxThrottle 0.5
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -36 -8 -35
+WheelPosition 1 -36 -8 35
+WheelPosition 2 42 -8 35
+WheelPosition 3 42 -8 -35
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 2500
+CargoSlots 0
+ShellSlots 5
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 14 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 18 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Shell_German88mmAP
+AddAmmo 44_88APShell
+AddAmmo 44_LargeHEShell
+AddGun 30 32 7 turret WW2_MG_MG42ZB_1A
+BarrelPosition 0 32 0
+ShellDelay 100
+ShootDelay 2
+
+
+//Driver and Passengers
+Driver 0 34 0 -360 360 -10 20
+RotatedDriverOffset -9 0 -9
+Passengers 1
+Passenger 1 33 12 17 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+GunOrigin 1 52 18 11
+
+
+//Sounds
+PlaceTimePrimary 80
+StartSound TankIdle3
+StartSoundLength 41
+EngineSound TankRun3
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack3
+StartSoundRange 12
+EngineSoundRange 22
+BackSoundRange 10
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ReloadTimeSecondary 100
+
+
+//Health and collision
+SetupPart turret 6000 -32 26 -23 56 15 46
+SetupPart leftTrack 300 -53 -10 21 106 22 15
+SetupPart core 6000 -53 -3 -20 113 28 40
+SetupPart rightTrack 300 -53 -10 -36 106 22 15
+BulletDetection 7
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 7.5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShootSoundPrimary 88mmShoot
+ShootSoundSecondary Mg34Shoot
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

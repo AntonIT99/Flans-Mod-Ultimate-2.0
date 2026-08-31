@@ -1,0 +1,123 @@
+﻿//---Standard Vehicle Config for Flans Mod--------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name T-34/76
+ShortName WW2_Vehicle_T34_1A
+
+
+// Visuals
+Model Manus_WW2.Vehicle.WW2_Vehicle_T34_1
+Icon Icon_WW2_Vehicle_T34_1A
+
+
+// Recipe
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Vehicle_T34_1A
+
+
+//Movement
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+
+
+//Wheels
+WheelPosition 0 -50 -8 -29
+WheelPosition 1 -50 -8 29
+WheelPosition 2 28 -8 29
+WheelPosition 3 28 -8 -29
+WheelRadius 1.0
+WheelSpringStrength 0.5
+
+
+//Inventory Slots
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+
+
+//Recipe
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 green
+
+
+//Floating
+
+
+//Weapons
+AllowAllAmmo False
+AddAmmo WW2_Shell_USSR76mmAP
+AddGun 30 33 -5 turret WW2_MG_DP28_1A
+BarrelPosition 0 33 0
+ShellDelay 110
+ShootDelay 5
+
+
+//Driver and Passengers
+Driver 0 25 0 -360 360 -10 20
+RotatedDriverOffset -3 0 6
+Passengers 1
+Passenger 1 24 3 -6 core -30 30 -10 10 WW2_MG_DP28_1A FrontMG
+GunOrigin 1 37 15 11
+
+
+//Sounds
+StartSound Engine
+StartSoundLength 20
+EngineSound Engine
+EngineSoundLength 20
+ShellSound TankShell
+
+
+//Health and collision
+SetupPart turret 450 -25 24 -19 42 13 38
+SetupPart core 600 -70 -3 -25 114 26 50
+SetupPart rightTrack 250 -50 -10 -30 100 20 11
+SetupPart leftTrack 250 -50 -10 19 100 20 11
+BulletDetection 7
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+CameraDistance 7.5
+
+//------------------------------------------------
+
+//---Vehicle--------------------------------------
+//Visuals
+RotateWheels True
+
+
+//Movement
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+
+
+//Sound
+ShellSound TankShell
+ShootSound bullet
+
+
+//Misc
+SquashMobs True
+IsExplosionWhenDestroyed true
+Tank true
+
+//------------------------------------------------

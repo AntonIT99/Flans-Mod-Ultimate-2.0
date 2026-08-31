@@ -1,0 +1,167 @@
+﻿//---Standard Plane Config for Flans Mod----------
+//Created by Minecraft-SMP Toolbox 2.1.2.6
+
+
+//---Standard-------------------------------------
+// Naming
+Name Supermarine Spitfire Mk VB - 603 Squadron
+ShortName WW2_Plane_SpitFireMkVB_1A
+
+
+// Visuals
+Model Manus_WW2.Plane.WW2_Plane_SpitFireMkVB_1
+ModelScale 1
+Icon Icon_WW2_Plane_SpitFireMkVB_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Driveables-----------------------------------
+//Visuals
+Texture Skin_WW2_Plane_SpitFireMkVB_1A
+
+
+//Movement
+MaxThrottle 2.5
+MaxNegativeThrottle 0.0
+Drag 1.0
+
+
+//Wheels
+NumWheels 3
+WheelPosition 0 17 -8 -21
+WheelPosition 1 17 -8 21
+WheelPosition 2 -112 20 0
+WheelSpringStrength 0.125
+
+
+//Floating
+
+
+//Ammo
+AllowAllAmmo False
+AddAmmo WW2_Bomb_UK50kg
+
+
+//Weapons
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 5
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 28 23 62 rightWing WW2_MG_M1919_1A
+ShootPointPrimary 28 23 -62 leftWing WW2_MG_M1919_1A
+ShootPointPrimary 26 24 81 rightWing WW2_MG_M1919_1A
+ShootPointPrimary 26 24 -81 leftWing WW2_MG_M1919_1A
+ShootPointPrimary 43 21 42 rightWing WW2_MG_MKII_1A
+ShootPointPrimary 43 21 -42 leftWing WW2_MG_MKII_1A
+ShootPointSecondary -1 0 0 core
+
+
+//Driver and Passengers
+Pilot -18 25 0
+Passengers 0
+
+
+//Inventory Slots
+CargoSlots 0
+BombSlots 4
+MissileSlots 0
+FuelTankSize 5000
+
+
+//Recipe
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 brown
+
+
+//Health and Collision
+SetupPart core 200 -47 16 -10 101 27 20
+SetupPart nose 100 54 25 -6 10 12 12
+SetupPart tail 100 -113 16 -7 66 27 14
+SetupPart rightWing 100 -17 19 10 38 8 93
+SetupPart leftWing 100 -17 19 -103 38 8 93
+SetupPart rightWingWheel 50 10 -10 15 13 26 7
+SetupPart leftWingWheel 50 10 -10 -22 13 26 7
+SetupPart tailWheel 50 -114 19 -1 8 5 2
+CollisionPoint 58 32 0 nose
+CollisionPoint -50 32 0 tail
+CollisionPoint -66 32 0 tail
+CollisionPoint -82 32 0 tail
+CollisionPoint -98 32 0 tail
+CollisionPoint -114 32 0 tail
+CollisionPoint 10 21 -19 leftWing
+CollisionPoint 10 21 -36 leftWing
+CollisionPoint 10 21 -52 leftWing
+CollisionPoint 10 24 -68 leftWing
+CollisionPoint 10 26 -84 leftWing
+CollisionPoint 10 27 -100 leftWing
+CollisionPoint 10 21 19 rightWing
+CollisionPoint 10 21 36 rightWing
+CollisionPoint 10 21 52 rightWing
+CollisionPoint 10 24 68 rightWing
+CollisionPoint 10 26 84 rightWing
+CollisionPoint 10 27 100 rightWing
+BulletDetection 10
+
+
+//Misc
+CameraDistance 10.0
+
+
+//Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+
+//------------------------------------------------
+
+//---Plane----------------------------------------
+//Flying Mode
+Mode Plane
+
+
+//Visuals
+
+
+//Movement
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+
+
+//Weapon
+
+
+//Misc
+RestingPitch 5.0
+
+
+//Propeller
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+
+//Sound
+PropSoundLength 30
+PropSound propSound
+
+//------------------------------------------------

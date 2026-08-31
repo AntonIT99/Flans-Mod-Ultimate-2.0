@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "MMM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_plastic"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_plastic"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_armor_plastic",
+    "count": 3
+  }
+}

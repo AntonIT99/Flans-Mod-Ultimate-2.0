@@ -1,0 +1,83 @@
+﻿//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+// Naming
+Name MK Vb Godwyn Pattern Boltgun
+ShortName WH40K_Gun_MKVbBoltgun_1A
+
+
+// Visuals
+Model Manus_WH40K.Gun.WH40K_Gun_MKVbBoltgun_1
+ModelScale 0.11
+Icon Icon_WH40K_Gun_MKVbBoltgun_1A
+
+
+// Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable False
+
+
+//Visual
+Model Manus_WH40K.Gun.WH40K_Gun_MKVbBoltgun_1
+AllowGripAttachments False
+
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WH40K_Ammo_BoltCal75
+Ammo WH40K_Ammo_BoltCal75Seeker
+Ammo WH40K_Ammo_BoltCal75Inferno
+
+
+//Attachments
+AllowAllAttachments False
+AllowAttachments WH40K_Attachment_MKVbBoltgunScope_1A WH40K_Attachment_MKVbBoltgunSilencer_1A WH40K_Attachment_MKVbBoltgunStock_1A
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+
+
+//Weapon Settings
+Accuracy 4
+Mode FULLAUTO
+Recoil 2
+ReloadTime 40
+ShootDelay 10
+
+
+//Shield
+NumGenericAttachmentSlots 1
+
+
+//Zoom
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+
+//Melee
+
+
+//Deployable
+DeployedModel None
+ModelScale 0.11
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+
+
+//Sound
+ShootSound boltgun_fire
+ReloadSound boltgun_reload
+
+//------------------------------------------------

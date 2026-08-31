@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MGM",
+    "EEE",
+    "MEM"
+  ],
+  "key": {
+    "E": {
+      "item": "flansmod:smp_part_misc_part_electronic"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_plastic"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_computer"
+  }
+}

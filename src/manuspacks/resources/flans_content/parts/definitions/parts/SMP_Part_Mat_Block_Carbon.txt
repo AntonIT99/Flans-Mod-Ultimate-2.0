@@ -1,0 +1,26 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Carbon Block
+ShortName SMP_Part_Mat_Block_Carbon
+
+// Visuals
+Icon Icon_SMP_Part_Mat_Block_Carbon
+
+// Recipe
+Recipe C coal M SMP_Part_Mat_Block_Aluminium
+CMC
+   
+   
+RecipeOutput 3
+
+//Misc
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

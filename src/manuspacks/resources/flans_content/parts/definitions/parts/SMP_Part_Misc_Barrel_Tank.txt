@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Tank Barrel
+ShortName SMP_Part_Misc_Barrel_Tank
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Barrel_Tank
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Steel E SMP_Part_Misc_Part_Electronic
+M  
+ ME
+  M
+RecipeOutput 1
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

@@ -1,0 +1,27 @@
+//---Standard Config for Flans Mod----------------
+
+
+//---Standard-------------------------------------
+// Naming
+Name Radar System
+ShortName SMP_Part_Misc_Radar
+
+// Visuals
+Icon Icon_SMP_Part_Misc_Radar
+
+// Recipe
+Recipe M SMP_Part_Mat_Block_Plastic E SMP_Part_Misc_Part_Electronic C SMP_Part_Misc_Computer
+EM 
+EMC
+EM 
+RecipeOutput 2
+
+//Misc
+
+//------------------------------------------------
+
+//---Part-----------------------------------------
+Category Misc
+PartBoxRecipe
+StackSize 64
+//------------------------------------------------

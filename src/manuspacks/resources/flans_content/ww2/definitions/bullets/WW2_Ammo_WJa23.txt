@@ -1,0 +1,69 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name Russian 23mm Ammo for WJa-23 - 100 Bullet Box
+ShortName WW2_Ammo_WJa23
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Ammo_WJa23
+
+
+//Recipe
+
+
+//Misc
+description Amunition for WJa-23
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+
+
+//Damage
+DamageVsLiving 90
+DamageVsVehicles 90
+DamageVsPlanes 10
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 0
+Fire 0
+FallSpeed 0.25
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke
+
+
+//Sound
+HitSound bullet
+
+
+/Inventory
+MaxStackSize 1
+RoundsPerItem 100
+
+//------------------------------------------------

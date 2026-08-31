@@ -1,0 +1,69 @@
+//---Standard Gun Config for Flans Mod------------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name 23mm WJa-23
+ShortName WW2_MG_WJa23_1A
+
+
+//Visuals
+Icon Icon_WW2_MG_WJa23_1A
+
+
+//Recipe
+
+
+//Misc
+
+//------------------------------------------------
+
+//---Gun------------------------------------------
+//Gun Type
+Deployable True
+
+
+//Visual
+Colour 255 255 255
+
+//Damage
+Damage 1
+
+
+//Ammo
+Ammo WW2_Ammo_WJa23
+
+
+//Attachments
+
+
+//Weapon Settings
+BulletSpeed 10.0
+Accuracy 6
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+ShootDelay 2
+
+
+//Melee
+
+
+//Deployable
+DeployedModel Manus_WW2.MG.WW2_MG_GunPlaneGeneric_1
+DeployedTexture Skin_WW2_MG_GunPlaneGeneric_1A
+TopViewLimit 0
+BottomViewLimit 0
+SideViewLimit 0
+PivotHeight 0.5
+StandBackDistance 1.3
+
+
+//Sound
+DistortSound False
+ShootSound AAfire
+ReloadSound BrowningReload
+
+//------------------------------------------------
