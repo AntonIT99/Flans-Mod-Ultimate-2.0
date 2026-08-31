@@ -97,10 +97,10 @@ minecraft {
                     source sourceSets.maybeCreate('wolffstarwarspack')
                 }
                 "flansmodultimate_warfare44" {
-                    source sourceSets.maybeCreate('wolffstarwarspack')
+                    source sourceSets.maybeCreate('warfare44pack')
                 }
                 "flansmodultimate_manuspacks" {
-                    source sourceSets.maybeCreate('flansmodultimate_manuspacks')
+                    source sourceSets.maybeCreate('manuspacks')
                 }
             }
         }
