@@ -37,7 +37,6 @@ public final class ModCommonConfig
     public static final double DEFAULT_MAX_PLANE_SPEED_KMH = 10000.0D;
     public static final double DEFAULT_MAX_VEHICLE_SPEED_KMH = 10000.0D;
     public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
-    public static final double DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43D;
     public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
@@ -146,7 +145,6 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue MAX_PLANE_SPEED_KMH;
     private static final ForgeConfigSpec.DoubleValue MAX_VEHICLE_SPEED_KMH;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_VEHICLE_HEALTH_SCALE;
-    private static final ForgeConfigSpec.DoubleValue PENETRATION_VELOCITY_EXPONENT;
     private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
     private static final ForgeConfigSpec.DoubleValue ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_BLAST_DISTANCE_METERS;
@@ -468,9 +466,6 @@ public final class ModCommonConfig
             .comment("Total HP scale for vehicles opting into UseRealisticVehicleHealth.",
                 "Total HP = scale * RealMassKg^(2/3). Legacy vehicles are unaffected.")
             .defineInRange("realisticVehicleHealthScale", DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE, 0.01D, 1000D);
-        PENETRATION_VELOCITY_EXPONENT = builder
-            .comment("Global velocity exponent for PenetrationAt100m falloff: P(v) = P100 * (v / v100)^exponent.")
-            .defineInRange("penetrationVelocityExponent", DEFAULT_PENETRATION_VELOCITY_EXPONENT, 0.1D, 5D);
         MAX_ARMOR_IMPACT_ANGLE_DEG = builder
             .comment("Maximum impact angle used for effective armour thickness before grazing-angle capping.")
             .defineInRange("maxArmorImpactAngleDeg", DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG, 0D, 89.9D);
@@ -584,7 +579,6 @@ public final class ModCommonConfig
             MAX_PLANE_SPEED_KMH.get(),
             MAX_VEHICLE_SPEED_KMH.get(),
             REALISTIC_VEHICLE_HEALTH_SCALE.get(),
-            PENETRATION_VELOCITY_EXPONENT.get(),
             MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
             ARMORED_BLAST_RESISTANCE_KPA_PER_MM.get(),
             MINIMUM_BLAST_DISTANCE_METERS.get(),
@@ -693,12 +687,6 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.driveableCollisionsBreakBlocks();
-    }
-
-    public static double penetrationVelocityExponent()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? DEFAULT_PENETRATION_VELOCITY_EXPONENT : config.penetrationVelocityExponent();
     }
 
     public static double maxArmorImpactAngleDeg()

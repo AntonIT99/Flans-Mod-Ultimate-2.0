@@ -2821,8 +2821,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
             normalizedHealth, bulletType.getMass(shotIndex), selectedFixedDamage,
             hit.getLocalProjectileDirection().length(), armorHit,
-            p100 > 0F && Float.isFinite(p100) ? p100 : null,
-            bulletType.getReferenceVelocityAt100m(shotIndex), ModCommonConfig.penetrationVelocityExponent());
+            p100 > 0F && Float.isFinite(p100) ? p100 : null);
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
             && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)

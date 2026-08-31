@@ -12,22 +12,14 @@ public final class VehicleProjectileDamageResolver
 
     public record Result(float damage, boolean kineticDamage, PenetrationResult penetration) {}
 
-    public static Result resolve(boolean normalizedHealth, float projectileMassGrams,
-                                 float fixedDamage, double impactVelocityBlocksPerTick,
-                                 ResolvedArmorHit armorHit, @Nullable Float penetrationAt100m,
-                                 double referenceVelocityAt100mMetersPerSecond,
-                                 double penetrationVelocityExponent)
+    public static Result resolve(boolean normalizedHealth, float projectileMassGrams, float fixedDamage, double impactVelocityBlocksPerTick, ResolvedArmorHit armorHit, @Nullable Float penetrationAt100m)
     {
         float safeFixedDamage = Float.isFinite(fixedDamage) ? Math.max(0F, fixedDamage) : 0F;
-        ResolvedArmorHit safeArmor = armorHit == null
-            ? new ResolvedArmorHit(null, EnumArmorFacing.FRONT, ArmorPlate.UNARMOURED,
-                EnumArmorFacing.FRONT.outwardNormal(), 0F, 0F)
-            : armorHit;
-        double impactVelocityMs = Double.isFinite(impactVelocityBlocksPerTick)
-            ? Math.max(0D, impactVelocityBlocksPerTick * PenetrationCalculator.TICKS_PER_SECOND) : 0D;
-        PenetrationResult penetration = PenetrationCalculator.resolve(penetrationAt100m,
-            impactVelocityMs, referenceVelocityAt100mMetersPerSecond,
-            penetrationVelocityExponent, safeArmor.effectiveArmorMm());
+
+        ResolvedArmorHit safeArmor = armorHit == null ? new ResolvedArmorHit(null, EnumArmorFacing.FRONT, ArmorPlate.UNARMOURED, EnumArmorFacing.FRONT.outwardNormal(), 0F, 0F) : armorHit;
+
+        PenetrationResult penetration = PenetrationCalculator.resolve(penetrationAt100m, safeArmor.effectiveArmorMm());
+
         if (!penetration.penetrated())
             return new Result(0F, false, penetration);
 

@@ -18,6 +18,7 @@ Driveables:
 - Check propeller speed at standby as well as when moving
 - Collisions with players
 - y positioning of driveables (Check Tiger I of Warfare 44)
+- Improve impostor quality or increase distance for ships
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

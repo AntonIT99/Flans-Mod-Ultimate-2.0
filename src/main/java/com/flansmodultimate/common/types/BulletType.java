@@ -6,7 +6,6 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.penetration.PenetrationCalculator;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
@@ -41,9 +40,6 @@ public class BulletType extends ShootableType
     /** Penetration @ 0° Angle of Attack (mm) at 100m */
     @Getter
     protected float penetrationAt100m;
-    /** Retained speed at 100 m, precomputed once from the bullet's drag model. */
-    protected float referenceVelocityAt100m;
-    protected final List<Float> roundReferenceVelocitiesAt100m = new ArrayList<>();
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -313,8 +309,6 @@ public class BulletType extends ShootableType
             }));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
-
-        precomputePenetrationReferenceVelocities();
     }
 
     @Override
@@ -393,39 +387,6 @@ public class BulletType extends ShootableType
     public float getPenetrationAt100m(int shotsFired)
     {
         return hasDifferentRounds() ? statsForShot(shotsFired).penetrationAt100m() : penetrationAt100m;
-    }
-
-    public float getReferenceVelocityAt100m(int shotsFired)
-    {
-        if (!hasDifferentRounds())
-            return referenceVelocityAt100m;
-        int k = Math.floorMod(shotsFired, periodLength);
-        for (int index = 0; index < period.size(); index++)
-        {
-            RoundEntry round = period.get(index);
-            if (k < round.count())
-                return index < roundReferenceVelocitiesAt100m.size()
-                    ? roundReferenceVelocitiesAt100m.get(index) : 0F;
-            k -= round.count();
-        }
-        return 0F;
-    }
-
-    private void precomputePenetrationReferenceVelocities()
-    {
-        referenceVelocityAt100m = PenetrationCalculator.referenceVelocityAt100m(
-            getBulletSpeed(true), dragInAir);
-        roundReferenceVelocitiesAt100m.clear();
-        for (RoundEntry round : period)
-        {
-            float speed = round.stats().bulletSpeed();
-            if (speed <= 0F || !Float.isFinite(speed))
-                speed = DEFAULT_BULLET_SPEED;
-            if (speedMultiplier > 0F)
-                speed *= speedMultiplier;
-            roundReferenceVelocitiesAt100m.add(
-                PenetrationCalculator.referenceVelocityAt100m(speed, dragInAir));
-        }
     }
 
     @Override
