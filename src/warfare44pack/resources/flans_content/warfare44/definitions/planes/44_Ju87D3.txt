@@ -78,7 +78,7 @@ StartSoundLength 22
 PropSound FighterEngine
 PropSoundLength 28
 ShootSoundPrimary PlaneMGShoot
-ShootSoundSecondary JU8737mmShoot
+ShootSoundSecondary BombDrop
 // ------------------------------------------------------ Recipe ------------------------------------------------------
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

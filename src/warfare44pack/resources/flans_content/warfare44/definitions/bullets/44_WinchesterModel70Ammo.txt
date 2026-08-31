@@ -32,7 +32,7 @@ DamageVsLiving 21
 DamageVsVehicles 1
 DamageVsPlanes 5
 
-HitSound HeavyImpact
+HitSound LargeImpact
 HitSoundRange 15
 HitSoundEnable true
 EntityHitSoundEnable true

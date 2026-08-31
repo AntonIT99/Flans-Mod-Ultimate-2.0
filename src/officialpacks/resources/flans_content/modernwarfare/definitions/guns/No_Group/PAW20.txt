@@ -15,8 +15,8 @@ Damage 1
 Accuracy 1
 //Time in ticks between rounds
 ShootDelay 10.0
-ShootSound PAW20Shoot
-ReloadSound PAW20Reload
+ShootSound GrenadeLauncherShoot
+ReloadSound DP28Reload
 Mode SemiAuto
 //Bullet speed, default 3.0
 BulletSpeed 3.0

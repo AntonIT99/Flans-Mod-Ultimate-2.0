@@ -1,4 +1,16 @@
 {
+  "88mmshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:88mmshoot"
+    ]
+  },
+  "152mmshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:152mmshoot"
+    ]
+  },
   "aafire": {
     "category": "player",
     "sounds": [

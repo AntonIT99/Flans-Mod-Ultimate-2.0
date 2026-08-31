@@ -15,8 +15,8 @@ Damage 2
 Accuracy 2
 //Time in ticks between rounds
 ShootDelay 4.0
-ShootSound SideWinder7Shoot
-ReloadSound SideWinder7Reload
+ShootSound AT4Shoot
+ReloadSound BrowningReload
 Mode FullAuto
 //Bullet speed, default 3.0
 BulletSpeed 3.0

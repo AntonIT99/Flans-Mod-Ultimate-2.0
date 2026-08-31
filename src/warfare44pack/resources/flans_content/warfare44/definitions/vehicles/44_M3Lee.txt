@@ -81,7 +81,7 @@ StartSoundRange 12
 EngineSoundRange 50
 BackSoundRange 25
 PlaceSoundPrimary TankPlace
-ReloadSoundSecondary 30CalReload
+ReloadSoundSecondary Mg34Reload
 ReloadTimeSecondary 100
 
 ShootSoundPrimary Shoot_37mUS

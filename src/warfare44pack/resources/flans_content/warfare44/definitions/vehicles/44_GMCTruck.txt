@@ -57,7 +57,6 @@ StartSoundLength 7
 EngineSound Engine_LT_Truck
 EngineSoundLength 39
 ShootSound bullet
-ShellSound shell
 SoundsPlaceTimePrimary 60
 BackSound Engine_LT_Truck
 StartSoundRange 12
