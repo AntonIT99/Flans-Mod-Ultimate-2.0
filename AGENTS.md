@@ -26,14 +26,14 @@ use modern render-state extraction and Mojang names; 26.2 uses feature rendering
 - Do not edit generated output, runtime files, or generated metadata; change the
   generator or its input instead.
 - Keep the main mod, bundled packs, and official packs as separate artifacts. Run
-  `packsJar` and/or `officialPacksJar` when their inputs or packaging change.
+  `packsManagerJar` and/or `officialPacksJar` when their inputs or packaging change.
 - For every feature or significant change, check whether the locally available wiki
   repository should be updated too.
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 
 ## Build and Validation
 
-Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsJar`, and
+Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
 `officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Run focused
 tests first. Run a full build after loader setup, registries, networking, entities,
 resources, source sets, or packaging changes. Keep `gradlew` executable.

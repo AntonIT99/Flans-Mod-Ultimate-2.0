@@ -131,8 +131,8 @@ configurations {
     library
     // Any dependency in the library configuration will also be added to the implementation configuration
     implementation.extendsFrom library
-    packsImplementation.extendsFrom implementation
-    packsRuntimeOnly.extendsFrom runtimeOnly
+    packsManagerImplementation.extendsFrom implementation
+    packsManagerRuntimeOnly.extendsFrom runtimeOnly
     officialpacksImplementation.extendsFrom implementation
     officialpacksRuntimeOnly.extendsFrom runtimeOnly
     wolffstarwarspackImplementation.extendsFrom implementation
@@ -158,12 +158,12 @@ sourceSets {
         }
 
     }
-    packs {
+    packsManager {
         java {
-            srcDirs = ['src/packs/java']
+            srcDirs = ['src/packsmanager/java']
         }
         resources {
-            srcDirs = ['src/packs/resources']
+            srcDirs = ['src/packsmanager/resources']
         }
     }
     officialpacks {
@@ -320,9 +320,9 @@ tasks.named('jar', Jar).configure {
 //     dependsOn 'reobfJar'
 // }
 
-def copyFlanPacks = tasks.register('copyFlanPacks') {
+def copyFlanPacksToManager = tasks.register('copyFlanPacksToManager') {
     doFirst {
-        def targetDir = file('src/packs/resources/flan')
+        def targetDir = file('src/packsmanager/resources/flan')
         if (targetDir.exists()) {
             targetDir.deleteDir()
         }
@@ -331,23 +331,23 @@ def copyFlanPacks = tasks.register('copyFlanPacks') {
     doLast {
         copy {
             from 'run/flan'
-            into 'src/packs/resources/flan'
+            into 'src/packsmanager/resources/flan'
         }
     }
 }
 
-def packsJar = tasks.register('packsJar', Jar) {
-    dependsOn tasks.named('copyFlanPacks')
+def packsManagerJar = tasks.register('packsManagerJar', Jar) {
+    dependsOn tasks.named('copyFlanPacksToManager')
 
-    archiveBaseName.set("[$minecraft_version] $mod_name_packs")
-    archiveVersion.set(packs_version)
+    archiveBaseName.set("[$minecraft_version] $mod_name_packs_manager")
+    archiveVersion.set(packs_manager_version)
 
-    from sourceSets.packs.output
+    from sourceSets.packsManager.output
 
     manifest {
         attributes(
-            'Implementation-Title': 'packs',
-            'Implementation-Version': packs_version
+            'Implementation-Title': 'packsManager',
+            'Implementation-Version': packs_manager_version
         )
     }
 }
@@ -381,7 +381,7 @@ def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
 }
 
 artifacts {
-    archives packsJar
+    archives packsManagerJar
     archives officialPacksJar
     archives wolffStarWarsPackJar
 }

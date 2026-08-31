@@ -107,12 +107,12 @@ public class FlansMod
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
     public static final String APOCALYPSE_ID = "flansmodapocalypse";
-    public static final String PACKS_ID = "flansmodultimate_packs";
-    private static final int PACKS_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
-    private static final String PACKS_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
-    private static final String PACKS_EXTRACTION_STATE_COMPLETE = "complete";
-    private static final String PACKS_EXTRACTION_STATE_FAILED = "failed";
-    private static final int TIMEOUT_PACKS_EXTRACTION = 120;
+    public static final String PACKS_MANAGER_ID = "flansmodultimate_packs_manager";
+    private static final int PACKS_MANAGER_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_COMPLETE = "complete";
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_FAILED = "failed";
+    private static final int TIMEOUT_PACKS_MANAGER_EXTRACTION = 120;
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
@@ -344,7 +344,7 @@ public class FlansMod
 
         EnchantmentModule.register(enchantmentRegistry);
 
-        waitForPacksExtractionIfPresent();
+        waitForPacksManagerExtractionIfPresent();
 
         // Register Everything
         CategoryManager.loadAll();
@@ -357,22 +357,22 @@ public class FlansMod
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private static void waitForPacksExtractionIfPresent()
+    private static void waitForPacksManagerExtractionIfPresent()
     {
-        if (!ModList.get().isLoaded(PACKS_ID))
+        if (!ModList.get().isLoaded(PACKS_MANAGER_ID))
             return;
 
         if (!FMLEnvironment.production)
         {
-            log.info("Flan's Mod Ultimate Packs Extractor found, but extraction is disabled outside production. Continuing without waiting.");
+            log.info("Flan's Mod Ultimate Packs Manager found, but extraction is disabled outside production. Continuing without waiting.");
             return;
         }
 
-        log.info("Flan's Mod Ultimate Packs Extractor found. Waiting for extraction...");
+        log.info("Flan's Mod Ultimate Packs Manager found. Waiting for extraction...");
 
-        Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_EXTRACTION_STATE_FILE_NAME);
+        Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME);
 
-        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_EXTRACTION);
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_MANAGER_EXTRACTION);
         while (true)
         {
             PacksExtractionWaitState state = readPacksExtractionWaitState(stateFile);
@@ -414,13 +414,13 @@ public class FlansMod
             if (!object.has("protocolVersion") || !object.has("state"))
                 return PacksExtractionWaitState.WAITING;
 
-            if (object.get("protocolVersion").getAsInt() != PACKS_EXTRACTION_STATE_PROTOCOL_VERSION)
+            if (object.get("protocolVersion").getAsInt() != PACKS_MANAGER_EXTRACTION_STATE_PROTOCOL_VERSION)
                 return PacksExtractionWaitState.UNSUPPORTED;
 
             String state = object.get("state").getAsString();
-            if (PACKS_EXTRACTION_STATE_COMPLETE.equals(state))
+            if (PACKS_MANAGER_EXTRACTION_STATE_COMPLETE.equals(state))
                 return PacksExtractionWaitState.COMPLETE;
-            if (PACKS_EXTRACTION_STATE_FAILED.equals(state))
+            if (PACKS_MANAGER_EXTRACTION_STATE_FAILED.equals(state))
                 return PacksExtractionWaitState.FAILED;
 
             return PacksExtractionWaitState.WAITING;

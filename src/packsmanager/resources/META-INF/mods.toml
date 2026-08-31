@@ -1,0 +1,30 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate_packs_manager"
+version="1.0"
+displayName="Flan's Mod Ultimate Packs Manager"
+authors="Wolff"
+displayTest = "NONE"
+description='''Companion mod for Flan's Mod Ultimate 2 that lets mod authors bundle legacy content packs inside a mod jar and extracts those packs into the configured content-pack directory at startup.'''
+
+[[dependencies.flansmodultimate_packs_manager]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.4.0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_packs_manager]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20,1.21)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_packs_manager]]
+    modId="flansmodultimate"
+    mandatory=true
+    versionRange="[2.0-beta-5,)"
+    ordering="BEFORE"
+    side="BOTH"

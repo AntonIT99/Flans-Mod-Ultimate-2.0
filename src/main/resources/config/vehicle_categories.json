@@ -7,7 +7,17 @@
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "32",
             "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
+            "UseRealisticVehicleHealth": "true",
+            "ArmorFrontMm": "12.7 64",
+            "ArmorRearMm": "12.7 13",
+            "ArmorSideMm": "12.7 23",
+            "ArmorTopMm": 7.9,
+            "ArmorBottomMm": 4.8,
+            "TurretArmorFrontMm": "25.4 23",
+            "TurretArmorRearMm": "12.7 9",
+            "TurretArmorSideMm": "12.7 23",
+            "TurretArmorTopMm": 0,
+            "PartArmorMm": ["leftTrack 15", "rightTrack 15"]
         },
         "items": [
             "44_m18hellcat",
@@ -34,7 +44,6 @@
             "TurretArmorRearMm": 80,
             "TurretArmorSideMm": 80,
             "TurretArmorTopMm": 25,
-            "TurretArmorBottomMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "88mm KwK/Flak 36"
         },

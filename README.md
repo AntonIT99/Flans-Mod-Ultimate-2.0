@@ -22,7 +22,7 @@ The main mod ID is `flansmodultimate`. The project is in beta: some legacy syste
 - Supports custom armor rendering and configuration behavior.
 - Includes gun handling, reload logic, fire modes, hit markers, scopes, recoil, spread, melee behavior, block-hit effects, and network synchronization.
 - Includes optional digital ammo support with server-side storage, HUD synchronization, admin commands, and configurable supply blocks.
-- Packages bundled and official content packs separately from the main mod.
+- Packages the Packs Manager companion mod, bundled packs, and official content packs separately from the main mod.
 
 ## Requirements
 
@@ -66,10 +66,10 @@ Generate data:
 .\gradlew.bat runData
 ```
 
-Build the separate content-pack artifacts:
+Build the separate Packs Manager and content-pack artifacts:
 
 ```powershell
-.\gradlew.bat packsJar
+.\gradlew.bat packsManagerJar
 .\gradlew.bat officialPacksJar
 .\gradlew.bat wolffStarWarsPackJar
 ```
@@ -82,8 +82,8 @@ Build artifacts are written under `build/libs/`.
 | --- | --- |
 | `src/main/java` | Main mod Java sources |
 | `src/main/resources` | Main mod resources, assets, data, Mixin configuration, and loader metadata |
-| `src/packs/java` | Optional bundled content-pack mod sources |
-| `src/packs/resources` | Bundled content-pack resources |
+| `src/packsmanager/java` | Packs Manager companion-mod sources and extraction logic |
+| `src/packsmanager/resources` | Packs Manager metadata and content packs bundled for extraction |
 | `src/officialpacks` | Optional official content packs and their entrypoint |
 | `libs` | Local mod jars used as development dependencies |
 | `run` | Development runtime directory |
@@ -95,7 +95,9 @@ Build artifacts are written under `build/libs/`.
 
 The mod registers client and common loader configuration files at runtime. Common settings cover gameplay, damage, armor, guns, shootables, sound ranges, penetration, digital ammo, and enchantment modules.
 
-Legacy packs are loaded through the mod's content-loading system. For local development, bundled pack content is copied from `run/flan` into `src/packs/resources/flan` when `packsJar` runs.
+Legacy packs are loaded through the mod's content-loading system. The optional **Flan's Mod Ultimate Packs Manager** companion mod allows mod authors and pack distributors to ship one or more legacy content packs inside a normal mod jar. At startup, it extracts the bundled `flan` directory into the content-pack directory configured by the main mod, while versioned extraction state prevents unnecessary repeat extraction.
+
+For local development, `packsManagerJar` copies the contents of `run/flan` into `src/packsmanager/resources/flan` and produces `[1.20.1] Flan's Mod Ultimate Packs Manager-1.0.jar` under `build/libs/`.
 
 ## Development Notes
 

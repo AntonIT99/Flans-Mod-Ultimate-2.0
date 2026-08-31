@@ -1,4 +1,4 @@
-package com.flansmodultimate.packs;
+package com.flansmodultimate.packsmanager;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
  * <p>
  * Startup coordination with the main mod is done through a stable JSON state file named
  * {@value #EXTRACTION_STATE_FILE_NAME} in the game directory. The file name is deliberately independent from the
- * packs mod version and bundled packs version so {@code FlansMod} can wait for the extractor to finish without
+ * Packs Manager mod version and bundled packs version so {@code FlansMod} can wait for extraction to finish without
  * needing to know which pack version was resolved. The state file stores a protocol version, an extraction status,
  * the currently resolved bundled packs version, the last successfully extracted packs version, the resolved flan
  * output path, an update timestamp, and an optional failure message.
@@ -55,10 +55,10 @@ import java.util.jar.JarFile;
  * Extraction only runs when this resolved version is higher than the last extracted packs version, so increment the
  * resource value when the extracted pack contents should be refreshed independently of the mod jar version.
  */
-@Mod(FlanPacksMod.MOD_ID)
-public class FlanPacksMod
+@Mod(FlanPacksManagerMod.MOD_ID)
+public class FlanPacksManagerMod
 {
-    public static final String MOD_ID = "flansmodultimate_packs";
+    public static final String MOD_ID = "flansmodultimate_packs_manager";
     public static final String MAIN_MOD_ID = "flansmodultimate";
 
     public static final Logger log = LogUtils.getLogger();
@@ -68,7 +68,7 @@ public class FlanPacksMod
     private static final int EXTRACTION_STATE_PROTOCOL_VERSION = 1;
     private static final int NO_EXTRACTED_PACKS_VERSION = 0;
     private static final int FALLBACK_BUNDLED_PACKS_VERSION = 1;
-    private static final String BUNDLED_PACKS_VERSION_RESOURCE = "/flansmodultimate_packs/bundled_packs_version.txt";
+    private static final String BUNDLED_PACKS_VERSION_RESOURCE = "/flansmodultimate_packs_manager/bundled_packs_version.txt";
     private static final String EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
     private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
@@ -78,7 +78,7 @@ public class FlanPacksMod
     private static final String CONTENT_LOADING_CONFIG_FILE_NAME = MAIN_MOD_ID + "-content-loading.toml";
     private static final String CONTENT_PACKS_RELATIVE_PATH_KEY = "contentPacksRelativePath";
 
-    public FlanPacksMod(FMLJavaModLoadingContext context)
+    public FlanPacksManagerMod(FMLJavaModLoadingContext context)
     {
         if (!FMLEnvironment.production)
             return;
@@ -198,7 +198,7 @@ public class FlanPacksMod
 
     private static int readBundledPacksVersion()
     {
-        try (InputStream input = FlanPacksMod.class.getResourceAsStream(BUNDLED_PACKS_VERSION_RESOURCE))
+        try (InputStream input = FlanPacksManagerMod.class.getResourceAsStream(BUNDLED_PACKS_VERSION_RESOURCE))
         {
             if (input == null)
             {

@@ -215,7 +215,8 @@ final class ContentPackRelocator
 
     private static boolean isKnownPackBundle(ZipFile zip)
     {
-        return zip.getEntry("flansmodultimate_packs/bundled_packs_version.txt") != null
+        return zip.getEntry("flansmodultimate_packs_manager/bundled_packs_version.txt") != null
+            || zip.getEntry("flansmodultimate_packs/bundled_packs_version.txt") != null
             || zip.getEntry("flans_content/pack_names.json") != null;
     }
 

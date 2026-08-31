@@ -1,4 +1,4 @@
-package com.flansmodultimate.content;
+package com.flansmodultimate.content.official;
 
 import com.flansmodultimate.PackagedContentPackApi;
 import net.minecraftforge.fml.common.Mod;
