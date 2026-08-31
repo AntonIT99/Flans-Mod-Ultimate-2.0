@@ -163,7 +163,7 @@ public final class VehiclePhysicsCommand
         send(context, ChatFormatting.GRAY, "  RealMassKg = " + format(source.massKg()) + " kg");
         send(context, ChatFormatting.GRAY, "  normalized health requested = "
             + type.isUseRealisticVehicleHealth() + ", enabled = " + type.getResolvedHealth().enabled()
-            + ", total HP = " + format(type.getResolvedHealth().totalHp()));
+            + ", total HP = " + format(type.getTotalHp()));
         type.getResolvedHealth().allocations().forEach((part, hp) -> {
             if (hp > 0F)
                 send(context, ChatFormatting.GRAY, "    " + part.getShortName() + " = " + format(hp) + " HP");

@@ -787,6 +787,27 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
         health.putAll(resolvedHealth.boxes());
     }
 
+    /**
+     * Returns the maximum combined health represented by this driveable's parts.
+     *
+     * <p>Normalized health has an authoritative total before its per-part values
+     * are rounded to floats. Legacy driveables instead define their total as the
+     * sum of the authored health of every part.</p>
+     */
+    public float getTotalHp()
+    {
+        if (resolvedHealth != null && resolvedHealth.enabled())
+            return resolvedHealth.totalHp();
+
+        float total = 0F;
+        for (CollisionBox box : health.values())
+        {
+            if (box != null)
+                total += box.getHealth();
+        }
+        return total;
+    }
+
     /** Which coupled real-world profile this type can qualify for. */
     protected EnumVehicleCategory physicsCategory()
     {

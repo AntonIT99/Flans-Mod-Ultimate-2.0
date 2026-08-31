@@ -3,7 +3,6 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
 import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
-import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
@@ -67,15 +66,11 @@ public final class DriveablePhysicsTooltip
     private static void appendArmorAndHealth(DriveableType type, List<Component> tooltip)
     {
         VehicleArmorSpec armor = type.getArmorSpec();
-        VehicleHealthScaler.Result health = type.getResolvedHealth();
-        if ((armor == null || armor.isEmpty()) && (health == null || !health.enabled()))
-            return;
 
         if (armor != null && !armor.isEmpty())
             appendArmorSummary(armor, tooltip);
-        if (health != null && health.enabled())
-            tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_TOTAL_HP),
-                IFlanItem.formatFloat(health.totalHp(), 1)));
+        tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_TOTAL_HP),
+            IFlanItem.formatFloat(type.getTotalHp(), 1)));
     }
 
     private static void appendArmorSummary(VehicleArmorSpec armor, List<Component> tooltip)

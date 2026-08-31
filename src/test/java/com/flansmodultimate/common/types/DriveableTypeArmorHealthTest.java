@@ -17,9 +17,12 @@ class DriveableTypeArmorHealthTest
     @Test
     void legacyDefinitionsKeepAuthoredHealthAndNoArmourGate()
     {
-        VehicleType type = vehicle("SetupPart core 1000 0 0 0 16 16 16");
+        VehicleType type = vehicle(
+            "SetupPart core 1000 0 0 0 16 16 16",
+            "SetupPart turret 250 0 16 0 16 16 16");
         assertEquals(1000F, type.getHealth().get(EnumDriveablePart.CORE).getHealth());
         assertFalse(type.getResolvedHealth().enabled());
+        assertEquals(1250F, type.getTotalHp());
         assertFalse(type.getResolvedArmor().isConfigured());
     }
 
@@ -37,6 +40,7 @@ class DriveableTypeArmorHealthTest
             "SetupPart core 100 0 0 0 16 16 16", "SetupPart turret 50 0 16 0 16 16 16",
             "RealMassKg 1000", "UseRealisticVehicleHealth true");
         assertTrue(normalizedSoft.getResolvedHealth().enabled());
+        assertEquals(normalizedSoft.getResolvedHealth().totalHp(), normalizedSoft.getTotalHp());
         assertFalse(normalizedSoft.getResolvedArmor().isConfigured());
     }
 
