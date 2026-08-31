@@ -1,17 +1,20 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableCrashExplosion;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
 import com.flansmodultimate.common.driveables.PlaneCrashDamage;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.SuspensionPhysics;
 import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
 import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
@@ -100,9 +103,53 @@ public class Plane extends Driveable
     public float getInitialPlacementPitch()
     {
         PlaneType type = getPlaneType();
-        // Plane model facing reverses the simulation pitch sign. This is the
-        // modern equivalent of 1.7.10's one-time rotatePitch(restingPitch).
-        return type == null ? 0F : -type.getRestingPitch();
+        if (type == null)
+            return 0F;
+        // Spawn in the pose the suspension settles into on flat ground, so the
+        // tail gear is not buried on placement. RestingPitch is authored per
+        // pack and often disagrees with the wheel geometry, so it only serves
+        // as a fallback for types without both front and rear gear. Plane model
+        // facing reverses the simulation pitch sign, as in 1.7.10's one-time
+        // rotatePitch(restingPitch).
+        Float geometryPitch = getLevelGroundPitch(type);
+        return geometryPitch != null ? geometryPitch : -type.getRestingPitch();
+    }
+
+    /**
+     * The pitch at which every configured wheel touches flat ground, derived
+     * from the authored wheel anchors exactly as the per-tick terrain
+     * alignment in {@link Driveable#applyWheelContactPhysics} derives it.
+     */
+    @Nullable
+    private static Float getLevelGroundPitch(@NotNull PlaneType type)
+    {
+        double frontX = 0D, backX = 0D, frontY = 0D, backY = 0D;
+        int frontCount = 0, backCount = 0;
+        for (DriveablePosition definition : type.getWheelPositions())
+        {
+            if (definition == null)
+                continue;
+            Vector3f position = definition.getPosition();
+            double forward = LegacyDriveableCoordinates.legacyForwardCoordinate(
+                LegacyDriveableCoordinates.toLocal(position));
+            if (forward > 1.0E-4D)
+            {
+                frontX += forward;
+                frontY += position.y;
+                ++frontCount;
+            }
+            else if (forward < -1.0E-4D)
+            {
+                backX += forward;
+                backY += position.y;
+                ++backCount;
+            }
+        }
+        if (frontCount == 0 || backCount == 0)
+            return null;
+        double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
+        double mountDifference = frontY / frontCount - backY / backCount;
+        return SuspensionPhysics.supportAngle(0D, length, mountDifference, true);
     }
 
     public EnumPlaneMode getPlaneMode()
