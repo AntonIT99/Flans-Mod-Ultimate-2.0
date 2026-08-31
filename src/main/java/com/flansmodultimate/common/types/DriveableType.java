@@ -555,10 +555,8 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierSecondary = readValue("DamageMultiplierSecondary", damageMultiplierSecondary, file);
         damageMultiplierSecondary = readValue("DamageModifierSecondary", damageMultiplierSecondary, file);
-        shootDelayPrimary = resolveShootDelay(file, shootDelayPrimary,
-            "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
-        shootDelaySecondary = resolveShootDelay(file, shootDelaySecondary,
-            "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        shootDelayPrimary = resolveShootDelay(file, shootDelayPrimary, "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
+        shootDelaySecondary = resolveShootDelay(file, shootDelaySecondary, "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
         readWeaponsFromGunTypes = readValue("ReadSecondaryWeaponFromGunType", readWeaponsFromGunTypes, file);
         readWeaponsFromGunTypes = readValue("ReadWeaponsFromGunTypes", readWeaponsFromGunTypes, file);
         placeTimePrimary = Math.max(0, readOptionalValue("PlaceTimePrimary", placeTimePrimary, file));
@@ -1507,19 +1505,25 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
      */
     private static float resolveShootDelay(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
     {
-        Float seconds = readFloat(secondsKey, file);
+        Float seconds = readOptionalFloat(secondsKey, file);
         if (seconds != null)
             return Math.max(1F, seconds * 20F);
-        Float roundsPerMin = readFloat(roundsPerMinKey, file);
+        Float roundsPerMin = readOptionalFloat(roundsPerMinKey, file);
         if (roundsPerMin != null)
             return delayFromRoundsPerMin(roundsPerMin);
         for (String key : delayKeys)
         {
-            Float delay = readFloat(key, file);
+            Float delay = readOptionalFloat(key, file);
             if (delay != null)
                 return Math.max(1F, delay);
         }
         return current >= 0F ? current : delayFromRoundsPerMin(DEFAULT_ROUNDS_PER_MIN);
+    }
+
+    /** A number of legacy vehicle definitions declare unused delay fields with no value. */
+    private static Float readOptionalFloat(String key, TypeFile file)
+    {
+        return hasValueForConfigField(key, file) ? readFloat(key, file) : null;
     }
 
     private static float delayFromRoundsPerMin(float roundsPerMin)

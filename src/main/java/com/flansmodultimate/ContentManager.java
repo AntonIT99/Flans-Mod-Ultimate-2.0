@@ -921,7 +921,14 @@ public class ContentManager
         if (!name.equals(newName))
         {
             name = newName;
-            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
+            if (thisContentPack.isPreprocessed())
+            {
+                FlansMod.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures to resolve the conflict", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName());
+            }
+            else
+            {
+                FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
+            }
         }
 
         return name;
