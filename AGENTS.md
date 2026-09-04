@@ -2,20 +2,13 @@
 
 Nested `AGENTS.md` files add rules for their directories.
 
-## Targets
+## Task-specific workflows
 
-| Branch | Minecraft | Loader | Java | Build plugin |
-| --- | --- | --- | --- | --- |
-| `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
-| `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
-| `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
-| `26.2` | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
-
-Check the current branch and `gradle.properties` before version-specific changes.
-When porting, preserve behavior; adapt loader APIs, events, registration, networking,
-and metadata rather than applying code mechanically. `master` uses Forge and
-`mods.toml`; newer branches use NeoForge and generated metadata. The 26.x branches
-use modern render-state extraction and Mojang names; 26.2 uses feature rendering.
+- For version-dependent changes or work ported between maintained branches, read
+  `.agents/skills/flans-version-porting/SKILL.md` before editing.
+- For built-in `*_categories.json` research or maintenance, read
+  `src/main/resources/config/AGENTS.md`, then
+  `.agents/skills/flans-category-research/SKILL.md` and the references it routes to.
 
 ## Repository Rules
 

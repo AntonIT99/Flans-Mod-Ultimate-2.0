@@ -1,0 +1,3 @@
+interface:
+  display_name: "Flans Version Porting"
+  short_description: "Port changes across Forge and NeoForge branches"
