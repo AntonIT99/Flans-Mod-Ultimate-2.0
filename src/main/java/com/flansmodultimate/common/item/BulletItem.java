@@ -72,8 +72,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             else if (configType.getPenetrationAt100m() > 0F)
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATION_AT_100M), IFlanItem.formatFloat(configType.getPenetrationAt100m()) + "mm"));
 
-            //TODO: investigate the penetration system and uncomment
-            //tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER), IFlanItem.formatFloat(configType.getPenetratingPower())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER), IFlanItem.formatFloat(configType.getPenetratingPower())));
 
             if (hasLockOn())
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.GUIDANCE), Component.translatable(TooltipKeys.GUIDANCE_LOCK_ON)));

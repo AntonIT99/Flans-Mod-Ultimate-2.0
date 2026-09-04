@@ -1,9 +1,7 @@
 General:
 - Fix gloves
-- Investigate the legacy penetration system
 - Implement FMU Style Hitmarkers
-- Investigate armored vehicles resistance to blast damage
-- Update ConfigReference in Wiki
+- Check if ConfigReference in Wiki is exhaustive / up to date
 
 Game Balance:
 - Check if the kinetic damage of shells is proportional to tanks HPs
@@ -11,6 +9,7 @@ Game Balance:
 - Check the possibilities to either increase the kinetic damage or decrease the HP of vehicles.
 - Maybe a global HP modifier would be a good idea since we have a global damage modifier.
 - For kinetic damage: use fixed muzzle velocity instead of actual velocity (since not reliable).
+- Investigate armored vehicles resistance to blast damage
 
 Driveables:
 - See if shooting points on vehicles can be directly inferred from models
@@ -22,6 +21,14 @@ Driveables:
 - Collisions with players
 - y positioning of driveables (Check Tiger I of Warfare 44)
 - Improve impostor quality or increase distance for ships
+
+Categories:
+- define guidelines for armor categories
+- create armor categories
+- make aa guns categories
+- finish official packs / warfare 44 / manus pack / wolff's packs in priority
+- define guidelines for adding fictional and generic categories
+- mecha categories?
 
 Content Packs:
 - Rewrite the official packs with the new gun and vehicle systems

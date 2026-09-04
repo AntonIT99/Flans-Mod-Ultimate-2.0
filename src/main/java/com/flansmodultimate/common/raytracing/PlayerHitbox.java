@@ -8,6 +8,7 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.TeamsRound;
+import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.jetbrains.annotations.Nullable;
@@ -157,10 +158,10 @@ public class PlayerHitbox
         ItemStack legs = player.getItemBySlot(EquipmentSlot.LEGS);
         ItemStack feet = player.getItemBySlot(EquipmentSlot.FEET);
 
-        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour) ? 1.0F : headArmour.getConfigType().getPenetrationResistance();
-        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour) ? 1.0F : chestArmour.getConfigType().getPenetrationResistance();
-        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour) ? 0.65F : legsArmour.getConfigType().getPenetrationResistance();
-        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour) ? 0.35F : feetArmour.getConfigType().getPenetrationResistance();
+        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour) ? ArmorType.UNARMORED_HELMET_PENETRATION_RESISTANCE : headArmour.getConfigType().getPenetrationResistance();
+        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour) ? ArmorType.UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE : chestArmour.getConfigType().getPenetrationResistance();
+        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour) ? ArmorType.UNARMORED_LEGGINGS_PENETRATION_RESISTANCE : legsArmour.getConfigType().getPenetrationResistance();
+        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour) ? ArmorType.UNARMORED_BOOTS_PENETRATION_RESISTANCE : feetArmour.getConfigType().getPenetrationResistance();
         float totalPenetrationResistance;
 
         if (type == EnumHitboxType.HEAD)

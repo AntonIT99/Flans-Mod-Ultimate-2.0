@@ -67,7 +67,7 @@ public class BulletType extends ShootableType
     protected boolean entityHitSoundEnable;
 
     protected boolean penetrates = true;
-    @Getter
+    /** Authored penetrating power, superseded by the kinetic derivation when the round declares a mass */
     protected float penetratingPower = 1F;
     /** In % of penetration to remove per tick. */
     @Getter
@@ -321,6 +321,57 @@ public class BulletType extends ShootableType
     public boolean useNewExplosionSystem()
     {
         return explosiveMass > 0F || hasDifferentRounds();
+    }
+
+    /**
+     * Penetrating power of the first round, without any weapon-supplied velocity.
+     *
+     * @see #getPenetratingPower(int, float)
+     */
+    public float getPenetratingPower()
+    {
+        return getPenetratingPower(0, 0F);
+    }
+
+    /**
+     * Penetrating power of the round fired at the given position of the magazine.
+     *
+     * <p>Ammunition that uses the kinetic damage system, meaning it declares a projectile {@code Mass}, derives its
+     * penetrating power from muzzle kinetic energy instead of from {@code Penetration} / {@code PenetratingPower},
+     * so that mass and muzzle velocity alone determine both damage and penetration. Ammunition without a mass, and
+     * ammunition explicitly declared as {@code Penetrates false}, keeps its authored value.
+     *
+     * @param shotsFired                    position in the magazine, which selects the round of an {@code AddRound} belt
+     * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon gives the projectile, used only when neither the
+     *                                       round nor the ammunition declares one; pass 0 when no weapon is known
+     */
+    public float getPenetratingPower(int shotsFired, float weaponBulletSpeedBlocksPerTick)
+    {
+        if (!penetrates || !useKineticDamageSystem())
+            return penetratingPower;
+
+        float mass = getMass(shotsFired);
+        if (mass <= 0F)
+            return penetratingPower;
+
+        return ShootingHelper.getKineticPenetratingPower(mass, getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick));
+    }
+
+    /**
+     * @return the velocity of the round fired at the given position of the magazine, falling back to the velocity
+     * supplied by the weapon and then to the default bullet speed
+     */
+    public float getBulletSpeed(int shotsFired, float weaponBulletSpeedBlocksPerTick)
+    {
+        float speed = hasDifferentRounds() ? statsForShot(shotsFired).bulletSpeed : bulletSpeed;
+        boolean useMultiplier = speedMultiplier > 0F && speedMultiplier != 1F;
+
+        if (speed > 0F)
+            return useMultiplier ? speed * speedMultiplier : speed;
+        if (weaponBulletSpeedBlocksPerTick > 0F)
+            return weaponBulletSpeedBlocksPerTick;
+
+        return useMultiplier ? DEFAULT_BULLET_SPEED * speedMultiplier : DEFAULT_BULLET_SPEED;
     }
 
     public float getBulletSpeed(boolean enforceDefaultFallback)

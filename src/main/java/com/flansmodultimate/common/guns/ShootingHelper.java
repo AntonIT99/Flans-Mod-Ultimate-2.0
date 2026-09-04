@@ -433,9 +433,40 @@ public final class ShootingHelper
         return Double.isFinite(damage) && damage > 0D ? (float) Math.min(damage, Float.MAX_VALUE) : 0F;
     }
 
+    /**
+     * Canonical kinetic penetration formula, the counterpart of {@link #getKineticDamage} for penetrating power.
+     *
+     * <p>Penetrating power is taken as proportional to the cube root of the muzzle kinetic energy. Energy itself
+     * spans about four orders of magnitude between a pistol round and a tank shell, which would be unusable as a
+     * penetration budget; the cube root compresses that into a range where one point of power is worth roughly one
+     * unarmoured player, so a pistol round stops in the first target while an anti-materiel round passes through
+     * two and a cannon shell through a dozen. The scale is set by
+     * {@link ModCommonConfig#kineticPenetrationReference()}.
+     *
+     * @param projectileMassGrams   projectile mass in grams
+     * @param velocityBlocksPerTick projectile velocity in blocks per tick (one block = one metre, twenty ticks = one second)
+     * @return the derived penetrating power, or the legacy default when the inputs are unusable
+     */
+    public static float getKineticPenetratingPower(float projectileMassGrams, double velocityBlocksPerTick)
+    {
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
+            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+            return BulletType.DEFAULT_PENETRATING_POWER;
+
+        double velocityMetersPerSecond = velocityBlocksPerTick * 20D;
+        double energyJoules = 0.5D * (projectileMassGrams / 1000D) * velocityMetersPerSecond * velocityMetersPerSecond;
+        double power = ModCommonConfig.kineticPenetrationReference() * Math.cbrt(energyJoules);
+        return Double.isFinite(power) && power > 0D ? (float) Math.min(power, Float.MAX_VALUE) : BulletType.DEFAULT_PENETRATING_POWER;
+    }
+
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)
     {
-        if (bullet == null || type.getPenetratingPower() <= 0F || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+        if (bullet == null || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+            return gunDamage;
+
+        // The power this very bullet was fired with, which for kinetic ammunition depends on its round and gun
+        float initialPenetratingPower = bullet.getInitialPenetratingPower();
+        if (initialPenetratingPower <= 0F)
             return gunDamage;
 
         float totalPenetrationLostPercentage = 0F;
@@ -448,7 +479,7 @@ public final class ShootingHelper
             if (effectOnDamage <= 0 || effectOnDamage > 1 || loss <= 0)
                 continue;
 
-            float penetrationLostPercentage = (loss / type.getPenetratingPower());
+            float penetrationLostPercentage = (loss / initialPenetratingPower);
             if (penetrationLostPercentage == 0)
                 continue;
 
@@ -573,11 +604,21 @@ public final class ShootingHelper
         }
     }
 
+    /**
+     * @return the penetrating power a shot starts with, resolved for the round being fired and for the speed the
+     * firing weapon actually gives it
+     */
+    public static float getInitialPenetratingPower(FiredShot shot)
+    {
+        FireableGun gun = shot.getFireableGun();
+        return shot.getBulletType().getPenetratingPower(shot.getShot(), gun == null ? 0F : gun.getBulletSpeed());
+    }
+
     private static void createShot(Level level, FiredShot shot, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
 
-        HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
+        HitData hitData = new HitData(getInitialPenetratingPower(shot), 0F, false);
         List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;

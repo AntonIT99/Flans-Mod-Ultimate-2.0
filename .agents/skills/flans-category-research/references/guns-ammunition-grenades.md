@@ -28,23 +28,26 @@ the value as invented in the final report.
 
 ### Muzzle-velocity ownership
 
-Choose one authoritative side for each weapon/ammunition configuration before
-researching velocity. Never set `MuzzleVelocity` on both its gun/AA-gun category and
-its ammunition category:
+Choose the primary source for each weapon/ammunition configuration before researching
+velocity. Ammunition `MuzzleVelocity` / `BulletSpeed` takes precedence at runtime
+when present, so a gun-category `MuzzleVelocity` is a compatible fallback rather
+than a competing override:
 
 - **Gun-authoritative:** ordinary simple guns and small arms normally own
   `MuzzleVelocity` in `gun_categories.json`. Use the exact represented barrel and
-  service loading. Their ordinary ammunition categories omit the key even though
-  they still supply projectile `Mass`.
+  service loading. Their ordinary ammunition categories normally omit the key even
+  though they still supply projectile `Mass`.
 - **Ammunition-authoritative:** autocannon belts, individually selectable cannon
   shells, missiles, and other shell-based patterns own `MuzzleVelocity` in
   `bullet_categories.json`. It is the exact projectile/load velocity for the
-  represented gun or barrel. The matching gun or AA-gun category omits the key.
+  represented gun or barrel. The matching gun or AA-gun category may retain a
+  compatible fallback velocity, but it does not override the ammunition value.
 
-The authoritative velocity combines with ammunition projectile `Mass` for kinetic
-damage; keep both values consistent with the same service loading. Split categories
-when the same nominal ammunition is fired from materially different barrels whose
-velocities must differ.
+The resolved velocity combines with ammunition projectile `Mass` for kinetic damage;
+keep both values consistent with the same service loading. When both sides define a
+velocity, they must describe compatible configurations. Split categories when the
+same nominal ammunition is fired from materially different barrels whose velocities
+must differ.
 
 Projectile mass, explosive filler, and penetration belong to ammunition, not gun
 categories. Exact aliases and skins may share one gun category; split materially
@@ -149,9 +152,10 @@ A definition with `Shell True`, `Missile True`, `WeaponType Shell`, or
 - `ExplosiveMass` in kilograms TNT equivalent whenever the intended value is
   nonzero. Omit it for genuinely inert ammunition such as many APCR projectiles.
 
-These are gameplay-critical and ammunition-authoritative. Continue down the source
-ladder rather than leaving a nonzero value unset. A weaker configuration-compatible
-value is preferable to an absent value; record the fallback and any conversion.
+These are gameplay-critical and ammunition-authoritative when present. Continue down
+the source ladder rather than leaving a nonzero value unset. A weaker
+configuration-compatible value is preferable to an absent value; record the fallback
+and any conversion.
 
 ### Mixed autocannon belts with `AddRound`
 

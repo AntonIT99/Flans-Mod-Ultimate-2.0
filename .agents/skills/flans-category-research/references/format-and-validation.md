@@ -101,9 +101,10 @@ After every category edit:
    belts. Confirm category-level `FallSpeed` unless sustained flight applies.
 6. Check unit conversions explicitly: projectile kg/g, explosive filler/TNT
    equivalent, hp/PS/kW, mph/knots/km/h, feet/metres, seconds/ticks, and MOA/degrees.
-   Confirm `MuzzleVelocity` has exactly one authority for every affected
-   gun/AA-gun and ammunition pairing: gun for ordinary small arms, ammunition for
-   autocannon belts, shells, and missiles.
+   Confirm muzzle-velocity precedence for every affected gun/AA-gun and ammunition
+   pairing: ammunition `MuzzleVelocity` / `BulletSpeed` wins when present; gun
+   velocity remains a compatible fallback. Autocannon belts, shells, and missiles
+   require ammunition velocity.
 7. Validate mandatory properties against the applicable domain reference: every
    categorized gun and AA gun has nonzero `RoundsPerMin` and `Dispersion`, and every
    researched, game-sourced, or invented fallback is identified; AA-gun mass/health

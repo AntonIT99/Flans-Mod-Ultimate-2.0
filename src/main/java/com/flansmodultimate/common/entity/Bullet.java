@@ -91,6 +91,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     /** Penetration */
     protected float penetratingPower;
+    /** Penetrating power this bullet was fired with, kept so penetration losses can be expressed as a fraction of it */
+    @Getter
+    protected float initialPenetratingPower;
     /** When the bullet loses penetration, the cause and amount is saved to this list */
     @Getter
     protected final List<PenetrationLoss> penetrationLosses = new ArrayList<>();
@@ -136,7 +139,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         super(FlansMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         configType = firedShot.getBulletType();
-        penetratingPower = firedShot.getBulletType().getPenetratingPower();
+        initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
+        penetratingPower = initialPenetratingPower;
         setPos(origin);
         setArrowHeading(direction, firedShot.getSpread(), firedShot.getFireableGun().getBulletSpeed(), firedShot.getFireableGun().getSpreadPattern());
         useDesignatedDriveableTarget();
@@ -344,7 +348,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 lockedOnTo = level.getEntity(lockedOnToId);
 
             firedShot = new FiredShot(null, configType, shooter, attacker, shot);
-            penetratingPower = configType.getPenetratingPower();
+            initialPenetratingPower = configType.getPenetratingPower(shot, 0F);
+            penetratingPower = initialPenetratingPower;
         }
         catch (Exception e)
         {

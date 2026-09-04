@@ -1,1 +1,56 @@
-{}
+{
+
+    "2 cm Flakvierling 38 (Alternating Fire)": {
+        "properties": {
+            "RoundsPerMin": 800.0,
+            "Dispersion": 0.35,
+            "RealMassKg": 1518.0,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ww2_aagun_flak20mmvierling_1a",
+            "ww2_aagun_flak20mmvierling_2a"
+        ]
+    },
+
+    "2 cm Flakvierling 38 (Simultaneous Fire)": {
+        "properties": {
+            "RoundsPerMin": 200.0,
+            "Dispersion": 0.35,
+            "RealMassKg": 1518.0,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ww2_aagun_flak20mmvierling_3a",
+            "ww2_aagun_flak20mmvierling_4a"
+        ]
+    },
+
+    "8.8 cm FlaK 18/36": {
+        "properties": {
+            "RoundsPerMin": 20.0,
+            "Dispersion": 0.03,
+            "RealMassKg": 4980.0,
+            "UseRealisticVehicleHealth": "true"
+        },
+        
+        "items": [
+            "ww2_aagun_flak88_1a",
+            "ww2_aagun_flak88_2a",
+            "ww2_aagun_flak88_3a",
+            "ww2_aagun_flak88_4a"
+        ]
+    },
+
+    "Oerlikon Skyshield 35/1000 Revolver Gun": {
+        "properties": {
+            "RoundsPerMin": 1000.0,
+            "Dispersion": 0.10,
+            "RealMassKg": 3200.0,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "skyshield"
+        ]
+    }
+}

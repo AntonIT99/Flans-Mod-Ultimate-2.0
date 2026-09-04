@@ -60,7 +60,6 @@ Barrel 1 45 22 6
 Barrel 2 45 22 -6
 Barrel 3 45 18 -6
 Damage 10
-FireAlternately True
 FireAlternately False
 Health 100
 Recoil 5

@@ -75,6 +75,7 @@ public record CommonConfigSnapshot(
     boolean useNewPenetrationSystem,
     boolean enableBlockPenetration,
     double blockPenetrationModifier,
+    double kineticPenetrationReference,
 
     List<String> penetrableBlocksLines,
 
@@ -174,6 +175,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.useNewPenetrationSystem);
         buf.writeBoolean(s.enableBlockPenetration);
         buf.writeDouble(s.blockPenetrationModifier);
+        buf.writeDouble(s.kineticPenetrationReference);
 
         buf.writeVarInt(s.penetrableBlocksLines.size());
         for (String line : s.penetrableBlocksLines)
@@ -275,6 +277,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readDouble(),
             buf.readDouble(),
 
             List.copyOf(readLines(buf)),

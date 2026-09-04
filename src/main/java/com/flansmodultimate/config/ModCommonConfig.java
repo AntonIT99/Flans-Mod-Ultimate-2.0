@@ -38,6 +38,12 @@ public final class ModCommonConfig
     public static final double DEFAULT_MAX_VEHICLE_SPEED_KMH = 10000.0D;
     public static final double DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE = 5.0D;
     public static final double DEFAULT_MAX_ARMOR_IMPACT_ANGLE_DEG = 80.0D;
+    /**
+     * Default scaling coefficient of the kinetic penetration formula.
+     * Yields the legacy {@code DEFAULT_PENETRATING_POWER} of 0.7 for an 8 g projectile at 360 m/s
+     * (about 520 J, a 9x19mm service pistol round).
+     */
+    public static final double DEFAULT_KINETIC_PENETRATION_REFERENCE = 0.087D;
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
 
@@ -126,6 +132,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.BooleanValue USE_NEW_PENETRATION_SYSTEM;
     private static final ForgeConfigSpec.BooleanValue ENABLE_BLOCK_PENETRATION;
     private static final ForgeConfigSpec.DoubleValue BLOCK_PENETRATION_MODIFIER;
+    private static final ForgeConfigSpec.DoubleValue KINETIC_PENETRATION_REFERENCE;
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
 
@@ -364,6 +371,13 @@ public final class ModCommonConfig
         BLOCK_PENETRATION_MODIFIER = builder
             .comment("Default block penetration modifier power. Individual bullets will override")
             .defineInRange("blockPenetrationModifier", 0.0, 0.0, 100.0);
+        KINETIC_PENETRATION_REFERENCE = builder
+            .comment("Scaling coefficient of the kinetic penetration formula, used when a bullet uses the kinetic damage system (when 'Mass' is set).",
+                "Penetrating power = this * cbrt(muzzle kinetic energy in joules), which supersedes 'Penetration' / 'PenetratingPower'.",
+                "The default yields the legacy penetrating power of 0.7 for an 8 g projectile at 360 m/s (about 520 J, a 9x19mm service pistol round),",
+                "about 1.1 for 7.62x39mm, 1.3 for 7.62x51mm NATO, 2.2 for .50 BMG and 12.6 for an 88mm armour-piercing shell.",
+                "Raise it to make every kinetic round punch through more targets and blocks, lower it to make armour dominate.")
+            .defineInRange("kineticPenetrationReference", DEFAULT_KINETIC_PENETRATION_REFERENCE, 0.0, 100.0);
         PENETRABLE_BLOCKS_RAW = builder
             .comment("Per-block penetration data.",
                 "Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>",
@@ -560,6 +574,7 @@ public final class ModCommonConfig
             USE_NEW_PENETRATION_SYSTEM.get(),
             ENABLE_BLOCK_PENETRATION.get(),
             BLOCK_PENETRATION_MODIFIER.get(),
+            KINETIC_PENETRATION_REFERENCE.get(),
 
             List.copyOf(PENETRABLE_BLOCKS_RAW.get()),
 
@@ -706,6 +721,12 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_MINIMUM_BLAST_DISTANCE_METERS : config.minimumBlastDistanceMeters();
+    }
+
+    public static double kineticPenetrationReference()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_KINETIC_PENETRATION_REFERENCE : config.kineticPenetrationReference();
     }
 
     public static boolean forceDefenseAsModernArmor()

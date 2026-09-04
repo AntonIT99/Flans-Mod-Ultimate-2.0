@@ -54,12 +54,13 @@ conflicts, this `AGENTS.md` takes precedence.
   exception. `AddRound` belts omit top-level `Mass` because every round supplies
   it. Shells and missiles require `MuzzleVelocity`, and require
   `PenetrationAt100m` and `ExplosiveMass` whenever the intended value is nonzero.
-- Assign `MuzzleVelocity` to exactly one authoritative side per weapon/ammunition
-  configuration. For simple/small-arms guns, the gun category owns its
-  barrel-specific velocity and the ammunition category omits it. For autocannon
-  belts, shells, missiles, and other ammunition-authoritative patterns, the bullet
-  category owns the exact round/gun velocity and the gun or AA-gun category omits
-  it. Never author conflicting values on both sides.
+- Treat ammunition `MuzzleVelocity` / `BulletSpeed` as authoritative when present:
+  it takes precedence over gun velocity. For simple/small-arms guns, define the
+  barrel-specific velocity on the gun category as the normal source and fallback.
+  For autocannon belts, shells, missiles, and other ammunition-authoritative
+  patterns, define the exact round/gun velocity on the bullet category; a matching
+  gun-category velocity may remain as a compatible fallback. Never assign
+  contradictory configurations or silently rely on which side wins.
 - Every grenade that possesses an explosive charge requires `ExplosiveMass` in kg
   TNT equivalent. Do not omit it merely because no source states the TNT equivalent:
   derive it from documented charge mass and explosive composition when a defensible
