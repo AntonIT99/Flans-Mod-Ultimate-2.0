@@ -85,7 +85,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
-    protected int shootDelay;
+    protected float shootDelay;
     protected int soundTimer;
     protected int currentBarrel;
     protected int ticksSinceUsed;
@@ -749,8 +749,6 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         boolean attempted = false;
         for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
         {
-            if (shootDelay > 0)
-                break;
             if (type.isFireAlternately() && barrel != getCurrentBarrelIndex())
                 continue;
 

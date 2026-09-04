@@ -1,6 +1,6 @@
 ---
 name: flans-category-research
-description: Research, add, sort, or audit historical built-in categories for Flan's Mod Ultimate guns, ammunition, grenades, ground vehicles, and aircraft. Use for *_categories.json work, missing_shortnames.csv triage, historical-stat validation, aliases, ammunition groups, and category coverage.
+description: Research, add, sort, or audit historical built-in categories for Flan's Mod Ultimate guns, AA guns, ammunition, grenades, ground vehicles, and aircraft. Use for *_categories.json work, missing_shortnames.csv triage, historical-stat validation, aliases, ammunition groups, and category coverage.
 ---
 
 # Flans Category Research
@@ -21,7 +21,7 @@ Always read:
 Then read only the applicable domain reference:
 
 - [guns-ammunition-grenades.md](references/guns-ammunition-grenades.md) for guns,
-  magazines, bullets, cannon shells, missiles, mixed belts, or grenades.
+  AA guns, magazines, bullets, cannon shells, missiles, mixed belts, or grenades.
 - [vehicles-aircraft.md](references/vehicles-aircraft.md) for ground vehicles,
   boats represented in the vehicle system, or aircraft.
 

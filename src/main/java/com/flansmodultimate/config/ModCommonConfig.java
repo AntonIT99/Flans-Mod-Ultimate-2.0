@@ -463,8 +463,8 @@ public final class ModCommonConfig
 
         builder.push("Vehicle Damage Settings");
         REALISTIC_VEHICLE_HEALTH_SCALE = builder
-            .comment("Total HP scale for vehicles opting into UseRealisticVehicleHealth.",
-                "Total HP = scale * RealMassKg^(2/3). Legacy vehicles are unaffected.")
+            .comment("Total HP scale for vehicles and AA guns opting into UseRealisticVehicleHealth.",
+                "Total HP = scale * RealMassKg^(2/3). Legacy definitions are unaffected.")
             .defineInRange("realisticVehicleHealthScale", DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE, 0.01D, 1000D);
         MAX_ARMOR_IMPACT_ANGLE_DEG = builder
             .comment("Maximum impact angle used for effective armour thickness before grazing-angle capping.")

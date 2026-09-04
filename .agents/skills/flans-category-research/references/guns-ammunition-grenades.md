@@ -1,7 +1,7 @@
 # Guns, Ammunition, and Grenades
 
-Read this reference when editing `gun_categories.json`, `bullet_categories.json`,
-or `grenade_categories.json`.
+Read this reference when editing `gun_categories.json`, `aagun_categories.json`,
+`bullet_categories.json`, or `grenade_categories.json`.
 
 ## Guns
 
@@ -9,9 +9,9 @@ For each identifiable gun, research and normally define:
 
 | Property | Unit | Requirement |
 | --- | --- | --- |
-| `MuzzleVelocity` | metres per second | Normal service load from the represented barrel. A cartridge velocity from another barrel length is not equivalent. |
-| `RoundsPerMin` | rounds per minute | Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
-| `Dispersion` | degrees | Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
+| `MuzzleVelocity` | metres per second | Required only when the gun is velocity-authoritative: normal service load from the represented barrel. A cartridge velocity from another barrel length is not equivalent. |
+| `RoundsPerMin` | rounds per minute | Mandatory. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
+| `Dispersion` | degrees | Mandatory. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
 
 Keep shotgun dispersion representative of the full shot pattern and ordinary gun
 dispersion representative of the base weapon without movement or attachment
@@ -20,12 +20,83 @@ modifiers. `MuzzleVelocity` is internally divided by 20 to obtain blocks/tick.
 Treat 1200 RPM as the maximum ordinary supported rate because gun updates occur on
 the Minecraft tick cadence.
 
-Gun `MuzzleVelocity` combines with ammunition projectile `Mass` for kinetic damage;
-keep the two categories consistent with the same service loading.
+When reliable research and configuration-compatible game sources cannot establish
+either mandatory value, author a gameplay-coherent fallback rather than omitting
+it. Base it on the weapon type, action, calibre, era, barrel length, and comparable
+already-categorized weapons; do not derive dispersion from effective range. Label
+the value as invented in the final report.
+
+### Muzzle-velocity ownership
+
+Choose one authoritative side for each weapon/ammunition configuration before
+researching velocity. Never set `MuzzleVelocity` on both its gun/AA-gun category and
+its ammunition category:
+
+- **Gun-authoritative:** ordinary simple guns and small arms normally own
+  `MuzzleVelocity` in `gun_categories.json`. Use the exact represented barrel and
+  service loading. Their ordinary ammunition categories omit the key even though
+  they still supply projectile `Mass`.
+- **Ammunition-authoritative:** autocannon belts, individually selectable cannon
+  shells, missiles, and other shell-based patterns own `MuzzleVelocity` in
+  `bullet_categories.json`. It is the exact projectile/load velocity for the
+  represented gun or barrel. The matching gun or AA-gun category omits the key.
+
+The authoritative velocity combines with ammunition projectile `Mass` for kinetic
+damage; keep both values consistent with the same service loading. Split categories
+when the same nominal ammunition is fired from materially different barrels whose
+velocities must differ.
 
 Projectile mass, explosive filler, and penetration belong to ammunition, not gun
 categories. Exact aliases and skins may share one gun category; split materially
 different calibres, marks, actions, or barrel lengths.
+
+## AA guns
+
+For each identifiable AA gun or complete AA mounting, research and define:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RoundsPerMin` | firing events per minute | Required. Use the represented mounting's mechanical cadence and interpret it with the definition's barrel behavior as described below. This overrides `ShootDelay` using `1200 / RPM` ticks, as for guns. |
+| `Dispersion` | degrees | Required. Convert MOA with `degrees = MOA / 60`; never derive it from range. |
+| `RealMassKg` | kilograms | Required firing/operational mass of the complete represented gun and integral mounting, carriage, or shield. Exclude crew, towing vehicle, and non-integral ammunition reserves. |
+| `UseRealisticVehicleHealth` | quoted boolean | Required as `"true"`. Total entity HP becomes `realisticVehicleHealthScale * RealMassKg^(2/3)`, rounded to the nearest integer with a minimum of one. |
+
+`Health` remains the legacy fallback. If realistic health is requested without a
+valid positive `RealMassKg`, the loader reports a warning and retains authored
+`Health`. AA guns have one health pool, so unlike driveables there are no hitbox
+weights to allocate.
+
+`RoundsPerMin` describes firing events, not automatically the sum of every barrel's
+projectile output. Inspect `NumBarrels`, `FireAlternately`, and `NumBullets` in the
+actual definition:
+
+- With `FireAlternately true`, one barrel fires per event. Use the documented total
+  system rate; if the source only gives an independently cycling per-barrel rate,
+  multiply by the number of barrels when the mounting actually staggers them.
+- With `FireAlternately false`, every loaded barrel fires in the same event. If the
+  source gives a per-barrel cyclic rate, use that rate. If it gives only combined
+  projectile output, divide by `NumBarrels * NumBullets` to obtain event RPM.
+- The modeled projectile output is event RPM multiplied by `NumBullets`, and also
+  by `NumBarrels` for non-alternating fire. Do not multiply a documented combined
+  rate a second time.
+
+Minecraft permits at most one AA-gun firing event per tick, so 1200 event RPM is
+the ordinary maximum representable cadence. A simultaneous multi-barrel mounting
+may legitimately emit more than 1200 projectiles per minute while remaining at or
+below 1200 firing events per minute.
+
+When reliable research and configuration-compatible game sources cannot establish
+AA-gun `RoundsPerMin` or `Dispersion`, author a gameplay-coherent fallback rather
+than omitting it. Base it on the gun calibre, era, mounting, barrel count, firing
+mode, and comparable categorized AA guns; report it explicitly as invented.
+
+Projectile mass, muzzle velocity, explosive filler, penetration, and belt/shell
+composition belong to the compatible `bullet_categories.json` entries because
+`AAGunType` takes flight and damage data from its ammunition. Add exact
+`UseAmmoGroup` mappings when a compatible ammunition family exists, and validate
+both sides of the group. `Recoil`, reload timing, view limits, targeting, and sound
+settings are gameplay/configuration properties, not mandatory historical category
+statistics unless the task specifically includes balancing them.
 
 ## Ammunition: classify the content pattern first
 
@@ -62,7 +133,7 @@ barrel length changes it. Equivalent items with the same projectile/load may sha
 a category despite magazine capacity differences. Split tracer, AP, incendiary,
 subsonic, explosive, or otherwise materially different loadings. Do not add
 `AddRound`, `AddToAmmoGroup`, or ammo-level `MuzzleVelocity` unless the content
-actually uses one of the cannon patterns.
+actually uses an ammunition-authoritative cannon, shell, or missile pattern.
 
 ### Shells and missiles: mandatory fields
 
@@ -78,9 +149,9 @@ A definition with `Shell True`, `Missile True`, `WeaponType Shell`, or
 - `ExplosiveMass` in kilograms TNT equivalent whenever the intended value is
   nonzero. Omit it for genuinely inert ammunition such as many APCR projectiles.
 
-These are gameplay-critical. Continue down the source ladder rather than leaving a
-nonzero value unset. A weaker configuration-compatible value is preferable to an
-absent value; record the fallback and any conversion.
+These are gameplay-critical and ammunition-authoritative. Continue down the source
+ladder rather than leaving a nonzero value unset. A weaker configuration-compatible
+value is preferable to an absent value; record the fallback and any conversion.
 
 ### Mixed autocannon belts with `AddRound`
 

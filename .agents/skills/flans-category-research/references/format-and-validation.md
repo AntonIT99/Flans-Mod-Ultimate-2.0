@@ -10,9 +10,10 @@ shipped defaults copied at runtime to `config/flansmodultimate/default/`. Never 
 runtime copies under `run/`.
 
 A category applies only to the definition type named by its file. Gun short names
-belong in `gun_categories.json`; magazine, cartridge, bullet, shell, and missile
-short names belong in `bullet_categories.json`; use the analogous grenade, vehicle,
-and plane files for their types.
+belong in `gun_categories.json`, AA-gun short names in `aagun_categories.json`, and
+magazine, cartridge, bullet, shell, and missile short names in
+`bullet_categories.json`; use the analogous grenade, vehicle, and plane files for
+their types.
 
 Use `scripts/scanShortnames.py` to find supported short names absent from all
 category JSON. It scans bundled source packs and `run/flan` ZIP packs and writes
@@ -100,10 +101,16 @@ After every category edit:
    belts. Confirm category-level `FallSpeed` unless sustained flight applies.
 6. Check unit conversions explicitly: projectile kg/g, explosive filler/TNT
    equivalent, hp/PS/kW, mph/knots/km/h, feet/metres, seconds/ticks, and MOA/degrees.
-7. Validate mandatory properties against the applicable domain reference:
-   ammunition mass/gravity and shell/missile statistics; every explosive grenade's
-   nonzero `ExplosiveMass` in kg TNT equivalent; complete vehicle propulsion,
-   armour/turret/track sets; complete aircraft
+   Confirm `MuzzleVelocity` has exactly one authority for every affected
+   gun/AA-gun and ammunition pairing: gun for ordinary small arms, ammunition for
+   autocannon belts, shells, and missiles.
+7. Validate mandatory properties against the applicable domain reference: every
+   categorized gun and AA gun has nonzero `RoundsPerMin` and `Dispersion`, and every
+   researched, game-sourced, or invented fallback is identified; AA-gun mass/health
+   opt-in and multi-barrel cadence; ammunition mass/gravity and shell/missile
+   statistics; every explosive
+   grenade's nonzero `ExplosiveMass` in kg TNT equivalent; complete vehicle
+   propulsion, armour/turret/track sets; complete aircraft
    mass/power/speed/span/area/climb; and quoted realistic-weapon/health flags for
    driveables.
 8. Recheck configuration consistency and every value based only on a game, broad

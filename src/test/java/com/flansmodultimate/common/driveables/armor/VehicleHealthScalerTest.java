@@ -53,6 +53,19 @@ class VehicleHealthScalerTest
         assertFalse(noWeights.enabled());
     }
 
+    @Test
+    void singleEntityUsesTheSameMassCurveWithoutPartWeights()
+    {
+        VehicleHealthScaler.SingleResult result = VehicleHealthScaler.resolveSingle(true, 1_000F, 20F, 5D);
+        assertTrue(result.enabled());
+        assertEquals(500F, result.health(), 1.0E-3F);
+
+        VehicleHealthScaler.SingleResult fallback = VehicleHealthScaler.resolveSingle(true, null, 20F, 5D);
+        assertFalse(fallback.enabled());
+        assertEquals(20F, fallback.health());
+        assertFalse(fallback.warnings().isEmpty());
+    }
+
     private static void assertTotal(float mass, float expected)
     {
         VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, mass,

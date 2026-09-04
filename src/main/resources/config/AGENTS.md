@@ -13,7 +13,8 @@ conflicts, this `AGENTS.md` takes precedence.
 
 - Edit these shipped defaults, never runtime copies under `run/config/`.
 - Put each definition only in the category file for its supported type: guns,
-  bullets/ammunition/shells/missiles, grenades, ground vehicles, or aircraft.
+  AA guns, bullets/ammunition/shells/missiles, grenades, ground vehicles, or
+  aircraft.
 - Match `items` to the sanitized content-pack `ShortName`, written lowercase for
   new entries. Search all bundled, official, and `run/flan` content packs for exact
   aliases and duplicate representations before deciding category membership.
@@ -38,11 +39,12 @@ conflicts, this `AGENTS.md` takes precedence.
   technical documents, then specialist historical sources, broad references,
   simulation/game databases, and finally weak discovery-only sources. Cross-check
   material ambiguity and keep all values in one category configuration-consistent.
-- Do not invent values except for mandatory gameplay-critical driveable fields
-  after exhausting the documented fallback ladder. Less authoritative but
+- Do not invent values except for mandatory gameplay-critical driveable fields and
+  the mandatory `RoundsPerMin` and `Dispersion` values of guns and AA guns after
+  exhausting the documented fallback ladder. Less authoritative but
   configuration-compatible values are preferable to missing mandatory ammunition
-  fields. Disclose every game-sourced, converted, approximate, substituted, or
-  disputed value in the final report.
+  fields. A final gameplay-coherent gun or AA-gun value must fit its type, era,
+  calibre, and configuration and be disclosed as invented in the final report.
 - Preserve distinctions including projectile versus cartridge/magazine mass,
   explosive filler versus TNT equivalent, hp versus PS, loaded versus empty mass,
   barrel-dependent velocity, armour angle convention, penetration distance and
@@ -52,10 +54,22 @@ conflicts, this `AGENTS.md` takes precedence.
   exception. `AddRound` belts omit top-level `Mass` because every round supplies
   it. Shells and missiles require `MuzzleVelocity`, and require
   `PenetrationAt100m` and `ExplosiveMass` whenever the intended value is nonzero.
+- Assign `MuzzleVelocity` to exactly one authoritative side per weapon/ammunition
+  configuration. For simple/small-arms guns, the gun category owns its
+  barrel-specific velocity and the ammunition category omits it. For autocannon
+  belts, shells, missiles, and other ammunition-authoritative patterns, the bullet
+  category owns the exact round/gun velocity and the gun or AA-gun category omits
+  it. Never author conflicting values on both sides.
 - Every grenade that possesses an explosive charge requires `ExplosiveMass` in kg
   TNT equivalent. Do not omit it merely because no source states the TNT equivalent:
   derive it from documented charge mass and explosive composition when a defensible
   equivalence factor exists. Omit it only for a grenade with no explosive charge.
+- Guns and AA guns require `RoundsPerMin` and `Dispersion`. AA guns additionally
+  require `RealMassKg` and quoted `UseRealisticVehicleHealth: "true"`. Exhaust
+  research and source-compatible fallbacks first; if still unavailable, establish a
+  gameplay-coherent value and report it as invented. Interpret AA multi-barrel
+  cadence from the definition's `NumBarrels`, `FireAlternately`, and `NumBullets`;
+  ammunition supplies projectile mass, muzzle velocity, filler, and penetration.
 - Ground vehicles require mass, exactly one engine-power/thrust key, drive type,
   forward speed, and reverse speed. Armoured vehicles require the applicable hull
   and turret faces; tracked vehicles with declared track parts require both track

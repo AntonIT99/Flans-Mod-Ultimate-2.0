@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
+import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -41,12 +43,16 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
     protected float bulletSpread;
     protected boolean readDispersion;
     protected float damage;
-    protected int shootDelay;
+    protected float shootDelay;
+    protected float roundsPerMin;
     protected int shootSoundLength;
     protected int numBullets = 1;
     protected int numBarrels = 1;
     protected boolean fireAlternately;
     protected int health;
+    protected Float realMassKg;
+    protected boolean useRealisticVehicleHealth;
+    protected boolean realisticVehicleHealthEnabled;
     protected int gunnerX;
     protected int gunnerY;
     protected int gunnerZ;
@@ -93,6 +99,7 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
             readDispersion = true;
         }
         shootDelay = readValue("ShootDelay", shootDelay, file);
+        roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
         shootSoundLength = readValue("SoundLength", shootSoundLength, file);
         shootSoundLength = readValue("ShootSoundLength", shootSoundLength, file);
         fireAlternately = readValue("FireAlternately", fireAlternately, file);
@@ -135,6 +142,24 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
         readGunnerPosition(file);
+        resolveRealisticHealth(file);
+    }
+
+    private void resolveRealisticHealth(TypeFile file)
+    {
+        RealWorldSpecReader.Result specResult = RealWorldSpecReader.read(file);
+        realMassKg = specResult.spec().massKg();
+        for (String warning : specResult.warnings())
+            logError(warning, file);
+
+        useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
+        VehicleHealthScaler.SingleResult result = VehicleHealthScaler.resolveSingle(
+            useRealisticVehicleHealth, realMassKg, health, ModCommonConfig.realisticVehicleHealthScale());
+        for (String warning : result.warnings())
+            logError(warning, file);
+        realisticVehicleHealthEnabled = result.enabled();
+        if (result.enabled())
+            health = Math.max(1, Math.round(result.health()));
     }
 
     private void readBarrels(TypeFile file)
@@ -166,6 +191,12 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
     public int getAmmoSlotCount()
     {
         return shareAmmo ? 1 : numBarrels;
+    }
+
+    /** {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}. */
+    public float getShootDelay()
+    {
+        return roundsPerMin != 0F ? 1200F / roundsPerMin : shootDelay;
     }
 
     public float getGunSoundRange()

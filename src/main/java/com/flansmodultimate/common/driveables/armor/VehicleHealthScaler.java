@@ -14,6 +14,15 @@ public final class VehicleHealthScaler
 {
     private VehicleHealthScaler() {}
 
+    /** Mass-normalized health for a single entity with no per-part allocation. */
+    public record SingleResult(boolean requested, boolean enabled, float health, List<String> warnings)
+    {
+        public SingleResult
+        {
+            warnings = List.copyOf(warnings);
+        }
+    }
+
     public record Result(boolean requested, boolean enabled, float totalHp,
                          Map<EnumDriveablePart, CollisionBox> boxes,
                          Map<EnumDriveablePart, Float> allocations,
@@ -38,16 +47,10 @@ public final class VehicleHealthScaler
             return legacy(false, original, List.of());
 
         List<String> warnings = new ArrayList<>();
-        if (massKg == null || !Float.isFinite(massKg) || massKg <= 0F)
-        {
-            warnings.add("UseRealisticVehicleHealth requires a valid RealMassKg; retaining authored hitbox health");
+        Float totalHp = calculateTotalHp(massKg, healthScale, warnings,
+            "authored hitbox health", "Realistic vehicle health");
+        if (totalHp == null)
             return legacy(true, original, warnings);
-        }
-        if (!Double.isFinite(healthScale) || healthScale <= 0D)
-        {
-            warnings.add("realisticVehicleHealthScale must be finite and greater than zero; retaining authored hitbox health");
-            return legacy(true, original, warnings);
-        }
 
         double weightTotal = 0D;
         for (CollisionBox box : original.values())
@@ -61,13 +64,6 @@ public final class VehicleHealthScaler
             return legacy(true, original, warnings);
         }
 
-        double total = healthScale * Math.pow(massKg, 2D / 3D);
-        if (!Double.isFinite(total) || total <= 0D)
-        {
-            warnings.add("Realistic vehicle health calculation was invalid; retaining authored health");
-            return legacy(true, original, warnings);
-        }
-
         EnumMap<EnumDriveablePart, CollisionBox> scaled = new EnumMap<>(EnumDriveablePart.class);
         EnumMap<EnumDriveablePart, Float> allocations = new EnumMap<>(EnumDriveablePart.class);
         for (Map.Entry<EnumDriveablePart, CollisionBox> entry : original.entrySet())
@@ -75,11 +71,54 @@ public final class VehicleHealthScaler
             CollisionBox box = entry.getValue();
             if (box == null)
                 continue;
-            float hp = box.getHealth() <= 0F ? 0F : (float) (total * box.getHealth() / weightTotal);
+            float hp = box.getHealth() <= 0F ? 0F : (float) (totalHp * box.getHealth() / weightTotal);
             scaled.put(entry.getKey(), copyWithHealth(box, hp));
             allocations.put(entry.getKey(), hp);
         }
-        return new Result(true, true, (float) total, scaled, allocations, warnings);
+        return new Result(true, true, totalHp, scaled, allocations, warnings);
+    }
+
+    /**
+     * Applies the same mass^(2/3) health curve to a single-health entity such as
+     * an AA gun. Invalid inputs retain the authored legacy health.
+     */
+    public static SingleResult resolveSingle(boolean requested, Float massKg, float authoredHealth,
+                                             double healthScale)
+    {
+        if (!requested)
+            return new SingleResult(false, false, authoredHealth, List.of());
+
+        List<String> warnings = new ArrayList<>();
+        Float totalHp = calculateTotalHp(massKg, healthScale, warnings,
+            "authored health", "Realistic health");
+        if (totalHp == null)
+            return new SingleResult(true, false, authoredHealth, warnings);
+        return new SingleResult(true, true, totalHp, warnings);
+    }
+
+    private static Float calculateTotalHp(Float massKg, double healthScale, List<String> warnings,
+                                          String fallbackDescription, String calculationDescription)
+    {
+        if (massKg == null || !Float.isFinite(massKg) || massKg <= 0F)
+        {
+            warnings.add("UseRealisticVehicleHealth requires a valid RealMassKg; retaining "
+                + fallbackDescription);
+            return null;
+        }
+        if (!Double.isFinite(healthScale) || healthScale <= 0D)
+        {
+            warnings.add("realisticVehicleHealthScale must be finite and greater than zero; retaining "
+                + fallbackDescription);
+            return null;
+        }
+
+        double total = healthScale * Math.pow(massKg, 2D / 3D);
+        if (!Double.isFinite(total) || total <= 0D)
+        {
+            warnings.add(calculationDescription + " calculation was invalid; retaining " + fallbackDescription);
+            return null;
+        }
+        return (float) total;
     }
 
     private static Result legacy(boolean requested, Map<EnumDriveablePart, CollisionBox> boxes,

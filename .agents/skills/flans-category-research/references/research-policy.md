@@ -65,10 +65,12 @@ terms when useful.
 
 These are preferred starting points, not automatic authorities:
 
-- Guns: original weapon manuals; `modernfirearms.net` for actions, dimensions,
-  barrel lengths, and cyclic rates; `forgottenweapons.com` for variant and
-  mechanical identification; `navweaps.com` for autocannon, AA, naval, and
-  larger-calibre weapons.
+- Guns and AA guns: original weapon and mounting manuals; `modernfirearms.net` for
+  actions, dimensions, barrel lengths, and cyclic rates; `forgottenweapons.com`
+  for variant and mechanical identification; `navweaps.com` for autocannon, AA,
+  naval, and larger-calibre weapons. For AA-gun mass, identify the complete
+  represented mounting and its firing/operational configuration rather than using
+  barrel or projectile weight.
 - Ammunition: original firing tables and ordnance handbooks;
   `panzerworld.com` for documented WWII tank/anti-tank ammunition;
   `quarryhs.co.uk` for heavy machine-gun and aircraft/autocannon ammunition;
@@ -135,14 +137,16 @@ matching property exists—for example, prefer `RealEnginePowerPS` for a PS sour
 Do not calculate missing historical penetration from calibre, kinetic energy, or a
 game formula merely to fill a field.
 
-Generally omit an unresolved optional value instead of inventing it. Dispersion and
-fuse timing remain optional when no defensible value exists. Mandatory ammunition,
-explosive-grenade, and driveable values follow their domain reference: continue down
-the source ladder, using a configuration-compatible game value where necessary.
-Only mandatory driveable values may use a final gameplay-coherent estimate after
-every source tier fails. Such estimates must fit the class, era, and neighboring
-categories and must be reported explicitly; never describe them as historically
-verified.
+Generally omit an unresolved optional value instead of inventing it. Fuse timing
+remains optional when no defensible value exists. `RoundsPerMin` and `Dispersion`
+are mandatory for every categorized gun and AA gun: continue down the source ladder,
+using a configuration-compatible game value where necessary. If that fails, author a
+final gameplay-coherent value based on the weapon's type, era, calibre, action or
+mounting, barrel configuration, and neighboring categories. Never present that value
+as historically verified; identify it as invented in the final report. Mandatory
+ammunition, explosive-grenade, and driveable values otherwise follow their domain
+reference. Only mandatory driveable values may also use a final gameplay-coherent
+estimate after every source tier fails, with the same explicit disclosure.
 
 For War Thunder ammunition fallback, open the carrying vehicle's page, follow
 **Armaments** to the gun and **Available ammunition**, then open the exact munition.
