@@ -24,6 +24,7 @@
 
     "Kugelrohrhandgranate": {
         "properties": {
+            "ExplosiveMass": "0.060",
             "FragType": "STD_FRAG",
             "Fuse": 140
         },
@@ -34,6 +35,7 @@
 
     "M18A1 Claymore Mine": {
         "properties": {
+            "ExplosiveMass": "0.934",
             "FragType": "HIGH_FRAG"
         },
         "items": [
@@ -43,6 +45,7 @@
 
     "M67 Fragmentation Hand Grenade": {
         "properties": {
+            "ExplosiveMass": "0.205",
             "FragType": "HIGH_FRAG"
         },
         "items": [
@@ -85,6 +88,7 @@
 
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
+            "ExplosiveMass": "1.179",
             "FragType": "DEFAULT"
         },
         "items": [
@@ -103,16 +107,6 @@
         ]
     },
 
-    "Satchel": {
-        "properties": {
-            "ExplosiveMass": "3.0",
-            "FragType": "DEFAULT"
-        },
-        "items": [
-            "44_satchelcharge"
-        ]
-    },
-
     "S-Mine 35": {
         "properties": {
             "ExplosiveMass": "0.182",
@@ -121,6 +115,16 @@
         "items": [
             "smine35",
             "44_smine"
+        ]
+    },
+
+    "Satchel": {
+        "properties": {
+            "ExplosiveMass": "3.0",
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_satchelcharge"
         ]
     },
 
