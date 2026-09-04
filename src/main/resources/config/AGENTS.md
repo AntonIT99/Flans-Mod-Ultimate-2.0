@@ -162,7 +162,7 @@ that yields a usable figure: primary manual, specialist reference, broad
 reference, game database, then the fallbacks named above, then a gameplay-coherent
 estimate. The key is never left unset.
 
-**Ammunition — every bullet category must define:**
+**Ammunition — every bullet category except an `AddRound` mixed belt must define:**
 
 * `Mass`, using projectile mass rather than cartridge, case or magazine mass;
 * `FallSpeed: 1.0`, except for a self-propelled projectile that can sustain its
@@ -176,6 +176,11 @@ Definitions with `Shell True`, `Missile True`, `WeaponType Shell` or
 * `PenetrationAt100m`, except when the intended value is zero;
 * `ExplosiveMass`, except when the intended value is zero, as with many inert
   APCR projectiles.
+
+For a mixed belt authored with `AddRound`, those three values and `Mass` are
+mandatory in each `AddRound` element rather than as top-level properties: each
+shot can have a different mass, velocity, filler and penetration. The
+category-level `FallSpeed` requirement still applies.
 
 These values are gameplay-critical. Continue down the source ladder rather than
 leaving a nonzero value unset. If historical sources do not yield a usable figure,
@@ -593,10 +598,10 @@ and `HE`, provided each name remains one token. Record an inferred belt composit
 in the task summary.
 
 Every round must provide all five fields after the name (six tokens in total) so
-zero values are deliberate and the belt is auditable. The category must still
-provide top-level `Mass` and normally `FallSpeed: 1.0`; per-round mass remains
-mandatory because the active shot reads the selected `AddRound` stats. `AddRound`
-lines accumulate with lines already present in the definition or another category, so
+zero values are deliberate and the belt is auditable. An `AddRound` category does
+not need top-level `Mass`, because the active shot reads its own per-round mass;
+the category must still normally provide `FallSpeed: 1.0`. `AddRound` lines
+accumulate with lines already present in the definition or another category, so
 inspect the affected ammo definitions and avoid accidentally appending a second
 belt. Do not use top-level `Mass`, `ExplosiveMass`, `MuzzleVelocity`, or
 `PenetrationAt100m` as a substitute for per-round stats.
@@ -822,9 +827,11 @@ After every category edit:
 5. Check unit conversions explicitly, especially kg versus g, hp versus PS, TNT
    equivalent versus filler mass, seconds versus ticks, and MOA versus degrees.
 6. Check every mandatory key of **Completeness over omission**. Ammunition: every
-   category has `Mass` and normally `FallSpeed: 1.0`; shells and missiles also have
-   nonzero `MuzzleVelocity`, `PenetrationAt100m` and `ExplosiveMass` wherever those
-   values are intended to be nonzero. Ground vehicles:
+   category except an `AddRound` mixed belt has `Mass` and normally `FallSpeed: 1.0`;
+   every `AddRound` line has its own mass and normally its category has
+   `FallSpeed: 1.0`; shells and missiles also have nonzero `MuzzleVelocity`,
+   `PenetrationAt100m` and `ExplosiveMass` wherever those values are intended to
+   be nonzero. Ground vehicles:
    mass, one power key, `DriveType`, forward and reverse speed; armoured ones also
    the five hull faces, turreted ones also the four turret faces, tracked ones also
    `PartArmorMm` for `leftTrack` and `rightTrack`. Aircraft: mass, one power or

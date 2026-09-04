@@ -2148,7 +2148,7 @@
         ]
     },
 
-    "Sd.Kfz. 222 leichter Panzerspahwagen Ausf. A": {
+    "Sd.Kfz. 222 leichter Panzerspähwagen Ausf. A": {
         "properties": {
             "RealMassKg": 4800,
             "RealEnginePowerPS": 75,
@@ -2193,31 +2193,7 @@
         ]
     },
 
-    "Sd.Kfz. 251/1 Ausf. D": {
-        "properties": {
-            "RealMassKg": 7000,
-            "RealEnginePowerPS": 100,
-            "RealMaxSpeedKmh": 52.5,
-            "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": 9,
-            "ArmorFrontMm": 14.5,
-            "ArmorSideMm": 8,
-            "ArmorRearMm": 8,
-            "ArmorTopMm": 0,
-            "ArmorBottomMm": 5.5,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
-            "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
-        },
-        "items": [
-            "sdkfz251d",
-            "sdkfz251dambush",
-            "sdkfz251ddesert",
-            "sdkfz251dsnow"
-        ]
-    },
-
-    "Sd.Kfz. 251/1 mittlerer Schutzenpanzerwagen": {
+    "Sd.Kfz. 251/1 mittlerer schützenpanzerwagen": {
         "properties": {
             "RealMassKg": 7000,
             "RealEnginePowerPS": 100,
@@ -2240,7 +2216,11 @@
         "items": [
             "hanomag",
             "sdkfz251",
-            "44_sdkfz251hanomag"
+            "44_sdkfz251hanomag",
+            "sdkfz251d",
+            "sdkfz251dambush",
+            "sdkfz251ddesert",
+            "sdkfz251dsnow"
         ]
     },
 
@@ -2387,7 +2367,7 @@
         ]
     },
 
-    "Sturmgeschutz III Ausf. G": {
+    "Sturmgeschütz III Ausf. G": {
         "properties": {
             "RealMassKg": 23900,
             "RealEnginePowerPS": 265,
@@ -2410,7 +2390,7 @@
         ]
     },
 
-    "Sturmgeschutz IV": {
+    "Sturmgeschütz IV": {
         "properties": {
             "RealMassKg": 25900,
             "RealEnginePowerPS": 265,
@@ -2433,7 +2413,7 @@
         ]
     },
 
-    "Sturmmorserwagen 606/4 mit 38 cm RW 61": {
+    "Sturmmörserwagen 606/4 mit 38 cm RW 61": {
         "properties": {
             "RealMassKg": 65000,
             "RealEnginePowerPS": 650,

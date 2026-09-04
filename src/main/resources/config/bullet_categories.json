@@ -651,14 +651,25 @@
         ]
     },
 
-    "12.7x108mm": {
+    "12.7x108mm B-32 API": {
         "properties": {
             "Mass": 48.0,
             "FallSpeed": 1.0,
-            "PenetrationAt100m": 22
+            "PenetrationAt100m": 20
         },
         "items": [
-            "44_berezinubmgammo",
+            "44_berezinubmgammo"
+        ]
+    },
+
+    "12.7x108mm BZT-44 API-T": {
+        "properties": {
+            "Mass": 44.0,
+            "MuzzleVelocity": 818,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 20
+        },
+        "items": [
             "twelvecalru"
         ]
     },
@@ -750,7 +761,10 @@
 
     "66mm M72A2/A3 LAW HEAT Rocket": {
         "properties": {
-            "Mass": 1800.0
+            "Mass": 1800.0,
+            "MuzzleVelocity": 145,
+            "PenetrationAt100m": 300,
+            "ExplosiveMass": 0.337
         },
         "items": [
             "m72lawammo"
@@ -917,6 +931,9 @@
         "properties": {
             "AddToAmmoGroup": "155mm/60 3rd Year Type",
             "Mass": 55870,
+            "MuzzleVelocity": 920,
+            "PenetrationAt100m": 39,
+            "ExplosiveMass": 3.39,
             "FallSpeed": 1.0
         },
         "items": [
@@ -929,6 +946,9 @@
         "properties": {
             "AddToAmmoGroup": "155mm/60 3rd Year Type",
             "Mass": 55870,
+            "MuzzleVelocity": 920,
+            "PenetrationAt100m": 311,
+            "ExplosiveMass": 1.21,
             "FallSpeed": 1.0
         },
         "items": [
@@ -966,6 +986,8 @@
             "AddToAmmoGroup": "305mm/45 Mark 5",
             "Mass": 394600,
             "MuzzleVelocity": 823,
+            "PenetrationAt100m": 540,
+            "ExplosiveMass": 10.2,
             "FallSpeed": 1.0
         },
         "items": [
@@ -979,6 +1001,8 @@
             "AddToAmmoGroup": "305mm/45 Mark 5",
             "Mass": 394600,
             "MuzzleVelocity": 823,
+            "PenetrationAt100m": 540,
+            "ExplosiveMass": 9.52,
             "FallSpeed": 1.0
         },
         "items": [
@@ -992,6 +1016,8 @@
             "AddToAmmoGroup": "343mm/45 Mark VI",
             "Mass": 635000,
             "MuzzleVelocity": 745,
+            "PenetrationAt100m": 585,
+            "ExplosiveMass": 22.22,
             "FallSpeed": 1.0
         },
         "items": [
@@ -1005,6 +1031,8 @@
             "AddToAmmoGroup": "343mm/45 Mark VI",
             "Mass": 635000,
             "MuzzleVelocity": 745,
+            "PenetrationAt100m": 81,
+            "ExplosiveMass": 88.11,
             "FallSpeed": 1.0
         },
         "items": [
@@ -1018,6 +1046,8 @@
             "AddToAmmoGroup": "356mm/45 Mark 10",
             "Mass": 680400,
             "MuzzleVelocity": 792,
+            "PenetrationAt100m": 706,
+            "ExplosiveMass": 8.84,
             "FallSpeed": 1.0
         },
         "items": [
@@ -1031,6 +1061,8 @@
             "AddToAmmoGroup": "356mm/45 Mark 10",
             "Mass": 578000,
             "MuzzleVelocity": 834,
+            "PenetrationAt100m": 88,
+            "ExplosiveMass": 40.21,
             "FallSpeed": 1.0
         },
         "items": [
@@ -1043,6 +1075,8 @@
             "AddToAmmoGroup": "356mm/45 Mark 10",
             "Mass": 578000,
             "MuzzleVelocity": 834,
+            "PenetrationAt100m": 88,
+            "ExplosiveMass": 40.21,
             "FallSpeed": 1.0
         },
         "items": [
