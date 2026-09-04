@@ -2,13 +2,15 @@ General:
 - Fix gloves
 - Implement FMU Style Hitmarkers
 - Check if ConfigReference in Wiki is exhaustive / up to date
+- Check if all FMU featues are implemented in the mod
+- Implement TaP Flan's Mod Features
 
 Game Balance:
-- Check if the kinetic damage of shells is proportional to tanks HPs
-- Check balance for the blast/frag radius/damage (seems ok)
-- Check the possibilities to either increase the kinetic damage or decrease the HP of vehicles.
-- Maybe a global HP modifier would be a good idea since we have a global damage modifier.
+- Check if the kinetic damage of shells is proportional to tanks HPs. Check the possibilities to either increase the kinetic damage or decrease the HP of vehicles.
 - For kinetic damage: use fixed muzzle velocity instead of actual velocity (since not reliable).
+- Maybe a global HP modifier would be a good idea since we have a global damage modifier.
+
+- Check balance for the blast/frag radius/damage (seems ok)
 - Investigate armored vehicles resistance to blast damage
 
 Driveables:
@@ -23,11 +25,9 @@ Driveables:
 - Improve impostor quality or increase distance for ships
 
 Categories:
-- define guidelines for armor categories
 - create armor categories
-- make aa guns categories
-- finish official packs / warfare 44 / manus pack / wolff's packs in priority
 - define guidelines for adding fictional and generic categories
+- finish official packs / warfare 44 / manus pack / wolff's packs in priority
 - mecha categories?
 
 Content Packs:

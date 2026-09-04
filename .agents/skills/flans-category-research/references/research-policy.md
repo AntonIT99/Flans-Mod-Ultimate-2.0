@@ -24,6 +24,12 @@ identifiable; purely fictional, fantasy, science-fiction, joke, or gameplay-only
 items; or identities that remain genuinely unknowable after inspecting localization,
 definitions, models, descriptions, neighboring files, and consumers.
 
+This scope restriction does not apply to `armor_categories.json`. Armor categories
+are balance assignments covering every armor item, generic and fictional included,
+and they take no values from this policy at all. Use only the identity rules above
+and the source ladder below, and only to establish an item's material and
+construction. See [armor.md](armor.md).
+
 Sparse data is not itself grounds for skipping a real item. For an undocumented
 sub-variant, use the nearest documented sibling configuration, adjust properties
 known to differ, make the category label honest about the basis where needed, and

@@ -1,1 +1,2143 @@
-{}
+{
+
+    "Ancient And Medieval Body Armour (Boots Slot)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.39",
+            "ArmorPoints": 2,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "cuirassier",
+            "footcombatarmor",
+            "kuyak",
+            "latercuirass",
+            "mamluklamellar",
+            "nazigothic",
+            "qingbrigandineheavymanjuu",
+            "wingedhussarnu",
+            "yoroilate",
+            "yuanlamellarheavy"
+        ]
+    },
+
+    "Ancient And Medieval Body Armour (Cross-Pack Slot Variants)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 2,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "byzantinecataphract",
+            "loricasegmentata"
+        ]
+    },
+
+    "Ancient And Medieval Face Armour (Legs Slot)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.72",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "mempo"
+        ]
+    },
+
+    "Ancient And Medieval Heavy Cataphract Armour": {
+        "properties": {
+            "Defence": "0.21",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 7,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "byzantinearmor",
+            "cataphractarii",
+            "cataphractarmor",
+            "dendrapanoply",
+            "loricadacia",
+            "palmyraguard",
+            "parthiancataphract"
+        ]
+    },
+
+    "Ancient And Medieval Helmet": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "achaemenidhelmet",
+            "ancientcorinthian",
+            "assyriahelm",
+            "attichelm",
+            "attichelmpraetorian",
+            "aurelianhelm",
+            "boarhelm",
+            "burghcastle",
+            "byzantinecataphracthelmet",
+            "caesarhelmet",
+            "coolus",
+            "corinthian",
+            "cuirassierhelm",
+            "cumanhelm",
+            "footcombathelm",
+            "frankishspangenhelm",
+            "gallichelm",
+            "greekkettle",
+            "lamellenhelm",
+            "lobsterpot",
+            "montefortino",
+            "montefortinocelt",
+            "niderbieberhelm",
+            "nupolishduck",
+            "palmyrahelm",
+            "phrygian",
+            "phrygianbeard",
+            "qinghelm",
+            "ridgehelm",
+            "romanauxiliahelmet",
+            "romancenturionhelmet",
+            "romanlegionaireancientblackhelmet",
+            "romanlegionaireancientredhelmet",
+            "romanlegionairehelmet",
+            "romanpraetorianhelmet",
+            "romansigniferhelmet",
+            "romanspangenhelm",
+            "romanveliteshelmet",
+            "sallet",
+            "sassanidsuperhelmet",
+            "seapeoplehelm",
+            "shelomhelm",
+            "snailhelm",
+            "spangenhelm",
+            "triarii",
+            "veiledhelm",
+            "veiledkkk",
+            "yoroikabutolate",
+            "yuanlamellarhelmheavy"
+        ]
+    },
+
+    "Ancient And Medieval Mail Or Lamellar Armour": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "MoveSpeedModifier": "0.99"
+        },
+        "items": [
+            "achaemenidscale",
+            "assyrialamellar",
+            "aurelianscale",
+            "byrnie",
+            "gaulmail",
+            "hamata",
+            "hamatabyzantine",
+            "hastati",
+            "linothorax",
+            "palmyramail",
+            "romanarcherauxiliaarmor",
+            "romanhastatiarmor",
+            "romanloricahamata",
+            "romantriariiarmor",
+            "romanvelitesarmor",
+            "romanvigilesarmor",
+            "sassanidheavyinfantry",
+            "sealobster"
+        ]
+    },
+
+    "Ancient And Medieval Padded Armour": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "buffcoat",
+            "byzanpadding",
+            "hussarpadding",
+            "islamicpadding",
+            "jappadding",
+            "mingpaddinggrey",
+            "steppepad"
+        ]
+    },
+
+    "Ancient And Medieval Plate Cuirass": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 6,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "avararmor",
+            "byzanavararmor",
+            "byzantinelightarmor",
+            "caesararmor",
+            "loricasegmentatapraetorian",
+            "musclecuirassarchaic",
+            "musclecuirasselite",
+            "romancenturionarmor",
+            "romanloricasegmentata",
+            "romanlpraetorianarmor",
+            "romanlpraetorianchainarmor",
+            "romansigniferarmor"
+        ]
+    },
+
+    "Diving Suit": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "Submarine": "true"
+        },
+        "items": [
+            "divingsuit"
+        ]
+    },
+
+    "Gas Mask And Sealed Respirator Helmet": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.25",
+            "ArmorPoints": 2,
+            "Toughness": 0,
+            "SmokeProtection": "true"
+        },
+        "items": [
+            "germangasmask",
+            "germanstahlhelmgasmask",
+            "germanstahlhelmgasmaskblack",
+            "germanstahlhelmgasmaskfeldgrau",
+            "russiangasmask"
+        ]
+    },
+
+    "Generic Cloth Headgear": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "1914austrianhussarhat",
+            "1914bulgarianncocap",
+            "1914bulgariansoldiercap",
+            "1914doncossackcap",
+            "1914doncossackcapnco",
+            "1914frontovikofficercap",
+            "1914frontovikpapakha",
+            "1914frontovikpapakhaopen",
+            "1914frontoviksoldiercap",
+            "1914hussarhat",
+            "1914infanterieofficercap",
+            "1914infanteriesoldiercap",
+            "1914irapilothat",
+            "1914kukcap",
+            "1914kukkriegsmarinehat",
+            "1914kukofficerhat",
+            "1914kukpolishcap",
+            "1914kuksoldiercapwinter",
+            "1914latvianncocap",
+            "1914latviansoldiercap",
+            "1914luftstreitkraftepilothat",
+            "1914romaniancavalryhat",
+            "1914romanianhat",
+            "1914romanianncohat",
+            "1914russianmilitiacap",
+            "1914russianmilitiapapakha",
+            "1914russiannavalinfantryhat",
+            "1914serbiansoldierhat",
+            "1916greeksoldiercap",
+            "1916kukcap",
+            "44_germanfeldgrausidecap",
+            "44_germanm43feldgrauhat",
+            "44_germanm43leibermusterhat",
+            "44_germanofficerhat",
+            "44_germanofficerhatfeldgrau",
+            "44_japanesetype3fieldcap",
+            "achaemenidheadwrap",
+            "americanallssschirmmuetze",
+            "balaclava",
+            "britadmiralcapdark",
+            "britishmaroonberet",
+            "civiccrown",
+            "cossackhat",
+            "deutschadmiralcapdark",
+            "evidenzbureauhat",
+            "fancytophat",
+            "fedora",
+            "fedoravar1",
+            "feldmutzem38",
+            "feldmutzem43",
+            "felthat",
+            "foragecap",
+            "foragecapbutternut",
+            "foragecapchasseur",
+            "foragecapgray",
+            "foragecapgrey",
+            "foragecapusmc",
+            "germanallssschirmmuetze",
+            "germanassaulthat",
+            "germanassaulthatoak",
+            "germanassaulthatpea",
+            "germanassaulthatsplinter",
+            "germanassaulthatswamp",
+            "germanfeldmuetzeblackvolkssturm",
+            "germanfeldmuetzem38",
+            "germanfeldmuetzem38black",
+            "germanfeldmuetzem38desert",
+            "germanfeldmuetzem38feldgrau",
+            "germanfeldmuetzem38forest",
+            "germanfeldmuetzem38luftwaffe",
+            "germanfeldmuetzem38snow",
+            "germanfeldmuetzem43",
+            "germanfeldmuetzem43black",
+            "germanfeldmuetzem43desert",
+            "germanfeldmuetzem43feldgrau",
+            "germanfeldmuetzem43feldgraurussia",
+            "germanfeldmuetzem43forest",
+            "germanfeldmuetzem43luftwaffe",
+            "germanfeldmuetzem43russia",
+            "germanfeldmuetzem43snow",
+            "germanfuehrerschirmmuetze",
+            "germanfuehrerschirmmuetze2",
+            "germangeneralschirmmuetze",
+            "germangeneralschirmmuetzefeldgrau",
+            "germangeneralschirmmuetzeluftwaffe",
+            "germanofficerhat",
+            "germanrommelschirmmuetze",
+            "germanschirmmuetze",
+            "germanschirmmuetzedesert",
+            "germanschirmmuetzefeldgrau",
+            "germanschirmmuetzeluftwaffe",
+            "germansdschirmmuetze",
+            "germansniperhat",
+            "germanssfeldmuetzem38",
+            "germanssfeldmuetzem38black",
+            "germanssfeldmuetzem38feldgrau",
+            "germanssfeldmuetzem38forest",
+            "germanssfeldmuetzem38snow",
+            "germanssfeldmuetzem43",
+            "germanssfeldmuetzem43belgian",
+            "germanssfeldmuetzem43black",
+            "germanssfeldmuetzem43feldgrau",
+            "germanssfeldmuetzem43feldgraubelgian",
+            "germanssfeldmuetzem43feldgraufrench",
+            "germanssfeldmuetzem43feldgraulatvia",
+            "germanssfeldmuetzem43feldgraurussia",
+            "germanssfeldmuetzem43forest",
+            "germanssfeldmuetzem43french",
+            "germanssfeldmuetzem43latvia",
+            "germanssfeldmuetzem43russia",
+            "germanssfeldmuetzem43snow",
+            "germanssschirmmuetze",
+            "germanssschirmmuetzeblack",
+            "germanssschirmmuetzefeldgrau",
+            "hunhat",
+            "ijnadmiralcapdark",
+            "japanesehat",
+            "japaneseofficerhat",
+            "kukmilitiacap",
+            "nkvdcap",
+            "nkvdhat",
+            "nlfvccapnco",
+            "norwayhat",
+            "nursehat",
+            "persianhat",
+            "policehat",
+            "pp_afrikakorpscap",
+            "pp_afrikakorpsofficercap",
+            "pp_britishofficerhat",
+            "ppgendarmeriecalot",
+            "ppgendarmeriecasquette",
+            "romancrown",
+            "scythiancap",
+            "semenovskihat",
+            "senboufieldcap",
+            "shapurcrown",
+            "ssfez",
+            "strawhat",
+            "suomim36fieldcap",
+            "ushanka",
+            "usnadmiralcap",
+            "usndixiecap",
+            "vcasianhat",
+            "vcbandana",
+            "vcbandana2",
+            "vcchineesehat",
+            "vccolonialhat",
+            "wh40k_armor_cadiacamo_1a",
+            "wh40k_armor_cadiahat_1a",
+            "wh40k_armor_catachanbandana_1a",
+            "wh40k_armor_commissarhat_1a",
+            "wolfskin"
+        ]
+    },
+
+    "Generic Cloth Uniform (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "1910infanterieofficer",
+            "1910infanteriesoldier",
+            "1914austrianhussar",
+            "1914bulgariannco",
+            "1914bulgariansoldier",
+            "1914doncossack",
+            "1914frontovikofficer",
+            "1914frontoviksoldier",
+            "1914frontoviksoldier2",
+            "1914hussar",
+            "1914infanterieofficer",
+            "1914infanteriesoldier",
+            "1914irapilot",
+            "1914kukkriegsmarine",
+            "1914kukofficer",
+            "1914kuksoldier",
+            "1914latviannco",
+            "1914latviansoldier",
+            "1914luftstreitkraftepilot",
+            "1914romanian",
+            "1914romaniancavalry",
+            "1914romaniannco",
+            "1914russiannavalinfantry",
+            "1914serbiansoldier",
+            "1916greeksoldier",
+            "1916infanterieofficer",
+            "1916infanteriesoldier",
+            "1916kukassaultsoldier",
+            "1916kukconnor",
+            "1916kukersatzgendarm",
+            "1916kukfeldgendarmnco",
+            "1916kukofficer",
+            "1916kuksoldier",
+            "44_americanm1941combatfielduniformchest",
+            "44_americanm1943combatfielduniformchest",
+            "44_americanm42airbornechest",
+            "44_americanmpofficerchest",
+            "44_british40patternchest",
+            "44_fallschirmjagercamochest",
+            "44_germanofficerchest",
+            "44_germanpalmenmusterchest",
+            "44_germanpzgrenadierfeldgrauchest",
+            "44_germanpzgrenadierleibermusterchest",
+            "44_germansplittermustercamosmock",
+            "44_germansumpftarnm43camosmock",
+            "44_germansumpftarnm45chest",
+            "44_japanesetype98chestkhaki",
+            "44_sovietsummerobr43chest",
+            "44_waffenm42camochest",
+            "44_waffenm44camochest",
+            "adolf",
+            "americanassaultchest",
+            "americanassaultchestblack",
+            "americanassaultchestbrown",
+            "americanassaultchestgreen",
+            "americanassaultchestkhaki",
+            "americanchest",
+            "americancoat",
+            "americanengineerchest",
+            "americanengineerchestblack",
+            "americanengineerchestbrown",
+            "americanengineerchestgreen",
+            "americanengineerchestkhaki",
+            "americanmedicchest",
+            "americanmedicchestblack",
+            "americanmedicchestbrown",
+            "americanmedicchestgreen",
+            "americanmedicchestkhaki",
+            "americanofficerchest",
+            "americansniperchest",
+            "americansniperchestfrog",
+            "americansnowcoat",
+            "americansupportchest",
+            "americansupportchestblack",
+            "americansupportchestbrown",
+            "americansupportchestgreen",
+            "americansupportchestkhaki",
+            "americanww1coat",
+            "austriangrenschutz",
+            "austrianww1coat",
+            "belgiancoat",
+            "blacksweater",
+            "britishairborne",
+            "britishcoat",
+            "britishdesertcoat",
+            "britishww1coat",
+            "britww2",
+            "butternutuniform",
+            "celtwarrior",
+            "celtwarriorwoman",
+            "chang",
+            "charles",
+            "chinesecoat",
+            "chinesekmt",
+            "chinesekmtblue",
+            "civilianclothes11",
+            "civilianclothes12",
+            "civilianclothes13",
+            "civilianclothes21",
+            "civilianclothes22",
+            "civilianclothes23",
+            "comfortwoman",
+            "coronachan",
+            "cossackbody",
+            "csagreycoatuniform",
+            "csagreyuniform",
+            "csamilitia",
+            "csauniformsgtkentucky",
+            "detainee",
+            "dripler",
+            "driplercensored",
+            "dutchcoat",
+            "einstein",
+            "evidenzbureau",
+            "fancycivi1",
+            "fancycivi1var1",
+            "fancycivi1var2",
+            "fancycivi2",
+            "fancycivi2var1",
+            "fancycivi3",
+            "fancycivi4",
+            "fancycivi4var1",
+            "fancycivi4var2",
+            "fdr",
+            "finnishcoat",
+            "finnishsnowcoat",
+            "franceuniform",
+            "french1914coat",
+            "french1915coat",
+            "frenchcoat",
+            "germ",
+            "germanairborne",
+            "germanairbornecamo",
+            "germanallsscoatbrigadefuehrer",
+            "germanallsscoatgruppenfuehrer",
+            "germanallsscoathauptscharfuehrer",
+            "germanallsscoathauptsturmfuehrer",
+            "germanallsscoatmann",
+            "germanallsscoatoberfuehrer",
+            "germanallsscoatobergruppenfuehrer",
+            "germanallsscoatoberscharfuehrer",
+            "germanallsscoatoberstgruppenfuehrer",
+            "germanallsscoatobersturmbannfuehrer",
+            "germanallsscoatobersturmfuehrer",
+            "germanallsscoatrottenfuehrer",
+            "germanallsscoatscharfuehrer",
+            "germanallsscoatstandartenfuehrer",
+            "germanallsscoatsturmbannfuehrer",
+            "germanallsscoatsturmmann",
+            "germanallsscoatsturmscharfuehrer",
+            "germanallsscoatunterscharfuehrer",
+            "germanallsscoatuntersturmfuehrer",
+            "germanassaultchest",
+            "germanassaultchestleiber",
+            "germanassaultchestoak",
+            "germanassaultchestpea",
+            "germanassaultchestsplinter",
+            "germanassaultchestswamp",
+            "germanchest",
+            "germancoat",
+            "germancoatfeldwebel",
+            "germancoatfeldwebelfeldgrau",
+            "germancoatfliegerfallschirmjaeger",
+            "germancoatfuehrer",
+            "germancoatfuehrer2",
+            "germancoatgefreiter",
+            "germancoatgefreiterfeldgrau",
+            "germancoatgefreiterveteran",
+            "germancoatgefreiterveteranfeldgrau",
+            "germancoathauptfeldwebel",
+            "germancoathauptfeldwebelfeldgrau",
+            "germancoathauptmann",
+            "germancoathauptmannfeldgrau",
+            "germancoatleutnant",
+            "germancoatleutnantdesert",
+            "germancoatleutnantfeldgrau",
+            "germancoatleutnantpanzer",
+            "germancoatmajor",
+            "germancoatmajorfeldgrau",
+            "germancoatmedic",
+            "germancoatmedicdesert",
+            "germancoatmedicfeldgrau",
+            "germancoatmedicforest",
+            "germancoatmedicwinter",
+            "germancoatoberfeldwebel",
+            "germancoatoberfeldwebelfeldgrau",
+            "germancoatobergefreiter",
+            "germancoatobergefreiterfeldgrau",
+            "germancoatoberleutnant",
+            "germancoatoberleutnantfeldgrau",
+            "germancoatoberoberschuetzefeldgrau",
+            "germancoatoberschuetze",
+            "germancoatoberst",
+            "germancoatoberstfeldgrau",
+            "germancoatoberstleutnant",
+            "germancoatoberstleutnantfeldgrau",
+            "germancoatreichsfuehrer",
+            "germancoatreichsfuehrerblack",
+            "germancoatrommel",
+            "germancoatrommeldesert",
+            "germancoatschuetze",
+            "germancoatschuetzedesert",
+            "germancoatschuetzedesert2",
+            "germancoatschuetzefeldgrau",
+            "germancoatschuetzeforest",
+            "germancoatschuetzepanzer",
+            "germancoatschuetzewinter",
+            "germancoatstabsgefreiter",
+            "germancoatstabsgefreiterfeldgrau",
+            "germancoatunterfeldwebel",
+            "germancoatunterfeldwebelfeldgrau",
+            "germancoatunteroffizier",
+            "germancoatunteroffizierfeldgrau",
+            "germandesertcoat",
+            "germanengineerchest",
+            "germanengineerchestleiber",
+            "germanengineerchestoak",
+            "germanengineerchestpea",
+            "germanengineerchestsplinter",
+            "germanengineerchestswamp",
+            "germanforestcoat",
+            "germaniclady",
+            "germanluftwaffecoatflieger",
+            "germanluftwaffecoatgefreiter",
+            "germanluftwaffecoatgeneral",
+            "germanluftwaffecoathauptgefreiter",
+            "germanluftwaffecoathauptmann",
+            "germanluftwaffecoatobergefreiter",
+            "germanluftwaffecoatstabsgefreiter",
+            "germanmedicchest",
+            "germanmedicchestleiber",
+            "germanmedicchestoak",
+            "germanmedicchestpea",
+            "germanmedicchestsplinter",
+            "germanmedicchestswamp",
+            "germanofficerchest",
+            "germansdcoatbrigadefuehrer",
+            "germansdcoatgruppenfuehrer",
+            "germansdcoathauptscharfuehrer",
+            "germansdcoathauptsturmfuehrer",
+            "germansdcoatmann",
+            "germansdcoatoberfuehrer",
+            "germansdcoatobergruppenfuehrer",
+            "germansdcoatoberscharfuehrer",
+            "germansdcoatoberstgruppenfuehrer",
+            "germansdcoatobersturmbannfuehrer",
+            "germansdcoatobersturmfuehrer",
+            "germansdcoatrottenfuehrer",
+            "germansdcoatscharfuehrer",
+            "germansdcoatstandartenfuehrer",
+            "germansdcoatsturmbannfuehrer",
+            "germansdcoatsturmmann",
+            "germansdcoatsturmscharfuehrer",
+            "germansdcoatunterscharfuehrer",
+            "germansdcoatuntersturmfuehrer",
+            "germansniperchest",
+            "germansniperchestsplinter",
+            "germansnowcoat",
+            "germansscoat",
+            "germansscoatbrigadefuehrer",
+            "germansscoatbrigadefuehrerblack",
+            "germansscoatbrigadefuehrerfeldgrau",
+            "germansscoatgruppenfuehrer",
+            "germansscoatgruppenfuehrerblack",
+            "germansscoatgruppenfuehrerfeldgrau",
+            "germansscoathauptscharfuehrer",
+            "germansscoathauptscharfuehrerblack",
+            "germansscoathauptscharfuehrerfeldgrau",
+            "germansscoathauptsturmfuehrer",
+            "germansscoathauptsturmfuehrerblack",
+            "germansscoathauptsturmfuehrerfeldgrau",
+            "germansscoatoberfuehrer",
+            "germansscoatoberfuehrerblack",
+            "germansscoatoberfuehrerfeldgrau",
+            "germansscoatobergruppenfuehrer",
+            "germansscoatobergruppenfuehrerblack",
+            "germansscoatobergruppenfuehrerfeldgrau",
+            "germansscoatoberscharfuehrer",
+            "germansscoatoberscharfuehrerblack",
+            "germansscoatoberscharfuehrerfeldgrau",
+            "germansscoatoberschuetze",
+            "germansscoatoberschuetzeblack",
+            "germansscoatoberschuetzefeldgrau",
+            "germansscoatoberstgruppenfuehrer",
+            "germansscoatoberstgruppenfuehrerblack",
+            "germansscoatoberstgruppenfuehrerfeldgrau",
+            "germansscoatobersturmbannfuehrer",
+            "germansscoatobersturmbannfuehrerblack",
+            "germansscoatobersturmbannfuehrerfeldgrau",
+            "germansscoatobersturmfuehrer",
+            "germansscoatobersturmfuehrerblack",
+            "germansscoatobersturmfuehrerfeldgrau",
+            "germansscoatrottenfuehrer",
+            "germansscoatrottenfuehrerblack",
+            "germansscoatrottenfuehrerfeldgrau",
+            "germansscoatscharfuehrer",
+            "germansscoatscharfuehrerblack",
+            "germansscoatscharfuehrerfeldgrau",
+            "germansscoatschuetze",
+            "germansscoatschuetzeblack",
+            "germansscoatschuetzeeichenlaubmusterautumn",
+            "germansscoatschuetzeeichenlaubmusterspring",
+            "germansscoatschuetzeerbsenmuster",
+            "germansscoatschuetzefeldgrau",
+            "germansscoatschuetzeforest",
+            "germansscoatschuetzeleibermuster",
+            "germansscoatschuetzeleibstandarte",
+            "germansscoatschuetzepanzer",
+            "germansscoatschuetzewinter",
+            "germansscoatstandartenfuehrer",
+            "germansscoatstandartenfuehrerblack",
+            "germansscoatstandartenfuehrerfeldgrau",
+            "germansscoatsturmbannfuehrer",
+            "germansscoatsturmbannfuehrerblack",
+            "germansscoatsturmbannfuehrerfeldgrau",
+            "germansscoatsturmmann",
+            "germansscoatsturmmannblack",
+            "germansscoatsturmmannfeldgrau",
+            "germansscoatsturmscharfuehrer",
+            "germansscoatsturmscharfuehrerblack",
+            "germansscoatsturmscharfuehrerfeldgrau",
+            "germansscoatunterscharfuehrer",
+            "germansscoatunterscharfuehrerblack",
+            "germansscoatunterscharfuehrerfeldgrau",
+            "germansscoatuntersturmfuehrer",
+            "germansscoatuntersturmfuehrerblack",
+            "germansscoatuntersturmfuehrerfeldgrau",
+            "germansscoatuntersturmfuehrerpanzer",
+            "germansummercoatschuetze",
+            "germansummercoatschuetzedesert",
+            "germansummercoatschuetzedesert2",
+            "germansummercoatschuetzefeldgrau",
+            "germansupportchest",
+            "germansupportchestleiber",
+            "germansupportchestoak",
+            "germansupportchestpea",
+            "germansupportchestsplinter",
+            "germansupportchestswamp",
+            "germanwehrmachtcoatschuetzeleibermuster",
+            "germanww1coat",
+            "goblinoirish",
+            "goblinooriginal",
+            "goblinowalmart",
+            "goblito",
+            "grekoidthot",
+            "hobgoblino",
+            "horthy",
+            "hungambeson",
+            "hungariancoat",
+            "hungaryww2",
+            "ignacy",
+            "imperialrobe",
+            "italiancoat",
+            "japanese64pcoat",
+            "japanesecoat",
+            "japaneseofficer",
+            "japanesesoldier",
+            "japuniformww2",
+            "japuniformww2snlf",
+            "johnsmithcoat",
+            "kallio",
+            "khakidrill",
+            "kukmilitia",
+            "kulturterror",
+            "labcoat",
+            "lacreatura",
+            "lagoblina",
+            "limitanei",
+            "ludwigcoat",
+            "luzextinguido",
+            "luzextinguidocute",
+            "m36spain",
+            "m36wehrmacht",
+            "m37italy",
+            "m39poland",
+            "m40dak",
+            "m43wehrmacht",
+            "m43wehrmachtwinter",
+            "mao",
+            "maozedong",
+            "minoanlady",
+            "mongolgambeson",
+            "mussolini",
+            "mvssolini",
+            "nkvduni",
+            "norwayuniform",
+            "nurse",
+            "parteifuehreruniform",
+            "paul",
+            "persiangambeson",
+            "policejacket",
+            "polishcoat",
+            "poortugal",
+            "pp_afrikakorpschest",
+            "pp_afrikakorpsofficerchest",
+            "pp_britishofficerchest",
+            "pp_britishuniformchest",
+            "pp_sbskbritishchest",
+            "pp_waffenchest",
+            "ppgendarmeriepololong",
+            "ppgendarmeriepololongnoir",
+            "ppgendarmeriepololongnoirpj",
+            "ppgendarmeriepololongnoirpsig",
+            "ppgendarmeriepololongpj",
+            "ppgendarmeriepololongpsig",
+            "ppgendarmeriepoloshort",
+            "ppgendarmeriepoloshortnoir",
+            "ppgendarmeriepoloshortnoirpj",
+            "ppgendarmeriepoloshortnoirpsig",
+            "ppgendarmeriepoloshortpj",
+            "ppgendarmeriepoloshortpsig",
+            "ppgendarmerieveste",
+            "ppgendarmerievestepj",
+            "ppgendarmerievestepsig",
+            "romangambeson",
+            "russiancoat",
+            "russianforestcoat",
+            "russiansnowcoat",
+            "russianww1coat",
+            "scientistcorpse",
+            "scientistf",
+            "scientistm",
+            "seedbed",
+            "seedbedused",
+            "semenovski",
+            "serbtunic",
+            "shapurrobe",
+            "shopkeepersapron",
+            "showa",
+            "slavpad",
+            "spearchucker",
+            "splintersmock",
+            "splintersmockautumn",
+            "splintersmocksummer",
+            "stalin",
+            "sturmabteilunguniform",
+            "suomim36uniform",
+            "synogogue",
+            "tejano",
+            "tradwife",
+            "usairborne",
+            "usarmydcu",
+            "usm1941",
+            "usm1943",
+            "usmcww2",
+            "usmcww2frogskin",
+            "usmcww2frogskinarid",
+            "usnenlisteddungarees",
+            "usnenlistedutility",
+            "ussrm35uniform",
+            "uswinter",
+            "ventihuman",
+            "voladar",
+            "waffenssdot44",
+            "wh40k_armor_catachanwest_1a",
+            "yankeeuniform",
+            "yankeeuniformchasseur",
+            "yankeeuniformusmc",
+            "yugoslaviancoat"
+        ]
+    },
+
+    "Generic Cloth Uniform (Legs)": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.65",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "44_americanm1941combatfielduniformpants",
+            "44_americanm1943combatfielduniformpants",
+            "44_americanm42airbornepants",
+            "44_british40patternpants",
+            "44_germanfeldgraupants",
+            "44_germanofficerpants",
+            "44_germansumpftarnm45pants",
+            "44_japanesetype98pantskhaki",
+            "44_sovietsummerobr43pants",
+            "44_waffenm44camopants",
+            "americanpants",
+            "americansniperpants",
+            "americansniperpantsfrog",
+            "americansnowpants",
+            "americanuniformpants",
+            "americanww1pants",
+            "austrianww1pants",
+            "belgianpants",
+            "blacktrousers",
+            "britishdesertpants",
+            "britishpants",
+            "britishww1pants",
+            "caesarpants",
+            "chinesepants",
+            "dutchpants",
+            "finnishpants",
+            "finnishsnowpants",
+            "french1914pants",
+            "french1915pants",
+            "frenchpants",
+            "germandesertpants",
+            "germanfeldhose",
+            "germanfeldhoseblack",
+            "germanfeldhosebrown",
+            "germanfeldhosedarkbrown",
+            "germanfeldhosedesert",
+            "germanfeldhoseeichenlaubmusterautumn",
+            "germanfeldhoseeichenlaubmusterspring",
+            "germanfeldhoseerbsenmuster",
+            "germanfeldhosefallschirmjaeger",
+            "germanfeldhosefeldgrau",
+            "germanfeldhoseforest",
+            "germanfeldhoseleibermuster",
+            "germanfeldhosewinter",
+            "germanforestpants",
+            "germangeneralfeldhose",
+            "germangeneralfeldhosefeldgrau",
+            "germanluftwaffefeldhose",
+            "germanpants",
+            "germansniperpants",
+            "germansniperpantssplinter",
+            "germansnowpants",
+            "germansspants",
+            "germanuniformpants",
+            "germanuniformpantsoak",
+            "germanuniformpantspea",
+            "germanww1pants",
+            "hungarianpants",
+            "italianpants",
+            "japanese64ppants",
+            "japanesepants",
+            "ludwigfeldhose",
+            "polishpants",
+            "pp_afrikakorpspants",
+            "pp_britishofficerpants",
+            "pp_britishuniformpants",
+            "ppgendarmeriepantalon",
+            "romanlegionairepants",
+            "romanpants",
+            "romanpraetorianpants",
+            "romansigniferpants",
+            "romantriariipants",
+            "russianforestpants",
+            "russianpants",
+            "russiansnowpants",
+            "russianww1pants",
+            "vcnlfclotheslong",
+            "vcnlfclotheslong2",
+            "vcnlfclotheslong3",
+            "vcnlfclotheslong4",
+            "vcnlfclotheslong5",
+            "vcnlfclothesshort",
+            "vcnlfclothesshort2",
+            "vcnlfclothesshort3",
+            "vcnlfclothesshort4",
+            "vcnlfclothesshort5",
+            "wh40k_armor_catachanlegs_1a",
+            "wh40k_armor_commissarlegs_1a",
+            "yugoslavianpants"
+        ]
+    },
+
+    "Generic Cosmetic Eyewear And Props": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "admirallee",
+            "cloakergoggles",
+            "fancymonocle",
+            "macarthur",
+            "pierce",
+            "rockwell",
+            "roundglasses"
+        ]
+    },
+
+    "Generic Cosmetic Prop And Insignia (Boots)": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "0.35",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "apron1",
+            "apron2",
+            "apron3",
+            "apron4",
+            "kenpeitaiarmband",
+            "medicalarmband",
+            "ppgendarmeriedadjudant",
+            "ppgendarmeriedadjudantchef",
+            "ppgendarmeriedcapitaine",
+            "ppgendarmeriedcommandant",
+            "ppgendarmeriedgendarme",
+            "ppgendarmeriedlieutenant",
+            "ppgendarmeriedmajor",
+            "ppgendarmeriedmarechaldeslogis",
+            "ppgendarmeriedmarechaldeslogischef",
+            "ppgendarmeriedsouslieutenant",
+            "ppgendarmerievestedadjudant",
+            "ppgendarmerievestedadjudantchef",
+            "ppgendarmerievestedcapitaine",
+            "ppgendarmerievestedcommandant",
+            "ppgendarmerievestedgendarme",
+            "ppgendarmerievestedlieutenant",
+            "ppgendarmerievestedmajor",
+            "ppgendarmerievestedmarechaldeslogis",
+            "ppgendarmerievestedmarechaldeslogischef",
+            "ppgendarmerievestedsouslieutenant"
+        ]
+    },
+
+    "Generic Greatcoat And Trenchcoat": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 4,
+            "Toughness": 0
+        },
+        "items": [
+            "1914frontoviktrenchcoat",
+            "1914infanterietrenchcoat",
+            "1914kuktrenchcoat",
+            "1916frontoviktrenchcoat",
+            "44_americangreatcoat",
+            "44_germanm43greatcoat",
+            "fancytrenchcoat",
+            "fancytrenchcoatblack",
+            "fancytrenchcoatwhite",
+            "frencharmyww2",
+            "germancoatgeneralderinfanterie",
+            "germancoatgeneralderinfanteriefeldgrau",
+            "germancoatgeneralfeldmarschall",
+            "germancoatgeneralfeldmarschallfeldgrau",
+            "germancoatgeneralleutnant",
+            "germancoatgeneralleutnantfeldgrau",
+            "germancoatgeneralmajor",
+            "germancoatgeneralmajorfeldgrau",
+            "germancoatgeneraloberst",
+            "germancoatgeneraloberstfeldgrau",
+            "germangreatcoatschuetze",
+            "germangreatcoatschuetzeblack",
+            "germangreatcoatschuetzefeldgrau",
+            "germangreatcoatschuetzesnow",
+            "japanesetrenchcoat",
+            "pp_afrikakorpstrenchcoat",
+            "sovietovercoat",
+            "wh40k_armor_commissarcoat_1a"
+        ]
+    },
+
+    "Generic Leather And Tactical Boots": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "0.35",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "44_americanboots",
+            "44_britishboots",
+            "44_germanboots",
+            "44_germanofficerboots",
+            "44_japaneseboots",
+            "44_sovietsummerobr43boots",
+            "americanboots",
+            "americansnowboots",
+            "americanuniformboots",
+            "americanww1boots",
+            "austrianww1boots",
+            "azaboots",
+            "belgianboots",
+            "britishboots",
+            "britishdesertboots",
+            "britishww1boots",
+            "caesarboots",
+            "chineseboots",
+            "dutchboots",
+            "finnishboots",
+            "finnishsnowboots",
+            "french1914boots",
+            "french1915boots",
+            "frenchboots",
+            "germanboots",
+            "germandesertboots",
+            "germanforestboots",
+            "germansnowboots",
+            "germanssboots",
+            "germanstiefel",
+            "germantropenstiefel",
+            "germanuniformboots",
+            "germanww1boots",
+            "gignboots",
+            "hungarianboots",
+            "italianboots",
+            "japanese64pboots",
+            "japaneseboots",
+            "kskboots",
+            "marineboots",
+            "nofalldamageboots",
+            "opafboots",
+            "polishboots",
+            "pp_afrikakorpsboots",
+            "pp_britishofficerboots",
+            "pp_britishuniformboots",
+            "romanlegionaireboots",
+            "russianboots",
+            "russianforestboots",
+            "russiansnowboots",
+            "russianww1boots",
+            "sasboots",
+            "speedboots",
+            "spetsnazboots",
+            "wh40k_armor_catachanboots_1a",
+            "wh40k_armor_commissarboots_1a",
+            "yugoslavianboots"
+        ]
+    },
+
+    "Generic Webbing And Load-Bearing Equipment (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "vcheavy",
+            "vcrifleman",
+            "vcscout"
+        ]
+    },
+
+    "Generic Webbing And Load-Bearing Equipment (Legs)": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.65",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "1914bulgarianncowebbing",
+            "1914germanncowebbing",
+            "1914germanncowebbingc96",
+            "1914latvianwebbing",
+            "1914romaniancavalrywebbing",
+            "1914romanianncowebbing",
+            "1914romanianriflemanwebbing",
+            "1916greeksoldierwebbing",
+            "austrianofficerwebbing",
+            "austrianwebbinginfantry",
+            "germanwebbinginfantry",
+            "germanwebbinginfantrykar88",
+            "japaneseofficerwebbing",
+            "japanesewebbing",
+            "militiabelt",
+            "russiandoncossackwebbing",
+            "russiandoncossackwebbing2",
+            "russianofficerwebbing",
+            "russianwebbinginfantry"
+        ]
+    },
+
+    "Heavy Assault Armour (Boots)": {
+        "properties": {
+            "Defence": "0.08",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "0.67",
+            "ArmorPoints": 3,
+            "Toughness": 2
+        },
+        "items": [
+            "bulldozerboots",
+            "juggernautboots",
+            "juggernautbootsbrown"
+        ]
+    },
+
+    "Heavy Assault Armour (Chest)": {
+        "properties": {
+            "Defence": "0.21",
+            "BulletDefence": "0.19",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 7,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "bulldozerbody",
+            "juggernautbody",
+            "juggernautbodybrown"
+        ]
+    },
+
+    "Heavy Assault Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.08",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 3,
+            "Toughness": 2
+        },
+        "items": [
+            "bulldozerhelmet",
+            "juggernauthelmet",
+            "juggernauthelmetbrown"
+        ]
+    },
+
+    "Heavy Assault Armour (Legs)": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.14",
+            "PenetrationResistance": "1.24",
+            "ArmorPoints": 5,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "bulldozerlegs",
+            "juggernautpants",
+            "juggernautpantsbrown"
+        ]
+    },
+
+    "Improvised Armour (Chest)": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "MoveSpeedModifier": "0.99"
+        },
+        "items": [
+            "dustbinlidchestplate"
+        ]
+    },
+
+    "Improvised Armour (Head)": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "panhelmet"
+        ]
+    },
+
+    "Leather Flight And Armoured-Crew Helmet": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "moderntankerhelmet",
+            "muricatankhelmet",
+            "pilothelmet",
+            "pp_afrikakorpstankcommanderhat",
+            "pp_afrikakorpstankdrivercap"
+        ]
+    },
+
+    "Modern Ballistic Vest": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.12",
+            "PenetrationResistance": "1.50",
+            "ArmorPoints": 6,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "bodyarmour",
+            "swatbody"
+        ]
+    },
+
+    "Modern Composite Combat Helmet": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "1.50",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "azahelmet",
+            "gignhelmet",
+            "kskhelmet",
+            "marinehelmet",
+            "opafhelmet",
+            "ppcasquepsig",
+            "sashelmet",
+            "spetsnazhelmet",
+            "swathelmet",
+            "ushelmetachdcu"
+        ]
+    },
+
+    "Modern Rifle-Plate Carrier (Legs Slot)": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.14",
+            "PenetrationResistance": "1.24",
+            "ArmorPoints": 5,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "usarmyiotv"
+        ]
+    },
+
+    "Modern Soft Ballistic Vest (Boots Slot)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "0.53",
+            "ArmorPoints": 2,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "ppgendarmeriegilet",
+            "ppgendarmeriegiletpj"
+        ]
+    },
+
+    "Modern Tactical Uniform (Chest)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "azabody",
+            "gignbody",
+            "kskbody",
+            "marinebody",
+            "opafbody",
+            "sasbody",
+            "spetsnazbody"
+        ]
+    },
+
+    "Modern Tactical Uniform (Legs)": {
+        "properties": {
+            "Defence": "0.05",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.65",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "azapants",
+            "gignpants",
+            "kskpants",
+            "marinepants",
+            "opafpants",
+            "saspants",
+            "spetsnazpants"
+        ]
+    },
+
+    "Nerf Foam Padding (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "nerfbluevest",
+            "nerfgreenvest",
+            "nerforangevest",
+            "nerfyellowvest"
+        ]
+    },
+
+    "Nerf Foam Padding (Legs)": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.65",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "nerfblueknees",
+            "nerfgreenknees",
+            "nerforangeknees",
+            "nerfyellowknees"
+        ]
+    },
+
+    "Powered Exoskeleton Armour (Boots)": {
+        "properties": {
+            "Defence": "0.10",
+            "BulletDefence": "0.10",
+            "PenetrationResistance": "0.84",
+            "ArmorPoints": 3,
+            "Toughness": 3
+        },
+        "items": [
+            "exoskeletonboots"
+        ]
+    },
+
+    "Powered Exoskeleton Armour (Chest)": {
+        "properties": {
+            "Defence": "0.26",
+            "BulletDefence": "0.26",
+            "PenetrationResistance": "2.40",
+            "ArmorPoints": 9,
+            "Toughness": 3,
+            "MoveSpeedModifier": "0.95"
+        },
+        "items": [
+            "exoskeletonbody"
+        ]
+    },
+
+    "Powered Exoskeleton Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.10",
+            "BulletDefence": "0.10",
+            "PenetrationResistance": "2.40",
+            "ArmorPoints": 3,
+            "Toughness": 3
+        },
+        "items": [
+            "exoskeletonhelmet"
+        ]
+    },
+
+    "Powered Exoskeleton Armour (Legs)": {
+        "properties": {
+            "Defence": "0.20",
+            "BulletDefence": "0.19",
+            "PenetrationResistance": "1.56",
+            "ArmorPoints": 7,
+            "Toughness": 3,
+            "MoveSpeedModifier": "0.95"
+        },
+        "items": [
+            "exoskeletonlegs"
+        ]
+    },
+
+    "Protective Suit (Chest)": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "SmokeProtection": "true"
+        },
+        "items": [
+            "hazmatclassc",
+            "hazmatclasscwhite"
+        ]
+    },
+
+    "Star Wars Battle Droid Chassis": {
+        "properties": {
+            "Defence": "0.26",
+            "BulletDefence": "0.24",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 9,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "battledroid",
+            "battledroidaatdriver",
+            "battledroidaatdrivergeonosis",
+            "battledroidcitadelsecurity",
+            "battledroidcommander",
+            "battledroidcommandergeonosis",
+            "battledroidgeonosis",
+            "battledroidgrenade",
+            "battledroidgrenadegeonosis",
+            "battledroidmarine",
+            "battledroidmarine2",
+            "battledroidmarine2geonosis",
+            "battledroidmarinegeonosis",
+            "battledroidpilot",
+            "battledroidpilot2",
+            "battledroidpilot2geonosis",
+            "battledroidpilotgeonosis",
+            "battledroidpilotreprogrammed",
+            "battledroidscout",
+            "battledroidscoutgeonosis",
+            "battledroidsecurity",
+            "battledroidsecurity2",
+            "battledroidsecurity2geonosis",
+            "battledroidsecuritygeonosis",
+            "battledroidsergeant",
+            "battledroidsergeantgeonosis",
+            "oom10"
+        ]
+    },
+
+    "Star Wars Droideka Chassis": {
+        "properties": {
+            "Defence": "0.08",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 3,
+            "Toughness": 2
+        },
+        "items": [
+            "droideka"
+        ]
+    },
+
+    "Star Wars Droideka Deflector Shield": {
+        "properties": {
+            "Defence": "0.26",
+            "BulletDefence": "0.26",
+            "PenetrationResistance": "2.40",
+            "ArmorPoints": 9,
+            "Toughness": 3,
+            "MoveSpeedModifier": "0.95"
+        },
+        "items": [
+            "droidekashield",
+            "droidekashieldred"
+        ]
+    },
+
+    "Star Wars Jedi And Sith Boots": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "0.35",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "highpoweredboots",
+            "jedibootspowered",
+            "sithbootspowered"
+        ]
+    },
+
+    "Star Wars Jedi And Sith Robes (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "jedicoat",
+            "sithcoat"
+        ]
+    },
+
+    "Star Wars Jedi And Sith Robes (Head)": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "jedihood",
+            "sitheyes",
+            "sithhood",
+            "sithhoodwithsitheyes"
+        ]
+    },
+
+    "Star Wars Jedi And Sith Robes (Legs)": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "0.65",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "jedipants",
+            "sithpants"
+        ]
+    },
+
+    "Star Wars Jet Trooper Armour": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "0.67",
+            "ArmorPoints": 2,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "jettrooperarmor"
+        ]
+    },
+
+    "Star Wars Trooper Armour (Boots)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "0.67",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "clone187iiboots",
+            "clone212boots",
+            "clone327boots",
+            "clone332boots",
+            "clone41boots",
+            "clone442boots",
+            "clone501boots",
+            "clonecaptainarcboots",
+            "clonecaptainboots",
+            "clonecommanderboots",
+            "cloneghostboots",
+            "clonegreenboots",
+            "clonekaminoboots",
+            "clonelieutnantarcboots",
+            "clonelieutnantboots",
+            "cloneriotboots",
+            "clonesergentboots",
+            "cloneshadowboots",
+            "cloneshockiiboots",
+            "clonetorrentboots",
+            "clonetrooperboots",
+            "codycloneboots",
+            "rexcloneboots",
+            "shadowtrooperboots",
+            "stormtrooperboots"
+        ]
+    },
+
+    "Star Wars Trooper Armour (Chest)": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.19",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 6,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "clone187iiarmor",
+            "clone212armor",
+            "clone327armor",
+            "clone332armor",
+            "clone41armor",
+            "clone442armor",
+            "clone501armor",
+            "clonecaptainarcarmor",
+            "clonecaptainarmor",
+            "clonecommanderarmor",
+            "cloneghostarmor",
+            "clonegreenarmor",
+            "clonekaminoarmor",
+            "clonelieutnantarcarmor",
+            "clonelieutnantarmor",
+            "cloneriotarmor",
+            "clonesergentarmor",
+            "cloneshadowarmor",
+            "cloneshockiiarmor",
+            "clonetorrentarmor",
+            "clonetrooperarmor",
+            "codyclonearmor",
+            "rexclonearmor",
+            "shadowtrooperarmor",
+            "stormtrooperarmor"
+        ]
+    },
+
+    "Star Wars Trooper Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "clone187iihelmet",
+            "clone212helmet",
+            "clone212iihelmet",
+            "clone327helmet",
+            "clone332iihelmet",
+            "clone41helmet",
+            "clone442iihelmet",
+            "clone501helmet",
+            "clonecaptainarchelmet",
+            "clonecaptainhelmet",
+            "clonecommanderhelmet",
+            "cloneghosthelmet",
+            "clonegreenhelmet",
+            "clonekaminohelmet",
+            "clonelieutnantarchelmet",
+            "clonelieutnanthelmet",
+            "cloneriothelmet",
+            "clonesergenthelmet",
+            "cloneshadowhelmet",
+            "cloneshadowiihelmet",
+            "cloneshockiihelmet",
+            "clonetorrenthelmet",
+            "clonetrooper501iihelmet",
+            "clonetrooperhelmet",
+            "clonetrooperiihelmet",
+            "codyclonehelmet",
+            "jettrooperhelmet",
+            "rexclonehelmet",
+            "shadowtrooperhelmet",
+            "stormtrooperhelmet"
+        ]
+    },
+
+    "Star Wars Trooper Armour (Legs)": {
+        "properties": {
+            "Defence": "0.12",
+            "BulletDefence": "0.14",
+            "PenetrationResistance": "1.24",
+            "ArmorPoints": 4,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "clone187iipants",
+            "clone212pants",
+            "clone327pants",
+            "clone332pants",
+            "clone41pants",
+            "clone442pants",
+            "clone501pants",
+            "clonecaptainarcpants",
+            "clonecaptainpants",
+            "clonecommanderpants",
+            "cloneghostpants",
+            "clonegreenpants",
+            "clonekaminopants",
+            "clonelieutnantarcpants",
+            "clonelieutnantpants",
+            "cloneriotpants",
+            "clonesergentpants",
+            "cloneshadowpants",
+            "cloneshockiipants",
+            "clonetorrentpants",
+            "clonetrooperpants",
+            "codyclonepants",
+            "jettrooperpants",
+            "rexclonepants",
+            "shadowtrooperpants",
+            "stormtrooperpants"
+        ]
+    },
+
+    "Warhammer 40k Imperial Guard Flak Armour (Boots)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "0.53",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "wh40k_armor_cadiaboots_1a",
+            "wh40k_armor_kriegboots_1a"
+        ]
+    },
+
+    "Warhammer 40k Imperial Guard Flak Armour (Chest)": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.12",
+            "PenetrationResistance": "1.50",
+            "ArmorPoints": 6,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "wh40k_armor_cadiajacket_1a",
+            "wh40k_armor_kriegjacket_1a"
+        ]
+    },
+
+    "Warhammer 40k Imperial Guard Flak Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "1.50",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "wh40k_armor_cadiahelemt_1a",
+            "wh40k_armor_krieghelemt_1a"
+        ]
+    },
+
+    "Warhammer 40k Imperial Guard Flak Armour (Legs)": {
+        "properties": {
+            "Defence": "0.12",
+            "BulletDefence": "0.09",
+            "PenetrationResistance": "0.98",
+            "ArmorPoints": 4,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "wh40k_armor_cadialegs_1a",
+            "wh40k_armor_krieglegs_1a"
+        ]
+    },
+
+    "Warhammer 40k Space Marine Power Armour (Boots)": {
+        "properties": {
+            "Defence": "0.10",
+            "BulletDefence": "0.10",
+            "PenetrationResistance": "0.84",
+            "ArmorPoints": 3,
+            "Toughness": 3
+        },
+        "items": [
+            "wh40k_armor_spacemarineboots_1a",
+            "wh40k_armor_spacemarineboots_1b",
+            "wh40k_armor_spacemarineboots_1c",
+            "wh40k_armor_spacemarineboots_1d",
+            "wh40k_armor_spacemarineboots_1e",
+            "wh40k_armor_spacemarineboots_1f",
+            "wh40k_armor_spacemarineboots_1g",
+            "wh40k_armor_spacemarineboots_1h",
+            "wh40k_armor_spacemarineboots_1i",
+            "wh40k_armor_spacemarineboots_1j"
+        ]
+    },
+
+    "Warhammer 40k Space Marine Power Armour (Chest)": {
+        "properties": {
+            "Defence": "0.26",
+            "BulletDefence": "0.26",
+            "PenetrationResistance": "2.40",
+            "ArmorPoints": 9,
+            "Toughness": 3,
+            "MoveSpeedModifier": "0.95"
+        },
+        "items": [
+            "wh40k_armor_spacemarinebody_1a",
+            "wh40k_armor_spacemarinebody_1b",
+            "wh40k_armor_spacemarinebody_1c",
+            "wh40k_armor_spacemarinebody_1d",
+            "wh40k_armor_spacemarinebody_1e",
+            "wh40k_armor_spacemarinebody_1f",
+            "wh40k_armor_spacemarinebody_1g",
+            "wh40k_armor_spacemarinebody_1h",
+            "wh40k_armor_spacemarinebody_1i",
+            "wh40k_armor_spacemarinebody_1j"
+        ]
+    },
+
+    "Warhammer 40k Space Marine Power Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.10",
+            "BulletDefence": "0.10",
+            "PenetrationResistance": "2.40",
+            "ArmorPoints": 3,
+            "Toughness": 3
+        },
+        "items": [
+            "wh40k_armor_spacemarinehelmet_1a",
+            "wh40k_armor_spacemarinehelmet_1b",
+            "wh40k_armor_spacemarinehelmet_1c",
+            "wh40k_armor_spacemarinehelmet_1d",
+            "wh40k_armor_spacemarinehelmet_1e",
+            "wh40k_armor_spacemarinehelmet_1f",
+            "wh40k_armor_spacemarinehelmet_1g",
+            "wh40k_armor_spacemarinehelmet_1h",
+            "wh40k_armor_spacemarinehelmet_1i",
+            "wh40k_armor_spacemarinehelmet_1j"
+        ]
+    },
+
+    "Warhammer 40k Space Marine Power Armour (Legs)": {
+        "properties": {
+            "Defence": "0.20",
+            "BulletDefence": "0.19",
+            "PenetrationResistance": "1.56",
+            "ArmorPoints": 7,
+            "Toughness": 3,
+            "MoveSpeedModifier": "0.95"
+        },
+        "items": [
+            "wh40k_armor_spacemarinelegs_1a",
+            "wh40k_armor_spacemarinelegs_1b",
+            "wh40k_armor_spacemarinelegs_1c",
+            "wh40k_armor_spacemarinelegs_1d",
+            "wh40k_armor_spacemarinelegs_1e",
+            "wh40k_armor_spacemarinelegs_1f",
+            "wh40k_armor_spacemarinelegs_1g",
+            "wh40k_armor_spacemarinelegs_1h",
+            "wh40k_armor_spacemarinelegs_1i",
+            "wh40k_armor_spacemarinelegs_1j"
+        ]
+    },
+
+    "WW1 And WW2 Steel Combat Helmet": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.02",
+            "PenetrationResistance": "1.25",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "1916infanteriehelmet",
+            "1916kukhelmet",
+            "1917romanianhelmet",
+            "1917russianhelmet",
+            "44_americanm1helmetmitchellcamo",
+            "44_americanm1helmetnetting",
+            "44_americanm1helmetnonetting",
+            "44_americanmpofficerhelmet",
+            "44_britishbrodiehelmet",
+            "44_fallschirmjagercamom38stahlhelm",
+            "44_germanm42feldgraustahlhelm",
+            "44_germanm42leibermusterstahlhelm",
+            "44_sovietsummerobr43helmet",
+            "44_waffenm42camostahlhelm",
+            "44_waffenm44camostahlhelm",
+            "americanassaulthelmet",
+            "americanengineerhelmet",
+            "americanhelmet",
+            "americanmedichelmet",
+            "americanofficerhelmet",
+            "americansniperhelmet",
+            "americansnowhelmet",
+            "americansupporthelmet",
+            "americanww1helmet",
+            "austrianww1helmet",
+            "belgianhelmet",
+            "britishdeserthelmet",
+            "britishhelmet",
+            "britishww1helmet",
+            "broadiemk2",
+            "broadiemk2desert",
+            "chinesehelmet",
+            "dutchhelmet",
+            "finnishhelmet",
+            "finnishsnowhelmet",
+            "french1914helmet",
+            "french1915helmet",
+            "frenchhelmet",
+            "germandeserthelmet",
+            "germanengineerhelmet",
+            "germanforesthelmet",
+            "germanhelmet",
+            "germanluftwaffestahlhelm",
+            "germanmedichelmet",
+            "germansnowhelmet",
+            "germansshelmet",
+            "germanssstahlhelm",
+            "germanssstahlhelmbelgian",
+            "germanssstahlhelmblack",
+            "germanssstahlhelmdenmark",
+            "germanssstahlhelmestonia",
+            "germanssstahlhelmfeldgrau",
+            "germanssstahlhelmfeldgraubelgian",
+            "germanssstahlhelmfeldgraudenmark",
+            "germanssstahlhelmfeldgrauestonia",
+            "germanssstahlhelmfeldgraufrench",
+            "germanssstahlhelmfeldgraulatvia",
+            "germanssstahlhelmfeldgraurussia",
+            "germanssstahlhelmfeldgrauukraine",
+            "germanssstahlhelmforest",
+            "germanssstahlhelmfrench",
+            "germanssstahlhelmlatvia",
+            "germanssstahlhelmrussia",
+            "germanssstahlhelmukraine",
+            "germanssstahlhelmwinter",
+            "germanstahlhelm",
+            "germanstahlhelm2",
+            "germanstahlhelm2desert",
+            "germanstahlhelm2feldgrau",
+            "germanstahlhelmbelgian",
+            "germanstahlhelmblack",
+            "germanstahlhelmcroatia",
+            "germanstahlhelmdesert",
+            "germanstahlhelmeichenlaubmusterautumn",
+            "germanstahlhelmeichenlaubmusterspring",
+            "germanstahlhelmerbsenmuster",
+            "germanstahlhelmfallschirmjaeger",
+            "germanstahlhelmfeldgrau",
+            "germanstahlhelmfeldgraubelgian",
+            "germanstahlhelmfeldgraucroatia",
+            "germanstahlhelmfeldgraufrench",
+            "germanstahlhelmfeldgraugd",
+            "germanstahlhelmfeldgraurussia",
+            "germanstahlhelmfeldgrauspain",
+            "germanstahlhelmforest",
+            "germanstahlhelmforest2",
+            "germanstahlhelmfrench",
+            "germanstahlhelmgd",
+            "germanstahlhelmglasses",
+            "germanstahlhelmglassesblack",
+            "germanstahlhelmglassesdesert",
+            "germanstahlhelmglassesfeldgrau",
+            "germanstahlhelmglassesforest",
+            "germanstahlhelmglasseswinter",
+            "germanstahlhelmleibermuster",
+            "germanstahlhelmmedic",
+            "germanstahlhelmrussia",
+            "germanstahlhelmspain",
+            "germanstahlhelmsplittermuster",
+            "germanstahlhelmwinter",
+            "germanstahlhelmwinter2",
+            "germansupporthelmet",
+            "germanww1helmet",
+            "hungarianhelmet",
+            "italianhelmet",
+            "japanese64phelmet",
+            "japanesehelmet",
+            "m18stahlhelm",
+            "m1pot",
+            "m1potfrog",
+            "m1potfrogarid",
+            "m1potwinter",
+            "m26adrian",
+            "m33helmet",
+            "m35stahlhelm",
+            "m35stahlhelmchina",
+            "m35stahlhelmspain",
+            "m38stahlhelm",
+            "m38stahlhelmjump",
+            "m42stahlhelm",
+            "m42stahlhelmwinter",
+            "parahelmetbrit",
+            "polishhelmet",
+            "pp_afrikakorpshelmet",
+            "pp_britishhelmet",
+            "pp_waffenhelmet",
+            "russianforesthelmet",
+            "russianhelmet",
+            "russiansnowhelmet",
+            "russianww1helmet",
+            "ssh36",
+            "ssh40",
+            "ssh40amoeba",
+            "ssh68amoeba2",
+            "stahlhelmdak",
+            "stahlhelmwaffenssdot",
+            "stahlhelmwaffenssoakleafautumn",
+            "stahlhelmwaffenssoakleafsummer",
+            "tsh4",
+            "type90helmet",
+            "type90snlf",
+            "yugoslavianhelmet"
+        ]
+    },
+
+    "WW1 Body Armour": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "1.25",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "MoveSpeedModifier": "0.99"
+        },
+        "items": [
+            "1916kukarmoredsoldier"
+        ]
+    },
+
+    "WW1 Leather Pickelhaube": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "1914infanteriehelmet",
+            "1914infanteriehelmetartillery",
+            "1914infanteriehelmetuncovered",
+            "1915infanteriehelmet"
+        ]
+    },
+
+    "WW2 Flak Vest": {
+        "properties": {
+            "Defence": "0.11",
+            "BulletDefence": "0.05",
+            "PenetrationResistance": "1.25",
+            "ArmorPoints": 4,
+            "Toughness": 0,
+            "MoveSpeedModifier": "0.99"
+        },
+        "items": [
+            "flakjacket"
+        ]
+    }
+
+}

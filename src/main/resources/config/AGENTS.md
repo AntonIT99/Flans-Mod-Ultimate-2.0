@@ -9,12 +9,18 @@ to the relevant reference files. Those files contain the detailed property
 semantics, units, source policy, workflows, and validation checklist. If guidance
 conflicts, this `AGENTS.md` takes precedence.
 
+`armor_categories.json` follows a different doctrine from every other file here.
+Its categories are balance assignments derived from fixed tier tables, not
+researched historical values, and they intentionally cover generic and fictional
+items. Where a rule below is marked as not applying to armor, the armor rules in
+`.agents/skills/flans-category-research/references/armor.md` govern instead.
+
 ## Non-negotiable scope and identity rules
 
 - Edit these shipped defaults, never runtime copies under `run/config/`.
 - Put each definition only in the category file for its supported type: guns,
-  AA guns, bullets/ammunition/shells/missiles, grenades, ground vehicles, or
-  aircraft.
+  AA guns, bullets/ammunition/shells/missiles, grenades, ground vehicles,
+  aircraft, or armor.
 - Match `items` to the sanitized content-pack `ShortName`, written lowercase for
   new entries. Search all bundled, official, and `run/flan` content packs for exact
   aliases and duplicate representations before deciding category membership.
@@ -28,10 +34,14 @@ conflicts, this `AGENTS.md` takes precedence.
   science-fiction, joke, gameplay-only, generic, and genuinely unidentifiable
   items uncategorized and report them. A real sub-variant with sparse data is not
   automatically skippable; use the nearest defensible configuration and disclose
-  the approximation as directed by the skill.
+  the approximation as directed by the skill. This rule does not apply to armor,
+  where every item is categorized.
 - Category labels document the exact real item and configuration whose values were
   used. Split materially different variants; share a category only when the
-  represented configuration and researched values genuinely match.
+  represented configuration and researched values genuinely match. This rule does
+  not apply to armor, where a label names a pragmatic group of items that share a
+  slot, set shape, coverage, protection class, and ballistic rating, and where
+  splitting is justified only by a balance-relevant difference.
 
 ## Non-negotiable research and data rules
 
@@ -79,6 +89,17 @@ conflicts, this `AGENTS.md` takes precedence.
   rate, wing span, and wing area; only genuinely wingless craft omit wing fields.
 - Ground-vehicle and aircraft categories always set quoted
   `ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth` to `"true"`.
+- Armor values are never researched, calculated, averaged, or invented. Research
+  establishes only material and construction; every authored number is a lookup
+  from the protection-class and ballistic-rating tables in `armor.md`, optionally
+  multiplied by the item's coverage and rounded as specified there.
+- Every armor category writes `Defence`, `BulletDefence`, `PenetrationResistance`,
+  `ArmorPoints`, and `Toughness`, including zero values, so that harmonization is
+  deterministic. `PenetrationResistance` is per-slot, never scaled by coverage, and
+  never below the unarmoured value of its slot.
+- One armor category covers exactly one armor slot. Never write `Type`, a model,
+  texture, icon, colour, name, description, or recipe key into an armor category,
+  and never write `Durability`, `KnockbackModifier`, or `KnockbackReduction`.
 
 ## Non-negotiable format and validation rules
 
@@ -93,9 +114,11 @@ conflicts, this `AGENTS.md` takes precedence.
   category values; use exact variant categories or property-specific `exceptions`.
 - After edits: strictly parse every changed JSON file; verify each short name and
   definition type; validate mandatory fields and unit conversions; validate both
-  sides of ammo groups and all `AddRound` fields; rerun
+  sides of ammo groups and all `AddRound` fields; recompute every armor value
+  against its tier table, coverage, and slot; rerun
   `scripts/scanShortnames.py` when coverage changed; review intentionally missing
-  rows; confirm ordering and non-conflicting assignments; inspect the scoped diff;
+  rows, treating any remaining armor row as a gap rather than a skip; confirm
+  ordering and non-conflicting assignments; inspect the scoped diff;
   run `git diff --check`; and report any check that could not be performed.
 - Update the sibling wiki when changing a supported property, format, enum, unit,
   or workflow. Ordinary data additions normally do not require a wiki change.

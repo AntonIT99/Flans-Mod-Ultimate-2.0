@@ -12,8 +12,8 @@ runtime copies under `run/`.
 A category applies only to the definition type named by its file. Gun short names
 belong in `gun_categories.json`, AA-gun short names in `aagun_categories.json`, and
 magazine, cartridge, bullet, shell, and missile short names in
-`bullet_categories.json`; use the analogous grenade, vehicle, and plane files for
-their types.
+`bullet_categories.json`; use the analogous grenade, vehicle, plane, and armor
+files for their types.
 
 Use `scripts/scanShortnames.py` to find supported short names absent from all
 category JSON. It scans bundled source packs and `run/flan` ZIP packs and writes
@@ -91,7 +91,9 @@ After every category edit:
    spelling, lowercase, category type, identity, aliases, and variant boundaries.
 3. Run `scripts/scanShortnames.py` after coverage changes. Inspect all remaining
    relevant rows and classify them as generic, fictional, unsupported, ambiguous,
-   or genuinely unresolved rather than assuming every row needs a category.
+   or genuinely unresolved rather than assuming every row needs a category. Armor
+   rows are the exception: every one of them is expected to end up in a category,
+   so a remaining armor row is a gap to report, not a correct skip.
 4. Validate ammo groups in both directions: every selectable shell has each intended
    `AddToAmmoGroup`, and every gun, AA gun, vehicle, or aircraft consumer has exact
    matching `UseAmmoGroup`. Check duplicate ammunition after combining groups.
@@ -112,8 +114,9 @@ After every category edit:
    statistics; every explosive
    grenade's nonzero `ExplosiveMass` in kg TNT equivalent; complete vehicle
    propulsion, armour/turret/track sets; complete aircraft
-   mass/power/speed/span/area/climb; and quoted realistic-weapon/health flags for
-   driveables.
+   mass/power/speed/span/area/climb; quoted realistic-weapon/health flags for
+   driveables; and the five mandatory armor properties with their slot, coverage,
+   and tier-table checks from `armor.md`.
 8. Recheck configuration consistency and every value based only on a game, broad
    reference, conversion, approximation, neighboring face, or sibling variant.
    Preserve provenance for the final report.
@@ -131,7 +134,9 @@ For a classification batch, report:
 - number of new categories per JSON file;
 - number of newly covered short names;
 - identifiable historical items left unresolved and why;
-- generic, fictional, unsupported, or otherwise intentionally skipped items;
+- generic, fictional, unsupported, or otherwise intentionally skipped items,
+  excluding armor, where nothing is intentionally skipped;
+- for armor batches, the additional report items required by `armor.md`;
 - principal primary and specialist sources;
 - values relying on broad/game/weak fallbacks or a neighboring configuration;
 - conversions, RHAe values, inferred belts, copied armour faces, final-resort
