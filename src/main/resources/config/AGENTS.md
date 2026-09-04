@@ -15,13 +15,18 @@ They supplement the repository-level `AGENTS.md`.
   name, file name or registry ID. Write short names in lowercase when adding new
   entries. Search every bundled and official pack for aliases and variants before
   deciding that the item list is complete.
-* When a short name is ambiguous, or when a definition's `Name`, `Model`,
-  `Description` and file name disagree about what the item represents, the
-  localisation entry decides. Look up `item.flansmod.<shortname>` in the pack's
-  `resources/assets/flansmod/lang/en_us.json`; treat that string as the correct
-  title and identify the real vehicle, aircraft or weapon from it. Do not leave an
-  item unclassified merely because the definition's own fields contradict each
-  other, and do not guess from the model name when a localisation entry exists.
+* The localisation entry is always the authority on what an item represents. Look
+  up `item.flansmod.<shortname>` in the pack's
+  `resources/assets/flansmod/lang/en_us.json` and treat that string as the correct
+  title. A definition's own `Name` field is **always** less reliable than the
+  localisation entry and never overrides it, even when the two do not obviously
+  conflict; `Model`, `Description` and the file name are weaker still. Consult the
+  definition's fields only to confirm the variant, the armament or the era once the
+  localisation entry has established the identity.
+* Fall back to the definition's `Name` only when the short name has no
+  localisation entry at all, and then to `Model`, `Description` and the file name
+  in that order. Do not leave an item unclassified merely because the definition's
+  own fields contradict each other or contradict the localisation entry.
 * Use `scripts/scanShortnames.py` to identify content-pack short names that are
   not yet listed in any supported category JSON file. It scans both bundled source
   packs and `run/flan` ZIP packs, then writes `missing_shortnames.csv` at the
@@ -32,8 +37,9 @@ They supplement the repository-level `AGENTS.md`.
   cartridge, round, grenade, vehicle or aircraft variant whose figures were used.
 * Follow the **Historical research and source policy** below for every real-world
   value. Identify the exact represented variant before researching properties.
-* Do not invent a value merely to complete a category. Keep all researched values
-  for one category compatible with the same model, ammunition loading, engine,
+* Do not invent a value merely to complete a category, except where explicitly
+  permitted under **Completeness over omission**. Keep all researched values for
+  one category compatible with the same model, ammunition loading, engine,
   configuration and test conditions.
 * Consult the sibling `Flans-Mod-Ultimate-2.0.wiki` repository first, especially
   `Category-System.md`, `ConfigReference.md`, `Realistic-Vehicle-Physics.md`, and
@@ -82,10 +88,11 @@ Prefer sources in roughly this order:
      values rather than historical test results.
    * Do not replace an available historical figure with a game value merely because
      the game database is easier to search.
-   * They are, however, the expected fallback for the gameplay-critical vehicle
-     properties listed under **Completeness over omission** below. For those keys a
-     War Thunder armour layout or reverse speed is preferable to leaving the key
-     unset. Record such values as game-sourced in the task summary.
+   * They are, however, the expected fallback for every key listed under
+     **Completeness over omission** below. For those keys, War Thunder ammunition
+     data, armour layouts, reverse speed, mass, wing figures, speed or climb rate
+     are preferable to leaving the key unset. Record such values as game-sourced
+     in the task summary.
 
 5. **Weak sources**
 
@@ -101,29 +108,89 @@ unsourced database.
 ### Completeness over omission
 
 The general rule elsewhere in this document is to omit a property rather than
-invent one. That rule still holds for ammunition penetration, explosive mass,
-muzzle velocity, dispersion, fuse timing and aircraft performance.
+invent one. That rule still holds for dispersion and fuse timing, but not for the
+gameplay-critical shell and missile properties listed below.
 
-It does **not** hold for the gameplay-critical driveable keys below, where an
-approximate value is better than no value, because omission silently disables a
-whole gameplay system rather than leaving one number slightly wrong:
+The gameplay-critical driveable keys listed below must not be omitted. For those
+keys, a less reliable value beats no value, and in the absolute worst case — when
+no source of any tier yields a figure — an invented but gameplay-coherent value is
+required rather than an empty key. "Gameplay-coherent" means consistent with the
+vehicle's class, era and neighbouring categories: a light tank must not end up
+better protected than a heavy one, and a 1944 fighter must not out-climb a jet.
 
-* `ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth`;
-* the hull armour set `ArmorFrontMm`, `ArmorRearMm`, `ArmorSideMm`,
-  `ArmorBottomMm` (and `ArmorTopMm`) on any clearly armoured vehicle;
-* the turret armour set `TurretArmorFrontMm`, `TurretArmorRearMm`,
-  `TurretArmorSideMm`, `TurretArmorTopMm` on any definition with a turret;
-* `PartArmorMm` for `leftTrack` and `rightTrack` on tracked vehicles;
-* `RealMaxReverseSpeedKmh` on ground vehicles.
+**Aircraft — every category must define all of:**
 
-For these keys, work down the source ladder and stop at the first tier that yields
-a usable figure: primary manual, specialist reference, broad reference, then game
-database. Only if every tier fails may the key be left unset, and the task summary
-must then say which vehicle and which key.
+* `RealMassKg`;
+* exactly one of `RealEnginePowerKw`, `RealEnginePowerPS`, `RealEnginePowerHp` or
+  `RealEngineThrustKn`;
+* `RealMaxSpeedKmh`;
+* `RealWingSpanM` and `RealWingAreaM2`, except for a craft that clearly has no
+  wing (rotorcraft, airship, balloon);
+* `RealClimbRateMs`.
+
+**Ground vehicles — every category must define all of:**
+
+* `RealMassKg`;
+* exactly one of `RealEnginePowerKw`, `RealEnginePowerPS`, `RealEnginePowerHp` or
+  `RealEngineThrustKn`;
+* `DriveType` — absolutely mandatory for anything that is actually a ground
+  vehicle rather than a ship;
+* `RealMaxSpeedKmh`;
+* `RealMaxReverseSpeedKmh`.
+
+**Clearly armoured vehicles additionally require the hull set:**
+
+* `ArmorFrontMm`, `ArmorSideMm`;
+* `ArmorRearMm` — worst case, reuse `ArmorSideMm`;
+* `ArmorTopMm` — worst case, reuse `ArmorSideMm` or `ArmorRearMm`;
+* `ArmorBottomMm` — worst case, reuse `ArmorSideMm` or `ArmorRearMm`.
+
+**Clearly armoured vehicles whose definition also has a turret hitbox additionally
+require the turret set:**
+
+* `TurretArmorFrontMm`, `TurretArmorSideMm`;
+* `TurretArmorRearMm` — worst case, reuse `TurretArmorSideMm`;
+* `TurretArmorTopMm` — worst case, reuse `TurretArmorSideMm` or
+  `TurretArmorRearMm`.
+
+**Also always set** quoted `ReadWeaponsFromGunTypes` and
+`UseRealisticVehicleHealth` to `"true"`, and author `PartArmorMm` for `leftTrack`
+and `rightTrack` on tracked vehicles whose definitions declare those parts.
+
+For all of the keys above, work down the source ladder and stop at the first tier
+that yields a usable figure: primary manual, specialist reference, broad
+reference, game database, then the fallbacks named above, then a gameplay-coherent
+estimate. The key is never left unset.
+
+**Ammunition — every bullet category must define:**
+
+* `Mass`, using projectile mass rather than cartridge, case or magazine mass;
+* `FallSpeed: 1.0`, except for a self-propelled projectile that can sustain its
+  own flight. Do not force those projectiles to ordinary ballistic gravity; omit
+  `FallSpeed` or author a specifically justified non-default value.
+
+Definitions with `Shell True`, `Missile True`, `WeaponType Shell` or
+`WeaponType Missile` additionally require:
+
+* `MuzzleVelocity`;
+* `PenetrationAt100m`, except when the intended value is zero;
+* `ExplosiveMass`, except when the intended value is zero, as with many inert
+  APCR projectiles.
+
+These values are gameplay-critical. Continue down the source ladder rather than
+leaving a nonzero value unset. If historical sources do not yield a usable figure,
+use a less authoritative but configuration-compatible source. For ammunition
+represented in War Thunder, check the carrying vehicle's wiki page under
+**Armaments**, select the gun under **Available ammunition**, and open the exact
+munition. Its detail page normally gives projectile mass in kilograms, muzzle
+velocity in metres per second and TNT equivalent in grams. Convert mass to grams
+and TNT equivalent to kilograms for the category. Record every fallback value and
+conversion in the task summary.
 
 An approximation used this way is still an approximation. Never describe it as
 historically verified, and always list it in the task summary under the values
-that relied on a fallback source.
+that relied on a fallback source, separating game-sourced values, values copied
+from a neighbouring face, and invented estimates.
 
 ### Preferred specialist sources by subject
 
@@ -253,7 +320,11 @@ Prefer:
   secondary cross-checking.
 
 IL-2, DCS and War Thunder may be used as fallback or sanity-check sources, not as
-the first choice for historically measured performance.
+the first choice for historically measured performance. They are nevertheless the
+expected fallback for the mandatory aircraft keys of **Completeness over
+omission** when no documented figure for the represented variant can be found.
+Note that a War Thunder aircraft page shows arcade/realistic and stock/upgraded
+columns rather than a rated figure; take the realistic column and say so.
 
 Aircraft figures are particularly configuration-sensitive. Before combining values,
 check:
@@ -290,7 +361,8 @@ When credible sources disagree:
    material.
 7. Do not average conflicting historical figures merely to obtain one number.
 8. If no defensible choice can be made, omit the property rather than inventing a
-   compromise.
+   compromise, except for a mandatory key governed by **Completeness over
+   omission**; follow that section's fallback rules instead.
 
 A later source is not automatically better than a contemporary source, and a more
 precise-looking number is not automatically more accurate.
@@ -461,12 +533,13 @@ blur these patterns merely because all three live in the bullet file.
 ### 1. Gun ammunition
 
 This is an ordinary cartridge or magazine item fired by a gun whose definition
-already selects its ammo. Normally define:
+already selects its ammo. `Mass` and normally `FallSpeed: 1.0` are mandatory as
+specified above. Also define where applicable:
 
 | Property            | Unit                                     | Importance                                                                                                                                                                                                                      |
 | ------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Mass`              | grams (g)                                | Required research: projectile/bullet mass only, not the complete cartridge or loaded magazine.                                                                                                                                  |
-| `FallSpeed`         | dimensionless gravity multiplier         | Normally `1.0`. This is a gameplay gravity factor, not m/s or m/s²; research is not applicable unless deliberately tuning unusual projectiles.                                                                                  |
+| `Mass`              | grams (g)                                | Always required: projectile/bullet mass only, not the complete cartridge or loaded magazine.                                                                                                                                    |
+| `FallSpeed`         | dimensionless gravity multiplier         | Always `1.0` for ordinary ballistic projectiles. A self-propelled projectile capable of sustaining flight is the exception; do not assign it ordinary ballistic gravity.                                                        |
 | `PenetrationAt100m` | millimetres (mm)                         | Research for armour-piercing and heavy anti-materiel rounds: perpendicular penetration at 100 m, preferably in comparable RHA. The current armour gate uses this authored value at every range despite the historical key name. |
 | `ExplosiveMass`     | kilograms of TNT equivalent (kg TNT eq.) | Define only for explosive ammunition. Research explosive filler mass and composition; convert to TNT equivalent when the source permits. Never put projectile mass here.                                                        |
 | `FlakParticles`     | particle count                           | Visual legacy flak-particle count, not fragment count or explosive mass. Small-arms ball ammunition normally uses `0`; it is not a real-world value to research.                                                                |
@@ -509,13 +582,24 @@ The exact positional format is:
 * `penetrationAt100mMm`: millimetres at normal impact; use `0` only when the round
   truly has no modeled armour penetration or no defensible value is intended.
 
-Every round should normally provide all five fields after the name (six tokens in
-total) so zero values are deliberate and the belt is auditable. `AddRound` lines
-accumulate with lines already present in the definition or another category, so
+Choose a meaningful repeating belt for how the ammunition is actually consumed.
+Prefer a documented service belt. If none can be established, inspect every gun,
+ground vehicle and aircraft that uses the item: bias the fallback toward AP when
+it is principally ground-vehicle ammunition and toward HE when it is principally
+aircraft ammunition. For ammunition genuinely shared by both roles, a repeating
+`1 AP : 1 HE` belt is an acceptable last-resort gameplay default. Round names may
+use exact designations such as `Pzgr.L'Spur` and `Sprgr.` rather than generic `AP`
+and `HE`, provided each name remains one token. Record an inferred belt composition
+in the task summary.
+
+Every round must provide all five fields after the name (six tokens in total) so
+zero values are deliberate and the belt is auditable. The category must still
+provide top-level `Mass` and normally `FallSpeed: 1.0`; per-round mass remains
+mandatory because the active shot reads the selected `AddRound` stats. `AddRound`
+lines accumulate with lines already present in the definition or another category, so
 inspect the affected ammo definitions and avoid accidentally appending a second
-belt. Do not also use top-level `Mass`, `ExplosiveMass`, `MuzzleVelocity`, or
-`PenetrationAt100m` as a substitute for per-round stats; the active shot reads its
-`AddRound` stats.
+belt. Do not use top-level `Mass`, `ExplosiveMass`, `MuzzleVelocity`, or
+`PenetrationAt100m` as a substitute for per-round stats.
 
 ### 3. Individual cannon shells (`AddToAmmoGroup`)
 
@@ -539,20 +623,27 @@ vehicle or aircraft with `UseAmmoGroup`:
 }
 ```
 
-Research and normally define:
+Research and define:
 
-* `AddToAmmoGroup`: no unit. Use the exact canonical cannon-family name expected
-  by `UseAmmoGroup`. Matching is case-insensitive and names may contain spaces.
-  Confirm that the consuming weapon/driveable actually uses the same group.
-* `Mass`: complete fired projectile/shell mass in grams, excluding the cartridge
+* `AddToAmmoGroup`: no unit. Use the exact canonical compatible-ammunition family
+  name expected by `UseAmmoGroup`. Matching is case-insensitive and names may
+  contain spaces. A group may intentionally cover several weapons that accept the
+  same ammunition; confirm compatibility rather than grouping merely similar
+  calibres.
+* `Mass`: always provide the complete fired projectile/shell mass in grams,
+  excluding the cartridge
   case and propellant charge. Convert kilograms to grams by multiplying by 1000.
-* `MuzzleVelocity`: metres per second for this shell from the represented gun.
-* `FallSpeed`: dimensionless gravity multiplier; normally `1.0`.
-* `ExplosiveMass`: kilograms TNT equivalent of the bursting charge. Omit for a
-  genuinely inert projectile; never use total shell mass.
-* `PenetrationAt100m`: millimetres at 100 m and normal impact. Research the exact
-  shell/gun combination and identify whether a source quotes 0° from normal or
-  an oblique test before using it.
+* `MuzzleVelocity`: always provide metres per second for this shell from the
+  represented gun.
+* `FallSpeed`: always `1.0` for a ballistic shell. Self-propelled missiles and
+  projectiles capable of sustaining flight are the exception.
+* `ExplosiveMass`: always provide kilograms TNT equivalent of the bursting charge
+  when nonzero; omit it only for a genuinely non-explosive projectile. Never use
+  total shell mass.
+* `PenetrationAt100m`: always provide millimetres at 100 m and normal impact when
+  nonzero; omit it only when zero is intentional. Research the exact shell/gun
+  combination and identify whether a source quotes 0° from normal or an oblique
+  test before using it.
 * `FragType`: optional enum for intentional fragmentation behavior. When used for
   an explosive cannon shell, choose the supported value that describes the
   construction (usually `HE_SHELL`) rather than guessing numeric frag tuning.
@@ -560,6 +651,25 @@ Research and normally define:
 Do not model individual selectable shells as an `AddRound` belt. Conversely, do
 not put a mixed autocannon belt into an ammo group as if the belt's AP and HE
 components were separately selectable items.
+
+`UseAmmoGroup` and `AddToAmmoGroup` are repeatable. Guns, AA guns and driveables
+may use several groups, and one ammunition item may join several compatible
+groups. Author each group as a separate legacy line; in category JSON, use an
+array when there is more than one:
+
+```json
+"UseAmmoGroup": [
+    "75mm KwK/PaK 40",
+    "Compatible 75mm Smoke"
+]
+```
+
+Do not put several group names after one `UseAmmoGroup` statement: the parser
+joins the entire remainder of that line and treats it as one group name, including
+spaces. Group memberships may be revised when compatibility research improves,
+but every change must keep all `AddToAmmoGroup` memberships coherent with every
+category that consumes them through `UseAmmoGroup`. Validate both directions and
+check for unintended duplicate ammunition after combining multiple groups.
 
 ## Grenades: `grenade_categories.json`
 
@@ -684,11 +794,14 @@ As with vehicles, always set quoted `ReadWeaponsFromGunTypes` and
 `RealMassKg` and positive authored hitbox-health weights; inspect the definitions
 so a missing-weight warning is expected rather than a surprise.
 
-Aircraft have no armour keys, so the completeness rule that applies to them is
-simply that a recognizable aircraft should end up with a category. Where the pack
-names a sub-variant whose performance is not separately documented, build it from
-the nearest documented mark, name the category for what was actually authored, and
-record the substitution in the task summary.
+Aircraft have no armour keys, but every key in the table above except the unused
+power/thrust alternatives is mandatory under **Completeness over omission**,
+including `RealClimbRateMs`. Where the pack names a sub-variant whose performance
+is not separately documented, build it from the nearest documented mark, name the
+category for what was actually authored, and record the substitution in the task
+summary. A wingless craft (rotorcraft, airship, balloon) is the only case in which
+`RealWingSpanM` and `RealWingAreaM2` may be absent, and such a definition normally
+should not be given an aircraft category at all.
 
 ## Validation checklist
 
@@ -708,13 +821,17 @@ After every category edit:
    unintended extra `AddRound` lines.
 5. Check unit conversions explicitly, especially kg versus g, hp versus PS, TNT
    equivalent versus filler mass, seconds versus ticks, and MOA versus degrees.
-6. For driveable categories, check the mandatory keys of **Completeness over
-   omission**: `ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth` are
-   `"true"` everywhere; every armoured vehicle has the four hull faces plus a top
-   unless open-topped; every turreted definition has the four turret faces; every
-   tracked vehicle has `PartArmorMm` for `leftTrack` and `rightTrack`; every ground
-   vehicle has `RealMaxReverseSpeedKmh`. List any deliberate exception, with the
-   vehicle and key, in the task summary.
+6. Check every mandatory key of **Completeness over omission**. Ammunition: every
+   category has `Mass` and normally `FallSpeed: 1.0`; shells and missiles also have
+   nonzero `MuzzleVelocity`, `PenetrationAt100m` and `ExplosiveMass` wherever those
+   values are intended to be nonzero. Ground vehicles:
+   mass, one power key, `DriveType`, forward and reverse speed; armoured ones also
+   the five hull faces, turreted ones also the four turret faces, tracked ones also
+   `PartArmorMm` for `leftTrack` and `rightTrack`. Aircraft: mass, one power or
+   thrust key, maximum speed, span, wing area and `RealClimbRateMs`. Both:
+   `ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth` set to `"true"`. No key
+   may be left unset; list every value that came from a game database, from a
+   neighbouring face, or from a gameplay-coherent estimate in the task summary.
 7. Review research consistency: verify that values assigned to each category refer
    to the same real-world variant/configuration. Re-check any value sourced only
    from a game, broad reference, conversion, approximation or disputed historical
