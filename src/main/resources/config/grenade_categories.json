@@ -1,4 +1,16 @@
 {
+
+    "F1 Fragmentation Grenade": {
+        "properties": {
+            "ExplosiveMass": "0.060",
+            "FragType": "STD_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "44_f1frag"
+        ]
+    },
+
     "Geballte Ladung 3kg": {
         "properties": {
             "ExplosiveMass": "3.0",
@@ -7,6 +19,34 @@
         },
         "items": [
             "geballteladung3kg"
+        ]
+    },
+
+    "Kugelrohrhandgranate": {
+        "properties": {
+            "FragType": "STD_FRAG",
+            "Fuse": 140
+        },
+        "items": [
+            "rohrhandgranate"
+        ]
+    },
+
+    "M18A1 Claymore Mine": {
+        "properties": {
+            "FragType": "HIGH_FRAG"
+        },
+        "items": [
+            "claymore"
+        ]
+    },
+
+    "M67 Fragmentation Hand Grenade": {
+        "properties": {
+            "FragType": "HIGH_FRAG"
+        },
+        "items": [
+            "m67"
         ]
     },
 
@@ -33,6 +73,25 @@
         ]
     },
 
+    "Nebelhandgranate 39": {
+        "properties": {
+            "FragType": "DEFAULT",
+            "Fuse": 100
+        },
+        "items": [
+            "44_smokestielhandgranate"
+        ]
+    },
+
+    "No. 73 Mk I Anti-Tank Grenade": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_no73atgrenade"
+        ]
+    },
+
     "RGD-33 Grenade": {
         "properties": {
             "ExplosiveMass": "0.085",
@@ -44,6 +103,16 @@
         ]
     },
 
+    "Satchel": {
+        "properties": {
+            "ExplosiveMass": "3.0",
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_satchelcharge"
+        ]
+    },
+
     "S-Mine 35": {
         "properties": {
             "ExplosiveMass": "0.182",
@@ -52,16 +121,6 @@
         "items": [
             "smine35",
             "44_smine"
-        ]
-    },
-
-    "Satchel": {
-        "properties": {
-            "ExplosiveMass": "3.0",
-            "FragType": "DEFAULT"
-        },
-        "items": [
-            "44_satchelcharge"
         ]
     },
 

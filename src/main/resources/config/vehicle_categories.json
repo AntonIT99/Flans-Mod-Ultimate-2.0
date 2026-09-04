@@ -1,4 +1,835 @@
 {
+    "3 inch Gun Motor Carriage M10": {
+        "properties": {
+            "RealMassKg": 29600,
+            "RealEnginePowerHp": 375,
+            "RealMaxSpeedKmh": 48,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m10wolverine",
+            "m10"
+        ]
+    },
+
+    "7TP": {
+        "properties": {
+            "RealMassKg": 9900,
+            "RealEnginePowerPS": 110,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "7tp"
+        ]
+    },
+
+    "17-pdr SP Achilles": {
+        "properties": {
+            "RealMassKg": 29600,
+            "RealEnginePowerHp": 375,
+            "RealMaxSpeedKmh": 48,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "achilles",
+            "44_achilles"
+        ]
+    },
+
+    "39M Csaba": {
+        "properties": {
+            "RealMassKg": 5950,
+            "RealEnginePowerPS": 90,
+            "RealMaxSpeedKmh": 65,
+            "DriveType": "AWD",
+            "ArmorFrontMm": 9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "39mcsaba"
+        ]
+    },
+
+    "40M Turan I": {
+        "properties": {
+            "RealMassKg": 18200,
+            "RealEnginePowerPS": 260,
+            "RealMaxSpeedKmh": 47,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "turan"
+        ]
+    },
+
+    "75 mm Gun Motor Carriage M3": {
+        "properties": {
+            "RealMassKg": 9070,
+            "RealEnginePowerHp": 147,
+            "RealMaxSpeedKmh": 72,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m3gmc"
+        ]
+    },
+
+    "75 mm Howitzer Motor Carriage M8 Scott": {
+        "properties": {
+            "RealMassKg": 15700,
+            "RealEnginePowerHp": 220,
+            "RealMaxSpeedKmh": 58,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m8hmcscott"
+        ]
+    },
+
+    "105 mm Gun Motor Carriage T95": {
+        "properties": {
+            "RealMassKg": 86300,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 13,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t95gmc"
+        ]
+    },
+
+    "105 mm Howitzer Motor Carriage M7 Priest": {
+        "properties": {
+            "RealMassKg": 22970,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m7priest"
+        ]
+    },
+
+    "A22D Churchill 3 inch Gun Carrier": {
+        "properties": {
+            "RealMassKg": 39600,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 24.6,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "churchill3guncarrier",
+            "44_churchill3guncarrier"
+        ]
+    },
+
+    "A39 Tortoise Heavy Assault Tank": {
+        "properties": {
+            "RealMassKg": 79250,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": 19,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 178,
+            "ArmorTopMm": 33,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "a39"
+        ]
+    },
+
+    "ARL 44": {
+        "properties": {
+            "RealMassKg": 48000,
+            "RealEnginePowerPS": 575,
+            "RealMaxSpeedKmh": 37.2,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 120,
+            "ArmorSideMm": 80,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "arl44"
+        ]
+    },
+
+    "Assault Tank M4A3E2 Jumbo": {
+        "properties": {
+            "RealMassKg": 38000,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m4shermanjumbo",
+            "44_m4a3e2sherman"
+        ]
+    },
+
+    "Bishop 25-pdr SP": {
+        "properties": {
+            "RealMassKg": 17500,
+            "RealEnginePowerHp": 131,
+            "RealMaxSpeedKmh": 24,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_bishop"
+        ]
+    },
+
+    "BMW R75": {
+        "properties": {
+            "RealMassKg": 420,
+            "RealEnginePowerPS": 26,
+            "RealMaxSpeedKmh": 92,
+            "DriveType": "RWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "bmwr75"
+        ]
+    },
+
+    "BT-7 mod. 1937": {
+        "properties": {
+            "RealMassKg": 13900,
+            "RealEnginePowerPS": 450,
+            "RealMaxSpeedKmh": 52,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "betushka71u"
+        ]
+    },
+
+    "BT-42": {
+        "properties": {
+            "RealMassKg": 15000,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 53,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "bt42"
+        ]
+    },
+
+    "Carro Armato M11/39": {
+        "properties": {
+            "RealMassKg": 11175,
+            "RealEnginePowerPS": 105,
+            "RealMaxSpeedKmh": 32.2,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 14.5,
+            "ArmorRearMm": 8,
+            "ArmorTopMm": 6,
+            "ArmorBottomMm": 6,
+            "TurretArmorFrontMm": 30,
+            "TurretArmorSideMm": 30,
+            "TurretArmorRearMm": 30,
+            "TurretArmorTopMm": 6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fiatm11"
+        ]
+    },
+
+    "Carro Armato M13/40": {
+        "properties": {
+            "RealMassKg": 14000,
+            "RealEnginePowerPS": 125,
+            "RealMaxSpeedKmh": 31.8,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m1340carro"
+        ]
+    },
+
+    "Carro Armato M15/42": {
+        "properties": {
+            "RealMassKg": 15500,
+            "RealEnginePowerPS": 192,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m15carroarmato"
+        ]
+    },
+
+    "Carro Armato P26/40": {
+        "properties": {
+            "RealMassKg": 26000,
+            "RealEnginePowerPS": 330,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "p2640"
+        ]
+    },
+
+    "Carro Veloce L3/35": {
+        "properties": {
+            "RealMassKg": 3200,
+            "RealEnginePowerPS": 43,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "cv35"
+        ]
+    },
+
+    "Centurion Mk 3": {
+        "properties": {
+            "RealMassKg": 50800,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": 34.6,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "centurion84"
+        ]
+    },
+
+    "Char 2C": {
+        "properties": {
+            "RealMassKg": 69000,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 15,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "char2c"
+        ]
+    },
+
+    "Char B1 bis": {
+        "properties": {
+            "RealMassKg": 28000,
+            "RealEnginePowerPS": 272,
+            "RealMaxSpeedKmh": 28,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b1bis",
+            "b1"
+        ]
+    },
+
+    "Churchill Mk III AVRE": {
+        "properties": {
+            "RealMassKg": 40000,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 24.6,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "churchill3avre",
+            "44_churchill3avre"
+        ]
+    },
+
+    "Cruiser Tank A27M Cromwell Mk V": {
+        "properties": {
+            "RealMassKg": 27900,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 64,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 64,
+            "TurretArmorFrontMm": 76.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "cromwell",
+            "44_cromwell"
+        ]
+    },
+
+    "Cruiser Tank A30 Challenger": {
+        "properties": {
+            "RealMassKg": 33000,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 51.5,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_challenger"
+        ]
+    },
+
+    "Cruiser Tank Mk VI Crusader Mk III": {
+        "properties": {
+            "RealMassKg": 20000,
+            "RealEnginePowerHp": 340,
+            "RealMaxSpeedKmh": 43,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "crusadermkiii",
+            "44_crusadermkiii"
+        ]
+    },
+
+    "Flakpanzer IV Ostwind": {
+        "properties": {
+            "RealMassKg": 25000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 30,
+            "ArmorTopMm": 20,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 25,
+            "TurretArmorSideMm": 25,
+            "TurretArmorRearMm": 25,
+            "TurretArmorTopMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ostwind"
+        ]
+    },
+
+    "Flakpanzer IV Wirbelwind": {
+        "properties": {
+            "RealMassKg": 22000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 30,
+            "ArmorTopMm": 20,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 16,
+            "TurretArmorSideMm": 16,
+            "TurretArmorRearMm": 16,
+            "TurretArmorTopMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_flakpanzeriv_1a"
+        ]
+    },
+
+    "GAZ-MM": {
+        "properties": {
+            "RealMassKg": 1810,
+            "RealEnginePowerPS": 50,
+            "RealMaxSpeedKmh": 70,
+            "DriveType": "RWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "gazpeaceful",
+            "gazaa"
+        ]
+    },
+
+    "GMC CCKW 353": {
+        "properties": {
+            "RealMassKg": 5420,
+            "RealEnginePowerHp": 91.5,
+            "RealMaxSpeedKmh": 72,
+            "DriveType": "AWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_gmctruck",
+            "ww2_vehicle_gmctruck_1a",
+            "ww2_vehicle_gmctruck_2a"
+        ]
+    },
+
+    "Half-track Car M3": {
+        "properties": {
+            "RealMassKg": 9070,
+            "RealEnginePowerHp": 148,
+            "RealMaxSpeedKmh": 72,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m3halftrack"
+        ]
+    },
+
+    "Hummel (Sd.Kfz. 165)": {
+        "properties": {
+            "RealMassKg": 23000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 20,
+            "ArmorRearMm": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_panzerhaubitzehummel_1a"
+        ]
+    },
+
+    "Infantry Tank A22F Churchill Mk VII": {
+        "properties": {
+            "RealMassKg": 40600,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 21.7,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "churchill7",
+            "churchill"
+        ]
+    },
+
+    "Infantry Tank Mk II Matilda II": {
+        "properties": {
+            "RealMassKg": 25400,
+            "RealEnginePowerHp": 190,
+            "RealMaxSpeedKmh": 24,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "matilda"
+        ]
+    },
+
+    "Infantry Tank Mk III Valentine Mk II": {
+        "properties": {
+            "RealMassKg": 16257,
+            "RealEnginePowerHp": 131,
+            "RealMaxSpeedKmh": 24,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "valentinemk2",
+            "44_valentineii"
+        ]
+    },
+
+    "Infantry Tank Mk IV A22 Churchill Mk III": {
+        "properties": {
+            "RealMassKg": 39600,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 24.6,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "churchillmk3",
+            "44_churchill3"
+        ]
+    },
+
+    "IS-2 mod. 1944": {
+        "properties": {
+            "RealMassKg": 46000,
+            "RealEnginePowerPS": 520,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "100 60",
+            "TurretArmorFrontMm": 100,
+            "TurretArmorSideMm": "90 20",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "stalin1944",
+            "44_is2",
+            "is2"
+        ]
+    },
+
+    "IS-3": {
+        "properties": {
+            "RealMassKg": 45800,
+            "RealEnginePowerPS": 520,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "110 55",
+            "ArmorSideMm": "90 60",
+            "ArmorRearMm": "60 48",
+            "ArmorTopMm": 25,
+            "ArmorBottomMm": 20,
+            "TurretArmorFrontMm": 250,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "is3"
+        ]
+    },
+
+    "IS-7": {
+        "properties": {
+            "RealMassKg": 68000,
+            "RealEnginePowerPS": 1050,
+            "RealMaxSpeedKmh": 60,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "150 65",
+            "ArmorSideMm": 150,
+            "TurretArmorFrontMm": "250 65",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "stalin7"
+        ]
+    },
+
+    "ISU-152": {
+        "properties": {
+            "RealMassKg": 47300,
+            "RealEnginePowerPS": 520,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 90,
+            "ArmorSideMm": 75,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "jagdstalin"
+        ]
+    },
+
+    "Jagdpanther": {
+        "properties": {
+            "RealMassKg": 46000,
+            "RealEnginePowerPS": 700,
+            "RealMaxSpeedKmh": 30,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "80 60",
+            "ArmorSideMm": "50 30",
+            "ArmorRearMm": "40 35",
+            "ArmorTopMm": 25,
+            "ArmorBottomMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_jagdpanther_1a"
+        ]
+    },
+
+    "Jagdpanzer 38(t) Hetzer": {
+        "properties": {
+            "RealMassKg": 16000,
+            "RealEnginePowerPS": 150,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 60,
+            "ArmorSideMm": 20,
+            "ArmorRearMm": 20,
+            "ArmorTopMm": 8,
+            "ArmorBottomMm": 10,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hetzer"
+        ]
+    },
+
+    "Jagdtiger": {
+        "properties": {
+            "RealMassKg": 75200,
+            "RealEnginePowerPS": 600,
+            "RealMaxSpeedKmh": 34.6,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 250,
+            "ArmorSideMm": 80,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 40,
+            "ArmorBottomMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_jagdtiger_1a"
+        ]
+    },
+
+    "Komsomolets T-20": {
+        "properties": {
+            "RealMassKg": 3500,
+            "RealEnginePowerPS": 71,
+            "RealMaxSpeedKmh": 50,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t20",
+            "44_t20"
+        ]
+    },
+
+    "KV-1E mod. 1941": {
+        "properties": {
+            "RealMassKg": 47500,
+            "RealEnginePowerPS": 600,
+            "RealMaxSpeedKmh": 34,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kv1",
+            "44_kv1e"
+        ]
+    },
+
+    "KV-2 mod. 1940": {
+        "properties": {
+            "RealMassKg": 53800,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 25,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kv2normal",
+            "44_kv2"
+        ]
+    },
+
+    "Light Armored Car M8 Greyhound": {
+        "properties": {
+            "RealMassKg": 7440,
+            "RealEnginePowerHp": 110,
+            "RealMaxSpeedKmh": 89,
+            "DriveType": "AWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m8greyhound",
+            "44_m8greyhound",
+            "greyhound"
+        ]
+    },
+
+    "Light Tank M3 Stuart": {
+        "properties": {
+            "RealMassKg": 12700,
+            "RealEnginePowerHp": 250,
+            "RealMaxSpeedKmh": 58,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m3stuartlittle"
+        ]
+    },
+
+    "Light Tank M5A1 Stuart": {
+        "properties": {
+            "RealMassKg": 15200,
+            "RealEnginePowerHp": 220,
+            "RealMaxSpeedKmh": 58,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m5stuartlittle",
+            "44_m5a1stuart"
+        ]
+    },
+
+    "Light Tank M24 Chaffee": {
+        "properties": {
+            "RealMassKg": 18370,
+            "RealEnginePowerHp": 220,
+            "RealMaxSpeedKmh": 56,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m24chaffee",
+            "chaffee"
+        ]
+    },
+
     "M18 Hellcat": {
         "properties": {
             "RealMassKg": 17036,
@@ -21,7 +852,481 @@
         },
         "items": [
             "44_m18hellcat",
-            "hellcat"
+            "hellcat",
+            "m18"
+        ]
+    },
+
+    "Marder II (Sd.Kfz. 131)": {
+        "properties": {
+            "RealMassKg": 11000,
+            "RealEnginePowerPS": 140,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "35 15",
+            "ArmorSideMm": "14.5 0",
+            "ArmorRearMm": "14.5 10",
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "marder2",
+            "44_marder2"
+        ]
+    },
+
+    "Medium Tank M3 Lee": {
+        "properties": {
+            "RealMassKg": 27200,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 51,
+            "ArmorSideMm": 38,
+            "ArmorRearMm": 38,
+            "TurretArmorFrontMm": 51,
+            "TurretArmorSideMm": 51,
+            "TurretArmorRearMm": 51,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "lee",
+            "44_m3lee"
+        ]
+    },
+
+    "Medium Tank M4 Sherman (75 mm)": {
+        "properties": {
+            "RealMassKg": 30300,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m4sherman",
+            "44_m4sherman",
+            "sherman"
+        ]
+    },
+
+    "Medium Tank M4 Sherman with T34 Calliope": {
+        "properties": {
+            "RealMassKg": 31400,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m4shermancalliope",
+            "44_m4shermant34calliope",
+            "ww2_vehicle_m4a1_2a"
+        ]
+    },
+
+    "Medium Tank M4A1 Sherman (75 mm)": {
+        "properties": {
+            "RealMassKg": 30300,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m4a1sherman",
+            "ww2_vehicle_m4a1_1a"
+        ]
+    },
+
+    "Medium Tank M4A3 (76) W HVSS": {
+        "properties": {
+            "RealMassKg": 33650,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m4a3sherman76",
+            "44_m4a3e8sherman",
+            "fury"
+        ]
+    },
+
+    "Medium Tank M4A3 Sherman (75 mm)": {
+        "properties": {
+            "RealMassKg": 30300,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_m4a3_1a"
+        ]
+    },
+
+    "Medium Tank M26 Pershing": {
+        "properties": {
+            "RealMassKg": 41892,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 14,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "pershing",
+            "44_m26"
+        ]
+    },
+
+    "Opel Blitz 3,6-36S": {
+        "properties": {
+            "RealMassKg": 2500,
+            "RealEnginePowerPS": 68,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "RWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_opelblitz",
+            "ww2_vehicle_opelblitz_1a",
+            "ww2_vehicle_opelblitz_2a"
+        ]
+    },
+
+    "Panhard 178 AMD 35": {
+        "properties": {
+            "RealMassKg": 8200,
+            "RealEnginePowerPS": 105,
+            "RealMaxSpeedKmh": 72,
+            "DriveType": "AWD",
+            "ArmorFrontMm": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panhard"
+        ]
+    },
+
+    "Panzer IV/70 (V)": {
+        "properties": {
+            "RealMassKg": 25500,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorTopMm": 20,
+            "ArmorBottomMm": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_jagdpanzeriv_1a"
+        ]
+    },
+
+    "Panzerkampfwagen 38(t) Ausf. A": {
+        "properties": {
+            "RealMassKg": 9730,
+            "RealEnginePowerPS": 125,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 25,
+            "ArmorSideMm": 15,
+            "ArmorRearMm": 15,
+            "ArmorTopMm": 8,
+            "ArmorBottomMm": 8,
+            "TurretArmorFrontMm": 25,
+            "TurretArmorSideMm": 15,
+            "TurretArmorRearMm": 15,
+            "TurretArmorTopMm": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "38t",
+            "44_panzer38t"
+        ]
+    },
+
+    "Panzerkampfwagen II Ausf. C": {
+        "properties": {
+            "RealMassKg": 8900,
+            "RealEnginePowerPS": 140,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "pz2c",
+            "44_panzer2c"
+        ]
+    },
+
+    "Panzerkampfwagen II Ausf. L Luchs": {
+        "properties": {
+            "RealMassKg": 11800,
+            "RealEnginePowerPS": 180,
+            "RealMaxSpeedKmh": 60,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzeriil"
+        ]
+    },
+
+    "Panzerkampfwagen III Ausf. F": {
+        "properties": {
+            "RealMassKg": 19500,
+            "RealEnginePowerPS": 285,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer3f",
+            "44_panzeriiif"
+        ]
+    },
+
+    "Panzerkampfwagen III Ausf. J": {
+        "properties": {
+            "RealMassKg": 21600,
+            "RealEnginePowerPS": 285,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzerkampfvageniii"
+        ]
+    },
+
+    "Panzerkampfwagen III Ausf. L": {
+        "properties": {
+            "RealMassKg": 22500,
+            "RealEnginePowerPS": 285,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer3m",
+            "44_panzeriiim"
+        ]
+    },
+
+    "Panzerkampfwagen IV Ausf. D": {
+        "properties": {
+            "RealMassKg": 20000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer4c"
+        ]
+    },
+
+    "Panzerkampfwagen IV Ausf. F1": {
+        "properties": {
+            "RealMassKg": 22300,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 50,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 50,
+            "TurretArmorSideMm": 30,
+            "TurretArmorRearMm": 30,
+            "TurretArmorTopMm": 10,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_panzerivf1"
+        ]
+    },
+
+    "Panzerkampfwagen IV Ausf. F2/G": {
+        "properties": {
+            "RealMassKg": 23600,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer4f2",
+            "44_panzerivf2",
+            "ww2_vehicle_panzeriv_1a"
+        ]
+    },
+
+    "Panzerkampfwagen IV Ausf. H": {
+        "properties": {
+            "RealMassKg": 25000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 20,
+            "ArmorTopMm": 11,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 80,
+            "TurretArmorSideMm": 30,
+            "TurretArmorRearMm": 30,
+            "TurretArmorTopMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer4h",
+            "44_panzerivh",
+            "ww2_vehicle_panzeriv_2a",
+            "panzerkampfvageniv"
+        ]
+    },
+
+    "Panzerkampfwagen IV Ausf. J": {
+        "properties": {
+            "RealMassKg": 25000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer4j",
+            "panzer4jsnow"
+        ]
+    },
+
+    "Panzerkampfwagen Tiger Ausf. B": {
+        "properties": {
+            "RealMassKg": 69800,
+            "RealEnginePowerPS": 600,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "150 50",
+            "ArmorSideMm": "80 25",
+            "ArmorRearMm": "80 30",
+            "ArmorTopMm": 40,
+            "ArmorBottomMm": 25,
+            "TurretArmorFrontMm": "180 9",
+            "TurretArmorSideMm": "80 21",
+            "TurretArmorRearMm": "80 21",
+            "TurretArmorTopMm": 40,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tigerdos",
+            "44_tiger2",
+            "tigerii",
+            "ww2_vehicle_tigerii_1a"
+        ]
+    },
+
+    "Panzerkampfwagen V Panther Ausf. D": {
+        "properties": {
+            "RealMassKg": 45500,
+            "RealEnginePowerPS": 650,
+            "RealMaxSpeedKmh": 46,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 3.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panther"
+        ]
+    },
+
+    "Panzerkampfwagen V Panther Ausf. G": {
+        "properties": {
+            "RealMassKg": 45500,
+            "RealEnginePowerPS": 600,
+            "RealMaxSpeedKmh": 46,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 3.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_pantherg",
+            "44_panthercommand",
+            "ww2_vehicle_panther_1a"
+        ]
+    },
+
+    "Panzerkampfwagen VI (P) Tiger (P)": {
+        "properties": {
+            "RealMassKg": 60000,
+            "RealEnginePowerPS": 620,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 100,
+            "ArmorSideMm": 80,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 25,
+            "ArmorBottomMm": 25,
+            "TurretArmorSideMm": 80,
+            "TurretArmorRearMm": 80,
+            "TurretArmorTopMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_tigerp"
+        ]
+    },
+
+    "Panzerkampfwagen VI Ausf. E Tiger": {
+        "properties": {
+            "RealMassKg": 57000,
+            "RealEnginePowerPS": 700,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "100 9",
+            "ArmorSideMm": 80,
+            "ArmorRearMm": "80 9",
+            "ArmorTopMm": 25,
+            "ArmorBottomMm": 25,
+            "TurretArmorSideMm": 80,
+            "TurretArmorRearMm": 80,
+            "TurretArmorTopMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_tigeri_1a"
         ]
     },
 
@@ -52,7 +1357,732 @@
             "tiger",
             "tiger131",
             "tigersnow",
-            "tigeri"
+            "tigeri",
+            "tigerilate"
+        ]
+    },
+
+    "Panzerkampfwagen VIII Maus": {
+        "properties": {
+            "RealMassKg": 188000,
+            "RealEnginePowerPS": 1540,
+            "RealMaxSpeedKmh": 20,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 200,
+            "ArmorSideMm": 180,
+            "ArmorRearMm": 180,
+            "ArmorTopMm": 50,
+            "ArmorBottomMm": 50,
+            "TurretArmorFrontMm": 220,
+            "TurretArmorSideMm": 200,
+            "TurretArmorRearMm": 200,
+            "TurretArmorTopMm": 60,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "maus"
+        ]
+    },
+
+    "Renault AMC 35": {
+        "properties": {
+            "RealMassKg": 14500,
+            "RealEnginePowerPS": 180,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "amc35"
+        ]
+    },
+
+    "Renault FT": {
+        "properties": {
+            "RealMassKg": 6500,
+            "RealEnginePowerPS": 39,
+            "RealMaxSpeedKmh": 7,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "renaultmale",
+            "renaultfemale",
+            "ww2_vehicle_renault17_1a"
+        ]
+    },
+
+    "Sd.Kfz. 2 Kettenkrad HK 101": {
+        "properties": {
+            "RealMassKg": 1560,
+            "RealEnginePowerPS": 36,
+            "RealMaxSpeedKmh": 70,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kettenkrad",
+            "sdkfz2"
+        ]
+    },
+
+    "Sd.Kfz. 222 leichter Panzerspahwagen Ausf. A": {
+        "properties": {
+            "RealMassKg": 4800,
+            "RealEnginePowerPS": 75,
+            "RealMaxSpeedKmh": 85,
+            "DriveType": "AWD",
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 8,
+            "ArmorRearMm": 8,
+            "ArmorTopMm": 5.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sdkfz222"
+        ]
+    },
+
+    "Sd.Kfz. 234/2 Puma": {
+        "properties": {
+            "RealMassKg": 11740,
+            "RealEnginePowerPS": 220,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "AWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "pumaww2",
+            "44_puma"
+        ]
+    },
+
+    "Sd.Kfz. 251/1 Ausf. D": {
+        "properties": {
+            "RealMassKg": 7000,
+            "RealEnginePowerPS": 100,
+            "RealMaxSpeedKmh": 52.5,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 9,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "sdkfz251d",
+            "sdkfz251dambush",
+            "sdkfz251ddesert",
+            "sdkfz251dsnow"
+        ]
+    },
+
+    "Sd.Kfz. 251/1 mittlerer Schutzenpanzerwagen": {
+        "properties": {
+            "RealMassKg": 7000,
+            "RealEnginePowerPS": 100,
+            "RealMaxSpeedKmh": 52.5,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 9,
+            "ArmorFrontMm": 14.5,
+            "ArmorSideMm": 8,
+            "ArmorRearMm": 8,
+            "ArmorBottomMm": 5.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hanomag",
+            "sdkfz251",
+            "44_sdkfz251hanomag"
+        ]
+    },
+
+    "Semovente da 75/18": {
+        "properties": {
+            "RealMassKg": 13100,
+            "RealEnginePowerPS": 125,
+            "RealMaxSpeedKmh": 31.8,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "semovente7518"
+        ]
+    },
+
+    "Semovente da 75/34": {
+        "properties": {
+            "RealMassKg": 15000,
+            "RealEnginePowerPS": 192,
+            "RealMaxSpeedKmh": 32,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 42,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "semovente7534"
+        ]
+    },
+
+    "Semovente da 90/53": {
+        "properties": {
+            "RealMassKg": 17000,
+            "RealEnginePowerPS": 145,
+            "RealMaxSpeedKmh": 25,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 30,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "semovente90"
+        ]
+    },
+
+    "Sherman VC Firefly": {
+        "properties": {
+            "RealMassKg": 35300,
+            "RealEnginePowerHp": 425,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "firefly",
+            "44_firefly"
+        ]
+    },
+
+    "SOMUA S35": {
+        "properties": {
+            "RealMassKg": 19500,
+            "RealEnginePowerPS": 190,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 47,
+            "ArmorSideMm": 40,
+            "ArmorTopMm": 20,
+            "TurretArmorFrontMm": 42,
+            "TurretArmorSideMm": 40,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "s35"
+        ]
+    },
+
+    "Stridsvagn m/42": {
+        "properties": {
+            "RealMassKg": 22500,
+            "RealEnginePowerPS": 324,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "strvm42"
+        ]
+    },
+
+    "Sturmgeschutz III Ausf. G": {
+        "properties": {
+            "RealMassKg": 23900,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 30,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "stug3",
+            "44_stug3g"
+        ]
+    },
+
+    "Sturmgeschutz IV": {
+        "properties": {
+            "RealMassKg": 25900,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 30,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 10,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_stugiv",
+            "stug"
+        ]
+    },
+
+    "Sturmmorserwagen 606/4 mit 38 cm RW 61": {
+        "properties": {
+            "RealMassKg": 65000,
+            "RealEnginePowerPS": 650,
+            "RealMaxSpeedKmh": 37.5,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 150,
+            "ArmorSideMm": 80,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 40,
+            "ArmorBottomMm": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sturmtiger",
+            "sturmtigerop"
+        ]
+    },
+
+    "SU-76M": {
+        "properties": {
+            "RealMassKg": 10500,
+            "RealEnginePowerPS": 140,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 35,
+            "ArmorSideMm": 15,
+            "ArmorRearMm": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_su76m"
+        ]
+    },
+
+    "SU-85": {
+        "properties": {
+            "RealMassKg": 29600,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 55,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "45 50",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "su85",
+            "44_su85",
+            "ww2_vehicle_su85_1a"
+        ]
+    },
+
+    "SU-100": {
+        "properties": {
+            "RealMassKg": 31600,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 48,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 75,
+            "ArmorSideMm": 45,
+            "ArmorRearMm": 45,
+            "ArmorTopMm": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_su100",
+            "ww2_vehicle_su100_1a"
+        ]
+    },
+
+    "T-26 mod. 1933": {
+        "properties": {
+            "RealMassKg": 9600,
+            "RealEnginePowerPS": 90,
+            "RealMaxSpeedKmh": 31,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t26"
+        ]
+    },
+
+    "T-34-76 mod. 1940": {
+        "properties": {
+            "RealMassKg": 26500,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 55,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "45 60",
+            "ArmorSideMm": "45 40",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t3476mod40",
+            "44_t3476mod1940"
+        ]
+    },
+
+    "T-34-76 mod. 1942": {
+        "properties": {
+            "RealMassKg": 30900,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 55,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "45 60",
+            "ArmorSideMm": "45 40",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t3476",
+            "44_t3476",
+            "ww2_vehicle_t34_1a"
+        ]
+    },
+
+    "T-34-85 mod. 1944": {
+        "properties": {
+            "RealMassKg": 32000,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 55,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": "45 60",
+            "ArmorSideMm": "45 40",
+            "TurretArmorFrontMm": 90,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t3485",
+            "44_t3485",
+            "t34",
+            "ww2_vehicle_t34_2a"
+        ]
+    },
+
+    "T-35A": {
+        "properties": {
+            "RealMassKg": 45000,
+            "RealEnginePowerPS": 500,
+            "RealMaxSpeedKmh": 30,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t35"
+        ]
+    },
+
+    "T-60": {
+        "properties": {
+            "RealMassKg": 5800,
+            "RealEnginePowerPS": 70,
+            "RealMaxSpeedKmh": 44,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t60"
+        ]
+    },
+
+    "T-70": {
+        "properties": {
+            "RealMassKg": 9200,
+            "RealEnginePowerPS": 140,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t70",
+            "44_t70"
+        ]
+    },
+
+    "TKS": {
+        "properties": {
+            "RealMassKg": 2650,
+            "RealEnginePowerPS": 46,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tks",
+            "tks20"
+        ]
+    },
+
+    "TOG II*": {
+        "properties": {
+            "RealMassKg": 81300,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 13.7,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 114,
+            "ArmorSideMm": 76,
+            "ArmorRearMm": 50,
+            "TurretArmorFrontMm": 114,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tog2redemption"
+        ]
+    },
+
+    "Type 1 Chi-He": {
+        "properties": {
+            "RealMassKg": 17200,
+            "RealEnginePowerPS": 240,
+            "RealMaxSpeedKmh": 44,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_chihe"
+        ]
+    },
+
+    "Type 1 Ho-Ni I": {
+        "properties": {
+            "RealMassKg": 15400,
+            "RealEnginePowerPS": 170,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "honi",
+            "44_type1honi1"
+        ]
+    },
+
+    "Type 2 Ho-I": {
+        "properties": {
+            "RealMassKg": 16100,
+            "RealEnginePowerPS": 240,
+            "RealMaxSpeedKmh": 44,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_hoi"
+        ]
+    },
+
+    "Type 2 Ka-Mi": {
+        "properties": {
+            "RealMassKg": 12300,
+            "RealEnginePowerPS": 115,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_type2kami"
+        ]
+    },
+
+    "Type 3 Chi-Nu": {
+        "properties": {
+            "RealMassKg": 19000,
+            "RealEnginePowerPS": 240,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_chinu",
+            "chinu"
+        ]
+    },
+
+    "Type 3 Ho-Ni III": {
+        "properties": {
+            "RealMassKg": 17000,
+            "RealEnginePowerPS": 170,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_type3honi3"
+        ]
+    },
+
+    "Type 4 Ho-Ro": {
+        "properties": {
+            "RealMassKg": 16300,
+            "RealEnginePowerPS": 170,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "horo",
+            "44_type4horo",
+            "type4horo"
+        ]
+    },
+
+    "Type 5 Chi-Ri": {
+        "properties": {
+            "RealMassKg": 37600,
+            "RealEnginePowerPS": 550,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_chiri"
+        ]
+    },
+
+    "Type 89 I-Go Ko": {
+        "properties": {
+            "RealMassKg": 12790,
+            "RealEnginePowerPS": 120,
+            "RealMaxSpeedKmh": 26,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_igo"
+        ]
+    },
+
+    "Type 95 Ha-Go": {
+        "properties": {
+            "RealMassKg": 7400,
+            "RealEnginePowerPS": 120,
+            "RealMaxSpeedKmh": 45,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 12,
+            "ArmorSideMm": 12,
+            "ArmorRearMm": 6,
+            "ArmorTopMm": 9,
+            "TurretArmorFrontMm": 12,
+            "TurretArmorSideMm": 12,
+            "TurretArmorRearMm": 12,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hago",
+            "44_hago"
+        ]
+    },
+
+    "Type 97 Chi-Ha": {
+        "properties": {
+            "RealMassKg": 15000,
+            "RealEnginePowerPS": 170,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "chiha",
+            "44_chiha"
+        ]
+    },
+
+    "Type 97 Chi-Ha Kai": {
+        "properties": {
+            "RealMassKg": 15800,
+            "RealEnginePowerPS": 170,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "chihakai",
+            "44_chihakai"
+        ]
+    },
+
+    "Universal Carrier": {
+        "properties": {
+            "RealMassKg": 3800,
+            "RealEnginePowerHp": 85,
+            "RealMaxSpeedKmh": 48,
+            "DriveType": "TRACKED",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "universalcarrier",
+            "uc2pdr"
+        ]
+    },
+
+    "Volkswagen Typ 82 Kubelwagen": {
+        "properties": {
+            "RealMassKg": 715,
+            "RealEnginePowerPS": 25,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "RWD",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kubelmg42",
+            "kubel",
+            "44_kubelwagenmg34",
+            "44_kubelwagenmg42",
+            "ww2_vehicle_vwtype82_1a"
+        ]
+    },
+
+    "Wespe (Sd.Kfz. 124)": {
+        "properties": {
+            "RealMassKg": 11000,
+            "RealEnginePowerPS": 140,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 14.5,
+            "ArmorRearMm": 14.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wespe",
+            "44_wespe"
         ]
     },
 
@@ -68,7 +2098,29 @@
         },
         "items": [
             "44_willys30cal",
-            "44_willys50cal"
+            "44_willys50cal",
+            "willyjeepy",
+            "jeep",
+            "sasjeep",
+            "ww2_vehicle_willyjeep_1a",
+            "ww2_vehicle_willyjeep_1ausa"
+        ]
+    },
+
+    "ZiS-30": {
+        "properties": {
+            "RealMassKg": 4000,
+            "RealEnginePowerPS": 50,
+            "RealMaxSpeedKmh": 40,
+            "DriveType": "TRACKED",
+            "ArmorFrontMm": 10,
+            "ArmorSideMm": 7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zis30",
+            "44_zis30"
         ]
     }
 }

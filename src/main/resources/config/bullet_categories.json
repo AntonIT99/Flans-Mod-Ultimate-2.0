@@ -1,4 +1,5 @@
 {
+
     "4.6x30mm HK": {
         "properties": {
             "Mass": 2.0,
@@ -18,7 +19,8 @@
         },
         "items": [
             "ak74ammo",
-            "an94ammo"
+            "an94ammo",
+            "aks74ammo"
         ]
     },
 
@@ -68,7 +70,45 @@
         },
         "items": [
             "type38ammo",
-            "44_type3899ammo"
+            "44_type3899ammo",
+            "type_96_mag",
+            "fedorovammo"
+        ]
+    },
+
+    "6.5x50mmSR Arisaka Type 30 Ball": {
+        "properties": {
+            "Mass": 10.1,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "arisakaammo"
+        ]
+    },
+
+    "6.5x52mm Carcano M91 Ball": {
+        "properties": {
+            "Mass": 10.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "breda30ammo",
+            "carcanoammo"
+        ]
+    },
+
+    "7.5x54mm Mle 1929C Balle C": {
+        "properties": {
+            "Mass": 9.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "fm2429ammo",
+            "frenchoidammomas36",
+            "frenchoidammomas49"
         ]
     },
 
@@ -83,7 +123,8 @@
             "tt33ammo",
             "44_ppsh41ammo",
             "44_tt33ammo",
-            "44_pps43ammo"
+            "44_pps43ammo",
+            "zastavam57ammo"
         ]
     },
 
@@ -95,7 +136,8 @@
         },
         "items": [
             "m1carbineammo",
-            "44_m1carbineammo"
+            "44_m1carbineammo",
+            "m2carbineammo"
         ]
     },
 
@@ -107,6 +149,18 @@
         },
         "items": [
             "honeybadgerammo"
+        ]
+    },
+
+    "7.62x38mmR Nagant FMJ": {
+        "properties": {
+            "Mass": 7.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m1895ammo",
+            "m1894ammo"
         ]
     },
 
@@ -136,23 +190,6 @@
         ]
     },
 
-    "7.62x54mmR 57-N-323S": {
-        "properties": {
-            "Mass": 9.6,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "dp28ammo",
-            "nagantammo",
-            "dragunovammo",
-            "44_dp28ammo",
-            "44_dt28ammo",
-            "44_mosinnagantammo",
-            "44_svt40ammo"
-        ]
-    },
-
     "7.62x51mm NATO M80": {
         "properties": {
             "Mass": 9.5,
@@ -171,6 +208,24 @@
             "7.62x51mm200rounds",
             "7.62x51mm750rounds",
             "7.62x51mm2600rounds"
+        ]
+    },
+
+    "7.62x54mmR 57-N-323S": {
+        "properties": {
+            "Mass": 9.6,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "dp28ammo",
+            "nagantammo",
+            "dragunovammo",
+            "44_dp28ammo",
+            "44_dt28ammo",
+            "44_mosinnagantammo",
+            "44_svt40ammo",
+            "avt40ammo"
         ]
     },
 
@@ -205,7 +260,8 @@
         },
         "items": [
             "c96ammo",
-            "44_c96ammo"
+            "44_c96ammo",
+            "mauserc96ammo"
         ]
     },
 
@@ -217,7 +273,30 @@
         },
         "items": [
             "skorpionammo",
-            "44_ppkammo"
+            "44_ppkammo",
+            "rubyammo2"
+        ]
+    },
+
+    "7.65x17mm Frommer Long": {
+        "properties": {
+            "Mass": 4.65,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "frommerstopammo"
+        ]
+    },
+
+    "7.65x20mm Longue Mle 1935 Ball": {
+        "properties": {
+            "Mass": 5.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "mas38ammo"
         ]
     },
 
@@ -305,6 +384,19 @@
         ]
     },
 
+    "7.92x57mm S-Patrone": {
+        "properties": {
+            "Mass": 10.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "g98ammo",
+            "kar98ammo",
+            "mg15ammo"
+        ]
+    },
+
     "7.92x94mm P318": {
         "properties": {
             "Mass": 14.58,
@@ -331,6 +423,66 @@
         ]
     },
 
+    "8x27mmR French Ordnance": {
+        "properties": {
+            "Mass": 7.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "mdle1892ammo",
+            "modele1892ammo"
+        ]
+    },
+
+    "8x50mmR Lebel Balle D": {
+        "properties": {
+            "Mass": 12.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "chauchautammo",
+            "chauchatammo",
+            "mle1914belt",
+            "berthierammo",
+            "lebelammo"
+        ]
+    },
+
+    "8x50mmR Steyr M90": {
+        "properties": {
+            "Mass": 15.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m95ammo"
+        ]
+    },
+
+    "8x59mm M35 Breda Ball": {
+        "properties": {
+            "Mass": 13.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "breda38ammo"
+        ]
+    },
+
+    "9x17mm Browning Short M34 Ball": {
+        "properties": {
+            "Mass": 6.2,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m1934ammo"
+        ]
+    },
+
     "9x18mm Makarov": {
         "properties": {
             "Mass": 6.0,
@@ -339,7 +491,8 @@
         },
         "items": [
             "bizonAmmo",
-            "makarovammo"
+            "makarovammo",
+            "makarovpmammo"
         ]
     },
 
@@ -365,7 +518,28 @@
             "emp4ammo",
             "glockammo",
             "m9ammo",
-            "sigp226ammo"
+            "sigp226ammo",
+            "berettam38ammo",
+            "bestfriendammo25rounds",
+            "bestfriendammo50rounds",
+            "bestfriendammo100rounds",
+            "waltherp38ammo",
+            "lahtil35ammo",
+            "mp41ammo",
+            "p8ammo",
+            "mp18drumammo",
+            "mp18stickammo"
+        ]
+    },
+
+    "9x23mm Steyr FMJ": {
+        "properties": {
+            "Mass": 7.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m1912ammo"
         ]
     },
 
@@ -377,6 +551,17 @@
         },
         "items": [
             "357magnum"
+        ]
+    },
+
+    "11x23mmR .44 Henry Rimfire": {
+        "properties": {
+            "Mass": 13.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "henryammo"
         ]
     },
 
@@ -397,6 +582,17 @@
             "44_greasegunammo",
             "44_thompsonm1a1ammo",
             "m1911ammo"
+        ]
+    },
+
+    "11.5mm .451 Whitworth Hexagonal Bullet": {
+        "properties": {
+            "Mass": 34.3,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "whitworthammo"
         ]
     },
 
@@ -436,7 +632,10 @@
             "browning50calammotracer",
             "barrettammo",
             "barrettcompactammo",
-            "gau19ammo"
+            "gau19ammo",
+            "ammonatocal50",
+            "ww2_ammo_mg532",
+            "ww2_ammo_usacal50"
         ]
     },
 
@@ -459,7 +658,8 @@
             "PenetrationAt100m": 22
         },
         "items": [
-            "44_berezinubmgammo"
+            "44_berezinubmgammo",
+            "twelvecalru"
         ]
     },
 
@@ -473,6 +673,28 @@
         },
         "items": [
             "44_mg131ammo"
+        ]
+    },
+
+    "13.9x99mmB .55 Boys Mk I Ball": {
+        "properties": {
+            "Mass": 47.6,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "boysrifleammo"
+        ]
+    },
+
+    "14x22mmR .56-56 Spencer": {
+        "properties": {
+            "Mass": 22.7,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "spencerammo"
         ]
     },
 
@@ -526,6 +748,15 @@
         ]
     },
 
+    "66mm M72A2/A3 LAW HEAT Rocket": {
+        "properties": {
+            "Mass": 1800.0
+        },
+        "items": [
+            "m72lawammo"
+        ]
+    },
+
     "75mm Pzgr.39": {
         "properties": {
             "AddToAmmoGroup": "75mm KwK/PaK 40",
@@ -538,6 +769,20 @@
         "items": [
             "ww2_shell_german75mmkwk40ap",
             "ww2_shell_german75mmap"
+        ]
+    },
+
+    "75mm PzGr 39/42": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 42",
+            "Mass": 6800,
+            "MuzzleVelocity": 935,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.029,
+            "PenetrationAt100m": 188
+        },
+        "items": [
+            "ww2_shell_german75mmaplong"
         ]
     },
 
@@ -568,17 +813,17 @@
         ]
     },
 
-    "75mm PzGr 39/42": {
+    "88mm Gr.39 Hl": {
         "properties": {
-            "AddToAmmoGroup": "75mm KwK/PaK 42",
-            "Mass": 6800,
-            "MuzzleVelocity": 935,
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 7600,
+            "MuzzleVelocity": 600,
             "FallSpeed": 1.0,
-            "ExplosiveMass": 0.029,
-            "PenetrationAt100m": 188
+            "ExplosiveMass": 1.1,
+            "PenetrationAt100m": 110
         },
         "items": [
-            "ww2_shell_german75mmaplong"
+            "ww2_shell_german88mmkwk36heat"
         ]
     },
 
@@ -595,6 +840,20 @@
             "ww2_shell_german88mmap",
             "ww2_shell_german88mmkwk36ap",
             "44_88apshell"
+        ]
+    },
+
+    "88mm PzGr.39/43": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Pak 43",
+            "Mass": 10200,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.109,
+            "PenetrationAt100m": 234
+        },
+        "items": [
+            "ww2_shell_german88mmaplong"
         ]
     },
 
@@ -626,34 +885,6 @@
         ]
     },
 
-    "88mm Gr.39 Hl": {
-        "properties": {
-            "AddToAmmoGroup": "88mm KwK/Flak 36",
-            "Mass": 7600,
-            "MuzzleVelocity": 600,
-            "FallSpeed": 1.0,
-            "ExplosiveMass": 1.1,
-            "PenetrationAt100m": 110
-        },
-        "items": [
-            "ww2_shell_german88mmkwk36heat"
-        ]
-    },
-
-    "88mm PzGr.39/43": {
-        "properties": {
-            "AddToAmmoGroup": "88mm KwK/Pak 43",
-            "Mass": 10200,
-            "MuzzleVelocity": 1000,
-            "FallSpeed": 1.0,
-            "ExplosiveMass": 0.109,
-            "PenetrationAt100m": 234
-        },
-        "items": [
-            "ww2_shell_german88mmaplong"
-        ]
-    },
-
     "128mm PzGr.": {
         "properties": {
             "AddToAmmoGroup": "128mm KwK/Pak 44",
@@ -679,6 +910,143 @@
         },
         "items": [
             "ww2_shell_german150mmhe"
+        ]
+    },
+
+    "155mm/60 3rd Year Type 0 Common Shell": {
+        "properties": {
+            "AddToAmmoGroup": "155mm/60 3rd Year Type",
+            "Mass": 55870,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "155mmtype0heshell",
+            "155mmtype0heshellsalvo"
+        ]
+    },
+
+    "155mm/60 3rd Year Type 91 AP Shell": {
+        "properties": {
+            "AddToAmmoGroup": "155mm/60 3rd Year Type",
+            "Mass": 55870,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "155mmtype91apshell",
+            "155mmtype91apshellsalvo"
+        ]
+    },
+
+    "155mm/62 AGS Ballistic Long Range Projectile": {
+        "properties": {
+            "AddToAmmoGroup": "155mm/62 Mark 51 AGS",
+            "Mass": 90000,
+            "MuzzleVelocity": 825,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "155mmblrp"
+        ]
+    },
+
+    "155mm/62 AGS Long Range Land Attack Projectile": {
+        "properties": {
+            "AddToAmmoGroup": "155mm/62 Mark 51 AGS",
+            "Mass": 102000,
+            "MuzzleVelocity": 825,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "155mmlrlap"
+        ]
+    },
+
+    "305mm/45 AP Mark V": {
+        "properties": {
+            "AddToAmmoGroup": "305mm/45 Mark 5",
+            "Mass": 394600,
+            "MuzzleVelocity": 823,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "12inmkvapshell",
+            "12inmkvapshellsalvo"
+        ]
+    },
+
+    "305mm/45 AP Mark XIV": {
+        "properties": {
+            "AddToAmmoGroup": "305mm/45 Mark 5",
+            "Mass": 394600,
+            "MuzzleVelocity": 823,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "12inmkxvapshell",
+            "12inmkxvapshellsalvo"
+        ]
+    },
+
+    "343mm/45 APC Mark Ia": {
+        "properties": {
+            "AddToAmmoGroup": "343mm/45 Mark VI",
+            "Mass": 635000,
+            "MuzzleVelocity": 745,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "13.5inchshellap",
+            "13.5inchshellapsalvo"
+        ]
+    },
+
+    "343mm/45 HE Shell": {
+        "properties": {
+            "AddToAmmoGroup": "343mm/45 Mark VI",
+            "Mass": 635000,
+            "MuzzleVelocity": 745,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "13.5inchshellhe",
+            "13.5inchshellhesalvo"
+        ]
+    },
+
+    "356mm/45 AP Mark 16": {
+        "properties": {
+            "AddToAmmoGroup": "356mm/45 Mark 10",
+            "Mass": 680400,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "14inapmk16shell",
+            "14inapmk16shellsalvo"
+        ]
+    },
+
+    "356mm/45 HC Mark 19": {
+        "properties": {
+            "AddToAmmoGroup": "356mm/45 Mark 10",
+            "Mass": 578000,
+            "MuzzleVelocity": 834,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "14inhcmk19shell"
+        ]
+    },
+
+    "356mm/45 HC Mark 22": {
+        "properties": {
+            "AddToAmmoGroup": "356mm/45 Mark 10",
+            "Mass": 578000,
+            "MuzzleVelocity": 834,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "14inhcmk22shellsalvo"
         ]
     }
 }

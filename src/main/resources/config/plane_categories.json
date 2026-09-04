@@ -1,4 +1,873 @@
 {
+    "Aichi D3A2 Model 22": {
+        "properties": {
+            "RealMassKg": 3800,
+            "RealEnginePowerPS": 1300,
+            "RealMaxSpeedKmh": 430,
+            "RealWingSpanM": 14.365,
+            "RealWingAreaM2": 34.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "d3a",
+            "44_d3a"
+        ]
+    },
+
+    "Aichi M6A1 Seiran": {
+        "properties": {
+            "RealMassKg": 4040,
+            "RealEnginePowerPS": 1400,
+            "RealMaxSpeedKmh": 474,
+            "RealWingSpanM": 12.262,
+            "RealWingAreaM2": 27,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "seiran"
+        ]
+    },
+
+    "Arado Ar 196 A-5": {
+        "properties": {
+            "RealMassKg": 3720,
+            "RealEnginePowerKw": 782,
+            "RealMaxSpeedKmh": 332,
+            "RealWingSpanM": 12.4,
+            "RealWingAreaM2": 28.4,
+            "RealClimbRateMs": 6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ar196",
+            "ww2_plane_arado196_1a"
+        ]
+    },
+
+    "Avro Lancaster B Mk I": {
+        "properties": {
+            "RealMassKg": 24948,
+            "RealEnginePowerHp": 5120,
+            "RealMaxSpeedKmh": 454,
+            "RealWingSpanM": 31.09,
+            "RealWingAreaM2": 120.5,
+            "RealClimbRateMs": 3.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "lancaster"
+        ]
+    },
+
+    "Boeing B-17G Flying Fortress": {
+        "properties": {
+            "RealMassKg": 24500,
+            "RealEnginePowerKw": 3580,
+            "RealMaxSpeedKmh": 472,
+            "RealWingSpanM": 31.62,
+            "RealWingAreaM2": 131.92,
+            "RealClimbRateMs": 4.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_ww2_plane_b17g_1a",
+            "ww2_ww2_plane_b17g_1b",
+            "ww2_ww2_plane_b17g_1c",
+            "ww2_ww2_plane_b17g_1d",
+            "44_b17g"
+        ]
+    },
+
+    "Boeing B-29 Superfortress": {
+        "properties": {
+            "RealMassKg": 54431,
+            "RealEnginePowerHp": 8800,
+            "RealMaxSpeedKmh": 575,
+            "RealWingSpanM": 43.053,
+            "RealWingAreaM2": 161.28,
+            "RealClimbRateMs": 4.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b29"
+        ]
+    },
+
+    "Boeing P-26A Peashooter": {
+        "properties": {
+            "RealMassKg": 1524,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 377,
+            "RealWingSpanM": 8.534,
+            "RealWingAreaM2": 23.23,
+            "RealClimbRateMs": 3.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "p26"
+        ]
+    },
+
+    "Breda Ba.88 Lince": {
+        "properties": {
+            "RealMassKg": 6750,
+            "RealEnginePowerKw": 1492,
+            "RealMaxSpeedKmh": 490,
+            "RealWingSpanM": 15.6,
+            "RealWingAreaM2": 33.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ba88"
+        ]
+    },
+
+    "Caproni Campini N.1": {
+        "properties": {
+            "RealMassKg": 4195,
+            "RealEngineThrustKn": 6.9,
+            "RealMaxSpeedKmh": 375,
+            "RealWingSpanM": 15.85,
+            "RealWingAreaM2": 36,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "caproni"
+        ]
+    },
+
+    "Consolidated B-24J Liberator": {
+        "properties": {
+            "RealMassKg": 24948,
+            "RealEnginePowerHp": 4800,
+            "RealMaxSpeedKmh": 478,
+            "RealWingSpanM": 33.528,
+            "RealWingAreaM2": 97.36,
+            "RealClimbRateMs": 5.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b24",
+            "b24bomber"
+        ]
+    },
+
+    "Consolidated PB2Y-5 Coronado": {
+        "properties": {
+            "RealMassKg": 30000,
+            "RealEnginePowerKw": 3600,
+            "RealMaxSpeedKmh": 310,
+            "RealWingSpanM": 35,
+            "RealWingAreaM2": 165,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "pb2y"
+        ]
+    },
+
+    "Curtiss P-40E Warhawk": {
+        "properties": {
+            "RealMassKg": 4128,
+            "RealEnginePowerHp": 1150,
+            "RealMaxSpeedKmh": 583,
+            "RealWingSpanM": "11.38",
+            "RealWingAreaM2": "21.92",
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "p40"
+        ]
+    },
+
+    "Dassault M.D.450B Ouragan": {
+        "properties": {
+            "RealMassKg": 7404,
+            "RealEngineThrustKn": 22.2,
+            "RealMaxSpeedKmh": 940,
+            "RealWingSpanM": 13.16,
+            "RealWingAreaM2": 23.8,
+            "RealClimbRateMs": 38,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ouragan"
+        ]
+    },
+
+    "Dewoitine D.520 C.1": {
+        "properties": {
+            "RealMassKg": 2677,
+            "RealEnginePowerPS": 950,
+            "RealMaxSpeedKmh": 560,
+            "RealWingSpanM": 10.2,
+            "RealWingAreaM2": 15.87,
+            "RealClimbRateMs": 14.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "d520"
+        ]
+    },
+
+    "Dornier Do 24 T-1": {
+        "properties": {
+            "RealMassKg": 13700,
+            "RealEnginePowerKw": 2112,
+            "RealMaxSpeedKmh": 330,
+            "RealWingSpanM": 27,
+            "RealWingAreaM2": 108,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "do24"
+        ]
+    },
+
+    "Dornier Do 335 A-1 Pfeil": {
+        "properties": {
+            "RealMassKg": 9600,
+            "RealEnginePowerKw": 2684,
+            "RealMaxSpeedKmh": 770,
+            "RealWingSpanM": 13.8,
+            "RealWingAreaM2": 38.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "do335"
+        ]
+    },
+
+    "Douglas A-1H Skyraider": {
+        "properties": {
+            "RealMassKg": 8213,
+            "RealEnginePowerHp": 2700,
+            "RealMaxSpeedKmh": 518,
+            "RealWingSpanM": 15.246,
+            "RealWingAreaM2": 37.19,
+            "RealClimbRateMs": 14.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "skyraider"
+        ]
+    },
+
+    "Douglas A-20G Havoc": {
+        "properties": {
+            "RealMassKg": 10944,
+            "RealEnginePowerHp": 3200,
+            "RealMaxSpeedKmh": 510,
+            "RealWingSpanM": 18.682,
+            "RealWingAreaM2": 43.11,
+            "RealClimbRateMs": 10.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "a20"
+        ]
+    },
+
+    "Douglas B-18A Bolo": {
+        "properties": {
+            "RealMassKg": 10886,
+            "RealEnginePowerHp": 2000,
+            "RealMaxSpeedKmh": 348,
+            "RealWingSpanM": 27.28,
+            "RealWingAreaM2": 89.09,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b18a"
+        ]
+    },
+
+    "Douglas SBD-5 Dauntless": {
+        "properties": {
+            "RealMassKg": 4245,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 410,
+            "RealWingSpanM": 12.659,
+            "RealWingAreaM2": 30.19,
+            "RealClimbRateMs": 8.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dauntless"
+        ]
+    },
+
+    "Douglas TBD-1 Devastator": {
+        "properties": {
+            "RealMassKg": 4213,
+            "RealEnginePowerHp": 900,
+            "RealMaxSpeedKmh": 332,
+            "RealWingSpanM": 15.24,
+            "RealWingAreaM2": 39.21,
+            "RealClimbRateMs": 3.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tbd"
+        ]
+    },
+
+    "Douglas XB-43 Jetmaster": {
+        "properties": {
+            "RealMassKg": 16783,
+            "RealEngineThrustKn": 33.36,
+            "RealMaxSpeedKmh": 829,
+            "RealWingSpanM": 21.692,
+            "RealWingAreaM2": 52.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b43"
+        ]
+    },
+
+    "Fairey Swordfish Mk I": {
+        "properties": {
+            "RealMassKg": 3438,
+            "RealEnginePowerHp": 690,
+            "RealMaxSpeedKmh": 230,
+            "RealWingSpanM": 13.868,
+            "RealWingAreaM2": 56.39,
+            "RealClimbRateMs": 4.4,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "swordfish"
+        ]
+    },
+
+    "Farman F.222/2": {
+        "properties": {
+            "RealMassKg": 18700,
+            "RealEnginePowerPS": 3680,
+            "RealMaxSpeedKmh": 360,
+            "RealWingSpanM": 35.65,
+            "RealWingAreaM2": 184.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "f222"
+        ]
+    },
+
+    "Fiat G.55/I Centauro": {
+        "properties": {
+            "RealMassKg": 3520,
+            "RealEnginePowerKw": 1085,
+            "RealMaxSpeedKmh": 623,
+            "RealWingSpanM": 11.85,
+            "RealWingAreaM2": 21.11,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "centauro"
+        ]
+    },
+
+    "Fieseler Fi 156 C-2 Storch": {
+        "properties": {
+            "RealMassKg": 1324,
+            "RealEnginePowerKw": 180,
+            "RealMaxSpeedKmh": 175,
+            "RealWingSpanM": 14.249,
+            "RealWingAreaM2": 26,
+            "RealClimbRateMs": 4.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "storch"
+        ]
+    },
+
+    "Focke-Wulf Fw 190 A-8": {
+        "properties": {
+            "RealMassKg": 4417,
+            "RealEnginePowerPS": 1700,
+            "RealMaxSpeedKmh": 652,
+            "RealWingSpanM": 10.506,
+            "RealWingAreaM2": 18.3,
+            "RealClimbRateMs": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fw190a8"
+        ]
+    },
+
+    "Fokker D.XXI (Mercury)": {
+        "properties": {
+            "RealMassKg": 1970,
+            "RealEnginePowerPS": 830,
+            "RealMaxSpeedKmh": 460,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 16.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fokkerdxxi"
+        ]
+    },
+
+    "Gloster Gladiator Mk I": {
+        "properties": {
+            "RealMassKg": 2084,
+            "RealEnginePowerHp": 830,
+            "RealMaxSpeedKmh": 407,
+            "RealWingSpanM": 9.83,
+            "RealWingAreaM2": 30.01,
+            "RealClimbRateMs": 11.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "gladiator"
+        ]
+    },
+
+    "Gloster Meteor F.8": {
+        "properties": {
+            "RealMassKg": 7121,
+            "RealEngineThrustKn": 32.02,
+            "RealMaxSpeedKmh": 966,
+            "RealWingSpanM": 11.328,
+            "RealWingAreaM2": 32.52,
+            "RealClimbRateMs": 35.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "glostermeteor"
+        ]
+    },
+
+    "Grumman F4F-3 Wildcat": {
+        "properties": {
+            "RealMassKg": 3367,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 533,
+            "RealWingSpanM": 11.582,
+            "RealWingAreaM2": 24.15,
+            "RealClimbRateMs": 11.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "f4fwildcat"
+        ]
+    },
+
+    "Grumman F7F-4N Tigercat": {
+        "properties": {
+            "RealMassKg": 11666,
+            "RealEnginePowerHp": 4200,
+            "RealMaxSpeedKmh": 740,
+            "RealWingSpanM": 15.697,
+            "RealWingAreaM2": 42.27,
+            "RealClimbRateMs": 23,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "f7tiger"
+        ]
+    },
+
+    "Hawker Hurricane Mk IIC": {
+        "properties": {
+            "RealMassKg": 3479,
+            "RealEnginePowerHp": 1185,
+            "RealMaxSpeedKmh": 547,
+            "RealWingSpanM": 12.192,
+            "RealWingAreaM2": 23.92,
+            "RealClimbRateMs": 14.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hurricanequad20"
+        ]
+    },
+
+    "Hawker Tempest Mk V": {
+        "properties": {
+            "RealMassKg": 5171,
+            "RealEnginePowerHp": 2420,
+            "RealMaxSpeedKmh": 700,
+            "RealWingSpanM": 12.497,
+            "RealWingAreaM2": 28.06,
+            "RealClimbRateMs": 23.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tempest"
+        ]
+    },
+
+    "Heinkel He 51 B-1": {
+        "properties": {
+            "RealMassKg": 1900,
+            "RealEnginePowerKw": 559,
+            "RealMaxSpeedKmh": 330,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 27.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "he51"
+        ]
+    },
+
+    "Heinkel He 111 H-16": {
+        "properties": {
+            "RealMassKg": 12030,
+            "RealEnginePowerPS": 2600,
+            "RealMaxSpeedKmh": 440,
+            "RealWingSpanM": 22.6,
+            "RealWingAreaM2": 87.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_he111_1a"
+        ]
+    },
+
+    "Heinkel He 177 A-5/R2 Greif": {
+        "properties": {
+            "RealMassKg": 32000,
+            "RealEnginePowerPS": 5950,
+            "RealMaxSpeedKmh": 488,
+            "RealWingSpanM": 31.44,
+            "RealWingAreaM2": 100,
+            "RealClimbRateMs": 3.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "he177"
+        ]
+    },
+
+    "IAR 81C": {
+        "properties": {
+            "RealMassKg": 3030,
+            "RealEnginePowerPS": 1000,
+            "RealMaxSpeedKmh": 510,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 17,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "iar80"
+        ]
+    },
+
+    "Ikarus 451M": {
+        "properties": {
+            "RealMassKg": 1350,
+            "RealEngineThrustKn": 2.94,
+            "RealMaxSpeedKmh": 470,
+            "RealWingSpanM": 6.78,
+            "RealWingAreaM2": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "451m"
+        ]
+    },
+
+    "Ikarus S-49C": {
+        "properties": {
+            "RealMassKg": 3568,
+            "RealEnginePowerKw": 1104,
+            "RealMaxSpeedKmh": 628,
+            "RealWingSpanM": 10.3,
+            "RealWingAreaM2": 16.65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "s49"
+        ]
+    },
+
+    "Ilyushin Il-2M3": {
+        "properties": {
+            "RealMassKg": 6360,
+            "RealEnginePowerPS": 1720,
+            "RealMaxSpeedKmh": 410,
+            "RealWingSpanM": 14.6,
+            "RealWingAreaM2": 38.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_il2_1a",
+            "ww2_plane_il2_1b",
+            "ww2_plane_il2_1c",
+            "ww2_plane_il2_3a",
+            "ww2_plane_il2_3b",
+            "ww2_plane_il2_3c"
+        ]
+    },
+
+    "Ilyushin Il-28": {
+        "properties": {
+            "RealMassKg": 18400,
+            "RealEngineThrustKn": 53,
+            "RealMaxSpeedKmh": 902,
+            "RealWingSpanM": 21.45,
+            "RealWingAreaM2": 60,
+            "RealClimbRateMs": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "il28"
+        ]
+    },
+
+    "Junkers Ju 52/3m g3e": {
+        "properties": {
+            "RealMassKg": 9500,
+            "RealEnginePowerKw": 1530,
+            "RealMaxSpeedKmh": 265.5,
+            "RealWingSpanM": 29.261,
+            "RealWingAreaM2": 110.5,
+            "RealClimbRateMs": 3.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ju52"
+        ]
+    },
+
+    "Junkers Ju 87 D-1": {
+        "properties": {
+            "RealMassKg": 6600,
+            "RealEnginePowerPS": 1400,
+            "RealMaxSpeedKmh": 410,
+            "RealWingSpanM": 13.805,
+            "RealWingAreaM2": 31.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_ju87_1a",
+            "ww2_plane_ju87_2a"
+        ]
+    },
+
+    "Junkers Ju 88 A-4": {
+        "properties": {
+            "RealMassKg": 12105,
+            "RealEnginePowerPS": 2680,
+            "RealMaxSpeedKmh": 470,
+            "RealWingSpanM": 20,
+            "RealWingAreaM2": 54.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ju1488"
+        ]
+    },
+
+    "Kawanishi H6K4 Model 22": {
+        "properties": {
+            "RealMassKg": 17000,
+            "RealEnginePowerPS": 4000,
+            "RealMaxSpeedKmh": 340,
+            "RealWingSpanM": 40,
+            "RealWingAreaM2": 170,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "h6k"
+        ]
+    },
+
+    "Kawanishi N1K1-J Shiden": {
+        "properties": {
+            "RealMassKg": 3900,
+            "RealEnginePowerPS": 1975,
+            "RealMaxSpeedKmh": 571,
+            "RealWingSpanM": 12,
+            "RealWingAreaM2": 23.5,
+            "RealClimbRateMs": 19.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "shiden"
+        ]
+    },
+
+    "Kawasaki Ki-10-II": {
+        "properties": {
+            "RealMassKg": 1740,
+            "RealEnginePowerKw": 634,
+            "RealMaxSpeedKmh": 400,
+            "RealWingSpanM": 10.02,
+            "RealWingAreaM2": 23,
+            "RealClimbRateMs": 16.67,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki10"
+        ]
+    },
+
+    "Kawasaki Ki-56": {
+        "properties": {
+            "RealMassKg": 8024,
+            "RealEnginePowerPS": 1980,
+            "RealMaxSpeedKmh": 400,
+            "RealWingSpanM": 19.96,
+            "RealWingAreaM2": 51.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki56"
+        ]
+    },
+
+    "Kawasaki Ki-61-I KAIc Hien": {
+        "properties": {
+            "RealMassKg": 3470,
+            "RealEnginePowerKw": 864,
+            "RealMaxSpeedKmh": 580,
+            "RealWingSpanM": 12,
+            "RealWingAreaM2": 20,
+            "RealClimbRateMs": 15.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki61"
+        ]
+    },
+
+    "Kawasaki Ki-102b": {
+        "properties": {
+            "RealMassKg": 7300,
+            "RealEnginePowerKw": 2240,
+            "RealMaxSpeedKmh": 580,
+            "RealWingSpanM": 15.57,
+            "RealWingAreaM2": 34,
+            "RealClimbRateMs": 11.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki102"
+        ]
+    },
+
+    "Lockheed P-38L Lightning": {
+        "properties": {
+            "RealMassKg": 7938,
+            "RealEnginePowerHp": 3200,
+            "RealMaxSpeedKmh": 666,
+            "RealWingSpanM": 15.85,
+            "RealWingAreaM2": 30.43,
+            "RealClimbRateMs": 24.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_p38_1a",
+            "ww2_plane_p38_1b"
+        ]
+    },
+
+    "Macchi C.200 Saetta (early series)": {
+        "properties": {
+            "RealMassKg": 2200,
+            "RealEnginePowerPS": 870,
+            "RealMaxSpeedKmh": 504,
+            "RealWingSpanM": 10.58,
+            "RealWingAreaM2": 16.82,
+            "RealClimbRateMs": 15.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "saetta"
+        ]
+    },
+
+    "Martin B-10B": {
+        "properties": {
+            "RealMassKg": 6668,
+            "RealEnginePowerHp": 1550,
+            "RealMaxSpeedKmh": 343,
+            "RealWingSpanM": 21.488,
+            "RealWingAreaM2": 62.99,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b10"
+        ]
+    },
+
+    "Messerschmitt Bf 109 G-6": {
+        "properties": {
+            "RealMassKg": 3100,
+            "RealEnginePowerPS": 1475,
+            "RealMaxSpeedKmh": 630,
+            "RealWingSpanM": 9.925,
+            "RealWingAreaM2": 16.05,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "bf109g6"
+        ]
+    },
+
     "Messerschmitt Bf 109 G-10": {
         "properties": {
             "RealMassKg": 3280,
@@ -11,7 +880,440 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "44_bf109g10"
+            "44_bf109g10",
+            "bf109g10"
+        ]
+    },
+
+    "Messerschmitt Bf 110 C-1/C-2": {
+        "properties": {
+            "RealMassKg": 6028,
+            "RealEnginePowerPS": 2100,
+            "RealMaxSpeedKmh": 475,
+            "RealWingSpanM": 16.25,
+            "RealWingAreaM2": 38.4,
+            "RealClimbRateMs": 11,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "bf110c2"
+        ]
+    },
+
+    "Messerschmitt Me 262 A-1a": {
+        "properties": {
+            "RealMassKg": 6473,
+            "RealEngineThrustKn": 17.62,
+            "RealMaxSpeedKmh": 900,
+            "RealWingSpanM": 12.6,
+            "RealWingAreaM2": 21.7,
+            "RealClimbRateMs": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_me262a_1a",
+            "ww2_plane_me262a_1b"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-9": {
+        "properties": {
+            "RealMassKg": 4860,
+            "RealEngineThrustKn": 15.6,
+            "RealMaxSpeedKmh": 864,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 18.2,
+            "RealClimbRateMs": 22,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "mig9"
+        ]
+    },
+
+    "Mitsubishi A5M4": {
+        "properties": {
+            "RealMassKg": 1671,
+            "RealEnginePowerPS": 710,
+            "RealMaxSpeedKmh": 435,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 17.8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "a5m4"
+        ]
+    },
+
+    "Mitsubishi A6M2 Type 0 Model 21": {
+        "properties": {
+            "RealMassKg": 2796,
+            "RealEnginePowerPS": 940,
+            "RealMaxSpeedKmh": 533,
+            "RealWingSpanM": 12,
+            "RealWingAreaM2": 22.44,
+            "RealClimbRateMs": 15.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zero2",
+            "zero2ace",
+            "ww2_plane_a6m_1a",
+            "ww2_plane_a6m_1b",
+            "ww2_plane_a6m_1c",
+            "ww2_plane_a6m_1d",
+            "zero"
+        ]
+    },
+
+    "Mitsubishi F1M2": {
+        "properties": {
+            "RealMassKg": 2550,
+            "RealEnginePowerPS": 875,
+            "RealMaxSpeedKmh": 370,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 29.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "f1m"
+        ]
+    },
+
+    "Mitsubishi G3M2 Model 21": {
+        "properties": {
+            "RealMassKg": 8000,
+            "RealEnginePowerKw": 1582,
+            "RealMaxSpeedKmh": 375,
+            "RealWingSpanM": 25,
+            "RealWingAreaM2": 75,
+            "RealClimbRateMs": 6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "g3m"
+        ]
+    },
+
+    "Mitsubishi G4M1 Model 11": {
+        "properties": {
+            "RealMassKg": 9500,
+            "RealEnginePowerPS": 3060,
+            "RealMaxSpeedKmh": 428,
+            "RealWingSpanM": 24.89,
+            "RealWingAreaM2": 78.125,
+            "RealClimbRateMs": 9.17,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "g4m"
+        ]
+    },
+
+    "Mitsubishi Ki-21-IIb": {
+        "properties": {
+            "RealMassKg": 10600,
+            "RealEnginePowerPS": 3000,
+            "RealMaxSpeedKmh": 485,
+            "RealWingSpanM": 22.5,
+            "RealWingAreaM2": 69.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki21"
+        ]
+    },
+
+    "Nakajima B5N2": {
+        "properties": {
+            "RealMassKg": 3800,
+            "RealEnginePowerPS": 1000,
+            "RealMaxSpeedKmh": 378,
+            "RealWingSpanM": 15.518,
+            "RealWingAreaM2": 37.7,
+            "RealClimbRateMs": 6.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b5n"
+        ]
+    },
+
+    "Nakajima G8N1 Renzan": {
+        "properties": {
+            "RealMassKg": 26800,
+            "RealEnginePowerPS": 8000,
+            "RealMaxSpeedKmh": 593,
+            "RealWingSpanM": 32.54,
+            "RealWingAreaM2": 112,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "g8n"
+        ]
+    },
+
+    "Nakajima Ki-27b": {
+        "properties": {
+            "RealMassKg": 1790,
+            "RealEnginePowerPS": 710,
+            "RealMaxSpeedKmh": 470,
+            "RealWingSpanM": 11.31,
+            "RealWingAreaM2": 18.56,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki27"
+        ]
+    },
+
+    "Nakajima Ki-43-IIb Hayabusa": {
+        "properties": {
+            "RealMassKg": 2590,
+            "RealEnginePowerPS": 1300,
+            "RealMaxSpeedKmh": 530,
+            "RealWingSpanM": 10.84,
+            "RealWingAreaM2": 21.4,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki43"
+        ]
+    },
+
+    "Nakajima Ki-84-Ia Hayate": {
+        "properties": {
+            "RealMassKg": 3601.5,
+            "RealEnginePowerKw": 1522,
+            "RealMaxSpeedKmh": 687,
+            "RealWingSpanM": 11.238,
+            "RealWingAreaM2": 21,
+            "RealClimbRateMs": 21.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ki84ko"
+        ]
+    },
+
+    "Nakajima Kikka": {
+        "properties": {
+            "RealMassKg": 3550,
+            "RealEngineThrustKn": 9.32,
+            "RealMaxSpeedKmh": 696,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 13.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kikka"
+        ]
+    },
+
+    "North American B-25H Mitchell": {
+        "properties": {
+            "RealMassKg": 15876,
+            "RealEnginePowerHp": 3400,
+            "RealMaxSpeedKmh": 438,
+            "RealWingSpanM": 20.599,
+            "RealWingAreaM2": 57.41,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "b25h"
+        ]
+    },
+
+    "North American P-51D Mustang": {
+        "properties": {
+            "RealMassKg": 4175,
+            "RealEnginePowerHp": 1490,
+            "RealMaxSpeedKmh": "703",
+            "RealWingSpanM": "11.28",
+            "RealWingAreaM2": "21.83",
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "liberionp51d",
+            "ww2_plane_p51_1a",
+            "ww2_plane_p51_1b",
+            "ww2_plane_p51_1c",
+            "44_p51dmustang",
+            "mustang"
+        ]
+    },
+
+    "Petlyakov Pe-2 (early production)": {
+        "properties": {
+            "RealMassKg": 7536,
+            "RealEnginePowerPS": 2200,
+            "RealMaxSpeedKmh": 540,
+            "RealWingSpanM": 17.16,
+            "RealWingAreaM2": 40.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "pe2"
+        ]
+    },
+
+    "Petlyakov Pe-8 (AM-35A)": {
+        "properties": {
+            "RealMassKg": 27000,
+            "RealEnginePowerKw": 3996,
+            "RealMaxSpeedKmh": 443,
+            "RealWingSpanM": 39.13,
+            "RealWingAreaM2": 188.66,
+            "RealClimbRateMs": 5.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "pe8"
+        ]
+    },
+
+    "Piaggio P.108B": {
+        "properties": {
+            "RealMassKg": 29885,
+            "RealEnginePowerKw": 4480,
+            "RealMaxSpeedKmh": 475,
+            "RealWingSpanM": 32,
+            "RealWingAreaM2": 135,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "piaggio"
+        ]
+    },
+
+    "Polikarpov I-16 Type 24": {
+        "properties": {
+            "RealMassKg": 1941,
+            "RealEnginePowerPS": 1100,
+            "RealMaxSpeedKmh": 489,
+            "RealWingSpanM": 9,
+            "RealWingAreaM2": 14.5,
+            "RealClimbRateMs": 14.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ishachok"
+        ]
+    },
+
+    "Polikarpov I-153 (M-62)": {
+        "properties": {
+            "RealMassKg": 1960,
+            "RealEnginePowerKw": 597,
+            "RealMaxSpeedKmh": 444,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 22.14,
+            "RealClimbRateMs": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "chaika"
+        ]
+    },
+
+    "Polikarpov Po-2": {
+        "properties": {
+            "RealMassKg": 1030,
+            "RealEnginePowerKw": 93,
+            "RealMaxSpeedKmh": 152,
+            "RealWingSpanM": 11.4,
+            "RealWingAreaM2": 33.2,
+            "RealClimbRateMs": 2.78,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "po"
+        ]
+    },
+
+    "PZL P.11c": {
+        "properties": {
+            "RealMassKg": 1630,
+            "RealEnginePowerPS": 560,
+            "RealMaxSpeedKmh": 390,
+            "RealWingSpanM": 10.719,
+            "RealWingAreaM2": 17.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "p11"
+        ]
+    },
+
+    "Republic P-47D Thunderbolt": {
+        "properties": {
+            "RealMassKg": 7938,
+            "RealEnginePowerHp": 2430,
+            "RealMaxSpeedKmh": 697,
+            "RealWingSpanM": "12.42",
+            "RealWingAreaM2": "27.87",
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "p47silver",
+            "44_p47d"
+        ]
+    },
+
+    "Savoia-Marchetti SM.79-III Sparviero": {
+        "properties": {
+            "RealMassKg": 10050,
+            "RealEnginePowerKw": 1926,
+            "RealMaxSpeedKmh": 460,
+            "RealWingSpanM": 20.2,
+            "RealWingAreaM2": 61.7,
+            "RealClimbRateMs": 5.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sparviero"
+        ]
+    },
+
+    "Short Sunderland Mk III": {
+        "properties": {
+            "RealMassKg": 26308,
+            "RealEnginePowerHp": 4260,
+            "RealMaxSpeedKmh": 338,
+            "RealWingSpanM": 34.379,
+            "RealWingAreaM2": 138.15,
+            "RealClimbRateMs": 3.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sunderland"
         ]
     },
 
@@ -27,7 +1329,206 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "44_spitfire"
+            "44_spitfire",
+            "spitfirelate"
+        ]
+    },
+
+    "Supermarine Spitfire Mk Vb": {
+        "properties": {
+            "RealMassKg": 3004,
+            "RealEnginePowerHp": 1470,
+            "RealMaxSpeedKmh": 595,
+            "RealWingSpanM": 11.227,
+            "RealWingAreaM2": 22.49,
+            "RealClimbRateMs": 13.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_spitfiremkvb_1a",
+            "ww2_plane_spitfiremkvb_1b",
+            "ww2_plane_spitfiremkvb_1c",
+            "ww2_plane_spitfire_1a",
+            "spitfire"
+        ]
+    },
+
+    "Tupolev Tu-4": {
+        "properties": {
+            "RealMassKg": 47850,
+            "RealEnginePowerKw": 7160,
+            "RealMaxSpeedKmh": 558,
+            "RealWingSpanM": 43.05,
+            "RealWingAreaM2": 161.7,
+            "RealClimbRateMs": 4.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tu4"
+        ]
+    },
+
+    "Vickers Valiant B.1": {
+        "properties": {
+            "RealMassKg": 63503,
+            "RealEngineThrustKn": 177.92,
+            "RealMaxSpeedKmh": 912,
+            "RealWingSpanM": 34.849,
+            "RealWingAreaM2": 219.44,
+            "RealClimbRateMs": 20.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "valiant"
+        ]
+    },
+
+    "Vickers Wellington Mk IC": {
+        "properties": {
+            "RealMassKg": 12927,
+            "RealEnginePowerHp": 2100,
+            "RealMaxSpeedKmh": 378,
+            "RealWingSpanM": 26.264,
+            "RealWingAreaM2": 78.04,
+            "RealClimbRateMs": 5.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wellington"
+        ]
+    },
+
+    "VL Myrsky II": {
+        "properties": {
+            "RealMassKg": 2947,
+            "RealEnginePowerHp": 1065,
+            "RealMaxSpeedKmh": 529.5,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 18,
+            "RealClimbRateMs": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "myrsky"
+        ]
+    },
+
+    "Vought F4U-4 Corsair": {
+        "properties": {
+            "RealMassKg": 6654,
+            "RealEnginePowerHp": 2380,
+            "RealMaxSpeedKmh": 717,
+            "RealWingSpanM": 12.497,
+            "RealWingAreaM2": 29.17,
+            "RealClimbRateMs": 22.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "f4u4",
+            "ww2_plane_f4u_1a",
+            "ww2_plane_f4u_2a"
+        ]
+    },
+
+    "Vought OS2U-3 Kingfisher": {
+        "properties": {
+            "RealMassKg": 2259,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 275,
+            "RealWingSpanM": 10.94,
+            "RealWingAreaM2": 24.33,
+            "RealClimbRateMs": 4.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "os2u"
+        ]
+    },
+
+    "Yakovlev Yak-3": {
+        "properties": {
+            "RealMassKg": 2697,
+            "RealEnginePowerPS": 1290,
+            "RealMaxSpeedKmh": 646,
+            "RealWingSpanM": 9.2,
+            "RealWingAreaM2": 14.85,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_plane_yak3_1a",
+            "ww2_plane_yak3_1aneu",
+            "ww2_plane_yak3_1b",
+            "ww2_plane_yak3_1c"
+        ]
+    },
+
+    "Yakovlev Yak-15": {
+        "properties": {
+            "RealMassKg": 2638,
+            "RealEngineThrustKn": 8.8,
+            "RealMaxSpeedKmh": 786,
+            "RealWingSpanM": 9.2,
+            "RealWingAreaM2": 14.85,
+            "RealClimbRateMs": 21.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "yak15"
+        ]
+    },
+
+    "Yokosuka D4Y2 Suisei": {
+        "properties": {
+            "RealMassKg": 4250,
+            "RealEnginePowerPS": 1400,
+            "RealMaxSpeedKmh": 550,
+            "RealWingSpanM": 11.5,
+            "RealWingAreaM2": 23.6,
+            "RealClimbRateMs": 14,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "d4y2"
+        ]
+    },
+
+    "Yokosuka MXY-7 Ohka Model 11": {
+        "properties": {
+            "RealMassKg": 2140,
+            "RealEngineThrustKn": 7.86,
+            "RealMaxSpeedKmh": 648,
+            "RealWingSpanM": 5.12,
+            "RealWingAreaM2": 6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ohka"
+        ]
+    },
+
+    "Yokosuka P1Y1a Ginga": {
+        "properties": {
+            "RealMassKg": 10500,
+            "RealEnginePowerKw": 2722,
+            "RealMaxSpeedKmh": 547,
+            "RealWingSpanM": 20,
+            "RealWingAreaM2": 55,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "p1y"
         ]
     }
 }

@@ -58,13 +58,18 @@ def iter_zip_files(root: Path) -> Iterable[Path]:
 def iter_flans_content_dirs(source_root: Path) -> Iterable[Path]:
     if not source_root.exists():
         return []
-    return sorted(
-        candidate
-        for source_folder in source_root.iterdir()
-        if source_folder.is_dir()
-        for candidate in [source_folder / "resources" / "flans_content" / "definitions"]
-        if candidate.is_dir()
-    )
+    definition_dirs: List[Path] = []
+    for source_folder in source_root.iterdir():
+        if not source_folder.is_dir():
+            continue
+        flans_content_dir = source_folder / "resources" / "flans_content"
+        if flans_content_dir.is_dir():
+            definition_dirs.extend(
+                candidate
+                for candidate in flans_content_dir.rglob("definitions")
+                if candidate.is_dir()
+            )
+    return sorted(definition_dirs)
 
 
 def is_txt_in_category(internal_path: str) -> Optional[str]:
