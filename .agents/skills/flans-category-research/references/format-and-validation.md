@@ -101,9 +101,11 @@ After every category edit:
 6. Check unit conversions explicitly: projectile kg/g, explosive filler/TNT
    equivalent, hp/PS/kW, mph/knots/km/h, feet/metres, seconds/ticks, and MOA/degrees.
 7. Validate mandatory properties against the applicable domain reference:
-   ammunition mass/gravity and shell/missile statistics; complete vehicle propulsion,
-   armour/turret/track sets; complete aircraft mass/power/speed/span/area/climb; and
-   quoted realistic-weapon/health flags for driveables.
+   ammunition mass/gravity and shell/missile statistics; every explosive grenade's
+   nonzero `ExplosiveMass` in kg TNT equivalent; complete vehicle propulsion,
+   armour/turret/track sets; complete aircraft
+   mass/power/speed/span/area/climb; and quoted realistic-weapon/health flags for
+   driveables.
 8. Recheck configuration consistency and every value based only on a game, broad
    reference, conversion, approximation, neighboring face, or sibling variant.
    Preserve provenance for the final report.

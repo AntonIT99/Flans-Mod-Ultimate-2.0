@@ -52,6 +52,10 @@ conflicts, this `AGENTS.md` takes precedence.
   exception. `AddRound` belts omit top-level `Mass` because every round supplies
   it. Shells and missiles require `MuzzleVelocity`, and require
   `PenetrationAt100m` and `ExplosiveMass` whenever the intended value is nonzero.
+- Every grenade that possesses an explosive charge requires `ExplosiveMass` in kg
+  TNT equivalent. Do not omit it merely because no source states the TNT equivalent:
+  derive it from documented charge mass and explosive composition when a defensible
+  equivalence factor exists. Omit it only for a grenade with no explosive charge.
 - Ground vehicles require mass, exactly one engine-power/thrust key, drive type,
   forward speed, and reverse speed. Armoured vehicles require the applicable hull
   and turret faces; tracked vehicles with declared track parts require both track

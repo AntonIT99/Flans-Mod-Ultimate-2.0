@@ -186,15 +186,17 @@ the shell categories.
 
 ## Grenades
 
-Research and normally define:
+Research and define:
 
 | Property | Unit | Guidance |
 | --- | --- | --- |
-| `ExplosiveMass` | kilograms TNT equivalent | Determine filler mass and composition separately from total grenade mass. |
+| `ExplosiveMass` | kilograms TNT equivalent | Mandatory for every grenade with an explosive charge. Use an exact TNT-equivalent figure when available; otherwise derive it from documented filler mass and composition using a defensible TNT-equivalence factor. Omit only when the grenade has no explosive charge. |
 | `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `GP_BOMB`, `THICK_CASE`, or `AIRBURST_AP`; `DEFAULT` opts out of a preset. |
 | `Fuse` | ticks | Use nominal timed delay multiplied by 20. Omit for impact, proximity, mine, or other non-timed behavior and when timing cannot be established defensibly. |
 
 Distinguish nominal fuse delay from tolerance range. A fragmentation sleeve changes
 `FragType`; it does not automatically alter explosive mass. Determine fragmentation
 from physical construction and intended behavior, not only from the word
-"fragmentation" in a name.
+"fragmentation" in a name. Never use total grenade weight as filler mass or assume
+TNT when a different charge is documented; record the composition, conversion, and
+any lower-tier source in the task report.

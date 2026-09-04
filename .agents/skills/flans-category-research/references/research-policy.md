@@ -126,18 +126,23 @@ source is not automatically better.
 Derive values only through deterministic, supported transformations. Valid examples
 include kg to g, mph or knots to km/h, ft to m, seconds to Minecraft ticks, MOA to
 degrees, hp/PS/kW when the original convention is known, and filler mass to TNT
-equivalent when a defensible equivalence factor exists. Preserve the source's unit
-when a matching property exists—for example, prefer `RealEnginePowerPS` for a PS
-source. Do not calculate missing historical penetration from calibre, kinetic
-energy, or a game formula merely to fill a field.
+equivalent when the charge mass and a defensible factor for that documented explosive
+composition are available. In particular, an explosive grenade's `ExplosiveMass`
+must be authored from an exact TNT-equivalent figure or this documented derivation;
+continue researching the charge and composition rather than leaving it unset. Omit
+it only when the grenade has no explosive charge. Preserve the source's unit when a
+matching property exists—for example, prefer `RealEnginePowerPS` for a PS source.
+Do not calculate missing historical penetration from calibre, kinetic energy, or a
+game formula merely to fill a field.
 
 Generally omit an unresolved optional value instead of inventing it. Dispersion and
-fuse timing remain optional when no defensible value exists. Mandatory ammunition
-and driveable values follow their domain reference: continue down the source ladder,
-using a configuration-compatible game value where necessary. Only mandatory
-driveable values may use a final gameplay-coherent estimate after every source tier
-fails. Such estimates must fit the class, era, and neighboring categories and must
-be reported explicitly; never describe them as historically verified.
+fuse timing remain optional when no defensible value exists. Mandatory ammunition,
+explosive-grenade, and driveable values follow their domain reference: continue down
+the source ladder, using a configuration-compatible game value where necessary.
+Only mandatory driveable values may use a final gameplay-coherent estimate after
+every source tier fails. Such estimates must fit the class, era, and neighboring
+categories and must be reported explicitly; never describe them as historically
+verified.
 
 For War Thunder ammunition fallback, open the carrying vehicle's page, follow
 **Armaments** to the gun and **Available ammunition**, then open the exact munition.
