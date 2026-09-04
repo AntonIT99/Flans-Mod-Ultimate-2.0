@@ -30,9 +30,14 @@ They supplement the repository-level `AGENTS.md`.
 * Use `scripts/scanShortnames.py` to identify content-pack short names that are
   not yet listed in any supported category JSON file. It scans both bundled source
   packs and `run/flan` ZIP packs, then writes `missing_shortnames.csv` at the
-  repository root. Review each reported entry for its type and variant before
-  adding it; an unclassified definition is a research queue, not automatic proof
-  that it should share another category's values.
+  repository root. For each row, the scanner resolves `full_name` from that pack's
+  `item.flansmod.<shortname>` entry in `assets/flansmod/lang/en_us.json` when one
+  exists, and falls back to the definition's `Name` otherwise. Treat the resulting
+  `full_name` as the authoritative initial identity, while still inspecting the
+  definition and neighboring files for the exact variant and configuration.
+  Review each reported entry before adding it; an unclassified definition is a
+  research queue, not automatic proof that it should share another category's
+  values.
 * Treat the category label as documentation. Name it for the exact real weapon,
   cartridge, round, grenade, vehicle or aircraft variant whose figures were used.
 * Follow the **Historical research and source policy** below for every real-world
