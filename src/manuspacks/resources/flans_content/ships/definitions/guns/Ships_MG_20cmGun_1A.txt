@@ -32,7 +32,7 @@ Damage 1
 
 
 //Ammo
-Ammo Ships_Shell_German20mmAA
+Ammo Ships_Shell_German20cmHE
 
 
 //Attachments

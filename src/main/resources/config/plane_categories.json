@@ -1,4 +1,59 @@
 {
+    "Admiral Hipper-class Heavy Cruiser": {
+        "properties": {
+            "RealDisplacementT": "<placeholder value>",
+            "RealDraftM": "<placeholder value>",
+            "ArmorBeltMm": "<placeholder value>",
+            "ArmorDeckMm": "<placeholder value>",
+            "ArmorCitadelMm": "<placeholder value>",
+            "ArmorConningTowerMm": "<placeholder value>",
+            "TurretArmorFrontMm": "<placeholder value>",
+            "TurretArmorSideMm": "<placeholder value>",
+            "TurretArmorRearMm": "<placeholder value>",
+            "TurretArmorTopMm": "<placeholder value>",
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ships_plane_prinzeugen_1a"
+        ]
+    },
+
+    "AH-1Z Viper": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ah1zgreen",
+            "ah1zgrey"
+        ]
+    },
+
+    "AH-64D Apache Longbow": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "apacheah64"
+        ]
+    },
+
     "Aichi B7A2 Ryusei": {
         "properties": {
             "RealMassKg": 5625,
@@ -113,6 +168,22 @@
         ]
     },
 
+    "Bell AH-1 Cobra": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "cobra"
+        ]
+    },
+
     "Bell P-39N Airacobra": {
         "properties": {
             "RealMassKg": 3010,
@@ -158,6 +229,27 @@
         },
         "items": [
             "bv238"
+        ]
+    },
+
+    "Boeing 707": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEngineThrustKn": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_plane_boeing707_1a",
+            "civil_plane_boeing707_1b",
+            "civil_plane_boeing707_1c",
+            "civil_plane_boeing707_1d",
+            "civil_plane_boeing707_1e",
+            "civil_plane_boeing707_1f"
         ]
     },
 
@@ -293,6 +385,22 @@
         ]
     },
 
+    "CH-47 Chinook": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "chinook"
+        ]
+    },
+
     "CMASA ICR.42": {
         "properties": {
             "RealMassKg": 2500,
@@ -306,6 +414,22 @@
         },
         "items": [
             "icr42"
+        ]
+    },
+
+    "Colonial Viper Mk II (Fictional)": {
+        "properties": {
+            "RealMassKg": 9000,
+            "RealEngineThrustKn": 150,
+            "RealMaxSpeedKmh": 2400,
+            "RealWingSpanM": 8.0,
+            "RealWingAreaM2": 32,
+            "RealClimbRateMs": 260,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "vipermk1"
         ]
     },
 
@@ -643,6 +767,52 @@
         },
         "items": [
             "b43"
+        ]
+    },
+
+    "Dropship Mk.3 (Fictional)": {
+        "properties": {
+            "RealMassKg": 20000,
+            "RealEngineThrustKn": 110,
+            "RealMaxSpeedKmh": 900,
+            "RealWingSpanM": 18,
+            "RealWingAreaM2": 55,
+            "RealClimbRateMs": 40,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dropshipmk3_a_desert",
+            "dropshipmk3_a_grass",
+            "dropshipmk3_a_grey",
+            "dropshipmk3_a_ice",
+            "dropshipmk3_a_jungle",
+            "dropshipmk3_b_desert",
+            "dropshipmk3_b_grass",
+            "dropshipmk3_b_grey",
+            "dropshipmk3_b_ice",
+            "dropshipmk3_b_jungle",
+            "dropshipmk3_c_desert",
+            "dropshipmk3_c_grass",
+            "dropshipmk3_c_grey",
+            "dropshipmk3_c_ice",
+            "dropshipmk3_c_jungle"
+        ]
+    },
+
+    "Eurocopter EC665 Tiger": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ec665"
         ]
     },
 
@@ -1518,6 +1688,22 @@
         ]
     },
 
+    "Learjet 28": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEngineThrustKn": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_plane_learjet28_1a"
+        ]
+    },
+
     "Lockheed AC-130A Spectre": {
         "properties": {
             "RealMassKg": 70307,
@@ -1849,6 +2035,22 @@
         ]
     },
 
+    "MH-6 Little Bird": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "littlebird"
+        ]
+    },
+
     "Mikoyan-Gurevich I-225": {
         "properties": {
             "RealMassKg": 3530,
@@ -1895,6 +2097,22 @@
         },
         "items": [
             "mig15"
+        ]
+    },
+
+    "Mil Mi-24 Hind": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hind"
         ]
     },
 
@@ -2602,6 +2820,22 @@
         ]
     },
 
+    "Single-Seat Biplane (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "biplane"
+        ]
+    },
+
     "Sopwith Camel F.1": {
         "properties": {
             "RealMassKg": 659,
@@ -2719,6 +2953,38 @@
         ]
     },
 
+    "TIE Fighter (Fictional)": {
+        "properties": {
+            "RealMassKg": 8000,
+            "RealEngineThrustKn": 120,
+            "RealMaxSpeedKmh": 2200,
+            "RealWingSpanM": 6.5,
+            "RealWingAreaM2": 30,
+            "RealClimbRateMs": 200,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tiefighter"
+        ]
+    },
+
+    "TIE Interceptor (Fictional)": {
+        "properties": {
+            "RealMassKg": 7500,
+            "RealEngineThrustKn": 140,
+            "RealMaxSpeedKmh": 2400,
+            "RealWingSpanM": 7.0,
+            "RealWingAreaM2": 28,
+            "RealClimbRateMs": 250,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tieinterceptor"
+        ]
+    },
+
     "Tupolev Tu-4": {
         "properties": {
             "RealMassKg": 47850,
@@ -2748,6 +3014,55 @@
         },
         "items": [
             "tu22m"
+        ]
+    },
+
+    "Two-Seat Biplane (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "twoseatbiplane"
+        ]
+    },
+
+    "UH-60 Black Hawk": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "RealWingSpanM": "<placeholder value>",
+            "RealWingAreaM2": "<placeholder value>",
+            "RealClimbRateMs": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "blackhawk"
+        ]
+    },
+
+    "Valkyrie Dropship (Fictional)": {
+        "properties": {
+            "RealMassKg": 25000,
+            "RealEngineThrustKn": 120,
+            "RealMaxSpeedKmh": 600,
+            "RealWingSpanM": 16,
+            "RealWingAreaM2": 45,
+            "RealClimbRateMs": 25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wh40k_plane_valkyrie_1a",
+            "wh40k_plane_valkyrie_2a"
         ]
     },
 
@@ -2878,6 +3193,23 @@
         },
         "items": [
             "f5u1"
+        ]
+    },
+
+    "Vulture Gunship (Fictional)": {
+        "properties": {
+            "RealMassKg": 22000,
+            "RealEngineThrustKn": 130,
+            "RealMaxSpeedKmh": 650,
+            "RealWingSpanM": 15,
+            "RealWingAreaM2": 42,
+            "RealClimbRateMs": 30,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wh40k_plane_vulture_1a",
+            "wh40k_plane_vulture_2a"
         ]
     },
 

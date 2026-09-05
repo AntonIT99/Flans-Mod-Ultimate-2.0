@@ -1,4 +1,20 @@
 {
+    "2 cm Flakvierling 38": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "flakvierling"
+        ]
+    },
+
     "3 inch Gun Motor Carriage M10": {
         "properties": {
             "RealMassKg": 29600,
@@ -17,11 +33,43 @@
             "TurretArmorTopMm": 0,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_m10wolverine",
             "m10"
+        ]
+    },
+
+    "3.7 cm FlaK 36/37": {
+        "properties": {
+            "RealMassKg": 1544,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_flak37"
         ]
     },
 
@@ -50,6 +98,72 @@
         ]
     },
 
+    "7.5 cm PaK 40": {
+        "properties": {
+            "RealMassKg": 1425,
+            "ArmorFrontMm": 4,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_pak40",
+            "pak40"
+        ]
+    },
+
+    "8.8 cm FlaK 37": {
+        "properties": {
+            "RealMassKg": 5150,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": [
+                "44_88apshell 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshell 773",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshell 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshell 162",
+                "44_largeheshell 18"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_flak88",
+            "flak88"
+        ]
+    },
+
     "17-pdr SP Achilles": {
         "properties": {
             "RealMassKg": 29600,
@@ -68,7 +182,23 @@
             "TurretArmorTopMm": 0,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "achilles",
@@ -125,6 +255,26 @@
         ]
     },
 
+    "57 mm Gun M1": {
+        "properties": {
+            "RealMassKg": 1225,
+            "ArmorFrontMm": 6,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_57apshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_57apshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_57apshell <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m157mm",
+            "m157mm"
+        ]
+    },
+
     "75 mm Gun Motor Carriage M3": {
         "properties": {
             "RealMassKg": 9070,
@@ -160,7 +310,11 @@
             "ArmorBottomMm": 10,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "44_m8hmcscott"
@@ -231,7 +385,23 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "churchill3guncarrier",
@@ -260,6 +430,53 @@
         ]
     },
 
+    "Admiral Hipper-class Heavy Cruiser": {
+        "properties": {
+            "RealDisplacementT": "<placeholder value>",
+            "RealEnginePowerPS": "<placeholder value>",
+            "RealMaxSpeedKn": "<placeholder value>",
+            "DriveType": "MARINE",
+            "RealMaxReverseSpeedKn": "<placeholder value>",
+            "RealDraftM": "<placeholder value>",
+            "ArmorBeltMm": "<placeholder value>",
+            "ArmorDeckMm": "<placeholder value>",
+            "ArmorCitadelMm": "<placeholder value>",
+            "ArmorConningTowerMm": "<placeholder value>",
+            "ArmorBulkheadMm": "<placeholder value>",
+            "TurretArmorFrontMm": "<placeholder value>",
+            "TurretArmorSideMm": "<placeholder value>",
+            "TurretArmorRearMm": "<placeholder value>",
+            "TurretArmorTopMm": "<placeholder value>",
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ships_plane_prinzeugen_1a"
+        ]
+    },
+
+    "Ambulance Van (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_medic_1a"
+        ]
+    },
+
     "ARL 44": {
         "properties": {
             "RealMassKg": 48000,
@@ -285,6 +502,26 @@
         ]
     },
 
+    "Armoured Bank Truck (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<placeholder value>",
+            "ArmorSideMm": "<placeholder value>",
+            "ArmorRearMm": "<placeholder value>",
+            "ArmorTopMm": "<placeholder value>",
+            "ArmorBottomMm": "<placeholder value>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_banktruck_1a"
+        ]
+    },
+
     "Assault Tank M4A3E2 Jumbo": {
         "properties": {
             "RealMassKg": 38000,
@@ -303,11 +540,55 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "m4shermanjumbo",
             "44_m4a3e2sherman"
+        ]
+    },
+
+    "Baneblade (Fictional)": {
+        "properties": {
+            "RealMassKg": 316000,
+            "RealEnginePowerHp": 2000,
+            "RealMaxSpeedKmh": 25,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 6,
+            "ArmorFrontMm": 250,
+            "ArmorSideMm": 150,
+            "ArmorRearMm": 100,
+            "ArmorTopMm": 60,
+            "ArmorBottomMm": 50,
+            "TurretArmorFrontMm": 250,
+            "TurretArmorSideMm": 150,
+            "TurretArmorRearMm": 100,
+            "TurretArmorTopMm": 60,
+            "PartArmorMm": [
+                "leftTrack 50",
+                "rightTrack 50"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wh40k_vehicle_baneblade_1a"
         ]
     },
 
@@ -325,7 +606,11 @@
             "ArmorBottomMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_mediumartilleryheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "44_bishop"
@@ -349,6 +634,23 @@
         },
         "items": [
             "bmwr75"
+        ]
+    },
+
+    "Bofors 40 mm L/60 Towed Mount": {
+        "properties": {
+            "RealMassKg": 1981,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_bofors40mm",
+            "bofors"
         ]
     },
 
@@ -399,6 +701,26 @@
         },
         "items": [
             "bt42"
+        ]
+    },
+
+    "Bundeswehr Cargo Truck (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "bwtruck"
         ]
     },
 
@@ -599,6 +921,29 @@
         ]
     },
 
+    "Chevrolet Suburban (2010)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_chevroletsuburban2010_1a",
+            "dayz_vehicle_chevroletsuburban2010_1b",
+            "dayz_vehicle_chevroletsuburban2010_2a",
+            "dayz_vehicle_chevroletsuburban2010_3a"
+        ]
+    },
+
     "Churchill Mk III AVRE": {
         "properties": {
             "RealMassKg": 40000,
@@ -617,7 +962,11 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_largeheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_largeheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_largeheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_largeheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "churchill3avre",
@@ -643,7 +992,23 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "cromwell",
@@ -665,7 +1030,23 @@
             "ArmorBottomMm": 14,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_challenger"
@@ -690,11 +1071,69 @@
             "TurretArmorTopMm": 14,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "crusadermkiii",
-            "44_crusadermkiii"
+            "44_crusadermkiii",
+            "crusader"
+        ]
+    },
+
+    "Dodge Ram Pickup": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_ram_1a"
+        ]
+    },
+
+    "Fire Appliance (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_lkw3_1a",
+            "civil_vehicle_lkw3_2a"
         ]
     },
 
@@ -748,6 +1187,119 @@
         ]
     },
 
+    "Formula One Racing Car (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_f1_1a",
+            "civil_vehicle_f1_1b",
+            "civil_vehicle_f1_1c",
+            "civil_vehicle_f1_1d",
+            "civil_vehicle_f1_1e",
+            "civil_vehicle_f1_1f"
+        ]
+    },
+
+    "Full-Size Sedan (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_car_1a",
+            "civil_vehicle_car_2a",
+            "civil_vehicle_cop_1a",
+            "civil_vehicle_taxi_1a"
+        ]
+    },
+
+    "FV4034 Challenger 2": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoExplosiveMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "challyii"
+        ]
+    },
+
+    "GAZ-24 Volga": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_gaz24volga_1a",
+            "dayz_vehicle_gaz24volga_2a"
+        ]
+    },
+
     "GAZ-MM": {
         "properties": {
             "RealMassKg": 1810,
@@ -791,6 +1343,94 @@
         ]
     },
 
+    "GMC CCKW 353 with T27 Xylophone": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_unguidedrocket 0",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_gmctruckt27xylophone"
+        ]
+    },
+
+    "GMC Vandura Panel Van": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_ateam_1a"
+        ]
+    },
+
+    "Golf Cart (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_golfcart_1a"
+        ]
+    },
+
+    "GTK Boxer": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "boxer1",
+            "boxer2",
+            "boxer3",
+            "boxer4",
+            "boxer5"
+        ]
+    },
+
     "Half-track Car M3": {
         "properties": {
             "RealMassKg": 9070,
@@ -808,7 +1448,31 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "m3halftrack"
+            "m3halftrack",
+            "44_m3halftrack"
+        ]
+    },
+
+    "Heavy Goods Truck (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_lkw2_1a",
+            "civil_vehicle_lkw2_2a",
+            "civil_vehicle_lkw2_2b",
+            "civil_vehicle_lkw2_3a"
         ]
     },
 
@@ -835,6 +1499,46 @@
         },
         "items": [
             "ww2_vehicle_panzerhaubitzehummel_1a"
+        ]
+    },
+
+    "Ikarus 60": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_ikarusz60_1a"
+        ]
+    },
+
+    "Ikarus 260": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_ikarusz260_1a"
         ]
     },
 
@@ -907,7 +1611,23 @@
             "TurretArmorTopMm": 10,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "valentinemk2",
@@ -933,7 +1653,23 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "churchillmk3",
@@ -959,7 +1695,23 @@
             "TurretArmorTopMm": 30,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_122apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_122apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_122apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_122apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "stalin1944",
@@ -1058,7 +1810,23 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseAmmoGroup": "88mm KwK/Pak 43",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_88apshelllong 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshelllong 1000",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshelllong 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshelllong 234",
+                "44_largeheshell 18"
+            ]
         },
         "items": [
             "ww2_vehicle_jagdpanther_1a"
@@ -1153,7 +1921,23 @@
             "TurretArmorTopMm": 30,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "kv1",
@@ -1179,11 +1963,177 @@
             "TurretArmorTopMm": 30,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_verylargeheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "kv2normal",
             "44_kv2"
+        ]
+    },
+
+    "Land Rover Defender": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_landroverdefender_1a",
+            "dayz_vehicle_landroverdefender_2a",
+            "dayz_vehicle_landroverdefender_3a",
+            "dayz_vehicle_landroverdefender_4a"
+        ]
+    },
+
+    "LCVP Landing Craft": {
+        "properties": {
+            "RealDisplacementT": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKn": "<value from wiki.warthunder.com>",
+            "DriveType": "MARINE",
+            "RealMaxReverseSpeedKn": "<value from wiki.warthunder.com>",
+            "RealDraftM": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": "<value from wiki.warthunder.com>",
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_higginslcvp",
+            "ww2_vehicle_higginsboat_1a"
+        ]
+    },
+
+    "Leman Russ Battle Tank (Fictional)": {
+        "properties": {
+            "RealMassKg": 60000,
+            "RealEnginePowerHp": 800,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 8,
+            "ArmorFrontMm": 150,
+            "ArmorSideMm": 80,
+            "ArmorRearMm": 60,
+            "ArmorTopMm": 40,
+            "ArmorBottomMm": 30,
+            "TurretArmorFrontMm": 150,
+            "TurretArmorSideMm": 80,
+            "TurretArmorRearMm": 60,
+            "TurretArmorTopMm": 40,
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "wh40k_vehicle_lemanruss_1a"
+        ]
+    },
+
+    "Leopard 2A6": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoExplosiveMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "leo2a6",
+            "leopard2a6"
+        ]
+    },
+
+    "Leopard 2A7+ PSO": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoExplosiveMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "leopard2a7"
         ]
     },
 
@@ -1204,12 +2154,50 @@
             "TurretArmorRearMm": 19,
             "TurretArmorTopMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "m8greyhound",
             "44_m8greyhound",
             "greyhound"
+        ]
+    },
+
+    "Light Panel Truck (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_lkw1_1a",
+            "civil_vehicle_lkw1_2a",
+            "civil_vehicle_lkw1_3a"
         ]
     },
 
@@ -1256,7 +2244,23 @@
             "TurretArmorTopMm": 13,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "m5stuartlittle",
@@ -1282,11 +2286,127 @@
             "TurretArmorTopMm": 13,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_m24chaffee",
             "chaffee"
+        ]
+    },
+
+    "M1 Abrams": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoExplosiveMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "abrams"
+        ]
+    },
+
+    "M2 Browning on M3 Tripod": {
+        "properties": {
+            "RealMassKg": 58,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_50caltripod"
+        ]
+    },
+
+    "M8A1 75 mm Gun Motor Carriage": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m8a1gmc"
         ]
     },
 
@@ -1308,12 +2428,88 @@
             "TurretArmorRearMm": "12.7 9",
             "TurretArmorSideMm": "12.7 23",
             "TurretArmorTopMm": 0,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"]
+            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_m18hellcat",
             "hellcat",
             "m18"
+        ]
+    },
+
+    "M20 Armored Utility Car": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": "<value from wiki.warthunder.com>",
+            "ArmorRearMm": "<value from wiki.warthunder.com>",
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": "<value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m20armoredcar"
+        ]
+    },
+
+    "M45 Quadmount .50 Cal": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": "<value from wiki.warthunder.com>",
+            "ArmorRearMm": "<value from wiki.warthunder.com>",
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "m45quad"
+        ]
+    },
+
+    "M998 HMMWV": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "hmmwv1",
+            "hmmwv2",
+            "hmmwv3",
+            "hmmwv4",
+            "humvee"
         ]
     },
 
@@ -1332,7 +2528,23 @@
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "marder2",
@@ -1357,7 +2569,23 @@
             "ArmorBottomMm": 13,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "lee",
@@ -1383,7 +2611,23 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "m4sherman",
@@ -1445,6 +2689,50 @@
         ]
     },
 
+    "Medium Tank M4A1 Sherman DD": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 50,
+            "ArmorSideMm": 38,
+            "ArmorRearMm": 38,
+            "ArmorTopMm": 19,
+            "ArmorBottomMm": 13,
+            "TurretArmorFrontMm": 76,
+            "TurretArmorSideMm": 50,
+            "TurretArmorRearMm": 50,
+            "TurretArmorTopMm": 25,
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
+        },
+        "items": [
+            "44_m4a1shermandd"
+        ]
+    },
+
     "Medium Tank M4A3 (76) W HVSS": {
         "properties": {
             "RealMassKg": 33650,
@@ -1463,7 +2751,23 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "m4a3sherman76",
@@ -1515,11 +2819,91 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
+            "UseRealisticVehicleHealth": "true",
+            "AmmoMass": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "pershing",
             "44_m26"
+        ]
+    },
+
+    "MG 34 on Lafette 34": {
+        "properties": {
+            "RealMassKg": 36,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_mg34tripod"
+        ]
+    },
+
+    "MIM-23 HAWK Launcher": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "mim23"
+        ]
+    },
+
+    "O-I Super-Heavy Tank": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_oi"
         ]
     },
 
@@ -1542,6 +2926,25 @@
             "44_opelblitz",
             "ww2_vehicle_opelblitz_1a",
             "ww2_vehicle_opelblitz_2a"
+        ]
+    },
+
+    "Ordnance QF 2-pdr Anti-Tank Gun": {
+        "properties": {
+            "RealMassKg": 814,
+            "ArmorFrontMm": 10,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_47apshell 1080",
+            "AmmoMuzzleVelocity": "44_47apshell 792",
+            "AmmoPenetrationAt100m": "44_47apshell <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_qf2pdr"
         ]
     },
 
@@ -1613,7 +3016,23 @@
             "RealMaxReverseSpeedKmh": 6,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "38t",
@@ -1639,7 +3058,11 @@
             "TurretArmorTopMm": 10,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_20mmammo <value from wiki.warthunder.com>"
         },
         "items": [
             "pz2c",
@@ -1690,7 +3113,23 @@
             "TurretArmorTopMm": 10,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "panzer3f",
@@ -1741,11 +3180,71 @@
             "TurretArmorTopMm": 10,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "panzer3m",
             "44_panzeriiim"
+        ]
+    },
+
+    "Panzerkampfwagen IV (Generic)": {
+        "properties": {
+            "RealMassKg": 25000,
+            "RealEnginePowerPS": 272,
+            "RealMaxSpeedKmh": 38,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 10,
+            "ArmorFrontMm": 80,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 20,
+            "ArmorTopMm": 11,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 50,
+            "TurretArmorSideMm": 30,
+            "TurretArmorRearMm": 30,
+            "TurretArmorTopMm": 16,
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": [
+                "shell 6800",
+                "heshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell 770",
+                "heshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "shell 0.029",
+                "heshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell 143",
+                "heshell 10"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "panzer"
         ]
     },
 
@@ -1792,7 +3291,11 @@
             "ArmorRearMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "44_panzerivf1"
@@ -1818,7 +3321,23 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "panzer4f2",
@@ -1846,7 +3365,23 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "panzer4h",
@@ -1902,7 +3437,23 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseAmmoGroup": "88mm KwK/Pak 43",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_88apshelllong 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshelllong 1000",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshelllong 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshelllong 234",
+                "44_largeheshell 18"
+            ]
         },
         "items": [
             "tigerdos",
@@ -1957,7 +3508,27 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseAmmoGroup": "75mm KwK/PaK 42",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_75apshelllong 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 935",
+                "44_75apshelllong 935",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_75apshelllong 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 188",
+                "44_75apshelllong 188",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "44_pantherg",
@@ -1984,7 +3555,23 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseAmmoGroup": "88mm KwK/Flak 36",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_88apshell 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshell 773",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshell 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshell 162",
+                "44_largeheshell 18"
+            ]
         },
         "items": [
             "44_tigerp"
@@ -2010,7 +3597,23 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseAmmoGroup": "88mm KwK/Flak 36",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_88apshell 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshell 773",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshell 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshell 162",
+                "44_largeheshell 18"
+            ]
         },
         "items": [
             "ww2_vehicle_tigeri_1a"
@@ -2037,7 +3640,23 @@
             "TurretArmorSideMm": 80,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
-            "UseAmmoGroup": "88mm KwK/Flak 36"
+            "UseAmmoGroup": "88mm KwK/Flak 36",
+            "AmmoMass": [
+                "44_88apshell 10200",
+                "44_largeheshell 9000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_88apshell 773",
+                "44_largeheshell 820"
+            ],
+            "AmmoExplosiveMass": [
+                "44_88apshell 0.109",
+                "44_largeheshell 0.9"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_88apshell 162",
+                "44_largeheshell 18"
+            ]
         },
         "items": [
             "44_tiger1h",
@@ -2072,6 +3691,47 @@
         },
         "items": [
             "maus"
+        ]
+    },
+
+    "Police Truck (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "civil_vehicle_policetruck_1a",
+            "civil_vehicle_policetruck_2a"
+        ]
+    },
+
+    "Post-Apocalyptic Buggy (Fictional)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "buggy"
         ]
     },
 
@@ -2127,6 +3787,29 @@
         ]
     },
 
+    "S-100 Schnellboot": {
+        "properties": {
+            "RealDisplacementT": "<value from wiki.warthunder.com>",
+            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKn": "<value from wiki.warthunder.com>",
+            "DriveType": "MARINE",
+            "RealMaxReverseSpeedKn": "<value from wiki.warthunder.com>",
+            "RealDraftM": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": "<value from wiki.warthunder.com>",
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ArmorConningTowerMm": "<value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_s100",
+            "s100"
+        ]
+    },
+
     "Sd.Kfz. 2 Kettenkrad HK 101": {
         "properties": {
             "RealMassKg": 1560,
@@ -2145,6 +3828,34 @@
         "items": [
             "kettenkrad",
             "sdkfz2"
+        ]
+    },
+
+    "Sd.Kfz. 140/1 Aufklarungspanzer 38(t)": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_20mmammo <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_20mmammo <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_sdkfz1401"
         ]
     },
 
@@ -2185,7 +3896,23 @@
             "ArmorTopMm": 10,
             "ArmorBottomMm": 10,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_50apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "pumaww2",
@@ -2309,7 +4036,23 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "firefly",
@@ -2367,6 +4110,50 @@
         ]
     },
 
+    "Studebaker BM-13N Katyusha": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_unguidedrocket <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_unguidedrocket 0",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_studebakerbm13n"
+        ]
+    },
+
+    "Studebaker US6": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_studebakerus6"
+        ]
+    },
+
     "Sturmgeschütz III Ausf. G": {
         "properties": {
             "RealMassKg": 23900,
@@ -2382,7 +4169,23 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "stug3",
@@ -2405,7 +4208,23 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell 6800",
+                "44_mediumheshell 5700"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell 770",
+                "44_mediumheshell 770"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell 0.029",
+                "44_mediumheshell 0.686"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell 143",
+                "44_mediumheshell 10"
+            ]
         },
         "items": [
             "44_stugiv",
@@ -2439,6 +4258,26 @@
         ]
     },
 
+    "SU-1-12": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "su-1-12"
+        ]
+    },
+
     "SU-76M": {
         "properties": {
             "RealMassKg": 10500,
@@ -2453,7 +4292,23 @@
             "ArmorBottomMm": 7,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_su76m"
@@ -2478,7 +4333,23 @@
             "TurretArmorTopMm": 45,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "su85",
@@ -2505,11 +4376,139 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_100apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_100apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_100apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_100apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_su100",
             "ww2_vehicle_su100_1a"
+        ]
+    },
+
+    "SU-122": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_su122_1a"
+        ]
+    },
+
+    "T26E1-1 Super Pershing": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "AmmoMass": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_90apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_t26e1"
+        ]
+    },
+
+    "T27 Wolfhound Armoured Car": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from wiki.warthunder.com>",
+            "ArmorSideMm": "<value from wiki.warthunder.com>",
+            "ArmorRearMm": "<value from wiki.warthunder.com>",
+            "ArmorTopMm": "<value from wiki.warthunder.com>",
+            "ArmorBottomMm": "<value from wiki.warthunder.com>",
+            "TurretArmorFrontMm": "<value from wiki.warthunder.com>",
+            "TurretArmorSideMm": "<value from wiki.warthunder.com>",
+            "TurretArmorRearMm": "<value from wiki.warthunder.com>",
+            "TurretArmorTopMm": "<value from wiki.warthunder.com>",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_m38wolfhound"
         ]
     },
 
@@ -2556,7 +4555,23 @@
             "TurretArmorTopMm": 15,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "t3476mod40",
@@ -2582,7 +4597,23 @@
             "TurretArmorTopMm": 16,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_76apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "t3476",
@@ -2609,13 +4640,73 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_85apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "t3485",
             "44_t3485",
             "t34",
             "ww2_vehicle_t34_2a"
+        ]
+    },
+
+    "T-34-100": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": [
+                "44_100apshell 15900",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_100apshell 895",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_100apshell 0.1001",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_100apshell <value from wiki.warthunder.com>",
+                "44_largeheshell <value from wiki.warthunder.com>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_t34100"
         ]
     },
 
@@ -2686,11 +4777,71 @@
             "TurretArmorTopMm": 15,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "t70",
             "44_t70"
+        ]
+    },
+
+    "T-90MS": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 30",
+                "rightTrack 30"
+            ],
+            "AmmoMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoExplosiveMass": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell <placeholder value>",
+                "heshell <placeholder value>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t90"
         ]
     },
 
@@ -2740,6 +4891,30 @@
         ]
     },
 
+    "Tunnel Boring Machine (Generic)": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": "<placeholder value>",
+            "ArmorSideMm": "<placeholder value>",
+            "ArmorRearMm": "<placeholder value>",
+            "ArmorTopMm": "<placeholder value>",
+            "ArmorBottomMm": "<placeholder value>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tunnelbore"
+        ]
+    },
+
     "Type 1 Chi-He": {
         "properties": {
             "RealMassKg": 17200,
@@ -2754,7 +4929,23 @@
             "ArmorBottomMm": 8,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_chihe"
@@ -2775,7 +4966,23 @@
             "ArmorBottomMm": 8,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "honi",
@@ -2797,7 +5004,11 @@
             "ArmorBottomMm": 8,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "44_hoi"
@@ -2818,7 +5029,23 @@
             "ArmorBottomMm": 6,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_type2kami"
@@ -2843,11 +5070,71 @@
             "TurretArmorTopMm": 12,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_chinu",
             "chinu"
+        ]
+    },
+
+    "Type 3 Chi-Nu II": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": "<value from tanks-encyclopedia>",
+            "ArmorSideMm": "<value from tanks-encyclopedia>",
+            "ArmorRearMm": "<value from tanks-encyclopedia>",
+            "ArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
+            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
+            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
+            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "AmmoMass": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_chinu2"
         ]
     },
 
@@ -2865,7 +5152,23 @@
             "ArmorBottomMm": 8,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshell <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_type3honi3"
@@ -2886,7 +5189,11 @@
             "ArmorBottomMm": 8,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_verylargeheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_verylargeheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "horo",
@@ -2913,7 +5220,23 @@
             "TurretArmorTopMm": 12,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_75apshelllong <value from wiki.warthunder.com>",
+                "44_mediumheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_chiri"
@@ -2934,10 +5257,42 @@
             "ArmorBottomMm": 10,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "44_igo"
+        ]
+    },
+
+    "Type 92 Heavy Machine Gun on Tripod": {
+        "properties": {
+            "RealMassKg": 83,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_type92tripod"
         ]
     },
 
@@ -2959,11 +5314,47 @@
             "TurretArmorTopMm": 9,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_37apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "hago",
             "44_hago"
+        ]
+    },
+
+    "Type 95 Kurogane": {
+        "properties": {
+            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
+            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_kurogane"
         ]
     },
 
@@ -2985,7 +5376,23 @@
             "TurretArmorTopMm": 12,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "chiha",
@@ -3011,11 +5418,66 @@
             "TurretArmorTopMm": 12,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_47apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "chihakai",
             "44_chihakai"
+        ]
+    },
+
+    "Type 98 20 mm AA Machine Cannon": {
+        "properties": {
+            "RealMassKg": 373,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_type98aa"
+        ]
+    },
+
+    "UAZ-469": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_uaz469_1a",
+            "dayz_vehicle_uaz469_1b",
+            "dayz_vehicle_uaz469_2a",
+            "dayz_vehicle_uaz469_3a"
         ]
     },
 
@@ -3038,6 +5500,27 @@
         "items": [
             "universalcarrier",
             "uc2pdr"
+        ]
+    },
+
+    "Volkswagen Passat B2": {
+        "properties": {
+            "RealMassKg": "<placeholder value>",
+            "RealEnginePowerHp": "<placeholder value>",
+            "RealMaxSpeedKmh": "<placeholder value>",
+            "DriveType": "FWD",
+            "RealMaxReverseSpeedKmh": "<placeholder value>",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "dayz_vehicle_vwpassatb2_1a",
+            "dayz_vehicle_vwpassatb2_2a"
         ]
     },
 
@@ -3079,7 +5562,11 @@
             "ArmorBottomMm": 10,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoExplosiveMass": "44_mediumartilleryheshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_mediumartilleryheshell <value from wiki.warthunder.com>"
         },
         "items": [
             "wespe",
@@ -3113,6 +5600,44 @@
         ]
     },
 
+    "ZiS-2 57 mm Anti-Tank Gun": {
+        "properties": {
+            "RealMassKg": 1250,
+            "ArmorFrontMm": 6,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_57apshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_57apshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_57apshell <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_zis2"
+        ]
+    },
+
+    "ZiS-3 76 mm Divisional Gun": {
+        "properties": {
+            "RealMassKg": 1116,
+            "ArmorFrontMm": 5,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "AmmoMass": "44_76apshell <value from wiki.warthunder.com>",
+            "AmmoMuzzleVelocity": "44_76apshell <value from wiki.warthunder.com>",
+            "AmmoPenetrationAt100m": "44_76apshell <value from wiki.warthunder.com>",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "44_zis3"
+        ]
+    },
+
     "ZiS-30": {
         "properties": {
             "RealMassKg": 4000,
@@ -3127,7 +5652,23 @@
             "ArmorBottomMm": 7,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoExplosiveMass": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell <value from wiki.warthunder.com>",
+                "44_smallheshell <value from wiki.warthunder.com>"
+            ]
         },
         "items": [
             "zis30",

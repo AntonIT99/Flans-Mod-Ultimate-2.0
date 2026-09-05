@@ -88,6 +88,14 @@ that work, and every mandatory field below still applies to those categories.
   exception. `AddRound` belts omit top-level `Mass` because every round supplies
   it. Shells and missiles require `MuzzleVelocity`, and require
   `PenetrationAt100m` and `ExplosiveMass` whenever the intended value is nonzero.
+- A gun, AA gun, or driveable may restate a shared ammunition item with `AmmoMass`,
+  `AmmoMuzzleVelocity`, `AmmoExplosiveMass`, `AmmoPenetrationAt100m`, and
+  `AddRoundForAmmo`. These are weapon-category properties and never belong in
+  `bullet_categories.json`. They are the preferred answer to generic ammunition
+  shared by several materially different real weapons: give each consumer the round
+  it actually fired, and give the shared item an honest `(Generic)` baseline. Each
+  ammunition is overridden individually, resolution is against the weapon that fires,
+  and an overridden round must stay internally coherent.
 - Treat ammunition `MuzzleVelocity` / `BulletSpeed` as authoritative when present:
   it takes precedence over gun velocity. For simple/small-arms guns, define the
   barrel-specific velocity on the gun category as the normal source and fallback.
@@ -131,7 +139,13 @@ that work, and every mandatory field below still applies to those categories.
   spellings of one quantity. Never copy a `SetupPart` penetration-resistance value
   into a millimetre armour key or the reverse.
 - Aircraft require mass, exactly one engine-power/thrust key, maximum speed, climb
-  rate, wing span, and wing area; only genuinely wingless craft omit wing fields.
+  rate, wing span, and wing area. A rotorcraft authors `RealRotorDiameterM`, and
+  `RealRotorCount` for a tandem or coaxial layout, instead of the wing fields: both
+  are published figures and the swept rotor disc becomes the reference area. Only a
+  craft with neither a wing nor a rotor omits the lifting surface entirely.
+- Never bake a gameplay cap into `ExplosiveMass`. Author the real yield, including
+  for nuclear stores, and leave the `maxExplosionRadius` server setting to bound
+  what is simulated.
 - Ground-vehicle and aircraft categories always set quoted
   `ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth` to `"true"`.
 - Weapon-bank cadence is authored per bank and only when that bank has no
@@ -159,10 +173,13 @@ that work, and every mandatory field below still applies to those categories.
 
 - Preserve four-space indentation, blank lines, key spelling, and nearby numeric
   style. Do not reformat an entire category file incidentally.
-- Order category labels case-insensitively and alphanumerically. In
+- Order category labels case-insensitively and **naturally**: digit runs compare
+  numerically, text runs alphabetically, and a digit run ranks before a text run at
+  the same position. Thus `SU-85` precedes `SU-100` and `Bf 109 G-6` precedes
+  `G-10`, and numeric-leading labels head the file in numeric order. In
   `bullet_categories.json`, labels with known metric calibre must begin with it;
-  sort those by numeric calibre, numeric case length when present, then
-  case-insensitive alphanumeric fallback. Thus 128 mm and 150 mm follow 88 mm.
+  sort those by numeric calibre, numeric case length when present, then the natural
+  fallback. Thus 128 mm and 150 mm follow 88 mm.
 - Use quoted strings for booleans and whitespace-separated legacy arguments. Use
   arrays for repeatable properties. Never assign one short name conflicting
   category values; use exact variant categories or property-specific `exceptions`.

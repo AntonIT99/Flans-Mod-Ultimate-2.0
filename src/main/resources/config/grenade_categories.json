@@ -1,5 +1,77 @@
 {
 
+    "40mm Launched Chemical Grenade (Generic)": {
+        "properties": {
+            "FragType": "DEFAULT",
+            "Fuse": 20
+        },
+        "items": [
+            "grenadelaunchergasammo"
+        ]
+    },
+
+    "40mm Launched HE Grenade (Generic)": {
+        "properties": {
+            "ExplosiveMass": "0.032",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "grenadelauncherammo",
+            "grenadelauncherbouncyammo"
+        ]
+    },
+
+    "40mm Launched Incendiary Grenade (Generic)": {
+        "properties": {
+            "FragType": "DEFAULT",
+            "Fuse": 40
+        },
+        "items": [
+            "grenadelauncherincendiaryammo"
+        ]
+    },
+
+    "Anti-Tank Mine (Generic)": {
+        "properties": {
+            "ExplosiveMass": "<placeholder value>",
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "ww2mine"
+        ]
+    },
+
+    "C4 Plastic Explosive": {
+        "properties": {
+            "ExplosiveMass": "<placeholder value>",
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "c4"
+        ]
+    },
+
+    "Creeper Charge (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "3.000",
+            "FragType": "DEFAULT",
+            "Fuse": 30
+        },
+        "items": [
+            "creeperexplode"
+        ]
+    },
+
+    "Dynamite Stick": {
+        "properties": {
+            "ExplosiveMass": "<placeholder value>",
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_dynamite"
+        ]
+    },
+
     "F1 Fragmentation Grenade": {
         "properties": {
             "ExplosiveMass": "0.060",
@@ -8,6 +80,26 @@
         },
         "items": [
             "44_f1frag"
+        ]
+    },
+
+    "Frag Grenade, Imperial (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "0.075",
+            "FragType": "STD_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "wh40k_grenade_fraggrenade_1a"
+        ]
+    },
+
+    "Gas Mine (Fictional)": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "gasmine"
         ]
     },
 
@@ -22,6 +114,27 @@
         ]
     },
 
+    "Inert Thrown Object (Generic)": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "rock",
+            "fleshlump"
+        ]
+    },
+
+    "Krak Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "0.850",
+            "FragType": "THICK_CASE",
+            "Fuse": 80
+        },
+        "items": [
+            "wh40k_grenade_krakgrenade_1a"
+        ]
+    },
+
     "Kugelrohrhandgranate": {
         "properties": {
             "ExplosiveMass": "0.060",
@@ -30,6 +143,36 @@
         },
         "items": [
             "rohrhandgranate"
+        ]
+    },
+
+    "Land Mine (Generic)": {
+        "properties": {
+            "ExplosiveMass": "<placeholder value>",
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "44_landmine"
+        ]
+    },
+
+    "Launched Impact Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "0.032",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "wh40k_grenade_mkvgrenadelauncher"
+        ]
+    },
+
+    "M8 HC Smoke Grenade": {
+        "properties": {
+            "FragType": "DEFAULT",
+            "Fuse": 100
+        },
+        "items": [
+            "44_smokem8smoke"
         ]
     },
 
@@ -76,6 +219,16 @@
         ]
     },
 
+    "Molotov Cocktail": {
+        "properties": {
+            "FragType": "LOW_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "molotovcocktail"
+        ]
+    },
+
     "Nebelhandgranate 39": {
         "properties": {
             "FragType": "DEFAULT",
@@ -93,6 +246,33 @@
         },
         "items": [
             "44_no73atgrenade"
+        ]
+    },
+
+    "Non-Explosive Field Equipment": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "44_ammobag",
+            "44_beartrap",
+            "44_medicalbag",
+            "44_medicalkit",
+            "44_smallammopouch",
+            "beartrap",
+            "mwammobag",
+            "mwmedicbag"
+        ]
+    },
+
+    "Proximity Blast Mine (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "0.900",
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "hx2mine",
+            "invisiblemine"
         ]
     },
 
@@ -125,6 +305,17 @@
         },
         "items": [
             "44_satchelcharge"
+        ]
+    },
+
+    "Smoke And Gas Detonator (Fictional)": {
+        "properties": {
+            "FragType": "DEFAULT",
+            "Fuse": 80
+        },
+        "items": [
+            "gasdetonator",
+            "smokedetonator"
         ]
     },
 
@@ -161,6 +352,40 @@
         "items": [
             "geballteladung",
             "44_stielhandgranateATBundle"
+        ]
+    },
+
+    "Thermal Detonator (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "1.000",
+            "FragType": "LOW_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "invisiblethermaldetonator",
+            "thermaldetonator",
+            "thermaldetonatorsticky"
+        ]
+    },
+
+    "Thermal Detonator Class A (Fictional)": {
+        "properties": {
+            "ExplosiveMass": "3.000",
+            "FragType": "LOW_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "thermaldetonatorclassa"
+        ]
+    },
+
+    "Trip Mine (Generic)": {
+        "properties": {
+            "ExplosiveMass": "<placeholder value>",
+            "FragType": "STD_FRAG"
+        },
+        "items": [
+            "44_tripmine"
         ]
     },
 

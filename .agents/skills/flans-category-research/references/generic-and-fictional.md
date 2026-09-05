@@ -374,9 +374,36 @@ get its own band.
 For a bow, crossbow, sling, thrown spear, or other pre-firearm launcher, use the
 weapon's real historical draw velocity and projectile mass when the weapon is real,
 and the `Rocket / recoilless launcher` dispersion band with a manual `RoundsPerMin`
-otherwise. Melee weapons defined as guns take a low `RoundsPerMin` matching their
-swing cadence and a dispersion that is irrelevant but must still be present; use
-`0.5` and report it as a placeholder.
+otherwise.
+
+### Melee weapons
+
+A melee weapon defined as a gun takes `MeleeDamage`, a `RoundsPerMin` matching its
+swing cadence, and `Dispersion: 0.5` — inert on a weapon that fires nothing, but
+mandatory for every gun category, so report it as a placeholder.
+
+`MeleeDamage` is authored content with no historical scale, so it is harmonized
+rather than researched. The ladder is anchored on vanilla Minecraft swords — wooden
+4, iron 6, diamond 7, netherite 8 — so a real blade lands where a player expects:
+
+| Class | `MeleeDamage` | `RoundsPerMin` |
+| --- | --- | --- |
+| Standard, flag, book, joke or debug item | 2 | 60 |
+| Shield bash, ancient or riot | 3 | 60 |
+| Entrenching tool, screwdriver, improvised light | 4 | 90 |
+| Knife, dagger, bayonet | 6 | 100 |
+| Short sword, hand axe | 7 | 80 / 60 |
+| Baseball bat | 7 | 70 |
+| Sabre, katana, machete | 8 | 70 |
+| Polearm: spear, pilum, javelin, lance | 9 | 50 |
+| Sledgehammer | 9 | 40 |
+| Energy blade | 20 | 80 |
+
+Group by what the weapon physically is, not by the pack it came from: a gladius, a
+spatha and a shamshir are one short-sword category. A firearm that merely has a
+bayonet or butt-stroke is **not** a melee weapon — categorizing it as one would
+overwrite its real cadence. Cap any authored value that is infinite or absurd at its
+class tier and report the override.
 
 ### Ammunition
 

@@ -42,6 +42,18 @@
         ]
     },
 
+    "Automated Sentry Gun (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 1000.0,
+            "Dispersion": 0.45,
+            "RealMassKg": 120,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "sentrygun"
+        ]
+    },
+
     "Oerlikon Skyshield 35/1000 Revolver Gun": {
         "properties": {
             "RoundsPerMin": 1000.0,
@@ -51,6 +63,18 @@
         },
         "items": [
             "skyshield"
+        ]
+    },
+
+    "XX-9 Turbolaser Turret (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.1,
+            "RealMassKg": 25000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "xx9"
         ]
     }
 }

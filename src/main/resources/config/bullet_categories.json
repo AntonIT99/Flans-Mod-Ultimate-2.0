@@ -47,7 +47,8 @@
             "m249ammo",
             "mtarammo",
             "5.56x45mm30rounds",
-            "5.56x45mm40rounds"
+            "5.56x45mm40rounds",
+            "betacmag"
         ]
     },
 
@@ -96,6 +97,17 @@
         "items": [
             "breda30ammo",
             "carcanoammo"
+        ]
+    },
+
+    "7x57mm Mauser": {
+        "properties": {
+            "Mass": 11.2,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "44_modell1915ammo"
         ]
     },
 
@@ -173,20 +185,8 @@
         "items": [
             "ak47ammo",
             "rpdammo",
-            "rpkammo"
-        ]
-    },
-
-    "7.62x51mm NATO .308 Winchester M80": {
-        "properties": {
-            "Mass": 9.5,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "fnscarammo",
-            "m60ammo",
-            "minigunammo"
+            "rpkammo",
+            "44_sksammo"
         ]
     },
 
@@ -207,7 +207,12 @@
             "7.62x51mm100rounds",
             "7.62x51mm200rounds",
             "7.62x51mm750rounds",
-            "7.62x51mm2600rounds"
+            "7.62x51mm2600rounds",
+            "m60ammo",
+            "minigunammo",
+            "ammonato762mmm134",
+            "ammonato762mmmg3",
+            "minigunportableammo"
         ]
     },
 
@@ -225,7 +230,9 @@
             "44_dt28ammo",
             "44_mosinnagantammo",
             "44_svt40ammo",
-            "avt40ammo"
+            "avt40ammo",
+            "ww2_ammo_shkas",
+            "ww2_ammo_ussr762mm"
         ]
     },
 
@@ -248,7 +255,9 @@
             "browning30calammo",
             "browning30calammo1000",
             "browning30calammotracer",
-            "hcarammo"
+            "hcarammo",
+            "44_30calammo",
+            "ww2_ammo_usacal30"
         ]
     },
 
@@ -314,7 +323,9 @@
             "44_brenammo",
             "44_leeenfieldammo",
             "brenm5ammo50",
-            "brenm5ammo200"
+            "brenm5ammo200",
+            "ww2_ammo_m1919",
+            "ww2_ammo_type97"
         ]
     },
 
@@ -337,8 +348,7 @@
         },
         "items": [
             "type99ammo",
-            "44_type99ammo",
-            "44_type3899ammo"
+            "44_type99ammo"
         ]
     },
 
@@ -380,7 +390,11 @@
             "7.92x57mm5rounds",
             "7.92x57mm10rounds",
             "7.92x57mm100rounds",
-            "7.92x57mm200rounds"
+            "7.92x57mm200rounds",
+            "44_mg15ammo",
+            "44_mg17ammo",
+            "ww2_ammo_german792mm",
+            "ww2_ammo_mg17"
         ]
     },
 
@@ -619,6 +633,17 @@
         ]
     },
 
+    "12.7x55mm STs-130": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "ash12ammo"
+        ]
+    },
+
     "12.7x99mm .50 BMG": {
         "properties": {
             "Mass": 42.0,
@@ -635,7 +660,8 @@
             "gau19ammo",
             "ammonatocal50",
             "ww2_ammo_mg532",
-            "ww2_ammo_usacal50"
+            "ww2_ammo_usacal50",
+            "44_50calammo"
         ]
     },
 
@@ -722,6 +748,104 @@
         ]
     },
 
+    "18.5x70mmR 12 Gauge 00 Buckshot": {
+        "properties": {
+            "Mass": 3.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "trenchgunammo",
+            "12gaugeshell",
+            "12gbuckshotammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Birdshot": {
+        "properties": {
+            "Mass": 1.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gbirdshotammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Flechette": {
+        "properties": {
+            "Mass": 0.7,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gflechetteammo",
+            "12gpoisonedflechetteammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge High Explosive": {
+        "properties": {
+            "Mass": 30.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "12gheammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Incendiary": {
+        "properties": {
+            "Mass": 3.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gaugeshellincendiary",
+            "12gincendiaryammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Rifled Slug": {
+        "properties": {
+            "Mass": 28.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "44_model10trenchgunammo",
+            "12gslugammo"
+        ]
+    },
+
+    "20mm Aircraft Autocannon (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_20mmaircraftammo"
+        ]
+    },
+
+    "20mm Vehicle Autocannon (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_20mmammo",
+            "20mmammo"
+        ]
+    },
+
     "20x42mm": {
         "properties": {
             "Mass": 110.0,
@@ -734,6 +858,32 @@
         ]
     },
 
+    "20x72mmRB Type 99-1": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_ammo_type99"
+        ]
+    },
+
+    "20x80mmRB MG FF": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_ammo_mgff"
+        ]
+    },
+
     "20x82mm": {
         "properties": {
             "Mass": 120.0,
@@ -742,7 +892,34 @@
             "PenetrationAt100m": 24
         },
         "items": [
-            "ntw20ammo"
+            "ntw20ammo",
+            "ww2_ammo_mg151"
+        ]
+    },
+
+    "20x102mm M61 Vulcan": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato20mm"
+        ]
+    },
+
+    "20x110mm Hispano Mk II": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_ammo_mkii"
         ]
     },
 
@@ -759,6 +936,201 @@
         ]
     },
 
+    "20x138mmB Flak 30/38": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "flakvierlingammo",
+            "ww2_shell_german20mmaa",
+            "ships_shell_german20mmaa"
+        ]
+    },
+
+    "23x152mmB VYa-23": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_ammo_wja23"
+        ]
+    },
+
+    "30x90mmRB MK 108": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_ammo_mk108"
+        ]
+    },
+
+    "30x173mm NATO": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato30mm"
+        ]
+    },
+
+    "35x228mm Oerlikon KDA": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato35mm"
+        ]
+    },
+
+    "37mm Aircraft Autocannon (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_37mmaircraftammo"
+        ]
+    },
+
+    "37x263mmB Flak 18/36/37": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_flak37ammo",
+            "ww2_shell_german37mmaa",
+            "37mmammo"
+        ]
+    },
+
+    "40mm Pattern Grenade Round (Fictional)": {
+        "properties": {
+            "Mass": 230.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.032
+        },
+        "items": [
+            "wh40k_ammo_mkvgrenadelauncher"
+        ]
+    },
+
+    "40mm QF 2-pdr AP Shot Mk I": {
+        "properties": {
+            "Mass": 1080.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "british2pdrapshell"
+        ]
+    },
+
+    "40x53mm HV Grenade": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": null
+        },
+        "items": [
+            "ammonato40mm"
+        ]
+    },
+
+    "40x311mmR Bofors": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_bofors40mmammo",
+            "boforsammo"
+        ]
+    },
+
+    "47mm Light Tank AP (Generic)": {
+        "properties": {
+            "Mass": 1080.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_47apshell"
+        ]
+    },
+
+    "50mm Medium Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_50apshell"
+        ]
+    },
+
+    "57mm Anti-Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_57apshell"
+        ]
+    },
+
+    "60mm M6A3 Bazooka HEAT Rocket": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 82,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_bazookaammo",
+            "bazookaammo"
+        ]
+    },
+
     "66mm M72A2/A3 LAW HEAT Rocket": {
         "properties": {
             "Mass": 1800.0,
@@ -771,18 +1143,55 @@
         ]
     },
 
-    "75mm Pzgr.39": {
+    "70mm Hydra 70 Rocket": {
         "properties": {
-            "AddToAmmoGroup": "75mm KwK/PaK 40",
-            "Mass": 6800,
-            "MuzzleVelocity": 770,
-            "FallSpeed": 1.0,
-            "ExplosiveMass": 0.029,
-            "PenetrationAt100m": 143
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>"
         },
         "items": [
-            "ww2_shell_german75mmkwk40ap",
-            "ww2_shell_german75mmap"
+            "hydra70ammo",
+            "mk4rocket"
+        ]
+    },
+
+    "75mm Long Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_75apshelllong"
+        ]
+    },
+
+    "75mm M61 APCBC": {
+        "properties": {
+            "Mass": 6790.0,
+            "MuzzleVelocity": 618,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.065,
+            "PenetrationAt100m": 102
+        },
+        "items": [
+            "ww2_shell_usa75mmap"
+        ]
+    },
+
+    "75mm Medium Tank AP (Generic)": {
+        "properties": {
+            "Mass": 6790.0,
+            "MuzzleVelocity": 618,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.065,
+            "PenetrationAt100m": 102,
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_75apshell"
         ]
     },
 
@@ -793,10 +1202,27 @@
             "MuzzleVelocity": 935,
             "FallSpeed": 1.0,
             "ExplosiveMass": 0.029,
-            "PenetrationAt100m": 188
+            "PenetrationAt100m": 188,
+            "HasSubmunitions": "false"
         },
         "items": [
             "ww2_shell_german75mmaplong"
+        ]
+    },
+
+    "75mm Pzgr.39": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 6800,
+            "MuzzleVelocity": 770,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.029,
+            "PenetrationAt100m": 143,
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "ww2_shell_german75mmkwk40ap",
+            "ww2_shell_german75mmap"
         ]
     },
 
@@ -827,6 +1253,133 @@
         ]
     },
 
+    "76mm BR-350A APBC (L-11)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_shell_ussr76mmap"
+        ]
+    },
+
+    "76mm Long Tank AP (Generic)": {
+        "properties": {
+            "Mass": 7000.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.06,
+            "PenetrationAt100m": 125,
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_76apshelllong"
+        ]
+    },
+
+    "76mm M62 APCBC": {
+        "properties": {
+            "Mass": 7000.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.06,
+            "PenetrationAt100m": 125
+        },
+        "items": [
+            "ww2_shell_usa76mmap"
+        ]
+    },
+
+    "76mm Medium Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_76apshell"
+        ]
+    },
+
+    "81mm HE Mortar Bomb (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "44_hemortarshell"
+        ]
+    },
+
+    "82mm RS-82 Aircraft Rocket": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_missle_ussrrs82"
+        ]
+    },
+
+    "84mm AT4 HEAT Rocket": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "at4ammo"
+        ]
+    },
+
+    "85mm BR-365 APBC": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_shell_ussr85mmap"
+        ]
+    },
+
+    "85mm Medium Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_85apshell"
+        ]
+    },
+
+    "85mm PG-7V HEAT Rocket": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "rpgammo"
+        ]
+    },
+
     "88mm Gr.39 Hl": {
         "properties": {
             "AddToAmmoGroup": "88mm KwK/Flak 36",
@@ -848,7 +1401,8 @@
             "MuzzleVelocity": 773,
             "FallSpeed": 1.0,
             "ExplosiveMass": 0.109,
-            "PenetrationAt100m": 162
+            "PenetrationAt100m": 162,
+            "HasSubmunitions": "false"
         },
         "items": [
             "ww2_shell_german88mmap",
@@ -864,10 +1418,12 @@
             "MuzzleVelocity": 1000,
             "FallSpeed": 1.0,
             "ExplosiveMass": 0.109,
-            "PenetrationAt100m": 234
+            "PenetrationAt100m": 234,
+            "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_german88mmaplong"
+            "ww2_shell_german88mmaplong",
+            "44_88apshelllong"
         ]
     },
 
@@ -881,6 +1437,19 @@
         },
         "items": [
             "ww2_shell_german88mmkwk36apcr"
+        ]
+    },
+
+    "88mm RPzB.Gr. 4322 Panzerschreck HEAT Rocket": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 110,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_panzerschreckammo",
+            "panzerschreckammo"
         ]
     },
 
@@ -899,6 +1468,171 @@
         ]
     },
 
+    "89mm PIAT HEAT Bomb": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 76,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_piatammo",
+            "piatammo"
+        ]
+    },
+
+    "90mm Heavy Tank AP (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_90apshell"
+        ]
+    },
+
+    "100mm BR-412B APBC": {
+        "properties": {
+            "Mass": 15900.0,
+            "MuzzleVelocity": 895,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.1001,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_shell_ussr100mmap"
+        ]
+    },
+
+    "100mm Tank Destroyer AP (Generic)": {
+        "properties": {
+            "Mass": 15900.0,
+            "MuzzleVelocity": 895,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.1001,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_100apshell"
+        ]
+    },
+
+    "105mm SK C/32 HE Shell": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "ships_shell_german10cmhe"
+        ]
+    },
+
+    "110mm Panzerfaust 3 HEAT Rocket": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "panzerfaust3ammo"
+        ]
+    },
+
+    "114mm M8 Aircraft Rocket": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_shell_usa114mmrockethe"
+        ]
+    },
+
+    "120mm DM11 HE": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato120mmdm11he"
+        ]
+    },
+
+    "120mm DM43 APFSDS": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato120mmdm43ke"
+        ]
+    },
+
+    "120mm DM53 APFSDS": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "shellnato120mmdm53lke"
+        ]
+    },
+
+    "122mm D-25T BR-471": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "44_122apshell"
+        ]
+    },
+
+    "122mm OF-462 HE (M-30S)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_shell_ussr122mmhe"
+        ]
+    },
+
+    "127mm HVAR Aircraft Rocket": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "ww2_missle_usahvar"
+        ]
+    },
+
     "128mm PzGr.": {
         "properties": {
             "AddToAmmoGroup": "128mm KwK/Pak 44",
@@ -906,10 +1640,24 @@
             "MuzzleVelocity": 930,
             "FallSpeed": 1.0,
             "ExplosiveMass": 0.786,
-            "PenetrationAt100m": 249
+            "PenetrationAt100m": 249,
+            "HasSubmunitions": "false"
         },
         "items": [
             "ww2_shell_german128mmap"
+        ]
+    },
+
+    "149mm Panzerfaust 60 HEAT Warhead": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 45,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_panzerfaustammo",
+            "panzerfaustammo"
         ]
     },
 
@@ -978,6 +1726,30 @@
         },
         "items": [
             "155mmlrlap"
+        ]
+    },
+
+    "203mm SK C/34 HE Shell": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "ships_shell_german20cmhe"
+        ]
+    },
+
+    "227mm MLRS Rocket": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "mlrs6ammo"
         ]
     },
 
@@ -1081,6 +1853,922 @@
         },
         "items": [
             "14inhcmk22shellsalvo"
+        ]
+    },
+
+    "533mm Aerial Torpedo (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "44_torpedo",
+            "torpedo"
+        ]
+    },
+
+    "37-40mm Light Tank AP (Generic)": {
+        "properties": {
+            "Mass": 1080.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_37apshell"
+        ]
+    },
+
+    "37-57mm HE Tank Shell (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_smallheshell"
+        ]
+    },
+
+    "75-85mm HE Tank Shell (Generic)": {
+        "properties": {
+            "Mass": 5700.0,
+            "MuzzleVelocity": 770,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.686,
+            "PenetrationAt100m": 10
+        },
+        "items": [
+            "44_mediumheshell"
+        ]
+    },
+
+    "88-122mm HE Tank Shell (Generic)": {
+        "properties": {
+            "Mass": 9000.0,
+            "MuzzleVelocity": 820,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.9,
+            "PenetrationAt100m": 18
+        },
+        "items": [
+            "44_largeheshell"
+        ]
+    },
+
+    "105-120mm HE Artillery Shell (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_mediumartilleryheshell"
+        ]
+    },
+
+    "130-152mm HE Tank Shell (Generic)": {
+        "properties": {
+            "Mass": 43500.0,
+            "MuzzleVelocity": 520,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 5.1,
+            "PenetrationAt100m": 41
+        },
+        "items": [
+            "44_verylargeheshell"
+        ]
+    },
+
+    "250kg / 500lb General-Purpose Bomb (Generic)": {
+        "properties": {
+            "Mass": 250000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "44_250kg500lbbomb"
+        ]
+    },
+
+    "AGM-114 Hellfire": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "hellfire"
+        ]
+    },
+
+    "AIM-9 Sidewinder": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "sidewinder7ammo"
+        ]
+    },
+
+    "AN-M30 100 lb General-Purpose Bomb": {
+        "properties": {
+            "Mass": 45400.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 22.7,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_usa100lbs",
+            "ww2_bomb_usa50kg"
+        ]
+    },
+
+    "AN-M64 500 lb General-Purpose Bomb": {
+        "properties": {
+            "Mass": 227000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 113.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_usa500lbs"
+        ]
+    },
+
+    "Anti-Materiel APCR Rifle Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<placeholder value>",
+            "FlakParticles": 0
+        },
+        "items": [
+            "apcrrifleammo"
+        ]
+    },
+
+    "Anti-Materiel Sniper Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<placeholder value>",
+            "FlakParticles": 0
+        },
+        "items": [
+            "sniperammo"
+        ]
+    },
+
+    "Armour-Piercing Revolver Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": "<placeholder value>",
+            "FlakParticles": 0
+        },
+        "items": [
+            "appistolammo"
+        ]
+    },
+
+    "Artillery HE Shell (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "PenetrationAt100m": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "artilleryheshell"
+        ]
+    },
+
+    "Battle Cannon AP Shell (Fictional)": {
+        "properties": {
+            "Mass": 23000.0,
+            "MuzzleVelocity": 880,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.75,
+            "PenetrationAt100m": 240
+        },
+        "items": [
+            "wh40k_shell_lemanrussap"
+        ]
+    },
+
+    "Blaster Bolt, Droid (Fictional)": {
+        "properties": {
+            "Mass": 36.0
+        },
+        "items": [
+            "e-5ammo"
+        ]
+    },
+
+    "Blaster Bolt, Full-Power (Fictional)": {
+        "properties": {
+            "Mass": 60.0
+        },
+        "items": [
+            "dc15afullammo"
+        ]
+    },
+
+    "Blaster Bolt, Sidearm (Fictional)": {
+        "properties": {
+            "Mass": 17.0
+        },
+        "items": [
+            "dc17ammo"
+        ]
+    },
+
+    "Blaster Bolt, Standard (Fictional)": {
+        "properties": {
+            "Mass": 44.0
+        },
+        "items": [
+            "dc15ammo",
+            "dc19invisibleammo",
+            "e-11ammo"
+        ]
+    },
+
+    "Bolt Round, .75 cal (Fictional)": {
+        "properties": {
+            "Mass": 120.0,
+            "ExplosiveMass": 0.011,
+            "PenetrationAt100m": 24
+        },
+        "items": [
+            "wh40k_ammo_boltcal75",
+            "wh40k_ammo_boltcal75seeker",
+            "wh40k_ammo_boltpistolcal75",
+            "wh40k_ammo_heavybolter"
+        ]
+    },
+
+    "Bolt Round, .75 cal Inferno (Fictional)": {
+        "properties": {
+            "Mass": 120.0,
+            "ExplosiveMass": 0.014,
+            "PenetrationAt100m": 16
+        },
+        "items": [
+            "wh40k_ammo_boltcal75inferno"
+        ]
+    },
+
+    "Combat Shotgun Pellet (Fictional)": {
+        "properties": {
+            "Mass": 3.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "wh40k_ammo_combatshotgun"
+        ]
+    },
+
+    "Combat Shotgun Round (Fictional)": {
+        "properties": {
+            "Mass": 3.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "mastiff1218ammo",
+            "juryammo"
+        ]
+    },
+
+    "Crossbow Bolt": {
+        "properties": {
+            "Mass": 40.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "crossbowbolt",
+            "b4crossbowammo"
+        ]
+    },
+
+    "Demolisher Cannon Shell (Fictional)": {
+        "properties": {
+            "Mass": 43500.0,
+            "MuzzleVelocity": 520,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 5.1,
+            "PenetrationAt100m": 41
+        },
+        "items": [
+            "wh40k_shell_banebladedemolishercannon"
+        ]
+    },
+
+    "Energy Cannon Powerpack, Fighter (Fictional)": {
+        "properties": {
+            "Mass": 118.0,
+            "PenetrationAt100m": 24
+        },
+        "items": [
+            "ammopowerpackcolonialblastercannon",
+            "ammopowerpackcylonblastercannon",
+            "ammopowerpackimperiallasercannon",
+            "ammopowerpackrebellasercannon"
+        ]
+    },
+
+    "Energy Cannon Powerpack, Heavy Mech (Fictional)": {
+        "properties": {
+            "Mass": 4000.0,
+            "PenetrationAt100m": 143
+        },
+        "items": [
+            "ammopowerpacklargemechlasercannon"
+        ]
+    },
+
+    "Energy Rifle Round (Fictional)": {
+        "properties": {
+            "Mass": 4.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "devotionx55ammo",
+            "voltv3ammo",
+            "coldware2ammo",
+            "pr3ammo",
+            "pr3oscammo"
+        ]
+    },
+
+    "Explosive Minigun Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "minigunexplosiveammo"
+        ]
+    },
+
+    "FAB-50 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 50000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 22.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_ussr50kg"
+        ]
+    },
+
+    "FAB-100 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 100000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 45.0,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "bombussrfab100"
+        ]
+    },
+
+    "FAB-250 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 250000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 112.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "bombussrfab250"
+        ]
+    },
+
+    "FAB-500 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 500000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 225.0,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "bombussrfab500"
+        ]
+    },
+
+    "FGM-148 Javelin": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "ammonatom148javelin"
+        ]
+    },
+
+    "FIM-92 Stinger": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "stingerammo"
+        ]
+    },
+
+    "Flamethrower Fuel (Generic)": {
+        "properties": {
+            "Mass": 40.0
+        },
+        "items": [
+            "flamethrowerww2ammo",
+            "flamethrowerammo"
+        ]
+    },
+
+    "GP 100 lb Bomb, British": {
+        "properties": {
+            "Mass": 45400.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 22.7,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_uk50kg"
+        ]
+    },
+
+    "Guided Anti-Tank Missile (Fictional)": {
+        "properties": {
+            "Mass": 9000.0,
+            "MuzzleVelocity": 400,
+            "PenetrationAt100m": 600,
+            "ExplosiveMass": 8.0
+        },
+        "items": [
+            "wh40k_ammo_guidedmissile"
+        ]
+    },
+
+    "High-Explosive Revolver Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "highexpistolammo"
+        ]
+    },
+
+    "High-Explosive Sniper Round (Generic)": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "hesniperammo"
+        ]
+    },
+
+    "Large General-Purpose Bomb (Generic)": {
+        "properties": {
+            "Mass": 227000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 113.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "largebomb"
+        ]
+    },
+
+    "Las Bolt, Heavy Lascannon (Fictional)": {
+        "properties": {
+            "Mass": 6100.0,
+            "PenetrationAt100m": 162
+        },
+        "items": [
+            "wh40k_ammo_lascannon_2"
+        ]
+    },
+
+    "Las Bolt, Infantry (Fictional)": {
+        "properties": {
+            "Mass": 16.0
+        },
+        "items": [
+            "wh40k_ammo_powerpacklasgun"
+        ]
+    },
+
+    "Las Bolt, Lascannon (Fictional)": {
+        "properties": {
+            "Mass": 4000.0,
+            "PenetrationAt100m": 143
+        },
+        "items": [
+            "wh40k_ammo_lascannon"
+        ]
+    },
+
+    "Las Bolt, Multi-Laser (Fictional)": {
+        "properties": {
+            "Mass": 118.0,
+            "PenetrationAt100m": 24
+        },
+        "items": [
+            "wh40k_ammo_multilaser_1"
+        ]
+    },
+
+    "Laser Bolt, Unassigned Colour Variants (Fictional)": {
+        "properties": {
+            "Mass": 44.0
+        },
+        "items": [
+            "blacklaser",
+            "bluelaser",
+            "greenlaser",
+            "greylaser",
+            "lightbluelaser",
+            "lightgreenlaser",
+            "magentalaser",
+            "orangelaser",
+            "purplelaser",
+            "redlaser",
+            "whitelaser",
+            "yellowlaser"
+        ]
+    },
+
+    "Legacy Duplicate Shell Submunition (Generic)": {
+        "properties": {
+            "DamageVsVehicles": 0,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "44_57sub",
+            "44_75longsub",
+            "44_75sub",
+            "44_76longsub",
+            "44_76sub",
+            "44_85sub",
+            "44_88longsub",
+            "44_88sub",
+            "44_90sub",
+            "44_100sub",
+            "44_122sub"
+        ]
+    },
+
+    "Marksman Rifle Round (Fictional)": {
+        "properties": {
+            "Mass": 9.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "tripletakeammo",
+            "seekerrifleammo",
+            "shulkersniperammo",
+            "witheringakammo"
+        ]
+    },
+
+    "Mega Battle Cannon AP Shell (Fictional)": {
+        "properties": {
+            "Mass": 43500.0,
+            "MuzzleVelocity": 900,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 1.2,
+            "PenetrationAt100m": 300
+        },
+        "items": [
+            "wh40k_shell_banebladeap"
+        ]
+    },
+
+    "MIM-23 HAWK": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>"
+        },
+        "items": [
+            "mim23ammo"
+        ]
+    },
+
+    "Napalm Incendiary Tank (Generic)": {
+        "properties": {
+            "Mass": 340000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": "<value from wiki.warthunder.com>",
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "napalm"
+        ]
+    },
+
+    "Nerf Clip System Dart (Fictional)": {
+        "properties": {
+            "Mass": 1.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "clipdart",
+            "6dartclip",
+            "18dartclip",
+            "25dartbelt",
+            "35dartdrum"
+        ]
+    },
+
+    "Nerf Elite Dart (Fictional)": {
+        "properties": {
+            "Mass": 1.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "elitedart",
+            "6darteliteclip",
+            "12darteliteclip",
+            "18darteliteclip",
+            "25dartelitedrum"
+        ]
+    },
+
+    "Nerf Vortex Disc (Fictional)": {
+        "properties": {
+            "Mass": 5.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "vortexdisc",
+            "10discclip",
+            "20discclip",
+            "40discdrum"
+        ]
+    },
+
+    "Nerf Whistler Dart (Fictional)": {
+        "properties": {
+            "Mass": 1.3,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "whistlerdart"
+        ]
+    },
+
+    "OFZAB-500 Incendiary Bomb": {
+        "properties": {
+            "Mass": 500000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 200.0,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "bombussrofzab500"
+        ]
+    },
+
+    "RDS-220 Thermonuclear Bomb": {
+        "properties": {
+            "Mass": 27000000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 50000000000.0,
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "bombussrrds200"
+        ]
+    },
+
+    "SC 50 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 50000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 27.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_german50kg"
+        ]
+    },
+
+    "SC 250 General-Purpose Bomb": {
+        "properties": {
+            "Mass": 250000.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 137.5,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "ww2_bomb_german250kg"
+        ]
+    },
+
+    "Signal Flare (Generic)": {
+        "properties": {
+            "Mass": 90.0,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "flaregunammo",
+            "flaregunblackammo",
+            "flaregunblueammo",
+            "flaregungreenammo",
+            "flaregunwhiteammo"
+        ]
+    },
+
+    "Small General-Purpose Bomb (Generic)": {
+        "properties": {
+            "Mass": 45400.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 22.7,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "smallbomb"
+        ]
+    },
+
+    "Smart Weapon Round, Anti-Materiel (Fictional)": {
+        "properties": {
+            "Mass": 42.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 20,
+            "FlakParticles": 0
+        },
+        "items": [
+            "kcasmart50ammo"
+        ]
+    },
+
+    "Smart Weapon Round, Carbine (Fictional)": {
+        "properties": {
+            "Mass": 4.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "kcasmartcarbineammo"
+        ]
+    },
+
+    "Smart Weapon Round, Pistol (Fictional)": {
+        "properties": {
+            "Mass": 8.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "kcasmartpistolammo"
+        ]
+    },
+
+    "Titan Inferno Cannon Fuel (Fictional)": {
+        "properties": {
+            "Mass": 40.0
+        },
+        "items": [
+            "wh40k_ammo_warhoundinfernocannon"
+        ]
+    },
+
+    "Titan Mega Bolter Round (Fictional)": {
+        "properties": {
+            "Mass": 1000.0,
+            "ExplosiveMass": 0.15,
+            "PenetrationAt100m": 60
+        },
+        "items": [
+            "wh40k_ammo_warhoundvulcanmegabolter"
+        ]
+    },
+
+    "Titan Plasma Blast (Fictional)": {
+        "properties": {
+            "Mass": 30000.0,
+            "ExplosiveMass": 20.0,
+            "PenetrationAt100m": 700
+        },
+        "items": [
+            "wh40k_ammo_warhoundplasmablastgun"
+        ]
+    },
+
+    "Titan Turbo-Laser Blast (Fictional)": {
+        "properties": {
+            "Mass": 40000.0,
+            "ExplosiveMass": 30.0,
+            "PenetrationAt100m": 900
+        },
+        "items": [
+            "wh40k_ammo_warhoundturbolaserdestructor"
+        ]
+    },
+
+    "TRIGAT-LR": {
+        "properties": {
+            "Mass": "<placeholder value>",
+            "MuzzleVelocity": "<placeholder value>",
+            "ExplosiveMass": "<placeholder value>",
+            "PenetrationAt100m": "<placeholder value>"
+        },
+        "items": [
+            "trigat"
+        ]
+    },
+
+    "Turbolaser Powerpack (Fictional)": {
+        "properties": {
+            "Mass": 30000.0,
+            "ExplosiveMass": 20.0,
+            "PenetrationAt100m": 700
+        },
+        "items": [
+            "ammopowerpackxx9"
+        ]
+    },
+
+    "Unguided HE Rocket (Generic)": {
+        "properties": {
+            "Mass": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "ExplosiveMass": "<value from wiki.warthunder.com>"
+        },
+        "items": [
+            "44_unguidedrocket"
+        ]
+    },
+
+    "Unguided Rocket Pod Round (Fictional)": {
+        "properties": {
+            "Mass": 6200.0,
+            "MuzzleVelocity": 700,
+            "ExplosiveMass": 1.0
+        },
+        "items": [
+            "wh40k_ammo_rodrocket"
+        ]
+    },
+
+    "Universal Tank AP Shell (Generic)": {
+        "properties": {
+            "Mass": 6790.0,
+            "MuzzleVelocity": 618,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.065,
+            "PenetrationAt100m": 102
+        },
+        "items": [
+            "shell"
+        ]
+    },
+
+    "Universal Tank HE Shell (Generic)": {
+        "properties": {
+            "Mass": 5700.0,
+            "MuzzleVelocity": 770,
+            "FallSpeed": 1.0,
+            "ExplosiveMass": 0.686,
+            "PenetrationAt100m": 10
+        },
+        "items": [
+            "heshell"
         ]
     }
 }
