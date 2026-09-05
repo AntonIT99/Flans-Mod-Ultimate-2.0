@@ -6,10 +6,6 @@ General:
 - Implement TaP Flan's Mod Features
 
 Game Balance:
-- Check if the kinetic damage of shells is proportional to tanks HPs. Check the possibilities to either increase the kinetic damage or decrease the HP of vehicles.
-- For kinetic damage: use fixed muzzle velocity instead of actual velocity (since not reliable).
-- Maybe a global HP modifier would be a good idea since we have a global damage modifier.
-
 - Check balance for the blast/frag radius/damage (seems ok)
 - Investigate armored vehicles resistance to blast damage
 
@@ -23,6 +19,11 @@ Driveables:
 - Collisions with players
 - y positioning of driveables (Check Tiger I of Warfare 44)
 - Improve impostor quality or increase distance for ships
+
+UI / HUD:
+- Check if the HUD of AA Guns shows its health and ammo.
+- Check if there is enought space on the right side for the driveable HUD.
+- LCTRL for ammo toolips for driveables + eventually for guns?
 
 Categories:
 - finish official packs / warfare 44 / manus pack / wolff's packs in priority
