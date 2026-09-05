@@ -3,6 +3,11 @@
 Read this reference when editing `vehicle_categories.json` or
 `plane_categories.json`.
 
+Marine craft are driveables too and every mandatory rule below still applies to
+them, but displacement, knots, shaft power, belt and deck armour, and the
+vehicle-versus-plane routing trap are covered separately in
+[ships.md](ships.md). Read that as well for anything that floats.
+
 Mandatory driveable fields follow completeness-over-omission. Work down the source
 ladder from exact primary evidence through specialist and broad references to a
 configuration-compatible game source. If every source tier fails, use a
@@ -15,7 +20,58 @@ positive `RealMassKg` and inspect authored hitbox-health weights. Missing weight
 cause a warning and fallback to authored health, which should be understood rather
 than accidental. `ReadWeaponsFromGunTypes` keeps mounted delay, velocity, spread,
 and damage derived from the researched gun definition instead of duplicating them
-in each driveable.
+in each driveable, but only for a weapon bank that actually has a gun to read from.
+Which cadence key a category needs follows from that, and is set out below.
+
+## Mounted weapon cadence
+
+This section applies to ground vehicles and aircraft alike; the keys live on
+`DriveableType`.
+
+A driveable has two weapon banks, primary and secondary, and each resolves its
+firing cadence like this:
+
+```text
+ReadWeaponsFromGunTypes true AND this bank has a PilotGun/AddGun mount
+    -> the mounted GunType's own RoundsPerMin
+otherwise
+    -> ShootDelayPrimarySeconds
+     > RoundsPerMinPrimary
+     > ShootDelayPrimary > ShellDelay > BombDelay      (legacy ticks)
+     > 60 rounds per minute
+```
+
+with `ShootDelaySecondarySeconds`, `RoundsPerMinSecondary`,
+`ShootDelaySecondary`, and `ShootDelay` as the secondary bank's equivalents.
+
+The consequence that decides everything: **`ReadWeaponsFromGunTypes` only takes over
+the cadence when that bank's shoot points include a real gun mount.** A bank made of
+bare `ShootPointPrimary` lines firing shells or bombs straight out of the ammo bank
+has no `GunType` at all, so it falls through to the driveable's own keys, and if
+none is authored it silently sits at the default 60 rounds per minute — one shot
+per second, for a Tiger's 8.8 cm as much as for a Sherman's 75 mm.
+
+So decide per bank, by inspecting the definition's shoot points:
+
+| The bank is | Author | Because |
+| --- | --- | --- |
+| A main gun firing shells, one round at a time | `ShootDelayPrimarySeconds` | Sources give tank and naval guns a *loading cycle in seconds*. Author the sustained rate a trained crew held, not a burst-of-three record. |
+| An autocannon, machine gun, or rocket pod on a bare shoot point | `RoundsPerMinPrimary` | Sources give automatic weapons a cyclic rate. It is the same unit, and the same 1200 ceiling, as `RoundsPerMin` in `gun_categories.json`. |
+| Backed by a `PilotGun` / `AddGun` mount | nothing | With `ReadWeaponsFromGunTypes: "true"` the cadence comes from that gun's own researched category. A driveable-level key here is dead: it is shadowed, and it will silently diverge from the gun category the day someone corrects the gun. |
+| A bomb or torpedo release | `ShootDelaySecondarySeconds` | Release interval in seconds, matching how bomb-bay intervals are documented. |
+
+Author exactly one cadence key per bank. Two are not an error, but the loser is
+invisible, and a category that carries both is a future contradiction.
+
+Both keys floor at one tick. `RoundsPerMinPrimary` therefore caps at 1200, exactly
+as gun `RoundsPerMin` does, and `ShootDelayPrimarySeconds` cannot express anything
+faster than 0.05 s. `ReloadTimePrimary` and `PlaceTimePrimary` are separate floors
+applied on top of the resolved delay, not alternatives to it.
+
+Passenger and turret mounts are outside all of this. A passenger gun always uses its
+own `GunType` cadence regardless of `ReadWeaponsFromGunTypes` and of every key
+above, so a hull with twenty passenger mounts needs no driveable cadence key for
+them — only correct `gun_categories.json` entries.
 
 ## Ground vehicles
 
@@ -28,7 +84,7 @@ Every ground vehicle requires:
 | --- | --- | --- |
 | `RealMassKg` | kg, finite and > 0 | Loaded/combat mass; this is not legacy vehicle `Mass`. |
 | exactly one of `RealEnginePowerKw`, `RealEnginePowerHp`, `RealEnginePowerPS`, or `RealEngineThrustKn` | source unit, finite and > 0 | Preserve the source's convention. `1 hp = 0.745699872 kW`; `1 PS = 0.73549875 kW`. Do not define aliases together. |
-| `DriveType` | enum | `RWD`, `FWD`, `AWD`, or `TRACKED`; mandatory for a true ground vehicle, not a ship. |
+| `DriveType` | enum | `RWD`, `FWD`, `AWD`, `TRACKED`, or `MARINE`. Mandatory. A true ground vehicle takes one of the first four; a hull that floats takes `MARINE`, which is never inferred and must be authored. |
 | `RealMaxSpeedKmh` | km/h, finite and > 0 | Governed road maximum for the represented setup, not an exceptional downhill value. |
 | `RealMaxReverseSpeedKmh` | km/h, finite and > 0 | Gearbox-limited reverse speed; use a game fallback rather than omit it. |
 
@@ -37,14 +93,16 @@ engine-power value are valid. Never leave an accidental half-profile.
 
 Additional properties:
 
-- `ShootDelayPrimarySeconds`: seconds. Use only to override primary mounting
-  cadence; prefer sustained reload/cycle time. It takes priority over
-  `RoundsPerMinPrimary` and tick-delay aliases and is converted at 20 ticks/second.
+- Cadence keys for a bank with no gun mount, as set out in
+  [Mounted weapon cadence](#mounted-weapon-cadence): `ShootDelayPrimarySeconds` for a
+  shell-firing main gun, `RoundsPerMinPrimary` for an autocannon or machine gun.
 - `UseAmmoGroup`: exact group already created by shell categories. It is repeatable,
   so use an array for several cannon families. Validate both producers and
   consumers as described in the weapons reference.
 - `RealDraftM`: metres, finite and > 0, for boats/floating vehicles whose
-  definitions actually float.
+  definitions actually float. See [ships.md](ships.md), which also covers the naval
+  unit aliases `RealDisplacementT`, `RealDisplacementLongTons`, `RealMaxSpeedKn`,
+  and `RealMaxReverseSpeedKn`, and the naval armour keys.
 
 ### Armour
 
@@ -107,6 +165,12 @@ Every aircraft category requires:
 | `RealClimbRateMs` | m/s, finite and > 0 | Sustained climb corresponding as closely as practical to selected mass and engine setting; not zoom climb. |
 
 Aircraft categories do not use the ground-vehicle armour keys.
+
+Aircraft cadence follows [Mounted weapon cadence](#mounted-weapon-cadence) unchanged.
+Most fighters mount their guns as `PilotGun` entries and therefore need no cadence
+key at all: `ReadWeaponsFromGunTypes: "true"` pulls the rate from the researched gun
+category. Author `RoundsPerMinPrimary` only for a bare-shoot-point gun bank, and
+`ShootDelaySecondarySeconds` for a bomb or torpedo release interval.
 
 A genuinely wingless craft such as a rotorcraft, airship, or balloon is the only
 case where span and wing area may be absent, and such a definition often should not

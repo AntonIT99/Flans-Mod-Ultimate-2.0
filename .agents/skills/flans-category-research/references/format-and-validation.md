@@ -11,9 +11,13 @@ runtime copies under `run/`.
 
 A category applies only to the definition type named by its file. Gun short names
 belong in `gun_categories.json`, AA-gun short names in `aagun_categories.json`, and
-magazine, cartridge, bullet, shell, and missile short names in
-`bullet_categories.json`; use the analogous grenade, vehicle, plane, and armor
-files for their types.
+magazine, cartridge, bullet, shell, missile, bomb, depth-charge, mine, and torpedo
+short names in `bullet_categories.json`; use the analogous grenade, vehicle, plane,
+and armor files for their types. Bombs live in the `bullets` folder and belong in
+`bullet_categories.json` despite resembling grenades. Ships have no file of their
+own: they follow the folder the pack put them in, so a hull under `definitions/planes`
+belongs in `plane_categories.json` and one under `definitions/vehicles` in
+`vehicle_categories.json`. See [ships.md](ships.md) for what that choice changes.
 
 Use `scripts/scanShortnames.py` to find supported short names absent from all
 category JSON. It scans bundled source packs and `run/flan` ZIP packs and writes
@@ -90,10 +94,11 @@ After every category edit:
 2. Locate every added `items` short name in source definitions; confirm sanitized
    spelling, lowercase, category type, identity, aliases, and variant boundaries.
 3. Run `scripts/scanShortnames.py` after coverage changes. Inspect all remaining
-   relevant rows and classify them as generic, fictional, unsupported, ambiguous,
-   or genuinely unresolved rather than assuming every row needs a category. Armor
-   rows are the exception: every one of them is expected to end up in a category,
-   so a remaining armor row is a gap to report, not a correct skip.
+   relevant rows and classify each one by the resolution step it stopped at, per
+   [generic-and-fictional.md](generic-and-fictional.md). A generic or fictional row
+   is not by itself a correct skip: only an item whose identity and class are both
+   unknowable is. Armor rows are never a correct skip, since every one of them is
+   expected to end up in a category.
 4. Validate ammo groups in both directions: every selectable shell has each intended
    `AddToAmmoGroup`, and every gun, AA gun, vehicle, or aircraft consumer has exact
    matching `UseAmmoGroup`. Check duplicate ammunition after combining groups.
@@ -102,7 +107,9 @@ After every category edit:
    exact velocity, total repeating belt count, and absence of unintended accumulated
    belts. Confirm category-level `FallSpeed` unless sustained flight applies.
 6. Check unit conversions explicitly: projectile kg/g, explosive filler/TNT
-   equivalent, hp/PS/kW, mph/knots/km/h, feet/metres, seconds/ticks, and MOA/degrees.
+   equivalent, hp/PS/kW, mph/knots/km/h, metric tonnes versus imperial long tons,
+   feet/metres, seconds/ticks, and MOA/degrees. Prefer the naval unit aliases over
+   converting by hand, and never author both spellings of one quantity.
    Confirm muzzle-velocity precedence for every affected gun/AA-gun and ammunition
    pairing: ammunition `MuzzleVelocity` / `BulletSpeed` wins when present; gun
    velocity remains a compatible fallback. Autocannon belts, shells, and missiles
@@ -112,16 +119,26 @@ After every category edit:
    researched, game-sourced, or invented fallback is identified; AA-gun mass/health
    opt-in and multi-barrel cadence; ammunition mass/gravity and shell/missile
    statistics; every explosive
-   grenade's nonzero `ExplosiveMass` in kg TNT equivalent; complete vehicle
+   grenade's and bomb's nonzero `ExplosiveMass` in kg TNT equivalent, with a bomb's
+   `FragType` taken from casing construction, its `Mass` authored as the complete
+   filled store, and any authored `Fuse` justified as a real timed function rather
+   than an arming delay; complete vehicle
    propulsion, armour/turret/track sets; complete aircraft
    mass/power/speed/span/area/climb; quoted realistic-weapon/health flags for
-   driveables; and the five mandatory armor properties with their slot, coverage,
+   driveables; exactly one weapon-bank cadence key per bank that has no gun mount,
+   and none on a bank that has one; marine craft additionally carrying `DriveType MARINE`, a full-load
+   displacement, an astern speed, `RealDraftM`, and naval rather than hull armour
+   keys; and the five mandatory armor properties with their slot, coverage,
    and tier-table checks from `armor.md`.
 8. Recheck configuration consistency and every value based only on a game, broad
    reference, conversion, approximation, neighboring face, or sibling variant.
    Preserve provenance for the final report.
 9. Confirm category ordering and scan all category files for duplicate or conflicting
-   assignments of affected short names.
+   assignments of affected short names. For generic and fictional categories, also
+   run the additional checks in
+   [generic-and-fictional.md](generic-and-fictional.md): marker suffix, no collision
+   with a historical label, exemplar traceability, recomputed effective masses, and
+   tier caps measured against the file's current real ceiling.
 10. Review the scoped diff and preserve unrelated worktree changes. Run focused
     parser tests if behavior changed, `git diff --check`, and a full Gradle build only
     when repository-level rules require it. Pure data changes require at minimum
@@ -134,10 +151,13 @@ For a classification batch, report:
 - number of new categories per JSON file;
 - number of newly covered short names;
 - identifiable historical items left unresolved and why;
-- generic, fictional, unsupported, or otherwise intentionally skipped items,
-  excluding armor, where nothing is intentionally skipped;
+- generic and fictional items, broken down by the resolution step they reached, and
+  the additional report items required by `generic-and-fictional.md`;
+- unsupported or otherwise intentionally skipped items, excluding armor, where
+  nothing is intentionally skipped;
 - for armor batches, the additional report items required by `armor.md`;
 - principal primary and specialist sources;
 - values relying on broad/game/weak fallbacks or a neighboring configuration;
 - conversions, RHAe values, inferred belts, copied armour faces, final-resort
-  estimates, and disputed or approximate values deserving manual review.
+  estimates, and disputed or approximate values deserving manual review;
+- for naval batches, the additional report items required by `ships.md`.

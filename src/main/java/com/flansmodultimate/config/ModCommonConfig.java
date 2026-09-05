@@ -309,7 +309,9 @@ public final class ModCommonConfig
             .comment("Whether guns and grenades can break glass")
             .define("shootablesCanBreakGlass", true);
         NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder
-            .comment("Damage reference for the new damage system using kinetic energy (when 'Mass' is set). Is approximately equal to the damage of a 9g bullet at 333 m/s")
+            .comment("Damage reference for the kinetic damage system (when 'Mass' is set).",
+                "A 9 g projectile retains the established baseline; heavier projectiles scale with mass^(2/3) so shell damage remains proportional to normalized vehicle health.",
+                "The default gives approximately 5 damage to a 9 g bullet at 333 m/s.")
             .defineInRange("newDamageSystemDamageReference", 5.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE = builder
             .comment("Explosion damage reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the damage of 1kg TNT")

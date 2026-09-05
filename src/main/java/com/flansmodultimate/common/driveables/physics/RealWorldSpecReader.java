@@ -34,8 +34,14 @@ public final class RealWorldSpecReader
     // Ground keys.
     public static final String KEY_DRIVE_TYPE = "DriveType";
     public static final String KEY_MAX_REVERSE_SPEED = "RealMaxReverseSpeedKmh";
-    // Marine keys.
+    // Marine keys. Naval sources state displacement in tons and speed in knots,
+    // so these are unit aliases for the common mass and speed keys rather than
+    // separate physical quantities.
     public static final String KEY_DRAFT = "RealDraftM";
+    public static final String KEY_DISPLACEMENT_TONNES = "RealDisplacementT";
+    public static final String KEY_DISPLACEMENT_LONG_TONS = "RealDisplacementLongTons";
+    public static final String KEY_MAX_SPEED_KNOTS = "RealMaxSpeedKn";
+    public static final String KEY_MAX_REVERSE_SPEED_KNOTS = "RealMaxReverseSpeedKn";
 
     private RealWorldSpecReader() {}
 
@@ -62,8 +68,8 @@ public final class RealWorldSpecReader
         if (file == null)
             return new Result(RealWorldVehicleSpec.EMPTY, warnings);
 
-        Float massKg = readPositive(file, KEY_MASS, warnings, "kilograms");
-        Float maxSpeedKmh = readPositive(file, KEY_MAX_SPEED, warnings, "km/h");
+        Float massKg = readMassKg(file, warnings);
+        Float maxSpeedKmh = readMaxSpeedKmh(file, warnings);
         Float enginePowerKw = readEnginePowerKw(file, warnings);
         Float engineThrustKn = readPositive(file, KEY_ENGINE_THRUST, warnings, "kilonewtons");
 
@@ -74,7 +80,7 @@ public final class RealWorldSpecReader
 
         RealWorldVehicleSpec.Ground ground = new RealWorldVehicleSpec.Ground(
             readDriveType(file, warnings),
-            readPositive(file, KEY_MAX_REVERSE_SPEED, warnings, "km/h"));
+            readMaxReverseSpeedKmh(file, warnings));
 
         RealWorldVehicleSpec.Marine marine = new RealWorldVehicleSpec.Marine(
             readPositive(file, KEY_DRAFT, warnings, "metres"));
@@ -112,6 +118,50 @@ public final class RealWorldSpecReader
             return null;
         }
         return value;
+    }
+
+    /**
+     * Mass accepts the unit the source actually states it in. {@code RealMassKg}
+     * is the canonical key; {@code RealDisplacementT} takes metric tonnes and
+     * {@code RealDisplacementLongTons} the imperial long tons that pre-metric
+     * naval records use. Following the same last-declared-wins convention as
+     * engine power, each key overrides the ones before it in the order
+     * {@code RealMassKg} < {@code RealDisplacementT} <
+     * {@code RealDisplacementLongTons}.
+     */
+    @Nullable
+    private static Float readMassKg(TypeFile file, List<String> warnings)
+    {
+        Float kg = readPositive(file, KEY_MASS, warnings, "kilograms");
+        Float tonnes = readPositive(file, KEY_DISPLACEMENT_TONNES, warnings, "metric tonnes");
+        if (tonnes != null)
+            kg = (float) VehiclePhysicsUnits.tonnesToKg(tonnes);
+        Float longTons = readPositive(file, KEY_DISPLACEMENT_LONG_TONS, warnings, "imperial long tons");
+        if (longTons != null)
+            kg = (float) VehiclePhysicsUnits.longTonsToKg(longTons);
+        return kg;
+    }
+
+    /** {@code RealMaxSpeedKn} is the knot spelling of {@code RealMaxSpeedKmh} and overrides it. */
+    @Nullable
+    private static Float readMaxSpeedKmh(TypeFile file, List<String> warnings)
+    {
+        Float kmh = readPositive(file, KEY_MAX_SPEED, warnings, "km/h");
+        Float knots = readPositive(file, KEY_MAX_SPEED_KNOTS, warnings, "knots");
+        if (knots != null)
+            kmh = (float) VehiclePhysicsUnits.knotsToKmh(knots);
+        return kmh;
+    }
+
+    /** {@code RealMaxReverseSpeedKn} is the knot spelling of {@code RealMaxReverseSpeedKmh}. */
+    @Nullable
+    private static Float readMaxReverseSpeedKmh(TypeFile file, List<String> warnings)
+    {
+        Float kmh = readPositive(file, KEY_MAX_REVERSE_SPEED, warnings, "km/h");
+        Float knots = readPositive(file, KEY_MAX_REVERSE_SPEED_KNOTS, warnings, "knots");
+        if (knots != null)
+            kmh = (float) VehiclePhysicsUnits.knotsToKmh(knots);
+        return kmh;
     }
 
     /**
@@ -209,7 +259,9 @@ public final class RealWorldSpecReader
     {
         return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS,
             KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
-            KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT);
+            KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT,
+            KEY_DISPLACEMENT_TONNES, KEY_DISPLACEMENT_LONG_TONS,
+            KEY_MAX_SPEED_KNOTS, KEY_MAX_REVERSE_SPEED_KNOTS);
     }
 
     /** Normalised form used when matching keys case-insensitively. */

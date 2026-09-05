@@ -12,7 +12,7 @@ public final class VehicleProjectileDamageResolver
 
     public record Result(float damage, boolean kineticDamage, PenetrationResult penetration) {}
 
-    public static Result resolve(boolean normalizedHealth, float projectileMassGrams, float fixedDamage, double impactVelocityBlocksPerTick, ResolvedArmorHit armorHit, @Nullable Float penetrationAt100m)
+    public static Result resolve(boolean normalizedHealth, float projectileMassGrams, float fixedDamage, double muzzleVelocityBlocksPerTick, ResolvedArmorHit armorHit, @Nullable Float penetrationAt100m)
     {
         float safeFixedDamage = Float.isFinite(fixedDamage) ? Math.max(0F, fixedDamage) : 0F;
 
@@ -33,7 +33,7 @@ public final class VehicleProjectileDamageResolver
             return new Result(safeFixedDamage, false, penetration);
         }
 
-        float damage = ShootingHelper.getKineticDamage(projectileMassGrams, impactVelocityBlocksPerTick);
+        float damage = ShootingHelper.getKineticDamage(projectileMassGrams, muzzleVelocityBlocksPerTick);
         if (safeArmor.isArmoured())
             damage *= hybridOvermatchMultiplier(penetration.overmatch());
         return new Result(Float.isFinite(damage) ? Math.max(0F, damage) : 0F, true, penetration);
@@ -43,6 +43,6 @@ public final class VehicleProjectileDamageResolver
     {
         if (!Float.isFinite(overmatch) || overmatch < 1F)
             return 0F;
-        return 0.5F + 0.5F * Math.min(overmatch, 3F);
+        return Math.min(overmatch, 2.5F);
     }
 }

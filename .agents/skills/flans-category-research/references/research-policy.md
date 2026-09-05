@@ -18,11 +18,21 @@ identity and configuration. Search every bundled and official source pack and th
 available `run/flan` ZIP packs for exact aliases and variant representations.
 
 Create historical categories for identifiable real items and documented prototypes,
-paper designs, or credible reconstructions. Do not create them for generic labels
-such as `rifle`, `machinegun`, `pistol`, `tank`, or `fighter` when no real model is
-identifiable; purely fictional, fantasy, science-fiction, joke, or gameplay-only
-items; or identities that remain genuinely unknowable after inspecting localization,
-definitions, models, descriptions, neighboring files, and consumers.
+paper designs, or credible reconstructions. Do not create a *historical* category
+for a generic label such as `rifle`, `machinegun`, `pistol`, `tank`, or `fighter`
+when no real model is identifiable; for a purely fictional, fantasy,
+science-fiction, joke, or gameplay-only item; or for an identity that remains
+genuinely unknowable after inspecting localization, definitions, models,
+descriptions, neighboring files, and consumers.
+
+Those items are not, however, out of scope. A generic label is very often a real
+item once its consumers are inspected, and what remains after that gets a marked
+generic or fictional category whose values are balance assignments anchored to the
+researched ones. That work is governed by
+[generic-and-fictional.md](generic-and-fictional.md), which owns the resolution
+ladder, the labelling convention, and the anchoring method. Read it before deciding
+that any item is out of scope; the only correct skip is an item whose identity *and*
+class both remain unknowable.
 
 This scope restriction does not apply to `armor_categories.json`. Armor categories
 are balance assignments covering every armor item, generic and fictional included,
@@ -84,6 +94,13 @@ These are preferred starting points, not automatic authorities:
   ammunition, construction, filler, and reproduced manuals.
 - Grenades: original ammunition/EOD manuals, `bulletpicker.com`, `inert-ord.net`,
   and `cat-uxo.com` for identification and cross-checking.
+- Bombs, depth charges, naval mines, and torpedoes: original bomb and armament
+  handbooks and aircraft loading tables, `bulletpicker.com` for US stores and
+  reproduced manuals, `inert-ord.net` and `cat-uxo.com` for construction and filler,
+  and `navweaps.com` for naval ordnance. Establish nominal weight, casing
+  construction, filler mass, and filler composition separately; a nominal weight
+  designation is a class, not the actual weight, and the filler is what
+  `ExplosiveMass` describes.
 - Ground vehicles: original manuals, trials, and official/manufacturer
   specifications; `panzerworld.com`, `tanks-encyclopedia.com`, and `tank-afv.com`.
   War Thunder is an expected fallback for armour layout, plate slope, reverse
@@ -135,10 +152,13 @@ Derive values only through deterministic, supported transformations. Valid examp
 include kg to g, mph or knots to km/h, ft to m, seconds to Minecraft ticks, MOA to
 degrees, hp/PS/kW when the original convention is known, and filler mass to TNT
 equivalent when the charge mass and a defensible factor for that documented explosive
-composition are available. In particular, an explosive grenade's `ExplosiveMass`
-must be authored from an exact TNT-equivalent figure or this documented derivation;
-continue researching the charge and composition rather than leaving it unset. Omit
-it only when the grenade has no explosive charge. Preserve the source's unit when a
+composition are available. In particular, the `ExplosiveMass` of an explosive
+grenade or bomb must be authored from an exact TNT-equivalent figure or this
+documented derivation; continue researching the charge and composition rather than
+leaving it unset. Omit it only when the item has no explosive charge. For a bomb
+whose filler mass is undocumented, the charge-to-weight ratio bands in
+[guns-ammunition-grenades.md](guns-ammunition-grenades.md) are the sanctioned
+derivation, and the band used must be reported. Preserve the source's unit when a
 matching property exists—for example, prefer `RealEnginePowerPS` for a PS source.
 Do not calculate missing historical penetration from calibre, kinetic energy, or a
 game formula merely to fill a field.

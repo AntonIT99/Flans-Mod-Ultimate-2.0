@@ -1349,7 +1349,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser
     public float getDamageForDisplay(ShootableType type, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (type.useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * getBulletSpeed(gunStack) * 20.0);
+            return ShootingHelper.getKineticDamage(type.getMass(), getBulletSpeed(gunStack));
         else
             return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage(gunStack);
     }

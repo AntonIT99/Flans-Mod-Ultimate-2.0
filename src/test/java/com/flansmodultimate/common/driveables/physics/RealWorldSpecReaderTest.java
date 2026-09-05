@@ -240,6 +240,49 @@ class RealWorldSpecReaderTest
     }
 
     @Test
+    void navalDisplacementAndKnotKeysConvertIntoTheCommonUnits()
+    {
+        RealWorldVehicleSpec metric = read("RealDisplacementT 38000", "RealMaxSpeedKn 27.5",
+            "RealMaxReverseSpeedKn 9").spec();
+        assertEquals(38_000_000F, metric.massKg());
+        assertEquals(27.5F * 1.852F, metric.maxSpeedKmh(), 1.0E-3F);
+        assertEquals(9F * 1.852F, metric.ground().maxReverseSpeedKmh(), 1.0E-3F);
+
+        RealWorldVehicleSpec imperial = read("RealDisplacementLongTons 35000").spec();
+        assertEquals(35_561_642F, imperial.massKg(), 1F,
+            "a long ton is 1016.0469088 kg, not a metric tonne");
+    }
+
+    @Test
+    void navalUnitAliasesOverrideTheCanonicalKeysTheyDuplicate()
+    {
+        // Same last-declared-wins priority the engine power aliases use, so a
+        // definition that carries both spellings resolves deterministically.
+        RealWorldVehicleSpec spec = read("RealMassKg 1", "RealDisplacementT 2",
+            "RealDisplacementLongTons 3", "RealMaxSpeedKmh 10", "RealMaxSpeedKn 10").spec();
+        assertEquals(3F * 1016.0469088F, spec.massKg(), 1.0E-2F);
+        assertEquals(18.52F, spec.maxSpeedKmh(), 1.0E-3F);
+    }
+
+    @Test
+    void aMalformedNavalValueWarnsAndLeavesTheCanonicalKeyInPlace()
+    {
+        RealWorldSpecReader.Result result = read("RealMassKg 4200", "RealDisplacementT nonsense");
+        assertEquals(4200F, result.spec().massKg());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("RealDisplacementT")));
+    }
+
+    @Test
+    void aShipCompletesTheGroundProfileFromNavalUnitsAlone()
+    {
+        RealWorldVehicleSpec spec = read("RealDisplacementT 2500", "RealMaxSpeedKn 36",
+            "RealEnginePowerHp 52000", "DriveType MARINE", "RealDraftM 3.7").spec();
+        assertTrue(spec.hasCompleteGroundProfile());
+        assertEquals(EnumDriveType.MARINE, spec.ground().driveType());
+        assertEquals(3.7F, spec.marine().draftM());
+    }
+
+    @Test
     void aNullFileIsToleratedRatherThanThrowing()
     {
         RealWorldSpecReader.Result result = RealWorldSpecReader.read(null);

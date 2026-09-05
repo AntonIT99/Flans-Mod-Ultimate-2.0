@@ -5,8 +5,11 @@ import com.flansmodultimate.common.types.TypeFile;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Deterministic reader for optional semantic and per-part armour keys. */
 public final class VehicleArmorSpecReader
@@ -22,6 +25,30 @@ public final class VehicleArmorSpecReader
     public static final String TURRET_ARMOR_TOP = "TurretArmorTopMm";
     public static final String TURRET_ARMOR_BOTTOM = "TurretArmorBottomMm";
     public static final String PART_ARMOR = "PartArmorMm";
+
+    // Naval semantic keys. Warship armour is published per structure - belt,
+    // deck, citadel, conning tower, bulkhead - and one structure is spread over
+    // several parts in a definition, so each key covers a family of parts rather
+    // than a facing. They resolve as part overrides, and an explicit
+    // PartArmorMm line for one of those parts still wins.
+    public static final String ARMOR_BELT = "ArmorBeltMm";
+    public static final String ARMOR_DECK = "ArmorDeckMm";
+    public static final String ARMOR_CITADEL = "ArmorCitadelMm";
+    public static final String ARMOR_BULKHEAD = "ArmorBulkheadMm";
+    public static final String ARMOR_CONNING_TOWER = "ArmorConningTowerMm";
+    public static final String ARMOR_TORPEDO_BULGE = "ArmorTorpedoBulgeMm";
+    public static final String ARMOR_SUPERSTRUCTURE = "ArmorSuperstructureMm";
+    public static final String ARMOR_BOW = "ArmorBowMm";
+    public static final String ARMOR_STERN = "ArmorSternMm";
+    public static final String ARMOR_MACHINERY = "ArmorMachineryMm";
+    public static final String ARMOR_FLIGHT_DECK = "ArmorFlightDeckMm";
+
+    /**
+     * Which parts each naval key covers. Order is irrelevant because every part
+     * appears in exactly one family, so two family keys can never disagree about
+     * the same part.
+     */
+    private static final Map<String, List<EnumDriveablePart>> NAVAL_FAMILIES = navalFamilies();
 
     private static final float MAX_SLOPE_DEG = 89F;
 
@@ -55,6 +82,16 @@ public final class VehicleArmorSpecReader
         readFacing(file, TURRET_ARMOR_BOTTOM, turret, EnumArmorFacing.BOTTOM, warnings);
 
         EnumMap<EnumDriveablePart, ArmorPlate> parts = new EnumMap<>(EnumDriveablePart.class);
+        // Naval families first, so an explicit PartArmorMm override still wins.
+        for (Map.Entry<String, List<EnumDriveablePart>> family : NAVAL_FAMILIES.entrySet())
+        {
+            ArmorPlate plate = readLastPlate(file, family.getKey(), warnings);
+            if (plate == null)
+                continue;
+            for (EnumDriveablePart part : family.getValue())
+                parts.put(part, plate);
+        }
+
         List<String> lines = file.getConfigLines(PART_ARMOR);
         if (lines != null)
         {
@@ -179,5 +216,49 @@ public final class VehicleArmorSpecReader
         if (value.startsWith("="))
             value = value.substring(1).trim();
         return value;
+    }
+
+    /** The naval key list, for documentation and debug output. */
+    public static List<String> navalKeys()
+    {
+        return List.copyOf(NAVAL_FAMILIES.keySet());
+    }
+
+    private static Map<String, List<EnumDriveablePart>> navalFamilies()
+    {
+        Map<String, List<EnumDriveablePart>> families = new LinkedHashMap<>();
+        // The side of the hull. leftsideArmor/rightsideArmor are the generic
+        // side boxes a naval definition uses for its belt when it has no
+        // dedicated belt part.
+        families.put(ARMOR_BELT, List.of(EnumDriveablePart.BELT, EnumDriveablePart.PORT,
+            EnumDriveablePart.STARBOARD, EnumDriveablePart.LEFTSIDE_ARMOR,
+            EnumDriveablePart.RIGHTSIDE_ARMOR));
+        families.put(ARMOR_DECK, List.of(EnumDriveablePart.DECK, EnumDriveablePart.DECK_2,
+            EnumDriveablePart.DECK_3));
+        families.put(ARMOR_CITADEL, List.of(EnumDriveablePart.CITADEL));
+        families.put(ARMOR_BULKHEAD, List.of(EnumDriveablePart.BULKHEAD, EnumDriveablePart.BULKHEAD_2));
+        families.put(ARMOR_CONNING_TOWER, List.of(EnumDriveablePart.CONNING_TOWER,
+            EnumDriveablePart.CONNING_TOWER_AFT, EnumDriveablePart.BRIDGE));
+        families.put(ARMOR_TORPEDO_BULGE, List.of(EnumDriveablePart.TORPEDO_BULGE,
+            EnumDriveablePart.TORPEDO_BULGE_2, EnumDriveablePart.TORPEDO_BULGE_3,
+            EnumDriveablePart.TORPEDO_BULGE_4));
+        families.put(ARMOR_SUPERSTRUCTURE, List.of(EnumDriveablePart.SUPERSTRUCTURE));
+        families.put(ARMOR_BOW, List.of(EnumDriveablePart.BOW));
+        families.put(ARMOR_STERN, List.of(EnumDriveablePart.STERN));
+        families.put(ARMOR_MACHINERY, machinery());
+        families.put(ARMOR_FLIGHT_DECK, List.of(EnumDriveablePart.FLIGHT_DECK,
+            EnumDriveablePart.FLIGHT_DECK_2, EnumDriveablePart.HANGAR,
+            EnumDriveablePart.HANGAR_DECK, EnumDriveablePart.HANGAR_DECK_2,
+            EnumDriveablePart.HANGAR_DECK_3));
+        return Collections.unmodifiableMap(families);
+    }
+
+    private static List<EnumDriveablePart> machinery()
+    {
+        List<EnumDriveablePart> parts = new ArrayList<>();
+        parts.addAll(EnumDriveablePart.getEngineRooms());
+        parts.addAll(EnumDriveablePart.getBoilerRooms());
+        parts.add(EnumDriveablePart.STEERING);
+        return List.copyOf(parts);
     }
 }

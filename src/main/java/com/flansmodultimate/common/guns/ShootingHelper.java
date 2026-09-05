@@ -74,6 +74,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class ShootingHelper
 {
     public static final float ANGULAR_SPREAD_FACTOR = 0.0025F;
+    /** Preserves the established infantry-damage baseline while larger projectiles scale geometrically. */
+    public static final double KINETIC_DAMAGE_REFERENCE_MASS_GRAMS = 9D;
 
     /** Call this to fire bullets or grenades from a living entity holding a gun item (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
@@ -401,10 +403,12 @@ public final class ShootingHelper
         if (type == null)
             return 0F;
 
-        if (shootable != null && projectileMass > 0F)
+        if (projectileMass > 0F)
         {
-            // proportional to the square root of kinetic energy
-            return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
+            // Use the authored firing velocity rather than mutable entity motion. This also keeps
+            // entity bullets and raytraced shots on the same kinetic-damage scale.
+            return getKineticDamage(projectileMass, getMuzzleVelocity(firedShot.getBulletType(),
+                firedShot.getShot(), firedShot.getFireableGun()));
         }
         else
         {
@@ -420,7 +424,27 @@ public final class ShootingHelper
         }
     }
 
-    /** Canonical kinetic damage formula shared by ordinary entities and normalized-health vehicles. */
+    /**
+     * Resolves the fixed velocity used by kinetic damage, with the same precedence as kinetic penetration. Per-round
+     * or ammunition velocity takes precedence over the firing weapon, and {@link BulletType} supplies its
+     * deterministic default when neither is authored.
+     */
+    public static float getMuzzleVelocity(@Nullable BulletType bulletType, int shotsFired,
+                                          @Nullable FireableGun fireableGun)
+    {
+        if (bulletType == null)
+            return 0F;
+        float weaponVelocity = fireableGun == null ? 0F : fireableGun.getBulletSpeed();
+        return bulletType.getBulletSpeed(shotsFired, weaponVelocity);
+    }
+
+    /**
+     * Canonical kinetic damage formula shared by ordinary entities and normalized-health vehicles.
+     *
+     * <p>The legacy square-root-energy term is multiplied by a sixth-root mass progression. This preserves the
+     * established 9 g infantry-round baseline while making damage proportional to {@code mass^(2/3)} at a fixed
+     * velocity, matching the geometric exponent used by normalized vehicle health.</p>
+     */
     public static float getKineticDamage(float projectileMassGrams, double velocityBlocksPerTick)
     {
         if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
@@ -428,8 +452,9 @@ public final class ShootingHelper
             return 0F;
         double reference = ModCommonConfig.get() == null
             ? 5D : ModCommonConfig.get().newDamageSystemDamageReference();
+        double massProgression = Math.pow(projectileMassGrams / KINETIC_DAMAGE_REFERENCE_MASS_GRAMS, 1D / 6D);
         double damage = reference * 0.001D * Math.sqrt(projectileMassGrams)
-            * velocityBlocksPerTick * 20D;
+            * massProgression * velocityBlocksPerTick * 20D;
         return Double.isFinite(damage) && damage > 0D ? (float) Math.min(damage, Float.MAX_VALUE) : 0F;
     }
 

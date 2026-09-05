@@ -39,6 +39,12 @@ public final class VehiclePhysicsUnits
     public static final double KW_PER_HP = 0.745699872D;
     /** Kilowatts per metric horsepower / Pferdestärke (1 PS = 75 kgf·m/s = 735.49875 W exactly). */
     public static final double KW_PER_PS = 0.73549875D;
+    /** km/h per knot (1 knot = 1 international nautical mile per hour = 1.852 km/h exactly). */
+    public static final double KMH_PER_KNOT = 1.852D;
+    /** Kilograms per metric tonne. */
+    public static final double KG_PER_TONNE = 1000D;
+    /** Kilograms per imperial long ton (2240 lb), the displacement unit of most pre-1960 naval sources. */
+    public static final double KG_PER_LONG_TON = 1016.0469088D;
 
     private VehiclePhysicsUnits() {}
 
@@ -82,6 +88,51 @@ public final class VehiclePhysicsUnits
         if (!Double.isFinite(kw) || kw <= 0D)
             return 0D;
         return kw / KW_PER_PS;
+    }
+
+    /**
+     * Converts knots to km/h, so {@code RealMaxSpeedKn} can be stored internally
+     * in the same unit as {@code RealMaxSpeedKmh}. Naval sources state speed in
+     * knots essentially without exception, and converting by hand is the single
+     * most common authoring error for marine craft.
+     */
+    public static double knotsToKmh(double knots)
+    {
+        if (!Double.isFinite(knots) || knots <= 0D)
+            return 0D;
+        return knots * KMH_PER_KNOT;
+    }
+
+    /** Inverse of {@link #knotsToKmh(double)}; used for debug and tooltip readouts. */
+    public static double kmhToKnots(double kmh)
+    {
+        if (!Double.isFinite(kmh) || kmh <= 0D)
+            return 0D;
+        return kmh / KMH_PER_KNOT;
+    }
+
+    /**
+     * Converts metric tonnes to kilograms, so {@code RealDisplacementT} can be
+     * stored internally in the same unit as {@code RealMassKg}.
+     */
+    public static double tonnesToKg(double tonnes)
+    {
+        if (!Double.isFinite(tonnes) || tonnes <= 0D)
+            return 0D;
+        return tonnes * KG_PER_TONNE;
+    }
+
+    /**
+     * Converts imperial long tons to kilograms. Displacement in British and
+     * American naval records before metrication is in long tons, not metric
+     * tonnes, and the 1.6% difference is large enough to matter once it is cubed
+     * into a health curve.
+     */
+    public static double longTonsToKg(double longTons)
+    {
+        if (!Double.isFinite(longTons) || longTons <= 0D)
+            return 0D;
+        return longTons * KG_PER_LONG_TON;
     }
 
     /** Converts km/h to blocks per tick at scale 1.0. */

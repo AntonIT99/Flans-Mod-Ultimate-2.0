@@ -253,7 +253,7 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
         if (type.useKineticDamageSystem())
         {
             float bulletSpeed = (type instanceof BulletType bulletType) ? bulletType.getBulletSpeed(true) : 1F;
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * bulletSpeed * 20.0);
+            return ShootingHelper.getKineticDamage(type.getMass(), bulletSpeed);
         }
         else
             return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage();

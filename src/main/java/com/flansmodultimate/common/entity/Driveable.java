@@ -2818,9 +2818,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
             : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
         float p100 = bulletType.getPenetrationAt100m(shotIndex);
+        float muzzleVelocity = ShootingHelper.getMuzzleVelocity(bulletType, shotIndex,
+            shot == null ? null : shot.getFireableGun());
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
             normalizedHealth, bulletType.getMass(shotIndex), selectedFixedDamage,
-            hit.getLocalProjectileDirection().length(), armorHit,
+            muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null);
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
             && !resolvedDamage.penetration().penetrated();

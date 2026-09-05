@@ -109,9 +109,12 @@ Every bullet category is exactly one of:
 2. A mixed small-cannon/autocannon belt represented by `AddRound`.
 3. An individually selectable cannon shell or missile joined through
    `AddToAmmoGroup`.
+4. Dropped or released ordnance carried by a driveable: bombs, depth charges, naval
+   mines, and torpedoes. See [Bombs and dropped ordnance](#bombs-and-dropped-ordnance).
 
-Inspect `Shell True`, `Missile True`, `WeaponType`, `RoundsPerItem`, all consuming
-guns/vehicles/aircraft, and neighboring definitions before choosing a pattern.
+Inspect `Bomb True`, `Shell True`, `Missile True`, `Torpedo True`, `WeaponType`,
+`RoundsPerItem`, all consuming guns/vehicles/aircraft, and neighboring definitions
+before choosing a pattern.
 
 ### Ordinary gun ammunition
 
@@ -258,6 +261,103 @@ gun should use an existing matching group when its shells already define one. Do
 not invent an empty group or attach an incompatible group; if no group exists,
 leave it unset and report the missing cannon family unless the task includes adding
 the shell categories.
+
+## Bombs And Dropped Ordnance
+
+`bullets` definitions whose `WeaponType` resolves to `BOMB` or `MINE`, including the
+legacy `Bomb True` shorthand, are ammunition in `bullet_categories.json`, not
+grenades. They are researched like grenades — the value that matters is the
+explosive charge — but they carry a bomb's mass, they are released from a driveable
+rather than thrown, and their `Fuse` means something different.
+
+Torpedoes (`Torpedo True`) and depth charges are usually authored as bombs or
+missiles by the pack. Follow the definition, not the name.
+
+### Mandatory and expected fields
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `ExplosiveMass` | kilograms TNT equivalent | Mandatory for every bomb with a charge. Derive from filler mass and composition, never from the bomb's total weight. Omit only for genuinely inert practice or ballast stores. |
+| `FragType` | enum | Required. Chosen from casing construction, not from the word in the name. |
+| `Mass` | grams | Expected. For a bomb this is the **complete filled store**, because the whole bomb is what falls and strikes — unlike a shell, where case and propellant are excluded. It enables the kinetic system for direct hits. |
+| `FallSpeed` | multiplier | `1.0` for a free-fall bomb. A retarded, parachute-braked, or glide store is the exception; reduce it or use `DragInAir` and report the choice. |
+| `PenetrationAt100m` | millimetres | Only for armour-piercing and semi-armour-piercing bombs with a real deck- or concrete-penetration figure. Omit for ordinary general-purpose bombs. |
+
+Do not author `MuzzleVelocity` or `BulletSpeed` for a gravity bomb; it is released
+at the carrier's velocity and an authored value overrides that. Rocket-boosted and
+glide weapons are the exception and are usually `Missile` definitions anyway.
+
+### `Fuse` on a bomb is not a grenade fuse
+
+For a grenade, `Fuse` is the nominal timed delay after which it detonates. For a
+bullet-type entity, `Fuse` is a **maximum airborne lifetime in ticks**, after which
+the projectile is removed and detonates in mid-air. It is a self-destruct ceiling,
+not a historical arming delay.
+
+Consequences:
+
+- Do not convert a bomb's real arming or delay-fuse time into `Fuse`. A 0.01-second
+  instantaneous nose fuse authored as `Fuse 0` would be ignored; authored as a small
+  number it would detonate the bomb the instant it leaves the aircraft.
+- Leave the definition's authored value alone for an ordinary impact-fused bomb.
+  Packs typically use 200 ticks. Gravity is real at `9.81 / 400` blocks per tick
+  squared, so ten seconds of fall covers far more than the world's build height and
+  the cap never fires in practice.
+- Author `Fuse` in a category only when the ordnance genuinely has a timed function
+  the lifetime cap can represent: a depth charge set to a stated depth, an airburst
+  or dispenser store, or a delayed-action mine. Convert as `ticks = seconds * 20` and
+  say in the report what the timer represents.
+
+### Charge-to-weight ratio method
+
+Most bomb sources give a nominal weight and a filler, not a TNT equivalent. Derive
+`ExplosiveMass` as:
+
+```text
+explosiveMassKgTnt = totalBombMassKg * chargeToWeightRatio * tntEquivalenceFactor
+```
+
+Use the documented filler mass whenever one exists. Fall back to the construction's
+ratio band only when it does not, and report the fallback.
+
+| Construction | Charge-to-weight ratio | Usual `FragType` |
+| --- | --- | --- |
+| General-purpose bomb | 0.45 – 0.55 | `GP_BOMB` |
+| Light-case / high-capacity blast bomb | 0.70 – 0.80 | `LOW_FRAG` |
+| Fragmentation bomb | 0.10 – 0.20 | `HIGH_FRAG` |
+| Semi-armour-piercing bomb | 0.20 – 0.30 | `THICK_CASE` |
+| Armour-piercing / penetrator bomb | 0.05 – 0.15 | `THICK_CASE` |
+| Depth charge | 0.35 – 0.55 | `LOW_FRAG` |
+| Naval mine | 0.30 – 0.50 | `LOW_FRAG` |
+| Torpedo warhead section | as documented warhead mass | `THICK_CASE` |
+| Cluster dispenser | sum of submunition charges | `AIRBURST_AP` |
+| Incendiary bomb | charge is the incendiary fill | `LOW_FRAG` |
+
+Then apply the filler's TNT equivalence: Amatol 80/20 about 0.90–1.0, TNT 1.0,
+Tritonal about 1.05–1.10, Trialen about 1.20–1.30, RDX and Composition B about
+1.30–1.35, Torpex about 1.40–1.50. Record the composition and the factor.
+
+A cluster or submunition dispenser sets its own `ExplosiveMass` from its own burster
+only; the submunition it spawns is a separate definition with its own category, and
+authoring the total payload on both double-counts the damage.
+
+Nuclear and thermonuclear stores are a special case. A literal TNT equivalent of
+millions of kilograms produces a radius of tens of thousands of blocks through the
+cube-root formula. Cap such a store at a value that is dramatic but survivable at the
+world scale, treat the label as honest about the cap, and report the capped value as
+a deliberate gameplay limit rather than a researched figure.
+
+### Grouping and splitting
+
+Split by nominal weight and construction: an SC 250 and an SC 500 are separate
+categories, and a 500 lb GP bomb and a 500 lb SAP bomb are separate categories.
+Do not split by carrier aircraft, by icon, or by which weapon bank the pack put the
+store in. Exact aliases across packs share one category.
+
+Generic bombs whose only stated property is a nominal weight follow the generic
+doctrine in [generic-and-fictional.md](generic-and-fictional.md); the ratio table
+above is the correct derivation for them, using the general-purpose band unless the
+definition says otherwise.
 
 ## Grenades
 

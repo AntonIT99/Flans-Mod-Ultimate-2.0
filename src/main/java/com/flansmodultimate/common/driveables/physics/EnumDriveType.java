@@ -23,7 +23,18 @@ public enum EnumDriveType
     /** All wheel drive; the legacy {@code FourWheelDrive true} equivalent. */
     AWD(true, 1F, 1.05F),
     /** Continuous tracks; the legacy {@code Tank true} equivalent. */
-    TRACKED(true, 1.1F, 1.25F);
+    TRACKED(true, 1.1F, 1.25F),
+    /**
+     * Screw, paddle or waterjet propulsion for a hull that floats.
+     *
+     * <p>A propeller is not traction limited the way a wheel is, so the launch
+     * ceiling is left unscaled and the speed-squared resistance term of the
+     * propulsion model is what governs how a hull gets under way. The grade
+     * response is neutral because a floating hull has no grade; the factor still
+     * exists so that a marine craft driven up a beach behaves predictably
+     * instead of inheriting a wheeled layout's climbing bonus.
+     */
+    MARINE(true, 1F, 1F);
 
     private final boolean drivesAllWheels;
     private final float tractionFactor;
@@ -75,6 +86,7 @@ public enum EnumDriveType
             case "FWD", "FRONTWHEELDRIVE", "FRONT" -> FWD;
             case "AWD", "4WD", "ALLWHEELDRIVE", "FOURWHEELDRIVE" -> AWD;
             case "TRACKED", "TRACK", "TRACKS", "TANK", "CONTINUOUSTRACK" -> TRACKED;
+            case "MARINE", "NAVAL", "SHIP", "BOAT", "SCREW", "PROPELLER", "WATERJET", "PADDLE" -> MARINE;
             default -> null;
         };
     }
@@ -82,6 +94,12 @@ public enum EnumDriveType
     /**
      * Legacy inference used when no {@code DriveType} is authored. Tracks win
      * over four wheel drive because a legacy {@code Tank} is always tracked.
+     *
+     * <p>{@code MARINE} is deliberately never inferred. The legacy {@code Boat}
+     * and {@code FloatOnWater} keywords are shared by amphibious ground vehicles
+     * that really are wheeled or tracked, so inferring a marine layout from them
+     * would silently change the traction of every amphibian. A hull that wants
+     * the marine layout declares {@code DriveType MARINE} explicitly.
      */
     public static EnumDriveType infer(boolean tank, boolean fourWheelDrive)
     {
