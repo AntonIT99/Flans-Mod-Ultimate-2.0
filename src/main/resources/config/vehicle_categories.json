@@ -1,7 +1,7 @@
 {
     "2 cm Flakvierling 38": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
+            "RealMassKg": 1514,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -35,20 +35,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 6800",
+                "44_mediumheshell 5800"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 792",
+                "44_mediumheshell 853"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.39"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 132",
+                "44_mediumheshell 16"
             ]
         },
         "items": [
@@ -184,20 +183,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 7700",
+                "44_mediumheshell 7000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 883",
+                "44_mediumheshell 883"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.58"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 168",
+                "44_mediumheshell 20"
             ]
         },
         "items": [
@@ -263,9 +261,10 @@
             "ArmorRearMm": 0,
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
-            "AmmoMass": "44_57apshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_57apshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_57apshell <value from wiki.warthunder.com>",
+            "AmmoMass": "44_57apshell 3300",
+            "AmmoMuzzleVelocity": "44_57apshell 822",
+            "AmmoExplosiveMass": "44_57apshell 0.041",
+            "AmmoPenetrationAt100m": "44_57apshell 118",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -311,10 +310,10 @@
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_mediumheshell 6300",
+            "AmmoMuzzleVelocity": "44_mediumheshell 381",
+            "AmmoExplosiveMass": "44_mediumheshell 0.666",
+            "AmmoPenetrationAt100m": "44_mediumheshell 6"
         },
         "items": [
             "44_m8hmcscott"
@@ -387,20 +386,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 5700",
+                "44_mediumheshell 7300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 853",
+                "44_mediumheshell 609"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.53"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 125",
+                "44_mediumheshell 12"
             ]
         },
         "items": [
@@ -542,20 +540,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ]
         },
         "items": [
@@ -963,10 +960,10 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_largeheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_largeheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_largeheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_largeheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_largeheshell 18100",
+            "AmmoMuzzleVelocity": "44_largeheshell 50",
+            "AmmoExplosiveMass": "44_largeheshell 17.7",
+            "AmmoPenetrationAt100m": "44_largeheshell 64"
         },
         "items": [
             "churchill3avre",
@@ -994,20 +991,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ]
         },
         "items": [
@@ -1032,20 +1028,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 7700",
+                "44_mediumheshell 7000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 883",
+                "44_mediumheshell 883"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.58"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 168",
+                "44_mediumheshell 20"
             ]
         },
         "items": [
@@ -1073,20 +1068,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 2800",
+                "44_smallheshell 2700"
             ],
             "AmmoMuzzleVelocity": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 815",
+                "44_smallheshell 655"
             ],
             "AmmoExplosiveMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_smallheshell 0.59"
             ],
             "AmmoPenetrationAt100m": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 97",
+                "44_smallheshell 9"
             ]
         },
         "items": [
@@ -1345,9 +1339,9 @@
 
     "GMC CCKW 353 with T27 Xylophone": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 46000,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 35,
             "DriveType": "AWD",
             "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
             "ArmorFrontMm": 0,
@@ -1613,20 +1607,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 1100",
+                "44_smallheshell 1100"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 792",
+                "44_smallheshell 792"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_smallheshell 0.021"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 68",
+                "44_smallheshell 62"
             ]
         },
         "items": [
@@ -1655,20 +1648,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 2900",
+                "44_smallheshell 2700"
             ],
             "AmmoMuzzleVelocity": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 883",
+                "44_smallheshell 655"
             ],
             "AmmoExplosiveMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_smallheshell 0.59"
             ],
             "AmmoPenetrationAt100m": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 111",
+                "44_smallheshell 9"
             ]
         },
         "items": [
@@ -1697,20 +1689,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_122apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_122apshell 25000",
+                "44_largeheshell 25000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_122apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_122apshell 795",
+                "44_largeheshell 795"
             ],
             "AmmoExplosiveMass": [
-                "44_122apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_122apshell 0.246",
+                "44_largeheshell 3.6"
             ],
             "AmmoPenetrationAt100m": [
-                "44_122apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_122apshell 201",
+                "44_largeheshell 25"
             ]
         },
         "items": [
@@ -1923,20 +1915,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 6300",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 612",
+                "44_mediumheshell 612"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 0.15",
+                "44_mediumheshell 0.621"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 76",
+                "44_mediumheshell 11"
             ]
         },
         "items": [
@@ -1964,10 +1956,10 @@
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_verylargeheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_verylargeheshell 40000",
+            "AmmoMuzzleVelocity": "44_verylargeheshell 530",
+            "AmmoExplosiveMass": "44_verylargeheshell 5.8",
+            "AmmoPenetrationAt100m": "44_verylargeheshell 16"
         },
         "items": [
             "kv2normal",
@@ -2055,15 +2047,15 @@
             "RealMaxSpeedKmh": "<placeholder value>",
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": "<placeholder value>",
-            "ArmorFrontMm": "<value from tanks-encyclopedia>",
-            "ArmorSideMm": "<value from tanks-encyclopedia>",
-            "ArmorRearMm": "<value from tanks-encyclopedia>",
-            "ArmorTopMm": "<value from tanks-encyclopedia>",
-            "ArmorBottomMm": "<value from tanks-encyclopedia>",
-            "TurretArmorFrontMm": "<value from tanks-encyclopedia>",
-            "TurretArmorSideMm": "<value from tanks-encyclopedia>",
-            "TurretArmorRearMm": "<value from tanks-encyclopedia>",
-            "TurretArmorTopMm": "<value from tanks-encyclopedia>",
+            "ArmorFrontMm": 100,
+            "ArmorSideMm": 75,
+            "ArmorRearMm": 75,
+            "ArmorTopMm": 75,
+            "ArmorBottomMm": 75,
+            "TurretArmorFrontMm": 76,
+            "TurretArmorSideMm": 76,
+            "TurretArmorRearMm": 76,
+            "TurretArmorTopMm": 76,
             "PartArmorMm": [
                 "leftTrack 30",
                 "rightTrack 30"
@@ -2156,19 +2148,18 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 870",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 883",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 76",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ]
         },
@@ -2246,20 +2237,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 870",
+                "44_smallheshell 730"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 883",
+                "44_smallheshell 792"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_smallheshell 0.038"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 76",
+                "44_smallheshell 31"
             ]
         },
         "items": [
@@ -2288,20 +2278,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ]
         },
         "items": [
@@ -2372,11 +2361,11 @@
 
     "M8A1 75 mm Gun Motor Carriage": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 15600,
+            "RealEnginePowerHp": 296,
+            "RealMaxSpeedKmh": 64,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 17,
             "ArmorFrontMm": "<value from tanks-encyclopedia>",
             "ArmorSideMm": "<value from tanks-encyclopedia>",
             "ArmorRearMm": "<value from tanks-encyclopedia>",
@@ -2387,20 +2376,20 @@
                 "rightTrack 15"
             ],
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
                 "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
@@ -2430,20 +2419,19 @@
             "TurretArmorTopMm": 0,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 6800",
+                "44_mediumheshell 5800"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 792",
+                "44_mediumheshell 823"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.39"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 132",
+                "44_mediumheshell 16"
             ]
         },
         "items": [
@@ -2571,20 +2559,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 6300",
+                "44_smallheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 588",
+                "44_smallheshell 448"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_smallheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 82",
+                "44_smallheshell 7"
             ]
         },
         "items": [
@@ -2613,20 +2600,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
                 "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ]
         },
         "items": [
@@ -2691,11 +2678,11 @@
 
     "Medium Tank M4A1 Sherman DD": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 30600,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 5,
             "ArmorFrontMm": 50,
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
@@ -2712,20 +2699,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6300",
+                "44_mediumheshell 6300"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 619",
+                "44_mediumheshell 463"
             ],
             "AmmoExplosiveMass": [
                 "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.666"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 88",
+                "44_mediumheshell 7"
             ]
         },
         "items": [
@@ -2753,20 +2740,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 6800",
+                "44_mediumheshell 5800"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 792",
+                "44_mediumheshell 823"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.39"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 132",
+                "44_mediumheshell 16"
             ]
         },
         "items": [
@@ -2821,20 +2807,19 @@
             "ReadWeaponsFromGunTypes": "true",
             "UseRealisticVehicleHealth": "true",
             "AmmoMass": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 10900",
+                "44_largeheshell 10600"
             ],
             "AmmoMuzzleVelocity": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 853",
+                "44_largeheshell 823"
             ],
             "AmmoExplosiveMass": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_largeheshell 1.2"
             ],
             "AmmoPenetrationAt100m": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 172",
+                "44_largeheshell 20"
             ]
         },
         "items": [
@@ -3018,19 +3003,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 850",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 741",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 0.022",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
+                "44_37apshell 59",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ]
         },
@@ -3115,19 +3100,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
+                "44_50apshell 2000",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoMuzzleVelocity": [
-                "44_50apshell <value from wiki.warthunder.com>",
+                "44_50apshell 685",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoExplosiveMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
+                "44_50apshell 0.029",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoPenetrationAt100m": [
-                "44_50apshell <value from wiki.warthunder.com>",
+                "44_50apshell 76",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ]
         },
@@ -3182,20 +3167,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 2000",
+                "44_smallheshell 1800"
             ],
             "AmmoMuzzleVelocity": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 835",
+                "44_smallheshell 870"
             ],
             "AmmoExplosiveMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 0.029",
+                "44_smallheshell 0.218"
             ],
             "AmmoPenetrationAt100m": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 101",
+                "44_smallheshell 11"
             ]
         },
         "items": [
@@ -3292,10 +3277,10 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_mediumheshell 5700",
+            "AmmoMuzzleVelocity": "44_mediumheshell 420",
+            "AmmoExplosiveMass": "44_mediumheshell 0.686",
+            "AmmoPenetrationAt100m": "44_mediumheshell 6"
         },
         "items": [
             "44_panzerivf1"
@@ -3833,24 +3818,24 @@
 
     "Sd.Kfz. 140/1 Aufklarungspanzer 38(t)": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 11000,
+            "RealEnginePowerPS": 152,
+            "RealMaxSpeedKmh": 58,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
-            "ArmorFrontMm": "<value from tanks-encyclopedia>",
-            "ArmorSideMm": "<value from tanks-encyclopedia>",
-            "ArmorRearMm": "<value from tanks-encyclopedia>",
-            "ArmorTopMm": "<value from tanks-encyclopedia>",
-            "ArmorBottomMm": "<value from tanks-encyclopedia>",
+            "RealMaxReverseSpeedKmh": 6,
+            "ArmorFrontMm": 50,
+            "ArmorSideMm": 30,
+            "ArmorRearMm": 30,
+            "ArmorTopMm": 30,
+            "ArmorBottomMm": 30,
             "PartArmorMm": [
                 "leftTrack 15",
                 "rightTrack 15"
             ],
-            "AmmoMass": "44_20mmammo <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_20mmammo <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_20mmammo <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_20mmammo <value from wiki.warthunder.com>",
+            "AddRoundForAmmo": [
+                "44_20mmammo Pzgr. 1 133 0 833 34",
+                "44_20mmammo Sprgr. 1 130 0.006 900 4"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3898,20 +3883,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 2000",
+                "44_smallheshell 1800"
             ],
             "AmmoMuzzleVelocity": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 835",
+                "44_smallheshell 870"
             ],
             "AmmoExplosiveMass": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 0.029",
+                "44_smallheshell 0.218"
             ],
             "AmmoPenetrationAt100m": [
-                "44_50apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_50apshell 101",
+                "44_smallheshell 11"
             ]
         },
         "items": [
@@ -4038,20 +4023,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 7700",
+                "44_mediumheshell 7000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 883",
+                "44_mediumheshell 883"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_mediumheshell 0.58"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshelllong 168",
+                "44_mediumheshell 20"
             ]
         },
         "items": [
@@ -4294,20 +4278,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 6300",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 662",
+                "44_mediumheshell 680"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 0.15",
+                "44_mediumheshell 0.621"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 85",
+                "44_mediumheshell 12"
             ]
         },
         "items": [
@@ -4335,20 +4319,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 9200",
+                "44_mediumheshell 9500"
             ],
             "AmmoMuzzleVelocity": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 792",
+                "44_mediumheshell 785"
             ],
             "AmmoExplosiveMass": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 0.077",
+                "44_mediumheshell 0.741"
             ],
             "AmmoPenetrationAt100m": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 143",
+                "44_mediumheshell 18"
             ]
         },
         "items": [
@@ -4378,20 +4362,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_100apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_100apshell 15900",
+                "44_largeheshell 15600"
             ],
             "AmmoMuzzleVelocity": [
-                "44_100apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_100apshell 895",
+                "44_largeheshell 900"
             ],
             "AmmoExplosiveMass": [
-                "44_100apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_100apshell 0.1",
+                "44_largeheshell 1.5"
             ],
             "AmmoPenetrationAt100m": [
-                "44_100apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_100apshell 212",
+                "44_largeheshell 27"
             ]
         },
         "items": [
@@ -4402,11 +4386,11 @@
 
     "SU-122": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 30900,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 55,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 8,
             "ArmorFrontMm": "<value from tanks-encyclopedia>",
             "ArmorSideMm": "<value from tanks-encyclopedia>",
             "ArmorRearMm": "<value from tanks-encyclopedia>",
@@ -4416,10 +4400,10 @@
                 "leftTrack 15",
                 "rightTrack 15"
             ],
-            "AmmoMass": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "ww2_shell_ussr122mmhe <value from wiki.warthunder.com>",
+            "AmmoMass": "ww2_shell_ussr122mmhe 21800",
+            "AmmoMuzzleVelocity": "ww2_shell_ussr122mmhe 515",
+            "AmmoExplosiveMass": "ww2_shell_ussr122mmhe 3.7",
+            "AmmoPenetrationAt100m": "ww2_shell_ussr122mmhe 12",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -4430,11 +4414,11 @@
 
     "T26E1-1 Super Pershing": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 49900,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 40,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 13,
             "ArmorFrontMm": "<value from tanks-encyclopedia>",
             "ArmorSideMm": "<value from tanks-encyclopedia>",
             "ArmorRearMm": "<value from tanks-encyclopedia>",
@@ -4449,20 +4433,20 @@
                 "rightTrack 20"
             ],
             "AmmoMass": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 10900",
+                "44_largeheshell 10600"
             ],
             "AmmoMuzzleVelocity": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 975",
+                "44_largeheshell 975"
             ],
             "AmmoExplosiveMass": [
                 "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_largeheshell 0.925"
             ],
             "AmmoPenetrationAt100m": [
-                "44_90apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_90apshell 208",
+                "44_largeheshell 25"
             ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
@@ -4557,20 +4541,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 6300",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 612",
+                "44_mediumheshell 612"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 0.15",
+                "44_mediumheshell 0.621"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 76",
+                "44_mediumheshell 11"
             ]
         },
         "items": [
@@ -4599,20 +4583,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 6300",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 662",
+                "44_mediumheshell 680"
             ],
             "AmmoExplosiveMass": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 0.15",
+                "44_mediumheshell 0.621"
             ],
             "AmmoPenetrationAt100m": [
-                "44_76apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_76apshell 85",
+                "44_mediumheshell 12"
             ]
         },
         "items": [
@@ -4642,20 +4626,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 9200",
+                "44_mediumheshell 9500"
             ],
             "AmmoMuzzleVelocity": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 792",
+                "44_mediumheshell 785"
             ],
             "AmmoExplosiveMass": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 0.077",
+                "44_mediumheshell 0.741"
             ],
             "AmmoPenetrationAt100m": [
-                "44_85apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_85apshell 143",
+                "44_mediumheshell 18"
             ]
         },
         "items": [
@@ -4668,11 +4652,11 @@
 
     "T-34-100": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerHp": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 33000,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 48,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 7,
             "ArmorFrontMm": "<value from tanks-encyclopedia>",
             "ArmorSideMm": "<value from tanks-encyclopedia>",
             "ArmorRearMm": "<value from tanks-encyclopedia>",
@@ -4688,19 +4672,19 @@
             ],
             "AmmoMass": [
                 "44_100apshell 15900",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_largeheshell 15600"
             ],
             "AmmoMuzzleVelocity": [
                 "44_100apshell 895",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_largeheshell 900"
             ],
             "AmmoExplosiveMass": [
                 "44_100apshell 0.1001",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_largeheshell 1.5"
             ],
             "AmmoPenetrationAt100m": [
-                "44_100apshell <value from wiki.warthunder.com>",
-                "44_largeheshell <value from wiki.warthunder.com>"
+                "44_100apshell 212",
+                "44_largeheshell 27"
             ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
@@ -4779,19 +4763,19 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
+                "44_47apshell 1400",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoMuzzleVelocity": [
-                "44_47apshell <value from wiki.warthunder.com>",
+                "44_47apshell 760",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoExplosiveMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
+                "44_47apshell 0.029",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ],
             "AmmoPenetrationAt100m": [
-                "44_47apshell <value from wiki.warthunder.com>",
+                "44_47apshell 67",
                 "44_smallheshell <value from wiki.warthunder.com>"
             ]
         },
@@ -4931,20 +4915,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 1500",
+                "44_smallheshell 1400"
             ],
             "AmmoMuzzleVelocity": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 808",
+                "44_smallheshell 822"
             ],
             "AmmoExplosiveMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 0.022",
+                "44_smallheshell 0.085"
             ],
             "AmmoPenetrationAt100m": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 75",
+                "44_smallheshell 9"
             ]
         },
         "items": [
@@ -4968,20 +4952,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6600",
+                "44_mediumheshell 6000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 668",
+                "44_mediumheshell 522"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 0.104",
+                "44_mediumheshell 0.81"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 100",
+                "44_mediumheshell 8"
             ]
         },
         "items": [
@@ -5005,10 +4989,10 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_mediumheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_mediumheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_mediumheshell 6000",
+            "AmmoMuzzleVelocity": "44_mediumheshell 522",
+            "AmmoExplosiveMass": "44_mediumheshell 0.81",
+            "AmmoPenetrationAt100m": "44_mediumheshell 8"
         },
         "items": [
             "44_hoi"
@@ -5031,20 +5015,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 700",
+                "44_smallheshell 700"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 700",
+                "44_smallheshell 700"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 0.011",
+                "44_smallheshell 0.011"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 44",
+                "44_smallheshell 44"
             ]
         },
         "items": [
@@ -5072,20 +5056,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6600",
+                "44_mediumheshell 6000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 668",
+                "44_mediumheshell 522"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 0.104",
+                "44_mediumheshell 0.81"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 100",
+                "44_mediumheshell 8"
             ]
         },
         "items": [
@@ -5096,11 +5080,11 @@
 
     "Type 3 Chi-Nu II": {
         "properties": {
-            "RealMassKg": "<value from wiki.warthunder.com>",
-            "RealEnginePowerPS": "<value from wiki.warthunder.com>",
-            "RealMaxSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMassKg": 19800,
+            "RealEnginePowerPS": 243,
+            "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": "<value from wiki.warthunder.com>",
+            "RealMaxReverseSpeedKmh": 7,
             "ArmorFrontMm": "<value from tanks-encyclopedia>",
             "ArmorSideMm": "<value from tanks-encyclopedia>",
             "ArmorRearMm": "<value from tanks-encyclopedia>",
@@ -5115,20 +5099,20 @@
                 "rightTrack 15"
             ],
             "AmmoMass": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 6600",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 865",
+                "44_mediumheshell 830"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 0.104",
+                "44_mediumheshell 0.49"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 145",
+                "44_mediumheshell 17"
             ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
@@ -5154,20 +5138,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 6600",
+                "44_mediumheshell 6000"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 668",
+                "44_mediumheshell 522"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 0.104",
+                "44_mediumheshell 0.81"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshell <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshell 100",
+                "44_mediumheshell 8"
             ]
         },
         "items": [
@@ -5190,10 +5174,10 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoMuzzleVelocity": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoExplosiveMass": "44_verylargeheshell <value from wiki.warthunder.com>",
-            "AmmoPenetrationAt100m": "44_verylargeheshell <value from wiki.warthunder.com>"
+            "AmmoMass": "44_verylargeheshell 36000",
+            "AmmoMuzzleVelocity": "44_verylargeheshell 290",
+            "AmmoExplosiveMass": "44_verylargeheshell 7.7",
+            "AmmoPenetrationAt100m": "44_verylargeheshell 6"
         },
         "items": [
             "horo",
@@ -5222,20 +5206,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 6600",
+                "44_mediumheshell 6200"
             ],
             "AmmoMuzzleVelocity": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 865",
+                "44_mediumheshell 830"
             ],
             "AmmoExplosiveMass": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 0.104",
+                "44_mediumheshell 0.49"
             ],
             "AmmoPenetrationAt100m": [
-                "44_75apshelllong <value from wiki.warthunder.com>",
-                "44_mediumheshell <value from wiki.warthunder.com>"
+                "44_75apshelllong 145",
+                "44_mediumheshell 17"
             ]
         },
         "items": [
@@ -5259,20 +5243,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 2600",
+                "44_smallheshell 2600"
             ],
             "AmmoMuzzleVelocity": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 349",
+                "44_smallheshell 349"
             ],
             "AmmoExplosiveMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 0.103",
+                "44_smallheshell 0.103"
             ],
             "AmmoPenetrationAt100m": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 21",
+                "44_smallheshell 21"
             ]
         },
         "items": [
@@ -5316,20 +5300,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 700",
+                "44_smallheshell 700"
             ],
             "AmmoMuzzleVelocity": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 575",
+                "44_smallheshell 575"
             ],
             "AmmoExplosiveMass": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 0.011",
+                "44_smallheshell 0.011"
             ],
             "AmmoPenetrationAt100m": [
-                "44_37apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_37apshell 33",
+                "44_smallheshell 33"
             ]
         },
         "items": [
@@ -5378,20 +5362,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 2600",
+                "44_smallheshell 2600"
             ],
             "AmmoMuzzleVelocity": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 349",
+                "44_smallheshell 349"
             ],
             "AmmoExplosiveMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 0.103",
+                "44_smallheshell 0.103"
             ],
             "AmmoPenetrationAt100m": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 21",
+                "44_smallheshell 21"
             ]
         },
         "items": [
@@ -5420,20 +5404,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 1500",
+                "44_smallheshell 1400"
             ],
             "AmmoMuzzleVelocity": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 808",
+                "44_smallheshell 822"
             ],
             "AmmoExplosiveMass": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 0.022",
+                "44_smallheshell 0.085"
             ],
             "AmmoPenetrationAt100m": [
-                "44_47apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_47apshell 75",
+                "44_smallheshell 9"
             ]
         },
         "items": [
@@ -5654,20 +5638,20 @@
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 3100",
+                "44_smallheshell 3700"
             ],
             "AmmoMuzzleVelocity": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 990",
+                "44_smallheshell 700"
             ],
             "AmmoExplosiveMass": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 0.022",
+                "44_smallheshell 0.22"
             ],
             "AmmoPenetrationAt100m": [
-                "44_57apshell <value from wiki.warthunder.com>",
-                "44_smallheshell <value from wiki.warthunder.com>"
+                "44_57apshell 142",
+                "44_smallheshell 12"
             ]
         },
         "items": [

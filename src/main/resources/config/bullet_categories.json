@@ -1731,11 +1731,11 @@
 
     "203mm SK C/34 HE Shell": {
         "properties": {
-            "Mass": "<placeholder value>",
-            "MuzzleVelocity": "<placeholder value>",
+            "Mass": 122000.0,
+            "MuzzleVelocity": 925.0,
             "FallSpeed": 1.0,
-            "ExplosiveMass": "<placeholder value>",
-            "PenetrationAt100m": "<placeholder value>"
+            "ExplosiveMass": 8.9,
+            "PenetrationAt100m": 61
         },
         "items": [
             "ships_shell_german20cmhe"

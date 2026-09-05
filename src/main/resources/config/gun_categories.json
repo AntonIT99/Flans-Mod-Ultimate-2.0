@@ -171,7 +171,7 @@
 
     "20mm Autocannon Mount (Generic)": {
         "properties": {
-            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 850.0,
             "RoundsPerMin": 600.0,
             "Dispersion": 0.3
         },
@@ -185,10 +185,11 @@
             "MuzzleVelocity": 925.0,
             "RoundsPerMin": 4.0,
             "Dispersion": 0.12,
-            "AmmoMass": "ships_shell_german20mmaa <placeholder value>",
-            "AmmoMuzzleVelocity": "ships_shell_german20mmaa 925",
-            "AmmoExplosiveMass": "ships_shell_german20mmaa <placeholder value>",
-            "AmmoPenetrationAt100m": "ships_shell_german20mmaa <placeholder value>"
+            "Ammo": "ships_shell_german20cmhe",
+            "AmmoMass": "ships_shell_german20cmhe 122000",
+            "AmmoMuzzleVelocity": "ships_shell_german20cmhe 925",
+            "AmmoExplosiveMass": "ships_shell_german20cmhe 8.9",
+            "AmmoPenetrationAt100m": "ships_shell_german20cmhe 61"
         },
         "items": [
             "20.3cmskc34gun",
@@ -208,7 +209,7 @@
 
     "37mm Autocannon Mount (Generic)": {
         "properties": {
-            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 800.0,
             "RoundsPerMin": 160.0,
             "Dispersion": 0.3
         },
@@ -870,7 +871,7 @@
 
     "Fliegerselbstladekarabiner Modell 1915": {
         "properties": {
-            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 760.0,
             "RoundsPerMin": 240.0,
             "Dispersion": 0.22
         },
@@ -2532,7 +2533,7 @@
 
     "Type 1 47 mm Tank Gun": {
         "properties": {
-            "MuzzleVelocity": "<value from wiki.warthunder.com>",
+            "MuzzleVelocity": 808.0,
             "RoundsPerMin": 20.0,
             "Dispersion": 0.2
         },
