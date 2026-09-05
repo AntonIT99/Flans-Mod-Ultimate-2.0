@@ -65,6 +65,10 @@ Use this shape:
 - Single-value properties normally use the last applied line and override the
   content definition. Repeatable properties accumulate. Confirm parser behavior
   before assuming how a new property applies.
+- A short name normally appears in exactly one type file. The one sanctioned
+  exception is a hull being migrated between `definitions/planes` and
+  `definitions/vehicles`: register it in both, because only the file matching the
+  installed definition's type ever applies. See [ships.md](ships.md).
 - Never put one short name in categories that assign conflicting values. When
   variants share most values, use an exact variant category or `exceptions` to
   exclude only the differing property. An `exceptions` map affects only the named
@@ -75,16 +79,28 @@ Use this shape:
 
 ## Ordering
 
-Order category labels using case-insensitive alphanumeric order. For
-`bullet_categories.json`, put known metric calibre first in the label. Sort labels
-that begin with numeric millimetre calibre by:
+Order category labels using case-insensitive **natural** order: split each label into
+runs of digits and runs of text, compare digit runs numerically and text runs
+alphabetically, and rank a digit run before a text run at the same position.
+
+Consequences, all of which the shipped files follow:
+
+- `SU-85` precedes `SU-100`, and `Light Tank M5A1 Stuart` precedes
+  `Light Tank M24 Chaffee`. Plain string order would reverse both.
+- `Messerschmitt Bf 109 G-6` precedes `Messerschmitt Bf 109 G-10`.
+- A label starting with a number leads the file and is ordered numerically among its
+  peers, so `2 cm FlaK 38` and `3.7 cm FlaK M42` come before `5-inch/25 Mark 17`,
+  and all of them before `AA-12`.
+
+For `bullet_categories.json`, put known metric calibre first in the label and sort
+those labels by:
 
 1. numeric calibre;
 2. numeric case length when present;
-3. case-insensitive alphanumeric fallback.
+3. the natural order above as the fallback.
 
-Labels without a leading metric calibre use the alphanumeric fallback. For example,
-128 mm and 150 mm sort after 88 mm, not between 12.7 mm and 20 mm.
+Labels without a leading metric calibre use the natural fallback. So 128 mm and
+150 mm sort after 88 mm, not between 12.7 mm and 20 mm.
 
 ## Validation checklist
 
@@ -102,6 +118,12 @@ After every category edit:
 4. Validate ammo groups in both directions: every selectable shell has each intended
    `AddToAmmoGroup`, and every gun, AA gun, vehicle, or aircraft consumer has exact
    matching `UseAmmoGroup`. Check duplicate ammunition after combining groups.
+   For every per-ammo override, confirm the named short name is the ammunition's own
+   `ShortName` and that the ammunition is actually reachable from that weapon through
+   `Ammo`, `AddAmmo`, or `UseAmmoGroup`; that the override lives on the definition
+   that declares the ammunition, not on a driveable whose mounted gun declares it;
+   and that an overridden round stays internally coherent rather than mixing one
+   shell's velocity with another's mass.
 5. For every `AddRound`, verify `RoundsPerItem > 1`, exactly six positional tokens,
    positive count, projectile mass, deliberate zero/nonzero filler and penetration,
    exact velocity, total repeating belt count, and absence of unintended accumulated
@@ -139,7 +161,10 @@ After every category edit:
    [generic-and-fictional.md](generic-and-fictional.md): marker suffix, no collision
    with a historical label, exemplar traceability, recomputed effective masses, and
    tier caps measured against the file's current real ceiling.
-10. Review the scoped diff and preserve unrelated worktree changes. Run focused
+10. List every placeholder string authored under the blocked-source rule in
+    `research-policy.md`, with its property, category, and source. A file that
+    contains one is a work in progress and must be reported as such.
+11. Review the scoped diff and preserve unrelated worktree changes. Run focused
     parser tests if behavior changed, `git diff --check`, and a full Gradle build only
     when repository-level rules require it. Pure data changes require at minimum
     strict JSON parsing and the targeted checks above. Report checks not performed.

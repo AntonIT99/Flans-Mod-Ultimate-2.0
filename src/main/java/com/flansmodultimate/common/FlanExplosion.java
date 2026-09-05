@@ -101,6 +101,18 @@ public class FlanExplosion extends Explosion
 
         public Stats
         {
+            // Every radius is capped here, the one place all explosion statistics pass
+            // through, so an extreme charge cannot ask the server to iterate a radius of
+            // tens of thousands of blocks. The cap is a performance ceiling, not a
+            // balance decision: the authored ExplosiveMass stays honest, and a server
+            // with the hardware for a larger detonation simply raises the config value.
+            float maxRadius = (float) ModCommonConfig.maxExplosionRadius();
+            if (Float.isFinite(maxRadius) && maxRadius > 0F)
+            {
+                explosionRadius = Math.min(explosionRadius, maxRadius);
+                blastRadius = Math.min(blastRadius, maxRadius);
+                fragRadius = Math.min(fragRadius, maxRadius);
+            }
             // Ensure blastRadius >= explosionRadius
             if (blastRadius < explosionRadius)
                 blastRadius = explosionRadius;

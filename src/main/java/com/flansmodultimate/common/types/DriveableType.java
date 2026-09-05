@@ -26,6 +26,7 @@ import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
@@ -55,7 +56,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 /** Shared content definition for planes, vehicles and mechas. */
 @Getter
 @NoArgsConstructor
-public class DriveableType extends PaintableType implements IAmmoGroupUser
+public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmmoOverrideUser
 {
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
@@ -74,6 +75,9 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
      * names is accepted by this driveable, exactly as if it had been listed with "AddAmmo".
      */
     protected final Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this driveable. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
     private volatile List<BulletType> resolvedAmmoTypes;
     /** Ammo group revision the cache above was built from; groups can still grow while later packs load */
     private volatile int resolvedAmmoGroupRevision;
@@ -547,6 +551,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser
         readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
             .map(String::trim).forEach(ammo::add));
         ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);

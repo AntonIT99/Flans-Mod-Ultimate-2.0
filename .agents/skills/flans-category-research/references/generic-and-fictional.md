@@ -88,20 +88,56 @@ the item *is* that weapon's ammunition and gets an ordinary historical category 
 creating the historical category for the first time when needed. This is the single
 most productive step, and it must be attempted before anything below it.
 
-### R3 — Representative category from a real exemplar
+### R3 — Per-consumer overrides, with a representative baseline
 
 Reached when the consumer set is real but plural and materially different. Example:
 Warfare 44's `44_75APShell` is fired by the Sherman's M3, the Panzer IV's KwK 40,
 the Cromwell's OQF 75 mm, and the Chi-Nu's Type 3 — four real guns, one item.
 
-Select one real exemplar (see below), copy its complete coherent value set, and
-create a `(Generic)` category. Do not average, and do not mix values from different
-members.
+One shared item used to mean one value set, so the only option was to pick a
+representative and accept that every other consumer fired the wrong round. That is
+no longer true. The **firing weapon** can restate what the shared round does out of
+its own barrel:
 
-Before doing this, check whether the pack already separates the class into several
-short names — Warfare 44 provides both `44_75APShell` and `44_75APShellLong`. If it
-does, each short name gets its own exemplar and the split is respected rather than
-collapsed.
+```text
+AmmoMass              <ammoShortName> <grams>
+AmmoMuzzleVelocity    <ammoShortName> <metresPerSecond>
+AmmoExplosiveMass     <ammoShortName> <kgTntEquivalent>
+AmmoPenetrationAt100m <ammoShortName> <millimetres>
+AddRoundForAmmo       <ammoShortName> <name> <count> <massG> [explKg] [mps] [mm]
+```
+
+These are gun, AA-gun, and driveable category properties, so they live in
+`gun_categories.json`, `aagun_categories.json`, `vehicle_categories.json`, and
+`plane_categories.json` — never in `bullet_categories.json`. Each ammunition is
+overridden individually, and resolution is against the weapon that actually fires:
+a driveable's own bank uses the driveable's overrides, while the same driveable
+firing through an `AddGun` / `PilotGun` mount uses that gun's.
+
+So R3 has two halves, and both are done:
+
+1. **Give every identifiable consumer its real round.** For each vehicle, aircraft,
+   gun, or AA gun in the consumer set whose weapon can be identified, add the four
+   override keys to *that consumer's* category with the exact researched values for
+   the round it actually fired. This is ordinary historical research and the values
+   carry no marker, because they describe a real gun firing a real shell.
+2. **Give the shared item an honest baseline.** The ammunition item still needs a
+   `(Generic)` category for consumers you did not cover and for the item viewed on
+   its own. Select one real exemplar as described below, copy its complete coherent
+   value set, and label it `(Generic)`.
+
+Do not average, and do not mix values from different members into either half.
+
+Prefer overriding on the consumer over splitting the ammunition item: splitting is
+not available to a category anyway, since a category cannot create a new definition.
+
+Before doing any of this, check whether the pack already separates the class into
+several short names — Warfare 44 provides both `44_75APShell` and
+`44_75APShellLong`. If it does, each short name gets its own baseline exemplar and
+the split is respected rather than collapsed.
+
+Report the two halves separately: overrides are researched historical values, the
+baseline is a balance assignment.
 
 ### R4 — Anchored tier
 

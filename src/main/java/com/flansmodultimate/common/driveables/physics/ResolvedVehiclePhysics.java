@@ -26,6 +26,7 @@ public record ResolvedVehiclePhysics(
 
     boolean groundProfileComplete,
     boolean aircraftProfileComplete,
+    boolean marineProfileComplete,
 
     /** Baseline engine power in kilowatts before the installed engine part modifier. */
     float baselinePowerKw,
@@ -63,7 +64,7 @@ public record ResolvedVehiclePhysics(
     {
         return new ResolvedVehiclePhysics(EnumVehiclePhysicsMode.LEGACY, category,
             RealWorldVehicleSpec.EMPTY, geometry == null ? VehicleGeometry.EMPTY : geometry,
-            false, false, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F,
+            false, false, false, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F,
             inferredDriveType, false, null, null);
     }
 
@@ -76,6 +77,16 @@ public record ResolvedVehiclePhysics(
     }
 
     /** Whether the new fixed-wing model owns thrust, lift and control authority. */
+    /**
+     * Whether this hull owns its propulsion through the marine profile. True for a
+     * floating definition with a mass, a top speed, engine power and a draft,
+     * regardless of whether the pack filed it as a vehicle or a plane.
+     */
+    public boolean hasMarineProfile()
+    {
+        return marineProfileComplete;
+    }
+
     public boolean hasAircraftProfile()
     {
         return aircraftProfileComplete && category == EnumVehicleCategory.AIRCRAFT;
@@ -135,7 +146,7 @@ public record ResolvedVehiclePhysics(
      */
     public double movementClampBlocksPerTick()
     {
-        return hasGroundPropulsion() || hasAircraftProfile()
+        return hasGroundPropulsion() || hasAircraftProfile() || hasMarineProfile()
             ? VehiclePhysicsConstants.REAL_WORLD_MOVEMENT_CLAMP_BLOCKS_PER_TICK
             : VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK;
     }
@@ -148,7 +159,7 @@ public record ResolvedVehiclePhysics(
     public double wheelPredictionBlocks(double speedScale)
     {
         double legacy = VehiclePhysicsConstants.LEGACY_WHEEL_PREDICTION_BLOCKS;
-        if (!hasGroundPropulsion() && !hasAircraftProfile())
+        if (!hasGroundPropulsion() && !hasAircraftProfile() && !hasMarineProfile())
             return legacy;
         return Math.max(legacy, maxSpeedBlocksPerTick(speedScale));
     }
@@ -192,7 +203,7 @@ public record ResolvedVehiclePhysics(
         if (!hasAircraftProfile())
             return 0D;
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(maxSpeedBlocksPerTick(speedScale));
-        Float wingArea = source.aircraft().wingAreaM2();
+        Float wingArea = source.aircraft().effectiveWingAreaM2();
         return AircraftPerformancePhysics.clampedReferenceSpeedMs(massKg,
             wingArea == null ? 0F : wingArea, terminalMs, referenceSpeedScale);
     }

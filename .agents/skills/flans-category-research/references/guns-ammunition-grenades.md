@@ -42,12 +42,17 @@ than a competing override:
   `bullet_categories.json`. It is the exact projectile/load velocity for the
   represented gun or barrel. The matching gun or AA-gun category may retain a
   compatible fallback velocity, but it does not override the ammunition value.
+- **Weapon-authoritative:** a gun, AA gun, or driveable may restate a shared round
+  outright with `AmmoMuzzleVelocity <ammoShortName> <mps>`. This wins over both sides
+  above, and it is the correct answer when one generic ammunition item is fired by
+  several materially different real barrels. See
+  [Per-ammo overrides](#per-ammo-overrides).
 
 The resolved velocity combines with ammunition projectile `Mass` for kinetic damage;
 keep both values consistent with the same service loading. When both sides define a
-velocity, they must describe compatible configurations. Split categories when the
-same nominal ammunition is fired from materially different barrels whose velocities
-must differ.
+velocity, they must describe compatible configurations. When the same nominal
+ammunition is fired from materially different barrels whose velocities must differ,
+override on each weapon rather than trying to pick one velocity for the item.
 
 Projectile mass, explosive filler, and penetration belong to ammunition, not gun
 categories. Exact aliases and skins may share one gun category; split materially
@@ -262,6 +267,56 @@ not invent an empty group or attach an incompatible group; if no group exists,
 leave it unset and report the missing cannon family unless the task includes adding
 the shell categories.
 
+## Per-Ammo Overrides
+
+A gun, AA gun, or driveable can restate what one shared ammunition item does out of
+its own barrel. These are weapon-category properties and belong in
+`gun_categories.json`, `aagun_categories.json`, `vehicle_categories.json`, or
+`plane_categories.json` — never in `bullet_categories.json`.
+
+| Property | Format | Overrides |
+| --- | --- | --- |
+| `AmmoMass` | `<ammoShortName> <grams>` | the round's projectile mass |
+| `AmmoMuzzleVelocity` | `<ammoShortName> <metresPerSecond>` | the round's muzzle velocity |
+| `AmmoExplosiveMass` | `<ammoShortName> <kgTntEquivalent>` | the round's bursting charge, and the blast derived from it |
+| `AmmoPenetrationAt100m` | `<ammoShortName> <millimetres>` | the round's armour penetration |
+| `AddRoundForAmmo` | `<ammoShortName> <name> <count> <massG> [explKg] [mps] [mm]` | the round's whole `AddRound` belt, replacing rather than appending |
+
+All five are repeatable, so use a JSON array when a weapon restates more than one
+ammunition:
+
+```json
+"UseAmmoGroup": "75mm KwK/PaK 40",
+"AmmoMass": [
+    "44_75apshell 6800",
+    "44_smallheshell 5700"
+],
+"AmmoMuzzleVelocity": [
+    "44_75apshell 770",
+    "44_smallheshell 770"
+]
+```
+
+Rules that matter when authoring them:
+
+- The short name is the ammunition's **own `ShortName`**, matched case-insensitively.
+- Each ammunition is overridden individually. Overriding one round says nothing about
+  the others the weapon accepts.
+- Resolution is against the weapon that fires. A driveable's own bank uses the
+  driveable's overrides; the same driveable firing through an `AddGun`/`PilotGun`
+  mount uses that gun's. Overrides never cascade from a driveable into its mounts, so
+  put them on whichever definition actually declares the ammunition.
+- Precedence per field: the scalar override, then `AddRoundForAmmo`, then the
+  ammunition's own `AddRound`, then the ammunition's own top-level value, then for
+  velocity only the weapon's `BulletSpeed`.
+- An override may give a mass to a round that had none, which puts that round on the
+  kinetic scale for that weapon alone. Use this deliberately, not accidentally.
+- Overriding is the preferred answer to shared generic ammunition, because it lets
+  every consumer fire its real round. See
+  [generic-and-fictional.md](generic-and-fictional.md) R3.
+- Keep an overridden set coherent: a weapon that restates velocity and penetration
+  but leaves the item's mass alone is describing two different shells.
+
 ## Bombs And Dropped Ordnance
 
 `bullets` definitions whose `WeaponType` resolves to `BOMB` or `MINE`, including the
@@ -341,11 +396,13 @@ A cluster or submunition dispenser sets its own `ExplosiveMass` from its own bur
 only; the submunition it spawns is a separate definition with its own category, and
 authoring the total payload on both double-counts the damage.
 
-Nuclear and thermonuclear stores are a special case. A literal TNT equivalent of
-millions of kilograms produces a radius of tens of thousands of blocks through the
-cube-root formula. Cap such a store at a value that is dramatic but survivable at the
-world scale, treat the label as honest about the cap, and report the capped value as
-a deliberate gameplay limit rather than a researched figure.
+Nuclear and thermonuclear stores need no special treatment in the category. Author
+the real yield as kilograms of TNT equivalent like any other charge - a 50 Mt device
+is `50000000000` - and let the server's `maxExplosionRadius` setting bound what is
+actually simulated. That ceiling is a performance guard applied to every detonation's
+radii at runtime; it leaves the authored charge, and therefore the damage, honest.
+Never bake a gameplay cap into `ExplosiveMass`: doing so silently misreports the
+weapon and cannot be tuned per server.
 
 ### Grouping and splitting
 

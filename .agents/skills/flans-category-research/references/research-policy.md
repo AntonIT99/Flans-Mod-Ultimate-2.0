@@ -180,6 +180,42 @@ Use projectile mass in kg, muzzle velocity in m/s, and TNT equivalent in g; conv
 projectile kg to grams and TNT-equivalent grams to kilograms. Confirm the exact
 munition and vehicle/gun configuration.
 
+## Placeholders for blocked sources
+
+Some sources refuse automated access: `wiki.warthunder.com` answers 401/404 and
+`tanks-encyclopedia.com` answers 403. When the *only* obstacle to a mandatory value
+is that its source cannot be opened, do not omit the property and do not omit the
+category. Author the structure with an identifiable placeholder string so the shape
+is right and a human can fill in one value later:
+
+```json
+"88mm Pzgr.39 (Generic)": {
+    "properties": {
+        "Mass": 10200,
+        "MuzzleVelocity": "<value from wiki.warthunder.com>",
+        "FallSpeed": 1.0,
+        "PenetrationAt100m": "<value from wiki.warthunder.com>"
+    },
+    "items": ["someshell"]
+}
+```
+
+Rules:
+
+- Use `<value from wiki.warthunder.com>`, `<value from tanks-encyclopedia>`, or
+  `<placeholder value>`. Name the blocked source when you know which one holds the
+  figure, so the follow-up research is a single lookup.
+- A placeholder is a last resort, not a shortcut. Exhaust the source ladder first,
+  and use a researched value whenever one is obtainable.
+- Never place a placeholder where a real value was found; never use one to avoid
+  a judgement call the doctrine already answers, such as exemplar selection or a
+  fictional tier.
+- Placeholders are not valid numbers and the loader will reject them, so a file
+  containing any placeholder is a work in progress. Say so explicitly in the report
+  and list every placeholder with its property, category, and the source to consult.
+- Prefer a placeholder over an omitted mandatory field, and an omitted *optional*
+  field over a placeholder.
+
 ## Traceability
 
 Keep working notes sufficient to audit each category. The final report must identify

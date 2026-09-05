@@ -4,6 +4,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.IAmmoOverrideUser;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,8 +30,8 @@ public class FiredShot
     /** counter of fired shots from the magazine */
     @Getter
     private int shot;
-    /** The weapon used to fire the shot */
-    @Getter
+    /** The weapon used to fire the shot. Null on the client spawn-data path, where the gun is not transmitted. */
+    @Getter @Nullable
     private final FireableGun fireableGun;
     /** The BulletType of the fired bullet */
     @Getter
@@ -61,6 +62,73 @@ public class FiredShot
         this.attacker = attacker;
         this.shooter = shooter;
         this.shot = shot;
+    }
+
+    /**
+     * The per-ammunition override the firing weapon declares for this shot's ammunition,
+     * or {@link AmmoOverride#EMPTY} when it declares none.
+     *
+     * <p>Resolution is against the weapon that actually fired: a driveable shooting
+     * through a mounted gun resolves against that gun, because the gun is what declared
+     * the ammunition.
+     */
+    public AmmoOverride getAmmoOverride()
+    {
+        if (fireableGun != null && fireableGun.getType() instanceof IAmmoOverrideUser user)
+        {
+            AmmoOverride override = user.getAmmoOverrides().get(bulletType.getOriginalShortName());
+            if (override != null)
+                return override;
+        }
+        return AmmoOverride.EMPTY;
+    }
+
+    /** Projectile mass in grams for this shot, after any per-weapon override. */
+    public float getProjectileMass()
+    {
+        return getAmmoOverride().resolveMass(bulletType, shot);
+    }
+
+    /**
+     * Muzzle velocity in blocks per tick for this shot, after any per-weapon override.
+     * Falls back to the firing weapon's own bullet speed exactly as the ammunition would.
+     */
+    public float getMuzzleVelocity()
+    {
+        return getAmmoOverride().resolveBulletSpeed(bulletType, shot, weaponBulletSpeed());
+    }
+
+    /** Bursting charge in kg TNT equivalent for this shot, after any per-weapon override. */
+    public float getExplosiveMass()
+    {
+        return getAmmoOverride().resolveExplosiveMass(bulletType, shot);
+    }
+
+    /** Penetration in millimetres at 100 m for this shot, after any per-weapon override. */
+    public float getPenetrationAt100m()
+    {
+        return getAmmoOverride().resolvePenetrationAt100m(bulletType, shot);
+    }
+
+    /**
+     * Penetrating power for this shot. Mirrors {@link BulletType#getPenetratingPower(int, float)}
+     * but derives the kinetic value from the overridden mass and velocity, so a weapon that
+     * restates a shared round's ballistics also restates how far it punches through.
+     */
+    public float getPenetratingPower()
+    {
+        if (!bulletType.isPenetrates())
+            return bulletType.getPenetratingPower(shot, weaponBulletSpeed());
+        float mass = getProjectileMass();
+        if (mass <= 0F)
+            return bulletType.getPenetratingPower(shot, weaponBulletSpeed());
+        return ShootingHelper.getKineticPenetratingPower(mass, getMuzzleVelocity());
+    }
+
+    /** The velocity the firing weapon contributes, or zero when the gun is unknown. */
+    private float weaponBulletSpeed()
+    {
+        return fireableGun == null ? 0F : fireableGun.getBulletSpeed();
     }
 
     public float getSpread()

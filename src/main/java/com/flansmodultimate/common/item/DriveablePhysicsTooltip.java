@@ -121,10 +121,10 @@ public final class DriveablePhysicsTooltip
         if (resolved.hasAircraftProfile())
         {
             RealWorldVehicleSpec.Aircraft aircraft = source.aircraft();
-            if (aircraft.wingSpanM() != null)
-                tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_WING_SPAN), IFlanItem.formatFloat(aircraft.wingSpanM(), 2) + " m"));
-            if (aircraft.wingAreaM2() != null)
-                tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_WING_AREA), IFlanItem.formatFloat(aircraft.wingAreaM2(), 2) + " m²"));
+            if (aircraft.effectiveWingSpanM() != null)
+                tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_WING_SPAN), IFlanItem.formatFloat(aircraft.effectiveWingSpanM(), 2) + " m"));
+            if (aircraft.effectiveWingAreaM2() != null)
+                tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_WING_AREA), IFlanItem.formatFloat(aircraft.effectiveWingAreaM2(), 2) + " m²"));
             if (aircraft.climbRateMs() != null)
                 tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_CLIMB_RATE), IFlanItem.formatFloat(aircraft.climbRateMs(), 1) + " m/s"));
             double minimumFlightSpeedKmh = resolved.referenceSpeedMs(

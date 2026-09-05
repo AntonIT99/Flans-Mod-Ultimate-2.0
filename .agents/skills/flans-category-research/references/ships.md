@@ -52,6 +52,32 @@ never gets `RealMaxSpeedKmh` propulsion; its speed stays on the legacy
 keys rather than leaving a half-profile, and report the definition as a
 misfiled hull so it can be moved later.
 
+Misfiling is rare and worth checking before assuming it. Across every bundled and
+runtime pack there are 21 floating `planes/` definitions, and 20 of them are genuine
+floatplanes and flying boats - Arado 196, OS2U Kingfisher, PBY Catalina, Sunderland,
+BV 238, H6K, Do 24 - which float *and* fly and belong exactly where they are. A
+floating plane with `leftWing`, `rightWing`, `tail` or `nose` parts is an aircraft.
+Only a hull with naval parts, or with no wing parts at all, is misfiled.
+
+### Migrating a misfiled hull
+
+When a pack moves a hull from `definitions/planes` to `definitions/vehicles`, players
+on the older release still have it as a `PlaneType`. A category cannot detect which
+release is installed, but it does not need to: **register the same short name in both
+`plane_categories.json` and `vehicle_categories.json`**. A category only applies to
+the definition type named by its file, so exactly one of the two ever matches and the
+other is inert.
+
+- The `vehicle_categories.json` entry carries the full ship profile: displacement,
+  `DriveType MARINE`, speed, astern speed, `RealDraftM`, naval armour, and the flags.
+- The `plane_categories.json` entry carries only what a `PlaneType` can use -
+  displacement, draft, armour and the flags - and omits the propulsion keys.
+
+Give both entries the same label so they are obviously one ship. If the pack also
+renames the short name during the move, add the new name to the vehicle entry and
+keep the old one in the plane entry. Record every such pair in the report, because a
+short name appearing in two type files is otherwise a validation error.
+
 ## Identifying A Marine Craft
 
 The definition is a marine craft when it declares `Boat`, `FloatOnWater true`, or

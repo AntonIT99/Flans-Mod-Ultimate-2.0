@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
@@ -113,6 +114,18 @@ public abstract class InfoType
     protected RenderOptions renderOptions;
 
     public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling) {}
+
+    /**
+     * Reads the optional per-ammunition override keys and reports any malformed line
+     * as an ordinary content warning. Shared by every weapon type that can fire.
+     */
+    protected AmmoOverrides readAmmoOverrides(TypeFile file)
+    {
+        AmmoOverrides.Result result = AmmoOverrides.read(file);
+        for (String warning : result.warnings())
+            TypeReaderUtils.logError(warning, file);
+        return result.overrides();
+    }
 
     public String getShortName()
     {

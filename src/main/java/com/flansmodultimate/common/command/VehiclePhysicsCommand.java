@@ -85,6 +85,7 @@ public final class VehiclePhysicsCommand
             line(context, RealWorldSpecReader.KEY_WING_SPAN, source.aircraft().wingSpanM(), "m");
             line(context, RealWorldSpecReader.KEY_WING_AREA, source.aircraft().wingAreaM2(), "m2");
             line(context, RealWorldSpecReader.KEY_CLIMB_RATE, source.aircraft().climbRateMs(), "m/s");
+            line(context, RealWorldSpecReader.KEY_ROTOR_DIAMETER, source.aircraft().rotorDiameterM(), "m");
             if (source.ground().driveType() != null)
                 send(context, ChatFormatting.GRAY, "  " + RealWorldSpecReader.KEY_DRIVE_TYPE
                     + " = " + source.ground().driveType());
@@ -195,8 +196,8 @@ public final class VehiclePhysicsCommand
         StringBuilder missing = new StringBuilder();
         appendMissing(missing, source.massKg(), RealWorldSpecReader.KEY_MASS);
         appendMissing(missing, source.maxSpeedKmh(), RealWorldSpecReader.KEY_MAX_SPEED);
-        appendMissing(missing, source.aircraft().wingSpanM(), RealWorldSpecReader.KEY_WING_SPAN);
-        appendMissing(missing, source.aircraft().wingAreaM2(), RealWorldSpecReader.KEY_WING_AREA);
+        appendMissing(missing, source.aircraft().effectiveWingSpanM(), RealWorldSpecReader.KEY_WING_SPAN);
+        appendMissing(missing, source.aircraft().effectiveWingAreaM2(), RealWorldSpecReader.KEY_WING_AREA);
         if (source.enginePowerKw() == null && source.engineThrustKn() == null)
             append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " (or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP
                 + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS + ") or " + RealWorldSpecReader.KEY_ENGINE_THRUST);

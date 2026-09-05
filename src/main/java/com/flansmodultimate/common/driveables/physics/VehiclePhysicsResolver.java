@@ -47,6 +47,9 @@ public final class VehiclePhysicsResolver
             && source.hasCompleteGroundProfile();
         boolean aircraftComplete = resolvedCategory == EnumVehicleCategory.AIRCRAFT
             && source.hasCompleteAircraftProfile();
+        // Marine is category-independent: what makes a hull a hull is that it floats
+        // and declares a draft, not which type class the pack filed it under.
+        boolean marineComplete = hints.floatOnWater() && source.hasCompleteMarineProfile();
 
         // Independently usable parameters.
         EnumDriveType driveType = source.ground().driveType();
@@ -58,7 +61,7 @@ public final class VehiclePhysicsResolver
         Float draftM = resolveDraft(source, hints);
 
         boolean anyOverride = driveTypeExplicit || reverseSpeedKmh != null || draftM != null;
-        boolean profileActive = groundComplete || aircraftComplete;
+        boolean profileActive = groundComplete || aircraftComplete || marineComplete;
 
         EnumVehiclePhysicsMode mode;
         if (profileActive)
@@ -82,14 +85,14 @@ public final class VehiclePhysicsResolver
         float rollInertia = 1F;
         if (aircraftComplete)
         {
-            float wingArea = orZero(source.aircraft().wingAreaM2());
-            float wingSpan = orZero(source.aircraft().wingSpanM());
+            float wingArea = orZero(source.aircraft().effectiveWingAreaM2());
+            float wingSpan = orZero(source.aircraft().effectiveWingSpanM());
             wingLoading = VehiclePhysicsUnits.wingLoading(massKg, wingArea);
             rollInertia = AircraftPerformancePhysics.rollInertiaFactor(wingSpan, massKg);
         }
 
         return new ResolvedVehiclePhysics(mode, resolvedCategory, source, dimensions,
-            groundComplete, aircraftComplete,
+            groundComplete, aircraftComplete, marineComplete,
             powerKw, thrustKn, massKg, maxSpeedKmh,
             powerToWeight, thrustToWeight, wingLoading, rollInertia,
             driveType, driveTypeExplicit, reverseSpeedKmh, draftM);

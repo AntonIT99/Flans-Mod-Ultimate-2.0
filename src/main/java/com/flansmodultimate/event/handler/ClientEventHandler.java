@@ -354,12 +354,10 @@ public final class ClientEventHandler
         Player player = event.getEntity();
         if (!(player.getVehicle() instanceof Seat seat) || seat.getDriveable() == null)
             return;
+
         float partialTick = event.getPartialTick();
-        Vec3 renderedFeet = new Vec3(Mth.lerp((double) partialTick, player.xo, player.getX()),
-            Mth.lerp((double) partialTick, player.yo, player.getY()),
-            Mth.lerp((double) partialTick, player.zo, player.getZ()));
-        Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(
-            seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
+        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()), Mth.lerp(partialTick, player.zo, player.getZ()));
+        Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         Vec3 correction = seatFeet.subtract(renderedFeet);
         event.getPoseStack().translate(correction.x, correction.y, correction.z);
     }
@@ -370,5 +368,4 @@ public final class ClientEventHandler
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
             event.setResult(Event.Result.DENY);
     }
-
 }

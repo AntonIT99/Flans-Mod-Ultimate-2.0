@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -27,7 +28,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 @NoArgsConstructor
-public class AAGunType extends InfoType implements IAmmoGroupUser
+public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverrideUser
 {
     public static final int MAX_BARRELS = 16;
 
@@ -38,6 +39,9 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
      * names is usable in this gun, exactly as if it had been listed individually.
      */
     protected Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this AA gun. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
     protected int reloadTime;
     protected float recoil = 5F;
     protected float bulletSpread;
@@ -141,6 +145,7 @@ public class AAGunType extends InfoType implements IAmmoGroupUser
         readBarrels(file);
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
         readGunnerPosition(file);
         resolveRealisticHealth(file);
     }

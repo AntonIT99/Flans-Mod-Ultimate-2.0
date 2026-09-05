@@ -308,11 +308,8 @@ public final class CommonEventHandler
 
         if (entity instanceof Player || entity instanceof Mob)
         {
-            if (FlanDamageSources.isShootableDamage(source))
-            {
-                if (CustomArmorItem.tryApplyIgnoreArmorShot(event, entity, source))
-                    return;
-            }
+            if (FlanDamageSources.isShootableDamage(source) && CustomArmorItem.tryApplyIgnoreArmorShot(event, entity, source))
+                return;
 
             CustomArmorItem.applyOldArmorRatioSystem(event, entity);
 
@@ -327,12 +324,9 @@ public final class CommonEventHandler
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
+            if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield())
             {
-                if (gunItem.getConfigType().isShield())
-                {
-                    absorption = Math.max(absorption, gunItem.getConfigType().getShieldDamageAbsorption());
-                }
+                absorption = Math.max(absorption, gunItem.getConfigType().getShieldDamageAbsorption());
             }
         }
         return absorption;

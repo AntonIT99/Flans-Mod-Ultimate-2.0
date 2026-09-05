@@ -46,6 +46,14 @@ public final class ModCommonConfig
     public static final double DEFAULT_KINETIC_PENETRATION_REFERENCE = 0.087D;
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
+    /**
+     * Hard ceiling on every explosion radius, in blocks. Conventional ordnance stays
+     * far below it - the largest researched charge in the shipped categories is an
+     * 88 kg TNT-equivalent naval shell at about 45 blocks - so this exists to keep a
+     * nuclear or otherwise extreme charge from asking the server to process a radius
+     * of tens of thousands of blocks.
+     */
+    public static final double DEFAULT_MAX_EXPLOSION_RADIUS = 128D;
 
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
@@ -155,6 +163,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue MAX_ARMOR_IMPACT_ANGLE_DEG;
     private static final ForgeConfigSpec.DoubleValue ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_BLAST_DISTANCE_METERS;
+    private static final ForgeConfigSpec.DoubleValue MAX_EXPLOSION_RADIUS;
 
     private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
 
@@ -492,6 +501,12 @@ public final class ModCommonConfig
         MINIMUM_BLAST_DISTANCE_METERS = builder
             .comment("Minimum physical distance used by armoured blast pressure calculations to avoid a singularity.")
             .defineInRange("minimumBlastDistanceMeters", DEFAULT_MINIMUM_BLAST_DISTANCE_METERS, 0.01D, 100D);
+        MAX_EXPLOSION_RADIUS = builder
+            .comment("Hard ceiling in blocks on the explosion, blast and fragmentation radii of any single detonation.",
+                "Conventional ordnance is far below this; the largest researched charge in the built-in categories reaches about 45 blocks.",
+                "It exists so that a nuclear or otherwise extreme charge cannot ask the server for a radius of tens of thousands of blocks.",
+                "Raise it if your hardware can process a larger detonation, lower it if it cannot.")
+            .defineInRange("maxExplosionRadius", DEFAULT_MAX_EXPLOSION_RADIUS, 1D, 4096D);
         builder.pop();
 
         builder.push("Enchantment Module");
@@ -599,6 +614,7 @@ public final class ModCommonConfig
             MAX_ARMOR_IMPACT_ANGLE_DEG.get(),
             ARMORED_BLAST_RESISTANCE_KPA_PER_MM.get(),
             MINIMUM_BLAST_DISTANCE_METERS.get(),
+            MAX_EXPLOSION_RADIUS.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get()
         );
@@ -723,6 +739,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_MINIMUM_BLAST_DISTANCE_METERS : config.minimumBlastDistanceMeters();
+    }
+
+    /** Hard ceiling in blocks on any explosion, blast or fragmentation radius. */
+    public static double maxExplosionRadius()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_EXPLOSION_RADIUS : config.maxExplosionRadius();
     }
 
     public static double kineticPenetrationReference()

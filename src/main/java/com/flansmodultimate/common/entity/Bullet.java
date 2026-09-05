@@ -348,7 +348,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 lockedOnTo = level.getEntity(lockedOnToId);
 
             firedShot = new FiredShot(null, configType, shooter, attacker, shot);
-            initialPenetratingPower = configType.getPenetratingPower(shot, 0F);
+            initialPenetratingPower = firedShot.getPenetratingPower();
             penetratingPower = initialPenetratingPower;
         }
         catch (Exception e)

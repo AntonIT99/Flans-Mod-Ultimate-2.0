@@ -98,6 +98,7 @@ public record CommonConfigSnapshot(
     double maxArmorImpactAngleDeg,
     double armoredBlastResistanceKPaPerMm,
     double minimumBlastDistanceMeters,
+    double maxExplosionRadius,
 
     boolean enchantmentModuleEnabled
 )
@@ -202,6 +203,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.maxArmorImpactAngleDeg);
         buf.writeDouble(s.armoredBlastResistanceKPaPerMm);
         buf.writeDouble(s.minimumBlastDistanceMeters);
+        buf.writeDouble(s.maxExplosionRadius);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
     }
@@ -291,6 +293,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

@@ -99,6 +99,12 @@ Additional properties:
 - `UseAmmoGroup`: exact group already created by shell categories. It is repeatable,
   so use an array for several cannon families. Validate both producers and
   consumers as described in the weapons reference.
+- `AmmoMass`, `AmmoMuzzleVelocity`, `AmmoExplosiveMass`, `AmmoPenetrationAt100m`, and
+  `AddRoundForAmmo`: per-ammunition overrides that restate what a shared generic round
+  does out of this vehicle's own gun. Use them to give each vehicle the exact shell its
+  real gun fired instead of collapsing a shared item to one value set. They are
+  repeatable, so use arrays. See the per-ammo section of the weapons reference and
+  [generic-and-fictional.md](generic-and-fictional.md) R3.
 - `RealDraftM`: metres, finite and > 0, for boats/floating vehicles whose
   definitions actually float. See [ships.md](ships.md), which also covers the naval
   unit aliases `RealDisplacementT`, `RealDisplacementLongTons`, `RealMaxSpeedKn`,
@@ -172,11 +178,33 @@ key at all: `ReadWeaponsFromGunTypes: "true"` pulls the rate from the researched
 category. Author `RoundsPerMinPrimary` only for a bare-shoot-point gun bank, and
 `ShootDelaySecondarySeconds` for a bomb or torpedo release interval.
 
-A genuinely wingless craft such as a rotorcraft, airship, or balloon is the only
-case where span and wing area may be absent, and such a definition often should not
-receive an ordinary aircraft category at all. Defining both shaft power and thrust
-is technically allowed but normally signals mixed or unclear research; aircraft use
-thrust when both are present.
+### Rotorcraft
+
+A helicopter has no wing, so `RealWingSpanM` and `RealWingAreaM2` describe nothing
+and the profile would never activate. Author rotor geometry instead:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealRotorDiameterM` | m, finite and > 0 | Main rotor diameter. Supplies the span, and the swept disc supplies the area. |
+| `RealRotorCount` | whole rotors, at least 1 | Only for a tandem or coaxial layout. Defaults to one. |
+
+The area becomes `count * pi * (diameter / 2)^2`, the swept disc, which is exactly
+the quantity a helicopter's published disc loading is calculated from. Both figures
+are published for every real rotorcraft, so this is ordinary research rather than a
+modelled estimate — never author them from the visible model when the real aircraft
+is identifiable.
+
+The span deliberately stays one rotor wide on a tandem layout: two rotors sweep two
+discs but the craft is not twice as wide, and span feeds roll inertia, not lift.
+
+An authored wing span or area wins over the derivation, which is what a compound
+helicopter with real wings needs. Every other aircraft key stays mandatory: mass,
+one engine key, maximum speed, and climb rate.
+
+An airship or balloon still has no lifting surface of either kind and normally
+should not receive an ordinary aircraft category. Defining both shaft power and
+thrust is technically allowed but normally signals mixed or unclear research;
+aircraft use thrust when both are present.
 
 The realistic profile activates only with valid mass, maximum speed, span, area,
 and engine power or thrust. `RealClimbRateMs` is also mandatory for category

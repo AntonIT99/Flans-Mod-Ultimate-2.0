@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
+import com.flansmodultimate.common.driveables.physics.EnumDriveType;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
@@ -404,9 +406,13 @@ public class Plane extends Driveable
     private Vec3 fixedWingPhysics(PlaneType type)
     {
         Vec3 current = getDeltaMovement();
-        // Precedence: a complete real-world profile beats the legacy
-        // NewFlightControl experiment, which beats the legacy flight model.
-        // Helicopter, VTOL and six-DOF craft are untouched by the new path.
+        // Precedence: a hull afloat is a ship before it is anything else, then a
+        // complete real-world profile, then the legacy NewFlightControl experiment,
+        // then the legacy flight model. Helicopter, VTOL and six-DOF craft are
+        // untouched by the new paths.
+        if (!ModCommonConfig.forceLegacyPlanePhysics() && type.getResolvedPhysics().hasMarineProfile()
+            && isInWater())
+            return marinePhysics(type, type.getResolvedPhysics(), current);
         if (!ModCommonConfig.forceLegacyPlanePhysics() && type.getResolvedPhysics().hasAircraftProfile())
             return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
         applyLegacyControls(type, current);
@@ -490,7 +496,7 @@ public class Plane extends Driveable
         double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
             * throttleDemand * propellerFraction;
 
-        Float wingSpan = physics.source().aircraft().wingSpanM();
+        Float wingSpan = physics.source().aircraft().effectiveWingSpanM();
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
             airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
             throttleDemand * propellerFraction);
@@ -687,6 +693,52 @@ public class Plane extends Driveable
         angularYaw *= 0.99F;
         angularPitch *= 0.99F;
         angularRoll *= 0.99F;
+    }
+
+    /**
+     * Surface propulsion for a hull that a content pack filed as a plane because its
+     * model extends {@code ModelPlane}.
+     *
+     * <p>It is deliberately the same constant-power, speed-squared-resistance model a
+     * {@code VehicleType} ship gets, driven by the same authored displacement, shaft
+     * power and top speed, so the two ways of authoring a warship behave identically.
+     * Only the horizontal plane is handled here; the vertical axis stays with the
+     * draft-based flotation in {@code applyGravityAndBuoyancy}, which already works
+     * for any floating driveable.
+     */
+    private Vec3 marinePhysics(PlaneType type, ResolvedVehiclePhysics physics, Vec3 current)
+    {
+        double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
+        double terminal = physics.maxSpeedBlocksPerTick(speedScale);
+        float throttle = isEngineActive() ? getThrottle() : 0F;
+
+        // A ship answers her helm, not her elevator: yaw only, and only under way.
+        Vec3 heading = new Vec3(flightForwardVector().x, 0D, flightForwardVector().z);
+        heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize()
+            : new Vec3(current.x, 0D, current.z);
+        setOrientation(getYaw(), approach(getPitch(), 0F, 1F), approach(getRoll(), 0F, 1F));
+
+        double speed = current.horizontalDistance();
+        boolean astern = throttle < 0F;
+        double target = terminal * Math.abs(throttle);
+        if (astern)
+        {
+            Float reverse = physics.maxReverseSpeedKmh();
+            double asternCap = reverse == null ? terminal * 0.4D
+                : VehiclePhysicsUnits.kmhToBlocksPerTick(reverse) * speedScale;
+            target = Math.min(target, asternCap);
+        }
+
+        double powerWatts = physics.effectivePowerWatts(getEngineSpeed());
+        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
+            speed, powerWatts, physics.massKg(), terminal, EnumDriveType.MARINE.tractionFactor());
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
+            speed, powerWatts, physics.massKg(), terminal,
+            DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE));
+        double newSpeed = GroundPropulsionPhysics.approach(speed, target, acceleration, deceleration);
+
+        Vec3 travel = heading.scale(astern ? -newSpeed : newSpeed);
+        return new Vec3(travel.x, current.y, travel.z);
     }
 
     private Vec3 applyAerodynamicDrag(Vec3 velocity, PlaneType type)

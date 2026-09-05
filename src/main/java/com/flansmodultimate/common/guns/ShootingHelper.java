@@ -397,7 +397,8 @@ public final class ShootingHelper
         {
             BulletType bulletType = firedShot.getBulletType();
             type = bulletType;
-            projectileMass = bulletType.getMass(firedShot.getShot());
+            // Resolved through the shot so a per-weapon AmmoMass override is honoured.
+            projectileMass = firedShot.getProjectileMass();
         }
 
         if (type == null)
@@ -407,8 +408,7 @@ public final class ShootingHelper
         {
             // Use the authored firing velocity rather than mutable entity motion. This also keeps
             // entity bullets and raytraced shots on the same kinetic-damage scale.
-            return getKineticDamage(projectileMass, getMuzzleVelocity(firedShot.getBulletType(),
-                firedShot.getShot(), firedShot.getFireableGun()));
+            return getKineticDamage(projectileMass, firedShot.getMuzzleVelocity());
         }
         else
         {
@@ -635,8 +635,7 @@ public final class ShootingHelper
      */
     public static float getInitialPenetratingPower(FiredShot shot)
     {
-        FireableGun gun = shot.getFireableGun();
-        return shot.getBulletType().getPenetratingPower(shot.getShot(), gun == null ? 0F : gun.getBulletSpeed());
+        return shot.getPenetratingPower();
     }
 
     private static void createShot(Level level, FiredShot shot, Vec3 shootingOrigin, Vec3 shootingDirection)

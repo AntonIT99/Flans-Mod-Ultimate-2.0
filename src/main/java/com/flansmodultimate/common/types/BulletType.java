@@ -5,6 +5,7 @@ import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -66,6 +67,7 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean entityHitSoundEnable;
 
+    @Getter
     protected boolean penetrates = true;
     /** Authored penetrating power, superseded by the kinetic derivation when the round declares a mass */
     protected float penetratingPower = 1F;
@@ -453,21 +455,34 @@ public class BulletType extends ShootableType
     @Override
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
-        if (explosiveEntity instanceof Bullet bullet && bullet.getConfigType().hasDifferentRounds())
+        if (explosiveEntity instanceof Bullet bullet)
         {
-            RoundStats roundStats = statsForShot(bullet.getFiredShot().getShot());
-            float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(roundStats.explosiveMass));
-            float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(roundStats.explosiveMass));
-            float explosionBlastRadius = ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * explosionRadius;
-            DamageStats explosionBlastDamage = new DamageStats();
-            explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(roundStats.explosiveMass)));
-            explosionBlastDamage.calculate();
-            return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
-                explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage,
-                Float.isFinite(roundStats.explosiveMass()) && roundStats.explosiveMass() > 0F
-                    ? roundStats.explosiveMass() : 0F);
+            FiredShot shot = bullet.getFiredShot();
+            // A per-weapon AmmoExplosiveMass or AddRoundForAmmo override replaces the
+            // charge for this shot; otherwise a belt round's own charge is used.
+            boolean overridden = shot != null && !shot.getAmmoOverride().isEmpty();
+            if (overridden || bullet.getConfigType().hasDifferentRounds())
+            {
+                float explosiveCharge = shot != null ? shot.getExplosiveMass()
+                    : statsForShot(0).explosiveMass();
+                return explosionStatsForCharge(explosiveCharge);
+            }
         }
         return super.getExplosionStats(explosiveEntity);
+    }
+
+    /** Derives the whole explosion profile from one bursting charge in kg TNT equivalent. */
+    private FlanExplosion.Stats explosionStatsForCharge(float explosiveCharge)
+    {
+        float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveCharge));
+        float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
+        float explosionBlastRadius = ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * explosionRadius;
+        DamageStats explosionBlastDamage = new DamageStats();
+        explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveCharge)));
+        explosionBlastDamage.calculate();
+        return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
+            explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage,
+            Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F);
     }
 
     public boolean hasDifferentRounds()

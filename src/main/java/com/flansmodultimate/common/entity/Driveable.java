@@ -2817,11 +2817,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
             : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
-        float p100 = bulletType.getPenetrationAt100m(shotIndex);
-        float muzzleVelocity = ShootingHelper.getMuzzleVelocity(bulletType, shotIndex,
-            shot == null ? null : shot.getFireableGun());
+        // Resolved through the shot where one exists, so a per-weapon override of the
+        // shared round's mass, velocity or penetration reaches the armour gate too.
+        float p100 = shot != null ? shot.getPenetrationAt100m() : bulletType.getPenetrationAt100m(shotIndex);
+        float muzzleVelocity = shot != null ? shot.getMuzzleVelocity()
+            : ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null);
+        float projectileMass = shot != null ? shot.getProjectileMass() : bulletType.getMass(shotIndex);
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
-            normalizedHealth, bulletType.getMass(shotIndex), selectedFixedDamage,
+            normalizedHealth, projectileMass, selectedFixedDamage,
             muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null);
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()

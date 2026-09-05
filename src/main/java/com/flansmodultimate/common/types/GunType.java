@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -42,7 +43,7 @@ import java.util.Set;
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
-public class GunType extends PaintableType implements IScope, IAmmoGroupUser
+public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IAmmoOverrideUser
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
@@ -116,6 +117,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser
      */
     @Getter
     protected Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this gun. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -712,6 +716,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser
             bulletSpeed = muzzleVelocity / 20F;
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
 
         //Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);

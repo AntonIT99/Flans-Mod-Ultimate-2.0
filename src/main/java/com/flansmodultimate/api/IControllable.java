@@ -1,8 +1,6 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.entity.Seat;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,8 +44,7 @@ public interface IControllable
 	 * @return The player's 3rd person view distance
 	 */
 	float getCameraDistance();
-	
-	@OnlyIn(Dist.CLIENT)
+
     LivingEntity getCamera();
 
 	Seat getSeat(LivingEntity living);
