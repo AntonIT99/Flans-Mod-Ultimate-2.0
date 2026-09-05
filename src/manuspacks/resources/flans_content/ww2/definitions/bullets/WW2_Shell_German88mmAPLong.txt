@@ -65,11 +65,6 @@ SmokeTrail True
 ExplodeParticles 10
 TrailParticleType flansmod.fmflame
 HasLight True
-HasSubmunitions true
-Submunition 44_88LongSub
-NumSubmunitions 5
-SubmunitionDelay 0
-SubmunitionSpread 0
 
 //Sound
 HitSound bomb

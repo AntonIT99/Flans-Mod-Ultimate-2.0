@@ -3,7 +3,7 @@
 
 //---Standard-------------------------------------
 // Naming
-Name Chevrolet Suburban 2010 White
+Name Golf Cart
 ShortName Civil_Vehicle_GolfCart_1A
 
 // Visuals
