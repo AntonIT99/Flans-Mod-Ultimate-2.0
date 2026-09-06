@@ -18,11 +18,14 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,19 +33,23 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
-    /** Passed as the lifetime to keep whatever lifetime the particle chose for itself. */
-    public static final int KEEP_LIFETIME = 0;
+    /** Ticks between waves of a sustained emission. */
+    private static final int WAVE_INTERVAL_TICKS = 5;
+    /**
+     * Roughly the average life of a vanilla explosion puff, which picks its own lifetime in the
+     * 18-82 tick range. Wave sizes are derived from it so a sustained emission holds a steady
+     * number of puffs on screen instead of piling them up.
+     */
+    private static final float AVERAGE_PUFF_LIFETIME_TICKS = 34F;
+    /** Simultaneous sustained emissions, so a barrage cannot stack unbounded emitters. */
+    private static final int MAX_ACTIVE_EMITTERS = 16;
 
     private static final Map<String, Optional<ParticleOptions>> PARTICLE_OPTIONS_CACHE = new ConcurrentHashMap<>();
+    private static final List<SustainedEmission> ACTIVE_EMISSIONS = new ArrayList<>();
     private static long particleBudgetTick = Long.MIN_VALUE;
     private static int particlesCreatedThisTick;
 
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
-    {
-        spawnFromString(s, x, y, z, vx, vy, vz, scale, KEEP_LIFETIME);
-    }
-
-    public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime)
     {
         if (!shouldSpawn(x, y, z))
             return;
@@ -57,7 +64,7 @@ public final class ParticleHelper
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
         if (legacyRequest.isPresent())
         {
-            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale, lifetime))
+            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale))
                 warnCouldNotParse(s);
             return;
         }
@@ -71,7 +78,99 @@ public final class ParticleHelper
 
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
         scaleParticle(particle, scale);
-        applyLifetime(particle, lifetime);
+    }
+
+    /**
+     * Emits {@code burstSize} particles now and then keeps topping them up for {@code durationTicks},
+     * so the effect stays on screen for the whole duration while each individual particle still runs
+     * its own animation at its own natural speed. Stretching one particle's lifetime instead would
+     * slow its animation to a crawl; replacing it as it expires keeps the motion looking right.
+     */
+    public static void spawnSustained(String particleType, double x, double y, double z,
+                                      double spread, double drift, float scale, int burstSize, int durationTicks)
+    {
+        emitWave(particleType, x, y, z, spread, drift, scale, burstSize);
+
+        if (durationTicks <= WAVE_INTERVAL_TICKS || ACTIVE_EMISSIONS.size() >= MAX_ACTIVE_EMITTERS)
+            return;
+
+        // Sized so the steady-state count of live particles stays near the opening burst:
+        // each wave replaces roughly what expired since the previous one.
+        int waveSize = Math.max(1, Math.round(burstSize * WAVE_INTERVAL_TICKS / AVERAGE_PUFF_LIFETIME_TICKS));
+        ACTIVE_EMISSIONS.add(new SustainedEmission(particleType, x, y, z, spread, drift, scale, waveSize, durationTicks));
+    }
+
+    /** Advances every sustained emission. Driven from the client tick. */
+    public static void tick()
+    {
+        if (ACTIVE_EMISSIONS.isEmpty())
+            return;
+
+        if (Minecraft.getInstance().level == null)
+        {
+            ACTIVE_EMISSIONS.clear();
+            return;
+        }
+
+        ACTIVE_EMISSIONS.removeIf(SustainedEmission::tick);
+    }
+
+    private static void emitWave(String particleType, double x, double y, double z,
+                                 double spread, double drift, float scale, int count)
+    {
+        RandomSource random = Minecraft.getInstance().level == null
+            ? RandomSource.create() : Minecraft.getInstance().level.random;
+
+        for (int i = 0; i < count; i++)
+        {
+            double ox = x + random.nextGaussian() * spread;
+            double oy = y + random.nextGaussian() * spread * 0.6D;
+            double oz = z + random.nextGaussian() * spread;
+
+            double vx = random.nextGaussian() * drift;
+            double vy = Math.abs(random.nextGaussian()) * drift;
+            double vz = random.nextGaussian() * drift;
+
+            spawnFromString(particleType, ox, oy, oz, vx, vy, vz, scale);
+        }
+    }
+
+    /** One in-flight sustained emission. */
+    private static final class SustainedEmission
+    {
+        private final String particleType;
+        private final double x;
+        private final double y;
+        private final double z;
+        private final double spread;
+        private final double drift;
+        private final float scale;
+        private final int waveSize;
+        private final int durationTicks;
+        private int age;
+
+        private SustainedEmission(String particleType, double x, double y, double z,
+                                  double spread, double drift, float scale, int waveSize, int durationTicks)
+        {
+            this.particleType = particleType;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.spread = spread;
+            this.drift = drift;
+            this.scale = scale;
+            this.waveSize = waveSize;
+            this.durationTicks = durationTicks;
+        }
+
+        /** @return true once this emission is finished and should be dropped */
+        private boolean tick()
+        {
+            age++;
+            if (age % WAVE_INTERVAL_TICKS == 0)
+                emitWave(particleType, x, y, z, spread, drift, scale, waveSize);
+            return age >= durationTicks;
+        }
     }
 
     public static void spawnFromString(String s, BlockState state, BlockPos sourcePos,
@@ -99,10 +198,10 @@ public final class ParticleHelper
             return;
 
         LegacyBlockParticle.Variant variant = request.get().kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
-        addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale, KEEP_LIFETIME);
+        addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale);
     }
 
-    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime)
+    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -116,7 +215,7 @@ public final class ParticleHelper
                 Optional<ItemStack> stack = getLegacyItemStack(request.resourceId());
                 if (stack.isEmpty())
                     return false;
-                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale, lifetime);
+                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale);
                 return true;
             }
             case BLOCK_CRACK, BLOCK_DUST:
@@ -125,19 +224,18 @@ public final class ParticleHelper
                 if (state.isEmpty())
                     return false;
                 LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
-                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale, lifetime);
+                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale);
                 return true;
             }
         }
         return false;
     }
 
-    private static void addParticle(Particle particle, float scale, int lifetime)
+    private static void addParticle(Particle particle, float scale)
     {
         if (particle == null)
             return;
         scaleParticle(particle, scale);
-        applyLifetime(particle, lifetime);
         Minecraft.getInstance().particleEngine.add(particle);
     }
 
@@ -145,16 +243,6 @@ public final class ParticleHelper
     {
         if (particle != null && scale != 1.0F)
             particle.scale(scale);
-    }
-
-    /**
-     * Sprite-sheet particles map their frame from age/lifetime, so stretching the lifetime
-     * slows the animation down rather than freezing the last frame on screen.
-     */
-    private static void applyLifetime(Particle particle, int lifetime)
-    {
-        if (particle != null && lifetime > KEEP_LIFETIME)
-            particle.setLifetime(lifetime);
     }
 
     private static boolean shouldSpawn(double x, double y, double z)

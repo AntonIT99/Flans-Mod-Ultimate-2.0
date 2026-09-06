@@ -64,6 +64,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     public static final String NBT_FIREABLE_GUN_TYPE_NAME = "info_type";
     public static final String NBT_FIREABLE_GUN_SPREAD = "spread";
     public static final String NBT_FIREABLE_GUN_SPEED = "speed";
+    public static final String NBT_FIREABLE_GUN_SPEED_MULTIPLIER = "speed_multiplier";
     public static final String NBT_FIREABLE_GUN_DAMAGE = "damage";
     public static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
 
@@ -142,7 +143,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
         penetratingPower = initialPenetratingPower;
         setPos(origin);
-        setArrowHeading(direction, firedShot.getSpread(), firedShot.getFireableGun().getBulletSpeed(), firedShot.getFireableGun().getSpreadPattern());
+        // The ammunition's own muzzle velocity decides how fast the round flies, exactly as it decides
+        // the kinetic damage it lands with. The weapon is only the fallback.
+        setArrowHeading(direction, firedShot.getSpread(), firedShot.getMuzzleVelocity(), firedShot.getSpreadPattern());
         useDesignatedDriveableTarget();
     }
 
@@ -338,10 +341,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             {
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
+                return;
             }
 
             if (shooterId != 0)
-                shooter = level.getEntity(attackerId);
+                shooter = level.getEntity(shooterId);
             if (attackerId != 0 && level.getEntity(attackerId) instanceof LivingEntity living)
                 attacker = living;
             if (lockedOnToId != 0)
@@ -372,6 +376,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
             gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
             gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
+            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
             gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
             gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
             tag.put(NBT_FIREABLE_GUN, gunTag);
@@ -397,11 +402,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
                 float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
                 float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
+                float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER)
+                    ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
                 EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
 
                 InfoType fireableGunInfoType = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
                 if (fireableGunInfoType != null)
-                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, spreadPattern);
+                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, speedMultiplier, spreadPattern);
             }
 
             if (tag.hasUUID(NBT_ATTACKER))

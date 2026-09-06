@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.ExplosionScaling;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -77,27 +78,34 @@ public abstract class ShootableType extends InfoType
         }
     }
 
+    /**
+     * {@code kFragRadius} is the fragmentation radius of a 1 kg charge in blocks, on the same
+     * footing as {@code newDamageSystemBlastRadiusReference} so the two envelopes are directly
+     * comparable. HE_SHELL sits exactly on the blast reference, because the artillery rounds the
+     * blast curve was fitted to are the ones whose quoted casualty radius includes their
+     * fragments; thinner casings reach less far and shrapnel-packed ones further.
+     */
     public enum EnumFragType
     {
         DEFAULT(0.0f, 0.0f, 0.0f),
         /** Thin casing / offensive or concussion style (e.g., Stielhandgranate 24). */
-        LOW_FRAG(22.0f, 6.0f, 0.9f),
+        LOW_FRAG(9.5f, 6.0f, 0.9f),
         /** Typical fragmentation grenade (e.g., Mills bomb, Mk 2, many “standard” frags). */
-        STD_FRAG(35.0f, 10.0f, 2.2f),
+        STD_FRAG(15.5f, 10.0f, 2.2f),
         /** Defensive sleeve / fragmentation jacket fitted to a grenade body. */
-        SLEEVE_FRAG(42.0f, 11.0f, 2.8f),
+        SLEEVE_FRAG(18.5f, 11.0f, 2.8f),
         /** Defensive / prefragmented / scored casing with a larger casualty radius. */
-        HIGH_FRAG(45.0f, 12.0f, 3.0f),
+        HIGH_FRAG(20.0f, 12.0f, 3.0f),
         /** Shrapnel-packed / IED-style (nails, ball bearings, pipe bomb). */
-        IED_SHRAPNEL(60.0f, 14.0f, 4.0f),
+        IED_SHRAPNEL(26.5f, 14.0f, 4.0f),
         /** Artillery / mortar / HE rocket type casing fragments. */
-        HE_SHELL(50.0f, 13.0f, 3.8f),
+        HE_SHELL(22.0f, 13.0f, 3.8f),
         /** General-purpose aerial bomb fragments (blast dominates, fragments still dangerous). */
-        GP_BOMB(40.0f, 13.0f, 2.6f),
+        GP_BOMB(17.5f, 13.0f, 2.6f),
         /** Thick-case / penetrator / “earthquake” style (less long-range frag emphasis). */
-        THICK_CASE(28.0f, 10.0f, 1.4f),
+        THICK_CASE(12.5f, 10.0f, 1.4f),
         /** Airburst / proximity-fused anti-personnel (optimized fragment distribution). */
-        AIRBURST_AP(55.0f, 12.0f, 3.2f);
+        AIRBURST_AP(24.0f, 12.0f, 3.2f);
 
         public final float kFragRadius;
         public final float kFragDamage;
@@ -385,7 +393,7 @@ public abstract class ShootableType extends InfoType
             {
                 explosionFragDamage = new DamageStats();
                 explosionFragDamage.setDamage((float) (fragType.kFragDamage * Math.cbrt(explosiveMass)));
-                fragRadius = (float) (fragType.kFragRadius * Math.cbrt(explosiveMass));
+                fragRadius = ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveMass);
             }
             fragIntensity = fragType.fragIntensity;
         }
@@ -433,7 +441,7 @@ public abstract class ShootableType extends InfoType
     public float getExplosionRadius()
     {
         float radius = useNewExplosionSystem()
-            ? (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(getExplosiveMass()))
+            ? ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), getExplosiveMass())
             : explosionRadius;
 
         // Mirrors the cap FlanExplosion.Stats applies to every explosion it simulates, so a
@@ -448,7 +456,7 @@ public abstract class ShootableType extends InfoType
     {
         if (useNewExplosionSystem())
         {
-            return (float) (ModCommonConfig.get().newDamageSystemBlastRadiusReference() * Math.cbrt(getExplosiveMass()));
+            return ExplosionScaling.blastRadius(ModCommonConfig.get().newDamageSystemBlastRadiusReference(), getExplosiveMass());
         }
         return blastRadius;
     }

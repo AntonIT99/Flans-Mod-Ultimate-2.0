@@ -20,8 +20,11 @@ public interface IClientRenderHooks
 
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);
 
-    /** As above, but overrides how many ticks the particle lives for. A lifetime of 0 keeps the particle's own. */
-    void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime);
+    /**
+     * Emits a burst of particles scattered around the given point and keeps replacing them as they
+     * expire for {@code durationTicks}, so the effect lasts without slowing any particle's animation.
+     */
+    void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks);
 
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 

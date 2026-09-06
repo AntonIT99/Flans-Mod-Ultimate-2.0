@@ -481,10 +481,10 @@ public class Mecha extends Driveable
 
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
         ItemStack otherHand = oppositeHandStack(left);
-        FireableGun fireable = new FireableGun(gunType, gunStack, loaded.stack(), attacker, otherHand,
+        FireableGun fireable = new FireableGun(gunType, gunStack, attacker, otherHand,
             attacker == null ? EnumMovement.NONE : ModUtils.getEnumMovement(attacker), !onGround());
         FiredShot shot = new FiredShot(fireable, loaded.bulletType(), this, attacker,
-            ShootableItem.getRoundsRemaining(loaded.stack()));
+            ShootableItem.getRoundsFired(loaded.stack()));
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         boolean consumeAmmo = !creative && !infiniteAmmo();
         boolean lastBullet = countLoadedHandRounds(gunItem, gunType, gunStack) <= 1;

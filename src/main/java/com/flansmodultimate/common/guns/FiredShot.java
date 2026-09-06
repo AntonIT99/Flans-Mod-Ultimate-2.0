@@ -2,9 +2,12 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.entity.IFlanEntity;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IAmmoOverrideUser;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,12 +49,8 @@ public class FiredShot
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(new FireableGun(gunType, gunStack, shootableStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType, shooter, shooter, shootableStack.getDamageValue());
-    }
-
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack shootableStack, @Nullable Entity shooter, @Nullable LivingEntity attacker)
-    {
-        this(new FireableGun(gunType, shootableStack), bulletType, shooter, attacker, shootableStack.getDamageValue());
+        this(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()),
+            bulletType, shooter, shooter, ShootableItem.getRoundsFired(shootableStack));
     }
 
     /** General Constructor */
@@ -65,22 +64,29 @@ public class FiredShot
     }
 
     /**
-     * The per-ammunition override the firing weapon declares for this shot's ammunition,
-     * or {@link AmmoOverride#EMPTY} when it declares none.
+     * The per-ammunition override that applies to this shot's ammunition, or
+     * {@link AmmoOverride#EMPTY} when nothing declares one.
      *
-     * <p>Resolution is against the weapon that actually fired: a driveable shooting
-     * through a mounted gun resolves against that gun, because the gun is what declared
-     * the ammunition.
+     * <p>The weapon that actually fired is asked first, because it is the weapon that declared the
+     * ammunition. The platform carrying it is the fallback, so a driveable can still restate what a
+     * shared round does out of its own mounts without the mounted gun having to know about it.
      */
     public AmmoOverride getAmmoOverride()
     {
-        if (fireableGun != null && fireableGun.getType() instanceof IAmmoOverrideUser user)
-        {
-            AmmoOverride override = user.getAmmoOverrides().get(bulletType.getOriginalShortName());
-            if (override != null)
-                return override;
-        }
-        return AmmoOverride.EMPTY;
+        AmmoOverride override = declaredOverride(fireableGun == null ? null : fireableGun.getType());
+
+        if (override == null && shooter instanceof IFlanEntity<?> platform)
+            override = declaredOverride(platform.getConfigType());
+
+        return override == null ? AmmoOverride.EMPTY : override;
+    }
+
+    @Nullable
+    private AmmoOverride declaredOverride(@Nullable InfoType weapon)
+    {
+        return weapon instanceof IAmmoOverrideUser user
+            ? user.getAmmoOverrides().get(bulletType.getOriginalShortName())
+            : null;
     }
 
     /** Projectile mass in grams for this shot, after any per-weapon override. */
@@ -90,12 +96,28 @@ public class FiredShot
     }
 
     /**
-     * Muzzle velocity in blocks per tick for this shot, after any per-weapon override.
-     * Falls back to the firing weapon's own bullet speed exactly as the ammunition would.
+     * Muzzle velocity in blocks per tick for this shot: the value the projectile is actually fired
+     * with and the value its kinetic damage and penetration are derived from.
+     *
+     * <p>Precedence, highest first: a per-ammunition override declared by the weapon or its platform,
+     * the round selected from an {@code AddRound} belt, the ammunition's own {@code MuzzleVelocity},
+     * and finally the velocity the weapon itself supplies. Whatever wins is then scaled by the
+     * weapon's attachment multiplier.
      */
     public float getMuzzleVelocity()
     {
-        return getAmmoOverride().resolveBulletSpeed(bulletType, shot, weaponBulletSpeed());
+        return getMuzzleVelocity(true);
+    }
+
+    /**
+     * @param useDefaultFallback when false, zero is returned if neither the ammunition, the weapon nor an
+     *                           override declares a velocity, which marks the shot as an instant raytrace
+     *                           rather than a projectile entity
+     */
+    public float getMuzzleVelocity(boolean useDefaultFallback)
+    {
+        float resolved = getAmmoOverride().resolveBulletSpeed(bulletType, shot, weaponBulletSpeed(), useDefaultFallback);
+        return resolved * (fireableGun == null ? 1F : fireableGun.getBulletSpeedMultiplier());
     }
 
     /** Bursting charge in kg TNT equivalent for this shot, after any per-weapon override. */
@@ -131,8 +153,17 @@ public class FiredShot
         return fireableGun == null ? 0F : fireableGun.getBulletSpeed();
     }
 
+    /** Spread pattern of the firing weapon, or a plain circle when the weapon is unknown. */
+    public EnumSpreadPattern getSpreadPattern()
+    {
+        return fireableGun == null ? EnumSpreadPattern.CIRCLE : fireableGun.getSpreadPattern();
+    }
+
     public float getSpread()
     {
+        if (fireableGun == null)
+            return bulletType.getBulletSpread();
+
         float spread = -1F;
 
         if (fireableGun.getType() instanceof GunType gunType && gunType.isAllowSpreadByBullet())

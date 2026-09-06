@@ -4,7 +4,6 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GrenadeType;
-import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,66 +12,54 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
+/**
+ * The single place a fired projectile entity is created.
+ *
+ * <p>Every weapon - a gun in hand, a deployed gun, a mounted gun, a vehicle weapon bank - ends up
+ * here, so what a round does on leaving the barrel is decided once rather than per firing path.
+ * Ammunition becomes a {@link Bullet} carrying the shot's resolved ballistics; a grenade round
+ * becomes a {@link Grenade} thrown along the same line.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShootableFactory
 {
     /**
-     * General way of spawning Shootable entities
-     * @param shootingEntity: the entity shooting (if any)
-     * @param attacker: the living entity causing the shot (if any, can be the same as shootingEntity)
+     * Spawns whichever projectile the given ammunition describes.
+     *
+     * @param shooter  the entity the shot comes from, if any
+     * @param attacker the living entity credited with the shot, if any; can be the same as shooter
+     * @param shot     position in the magazine, which selects the round of a belt
      */
     @NotNull
-    public static Shootable createShootable(Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType type, Vec3 origin, Vec3 direction, @Nullable Entity shootingEntity, @Nullable LivingEntity attacker, int shot)
+    public static Shootable createShootable(@NotNull Level level, @NotNull FireableGun fireableGun,
+                                            @NotNull ShootableType type, Vec3 origin, Vec3 direction,
+                                            @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot)
     {
         if (type instanceof BulletType bulletType)
-        {
-            return new Bullet(level, new FiredShot(fireableGun, bulletType, shootingEntity, attacker, shot), origin, direction);
-        }
-        else if (type instanceof GrenadeType grenadeType)
-        {
-            return new Grenade(level, grenadeType, origin, direction, attacker);
-        }
-        throw new IllegalArgumentException("Unknown Shootable Type");
+            return createBullet(level, new FiredShot(fireableGun, bulletType, shooter, attacker, shot), origin, direction);
+        if (type instanceof GrenadeType grenadeType)
+            return createGrenade(level, grenadeType, origin, direction, attacker);
+        throw new IllegalArgumentException("Unknown shootable type " + type.getShortName());
     }
 
-    /**
-     * For spawning Shootable entities associated with a living entity shooting a gun item
-     */
+    /** Spawns the bullet a resolved shot describes. */
     @NotNull
-    public static Shootable createShootable(Level level, @NotNull GunType gunType, @NotNull ShootableType type, @NotNull LivingEntity shooter, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack)
+    public static Bullet createBullet(@NotNull Level level, @NotNull FiredShot firedShot, Vec3 origin, Vec3 direction)
     {
-        if (type instanceof BulletType bulletType)
-        {
-            return new Bullet(level, new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter), shooter.getEyePosition(0F), shooter.getLookAngle());
-        }
-        else if (type instanceof GrenadeType grenadeType)
-        {
-            return new Grenade(level, grenadeType, shooter);
-        }
-        throw new IllegalArgumentException("Unknown Shootable Type");
+        return new Bullet(level, firedShot, origin, direction);
     }
 
-    /**
-     * For spawning Shootable entities associated with a living entity shooting a deployable gun
-     */
+    /** Spawns a grenade round thrown along the given line. */
     @NotNull
-    public static Shootable createShootable(Level level, @NotNull ShootableType type, @NotNull DeployedGun deployedGun, @Nullable LivingEntity shooter, @NotNull ItemStack shootableStack)
+    public static Grenade createGrenade(@NotNull Level level, @NotNull GrenadeType grenadeType, Vec3 origin,
+                                        Vec3 direction, @Nullable LivingEntity attacker)
     {
-        if (type instanceof BulletType bulletType)
-        {
-            return new Bullet(level, new FiredShot(deployedGun.getConfigType(), bulletType, shootableStack, deployedGun, shooter), deployedGun.getShootingOrigin(), deployedGun.getShootingDirection());
-        }
-        else if (type instanceof GrenadeType grenadeType)
-        {
-            return new Grenade(level, grenadeType, deployedGun.getShootingOrigin(), deployedGun.getShootingPitch(), deployedGun.getShootingYaw(), shooter);
-        }
-        throw new IllegalArgumentException("Unknown Shootable Type");
+        return new Grenade(level, grenadeType, origin, direction, attacker);
     }
 
     /**
@@ -83,19 +70,17 @@ public final class ShootableFactory
     {
         BulletType bulletType = firedShot.getBulletType();
         ShootableType submunitionType = ShootableType.findAmmoType(bulletType.getSubmunition(), bulletType.getContentPack()).orElse(null);
+        FireableGun fireableGun = firedShot.getFireableGun();
 
-        if (submunitionType instanceof BulletType subBulletType)
-        {
-            FireableGun fireableGun = firedShot.getFireableGun();
-            FireableGun newFireableGun = new FireableGun(fireableGun.getType(), fireableGun.getDamage(), subBulletType.getSubmunitionSpread(), fireableGun.getBulletSpeed(), fireableGun.getSpreadPattern());
-            FiredShot newFiredShot = new FiredShot(newFireableGun, subBulletType, firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null), 0);
-            return Optional.of(new Bullet(level, newFiredShot, origin, direction));
-        }
-        else if (submunitionType instanceof GrenadeType grenadeType)
-        {
-            return Optional.of(new Grenade(level, grenadeType, origin, direction, firedShot.getAttacker().orElse(null)));
-        }
-        return Optional.empty();
+        if (submunitionType == null || fireableGun == null)
+            return Optional.empty();
+
+        // The submunition keeps the parent's weapon but scatters with its own spread.
+        FireableGun submunitionGun = new FireableGun(fireableGun.getType(), fireableGun.getDamage(),
+            submunitionType instanceof BulletType subBulletType ? subBulletType.getSubmunitionSpread() : fireableGun.getSpread(),
+            fireableGun.getBulletSpeed(), fireableGun.getBulletSpeedMultiplier(), fireableGun.getSpreadPattern());
+
+        return Optional.of(createShootable(level, submunitionGun, submunitionType, origin, direction,
+            firedShot.getCausingEntity().orElse(null), firedShot.getAttacker().orElse(null), 0));
     }
-
 }

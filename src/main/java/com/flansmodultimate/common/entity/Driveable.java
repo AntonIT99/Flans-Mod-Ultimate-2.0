@@ -49,6 +49,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
@@ -1506,41 +1507,59 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         AmmoSelection selection = selectAmmo(point, weapon);
         if (selection == null || !ShootableItem.hasRoundsLeft(selection.stack()))
             return false;
-        if (!(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
+        if (!(selection.stack().getItem() instanceof ShootableItem item))
             return false;
 
-        boolean pureGunType = configType.isReadWeaponsFromGunTypes();
-
-        FireableGun fireable;
-        int bulletCount;
-        if (selection.gunType() != null)
-        {
-            fireable = new FireableGun(selection.gunType(), selection.stack());
-            if (!pureGunType && configType.isRangingGun() && configType.getBulletSpeed() > 0F)
-                fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
-                    configType.getBulletSpeed(), fireable.getSpreadPattern());
-            bulletCount = Math.max(1, selection.gunType().getNumBullets(null, bulletType));
-        }
-        else
-        {
-            float multiplier = secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary();
-            float speed = configType.getBulletSpeed() > 0F ? configType.getBulletSpeed() : bulletType.getBulletSpeed(true);
-            fireable = new FireableGun(configType, Math.max(0F, multiplier), Math.max(0F, configType.getBulletSpread()),
-                Math.max(0.01F, speed), EnumSpreadPattern.CIRCLE);
-            bulletCount = Math.max(1, bulletType.getNumBullets());
-        }
-        if (selection.gunType() != null && !pureGunType)
-            fireable.multiplyDamage(secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary());
+        ShootableType shootableType = item.getConfigType();
+        FireableGun fireable = resolveFireableGun(selection, secondary);
+        int numShots = selection.gunType() != null
+            ? selection.gunType().getNumBullets(null, shootableType)
+            : shootableType.getNumBullets();
 
         Vec3 origin = getShootOrigin(point);
         Vec3 direction = getShootDirection(point, secondary);
-        FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(selection.stack()));
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-        ShootingHelper.fireGun(level(), shot, bulletCount, origin, direction, () -> {
-            if (!creative)
-                consumeAmmo(selection);
-        });
+        ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+            ShootableItem.getRoundsFired(selection.stack()), () -> {
+                if (!creative)
+                    consumeAmmo(selection);
+            });
         return true;
+    }
+
+    /**
+     * The weapon side of a shot fired from a weapon bank.
+     *
+     * <p>The velocity handed over here is only what the vehicle itself supplies: ammunition that
+     * declares a {@code MuzzleVelocity} of its own overrides it, and the vehicle takes that velocity
+     * back only by declaring an {@code AmmoMuzzleVelocity} for that round. See
+     * {@link FiredShot#getMuzzleVelocity()} for the full precedence.
+     */
+    protected FireableGun resolveFireableGun(AmmoSelection selection, boolean secondary)
+    {
+        float damageMultiplier = secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary();
+        boolean pureGunType = configType.isReadWeaponsFromGunTypes();
+
+        if (selection.gunType() == null)
+        {
+            // Shells and other bank-fired ordnance: the vehicle is the weapon. Its BulletSpeed is a
+            // fallback only, and the default keeps such rounds flying as projectiles rather than hitscan.
+            float speed = configType.getBulletSpeed() > 0F ? configType.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED;
+            return new FireableGun(configType, Math.max(0F, damageMultiplier),
+                Math.max(0F, configType.getBulletSpread()), speed, EnumSpreadPattern.CIRCLE);
+        }
+
+        FireableGun fireable = new FireableGun(selection.gunType());
+
+        // A ranging gun spots for the main armament, so it borrows the vehicle's ballistics instead of
+        // the mounted gun's - still only as the fallback the ammunition may override.
+        if (!pureGunType && configType.isRangingGun() && configType.getBulletSpeed() > 0F)
+            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
+                configType.getBulletSpeed(), fireable.getBulletSpeedMultiplier(), fireable.getSpreadPattern());
+        if (!pureGunType)
+            fireable.multiplyDamage(damageMultiplier);
+
+        return fireable;
     }
 
     @Nullable
@@ -1585,6 +1604,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return null;
     }
 
+    /**
+     * Ammunition for one of the vehicle's own weapon banks. This stays restricted to {@link BulletType}
+     * because {@code WeaponType}, which decides the bank a round belongs to, is declared on the
+     * ammunition itself and grenade rounds do not carry one.
+     */
     protected boolean validAmmo(ItemStack stack, EnumWeaponType requested)
     {
         if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
@@ -1593,12 +1617,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             && (bulletType.getWeaponType() == requested || requested == EnumWeaponType.GUN && bulletType.getWeaponType() == EnumWeaponType.NONE);
     }
 
+    /**
+     * A gun mounted on this driveable accepts exactly what the same gun accepts in a player's hands,
+     * so grenade rounds load into a mounted launcher just as they do into a held one. The vehicle's own
+     * weapon banks are narrower - see {@link #validAmmo(ItemStack, EnumWeaponType)}.
+     */
     protected boolean validGunAmmo(ItemStack stack, @Nullable GunType gunType)
     {
-        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item)
-            || !(item.getConfigType() instanceof BulletType bulletType))
+        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item))
             return false;
-        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(bulletType);
+        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(item.getConfigType());
     }
 
     protected void consumeAmmo(AmmoSelection selection)
@@ -1810,26 +1838,26 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (ammoSlot < 0)
                 continue;
             ItemStack ammo = driveableData.getAmmo(ammoSlot);
-            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable)
-                || !(shootable.getConfigType() instanceof BulletType bulletType))
+            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
                 continue;
             if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
                 continue;
 
-            FireableGun fireable = new FireableGun(gun, ammo);
+            ShootableType shootableType = shootable.getConfigType();
+            FireableGun fireable = new FireableGun(gun);
             LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
             Vec3 origin = getPassengerShootOrigin(info);
             Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
-            FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
             boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-            ShootingHelper.fireGun(level(), shot, Math.max(1, gun.getNumBullets(null, bulletType)), origin, direction, () -> {
-                if (!creative)
-                {
-                    ShootableItem.consumeRound(ammo);
-                    driveableData.setAmmo(ammoSlot, ShootableItem.hasRoundsLeft(ammo) ? ammo : ItemStack.EMPTY);
-                    acknowledgeInternalWeaponInventoryChange();
-                }
-            });
+            ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
+                origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () -> {
+                    if (!creative)
+                    {
+                        ShootableItem.consumeRound(ammo);
+                        driveableData.setAmmo(ammoSlot, ShootableItem.hasRoundsLeft(ammo) ? ammo : ItemStack.EMPTY);
+                        acknowledgeInternalWeaponInventoryChange();
+                    }
+                });
             passengerShootDelay[index] = Math.max(1, Mth.ceil(gun.getShootDelay(null)));
             if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
                 --passengerBurstRemaining[index];

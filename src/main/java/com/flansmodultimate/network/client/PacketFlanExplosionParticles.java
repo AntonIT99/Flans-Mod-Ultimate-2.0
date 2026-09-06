@@ -30,11 +30,11 @@ public class PacketFlanExplosionParticles implements IClientPacket
     /** One fireball sprite per this many blocks of crater radius. */
     private static final float RADIUS_PER_FIREBALL = 4.0F;
     private static final int MAX_FIREBALLS = 12;
-    /** Fireball life at zero radius, before the linear term. Roughly the vanilla puff. */
-    private static final float FIREBALL_BASE_LIFETIME_TICKS = 20.0F;
-    /** Extra ticks of fireball life per block of crater radius. */
-    private static final float FIREBALL_LIFETIME_PER_RADIUS = 1.0F;
-    private static final int MAX_FIREBALL_LIFETIME_TICKS = 200;
+    /** How long the fireball keeps burning at zero radius, before the linear term. */
+    private static final float FIREBALL_BASE_DURATION_TICKS = 20.0F;
+    /** Extra ticks of burning per block of crater radius. */
+    private static final float FIREBALL_DURATION_PER_RADIUS = 1.0F;
+    private static final int MAX_FIREBALL_DURATION_TICKS = 200;
 
     private Vec3 position;
     private int numSmoke;
@@ -76,7 +76,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        spawnFireball(level, position, explosionRadius);
+        spawnFireball(position, explosionRadius);
 
         // Bigger blasts get bigger flares and debris rather than just more of them, both for
         // the visual read (a huge charge should look huge, not just noisy) and because the
@@ -97,41 +97,26 @@ public class PacketFlanExplosionParticles implements IClientPacket
      * through the crater rather than one pinned to the centre, so the fireball keeps some depth
      * instead of reading as a single flat billboard.
      * <p>
-     * Life scales linearly with the radius too. A sprite tens of blocks across that vanishes in
-     * the vanilla puff's a second or so reads as a flicker rather than a detonation, and because
-     * the explosion particle picks its animation frame from age/lifetime, a longer life plays the
-     * same frames out slowly - the fireball billows and dissipates instead of blinking out.
+     * How long it burns for is linear in the radius as well, but that duration is achieved by
+     * replacing puffs as they expire rather than by stretching any one of them: a single sprite
+     * told to live ten times longer just animates ten times slower. Each puff runs its own
+     * animation at its natural speed, and fresh ones keep taking over until the time is up.
      */
-    private void spawnFireball(Level level, Vec3 center, float explosionRadius)
+    private void spawnFireball(Vec3 center, float explosionRadius)
     {
         if (explosionRadius <= 0F)
             return;
 
         float scale = Mth.clamp(explosionRadius * FIREBALL_SCALE_PER_RADIUS, 1.0F, MAX_FIREBALL_SCALE);
-        int count = Mth.clamp(Mth.ceil(explosionRadius / RADIUS_PER_FIREBALL), 1, MAX_FIREBALLS);
-        int lifetime = Mth.clamp(Mth.ceil(FIREBALL_BASE_LIFETIME_TICKS + explosionRadius * FIREBALL_LIFETIME_PER_RADIUS),
-            1, MAX_FIREBALL_LIFETIME_TICKS);
+        int burstSize = Mth.clamp(Mth.ceil(explosionRadius / RADIUS_PER_FIREBALL), 1, MAX_FIREBALLS);
+        int duration = Mth.clamp(Mth.ceil(FIREBALL_BASE_DURATION_TICKS + explosionRadius * FIREBALL_DURATION_PER_RADIUS),
+            1, MAX_FIREBALL_DURATION_TICKS);
 
         double spread = explosionRadius * 0.3D;
         double drift = explosionRadius * 0.02D;
 
-        for (int i = 0; i < count; i++)
-        {
-            // The first sprite always sits dead centre so there is a core to the fireball
-            // however few of them the radius earns.
-            double ox = i == 0 ? center.x : center.x + level.random.nextGaussian() * spread;
-            double oy = i == 0 ? center.y : center.y + level.random.nextGaussian() * spread * 0.6D;
-            double oz = i == 0 ? center.z : center.z + level.random.nextGaussian() * spread;
-
-            double vx = level.random.nextGaussian() * drift;
-            double vy = Math.abs(level.random.nextGaussian()) * drift;
-            double vz = level.random.nextGaussian() * drift;
-
-            // Jittered per sprite so the cluster thins out gradually instead of the whole
-            // fireball disappearing on one tick.
-            int jittered = Math.max(1, Mth.ceil(lifetime * (0.75F + level.random.nextFloat() * 0.5F)));
-            ClientHooks.RENDER.spawnParticle(FlanParticles.LARGE_EXPLODE, ox, oy, oz, vx, vy, vz, scale, jittered);
-        }
+        ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.LARGE_EXPLODE,
+            center.x, center.y, center.z, spread, drift, scale, burstSize, duration);
     }
 
     private void spawn(Level level, String particleType, Vec3 position, int count, float maxVelocity, float scale)

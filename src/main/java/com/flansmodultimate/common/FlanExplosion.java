@@ -97,27 +97,6 @@ public class FlanExplosion extends Explosion
     public record Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
                         float fragRadius, float fragIntensity, DamageStats fragDamage, float explosiveMassKg)
     {
-        /**
-         * Mass beyond which blast/frag radius growth starts bending over. Below it, both
-         * follow their reference's pure cube-root scaling untouched - every grenade, mine,
-         * tank shell and naval shell in the shipped categories sits well under it.
-         */
-        private static final float FLATTEN_KNEE_MASS_KG = 50F;
-        /**
-         * How slowly blast radius keeps growing once past the knee. Tuned so the heaviest
-         * conventional charge shipped (an ~11 t aerial bomb) lands at a blast radius in the
-         * low hundreds of blocks rather than the ~450 pure cbrt(mass) scaling would give it,
-         * while a nuclear-scale charge (Tsar Bomba is ~5*10^10 kg TNT-equivalent) still clearly
-         * out-blasts it, tapering in toward the configured cap instead of hitting it as a wall.
-         */
-        private static final float BLAST_FLATTEN_EXPONENT = 0.08F;
-        /**
-         * Fragmentation is allowed to keep reaching a bit further than blast overpressure at
-         * the same mass - real HE fragments often outrange blast lethality - so it flattens
-         * more gently than blast radius does.
-         */
-        private static final float FRAG_FLATTEN_EXPONENT = 0.14F;
-
         public Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
                      float fragRadius, float fragIntensity, DamageStats fragDamage)
         {
@@ -145,18 +124,10 @@ public class FlanExplosion extends Explosion
             if (Float.isFinite(maxCraterRadius) && maxCraterRadius > 0F)
                 explosionRadius = Math.min(explosionRadius, maxCraterRadius);
 
-            // Both radii follow cbrt(mass), the same growth curve as the crater, but with a
-            // much larger reference coefficient (overpressure lethality reaches far past
-            // cratering distance). That constant ratio means blast/frag keep outrunning the
-            // crater by the same multiple at every scale, so a heavy charge's damage radius
-            // grows in lockstep with cbrt(mass) far beyond what is plausible on Minecraft's
-            // scale before it ever reaches the (performance-motivated) config cap. Bending
-            // growth over past FLATTEN_KNEE_MASS_KG keeps light ordnance exactly as before
-            // and lets heavy ordnance still out-blast it, just with steeply diminishing
-            // returns instead of unbounded cbrt(mass) growth.
-            blastRadius = flattenAboveKnee(blastRadius, explosiveMassKg, BLAST_FLATTEN_EXPONENT);
-            fragRadius = flattenAboveKnee(fragRadius, explosiveMassKg, FRAG_FLATTEN_EXPONENT);
-
+            // How these radii grow with the charge, including the flattening that keeps a heavy
+            // charge's damage radius plausible on Minecraft's scale, is ExplosionScaling's job:
+            // it is applied where the radii are derived, so an authored legacy radius is taken
+            // literally and only the caps below apply to it.
             float maxDamageRadius = (float) ModCommonConfig.maxBlastRadius();
             if (Float.isFinite(maxDamageRadius) && maxDamageRadius > 0F)
             {
@@ -166,22 +137,6 @@ public class FlanExplosion extends Explosion
             // Ensure blastRadius >= explosionRadius
             if (blastRadius < explosionRadius)
                 blastRadius = explosionRadius;
-        }
-
-        /**
-         * {@code rawRadius} is assumed to already be {@code k * cbrt(massKg)} for some
-         * reference coefficient k that this method does not need to know. Below the knee mass
-         * it is returned unchanged; above it, the value that same formula would have given
-         * exactly at the knee is recovered algebraically (k cancels out), and growth continues
-         * from there at {@code exponent} instead of 1/3.
-         */
-        private static float flattenAboveKnee(float rawRadius, float massKg, float exponent)
-        {
-            if (rawRadius <= 0F || massKg <= FLATTEN_KNEE_MASS_KG)
-                return rawRadius;
-
-            float radiusAtKnee = rawRadius * (float) Math.cbrt(FLATTEN_KNEE_MASS_KG / massKg);
-            return radiusAtKnee * (float) Math.pow(massKg / FLATTEN_KNEE_MASS_KG, exponent);
         }
     }
 

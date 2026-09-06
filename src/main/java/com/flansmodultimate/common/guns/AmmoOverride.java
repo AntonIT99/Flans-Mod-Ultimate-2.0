@@ -110,12 +110,24 @@ public record AmmoOverride(@Nullable Float massGrams,
      */
     public float resolveBulletSpeed(BulletType bulletType, int shotsFired, float weaponBulletSpeedBlocksPerTick)
     {
+        return resolveBulletSpeed(bulletType, shotsFired, weaponBulletSpeedBlocksPerTick, true);
+    }
+
+    /**
+     * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon supplies, used only when
+     *                                       neither this override nor the ammunition declares one
+     * @param useDefaultFallback             when false, zero is returned if nothing declares a velocity,
+     *                                       which marks the shot as an instant raytrace
+     */
+    public float resolveBulletSpeed(BulletType bulletType, int shotsFired, float weaponBulletSpeedBlocksPerTick,
+                                    boolean useDefaultFallback)
+    {
         if (bulletSpeedBlocksPerTick != null)
-            return applySpeedMultiplier(bulletType, bulletSpeedBlocksPerTick);
+            return bulletType.applySpeedMultiplier(bulletSpeedBlocksPerTick);
         BulletType.RoundStats stats = statsForShot(shotsFired);
         if (stats != null && stats.bulletSpeed() > 0F)
-            return applySpeedMultiplier(bulletType, stats.bulletSpeed());
-        return bulletType.getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick);
+            return bulletType.applySpeedMultiplier(stats.bulletSpeed());
+        return bulletType.getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick, useDefaultFallback);
     }
 
     public float resolveExplosiveMass(BulletType bulletType, int shotsFired)
@@ -138,11 +150,5 @@ public record AmmoOverride(@Nullable Float massGrams,
         if (stats != null)
             return stats.penetrationAt100m();
         return bulletType.getPenetrationAt100m(shotsFired);
-    }
-
-    private static float applySpeedMultiplier(BulletType bulletType, float speed)
-    {
-        float multiplier = bulletType.getSpeedMultiplier();
-        return multiplier > 0F && multiplier != 1F ? speed * multiplier : speed;
     }
 }

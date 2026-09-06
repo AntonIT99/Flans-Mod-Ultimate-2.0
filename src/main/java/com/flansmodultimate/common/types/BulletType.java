@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.ExplosionScaling;
 import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -365,25 +366,37 @@ public class BulletType extends ShootableType
      */
     public float getBulletSpeed(int shotsFired, float weaponBulletSpeedBlocksPerTick)
     {
+        return getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick, true);
+    }
+
+    /**
+     * Canonical velocity resolution: the round declared for this position of the magazine first, then the
+     * ammunition's own {@code MuzzleVelocity}, then the velocity the firing weapon supplies.
+     *
+     * @param shotsFired                     position in the magazine, which selects the round of an {@code AddRound} belt
+     * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon gives the projectile, used only when the
+     *                                       ammunition declares none; pass 0 when no weapon is known
+     * @param useDefaultFallback             when false, zero is returned if neither the ammunition nor the weapon
+     *                                       declares a velocity, which marks the shot as an instant raytrace
+     */
+    public float getBulletSpeed(int shotsFired, float weaponBulletSpeedBlocksPerTick, boolean useDefaultFallback)
+    {
         float speed = hasDifferentRounds() ? statsForShot(shotsFired).bulletSpeed : bulletSpeed;
-        boolean useMultiplier = speedMultiplier > 0F && speedMultiplier != 1F;
 
         if (speed > 0F)
-            return useMultiplier ? speed * speedMultiplier : speed;
+            return applySpeedMultiplier(speed);
         if (weaponBulletSpeedBlocksPerTick > 0F)
-            return weaponBulletSpeedBlocksPerTick;
+            return applySpeedMultiplier(weaponBulletSpeedBlocksPerTick);
 
-        return useMultiplier ? DEFAULT_BULLET_SPEED * speedMultiplier : DEFAULT_BULLET_SPEED;
+        return useDefaultFallback ? applySpeedMultiplier(DEFAULT_BULLET_SPEED) : 0F;
     }
 
     public float getBulletSpeed(boolean enforceDefaultFallback)
     {
-        float speed = hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed;
-        boolean useMultiplier = speedMultiplier > 0F && speedMultiplier != 1F;
-        speed = useMultiplier ? speed * speedMultiplier : speed;
+        float speed = applySpeedMultiplier(hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed);
 
         if (enforceDefaultFallback && speed <= 0F)
-            return useMultiplier ? DEFAULT_BULLET_SPEED * speedMultiplier : DEFAULT_BULLET_SPEED;
+            return applySpeedMultiplier(DEFAULT_BULLET_SPEED);
 
         return speed;
     }
@@ -391,6 +404,12 @@ public class BulletType extends ShootableType
     public float getBulletSpeed()
     {
         return getBulletSpeed(false);
+    }
+
+    /** Applies this ammunition's {@code BulletSpeedMultiplier} to an already resolved velocity. */
+    public float applySpeedMultiplier(float speedBlocksPerTick)
+    {
+        return speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
     }
 
     @Override
@@ -474,14 +493,19 @@ public class BulletType extends ShootableType
     /** Derives the whole explosion profile from one bursting charge in kg TNT equivalent. */
     private FlanExplosion.Stats explosionStatsForCharge(float explosiveCharge)
     {
-        float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveCharge));
+        float explosionRadius = ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), explosiveCharge);
         float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
-        float explosionBlastRadius = (float) (ModCommonConfig.get().newDamageSystemBlastRadiusReference() * Math.cbrt(explosiveCharge));
+        float explosionBlastRadius = ExplosionScaling.blastRadius(ModCommonConfig.get().newDamageSystemBlastRadiusReference(), explosiveCharge);
         DamageStats explosionBlastDamage = new DamageStats();
         explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveCharge)));
         explosionBlastDamage.calculate();
+        // The frag envelope has to come from this round's own charge too, not the type's parsed
+        // fragRadius, which was derived from the type-level ExplosiveMass and is wrong for a belt
+        // whose rounds carry different charges.
+        float roundFragRadius = fragType != EnumFragType.DEFAULT
+            ? ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveCharge) : fragRadius;
         return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
-            explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage,
+            explosionBlastDamage, roundFragRadius, fragIntensity, explosionFragDamage,
             Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F);
     }
 

@@ -60,6 +60,22 @@ public abstract class ShootableItem extends Item
         return roundsPerItem;
     }
 
+    /**
+     * Position in the magazine of the round about to be fired, counting from the first one loaded.
+     *
+     * <p>This is what selects the round of an {@code AddRound} belt, so it has to count up as the item
+     * empties. Items holding a single round have no belt position and always report zero.
+     */
+    public static int getRoundsFired(ItemStack stack)
+    {
+        int roundsPerItem = getMaxRounds(stack);
+
+        if (roundsPerItem <= 1)
+            return 0;
+
+        return Math.max(0, roundsPerItem - getRoundsRemaining(stack));
+    }
+
     public static void setRoundsRemaining(ItemStack stack, int rounds)
     {
         if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item))

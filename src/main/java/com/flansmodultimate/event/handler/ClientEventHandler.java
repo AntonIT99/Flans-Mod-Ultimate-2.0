@@ -7,6 +7,7 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.KillMessageFeed;
@@ -97,6 +98,7 @@ public final class ClientEventHandler
 
         GunInputState.tick();
         ModClient.tick();
+        ParticleHelper.tick();
     }
 
     @SubscribeEvent

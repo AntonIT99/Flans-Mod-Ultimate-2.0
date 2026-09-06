@@ -58,6 +58,10 @@ public final class ModCommonConfig
      * and can be allowed a much larger ceiling before anything needs clamping.
      */
     public static final double DEFAULT_MAX_BLAST_RADIUS = 512D;
+    /** Cratering radius of a 1 kg TNT-equivalent charge, in blocks. See {@link com.flansmodultimate.common.ExplosionScaling}. */
+    public static final double DEFAULT_CRATER_RADIUS_REFERENCE = 5.5D;
+    /** Blast radius of a 1 kg TNT-equivalent charge, in blocks. See {@link com.flansmodultimate.common.ExplosionScaling}. */
+    public static final double DEFAULT_BLAST_RADIUS_REFERENCE = 22.0D;
 
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
@@ -336,16 +340,16 @@ public final class ModCommonConfig
             .defineInRange("newDamageSystemExplosivePowerReference", 4.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE = builder
             .comment("Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT.",
-                "This is the CRATERING radius: block breaking and explosion particles. Both radii follow the cube root of the charge (Hopkinson-Cranz scaling),",
-                "so this constant is the scaled distance Z in m/kg^(1/3) at which blocks stop being destroyed.",
-                "The default of 4.0 puts a 1 kg charge at the same 4-block radius as vanilla TNT, which is the reference players already know,",
-                "and corresponds to roughly 100 kPa of peak overpressure - the point at which ordinary structures are destroyed outright.")
-            .defineInRange("newDamageSystemExplosiveRadiusReference", 4.0, 0.0, 1000.0);
+                "This is the CRATERING radius: block breaking and explosion particles. It grows as mass^0.37 up to a 5 kg charge and far more slowly above that;",
+                "see ExplosionScaling for why, and for the measured rounds the exponent is fitted to.",
+                "The default of 5.5 puts a 1 kg charge - roughly an 88 mm HE shell - at a 5.5 block crater, matching its quoted 4-6 m destruction radius.")
+            .defineInRange("newDamageSystemExplosiveRadiusReference", DEFAULT_CRATER_RADIUS_REFERENCE, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE = builder
             .comment("Blast radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the blast radius of 1kg TNT.",
                 "This is the DAMAGE radius: how far the blast hurts entities and vehicles. It is derived from the charge directly, not from the cratering radius,",
-                "so the two can be tuned independently. The default of 25.0 is the scaled distance at which overpressure falls to roughly 3 kPa.")
-            .defineInRange("newDamageSystemBlastRadiusReference", 25.0, 0.0, 1000.0);
+                "so the two can be tuned independently. It grows as mass^0.40 up to a 5 kg charge and far more slowly above that.",
+                "The default of 22.0 puts a 1 kg charge - roughly an 88 mm HE shell - at a 22 block blast radius, matching its quoted 15-25 m casualty radius.")
+            .defineInRange("newDamageSystemBlastRadiusReference", DEFAULT_BLAST_RADIUS_REFERENCE, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS = builder
             .comment("Shape of the blast damage falloff inside the blast radius. Higher values concentrate damage near the centre; lower values spread it out.",
                 "This only shapes the curve, it does not change any radius.")

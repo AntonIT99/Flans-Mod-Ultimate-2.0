@@ -775,8 +775,11 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         if (type == null || !(ammoStack.getItem() instanceof ShootableItem shootableItem) || !(shootableItem.getConfigType() instanceof BulletType bulletType))
             return false;
 
-        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(), bulletType.getBulletSpeed(true), type.getSpreadPattern());
-        FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ammoStack.getDamageValue());
+        // The AA gun declares no velocity of its own, so it hands over the default as a fallback and
+        // lets the ammunition's MuzzleVelocity win.
+        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(),
+            BulletType.DEFAULT_BULLET_SPEED, type.getSpreadPattern());
+        FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ShootableItem.getRoundsFired(ammoStack));
 
         Vec3 shootingDir = getShootingDirection();
         Vec3 barrelOrigin = getBarrelOrigin(barrel, sentryShot);

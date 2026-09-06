@@ -11,7 +11,6 @@ import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.AttachmentItem;
-import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -1529,39 +1528,33 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     }
 
     /**
-     * Get the bullet speed of a specific gun, taking into account attachments
+     * The muzzle velocity this gun supplies on its own, honouring a secondary grip but not the
+     * attachment multipliers. Ammunition that declares a {@code MuzzleVelocity} replaces this value;
+     * see {@link com.flansmodultimate.common.guns.FiredShot#getMuzzleVelocity()}.
      */
-    public float getBulletSpeed(@Nullable ItemStack stack, ItemStack bulletStack)
+    public float getBaseBulletSpeed(@Nullable ItemStack stack)
     {
-        float stackBulletSpeed;
+        if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
+            return getGrip(stack).secondarySpeed;
 
-        if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
-        {
-            float bulletSpeedOfBulletItem = bulletItem.getConfigType().getBulletSpeed();
+        return bulletSpeed;
+    }
 
-            if (bulletItem.getConfigType().hasDifferentRounds())
-                bulletSpeedOfBulletItem = bulletItem.getConfigType().statsForShot(bulletStack.getDamageValue()).bulletSpeed();
+    /**
+     * The combined muzzle-velocity multiplier of the attachments on this gun. It is applied on top of
+     * whichever velocity wins, so a barrel still speeds up ammunition that states its own.
+     */
+    public float getBulletSpeedMultiplier(@Nullable ItemStack stack)
+    {
+        if (stack == null)
+            return 1F;
 
-            if (bulletSpeedOfBulletItem > 0F)
-                stackBulletSpeed = bulletSpeedOfBulletItem;
-            else
-                stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().speedMultiplier;
-        }
-        else
-        {
-            stackBulletSpeed = bulletSpeed;
-        }
+        float multiplier = 1F;
 
-        if (stack != null)
-        {
-            if (getGrip(stack) != null && getSecondaryFire(stack))
-                stackBulletSpeed = getGrip(stack).secondarySpeed;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            multiplier *= attachment.bulletSpeedMultiplier;
 
-            for (AttachmentType attachment : getCurrentAttachments(stack))
-                stackBulletSpeed *= attachment.bulletSpeedMultiplier;
-        }
-
-        return stackBulletSpeed;
+        return multiplier;
     }
 
     /**
@@ -1569,18 +1562,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getBulletSpeed(@Nullable ItemStack stack)
     {
-        float stackBulletSpeed = bulletSpeed;
-
-        if (stack == null)
-            return stackBulletSpeed;
-
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            stackBulletSpeed = getGrip(stack).secondarySpeed;
-
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackBulletSpeed *= attachment.bulletSpeedMultiplier;
-
-        return stackBulletSpeed;
+        return getBaseBulletSpeed(stack) * getBulletSpeedMultiplier(stack);
     }
 
     /**
