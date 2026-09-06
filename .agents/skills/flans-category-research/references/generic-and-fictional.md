@@ -266,44 +266,34 @@ to decide what tier a non-historical weapon should feel like, then work backward
 | 128mm PzGr. | 26400 | 930 | 756 | 19.59 |
 | 356mm/45 AP Mark 16 | 680400 | 792 | 3267 | 51.99 |
 
-### Effective mass
+### Energy and exotic ammunition
 
-Fictional projectiles that are not solid shot — blaster bolts, laser pulses, plasma,
-disruptor beams, foam darts — still need `Mass` so that they enter the same kinetic
-system as everything else. Author it as an **effective mass**: the mass a real
-projectile at the same velocity would need to produce the intended tier. It is
-declared equivalence, not a physical claim, exactly as RHAe is for armour, and it
-must be reported as such.
+A blaster bolt has no mass and carries no bursting charge, so do not invent either.
+Author its effect **directly** on the ammunition category:
 
-Pick the velocity first, from feel and from what the definition already does — a
-visible blaster bolt is usually 200–500 m/s, a laser is usually fast. Then solve:
+| Property | Instead of | Note |
+| --- | --- | --- |
+| `Damage` | `Mass` | The kinetic system is only active when `Mass > 0`, so leaving mass out keeps the bolt off it entirely and makes this value authoritative. |
+| `DamageVsLiving`, `DamageVsVehicles` | — | Optional. Both inherit from `Damage`; set one when the fiction makes the bolt markedly better or worse against armour. |
+| `Explosion` | `ExplosiveMass` | A radius in blocks, for a bolt that bursts. The derived-blast system is only active when `ExplosiveMass > 0`, so omitting it leaves this radius in force. |
+| `MuzzleVelocity` | — | Still authored. The projectile has to travel at some speed, and it drives the visible flight time. |
 
-```text
-massGrams = ( targetKineticDamage / (0.005 * velocityMps) ) ^ 2
-```
+This applies to blaster bolts, laser and turbolaser pulses, plasma, disruptor beams,
+and any other projectile that is not a physical object. It does **not** apply to
+fictional solid shot — bolter rounds, gauss slugs, railgun darts, foam darts — which
+are masses moving at a velocity and stay on the kinetic system like every real round.
 
-Then check the penetration the pair implies with the second formula, and adjust the
-velocity if the round penetrates far more or less than its tier should. Never author
-`Mass` and `MuzzleVelocity` that were solved independently against two different
-targets.
+Pick the damage from the calibration ladder above: read off the kinetic damage of the
+real class the weapon plays the part of, and author that number. A standard-issue
+blaster rifle meant to sit at intermediate-rifle tier is `Damage: 10`; a heavy
+support weapon takes the 20 mm rung; a turbolaser takes a naval rung. Report every
+such value as invented, because none of it is researched.
 
-Worked example — a standard-issue blaster rifle intended to sit at intermediate-rifle
-tier (damage ≈ 10) with a slow, visible bolt at 300 m/s:
+Set the gun category's own `Damage` to `1.0` so the ammunition stays authoritative:
+the legacy path multiplies the two together.
 
-```text
-mass = (10 / (0.005 * 300))^2 = (6.667)^2 = 44.4 -> author 44
-check: penetrating power = 0.087 * cbrt(0.5 * 0.044 * 300^2) = 1.15
-```
-
-1.15 sits between 5.56 NATO and 7.62 NATO, which is the intended tier. Author
-`Mass: 44` on the bullet category and `MuzzleVelocity: 300` on the gun category,
-following the ordinary muzzle-velocity ownership rules.
-
-Do **not** solve this by leaving `Mass` unset and tuning `Damage` instead. A
-massless round drops out of the kinetic system entirely, its penetration falls back
-to an authored `PenetratingPower`, and it stops being comparable to anything else in
-the file. Omitting `Mass` is correct only when the definition is deliberately
-non-damaging, such as a training, stun, or purely cosmetic projectile.
+Give energy ammunition a `FallSpeed` well below 1.0, or `0` when the fiction
+genuinely shows a flat-trajectory beam, and report the choice.
 
 ## Fictional Power Tiers
 
@@ -378,9 +368,17 @@ otherwise.
 
 ### Melee weapons
 
-A melee weapon defined as a gun takes `MeleeDamage`, a `RoundsPerMin` matching its
-swing cadence, and `Dispersion: 0.5` — inert on a weapon that fires nothing, but
-mandatory for every gun category, so report it as a placeholder.
+A melee weapon defined as a gun takes `MeleeDamage` and nothing else. A gun that
+fires no ammunition needs neither `Dispersion` nor `RoundsPerMin`: both describe
+shooting, both are inert on a weapon that fires nothing, and a placeholder for them
+only invents a number a later reader has to check. The mandatory-for-every-gun rule
+applies to guns that shoot.
+
+The `RoundsPerMin` column below therefore applies **only** to a weapon that both
+swings and shoots. An item like `ermeysgarand` is a rifle with a bayonet: put it in
+two categories at once, one carrying the melee statistics and one carrying the gun
+statistics. A short name may belong to any number of categories as long as they do
+not assign conflicting values for the same property.
 
 `MeleeDamage` is authored content with no historical scale, so it is harmonized
 rather than researched. The ladder is anchored on vanilla Minecraft swords — wooden
@@ -425,9 +423,9 @@ Additional rules:
 - Magazine and clip items that only change capacity share the ammunition category of
   the round they hold. Nerf clips, drums, and belts are one category per projectile
   type, not one per capacity.
-- Energy and exotic ammunition uses the effective-mass method above. Give it
-  `FallSpeed` well below 1.0 or `0` only when the fiction genuinely shows a
-  flat-trajectory beam, and report the choice; otherwise leave `FallSpeed: 1.0`.
+- Energy and exotic ammunition takes direct `Damage` and `Explosion` rather than
+  `Mass` and `ExplosiveMass`, per the section above. Fictional solid shot keeps mass
+  and stays on the kinetic system.
 
 ### Grenades and bombs
 
@@ -505,8 +503,11 @@ researched.
 - Copying the strongest consumer's values because the item "should feel powerful".
 - Labelling a representative category with an exact designation it does not have.
 - Filling an unknown armour face from the front face, which stays forbidden here.
-- Leaving `Mass` off a fictional projectile and tuning `Damage` instead.
-- Solving effective mass and velocity against two different target tiers.
+- Giving a blaster bolt or laser pulse a `Mass` or an `ExplosiveMass`, which claims
+  a physical projectile the fiction does not have.
+- Leaving `Mass` off fictional *solid* shot and tuning `Damage` instead; a bolter
+  round or a gauss slug belongs on the kinetic system.
+- Authoring an energy round's `Damage` without reading it off the calibration ladder.
 - Giving a fictional item a bespoke stat band because its franchise says it is
   special.
 - Creating one category per capacity variant of the same generic magazine.
@@ -525,8 +526,9 @@ In addition to the checklist in
 2. No `(Generic)` or `(Fictional)` label duplicates or shadows a historical label.
 3. Every R3 category names its exemplar in the working notes, and its values match
    that exemplar's set rather than a blend.
-4. Every effective mass is recomputed from its declared target tier and velocity,
-   and the implied penetrating power is checked against the calibration ladder.
+4. Every energy round carries `Damage` and no `Mass` or `ExplosiveMass`, and its
+   damage is traceable to a rung of the calibration ladder; every fictional solid
+   round instead carries a mass whose implied kinetic damage lands on its tier.
 5. Every fictional category is compared against the current file ceiling for its
    kind, recomputed at edit time, and sits within its tier's cap.
 6. Every mandatory field required by the domain reference is present. A generic or
@@ -542,8 +544,7 @@ Report, in addition to the standard items:
 - for every R3 category, the exemplar chosen, the consumer set it was selected from,
   the ranking axis, and any single-axis substitution;
 - for every R4 category, the tier assigned and the anchor it was measured against;
-- every effective mass, with its target tier, velocity, and resulting penetrating
-  power;
+- every invented energy-round damage, with the ladder rung it was read from;
 - every fictional category that landed at its tier cap, and what the fiction claimed
   instead;
 - generic items that were resolved to real identities at R1 or R2, listed separately,

@@ -217,7 +217,7 @@ public final class AmmoOverrides
     }
 
     @NotNull
-    private static List<String[]> lines(TypeFile file, String key)
+    static List<String[]> lines(TypeFile file, String key)
     {
         List<String> raw = file.getConfigLines(key);
         if (raw == null)

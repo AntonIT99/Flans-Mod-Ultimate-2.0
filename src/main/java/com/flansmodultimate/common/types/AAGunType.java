@@ -4,6 +4,7 @@ import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -42,6 +43,9 @@ public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverride
     /** Per-ammunition statistic overrides declared by this AA gun. */
     @Getter
     protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     protected int reloadTime;
     protected float recoil = 5F;
     protected float bulletSpread;
@@ -146,6 +150,7 @@ public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverride
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
         readGunnerPosition(file);
         resolveRealisticHealth(file);
     }
@@ -238,6 +243,9 @@ public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverride
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
         ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            ammoTypes.removeIf(ammoType -> removedAmmo.removes(ammoType.getOriginalShortName()));
         return ammoTypes;
     }
 

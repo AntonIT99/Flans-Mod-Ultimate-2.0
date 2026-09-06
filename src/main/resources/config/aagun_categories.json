@@ -54,6 +54,16 @@
         ]
     },
 
+    "Imperial Throne (Fictional)": {
+        "properties": {
+            "RealMassKg": 400,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "imperialthrone"
+        ]
+    },
+
     "Oerlikon Skyshield 35/1000 Revolver Gun": {
         "properties": {
             "RoundsPerMin": 1000.0,
@@ -66,8 +76,21 @@
         ]
     },
 
+    "Type 96 25 mm Triple Mount": {
+        "properties": {
+            "RoundsPerMin": 660,
+            "Dispersion": 0.3,
+            "RealMassKg": 1800,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "25mmmountaa"
+        ]
+    },
+
     "XX-9 Turbolaser Turret (Fictional)": {
         "properties": {
+            "Damage": 1,
             "RoundsPerMin": 120.0,
             "Dispersion": 0.1,
             "RealMassKg": 25000,

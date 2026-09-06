@@ -45,6 +45,36 @@ public final class ExplosionVehicleDamageResolver
         return new DamageChannels(blast * multiplier, 0F, pressure, multiplier);
     }
 
+    /**
+     * TNT equivalent, in kg, of a legacy explosive that never declared {@code ExplosiveMass}.
+     * <p>
+     * Without this a legacy definition cannot scratch an armoured vehicle at all, because the
+     * pressure model has no charge to work from. The crater radius is the one legacy quantity
+     * with a physical meaning here: the new system derives it as
+     * {@code radius = craterRadiusReference * cbrt(mass)}, so inverting that recovers the charge
+     * the author was implicitly asking for. {@code ExplosionPower} then scales it, since it is
+     * documented as a multiplier where 1 is vanilla behaviour.
+     *
+     * @param explosionRadius       legacy {@code ExplosionRadius} / {@code Explosion} in blocks
+     * @param explosionPower        legacy {@code ExplosionPower} multiplier, 1 being vanilla
+     * @param craterRadiusReference {@code newDamageSystemExplosiveRadiusReference}
+     * @return the equivalent charge in kg TNT, or 0 when the legacy values describe no explosion
+     */
+    public static float legacyTntEquivalentKg(float explosionRadius, float explosionPower,
+                                              double craterRadiusReference)
+    {
+        if (!Float.isFinite(explosionRadius) || explosionRadius <= 0F
+            || !Double.isFinite(craterRadiusReference) || craterRadiusReference <= 0D)
+            return 0F;
+
+        double power = Float.isFinite(explosionPower) && explosionPower > 0F ? explosionPower : 1D;
+        double normalized = explosionRadius / craterRadiusReference;
+        double equivalent = normalized * normalized * normalized * power;
+        if (!Double.isFinite(equivalent) || equivalent <= 0D)
+            return 0F;
+        return (float) Math.min(equivalent, Float.MAX_VALUE);
+    }
+
     public static double peakPressureKPa(double explosiveMassKg, double actualDistanceMeters,
                                          double minimumDistanceMeters)
     {

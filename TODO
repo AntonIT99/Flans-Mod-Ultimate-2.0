@@ -5,10 +5,6 @@ General:
 - Check if all FMU featues are implemented in the mod
 - Implement TaP Flan's Mod Features
 
-Game Balance:
-- Check balance for the blast/frag radius/damage (seems ok)
-- Investigate armored vehicles resistance to blast damage
-
 Driveables:
 - See if shooting points on vehicles can be directly inferred from models
 - Mecha does not rotate very smoothly
@@ -26,7 +22,6 @@ UI / HUD:
 - LCTRL for ammo toolips for driveables + eventually for guns?
 
 Categories:
-- finish official packs / warfare 44 / manus pack / wolff's packs in priority
 - mecha categories?
 
 Content Packs:

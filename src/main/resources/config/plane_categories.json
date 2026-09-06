@@ -1,16 +1,16 @@
 {
     "Admiral Hipper-class Heavy Cruiser": {
         "properties": {
-            "RealDisplacementT": "<placeholder value>",
-            "RealDraftM": "<placeholder value>",
-            "ArmorBeltMm": "<placeholder value>",
-            "ArmorDeckMm": "<placeholder value>",
-            "ArmorCitadelMm": "<placeholder value>",
-            "ArmorConningTowerMm": "<placeholder value>",
-            "TurretArmorFrontMm": "<placeholder value>",
-            "TurretArmorSideMm": "<placeholder value>",
-            "TurretArmorRearMm": "<placeholder value>",
-            "TurretArmorTopMm": "<placeholder value>",
+            "RealDisplacementT": 19050,
+            "RealDraftM": 7.2,
+            "ArmorBeltMm": 80,
+            "ArmorDeckMm": 30,
+            "ArmorCitadelMm": 80,
+            "ArmorConningTowerMm": 150,
+            "TurretArmorFrontMm": 105,
+            "TurretArmorSideMm": 70,
+            "TurretArmorRearMm": 70,
+            "TurretArmorTopMm": 70,
             "ArmorBowMm": 0,
             "ArmorSternMm": 0,
             "UseRealisticVehicleHealth": "true",
@@ -23,29 +23,28 @@
 
     "AH-1Z Viper": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 8391,
+            "RealEnginePowerHp": 2680,
+            "RealMaxSpeedKmh": 296,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 14.2,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
             "ah1zgreen",
-            "ah1zgrey"
+            "ah1zgrey",
+            "ah1zviper"
         ]
     },
 
     "AH-64D Apache Longbow": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 10433,
+            "RealEnginePowerHp": 3780,
+            "RealMaxSpeedKmh": 265,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 12.7,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -170,12 +169,11 @@
 
     "Bell AH-1 Cobra": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 4309,
+            "RealEnginePowerHp": 1400,
+            "RealMaxSpeedKmh": 277,
+            "RealRotorDiameterM": 13.41,
+            "RealClimbRateMs": 6.25,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -234,12 +232,12 @@
 
     "Boeing 707": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEngineThrustKn": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 151315,
+            "RealEngineThrustKn": 320.4,
+            "RealMaxSpeedKmh": 1009,
+            "RealWingSpanM": 44.42,
+            "RealWingAreaM2": 283.4,
+            "RealClimbRateMs": 20.3,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -387,12 +385,12 @@
 
     "CH-47 Chinook": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 22680,
+            "RealEnginePowerHp": 9466,
+            "RealMaxSpeedKmh": 302,
+            "RealRotorDiameterM": 18.29,
+            "RealRotorCount": 2,
+            "RealClimbRateMs": 10.1,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -802,12 +800,11 @@
 
     "Eurocopter EC665 Tiger": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 6600,
+            "RealEnginePowerHp": 2606,
+            "RealMaxSpeedKmh": 290,
+            "RealRotorDiameterM": 13.0,
+            "RealClimbRateMs": 10.7,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -926,6 +923,22 @@
         },
         "items": [
             "storch"
+        ]
+    },
+
+    "Focke-Achgelis Fa 223 Drache": {
+        "properties": {
+            "RealMassKg": 4315,
+            "RealEnginePowerPS": 1000,
+            "RealMaxSpeedKmh": 176,
+            "RealRotorDiameterM": 12,
+            "RealRotorCount": 2,
+            "RealClimbRateMs": 4.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fa223"
         ]
     },
 
@@ -1218,6 +1231,23 @@
         },
         "items": [
             "hurricane40mm"
+        ]
+    },
+
+    "Hawker Osprey (Swedish S9)": {
+        "properties": {
+            "RealMassKg": 2245,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 283,
+            "RealWingSpanM": 11.28,
+            "RealWingAreaM2": 32.3,
+            "RealClimbRateMs": 7.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "s9osprey",
+            "s9ospreyfancy"
         ]
     },
 
@@ -1656,6 +1686,20 @@
         ]
     },
 
+    "Kirov Airship (Fictional)": {
+        "properties": {
+            "RealMassKg": 240000,
+            "RealEnginePowerHp": 4800,
+            "RealMaxSpeedKmh": 135,
+            "RealClimbRateMs": 5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "kirovra"
+        ]
+    },
+
     "Kyushu J7W1 Shinden": {
         "properties": {
             "RealMassKg": 4928,
@@ -1690,12 +1734,12 @@
 
     "Learjet 28": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEngineThrustKn": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 6804,
+            "RealEngineThrustKn": 26.2,
+            "RealMaxSpeedKmh": 872,
+            "RealWingSpanM": 13.35,
+            "RealWingAreaM2": 21.5,
+            "RealClimbRateMs": 25.4,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -1852,6 +1896,22 @@
         ]
     },
 
+    "McDonnell XF-85 Goblin": {
+        "properties": {
+            "RealMassKg": 2050,
+            "RealEngineThrustKn": 13.1,
+            "RealMaxSpeedKmh": 1069,
+            "RealWingSpanM": 6.44,
+            "RealWingAreaM2": 8.36,
+            "RealClimbRateMs": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "goblinoplane"
+        ]
+    },
+
     "Messerschmitt Bf 109 E-3": {
         "properties": {
             "RealMassKg": 2340,
@@ -1918,6 +1978,22 @@
         "items": [
             "44_bf109g10",
             "bf109g10"
+        ]
+    },
+
+    "Messerschmitt Bf 109 T": {
+        "properties": {
+            "RealMassKg": 2800,
+            "RealEnginePowerPS": 1175,
+            "RealMaxSpeedKmh": 570,
+            "RealWingSpanM": 11.08,
+            "RealWingAreaM2": 17.5,
+            "RealClimbRateMs": 17,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "karlslandbf109"
         ]
     },
 
@@ -2037,17 +2113,32 @@
 
     "MH-6 Little Bird": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 1610,
+            "RealEnginePowerHp": 425,
+            "RealMaxSpeedKmh": 282,
+            "RealRotorDiameterM": 8.33,
+            "RealClimbRateMs": 8.4,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
             "littlebird"
+        ]
+    },
+
+    "MiG I-225": {
+        "properties": {
+            "RealMassKg": 4182,
+            "RealEnginePowerHp": 2200,
+            "RealMaxSpeedKmh": 720,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 17.44,
+            "RealClimbRateMs": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sanyai225"
         ]
     },
 
@@ -2102,12 +2193,11 @@
 
     "Mil Mi-24 Hind": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 12000,
+            "RealEnginePowerHp": 4400,
+            "RealMaxSpeedKmh": 335,
+            "RealRotorDiameterM": 17.3,
+            "RealClimbRateMs": 12.5,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -2154,6 +2244,22 @@
         ]
     },
 
+    "Mitsubishi A6M3 Model 22": {
+        "properties": {
+            "RealMassKg": 2544,
+            "RealEnginePowerHp": 1130,
+            "RealMaxSpeedKmh": 540,
+            "RealWingSpanM": 12,
+            "RealWingAreaM2": 22.44,
+            "RealClimbRateMs": 15.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fusoa6m3"
+        ]
+    },
+
     "Mitsubishi A6M3 Type 0 Model 22": {
         "properties": {
             "RealMassKg": 2290,
@@ -2167,6 +2273,22 @@
         },
         "items": [
             "reala6m3"
+        ]
+    },
+
+    "Mitsubishi A6M5 Model 52": {
+        "properties": {
+            "RealMassKg": 2733,
+            "RealEnginePowerHp": 1130,
+            "RealMaxSpeedKmh": 565,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 21.3,
+            "RealClimbRateMs": 12.8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "speciala6m5"
         ]
     },
 
@@ -2200,6 +2322,22 @@
         },
         "items": [
             "reppu"
+        ]
+    },
+
+    "Mitsubishi A7M3-J Reppu Kai": {
+        "properties": {
+            "RealMassKg": 5700,
+            "RealEnginePowerHp": 2200,
+            "RealMaxSpeedKmh": 648,
+            "RealWingSpanM": 14,
+            "RealWingAreaM2": 30.86,
+            "RealClimbRateMs": 19,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "reppuukai"
         ]
     },
 
@@ -2690,6 +2828,22 @@
         ]
     },
 
+    "Porckhechop Mk.2 (Fictional)": {
+        "properties": {
+            "RealMassKg": 1000,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 300,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 20,
+            "RealClimbRateMs": 5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2pigplane"
+        ]
+    },
+
     "Potez 630": {
         "properties": {
             "RealMassKg": 3520,
@@ -2820,14 +2974,45 @@
         ]
     },
 
+    "Sikorsky R-5 Dragonfly": {
+        "properties": {
+            "RealMassKg": 2190,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 171,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 5.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ho3s1"
+        ]
+    },
+
+    "Single-Engine Monoplane (Generic)": {
+        "properties": {
+            "RealMassKg": 1500,
+            "RealEnginePowerHp": 450,
+            "RealMaxSpeedKmh": 350,
+            "RealWingSpanM": 11,
+            "RealWingAreaM2": 20,
+            "RealClimbRateMs": 7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "genericplane"
+        ]
+    },
+
     "Single-Seat Biplane (Generic)": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 659,
+            "RealEnginePowerHp": 130,
+            "RealMaxSpeedKmh": 185,
+            "RealWingSpanM": 8.53,
+            "RealWingAreaM2": 21.46,
+            "RealClimbRateMs": 5.5,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3019,12 +3204,12 @@
 
     "Two-Seat Biplane (Generic)": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 830,
+            "RealEnginePowerHp": 110,
+            "RealMaxSpeedKmh": 145,
+            "RealWingSpanM": 10.97,
+            "RealWingAreaM2": 30.66,
+            "RealClimbRateMs": 3.6,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3035,12 +3220,11 @@
 
     "UH-60 Black Hawk": {
         "properties": {
-            "RealMassKg": "<placeholder value>",
-            "RealEnginePowerHp": "<placeholder value>",
-            "RealMaxSpeedKmh": "<placeholder value>",
-            "RealWingSpanM": "<placeholder value>",
-            "RealWingAreaM2": "<placeholder value>",
-            "RealClimbRateMs": "<placeholder value>",
+            "RealMassKg": 10660,
+            "RealEnginePowerHp": 3880,
+            "RealMaxSpeedKmh": 294,
+            "RealRotorDiameterM": 16.36,
+            "RealClimbRateMs": 3.6,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3245,6 +3429,23 @@
             "ww2_plane_yak3_1aneu",
             "ww2_plane_yak3_1b",
             "ww2_plane_yak3_1c"
+        ]
+    },
+
+    "Yakovlev Yak-9": {
+        "properties": {
+            "RealMassKg": 2870,
+            "RealEnginePowerHp": 1180,
+            "RealMaxSpeedKmh": 599,
+            "RealWingSpanM": 9.74,
+            "RealWingAreaM2": 17.15,
+            "RealClimbRateMs": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "orussianyak9",
+            "yak9neurofied"
         ]
     },
 

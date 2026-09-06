@@ -58,7 +58,8 @@ public record CommonConfigSnapshot(
     float newDamageSystemExplosiveDamageReference,
     float newDamageSystemExplosivePowerReference,
     float newDamageSystemExplosiveRadiusReference,
-    float newDamageSystemBlastToExplosionRadiusRatio,
+    float newDamageSystemBlastRadiusReference,
+    float newDamageSystemBlastFalloffSharpness,
     int shootableDefaultRespawnTime,
     boolean shootableProximityTriggerFriendlyFire,
     double lockOnRange,
@@ -99,11 +100,12 @@ public record CommonConfigSnapshot(
     double armoredBlastResistanceKPaPerMm,
     double minimumBlastDistanceMeters,
     double maxExplosionRadius,
+    double maxBlastRadius,
 
     boolean enchantmentModuleEnabled
 )
 {
-    public static final int CURRENT_VERSION = 21;
+    public static final int CURRENT_VERSION = 22;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -159,7 +161,8 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.newDamageSystemExplosiveDamageReference);
         buf.writeFloat(s.newDamageSystemExplosivePowerReference);
         buf.writeFloat(s.newDamageSystemExplosiveRadiusReference);
-        buf.writeFloat(s.newDamageSystemBlastToExplosionRadiusRatio);
+        buf.writeFloat(s.newDamageSystemBlastRadiusReference);
+        buf.writeFloat(s.newDamageSystemBlastFalloffSharpness);
         buf.writeVarInt(s.shootableDefaultRespawnTime);
         buf.writeBoolean(s.shootableProximityTriggerFriendlyFire);
         buf.writeDouble(s.lockOnRange);
@@ -204,6 +207,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.armoredBlastResistanceKPaPerMm);
         buf.writeDouble(s.minimumBlastDistanceMeters);
         buf.writeDouble(s.maxExplosionRadius);
+        buf.writeDouble(s.maxBlastRadius);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
     }
@@ -264,6 +268,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readFloat(),
             buf.readVarInt(),
             buf.readBoolean(),
             buf.readDouble(),
@@ -293,6 +298,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

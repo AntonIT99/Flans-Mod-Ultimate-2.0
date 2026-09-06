@@ -476,7 +476,7 @@ public class BulletType extends ShootableType
     {
         float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(explosiveCharge));
         float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
-        float explosionBlastRadius = ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * explosionRadius;
+        float explosionBlastRadius = (float) (ModCommonConfig.get().newDamageSystemBlastRadiusReference() * Math.cbrt(explosiveCharge));
         DamageStats explosionBlastDamage = new DamageStats();
         explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveCharge)));
         explosionBlastDamage.calculate();

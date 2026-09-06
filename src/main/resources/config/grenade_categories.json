@@ -1,5 +1,55 @@
 {
 
+    "20x28mm HE Airburst Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.02,
+            "FragType": "AIRBURST_AP"
+        },
+        "items": [
+            "20x33mmairburstgrenade"
+        ]
+    },
+
+    "20x28mm High-Explosive Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.02,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "20x33mmhegrenade"
+        ]
+    },
+
+    "20x85mm HE Airburst Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.04,
+            "FragType": "AIRBURST_AP"
+        },
+        "items": [
+            "20x85mmairburstgrenade"
+        ]
+    },
+
+    "20x85mm High-Explosive Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.04,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "20x85mmhegrenade"
+        ]
+    },
+
+    "25mm HE Airburst Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.03,
+            "FragType": "AIRBURST_AP"
+        },
+        "items": [
+            "23mmgrenade"
+        ]
+    },
+
     "40mm Launched Chemical Grenade (Generic)": {
         "properties": {
             "FragType": "DEFAULT",
@@ -33,7 +83,7 @@
 
     "Anti-Tank Mine (Generic)": {
         "properties": {
-            "ExplosiveMass": "<placeholder value>",
+            "ExplosiveMass": 5.5,
             "FragType": "THICK_CASE"
         },
         "items": [
@@ -41,13 +91,32 @@
         ]
     },
 
+    "Black-Powder Hand Bomb (Generic)": {
+        "properties": {
+            "ExplosiveMass": 0.19,
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "bomb"
+        ]
+    },
+
     "C4 Plastic Explosive": {
         "properties": {
-            "ExplosiveMass": "<placeholder value>",
+            "ExplosiveMass": 0.76,
             "FragType": "DEFAULT"
         },
         "items": [
             "c4"
+        ]
+    },
+
+    "Chemical Gas Grenade (Generic)": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "gasgrenade"
         ]
     },
 
@@ -64,7 +133,7 @@
 
     "Dynamite Stick": {
         "properties": {
-            "ExplosiveMass": "<placeholder value>",
+            "ExplosiveMass": 0.23,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -80,6 +149,15 @@
         },
         "items": [
             "44_f1frag"
+        ]
+    },
+
+    "Field Utility Container (Generic)": {
+        "properties": {
+        },
+        "items": [
+            "bigammochest",
+            "divingsuitactivator"
         ]
     },
 
@@ -100,6 +178,16 @@
         },
         "items": [
             "gasmine"
+        ]
+    },
+
+    "GBU-43/B MOAB": {
+        "properties": {
+            "ExplosiveMass": 11021,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "moab"
         ]
     },
 
@@ -148,11 +236,12 @@
 
     "Land Mine (Generic)": {
         "properties": {
-            "ExplosiveMass": "<placeholder value>",
+            "ExplosiveMass": 0.2,
             "FragType": "LOW_FRAG"
         },
         "items": [
-            "44_landmine"
+            "44_landmine",
+            "mine"
         ]
     },
 
@@ -193,6 +282,15 @@
         },
         "items": [
             "m67"
+        ]
+    },
+
+    "Medical Grenade (Fictional)": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "medicalgrenade"
         ]
     },
 
@@ -239,6 +337,15 @@
         ]
     },
 
+    "No.27 White Phosphorus Grenade": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "no27"
+        ]
+    },
+
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
             "ExplosiveMass": "1.179",
@@ -265,6 +372,16 @@
         ]
     },
 
+    "Nuclear Hand Munition (Fictional)": {
+        "properties": {
+            "ExplosiveMass": 10000,
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "testgrenade"
+        ]
+    },
+
     "Proximity Blast Mine (Fictional)": {
         "properties": {
             "ExplosiveMass": "0.900",
@@ -273,6 +390,15 @@
         "items": [
             "hx2mine",
             "invisiblemine"
+        ]
+    },
+
+    "RDG-2 Smoke Grenade": {
+        "properties": {
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "rdg2"
         ]
     },
 
@@ -305,6 +431,26 @@
         },
         "items": [
             "44_satchelcharge"
+        ]
+    },
+
+    "Semtex Adhesive Grenade": {
+        "properties": {
+            "ExplosiveMass": 0.4,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "semtexgrenademk2"
+        ]
+    },
+
+    "Smart Fragmentation Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMass": 0.18,
+            "FragType": "HIGH_FRAG"
+        },
+        "items": [
+            "opfraggrenade"
         ]
     },
 
@@ -355,6 +501,17 @@
         ]
     },
 
+    "Support And Effect Grenade (Fictional)": {
+        "properties": {
+            "Damage": 0,
+            "Explosion": 0
+        },
+        "items": [
+            "healingbacta",
+            "invisibleeffect"
+        ]
+    },
+
     "Thermal Detonator (Fictional)": {
         "properties": {
             "ExplosiveMass": "1.000",
@@ -381,7 +538,7 @@
 
     "Trip Mine (Generic)": {
         "properties": {
-            "ExplosiveMass": "<placeholder value>",
+            "ExplosiveMass": 0.18,
             "FragType": "STD_FRAG"
         },
         "items": [

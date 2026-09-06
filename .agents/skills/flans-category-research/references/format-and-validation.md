@@ -69,6 +69,10 @@ Use this shape:
   exception is a hull being migrated between `definitions/planes` and
   `definitions/vehicles`: register it in both, because only the file matching the
   installed definition's type ever applies. See [ships.md](ships.md).
+- A short name may belong to **several categories of the same file** as long as no two
+  of them set the same property. This is how a weapon with two distinct behaviours is
+  authored: a bayonet rifle takes a melee category carrying `MeleeDamage` and a gun
+  category carrying its ballistics.
 - Never put one short name in categories that assign conflicting values. When
   variants share most values, use an exact variant category or `exceptions` to
   exclude only the differing property. An `exceptions` map affects only the named
@@ -118,6 +122,9 @@ After every category edit:
 4. Validate ammo groups in both directions: every selectable shell has each intended
    `AddToAmmoGroup`, and every gun, AA gun, vehicle, or aircraft consumer has exact
    matching `UseAmmoGroup`. Check duplicate ammunition after combining groups.
+   For every `RemoveAmmo`, confirm the named short name really reaches that weapon,
+   that removing it is a repair or a deliberate narrowing rather than a way of
+   avoiding a per-ammo override, and that the weapon keeps at least one round.
    For every per-ammo override, confirm the named short name is the ammunition's own
    `ShortName` and that the ammunition is actually reachable from that weapon through
    `Ammo`, `AddAmmo`, or `UseAmmoGroup`; that the override lives on the definition
@@ -137,7 +144,8 @@ After every category edit:
    velocity remains a compatible fallback. Autocannon belts, shells, and missiles
    require ammunition velocity.
 7. Validate mandatory properties against the applicable domain reference: every
-   categorized gun and AA gun has nonzero `RoundsPerMin` and `Dispersion`, and every
+   categorized gun and AA gun that fires ammunition has nonzero `RoundsPerMin` and
+   `Dispersion` (a melee-only gun needs neither), and every
    researched, game-sourced, or invented fallback is identified; AA-gun mass/health
    opt-in and multi-barrel cadence; ammunition mass/gravity and shell/missile
    statistics; every explosive
@@ -155,11 +163,11 @@ After every category edit:
 8. Recheck configuration consistency and every value based only on a game, broad
    reference, conversion, approximation, neighboring face, or sibling variant.
    Preserve provenance for the final report.
-9. Confirm category ordering and scan all category files for duplicate or conflicting
-   assignments of affected short names. For generic and fictional categories, also
+9. Confirm category ordering and scan all category files for conflicting assignments of
+   affected short names: two categories may share an item, but not a property. For generic and fictional categories, also
    run the additional checks in
    [generic-and-fictional.md](generic-and-fictional.md): marker suffix, no collision
-   with a historical label, exemplar traceability, recomputed effective masses, and
+   with a historical label, exemplar traceability, energy-round damage read from the calibration ladder, and
    tier caps measured against the file's current real ceiling.
 10. List every placeholder string authored under the blocked-source rule in
     `research-policy.md`, with its property, category, and source. A file that

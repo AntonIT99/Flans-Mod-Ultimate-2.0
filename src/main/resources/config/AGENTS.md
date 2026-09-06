@@ -70,7 +70,8 @@ that work, and every mandatory field below still applies to those categories.
   simulation/game databases, and finally weak discovery-only sources. Cross-check
   material ambiguity and keep all values in one category configuration-consistent.
 - Do not invent values except for mandatory gameplay-critical driveable fields and
-  the mandatory `RoundsPerMin` and `Dispersion` values of guns and AA guns after
+  the mandatory `RoundsPerMin` and `Dispersion` values of guns and AA guns that
+  shoot, after
   exhausting the documented fallback ladder. Less authoritative but
   configuration-compatible values are preferable to missing mandatory ammunition
   fields. A final gameplay-coherent gun or AA-gun value must fit its type, era,
@@ -187,8 +188,8 @@ that work, and every mandatory field below still applies to those categories.
   definition type; validate mandatory fields and unit conversions; validate both
   sides of ammo groups and all `AddRound` fields; recompute every armor value
   against its tier table, coverage, and slot; recheck every generic and fictional
-  category for its marker, its exemplar or tier, its recomputed effective masses,
-  and its cap against the file's current real ceiling; rerun
+  category for its marker, its exemplar or tier, its energy-round damage or its recomputed
+  kinetic mass, and its cap against the file's current real ceiling; rerun
   `scripts/scanShortnames.py` when coverage changed; review remaining
   rows by the resolution step they reached, treating any remaining armor row as a
   gap rather than a skip; confirm

@@ -47,13 +47,17 @@ public final class ModCommonConfig
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     /**
-     * Hard ceiling on every explosion radius, in blocks. Conventional ordnance stays
-     * far below it - the largest researched charge in the shipped categories is an
-     * 88 kg TNT-equivalent naval shell at about 45 blocks - so this exists to keep a
-     * nuclear or otherwise extreme charge from asking the server to process a radius
-     * of tens of thousands of blocks.
+     * Hard ceiling on the CRATER radius, in blocks. This is the one radius that drives the
+     * block-breaking loop, so it is the expensive one. Conventional ordnance stays far below
+     * it - a 250 kg bomb craters about 21 blocks - and only nuclear-scale charges clamp.
      */
     public static final double DEFAULT_MAX_EXPLOSION_RADIUS = 128D;
+    /**
+     * Hard ceiling on the blast and fragmentation radii, in blocks. These only drive an entity
+     * query rather than the block-breaking loop, so they are far cheaper than the crater radius
+     * and can be allowed a much larger ceiling before anything needs clamping.
+     */
+    public static final double DEFAULT_MAX_BLAST_RADIUS = 512D;
 
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;
     private static final double MAX_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 1.0D;
@@ -123,7 +127,8 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
     private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
-    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE;
+    private static final ForgeConfigSpec.DoubleValue NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS;
     private static final ForgeConfigSpec.IntValue SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final ForgeConfigSpec.BooleanValue SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
     private static final ForgeConfigSpec.DoubleValue LOCK_ON_RANGE;
@@ -164,6 +169,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_BLAST_DISTANCE_METERS;
     private static final ForgeConfigSpec.DoubleValue MAX_EXPLOSION_RADIUS;
+    private static final ForgeConfigSpec.DoubleValue MAX_BLAST_RADIUS;
 
     private static final ForgeConfigSpec.BooleanValue ENCHANTMENT_MODULE_ENABLED;
 
@@ -329,11 +335,21 @@ public final class ModCommonConfig
             .comment("Explosion power reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the power of 1kg TNT")
             .defineInRange("newDamageSystemExplosivePowerReference", 4.0, 0.0, 1000.0);
         NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE = builder
-            .comment("Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT")
-            .defineInRange("newDamageSystemExplosiveRadiusReference", 10.0, 0.0, 1000.0);
-        NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO = builder
-            .comment("Ratio of the blast radius (damage area) relative to the explosion radius (block breaking and particles area)")
-            .defineInRange("newDamageSystemBlastToExplosionRadiusRatio", 2.5, 0.0, 10.0);
+            .comment("Explosion radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the radius of 1kg TNT.",
+                "This is the CRATERING radius: block breaking and explosion particles. Both radii follow the cube root of the charge (Hopkinson-Cranz scaling),",
+                "so this constant is the scaled distance Z in m/kg^(1/3) at which blocks stop being destroyed.",
+                "The default of 4.0 puts a 1 kg charge at the same 4-block radius as vanilla TNT, which is the reference players already know,",
+                "and corresponds to roughly 100 kPa of peak overpressure - the point at which ordinary structures are destroyed outright.")
+            .defineInRange("newDamageSystemExplosiveRadiusReference", 4.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE = builder
+            .comment("Blast radius reference for the new damage system using explosive mass as TNT equivalent (when 'ExplosiveMass' is set). Is equal to the blast radius of 1kg TNT.",
+                "This is the DAMAGE radius: how far the blast hurts entities and vehicles. It is derived from the charge directly, not from the cratering radius,",
+                "so the two can be tuned independently. The default of 25.0 is the scaled distance at which overpressure falls to roughly 3 kPa.")
+            .defineInRange("newDamageSystemBlastRadiusReference", 25.0, 0.0, 1000.0);
+        NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS = builder
+            .comment("Shape of the blast damage falloff inside the blast radius. Higher values concentrate damage near the centre; lower values spread it out.",
+                "This only shapes the curve, it does not change any radius.")
+            .defineInRange("newDamageSystemBlastFalloffSharpness", 2.5, 0.1, 10.0);
         SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder
             .comment("Whether proximity triggers can get triggered by allies and cause friendly fire")
             .define("shootableProximityTriggerFriendlyFire", false);
@@ -503,10 +519,16 @@ public final class ModCommonConfig
             .defineInRange("minimumBlastDistanceMeters", DEFAULT_MINIMUM_BLAST_DISTANCE_METERS, 0.01D, 100D);
         MAX_EXPLOSION_RADIUS = builder
             .comment("Hard ceiling in blocks on the explosion, blast and fragmentation radii of any single detonation.",
-                "Conventional ordnance is far below this; the largest researched charge in the built-in categories reaches about 45 blocks.",
+                "Most ordnance is far below this: a 250 kg bomb craters about 13 blocks and damages out to about 157.",
+                "The largest conventional charges do reach it, however - a GBU-43/B MOAB damages out to about 556 blocks - so this is not a nuclear-only clamp.",
                 "It exists so that a nuclear or otherwise extreme charge cannot ask the server for a radius of tens of thousands of blocks.",
                 "Raise it if your hardware can process a larger detonation, lower it if it cannot.")
             .defineInRange("maxExplosionRadius", DEFAULT_MAX_EXPLOSION_RADIUS, 1D, 4096D);
+        MAX_BLAST_RADIUS = builder
+            .comment("Hard ceiling in blocks on the blast and fragmentation radii of any single detonation.",
+                "These drive an entity query rather than the block-breaking loop, so they are much cheaper than the crater radius and get a far higher ceiling.",
+                "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.")
+            .defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
         builder.pop();
 
         builder.push("Enchantment Module");
@@ -574,7 +596,8 @@ public final class ModCommonConfig
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
-            NEW_DAMAGE_SYSTEM_BLAST_TO_EXPLOSION_RADIUS_RATIO.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE.get().floatValue(),
+            NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS.get().floatValue(),
             SHOOTABLE_DEFAULT_RESPAWN_TIME.get(),
             SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get(),
             LOCK_ON_RANGE.get(),
@@ -615,6 +638,7 @@ public final class ModCommonConfig
             ARMORED_BLAST_RESISTANCE_KPA_PER_MM.get(),
             MINIMUM_BLAST_DISTANCE_METERS.get(),
             MAX_EXPLOSION_RADIUS.get(),
+            MAX_BLAST_RADIUS.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get()
         );
@@ -746,6 +770,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_MAX_EXPLOSION_RADIUS : config.maxExplosionRadius();
+    }
+
+    /** Hard ceiling in blocks on the blast and fragmentation radii. */
+    public static double maxBlastRadius()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_BLAST_RADIUS : config.maxBlastRadius();
     }
 
     public static double kineticPenetrationReference()

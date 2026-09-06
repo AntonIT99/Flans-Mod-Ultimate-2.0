@@ -28,6 +28,7 @@ import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -78,6 +79,9 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     /** Per-ammunition statistic overrides declared by this driveable. */
     @Getter
     protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     private volatile List<BulletType> resolvedAmmoTypes;
     /** Ammo group revision the cache above was built from; groups can still grow while later packs load */
     private volatile int resolvedAmmoGroupRevision;
@@ -552,6 +556,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
             .map(String::trim).forEach(ammo::add));
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
@@ -925,6 +930,9 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
             if (ammoInGroup instanceof BulletType bulletType && !result.contains(bulletType))
                 result.add(bulletType);
         }
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            result.removeIf(bulletType -> removedAmmo.removes(bulletType.getOriginalShortName()));
         cached = List.copyOf(result);
         resolvedAmmoTypes = cached;
         resolvedAmmoGroupRevision = revision;

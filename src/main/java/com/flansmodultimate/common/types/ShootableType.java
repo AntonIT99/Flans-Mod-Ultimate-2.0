@@ -443,7 +443,7 @@ public abstract class ShootableType extends InfoType
     {
         if (useNewExplosionSystem())
         {
-            return ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * getExplosionRadius();
+            return (float) (ModCommonConfig.get().newDamageSystemBlastRadiusReference() * Math.cbrt(getExplosiveMass()));
         }
         return explosionRadius;
     }

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
+import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.BulletItem;
@@ -120,6 +121,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Per-ammunition statistic overrides declared by this gun. */
     @Getter
     protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -717,6 +721,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
 
         //Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
@@ -1073,6 +1078,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
         ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            ammoTypes.removeIf(ammoType -> removedAmmo.removes(ammoType.getOriginalShortName()));
         return ammoTypes;
     }
 

@@ -10,8 +10,8 @@ For each identifiable gun, research and normally define:
 | Property | Unit | Requirement |
 | --- | --- | --- |
 | `MuzzleVelocity` | metres per second | Required only when the gun is velocity-authoritative: normal service load from the represented barrel. A cartridge velocity from another barrel length is not equivalent. |
-| `RoundsPerMin` | rounds per minute | Mandatory. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
-| `Dispersion` | degrees | Mandatory. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
+| `RoundsPerMin` | rounds per minute | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
+| `Dispersion` | degrees | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
 
 Keep shotgun dispersion representative of the full shot pattern and ordinary gun
 dispersion representative of the base weapon without movement or attachment
@@ -316,6 +316,24 @@ Rules that matter when authoring them:
   [generic-and-fictional.md](generic-and-fictional.md) R3.
 - Keep an overridden set coherent: a weapon that restates velocity and penetration
   but leaves the item's mass alone is describing two different shells.
+
+### Removing Ammunition
+
+`RemoveAmmo <ammoShortName>` drops a round from a weapon. It is repeatable, one line
+may name several rounds, and it is applied after `Ammo`, `AddAmmo` and every
+`UseAmmoGroup`, so it takes precedence over all three.
+
+Use it when a pack has handed a weapon ammunition it plainly could never fire - a
+20.3 cm main battery fed the ship's 2 cm AA shell, say - or when a category
+deliberately narrows what a weapon accepts. Do **not** use it merely because a round
+is generic: shared generic ammunition is a per-ammo override problem, not a removal
+problem, and removing it would leave a consumer with nothing to fire. Never remove a
+weapon's only remaining ammunition.
+
+```json
+"Ammo": "ships_shell_german20cmhe",
+"RemoveAmmo": "ships_shell_german20mmaa"
+```
 
 ## Bombs And Dropped Ordnance
 

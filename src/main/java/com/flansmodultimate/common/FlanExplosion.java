@@ -103,15 +103,24 @@ public class FlanExplosion extends Explosion
         {
             // Every radius is capped here, the one place all explosion statistics pass
             // through, so an extreme charge cannot ask the server to iterate a radius of
-            // tens of thousands of blocks. The cap is a performance ceiling, not a
+            // tens of thousands of blocks. The caps are a performance ceiling, not a
             // balance decision: the authored ExplosiveMass stays honest, and a server
             // with the hardware for a larger detonation simply raises the config value.
-            float maxRadius = (float) ModCommonConfig.maxExplosionRadius();
-            if (Float.isFinite(maxRadius) && maxRadius > 0F)
+            //
+            // The two ceilings are deliberately separate because the work they bound is
+            // not comparable. The crater radius drives the block-breaking ray march, which
+            // is the expensive loop, so it gets the tighter maxExplosionRadius. The blast
+            // and fragmentation radii only size an entity query, so they get the far more
+            // generous maxBlastRadius and keep their full reach on conventional charges.
+            float maxCraterRadius = (float) ModCommonConfig.maxExplosionRadius();
+            if (Float.isFinite(maxCraterRadius) && maxCraterRadius > 0F)
+                explosionRadius = Math.min(explosionRadius, maxCraterRadius);
+
+            float maxDamageRadius = (float) ModCommonConfig.maxBlastRadius();
+            if (Float.isFinite(maxDamageRadius) && maxDamageRadius > 0F)
             {
-                explosionRadius = Math.min(explosionRadius, maxRadius);
-                blastRadius = Math.min(blastRadius, maxRadius);
-                fragRadius = Math.min(fragRadius, maxRadius);
+                blastRadius = Math.min(blastRadius, maxDamageRadius);
+                fragRadius = Math.min(fragRadius, maxDamageRadius);
             }
             // Ensure blastRadius >= explosionRadius
             if (blastRadius < explosionRadius)
@@ -387,7 +396,14 @@ public class FlanExplosion extends Explosion
 
         ArmorPlate plate = driveable.getConfigType().getResolvedArmor()
             .plate(target.part(), target.facing()).authored();
-        Float explosiveMass = stats.explosiveMassKg() > 0F ? stats.explosiveMassKg() : null;
+        // A legacy explosive declares no ExplosiveMass, so the pressure model has no charge to
+        // work from and the vehicle would take nothing at all. Recover an equivalent charge from
+        // the legacy crater radius and power so those definitions still threaten armour.
+        float charge = stats.explosiveMassKg() > 0F ? stats.explosiveMassKg()
+            : ExplosionVehicleDamageResolver.legacyTntEquivalentKg(
+                stats.explosionRadius(), stats.explosionPower(),
+                ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
+        Float explosiveMass = charge > 0F ? charge : null;
         ExplosionVehicleDamageResolver.DamageChannels channels = ExplosionVehicleDamageResolver.resolve(
             plate.thicknessMm(), explosiveMass, target.distanceMeters(), existingBlast, existingFragmentation,
             ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
@@ -437,7 +453,7 @@ public class FlanExplosion extends Explosion
         double normalizedDistance = distanceToEntity / Math.max(0.001, radius);
 
         // blast-like falloff based on radius
-        double falloff = 1.0 / (1.0 + Math.pow(normalizedDistance * ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio(), 3.0));
+        double falloff = 1.0 / (1.0 + Math.pow(normalizedDistance * ModCommonConfig.get().newDamageSystemBlastFalloffSharpness(), 3.0));
 
         // soft cutoff so it’s ~0 at the edge of radius
         double edge = 1.0 - normalizedDistance;
