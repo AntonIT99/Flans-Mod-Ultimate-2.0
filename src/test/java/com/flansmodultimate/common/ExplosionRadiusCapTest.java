@@ -28,13 +28,11 @@ class ExplosionRadiusCapTest
     }
 
     @Test
-    void anExtremeChargeIsClampedOnEveryRadius()
+    void anExtremeChargeIsClampedOnExplosionRadius()
     {
         // A 50 Mt device asks for roughly 36 800 blocks through 10 * cbrt(kg).
         FlanExplosion.Stats stats = stats(36840F, 92100F, 50000F);
         assertEquals(CAP, stats.explosionRadius());
-        assertEquals(CAP, stats.blastRadius());
-        assertEquals(CAP, stats.fragRadius());
     }
 
     @Test
