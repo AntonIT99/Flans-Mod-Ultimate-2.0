@@ -55,7 +55,7 @@ public final class MountedCameraView
             Mth.rotLerp(partial, driveable.getPrevYaw(), driveable.getYaw()),
             Mth.rotLerp(partial, driveable.getPrevPitch(), driveable.getPitch()),
             Mth.rotLerp(partial, driveable.getPrevRoll(), driveable.getRoll()),
-            locked ? 0F : seat.getViewAimYaw(),
+            locked ? 0F : seat.getViewAimYaw(partial),
             locked ? 0F : seat.getViewAimPitch(),
             driveable instanceof Plane);
     }

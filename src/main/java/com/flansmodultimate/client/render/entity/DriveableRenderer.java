@@ -57,6 +57,34 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     /** Limits diagnostic markers to once per game tick, rather than once per frame. */
     private final Map<Driveable, Integer> diagnosticMarkerTicks = new WeakHashMap<>();
 
+    /** Nesting depth of {@link #renderPreview(Runnable)}. Render thread only. */
+    private static int previewDepth;
+
+    /**
+     * Draws a driveable through the entity dispatcher for a menu preview.
+     *
+     * <p>Both level of detail stages measure the entity in world space against
+     * the game camera. A GUI supplies neither, so they are switched off for the
+     * duration of the call instead of silently culling the whole model.</p>
+     */
+    public static void renderPreview(Runnable render)
+    {
+        ++previewDepth;
+        try
+        {
+            render.run();
+        }
+        finally
+        {
+            --previewDepth;
+        }
+    }
+
+    public static boolean isRenderingPreview()
+    {
+        return previewDepth > 0;
+    }
+
     public DriveableRenderer(EntityRendererProvider.Context context)
     {
         super(context);
@@ -133,14 +161,23 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 break;
             }
         }
-        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.renderOrPrepare(
-            model, type, texture, translucent, cull, red, green, blue,
-            poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-            entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
-            !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
-        history.usingImpostor = lodResult.usingImpostor();
-        if (lodResult.rendered())
-            return;
+        // Distance based level of detail measures the entity against the world
+        // camera through a perspective projection. A menu draws the same entity
+        // under the GUI's orthographic matrix at a pose only tens of pixels from
+        // the origin, which those measurements read as vanishingly small.
+        boolean preview = isRenderingPreview();
+        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.Result.notRendered();
+        if (!preview)
+        {
+            lodResult = DriveableImpostorCache.renderOrPrepare(
+                model, type, texture, translucent, cull, red, green, blue,
+                poseStack, buffer, packedLight, projectionPixels, cameraDistance,
+                entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
+                !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
+            history.usingImpostor = lodResult.usingImpostor();
+            if (lodResult.rendered())
+                return;
+        }
 
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
@@ -158,8 +195,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        float minimumPartPixels = (float)ModClientConfig.get().minimumDriveablePartPixelSize;
-        if (ModClientConfig.get().enableDriveableLod)
+        float minimumPartPixels = preview ? 0F : (float)ModClientConfig.get().minimumDriveablePartPixelSize;
+        if (!preview && ModClientConfig.get().enableDriveableLod)
         {
             minimumPartPixels = DriveableImpostorCache.adaptivePartThreshold(minimumPartPixels,
                 (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,

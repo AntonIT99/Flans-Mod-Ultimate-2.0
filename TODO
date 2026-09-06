@@ -4,23 +4,19 @@ General:
 - Check if all FMU featues are implemented in the mod
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
-- Improve explosion visuals, some of the particles like the flare ones are not disappearing.
+- Check and Improve explosion visuals
 
 Mechas:
-- Mecha does not rotate very smoothly
-- Some Mecha models are still buggged (Alpha titan)
 - Mecha categories?
-- Fix Mecha inventory
 
 Driveables:
-- differentiate reload time and shootdelay for vehicles
+- Differentiate reload time and shootdelay for vehicles (for example Panzer II C)
 - See if shooting points on vehicles can be directly inferred from models
 - Display hitboxes for driveables in debug mode
 - Driveable item rendering in hand has not the same transformations
 - Check propeller speed at standby as well as when moving
 - Collisions with players
 - y positioning of driveables (Check Tiger I of Warfare 44)
-- Improve impostor quality or increase distance for ships
 
 UI:
 - LCTRL for ammo toolips for driveables + eventually for guns?

@@ -3284,12 +3284,18 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     /** Opens the paged driveable inventory window, even for driveables with a window of their own. */
     public boolean openDriveableInventoryMenu(@NotNull ServerPlayer player)
     {
+        return openDriveableInventoryMenu(player, DriveableInventoryMenu.Page.MENU);
+    }
+
+    /** Opens the paged driveable inventory window directly on one of its pages. */
+    public boolean openDriveableInventoryMenu(@NotNull ServerPlayer player, DriveableInventoryMenu.Page page)
+    {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
         NetworkHooks.openScreen(player,
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this),
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
                 Component.literal(configType.getName())),
-            buffer -> buffer.writeVarInt(getId()));
+            buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()));
         return true;
     }
 

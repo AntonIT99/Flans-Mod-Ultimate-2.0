@@ -10,6 +10,9 @@ import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -19,8 +22,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -75,10 +76,18 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     public static DriveableInventoryMenu createFromNetwork(int containerId, Inventory inventory, FriendlyByteBuf buffer)
     {
         Entity entity = inventory.player.level().getEntity(buffer.readVarInt());
-        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null);
+        Page[] pages = Page.values();
+        int pageIndex = buffer.readVarInt();
+        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null,
+            pageIndex >= 0 && pageIndex < pages.length ? pages[pageIndex] : Page.MENU);
     }
 
     public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable)
+    {
+        this(containerId, playerInventory, driveable, Page.MENU);
+    }
+
+    public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable, Page initialPage)
     {
         super(FlansMod.driveableInventoryMenu.get(), containerId);
         this.playerInventory = playerInventory;
@@ -118,6 +127,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         for (int column = 0; column < 9; column++)
             addSlot(new PageAwarePlayerSlot(playerInventory, column, GUI_X_OFFSET + 8 + column * SLOT_SIZE, 156));
         playerInventoryEnd = slots.size();
+        if (hasPage(initialPage))
+            page = initialPage;
         remapVisibleSlots();
     }
 

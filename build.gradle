@@ -293,6 +293,8 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
+
+    exclude 'config/AGENTS.md'
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

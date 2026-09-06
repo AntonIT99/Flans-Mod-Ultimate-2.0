@@ -58,6 +58,9 @@ public final class DriveableImpostorCache
     private static final float HYSTERESIS = 1.2F;
     private static final float PREWARM_MULTIPLIER = 2F;
     private static final long CACHE_RETENTION_MILLIS = 2_000L;
+    /** Configured impostor distances are tuned around roughly tank-sized vehicles; larger driveables push them out. */
+    private static final float REFERENCE_VEHICLE_RADIUS = 3F;
+    private static final float MAX_SIZE_DISTANCE_SCALE = 8F;
 
     /** Small MRU list; reverse lookup avoids allocating a cache key for every rendered entity. */
     private static final List<Entry> entries = new ArrayList<>(16);
@@ -68,6 +71,12 @@ public final class DriveableImpostorCache
     public record Result(boolean rendered, boolean usingImpostor, float projectedPixelDiameter)
     {
         private static final Result EXACT_UNKNOWN = new Result(false, false, Float.POSITIVE_INFINITY);
+
+        /** The exact model must be drawn, with no distance measurement to base a threshold on. */
+        public static Result notRendered()
+        {
+            return EXACT_UNKNOWN;
+        }
 
         private static Result exact(float projectedPixelDiameter)
         {
@@ -109,10 +118,13 @@ public final class DriveableImpostorCache
             return Result.exact(Float.POSITIVE_INFINITY);
 
         float projectedPixels = projectedDiameter(entry.bounds.radius(), projectionPixels, cameraDistance);
+        float sizeDistanceScale = sizeDistanceScale(entry.bounds.radius());
         float impostorThreshold = (float)config.driveableImpostorPixelSize;
-        float maximumDistance = config.driveableImpostorMaximumDistance;
+        float minimumDistance = config.driveableImpostorMinimumDistance * sizeDistanceScale;
+        float maximumDistance = config.driveableImpostorMaximumDistance > 0F
+            ? config.driveableImpostorMaximumDistance * sizeDistanceScale : 0F;
         if ((impostorThreshold <= 0F && maximumDistance <= 0F)
-            || cameraDistance < config.driveableImpostorMinimumDistance || entry.failed)
+            || cameraDistance < minimumDistance || entry.failed)
             return Result.exact(projectedPixels);
 
         int yawIndex = yawIndex(viewYaw, settings.yawAngles());
@@ -399,6 +411,14 @@ public final class DriveableImpostorCache
     {
         float normalized = Mth.positiveModulo(viewYaw, 360F);
         return Mth.floor(normalized / 360F * yawAngles + 0.5F) % yawAngles;
+    }
+
+    /** Scales configured impostor distances up for driveables larger than a typical tank, so battleships keep their exact model much longer than the tuned base distance would allow. */
+    private static float sizeDistanceScale(float radius)
+    {
+        if (!Float.isFinite(radius) || radius <= REFERENCE_VEHICLE_RADIUS)
+            return 1F;
+        return Math.min(MAX_SIZE_DISTANCE_SCALE, radius / REFERENCE_VEHICLE_RADIUS);
     }
 
     private static int pitchIndex(float viewPitch)

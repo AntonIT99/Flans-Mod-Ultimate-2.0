@@ -92,18 +92,19 @@ public class ModelMecha extends ModelDriveable
 
         float aimPitch = type == null ? -state.turretPitch()
             : -Mth.clamp(state.turretPitch(), -type.getUpperArmLimit(), type.getLowerArmLimit());
+        float armSpaceScale = configSpaceScale(type);
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_ARM))
         {
             renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(),
                 type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
-                aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer,
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM))
         {
             renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(),
                 type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
-                aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer,
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
@@ -171,23 +172,39 @@ public class ModelMecha extends ModelDriveable
         return data != null && !data.getMechaAddon(slot).isEmpty();
     }
 
+    /**
+     * Undoes the ModelScale the whole hierarchy is rendered under.
+     *
+     * <p>The legacy renderer scaled only the arm meshes, leaving ArmOrigin,
+     * ArmLength and the hand modifiers in unscaled entity space, and its own
+     * inventory preview divided them by ModelScale for exactly that reason.
+     * Without this a mecha such as the Alpha Titan (ModelScale 2) has its arms
+     * hanging in the air twice as far from the torso as authored.</p>
+     */
+    private static float configSpaceScale(MechaType type)
+    {
+        float modelScale = type == null ? 1F : type.getModelScale();
+        return modelScale <= 0F ? 1F : 1F / modelScale;
+    }
+
     private void renderArm(ModelRendererTurbo[] arm, ModelRendererTurbo[] hand, Vector3f origin,
-                           Vector3f handModifier, float armLength, float aimPitch, boolean renderHand,
+                           Vector3f handModifier, float armLength, float configScale, float aimPitch, boolean renderHand,
                            PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                            float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
-        translateToModelPoint(poseStack, origin);
+        if (origin != null)
+            poseStack.translate(origin.x * configScale, origin.y * configScale, -origin.z * configScale);
         // Legacy mecha arm models point down their local Y axis and are rotated forward from here.
         poseStack.mulPose(Axis.ZP.rotationDegrees(90F + aimPitch));
         renderPart(arm, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
         if (renderHand)
         {
-            float modifierX = handModifier == null ? 0F : handModifier.x;
-            float modifierY = handModifier == null ? 0F : handModifier.y;
-            float modifierZ = handModifier == null ? 0F : handModifier.z;
-            poseStack.translate(modifierY, -armLength - modifierX, -modifierZ);
+            float modifierX = (handModifier == null ? 0F : handModifier.x) * configScale;
+            float modifierY = (handModifier == null ? 0F : handModifier.y) * configScale;
+            float modifierZ = (handModifier == null ? 0F : handModifier.z) * configScale;
+            poseStack.translate(modifierY, -armLength * configScale - modifierX, -modifierZ);
             renderPart(hand, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
         }
@@ -215,13 +232,14 @@ public class ModelMecha extends ModelDriveable
         renderPart(rightAnimFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(barrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        float armSpaceScale = configSpaceScale(type);
         renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(),
             type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
-            0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            armSpaceScale, 0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
         renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(),
             type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
-            0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            armSpaceScale, 0F, true, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
     }
 

@@ -27,7 +27,9 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
 {
     public static final int SCROLL_UP_BUTTON = 0;
     public static final int SCROLL_DOWN_BUTTON = 1;
-    public static final int DRIVEABLE_MENU_BUTTON = 2;
+    /** Legacy 1.7.10 opened the passenger gun ammunition and the repair pages straight from this window. */
+    public static final int PASSENGER_GUNS_BUTTON = 2;
+    public static final int REPAIR_BUTTON = 3;
 
     public static final int COLUMN_COUNT = 8;
     public static final int VISIBLE_ROWS = 3;
@@ -123,6 +125,12 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
         return mecha == null ? -1 : mecha.getId();
     }
 
+    /** Whether this mecha has any passenger gun ammunition slots to show. */
+    public boolean hasPassengerGunSlots()
+    {
+        return mechaInventory instanceof DriveableData data && data.getNumAmmoSlots() > 0;
+    }
+
     public int getCargoSlotCount()
     {
         return mechaInventory instanceof DriveableData data ? data.getNumCargoSlots() : 0;
@@ -151,10 +159,11 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
             remapCargoSlots();
             return true;
         }
-        if (id == DRIVEABLE_MENU_BUTTON)
+        if (id == PASSENGER_GUNS_BUTTON || id == REPAIR_BUTTON)
         {
             if (mecha != null && player instanceof ServerPlayer serverPlayer)
-                mecha.openDriveableInventoryMenu(serverPlayer);
+                mecha.openDriveableInventoryMenu(serverPlayer, id == PASSENGER_GUNS_BUTTON
+                    ? DriveableInventoryMenu.Page.GUNS : DriveableInventoryMenu.Page.REPAIR);
             return true;
         }
         return false;

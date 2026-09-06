@@ -217,10 +217,10 @@ public final class ModClientConfig
             .comment("Use a generated far-distance impostor when a vehicle or plane projects to at most this many physical screen pixels. Set to 0 to disable only impostors.")
             .defineInRange("driveableImpostorPixelSize", 32D, 0D, 256D);
         DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE = builder
-            .comment("Minimum camera distance in blocks before a generated driveable impostor may be used.")
+            .comment("Minimum camera distance in blocks before a generated driveable impostor may be used. Tuned around tank-sized vehicles; scaled up automatically for physically larger driveables (e.g. battleships) so they keep their exact model much longer.")
             .defineInRange("driveableImpostorMinimumDistance", 64, 8, 4096);
         DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE = builder
-            .comment("Always use a ready generated driveable impostor at or beyond this camera distance, even for physically large vehicles. Set to 0 to use only the projected-pixel threshold.")
+            .comment("Always use a ready generated driveable impostor at or beyond this camera distance. Tuned around tank-sized vehicles; scaled up automatically for physically larger driveables (e.g. battleships) so they don't switch to an impostor while still filling the screen. Set to 0 to use only the projected-pixel threshold.")
             .defineInRange("driveableImpostorMaximumDistance", 128, 0, 4096);
         DRIVEABLE_IMPOSTOR_RESOLUTION = builder
             .comment("Resolution of each generated driveable impostor view. Changing this clears and regenerates the runtime cache.")

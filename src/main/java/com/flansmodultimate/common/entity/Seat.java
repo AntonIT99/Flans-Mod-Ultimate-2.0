@@ -5,7 +5,6 @@ import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.MechaPhysics;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -80,7 +79,7 @@ public class Seat extends Entity implements IControllable
     private boolean clientViewAimInitialized;
     private float clientViewAimYaw;
     private float clientViewAimPitch;
-    private float clientViewParentYaw;
+    private float clientViewWorldYaw;
 
     private int orphanTicks;
     private int localInputMask;
@@ -134,7 +133,41 @@ public class Seat extends Entity implements IControllable
 
     public float getViewAimYaw()
     {
-        return clientViewAimInitialized ? clientViewAimYaw : getAimYaw();
+        return getViewAimYaw(1F);
+    }
+
+    /**
+     * @param partialTick the same partial tick the caller is about to compose the chassis yaw
+     *                    with, so the two interpolate from the same instant. Callers that read
+     *                    the chassis yaw raw (input sending, once-per-tick bookkeeping) should
+     *                    keep using the no-arg overload, which behaves as if the tick just landed.
+     */
+    public float getViewAimYaw(float partialTick)
+    {
+        if (!clientViewAimInitialized)
+            return getAimYaw();
+        // A mecha turns its whole torso to follow the driver's look, so the aim
+        // reproducing a requested view depends on where the torso currently is.
+        // Deriving it from an absolute world yaw on every read keeps the camera
+        // steady while the torso interpolates towards the server angle. Storing
+        // a relative aim and subtracting the torso motion once per tick instead
+        // made the view stutter by one tick worth of torso rotation.
+        //
+        // The torso motion has to be read with the exact same partial tick the render
+        // camera is about to interpolate the chassis yaw with. Subtracting the raw,
+        // un-interpolated chassis yaw here left a residual term equal to the gap between
+        // the interpolated and raw chassis yaw - zero only at the end of each tick - which
+        // reintroduced the same one-tick sawtooth on top of an otherwise perfectly smooth,
+        // continuously mouse-driven view whenever the torso was actually turning.
+        if (usesAbsoluteViewYaw())
+            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
+        return clientViewAimYaw;
+    }
+
+    /** Whether this seat stores its look as a world yaw instead of a driveable relative aim. */
+    private boolean usesAbsoluteViewYaw()
+    {
+        return level().isClientSide && driveable instanceof Mecha && isDriverSeat();
     }
 
     public float getViewAimPitch()
@@ -267,7 +300,6 @@ public class Seat extends Entity implements IControllable
         if (seatInfo == null && driveable.getConfigType() != null)
             seatInfo = driveable.getConfigType().getSeat(getSeatIndex());
 
-        consumeClientMechaParentYaw();
         driveable.registerSeatProxy(this);
         snapToParent();
 
@@ -481,6 +513,14 @@ public class Seat extends Entity implements IControllable
             return;
 
         initializeClientViewAim();
+        if (usesAbsoluteViewYaw())
+        {
+            // The torso is free to spin, so only the pitch keeps its seat limits.
+            clientViewWorldYaw = Mth.wrapDegrees(clientViewWorldYaw + yawDelta);
+            float pitched = clientViewAimPitch + pitchDelta;
+            clientViewAimPitch = Mth.clamp(seatInfo == null ? pitched : seatInfo.clampPitch(pitched), -89.9F, 89.9F);
+            return;
+        }
         SeatInfo info = seatInfo;
         float yaw = clientViewAimYaw + yawDelta;
         float pitch = clientViewAimPitch + pitchDelta;
@@ -497,7 +537,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = getAimYaw();
         clientViewAimPitch = getAimPitch();
-        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
+        clientViewWorldYaw = Mth.wrapDegrees((driveable == null ? 0F : driveable.getYaw()) + getAimYaw());
         clientViewAimInitialized = true;
     }
 
@@ -506,16 +546,6 @@ public class Seat extends Entity implements IControllable
     {
         if (Float.isFinite(yawDelta))
             entityData.set(DATA_AIM_YAW, Mth.wrapDegrees(getAimYaw() - yawDelta));
-    }
-
-    private void consumeClientMechaParentYaw()
-    {
-        if (!level().isClientSide || !clientViewAimInitialized || !isDriverSeat()
-            || !(driveable instanceof Mecha))
-            return;
-        float parentYaw = driveable.getYaw();
-        clientViewAimYaw = MechaPhysics.consumeParentYaw(clientViewAimYaw, clientViewParentYaw, parentYaw);
-        clientViewParentYaw = parentYaw;
     }
 
     private void initializeClientViewAim()
@@ -529,7 +559,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = 0F;
         clientViewAimPitch = 0F;
-        clientViewParentYaw = driveable == null ? 0F : driveable.getYaw();
+        clientViewWorldYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 

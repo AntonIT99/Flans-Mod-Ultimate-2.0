@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.render.entity.DriveableRenderer;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.types.MechaType;
@@ -74,9 +75,15 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     protected void init()
     {
         super.init();
-        addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.mecha.driveable_menu"),
-                ignored -> sendMenuButton(MechaInventoryMenu.DRIVEABLE_MENU_BUTTON))
-            .bounds(leftPos + 9, topPos + 153, 93, 20).build());
+        // Legacy 1.7.10 layout: the two shortcuts sit under the mecha preview.
+        Button passengerGuns = Button.builder(Component.translatable("gui.flansmodultimate.mecha.passenger_guns"),
+                ignored -> sendMenuButton(MechaInventoryMenu.PASSENGER_GUNS_BUTTON))
+            .bounds(leftPos + 9, topPos + 153, 93, 20).build();
+        passengerGuns.active = menu.hasPassengerGunSlots();
+        addRenderableWidget(passengerGuns);
+        addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.mecha.repair"),
+                ignored -> sendMenuButton(MechaInventoryMenu.REPAIR_BUTTON))
+            .bounds(leftPos + 107, topPos + 153, 68, 20).build());
     }
 
     private void sendMenuButton(int id)
@@ -175,7 +182,8 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
         EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
         dispatcher.setRenderShadow(false);
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
-        dispatcher.render(mecha, 0D, 0D, 0D, 0F, partialTick, pose, buffers, 0xF000F0);
+        DriveableRenderer.renderPreview(() ->
+            dispatcher.render(mecha, 0D, 0D, 0D, 0F, partialTick, pose, buffers, 0xF000F0));
         buffers.endBatch();
         dispatcher.setRenderShadow(true);
         Lighting.setupFor3DItems();
