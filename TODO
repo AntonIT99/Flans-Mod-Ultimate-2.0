@@ -1,16 +1,23 @@
 General:
-- Fix Gloves
+- Optimize skills for token consumption
+- Fix Gloves (still not working)
 - Check if ConfigReference in Wiki is exhaustive / up to date
 - Check if all FMU featues are implemented in the mod
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
+- Improve explosion visuals, some of the particles like the flare ones are not disappearing.
+- Investigate explosion radius balance
+
+Mechas:
+- Mecha does not rotate very smoothly
+- Some Mecha models are still buggged (Alpha titan)
+- Mecha categories?
+- Fix Mecha inventory
 
 Driveables:
 - differentiate reload time and shootdelay for vehicles
 - See if shooting points on vehicles can be directly inferred from models
-- Mecha does not rotate very smoothly
 - Display hitboxes for driveables in debug mode
-- Implement special mecha inventory
 - Driveable item rendering in hand has not the same transformations
 - Check propeller speed at standby as well as when moving
 - Collisions with players
@@ -18,19 +25,23 @@ Driveables:
 - Improve impostor quality or increase distance for ships
 
 UI / HUD:
-- Check if the HUD of AA Guns shows its health and ammo.
 - Check if there is enought space on the right side for the driveable HUD.
 - LCTRL for ammo toolips for driveables + eventually for guns?
 
 Categories:
-- mecha categories?
+- harmonize visuals for shootables?
+- harmonize sounds for vehicles / planes?
+- missing ammo groups for shells
 
 Content Packs:
+- Scaling problem with Semtex grenade?
 - Rewrite the official packs with the new gun and vehicle systems
 WW2
 - Fix Scope Attachment Points
 - Fix Barrel Attachment and Muzzle Flash
 - Remove Minigun Mode for some guns
+Manus:
+- Sitting position too high (Flak 36)
 Star Wars Pack
 - Add Idle Sound to Lightsabers
 
