@@ -1,6 +1,5 @@
 Name Panzerschreck Ammo
 ShortName panzerschreckAmmo
-//TODO : Change model
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255

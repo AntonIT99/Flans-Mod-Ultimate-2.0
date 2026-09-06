@@ -1,6 +1,5 @@
 Name PIAT Ammo
 ShortName PIATAmmo
-//TODO : Change model
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
