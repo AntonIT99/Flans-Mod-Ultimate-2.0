@@ -5,7 +5,6 @@ General:
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
 - Improve explosion visuals, some of the particles like the flare ones are not disappearing.
-- Investigate explosion radius balance
 
 Mechas:
 - Mecha does not rotate very smoothly
@@ -23,8 +22,7 @@ Driveables:
 - y positioning of driveables (Check Tiger I of Warfare 44)
 - Improve impostor quality or increase distance for ships
 
-UI / HUD:
-- Check if there is enought space on the right side for the driveable HUD.
+UI:
 - LCTRL for ammo toolips for driveables + eventually for guns?
 
 Categories:

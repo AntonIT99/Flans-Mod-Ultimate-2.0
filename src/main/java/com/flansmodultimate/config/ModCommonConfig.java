@@ -47,11 +47,16 @@ public final class ModCommonConfig
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     /**
-     * Hard ceiling on the CRATER radius, in blocks. This is the one radius that drives the
-     * block-breaking loop, so it is the expensive one. Conventional ordnance stays far below
-     * it - a 250 kg bomb craters about 21 blocks - and only nuclear-scale charges clamp.
+     * Hard ceiling on the CRATER radius, in blocks. This drives the block-breaking loop, but
+     * FlanExplosion.doBreakBlocks scales its ray-march step with the radius, which keeps that
+     * loop's cost roughly flat from a few dozen blocks radius all the way up to this ceiling -
+     * so the value here is a design choice about how big a crater gets to be, not a performance
+     * knob. Conventional ordnance stays far below it (a 250 kg bomb craters about 28 blocks);
+     * 256 lets a small (~1 kt) tactical nuke reach close to its natural ~238 block crater while
+     * staying under Minecraft's 384 block total world height, so one detonation cannot already
+     * span bedrock to build limit by itself. Only heavier nuclear/paper-design charges clamp.
      */
-    public static final double DEFAULT_MAX_EXPLOSION_RADIUS = 128D;
+    public static final double DEFAULT_MAX_EXPLOSION_RADIUS = 256D;
     /**
      * Hard ceiling on the blast and fragmentation radii, in blocks. These only drive an entity
      * query rather than the block-breaking loop, so they are far cheaper than the crater radius
@@ -522,15 +527,16 @@ public final class ModCommonConfig
             .comment("Minimum physical distance used by armoured blast pressure calculations to avoid a singularity.")
             .defineInRange("minimumBlastDistanceMeters", DEFAULT_MINIMUM_BLAST_DISTANCE_METERS, 0.01D, 100D);
         MAX_EXPLOSION_RADIUS = builder
-            .comment("Hard ceiling in blocks on the explosion, blast and fragmentation radii of any single detonation.",
-                "Most ordnance is far below this: a 250 kg bomb craters about 13 blocks and damages out to about 157.",
-                "The largest conventional charges do reach it, however - a GBU-43/B MOAB damages out to about 556 blocks - so this is not a nuclear-only clamp.",
-                "It exists so that a nuclear or otherwise extreme charge cannot ask the server for a radius of tens of thousands of blocks.",
-                "Raise it if your hardware can process a larger detonation, lower it if it cannot.")
+            .comment("Hard ceiling in blocks on the CRATER radius of any single detonation (block breaking and its particles).",
+                "Most ordnance is far below this: a 250 kg bomb craters about 28 blocks, the largest conventional bomb shipped (an ~11 t MOAB-class charge) about 74.",
+                "The block-breaking loop's cost is roughly flat with radius (its ray-march step scales to match), so this is a design choice about how big a",
+                "crater gets to be rather than a performance knob - lower it only if you want smaller craters, or raise it to let heavier nuclear/paper-design",
+                "charges carve closer to their full, otherwise-clamped size.")
             .defineInRange("maxExplosionRadius", DEFAULT_MAX_EXPLOSION_RADIUS, 1D, 4096D);
         MAX_BLAST_RADIUS = builder
             .comment("Hard ceiling in blocks on the blast and fragmentation radii of any single detonation.",
                 "These drive an entity query rather than the block-breaking loop, so they are much cheaper than the crater radius and get a far higher ceiling.",
+                "Most ordnance is far below this: a 250 kg bomb reaches about 85 blocks, the largest conventional bomb shipped about 167.",
                 "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.")
             .defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
         builder.pop();
