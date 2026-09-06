@@ -7794,7 +7794,7 @@
         "properties": {
             "Mass": 9800000,
             "FallSpeed": 1.0,
-            "ExplosiveMass": 10000000,
+            "ExplosiveMass": 11021,
             "FragType": "LOW_FRAG"
         },
         "items": [
