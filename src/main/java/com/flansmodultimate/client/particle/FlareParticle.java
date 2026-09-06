@@ -7,6 +7,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class FlareParticle extends ParticleBase
@@ -92,9 +93,43 @@ public class FlareParticle extends ParticleBase
     @NotNull
     public ParticleRenderType getRenderType()
     {
-        // The flare acts only as the moving controller for its fmflame trail.
-        // Its own flare.png quad is intentionally not submitted for rendering.
-        return ParticleRenderType.NO_RENDER;
+        return LegacyParticleRenderTypes.FLARE;
+    }
+
+    /**
+     * The flare burns at full brightness rather than taking the light of the
+     * sky it was fired into.
+     */
+    @Override
+    public int getLightColor(float partialTick)
+    {
+        return LightTexture.FULL_BRIGHT;
+    }
+
+    // The flare is drawn straight from flare.png instead of a particle atlas
+    // sprite, so the quad spans the whole texture.
+    @Override
+    protected float getU0()
+    {
+        return 0F;
+    }
+
+    @Override
+    protected float getU1()
+    {
+        return 1F;
+    }
+
+    @Override
+    protected float getV0()
+    {
+        return 0F;
+    }
+
+    @Override
+    protected float getV1()
+    {
+        return 1F;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType>

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.SeatInfo;
@@ -19,7 +20,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -35,11 +35,6 @@ import java.util.Optional;
 /** 1.7.10-style driveable hub, inventory, fuel and repair interface. */
 public final class DriveableInventoryScreen extends AbstractContainerScreen<DriveableInventoryMenu>
 {
-    private static final ResourceLocation MENU_TEXTURE = texture("plane_menu.png");
-    private static final ResourceLocation INVENTORY_TEXTURE = texture("plane_inventory.png");
-    private static final ResourceLocation FUEL_TEXTURE = texture("plane_fuel.png");
-    private static final ResourceLocation REPAIR_TEXTURE = texture("repair.png");
-
     private static final int LEGACY_WIDTH = 176;
     private static final int LEGACY_HEIGHT = 180;
     private static final int LEGACY_X_OFFSET = 13;
@@ -57,11 +52,6 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         imageHeight = LEGACY_HEIGHT;
         inventoryLabelX = LEGACY_X_OFFSET + 8;
         inventoryLabelY = 86;
-    }
-
-    private static ResourceLocation texture(String name)
-    {
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/driveable/" + name);
     }
 
     private int legacyLeft()
@@ -240,7 +230,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int y = topPos;
         switch (menu.getPage())
         {
-            case MENU -> graphics.blit(MENU_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
+            case MENU -> graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEMENU, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
             case FUEL -> renderFuel(graphics, x, y);
             case REPAIR -> renderRepair(graphics);
             default -> renderInventoryPage(graphics, x, y);
@@ -249,13 +239,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
 
     private void renderInventoryPage(GuiGraphics graphics, int x, int y)
     {
-        graphics.blit(INVENTORY_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
+        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEINVENTORY, x, y, 0, 0, LEGACY_WIDTH, LEGACY_HEIGHT);
         int count = activeItemCount();
         if (menu.getPage() == Page.GUNS)
         {
             int visible = Math.max(0, count - menu.getScrollRow());
             for (int row = 0; row < Math.min(VISIBLE_INVENTORY_ROWS, visible); row++)
-                graphics.blit(INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 176, 0, 37, 18);
+                graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEINVENTORY, x + 9, y + 24 + row * 19, 176, 0, 37, 18);
             renderGunRows(graphics, x, y);
         }
         else
@@ -266,13 +256,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 int remaining = count - (menu.getScrollRow() + row) * 8;
                 int columns = Math.min(8, Math.max(0, remaining));
                 if (columns > 0)
-                    graphics.blit(INVENTORY_TEXTURE, x + 9, y + 24 + row * 19, 7, 97, columns * 18, 18);
+                    graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEINVENTORY, x + 9, y + 24 + row * 19, 7, 97, columns * 18, 18);
             }
         }
         if (menu.getScrollRow() == 0)
-            graphics.blit(INVENTORY_TEXTURE, x + 161, y + 41, 176, 18, 10, 10);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEINVENTORY, x + 161, y + 41, 176, 18, 10, 10);
         if (menu.getScrollRow() == menu.getMaxScrollRow())
-            graphics.blit(INVENTORY_TEXTURE, x + 161, y + 53, 176, 28, 10, 10);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEINVENTORY, x + 161, y + 53, 176, 28, 10, 10);
     }
 
     private int activeItemCount()
@@ -400,20 +390,20 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private void renderFuel(GuiGraphics graphics, int x, int y)
     {
         y += 19;
-        graphics.blit(FUEL_TEXTURE, x, y, 0, 0, LEGACY_WIDTH, 161);
+        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEFUEL, x, y, 0, 0, LEGACY_WIDTH, 161);
         if (menu.getDriveable() == null || menu.getDriveable().getConfigType() == null)
             return;
         float capacity = menu.getDriveable().getConfigType().getFuelTankSize();
         float fraction = capacity <= 0F ? 0F : Mth.clamp(menu.getDriveable().getFuel() / capacity, 0F, 1F);
-        int frame = menu.getDriveable().level() == null ? 0 : (int) (menu.getDriveable().level().getGameTime() / 5L % 4L);
-        ItemStack fuelStack = menu.getDriveable().getDriveableData().getFuelStack();
+        int frame = (int) (menu.getDriveable().level().getGameTime() / 5L % 4L);
+        ItemStack fuelStack = Optional.ofNullable(menu.getDriveable().getDriveableData()).map(DriveableData::getFuelStack).orElse(ItemStack.EMPTY);
         if (!fuelStack.isEmpty())
-            graphics.blit(FUEL_TEXTURE, x + 15, y + 44, 176 + 15 * frame, 0, 15, 16);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEFUEL, x + 15, y + 44, 176 + 15 * frame, 0, 15, 16);
         if (capacity > 0F && menu.getDriveable().getFuel() < capacity / 8F && frame > 1)
-            graphics.blit(FUEL_TEXTURE, x + 16, y + 25, 176, 16, 6, 6);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEFUEL, x + 16, y + 25, 176, 16, 6, 6);
         int width = Math.round(129F * fraction);
         if (width > 0)
-            graphics.blit(FUEL_TEXTURE, x + 26, y + 21, 0, 161, width, 15);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEFUEL, x + 26, y + 21, 0, 161, width, 15);
     }
 
     private void renderRepair(GuiGraphics graphics)
@@ -422,7 +412,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int left = repairLeft();
         int top = repairTop();
         int end = visibleRepairEnd(parts);
-        graphics.blit(REPAIR_TEXTURE, left, top, 0, 0, 202, 23);
+        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEREPAIR, left, top, 0, 0, 202, 23);
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
             ? title.getString() : menu.getDriveable().getConfigType().getName();
         graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
@@ -432,11 +422,11 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             DriveablePart part = parts.get(index);
             boolean broken = part.isDestroyed();
             int height = broken ? 40 : 20;
-            graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 24, 202, height);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEREPAIR, left, top + y, 0, 24, 202, height);
 
             float health = part.getMaxHealth() <= 0F ? 0F : Mth.clamp(part.getHealth() / part.getMaxHealth(), 0F, 1F);
             graphics.setColor(1F - health, health, 0F, 1F);
-            graphics.blit(REPAIR_TEXTURE, left + 111, top + y + 2, 0, 73, Math.round(70F * health), 16);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEREPAIR, left + 111, top + y + 2, 0, 73, Math.round(70F * health), 16);
             graphics.setColor(1F, 1F, 1F, 1F);
 
             int nameX = broken ? 60 : 10;
@@ -458,7 +448,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             }
             y += height;
         }
-        graphics.blit(REPAIR_TEXTURE, left, top + y, 0, 65, 202, 8);
+        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEREPAIR, left, top + y, 0, 65, 202, 8);
     }
 
     @Override

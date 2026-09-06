@@ -1,6 +1,7 @@
 {
   "block.flansmod.gunworkbench": "Gun Modification Table",
   "block.flansmod.paintjobtable": "Paintjob Table",
+  "block.flansmod.vehiclecraftingtable": "Vehicle Crafting Table",
   "block.flansmod.teams_item_spawner": "Teams Item Spawner",
   "block.flansmod.teams_player_spawner": "Teams Player Spawner",
   "block.flansmod.teams_vehicle_spawner": "Teams Vehicle Spawner",

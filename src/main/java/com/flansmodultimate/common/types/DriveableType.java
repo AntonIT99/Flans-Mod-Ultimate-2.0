@@ -317,8 +317,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
         if (useRealisticVehicleHealth && realWorldSpec.massKg() == null)
             logError("UseRealisticVehicleHealth requires a valid RealMassKg; authored hitbox health will be retained", file);
-        if (useRealisticVehicleHealth && health.values().stream().noneMatch(box -> box != null && box.getHealth() > 0F))
-            logError("UseRealisticVehicleHealth requires at least one positive hitbox health weight; authored health will be retained", file);
+        // Missing per-part health is no longer fatal: the scaler falls back to hitbox volume
     }
 
     private void readSeats(TypeFile file)

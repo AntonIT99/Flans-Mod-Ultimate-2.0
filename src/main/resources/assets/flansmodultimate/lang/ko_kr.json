@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "구동 방식",
   "tooltip.flansmodultimate.physics.drivetype.awd": "사륜구동",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "전륜구동",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "선박 추진",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "후륜구동",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "궤도식",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "유효 후진 속도 (블록/tick)",

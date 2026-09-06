@@ -178,6 +178,33 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         return formatDouble(d, 2);
     }
 
+    /**
+     * Color a health value by its ratio to max health: green above 66%, yellow above 33%, red below.
+     */
+    static ChatFormatting healthColor(float health, float maxHealth)
+    {
+        if (maxHealth <= 0F)
+            return ChatFormatting.GREEN;
+
+        float ratio = health / maxHealth;
+        if (ratio > 2F / 3F)
+            return ChatFormatting.GREEN;
+        if (ratio > 1F / 3F)
+            return ChatFormatting.YELLOW;
+        return ChatFormatting.RED;
+    }
+
+    /**
+     * "[Health]" style tooltip line, colored by the current/max ratio.
+     */
+    static MutableComponent healthLine(Component label, float health, float maxHealth)
+    {
+        return Component.empty()
+            .append(label.copy().withStyle(ChatFormatting.DARK_BLUE))
+            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_BLUE))
+            .append(Component.literal(formatFloat(health, 1) + " / " + formatFloat(maxHealth, 1)).withStyle(healthColor(health, maxHealth)));
+    }
+
     static UUID getOrCreateStackUUID(ItemStack stack, String key)
     {
         CompoundTag tag = stack.getOrCreateTag();

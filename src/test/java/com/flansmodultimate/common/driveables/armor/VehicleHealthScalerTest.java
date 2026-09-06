@@ -40,17 +40,56 @@ class VehicleHealthScalerTest
     }
 
     @Test
-    void invalidMassAndMissingWeightsFallBackSafely()
+    void invalidMassFallsBackSafely()
     {
         VehicleHealthScaler.Result noMass = VehicleHealthScaler.resolve(true, null,
             Map.of(EnumDriveablePart.CORE, box(100F)), 5D);
         assertFalse(noMass.enabled());
         assertEquals(100F, noMass.boxes().get(EnumDriveablePart.CORE).getHealth());
         assertFalse(noMass.warnings().isEmpty());
+    }
 
-        VehicleHealthScaler.Result noWeights = VehicleHealthScaler.resolve(true, 1_000F,
-            Map.of(EnumDriveablePart.CORE, box(0F)), 5D);
-        assertFalse(noWeights.enabled());
+    /**
+     * Plenty of packs never author per-part health. The mass curve is still the better
+     * number for them, so the split falls back to how big each hitbox is.
+     */
+    @Test
+    void missingHealthWeightsFallBackToHitboxVolume()
+    {
+        EnumMap<EnumDriveablePart, CollisionBox> boxes = new EnumMap<>(EnumDriveablePart.class);
+        boxes.put(EnumDriveablePart.CORE, box(0F, 2F, 1F, 1F));
+        boxes.put(EnumDriveablePart.TURRET, box(0F, 1F, 1F, 1F));
+        VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, 1_000F, boxes, 5D);
+
+        assertTrue(result.enabled());
+        assertEquals(500F, result.totalHp(), 1.0E-3F);
+        assertEquals(333.333F, result.allocations().get(EnumDriveablePart.CORE), 1.0E-2F);
+        assertEquals(166.666F, result.allocations().get(EnumDriveablePart.TURRET), 1.0E-2F);
+        assertFalse(result.warnings().isEmpty());
+    }
+
+    @Test
+    void hitboxesWithoutHealthOrVolumeShareEvenly()
+    {
+        EnumMap<EnumDriveablePart, CollisionBox> boxes = new EnumMap<>(EnumDriveablePart.class);
+        boxes.put(EnumDriveablePart.CORE, box(0F, 0F, 0F, 0F));
+        boxes.put(EnumDriveablePart.TURRET, box(0F, 0F, 0F, 0F));
+        VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, 1_000F, boxes, 5D);
+
+        assertTrue(result.enabled());
+        assertEquals(250F, result.allocations().get(EnumDriveablePart.CORE), 1.0E-3F);
+        assertEquals(250F, result.allocations().get(EnumDriveablePart.TURRET), 1.0E-3F);
+    }
+
+    /** With nothing to split the total between, the derived total still applies to the hull. */
+    @Test
+    void noHitboxesAtAllStillDerivesTheTotal()
+    {
+        VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, 1_000F, Map.of(), 5D);
+        assertTrue(result.enabled());
+        assertEquals(500F, result.totalHp(), 1.0E-3F);
+        assertTrue(result.boxes().isEmpty());
+        assertFalse(result.warnings().isEmpty());
     }
 
     @Test
@@ -75,6 +114,11 @@ class VehicleHealthScalerTest
 
     private static CollisionBox box(float health)
     {
-        return CollisionBox.inWorldUnits(health, 0F, 0F, 0F, 1F, 1F, 1F, 5F, 0F);
+        return box(health, 1F, 1F, 1F);
+    }
+
+    private static CollisionBox box(float health, float width, float height, float depth)
+    {
+        return CollisionBox.inWorldUnits(health, 0F, 0F, 0F, width, height, depth, 5F, 0F);
     }
 }

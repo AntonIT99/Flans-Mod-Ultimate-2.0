@@ -19,6 +19,11 @@ public final class ModClientConfig
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
     public final EnumSpeedUnit driveableSpeedUnit;
+    public final EnumHitMarkerStyle hitMarkerStyle;
+    public final boolean hdHitMarker;
+    public final boolean fancyHitMarker;
+    public final boolean showFlashesWhenWounded;
+    public final boolean enablePlayerClassSkinOverrides;
     public final int bulletRenderDistance;
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
@@ -74,6 +79,11 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     private static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    private static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
+    private static final ForgeConfigSpec.BooleanValue HD_HIT_MARKER;
+    private static final ForgeConfigSpec.BooleanValue FANCY_HIT_MARKER;
+    private static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
@@ -153,6 +163,32 @@ public final class ModClientConfig
         DRIVEABLE_SPEED_UNIT = builder
                 .comment("Unit used for vehicle and plane speed on the HUD")
                 .defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
+        HIT_MARKER_STYLE = builder
+                .comment("""
+                    Visual style of the hit marker.
+                    ULTIMATE: the full screen hit marker overlay from Flan's Mod Ultimate 1.7.10.
+                    CLASSIC: the small centered hit marker icon from Flan's Mod 1.12.2.
+                    """)
+                .defineEnum("hitMarkerStyle", EnumHitMarkerStyle.ULTIMATE);
+        HD_HIT_MARKER = builder
+                .comment("Use the higher resolution texture for the ULTIMATE hit marker style")
+                .define("hdHitMarker", false);
+        FANCY_HIT_MARKER = builder
+                .comment("""
+                    Colour the ULTIMATE hit marker based on the hit.
+                    Red = no penetration, green = full damage, light blue = headshot, yellow = explosion.
+                    """)
+                .define("fancyHitMarker", true);
+        SHOW_FLASHES_WHEN_WOUNDED = builder
+                .comment("Show the red blood overlay flash when the player takes damage")
+                .define("showFlashesWhenWounded", true);
+        ENABLE_PLAYER_CLASS_SKIN_OVERRIDES = builder
+                .comment("""
+                    Let a Teams player class replace the skin of the players wearing it, when its content pack
+                    defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a
+                    valid player skin sheet, or when another mod draws that player with its own model.
+                    """)
+                .define("enablePlayerClassSkinOverrides", true);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -280,6 +316,11 @@ public final class ModClientConfig
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
         driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
+        hitMarkerStyle = HIT_MARKER_STYLE.get();
+        hdHitMarker = HD_HIT_MARKER.get();
+        fancyHitMarker = FANCY_HIT_MARKER.get();
+        showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
+        enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();

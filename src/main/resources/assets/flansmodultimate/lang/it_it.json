@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "Tipo di trazione",
   "tooltip.flansmodultimate.physics.drivetype.awd": "Trazione integrale",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "Trazione anteriore",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "Propulsione marina",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "Trazione posteriore",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "Cingolato",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "Retromarcia effettiva (blocchi/tick)",

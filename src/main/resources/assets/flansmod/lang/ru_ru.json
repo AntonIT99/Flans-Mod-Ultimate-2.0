@@ -1,6 +1,7 @@
 {
   "block.flansmod.gunworkbench": "Стол модификации оружия",
   "block.flansmod.paintjobtable": "Стол покраски",
+  "block.flansmod.vehiclecraftingtable": "Стол создания техники",
   "block.flansmod.teams_item_spawner": "Спавнер предметов команд",
   "block.flansmod.teams_player_spawner": "Спавнер игроков команд",
   "block.flansmod.teams_vehicle_spawner": "Спавнер техники команд",

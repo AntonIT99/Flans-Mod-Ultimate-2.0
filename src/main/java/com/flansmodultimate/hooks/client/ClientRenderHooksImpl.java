@@ -10,7 +10,10 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
+import com.flansmodultimate.client.render.KillMessageFeed;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.item.CustomBewlr;
+import com.flansmodultimate.common.KillMessageData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.AttachmentType;
@@ -30,6 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -225,7 +229,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void spawnTrail(String trailTexture, Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed)
     {
-        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
+        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
         InstantBulletRenderer.addTrail(new InstantShotTrail(origin, hitPos, width, length, bulletSpeed, resLoc));
     }
 
@@ -241,7 +245,19 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void updateFlash(boolean value, int time)
     {
-        ModClient.setInFlash(true);
-        ModClient.setFlashTime(time);
+        if (value)
+            ModClient.startFlash(time);
+    }
+
+    @Override
+    public void updatePlayerClassSkins(Map<UUID, String> playerClasses)
+    {
+        PlayerSkinOverrides.setPlayerClasses(playerClasses);
+    }
+
+    @Override
+    public void addKillMessage(KillMessageData message)
+    {
+        KillMessageFeed.add(message);
     }
 }

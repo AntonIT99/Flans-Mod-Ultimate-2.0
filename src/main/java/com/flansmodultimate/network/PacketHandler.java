@@ -24,10 +24,12 @@ import com.flansmodultimate.network.client.PacketGunSecondaryModeClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
+import com.flansmodultimate.network.client.PacketKillMessage;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.PacketPlayerClassSkins;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import com.flansmodultimate.network.client.PacketTeamsState;
@@ -126,10 +128,12 @@ public final class PacketHandler {
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
         registerS2C(PacketParticles.class);
+        registerS2C(PacketPlayerClassSkins.class);
         registerS2C(PacketPlaySound.class);
         registerS2C(PacketSyncCommonConfig.class);
         registerS2C(PacketSyncDigitalAmmo.class);
         registerS2C(PacketTeamsState.class);
+        registerS2C(PacketKillMessage.class);
         registerS2C(PacketLoadoutState.class);
 
         // Client to Server Packets

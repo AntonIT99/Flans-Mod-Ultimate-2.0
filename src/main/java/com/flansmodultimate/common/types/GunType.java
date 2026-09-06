@@ -92,19 +92,23 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected float recoilSneakingMultiplier = -1F;
     protected float recoilSneakingMultiplierYaw = 0.8F;
 
+    public static final float DEFAULT_RECOIL_CONTROL = 0.8F;
+    public static final float DEFAULT_RECOIL_CONTROL_SPRINTING = 0.9F;
+    public static final float DEFAULT_RECOIL_CONTROL_SNEAKING = 0.7F;
+
     /* Countering gun recoil can be modelled with angle=n^tick where n is the coefficient here. */
     /**
      * HIGHER means less force to center, meaning it takes longer to return.
      */
-    protected float recoilCounterCoefficient = 0.8F;
+    protected float recoilCounterCoefficient = DEFAULT_RECOIL_CONTROL;
     /**
      * The above variable but for sprinting.
      */
-    protected float recoilCounterCoefficientSprinting = 0.9F;
+    protected float recoilCounterCoefficientSprinting = DEFAULT_RECOIL_CONTROL_SPRINTING;
     /**
      * The above variable but for sneaking.
      */
-    protected float recoilCounterCoefficientSneaking = 0.7F;
+    protected float recoilCounterCoefficientSneaking = DEFAULT_RECOIL_CONTROL_SNEAKING;
 
     //Ammo & Reload Variables
     /**
@@ -577,6 +581,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * Set a hit marker texture
      */
     protected String hitTextureName = StringUtils.EMPTY;
+    /** Client-side hit marker texture, replacing the built-in one while this gun is held */
+    @Getter
+    protected ResourceLocation hitTexture;
 
     @Getter
     protected String muzzleFlashParticle = FlanParticles.FM_MUZZLE_FLASH;
@@ -946,6 +953,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         casingTexture = loadTexture(casingTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = loadTexture(flashTextureName, this);
+        hitTexture = StringUtils.isBlank(hitTextureName) ? null : loadTexture(hitTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
     }
 

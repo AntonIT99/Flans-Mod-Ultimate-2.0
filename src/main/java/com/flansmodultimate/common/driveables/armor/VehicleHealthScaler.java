@@ -52,17 +52,15 @@ public final class VehicleHealthScaler
         if (totalHp == null)
             return legacy(true, original, warnings);
 
-        double weightTotal = 0D;
-        for (CollisionBox box : original.values())
+        Map<EnumDriveablePart, Double> weights = resolveWeights(original, warnings);
+        if (weights.isEmpty())
         {
-            if (box != null && box.getHealth() > 0F)
-                weightTotal += box.getHealth();
+            // Nothing to split the total between, but the mass curve is still the honest
+            // total for this hull, so the flag keeps affecting the number it is about.
+            warnings.add("UseRealisticVehicleHealth found no hitboxes to distribute health over; applying the derived total only");
+            return new Result(true, true, totalHp, original, Map.of(), warnings);
         }
-        if (!(weightTotal > 0D) || !Double.isFinite(weightTotal))
-        {
-            warnings.add("UseRealisticVehicleHealth found no positive hitbox health weights; retaining authored health");
-            return legacy(true, original, warnings);
-        }
+        double weightTotal = weights.values().stream().mapToDouble(Double::doubleValue).sum();
 
         EnumMap<EnumDriveablePart, CollisionBox> scaled = new EnumMap<>(EnumDriveablePart.class);
         EnumMap<EnumDriveablePart, Float> allocations = new EnumMap<>(EnumDriveablePart.class);
@@ -71,7 +69,8 @@ public final class VehicleHealthScaler
             CollisionBox box = entry.getValue();
             if (box == null)
                 continue;
-            float hp = box.getHealth() <= 0F ? 0F : (float) (totalHp * box.getHealth() / weightTotal);
+            double weight = weights.getOrDefault(entry.getKey(), 0D);
+            float hp = weight <= 0D ? 0F : (float) (totalHp * weight / weightTotal);
             scaled.put(entry.getKey(), copyWithHealth(box, hp));
             allocations.put(entry.getKey(), hp);
         }
@@ -134,6 +133,49 @@ public final class VehicleHealthScaler
                 total += hp;
         }
         return new Result(requested, false, total, boxes, allocations, warnings);
+    }
+
+    /**
+     * How the derived total is split between hitboxes. Authored health is the intent of
+     * the pack, so it wins; packs that never bothered with per-part health still get a
+     * usable split from hitbox volume, and boxes with no size at all share equally.
+     */
+    private static Map<EnumDriveablePart, Double> resolveWeights(Map<EnumDriveablePart, CollisionBox> boxes,
+                                                                 List<String> warnings)
+    {
+        EnumMap<EnumDriveablePart, Double> weights = new EnumMap<>(EnumDriveablePart.class);
+        for (Map.Entry<EnumDriveablePart, CollisionBox> entry : boxes.entrySet())
+        {
+            CollisionBox box = entry.getValue();
+            if (box != null && box.getHealth() > 0F && Float.isFinite(box.getHealth()))
+                weights.put(entry.getKey(), (double) box.getHealth());
+        }
+        if (!weights.isEmpty())
+            return weights;
+
+        for (Map.Entry<EnumDriveablePart, CollisionBox> entry : boxes.entrySet())
+        {
+            CollisionBox box = entry.getValue();
+            if (box == null)
+                continue;
+            double volume = (double) box.getWidth() * box.getHeight() * box.getDepth();
+            if (volume > 0D && Double.isFinite(volume))
+                weights.put(entry.getKey(), volume);
+        }
+        if (!weights.isEmpty())
+        {
+            warnings.add("UseRealisticVehicleHealth found no positive hitbox health weights; distributing health by hitbox volume");
+            return weights;
+        }
+
+        for (Map.Entry<EnumDriveablePart, CollisionBox> entry : boxes.entrySet())
+        {
+            if (entry.getValue() != null)
+                weights.put(entry.getKey(), 1D);
+        }
+        if (!weights.isEmpty())
+            warnings.add("UseRealisticVehicleHealth found no hitbox health or volume weights; splitting health evenly between parts");
+        return weights;
     }
 
     private static CollisionBox copyWithHealth(CollisionBox box, float health)

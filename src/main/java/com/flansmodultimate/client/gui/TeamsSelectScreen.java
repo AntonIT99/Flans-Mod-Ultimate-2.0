@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.List;
 /** Modern recreation of the legacy team and class selection window. */
 public final class TeamsSelectScreen extends Screen
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams.png");
     private final boolean classMenu;
     private int panelHeight;
 
@@ -89,11 +87,11 @@ public final class TeamsSelectScreen extends Screen
             return;
         int left = width / 2 - 128;
         int top = height / 2 - panelHeight / 2;
-        graphics.blit(TEXTURE, left, top, 0, 0, 256, 22, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top, 0, 0, 256, 22, 256, 256);
         int count = classMenu ? state.getClassChoices().size() : state.getTeamChoices().size();
         for (int row = 0; row < count; row++)
-            graphics.blit(TEXTURE, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
-        graphics.blit(TEXTURE, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
+            graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
         graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
         super.render(graphics, mouseX, mouseY, partialTick);
 

@@ -9,6 +9,7 @@ import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.PlayerData;
@@ -157,7 +158,7 @@ public class ModClient
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
 
-    //TODO: FMU Hitmarker logic
+    /** Hit marker state, set from the server via PacketHitMarker */
     @Getter @Setter
     private static int hitMarkerTime;
     @Getter @Setter
@@ -165,13 +166,33 @@ public class ModClient
     @Getter @Setter
     private static float hitMarkerPenAmount = 1F;
     @Getter @Setter
-    private static boolean hitMarkerExplosion; //TODO: Fix Hit marker for explosion
+    private static boolean hitMarkerExplosion;
 
-    //TODO: implement
-    @Getter @Setter
+    /** Remaining ticks of the wounded blood flash overlay */
+    @Getter
+    private static int woundedTime;
+    /** Ticks the blood flash overlay lasts after the player stops being hurt */
+    public static final int WOUNDED_FLASH_TICKS = 40;
+
+    /** Flashbang state, set from the server via PacketFlashBang */
+    @Getter
     private static boolean isInFlash;
-    @Getter @Setter
-    private static int flashTime = 10;
+    /** Remaining ticks of the flashbang overlay */
+    @Getter
+    private static int flashTime;
+    /** Length of the flash currently running, used to fade it back out */
+    @Getter
+    private static int flashDuration;
+
+    /** Blinds the player for the given number of ticks, restarting a flash that is already running. */
+    public static void startFlash(int ticks)
+    {
+        if (ticks <= 0)
+            return;
+        isInFlash = true;
+        flashTime = ticks;
+        flashDuration = ticks;
+    }
 
     /** Lighting */
     private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
@@ -352,7 +373,9 @@ public class ModClient
 
         updateFlashlights(mc, level);
         InstantBulletRenderer.updateAllTrails();
+        KillMessageFeed.tick();
         updateTimers();
+        updateWoundedFlash(player);
 
         isShooting = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
 
@@ -592,14 +615,28 @@ public class ModClient
         blockLightOverrides.clear();
     }
 
+    /** Refreshes the blood flash timer while the player is taking damage, then lets it fade out. */
+    private static void updateWoundedFlash(LocalPlayer player)
+    {
+        if (player.hurtTime > 0)
+            woundedTime = WOUNDED_FLASH_TICKS;
+        else if (woundedTime > 0)
+            woundedTime--;
+    }
+
     private static void updateTimers()
     {
         if (switchTime > 0)
-            switchTime--;
+            switchTime -= 1F;
         if (scopeTime > 0)
             scopeTime--;
         if (hitMarkerTime > 0)
             hitMarkerTime--;
+        if (flashTime > 0 && --flashTime <= 0)
+        {
+            isInFlash = false;
+            flashDuration = 0;
+        }
         if (controlModeSwitchTimer > 0)
             controlModeSwitchTimer--;
     }

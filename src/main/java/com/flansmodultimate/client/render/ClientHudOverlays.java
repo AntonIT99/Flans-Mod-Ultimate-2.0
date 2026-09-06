@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
@@ -22,12 +23,16 @@ import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.config.EnumHitMarkerStyle;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -66,11 +71,30 @@ public final class ClientHudOverlays
     private static final int LEGACY_HUD_LEFT = 2;
     private static final int LEGACY_HUD_TOP = 2;
     private static final int LEGACY_HUD_LINE_HEIGHT = 10;
+    /** Extra clearance from the right screen edge so longer translated strings don't get clipped. */
+    private static final int HUD_RIGHT_MARGIN = 12;
     private static final int HUD_WHITE = 0xFFFFFF;
     private static final int HUD_GREEN = 0x00FF00;
     private static final int HUD_AMMO_GREEN = 0x24FF62;
     private static final int HUD_GOLD = 0xDAA520;
     private static final int HUD_RED = 0xFF0000;
+    private static final int TEAM_INFO_HALF_WIDTH = 43;
+    private static final int TEAM_INFO_HEIGHT = 27;
+    private static final int TEAM_INFO_U = 85;
+    private static final int TEAM_INFO_V = 0;
+    private static final int TEAM_COLOUR_WIDTH = 24;
+    private static final int TEAM_COLOUR_V = 98;
+    private static final int TEAM_COLOUR_LEFT_U = 0;
+    private static final int TEAM_COLOUR_RIGHT_U = 62;
+    private static final int KILL_MESSAGE_LINE_HEIGHT = 16;
+    private static final String KILL_MESSAGE_GAP = "     ";
+    private static final String KILL_MESSAGE_HEADSHOT_GAP = "         ";
+    private static final int HEADSHOT_SYMBOL_SIZE = 16;
+    private static final int HEADSHOT_SYMBOL_SHEET = 64;
+    private static final float HIT_MARKER_FADE_TICKS = 20F;
+    private static final float WOUNDED_FLASH_FADE_TICKS = 20F;
+    /** Fraction of a flashbang's duration spent fading back out. */
+    private static final float FLASH_FADE_FRACTION = 0.4F;
     private static final double[] BAR_X_OFFSETS = {
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
@@ -146,7 +170,7 @@ public final class ClientHudOverlays
         int healthPercent = type.getHealth() <= 0
             ? 0
             : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
-        Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent);
+        Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent, aaGun.getHealth(), type.getHealth());
         g.drawString(font, health, LEGACY_HUD_LEFT, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
 
         float yaw = Mth.rotLerp(partialTick, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
@@ -156,18 +180,20 @@ public final class ClientHudOverlays
 
         Component currentAmmoName = aaGun.getCurrentAmmoName();
         boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
-        Component reloadText = aaGun.getReloadTimer() > 0
-            ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", aaGun.getReloadTimer() / 20F))
-            : Component.translatable("hud.flansmodultimate.aa_gun.ready");
+        Component reloadText = !hasCurrentAmmo
+            ? Component.translatable("hud.flansmodultimate.aa_gun.no_ammo")
+            : aaGun.getReloadTimer() > 0
+                ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", aaGun.getReloadTimer() / 20F))
+                : Component.translatable("hud.flansmodultimate.aa_gun.ready");
+        int reloadColor = !hasCurrentAmmo || aaGun.getReloadTimer() > 0 ? HUD_RED : HUD_GREEN;
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
-        int rightX = Math.max(LEGACY_HUD_LEFT, sw - 2 - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
+        int rightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
             currentAmmoName));
 
         g.drawString(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
         g.drawString(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
-        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2,
-            aaGun.getReloadTimer() > 0 ? HUD_RED : HUD_GREEN, false);
+        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2, reloadColor, false);
 
         if (hasCurrentAmmo)
         {
@@ -195,6 +221,25 @@ public final class ClientHudOverlays
         return width;
     }
 
+    private record OrdnanceLine(Component text, int color) {}
+
+    /** Appends a Shell/Bomb/Missile readiness line for a weapon bank, if that bank fires ordnance. */
+    private static void addOrdnanceLine(List<OrdnanceLine> lines, EnumWeaponType weapon, int reloadTicks, Component ammoName)
+    {
+        if (!EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(weapon))
+            return;
+
+        String labelKey = "hud.flansmodultimate.driveable." + weapon.name().toLowerCase(Locale.ROOT);
+        boolean hasAmmo = !ammoName.getString().isEmpty();
+        if (!hasAmmo)
+            lines.add(new OrdnanceLine(Component.translatable(labelKey + ".no_ammo"), HUD_RED));
+        else if (reloadTicks > 0)
+            lines.add(new OrdnanceLine(Component.translatable(labelKey + ".reload_time",
+                String.format(Locale.ROOT, "%.1f", reloadTicks / 20F)), HUD_RED));
+        else
+            lines.add(new OrdnanceLine(Component.translatable(labelKey + ".ready"), HUD_GREEN));
+    }
+
     private static Component compassDirection(float yaw)
     {
         float wrappedYaw = Mth.wrapDegrees(yaw);
@@ -218,25 +263,119 @@ public final class ClientHudOverlays
             gui.leftHeight += 10;
     };
 
-    //TODO: FMU Style hit marker
-    /** Draw the hit marker at screen center with fade-out alpha. */
+    /** Draw the hit marker in the style selected in the client config, with fade-out alpha. */
     public static void renderHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
     {
         if (ModClient.getHitMarkerTime() <= 0)
             return;
 
-        float a = Math.max((ModClient.getHitMarkerTime() - 10.0f + partialTick) / 10.0f, 0.0f);
+        if (ModClientConfig.get().hitMarkerStyle == EnumHitMarkerStyle.ULTIMATE)
+            renderUltimateHitMarker(g, partialTick, sw, sh);
+        else
+            renderClassicHitMarker(g, partialTick, sw, sh);
+    }
 
-        int w = 9;
-        int h = 9;
-        int x = sw / 2 - 5;
-        int y = sh / 2 - 5;
+    /** Flan's Mod 1.12.2 style: small icon at screen center. */
+    private static void renderClassicHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
+    {
+        float alpha = Math.max((ModClient.getHitMarkerTime() - 10F + partialTick) / 10F, 0F);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1f, 1f, 1f, a);
-        g.blit(FlansMod.hitmarkerTexture, x, y, 0, 0, w, h, 16, 16);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderColor(1F, 1F, 1F, alpha);
+        g.blit(FlansMod.TEXTURE_GUI_BASICHITMARKER, sw / 2 - 5, sh / 2 - 5, 0, 0, 9, 9, 16, 16);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+    }
+
+    /**
+     * Flan's Mod Ultimate 1.7.10 style: full screen overlay tinted by the kind of hit that was scored.
+     * Red = no penetration, green = full damage, light blue = headshot, yellow = explosion.
+     */
+    private static void renderUltimateHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
+    {
+        float alpha = Mth.clamp((ModClient.getHitMarkerTime() - partialTick) / HIT_MARKER_FADE_TICKS, 0F, 1F);
+
+        float red = 1F;
+        float green = 1F;
+        float blue = 1F;
+
+        if (ModClientConfig.get().fancyHitMarker)
+        {
+            if (ModClient.isHitMarkerExplosion())
+            {
+                red = 0.95F;
+                green = 0.85F;
+                blue = 0.3F;
+            }
+            else if (ModClient.isHitMarkerHeadshot())
+            {
+                red = 0F;
+                green = 0.5F;
+                blue = 1F;
+            }
+            else
+            {
+                // Two stage transition between red and green, to avoid going through yellow
+                float penetration = Mth.clamp(ModClient.getHitMarkerPenAmount(), 0F, 1F);
+                red = penetration < 0.5F ? 1F : 2F * (1F - penetration);
+                green = penetration < 0.5F ? 2F * penetration : 1F;
+                blue = 0F;
+            }
+        }
+
+        renderFullScreenOverlay(g, hitMarkerTexture(), sw, sh, red, green, blue, alpha);
+    }
+
+    /** The HitTexture of a held gun overrides the built-in full screen hit marker. */
+    private static ResourceLocation hitMarkerTexture()
+    {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null)
+        {
+            for (GunItem gunItem : ModUtils.getGunItemsInHands(player))
+            {
+                ResourceLocation hitTexture = gunItem.getConfigType().getHitTexture();
+                if (hitTexture != null)
+                    return hitTexture;
+            }
+        }
+        return ModClientConfig.get().hdHitMarker ? FlansMod.TEXTURE_GUI_FMUHITMARKERHD : FlansMod.TEXTURE_GUI_FMUHITMARKER;
+    }
+
+    /**
+     * Blinding white overlay of a flashbang. It is held at full strength for most of
+     * its time and then faded out, instead of the legacy hard cut back to normal.
+     */
+    public static final IGuiOverlay FLASH_BANG = (gui, g, partialTick, sw, sh) -> {
+        if (!ModClient.isInFlash() || ModClient.getFlashTime() <= 0 || gui.getMinecraft().options.hideGui)
+            return;
+
+        float remaining = ModClient.getFlashTime() - partialTick;
+        float fadeTicks = Math.max(1F, ModClient.getFlashDuration() * FLASH_FADE_FRACTION);
+        float alpha = Mth.clamp(remaining / fadeTicks, 0F, 1F);
+        renderFullScreenOverlay(g, FlansMod.TEXTURE_GUI_FLASH, sw, sh, 1F, 1F, 1F, alpha);
+    };
+
+    /** Flan's Mod Ultimate 1.7.10 style red flash shown while the player is wounded. */
+    public static final IGuiOverlay WOUNDED_FLASH = (gui, g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showFlashesWhenWounded || ModClient.getWoundedTime() <= 0 || gui.getMinecraft().options.hideGui)
+            return;
+
+        float alpha = Mth.clamp((ModClient.getWoundedTime() - partialTick) / WOUNDED_FLASH_FADE_TICKS, 0F, 1F);
+        renderFullScreenOverlay(g, FlansMod.TEXTURE_GUI_BLOOD, sw, sh, 1F, 1F, 1F, alpha);
+    };
+
+    private static void renderFullScreenOverlay(GuiGraphics g, ResourceLocation texture, int sw, int sh, float red, float green, float blue, float alpha)
+    {
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(red, green, blue, alpha);
+        g.blit(texture, sw / 2 - 2 * sh, 0, 0, 0, 4 * sh, sh, 4 * sh, sh);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
     }
 
     /** Fullscreen scope/helmet overlay; mirrors your old quad (centered square using screen height). */
@@ -423,7 +562,7 @@ public final class ClientHudOverlays
 
         int numTypes = Math.min(LocalBulletManager.getNumTypes(), BAR_X_OFFSETS.length);
 
-        RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
+        RenderSystem.setShaderTexture(0, FlansMod.TEXTURE_GUI_AMMOGUI);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -431,7 +570,7 @@ public final class ClientHudOverlays
         int bgX = 10;
         int bgY = sh - 50;
 
-        g.blit(FlansMod.ammoGuiTexture, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        g.blit(FlansMod.TEXTURE_GUI_AMMOGUI, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         for (int i = 0; i < numTypes; i++)
         {
@@ -445,17 +584,130 @@ public final class ClientHudOverlays
                 int barX = (int) Math.round(bgX + BAR_X_OFFSETS[i]);
                 int barY = bgY + 12;
 
-                RenderSystem.setShaderTexture(0, FlansMod.ammoGuiTexture);
-                g.blit(FlansMod.ammoGuiTexture, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+                RenderSystem.setShaderTexture(0, FlansMod.TEXTURE_GUI_AMMOGUI);
+                g.blit(FlansMod.TEXTURE_GUI_AMMOGUI, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
             }
         }
 
         RenderSystem.disableBlend();
     }
 
-    //TODO: implement these methods
-    public static void renderTeamInfo(GuiGraphics g, int sw, int sh) {}
-    public static void renderKillMessages(GuiGraphics g, int sw, int sh) {}
+    /**
+     * Legacy Teams banner at the top of the screen: both team scores and colours, the map and
+     * gametype names, the time left, and the local player's own score, kills and deaths.
+     */
+    public static void renderTeamInfo(GuiGraphics g, int sw, int sh)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        PacketTeamsState state = TeamsClientState.get();
+        if (player == null || mc.options.hideGui || state == null || !state.isEnabled() || state.getGameType().isBlank())
+            return;
+
+        PacketTeamsState.PlayerScore localScore = findPlayerScore(state, player.getGameProfile().getName());
+        boolean teamGame = state.isSortedByTeam() && state.getTeamScores().size() == 2;
+        if (localScore == null || (state.getTeamScores().isEmpty() && state.isSortedByTeam()))
+            return;
+
+        int centre = sw / 2;
+        Font font = mc.font;
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+        g.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, centre - TEAM_INFO_HALF_WIDTH, 0,
+            TEAM_INFO_U, TEAM_INFO_V, TEAM_INFO_HALF_WIDTH * 2, TEAM_INFO_HEIGHT, 256, 256);
+
+        if (teamGame)
+        {
+            PacketTeamsState.TeamScore left = state.getTeamScores().get(0);
+            PacketTeamsState.TeamScore right = state.getTeamScores().get(1);
+            drawTeamColourBlock(g, centre - TEAM_INFO_HALF_WIDTH, TEAM_COLOUR_LEFT_U, left.colour());
+            drawTeamColourBlock(g, centre + TEAM_INFO_HALF_WIDTH - TEAM_COLOUR_WIDTH, TEAM_COLOUR_RIGHT_U, right.colour());
+            RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+
+            String leftScore = Integer.toString(left.score());
+            String rightScore = Integer.toString(right.score());
+            g.drawString(font, leftScore, centre - 36, 8, HUD_WHITE, true);
+            g.drawString(font, rightScore, centre + 34 - font.width(rightScore), 8, HUD_WHITE, true);
+        }
+
+        g.drawString(font, state.getGameType(), centre + 47, 8, HUD_WHITE, true);
+        g.drawString(font, state.getMapName(), centre - 48 - font.width(state.getMapName()), 8, HUD_WHITE, true);
+
+        String timeLeft = timeText(state);
+        g.drawString(font, timeLeft, centre - font.width(timeLeft) / 2, 30, HUD_WHITE, true);
+
+        g.drawString(font, Integer.toString(localScore.score()), centre - 7, 1, HUD_WHITE, true);
+        g.drawString(font, Integer.toString(localScore.kills()), centre - 7, 9, HUD_WHITE, true);
+        g.drawString(font, Integer.toString(localScore.deaths()), centre - 7, 17, HUD_WHITE, true);
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+    }
+
+    /** Remaining round time as m:ss, like the legacy banner. */
+    private static String timeText(PacketTeamsState state)
+    {
+        int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
+        return String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
+    }
+
+    /** Tints one end of the banner with a team's colour. */
+    private static void drawTeamColourBlock(GuiGraphics g, int x, int u, int colour)
+    {
+        RenderSystem.setShaderColor(((colour >> 16) & 0xFF) / 255F, ((colour >> 8) & 0xFF) / 255F, (colour & 0xFF) / 255F, 1F);
+        g.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, x, 0, u, TEAM_COLOUR_V, TEAM_COLOUR_WIDTH, TEAM_INFO_HEIGHT, 256, 256);
+    }
+
+    @Nullable
+    private static PacketTeamsState.PlayerScore findPlayerScore(PacketTeamsState state, String name)
+    {
+        return state.getTeamScores().stream()
+            .flatMap(team -> team.players().stream())
+            .filter(entry -> entry.name().equalsIgnoreCase(name))
+            .findFirst().orElse(null);
+    }
+
+    /**
+     * Kill feed in the bottom right corner: killer, weapon icon, an extra crosshair for a
+     * headshot, and the victim, each line rising as newer kills come in.
+     */
+    public static void renderKillMessages(GuiGraphics g, int sw, int sh)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.hideGui || KillMessageFeed.getMessages().isEmpty())
+            return;
+
+        Font font = mc.font;
+        for (KillMessageFeed.Entry message : KillMessageFeed.getMessages())
+        {
+            String killer = message.getKiller().getString();
+            String victim = message.getVictim().getString();
+            String gap = message.isHeadshot() ? KILL_MESSAGE_HEADSHOT_GAP : KILL_MESSAGE_GAP;
+            int textY = sh - 32 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+            int iconY = sh - 36 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+
+            Component line = Component.empty().append(message.getKiller())
+                .append(Component.literal(gap)).append(message.getVictim());
+            g.drawString(font, line, sw - font.width(killer + gap + victim) - 6, textY, HUD_WHITE, true);
+
+            if (!message.getWeapon().isEmpty())
+                g.renderItem(message.getWeapon(), sw - font.width(gap + victim), iconY);
+
+            if (message.isHeadshot())
+            {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+                g.blit(FlansMod.TEXTURE_GUI_HEADSHOTSYMBOL, sw - font.width(KILL_MESSAGE_GAP + victim), iconY,
+                    HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F,
+                    HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET);
+            }
+        }
+    }
 
     public static void renderVehicleDebug(GuiGraphics g, int sw, int sh)
     {
@@ -480,7 +732,8 @@ public final class ClientHudOverlays
             if (core != null && core.getMaxHealth() > 0F)
             {
                 int healthPercent = Mth.clamp(Math.round(core.getHealth() * 100F / core.getMaxHealth()), 0, 100);
-                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent),
+                g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent,
+                    Math.round(core.getHealth()), Math.round(core.getMaxHealth())),
                     LEGACY_HUD_LEFT, y, healthColor(healthPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }
@@ -526,16 +779,11 @@ public final class ClientHudOverlays
         Component yawText = Component.translatable("hud.flansmodultimate.driveable.yaw", Math.round(yaw));
         Component pitchText = Component.translatable("hud.flansmodultimate.driveable.pitch", Math.round(pitch));
         VehicleType vehicleType = isVehicle ? ((Vehicle) driveable).getVehicleType() : null;
-        boolean primaryShellBank = driveable.getConfigType().weaponType(false) == EnumWeaponType.SHELL;
-        boolean secondaryShellBank = driveable.getConfigType().weaponType(true) == EnumWeaponType.SHELL;
-        boolean hasShellBank = primaryShellBank || secondaryShellBank;
-        int shellReloadTicks = primaryShellBank ? driveable.getPrimaryReloadTicks()
-            : secondaryShellBank ? driveable.getSecondaryReloadTicks() : 0;
-        Component shellText = shellReloadTicks > 0
-            ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", shellReloadTicks / 20F))
-            : Component.translatable("hud.flansmodultimate.aa_gun.ready");
         Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
         Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
+        List<OrdnanceLine> ordnanceLines = new java.util.ArrayList<>();
+        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(false), driveable.getPrimaryReloadTicks(), primaryAmmoName);
+        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(true), driveable.getSecondaryReloadTicks(), secondaryAmmoName);
         Component currentAmmoName = !primaryAmmoName.getString().isEmpty() ? primaryAmmoName : secondaryAmmoName;
         boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
@@ -551,9 +799,11 @@ public final class ClientHudOverlays
         Component altitudeText = Component.translatable("hud.flansmodultimate.driveable.altitude",
             Math.round(driveable.getY() - driveable.level().getSeaLevel()));
         Component compassText = Component.translatable("hud.flansmodultimate.driveable.compass", compassDirection(driveable.getYaw()));
-        int hudRightX = Math.max(LEGACY_HUD_LEFT,
-            sw - 2 - maxWidth(font, yawText, pitchText, shellText, smokeText, ammoHeading, currentAmmoName,
-                rollText, altitudeText, compassText));
+        int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, currentAmmoName,
+            rollText, altitudeText, compassText);
+        for (OrdnanceLine line : ordnanceLines)
+            rightWidth = Math.max(rightWidth, font.width(line.text()));
+        int hudRightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - rightWidth);
         int rightLine = 0;
         g.drawString(font, yawText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         g.drawString(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
@@ -563,9 +813,8 @@ public final class ClientHudOverlays
             g.drawString(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
             g.drawString(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         }
-        if (hasShellBank)
-            g.drawString(font, shellText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++,
-                shellReloadTicks > 0 ? HUD_RED : HUD_GREEN, false);
+        for (OrdnanceLine line : ordnanceLines)
+            g.drawString(font, line.text(), hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, line.color(), false);
         if (hasSmoke)
             g.drawString(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
         if (hasCurrentAmmo)

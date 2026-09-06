@@ -4,8 +4,10 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.types.Team;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +16,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -39,6 +44,11 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     private static final String NBT_SPAWN_DELAY = "spawn_delay";
     private static final String NBT_CURRENT_DELAY = "current_delay";
     private static final String NBT_ITEMS = "items";
+    private static final String NBT_TEAM_COLOUR = "team_colour";
+    /** How often the owning team is re-checked, in ticks. */
+    private static final int TEAM_COLOUR_REFRESH_TICKS = 20;
+    /** Legacy light grey used by spawners that belong to no team. */
+    public static final int UNOWNED_COLOUR = 0x808080;
 
     public enum Mode
     {
@@ -55,6 +65,9 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     private final List<ItemStack> templates = new ArrayList<>();
     @Getter
     private int spawnDelayTicks = 20 * 20;
+    /** Colour of the owning team, synced to clients for the block colour handler */
+    @Getter
+    private int teamColour = UNOWNED_COLOUR;
     private int currentDelay = 10;
 
     public TeamSpawnerBlockEntity(BlockPos pos, BlockState state)
@@ -85,6 +98,8 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TeamSpawnerBlockEntity spawner)
     {
+        if (level.getGameTime() % TEAM_COLOUR_REFRESH_TICKS == 0)
+            spawner.refreshTeamColour();
         if (spawner.mode == Mode.PLAYER || spawner.templates.isEmpty() || !(level instanceof ServerLevel serverLevel))
             return;
         if (spawner.currentDelay-- > 0)
@@ -146,6 +161,7 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         if (baseId != null)
             tag.putUUID(NBT_BASE_ID, baseId);
         tag.putString(NBT_MODE, mode.name()); tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks); tag.putInt(NBT_CURRENT_DELAY, currentDelay);
+        tag.putInt(NBT_TEAM_COLOUR, teamColour);
         ListTag items = new ListTag();
         templates.forEach(stack -> items.add(stack.save(new CompoundTag())));
         tag.put(NBT_ITEMS, items);
@@ -168,10 +184,50 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
         }
 
         spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY)); currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
+        teamColour = tag.contains(NBT_TEAM_COLOUR) ? tag.getInt(NBT_TEAM_COLOUR) : UNOWNED_COLOUR;
         templates.clear();
 
         for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
             templates.add(ItemStack.of((CompoundTag) item));
+    }
+
+    /**
+     * The spawner plate carries a tinted overlay in its owning team's colour, the way the
+     * legacy coloured render pass did. The colour is kept on the block entity so the client
+     * block colour handler can read it without knowing anything about the Teams runtime.
+     */
+    private void refreshTeamColour()
+    {
+        if (level == null || level.isClientSide)
+            return;
+        int colour = UNOWNED_COLOUR;
+        if (baseId != null)
+        {
+            ITeamBase base = TeamsManager.getInstance().getBase(baseId).orElse(null);
+            Team team = base == null ? null : TeamsManager.getInstance().getTeamForBase(base);
+            if (team != null)
+                colour = team.getTeamColour();
+        }
+        if (colour == teamColour)
+            return;
+        teamColour = colour;
+        setChangedAndSync();
+    }
+
+    @Override
+    @NotNull
+    public CompoundTag getUpdateTag()
+    {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket()
+    {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     private void setChangedAndSync()

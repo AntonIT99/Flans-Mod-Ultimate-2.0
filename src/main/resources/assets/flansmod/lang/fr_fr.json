@@ -1,6 +1,7 @@
 {
   "block.flansmod.gunworkbench": "Table de modification d'armes",
   "block.flansmod.paintjobtable": "Table de peinture",
+  "block.flansmod.vehiclecraftingtable": "Table de Fabrication de Véhicules",
   "block.flansmod.teams_item_spawner": "Générateur d'objets",
   "block.flansmod.teams_player_spawner": "Générateur de joueurs",
   "block.flansmod.teams_vehicle_spawner": "Générateur de véhicules",

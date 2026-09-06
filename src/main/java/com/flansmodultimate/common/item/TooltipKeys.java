@@ -89,6 +89,7 @@ public final class TooltipKeys
     public static final String PHYSICS_DRIVE_TYPE = "tooltip.flansmodultimate.physics.driveType";
     public static final String PHYSICS_DRIVETYPE_AWD = "tooltip.flansmodultimate.physics.drivetype.awd";
     public static final String PHYSICS_DRIVETYPE_FWD = "tooltip.flansmodultimate.physics.drivetype.fwd";
+    public static final String PHYSICS_DRIVETYPE_MARINE = "tooltip.flansmodultimate.physics.drivetype.marine";
     public static final String PHYSICS_DRIVETYPE_RWD = "tooltip.flansmodultimate.physics.drivetype.rwd";
     public static final String PHYSICS_DRIVETYPE_TRACKED = "tooltip.flansmodultimate.physics.drivetype.tracked";
     public static final String PHYSICS_EFFECTIVE_REVERSE_SPEED = "tooltip.flansmodultimate.physics.effectiveReverseSpeed";

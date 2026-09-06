@@ -67,7 +67,7 @@ public final class DriveablePhysicsTooltip
     {
         VehicleArmorSpec armor = type.getArmorSpec();
 
-        if (armor != null && !armor.isEmpty())
+        if (armor != null && !armor.isEmpty() && hasAnyArmour(armor))
             appendArmorSummary(armor, tooltip);
         tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_TOTAL_HP),
             IFlanItem.formatFloat(type.getTotalHp(), 1)));
@@ -80,6 +80,12 @@ public final class DriveablePhysicsTooltip
             tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.PHYSICS_ARMOR_HULL), formatArmorSummary(armor.hull())));
         if (!armor.turret().isEmpty())
             tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.PHYSICS_ARMOR_TURRET), formatArmorSummary(armor.turret())));
+    }
+
+    private static boolean hasAnyArmour(VehicleArmorSpec armor)
+    {
+        return armor.hull().values().stream().anyMatch(ArmorPlate::isArmoured)
+            || armor.turret().values().stream().anyMatch(ArmorPlate::isArmoured);
     }
 
     static String formatArmorSummary(Map<EnumArmorFacing, ArmorPlate> plates)

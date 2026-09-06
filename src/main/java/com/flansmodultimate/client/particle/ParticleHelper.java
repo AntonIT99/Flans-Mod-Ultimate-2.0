@@ -7,6 +7,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -22,7 +23,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -209,9 +209,14 @@ public final class ParticleHelper
         }
     }
 
+    /**
+     * Accepts both the full content pack name and its short form, so "flare" spawns
+     * the same particle as "flansmod.flare".
+     */
+    @Nullable
     private static String normalize(String raw)
     {
-        return raw == null || raw.isBlank() ? null : raw.toLowerCase(Locale.ROOT);
+        return FlanParticles.resolve(raw).orElse(null);
     }
 
     private static void warnCouldNotParse(String s)

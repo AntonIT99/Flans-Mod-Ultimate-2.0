@@ -1,60 +1,116 @@
 package com.flansmodultimate.client.gui;
 
+import com.flansmod.client.model.ModelDriveable;
+import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-/** Modern, texture-independent blueprint browser for the legacy vehicle table. */
+/** Blueprint browser of the Vehicle Crafting Table, on the legacy Flan's Mod panel. */
 public final class DriveableCraftingScreen extends AbstractContainerScreen<DriveableCraftingMenu>
 {
-    private static final int BLUEPRINTS_PER_PAGE = 16;
-    private static final int RECIPE_ITEMS_PER_PAGE = 12;
+    private static final int SHEET_SIZE = 256;
+    private static final int GUI_WIDTH = 176;
+    private static final int GUI_HEIGHT = 234;
+
+    private static final int SLOT_SIZE = 18;
+    private static final int BLUEPRINT_COLUMNS = 8;
+    private static final int BLUEPRINT_ROWS = 4;
+    private static final int BLUEPRINTS_LEFT = 8;
+    private static final int BLUEPRINTS_TOP = 18;
+
+    private static final int RECIPE_COLUMNS = 4;
+    private static final int RECIPE_ROWS = 3;
+    private static final int RECIPE_LEFT = 8;
+    private static final int RECIPE_TOP = 174;
+
+    private static final int ENGINE_SLOT_LEFT = 152;
+    private static final int ENGINE_SLOT_TOP = 174;
+    private static final int STATS_LEFT = 82;
+    private static final int STATS_TOP = 100;
+    private static final int STATS_LINE_HEIGHT = 10;
+    private static final int MODEL_CENTRE_X = 42;
+    private static final int MODEL_CENTRE_Y = 125;
+    private static final float PREVIEW_SCALE = 50F;
+    private static final float PREVIEW_TILT = 30F;
+    private static final float PREVIEW_SPIN_SPEED = 1F;
+
+    /** Red "missing item" frame and the selected-blueprint highlight live on the sheet. */
+    private static final int MISSING_U = 195;
+    private static final int MISSING_V = 11;
+    private static final int SELECTED_U = 213;
+    private static final int SELECTED_V = 11;
+    private static final int ICON_SIZE = 16;
+
+    private static final int WHITE = 0xFFFFFF;
+    private static final int MAX_NAME_WIDTH = 88;
 
     private static int selectedBlueprint;
-    private static int blueprintPage;
-    private int recipeOffset;
-    private Button previousButton;
-    private Button nextButton;
+    private static int blueprintScrollRow;
+    private int recipeScrollRow;
+
+    private ArrowButton blueprintsUpButton;
+    private ArrowButton blueprintsDownButton;
+    private ArrowButton recipeUpButton;
+    private ArrowButton recipeDownButton;
     private Button craftButton;
     private ItemStack hoveredStack = ItemStack.EMPTY;
 
     public DriveableCraftingScreen(DriveableCraftingMenu menu, Inventory inventory, Component title)
     {
         super(menu, inventory, title);
-        imageWidth = 248;
-        imageHeight = 212;
+        imageWidth = GUI_WIDTH;
+        imageHeight = GUI_HEIGHT;
     }
 
     @Override
     protected void init()
     {
         super.init();
-        previousButton = addRenderableWidget(Button.builder(Component.literal("<"), button -> changeBlueprintPage(-1))
-            .bounds(leftPos + 8, topPos + 181, 24, 20).build());
-        nextButton = addRenderableWidget(Button.builder(Component.literal(">"), button -> changeBlueprintPage(1))
-            .bounds(leftPos + 36, topPos + 181, 24, 20).build());
         craftButton = addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.driveable.craft"), button -> craftSelected())
-            .bounds(leftPos + 178, topPos + 181, 62, 20).build());
+            .bounds(leftPos + 110, topPos + 198, 40, 20).build());
+        blueprintsUpButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 21, true, button -> scrollBlueprints(-1)));
+        blueprintsDownButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 75, false, button -> scrollBlueprints(1)));
+        recipeUpButton = addRenderableWidget(new ArrowButton(leftPos + 83, topPos + 177, true, button -> scrollRecipe(-1)));
+        recipeDownButton = addRenderableWidget(new ArrowButton(leftPos + 83, topPos + 213, false, button -> scrollRecipe(1)));
         clampSelection();
         updateButtons();
     }
 
-    private void changeBlueprintPage(int direction)
+    private void scrollBlueprints(int direction)
     {
-        int maxPage = Math.max(0, (DriveableCraftingMenu.getBlueprints().size() - 1) / BLUEPRINTS_PER_PAGE);
-        blueprintPage = Mth.clamp(blueprintPage + direction, 0, maxPage);
+        blueprintScrollRow = Mth.clamp(blueprintScrollRow + direction, 0, maxBlueprintScrollRow());
+        updateButtons();
+    }
+
+    private void scrollRecipe(int direction)
+    {
+        recipeScrollRow = Mth.clamp(recipeScrollRow + direction, 0, maxRecipeScrollRow());
         updateButtons();
     }
 
@@ -70,15 +126,13 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         renderBackground(graphics);
         hoveredStack = ItemStack.EMPTY;
         clampSelection();
         updateButtons();
         super.render(graphics, mouseX, mouseY, partialTick);
-        renderBlueprints(graphics, mouseX, mouseY);
-        renderRecipe(graphics, mouseX, mouseY);
         if (!hoveredStack.isEmpty())
             graphics.renderTooltip(font, hoveredStack, mouseX, mouseY);
         else
@@ -86,58 +140,63 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
+    protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xE0181C22);
-        graphics.fill(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + imageHeight - 4, 0xFF313842);
-        graphics.fill(leftPos + 7, topPos + 16, leftPos + 153, topPos + 55, 0xFF20262E);
-        graphics.fill(leftPos + 7, topPos + 60, leftPos + imageWidth - 7, topPos + 116, 0xFF20262E);
-        graphics.fill(leftPos + 7, topPos + 121, leftPos + imageWidth - 7, topPos + 177, 0xFF20262E);
+        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, leftPos, topPos, 0, 0, GUI_WIDTH, GUI_HEIGHT, SHEET_SIZE, SHEET_SIZE);
+        renderBlueprints(graphics, mouseX, mouseY);
+        renderRecipe(graphics, mouseX, mouseY);
+        renderEngineSlot(graphics, mouseX, mouseY);
+        renderPreview(graphics, partialTick);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
+    protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY)
     {
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.crafting"), 8, 6, 0xFFFFFF, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.crafting"), 6, 6, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.requires"), 6, 161, WHITE, false);
+
         DriveableType selected = getSelectedBlueprint();
         if (selected == null)
         {
-            graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.none"), 12, 73, 0xB0B0B0, false);
+            graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.none"), STATS_LEFT, STATS_TOP, WHITE, false);
             return;
         }
 
-        graphics.drawString(font, Component.literal(font.plainSubstrByWidth(selected.getName(), 150)), 38, 65, 0xFFFFFF, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), 38, 77, 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), 38, 88, 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), 38, 99, 0xC9D2DC, false);
-        PartType engine = menu.getBestEngine(selected);
-        boolean needsEngine = selected.numEngines() > 0;
-        Component engineDescription = !needsEngine
-            ? Component.translatable("gui.flansmodultimate.driveable.no_engine")
-            : Component.translatable("gui.flansmodultimate.driveable.engine", selected.numEngines(), engine == null
-                ? Component.translatable("gui.flansmodultimate.driveable.missing_engine") : Component.literal(engine.getName()));
-        graphics.drawString(font, engineDescription, 116, 99, needsEngine && engine == null ? 0xFF7777 : 0xC9D2DC, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.requires"), 10, 123, 0xFFFFFF, false);
+        graphics.drawString(font, font.plainSubstrByWidth(selected.getName(), MAX_NAME_WIDTH), STATS_LEFT, STATS_TOP, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()),
+            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()),
+            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 2, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()),
+            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 3, WHITE, false);
+
+        // Engine requirement, beside its slot
+        graphics.drawString(font, selected.numEngines() + "x", 100, 177, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.engine_label"), 114, 177, WHITE, false);
     }
 
     private void renderBlueprints(GuiGraphics graphics, int mouseX, int mouseY)
     {
         List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
-        int first = blueprintPage * BLUEPRINTS_PER_PAGE;
-        for (int visible = 0; visible < BLUEPRINTS_PER_PAGE; visible++)
+        for (int row = 0; row < BLUEPRINT_ROWS; row++)
         {
-            int blueprint = first + visible;
-            if (blueprint >= blueprints.size())
-                break;
-            int x = leftPos + 8 + visible % 8 * 18;
-            int y = topPos + 18 + visible / 8 * 18;
-            int background = blueprint == selectedBlueprint ? 0xFF4B9360 : 0xFF464F5B;
-            graphics.fill(x - 1, y - 1, x + 17, y + 17, background);
-            ItemStack stack = ModUtils.getItemStack(blueprints.get(blueprint)).orElse(ItemStack.EMPTY);
-            if (!stack.isEmpty())
+            for (int column = 0; column < BLUEPRINT_COLUMNS; column++)
+            {
+                int index = (blueprintScrollRow + row) * BLUEPRINT_COLUMNS + column;
+                if (index >= blueprints.size())
+                    return;
+                int x = leftPos + BLUEPRINTS_LEFT + column * SLOT_SIZE;
+                int y = topPos + BLUEPRINTS_TOP + row * SLOT_SIZE;
+                if (index == selectedBlueprint)
+                    graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, SELECTED_U, SELECTED_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+
+                ItemStack stack = ModUtils.getItemStack(blueprints.get(index)).orElse(ItemStack.EMPTY);
+                if (stack.isEmpty())
+                    continue;
                 graphics.renderItem(stack, x, y);
-            if (isInside(mouseX, mouseY, x - 1, y - 1, 18, 18))
-                hoveredStack = stack;
+                if (isInside(mouseX, mouseY, x, y, ICON_SIZE, ICON_SIZE))
+                    hoveredStack = stack;
+            }
         }
     }
 
@@ -146,55 +205,128 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         DriveableType selected = getSelectedBlueprint();
         if (selected == null)
             return;
-        List<ItemStack> recipe = menu.getDisplayRecipe(selected);
-        int maxOffset = Math.max(0, recipe.size() - RECIPE_ITEMS_PER_PAGE);
-        recipeOffset = Mth.clamp(recipeOffset, 0, maxOffset);
-        for (int visible = 0; visible < RECIPE_ITEMS_PER_PAGE; visible++)
+
+        // Only the parts list here: the engine has its own slot, as in the legacy table
+        List<ItemStack> recipe = selected.getDriveableRecipe();
+        for (int row = 0; row < RECIPE_ROWS; row++)
         {
-            int recipeIndex = recipeOffset + visible;
-            if (recipeIndex >= recipe.size())
-                break;
-            ItemStack required = recipe.get(recipeIndex);
-            int x = leftPos + 9 + visible % 12 * 18;
-            int y = topPos + 140;
-            boolean enough = minecraft != null && minecraft.player != null
-                && (minecraft.player.getAbilities().instabuild
-                    || InventoryHelper.countInInventory(minecraft.player.getInventory(), required) >= required.getCount());
-            graphics.fill(x - 1, y - 1, x + 17, y + 17, enough ? 0xFF465349 : 0xFF713F43);
-            graphics.renderItem(required, x, y);
-            graphics.renderItemDecorations(font, required, x, y);
-            if (isInside(mouseX, mouseY, x - 1, y - 1, 18, 18))
-                hoveredStack = required;
+            for (int column = 0; column < RECIPE_COLUMNS; column++)
+            {
+                int index = (recipeScrollRow + row) * RECIPE_COLUMNS + column;
+                if (index >= recipe.size())
+                    return;
+                ItemStack required = recipe.get(index);
+                int x = leftPos + RECIPE_LEFT + column * SLOT_SIZE;
+                int y = topPos + RECIPE_TOP + row * SLOT_SIZE;
+
+                if (!hasEnough(required))
+                    graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+                graphics.renderItem(required, x, y);
+                graphics.renderItemDecorations(font, required, x, y);
+                if (isInside(mouseX, mouseY, x, y, ICON_SIZE, ICON_SIZE))
+                    hoveredStack = required;
+            }
         }
-        if (recipe.size() > RECIPE_ITEMS_PER_PAGE)
+    }
+
+    /** The engine is not part of the recipe list; the table picks the best one you carry. */
+    private void renderEngineSlot(GuiGraphics graphics, int mouseX, int mouseY)
+    {
+        DriveableType selected = getSelectedBlueprint();
+        int x = leftPos + ENGINE_SLOT_LEFT;
+        int y = topPos + ENGINE_SLOT_TOP;
+        if (selected == null || selected.numEngines() <= 0)
+            return;
+
+        PartType engine = menu.getBestEngine(selected);
+        ItemStack engineStack = engine == null ? ItemStack.EMPTY : ModUtils.getItemStack(engine, selected.numEngines()).orElse(ItemStack.EMPTY);
+        if (engineStack.isEmpty())
         {
-            graphics.drawString(font, Component.literal((recipeOffset + 1) + "-" + Math.min(recipe.size(), recipeOffset + RECIPE_ITEMS_PER_PAGE)
-                + " / " + recipe.size()), leftPos + 89, topPos + 163, 0xAAB4C0, false);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+            return;
+        }
+        graphics.renderItem(engineStack, x, y);
+        graphics.renderItemDecorations(font, engineStack, x, y);
+        if (isInside(mouseX, mouseY, x, y, ICON_SIZE, ICON_SIZE))
+            hoveredStack = engineStack;
+    }
+
+    /** The selected driveable turns slowly in the preview window, as in the legacy table. */
+    private void renderPreview(GuiGraphics graphics, float partialTick)
+    {
+        DriveableType selected = getSelectedBlueprint();
+        if (selected == null || minecraft == null)
+            return;
+        if (!(ModelCache.getOrLoadTypeModel(selected) instanceof ModelDriveable model))
+        {
+            renderPreviewIcon(graphics, selected);
+            return;
         }
 
+        ResourceLocation texture = selected.getTexture();
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(selected);
+        boolean cull = ModClientConfig.get().useCullingRendering(selected);
+        int colour = selected.getColour();
+        float red = (colour >> 16 & 255) / 255F;
+        float green = (colour >> 8 & 255) / 255F;
+        float blue = (colour & 255) / 255F;
+        float spin = (minecraft.level == null ? 0F : minecraft.level.getGameTime() + partialTick) * PREVIEW_SPIN_SPEED;
+        float scale = PREVIEW_SCALE * selected.getModelScale() / Math.max(1F, selected.getCameraDistance());
+
+        PoseStack pose = graphics.pose();
+        pose.pushPose();
+        pose.translate(leftPos + MODEL_CENTRE_X, topPos + MODEL_CENTRE_Y, 100D);
+        if (selected instanceof MechaType)
+            pose.translate(0D, 15D, 0D);
+        pose.scale(-scale, scale, scale);
+        pose.mulPose(Axis.ZP.rotationDegrees(180F));
+        pose.mulPose(Axis.XP.rotationDegrees(PREVIEW_TILT));
+        pose.mulPose(Axis.YP.rotationDegrees(spin));
+
+        Lighting.setupForFlatItems();
+        MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+        {
+            model.render(selected, pose, buffers.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+        }
+        buffers.endBatch();
+        Lighting.setupFor3DItems();
+        pose.popPose();
+    }
+
+    /** Content packs without a loaded model still get a recognisable picture. */
+    private void renderPreviewIcon(GuiGraphics graphics, DriveableType selected)
+    {
         ItemStack output = ModUtils.getItemStack(selected).orElse(ItemStack.EMPTY);
-        if (!output.isEmpty())
-            graphics.renderItem(output, leftPos + 16, topPos + 76);
+        if (output.isEmpty())
+            return;
+        graphics.renderItem(output, leftPos + MODEL_CENTRE_X - ICON_SIZE / 2, topPos + MODEL_CENTRE_Y - ICON_SIZE / 2);
+    }
+
+    private boolean hasEnough(ItemStack required)
+    {
+        if (minecraft == null || minecraft.player == null)
+            return false;
+        return minecraft.player.getAbilities().instabuild
+            || InventoryHelper.countInInventory(minecraft.player.getInventory(), required) >= required.getCount();
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        if (button == 0)
+        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
+        int localX = (int) mouseX - leftPos - BLUEPRINTS_LEFT;
+        int localY = (int) mouseY - topPos - BLUEPRINTS_TOP;
+        if (localX >= 0 && localX < BLUEPRINT_COLUMNS * SLOT_SIZE && localY >= 0 && localY < BLUEPRINT_ROWS * SLOT_SIZE)
         {
-            int localX = (int) mouseX - leftPos - 8;
-            int localY = (int) mouseY - topPos - 18;
-            if (localX >= 0 && localX < 8 * 18 && localY >= 0 && localY < 2 * 18)
+            int index = (blueprintScrollRow + localY / SLOT_SIZE) * BLUEPRINT_COLUMNS + localX / SLOT_SIZE;
+            if (index < blueprints.size())
             {
-                int visible = localX / 18 + localY / 18 * 8;
-                int index = blueprintPage * BLUEPRINTS_PER_PAGE + visible;
-                if (index < DriveableCraftingMenu.getBlueprints().size())
-                {
-                    selectedBlueprint = index;
-                    recipeOffset = 0;
-                    updateButtons();
-                    return true;
-                }
+                selectedBlueprint = index;
+                recipeScrollRow = 0;
+                updateButtons();
+                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -203,38 +335,57 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
-        DriveableType selected = getSelectedBlueprint();
-        if (selected != null && isInside(mouseX, mouseY, leftPos + 7, topPos + 121, imageWidth - 14, 56))
-        {
-            int maxOffset = Math.max(0, menu.getDisplayRecipe(selected).size() - RECIPE_ITEMS_PER_PAGE);
-            recipeOffset = Mth.clamp(recipeOffset + (delta < 0D ? 1 : -1), 0, maxOffset);
-            return true;
-        }
-        changeBlueprintPage(delta < 0D ? 1 : -1);
+        int direction = delta < 0D ? 1 : -1;
+        if (isInside(mouseX, mouseY, leftPos + RECIPE_LEFT, topPos + RECIPE_TOP, RECIPE_COLUMNS * SLOT_SIZE, RECIPE_ROWS * SLOT_SIZE))
+            scrollRecipe(direction);
+        else
+            scrollBlueprints(direction);
         return true;
+    }
+
+    private int maxBlueprintScrollRow()
+    {
+        int rows = (DriveableCraftingMenu.getBlueprints().size() + BLUEPRINT_COLUMNS - 1) / BLUEPRINT_COLUMNS;
+        return Math.max(0, rows - BLUEPRINT_ROWS);
+    }
+
+    private int maxRecipeScrollRow()
+    {
+        DriveableType selected = getSelectedBlueprint();
+        if (selected == null)
+            return 0;
+        int rows = (selected.getDriveableRecipe().size() + RECIPE_COLUMNS - 1) / RECIPE_COLUMNS;
+        return Math.max(0, rows - RECIPE_ROWS);
     }
 
     private void clampSelection()
     {
         int size = DriveableCraftingMenu.getBlueprints().size();
         selectedBlueprint = size == 0 ? -1 : Mth.clamp(selectedBlueprint, 0, size - 1);
-        int maxPage = Math.max(0, (size - 1) / BLUEPRINTS_PER_PAGE);
-        blueprintPage = Mth.clamp(blueprintPage, 0, maxPage);
-        if (selectedBlueprint >= 0 && selectedBlueprint / BLUEPRINTS_PER_PAGE != blueprintPage)
-            selectedBlueprint = Math.min(size - 1, blueprintPage * BLUEPRINTS_PER_PAGE);
+        blueprintScrollRow = Mth.clamp(blueprintScrollRow, 0, maxBlueprintScrollRow());
+        recipeScrollRow = Mth.clamp(recipeScrollRow, 0, maxRecipeScrollRow());
+
+        // Keep the selection on screen when the list is scrolled with the wheel
+        if (selectedBlueprint < 0)
+            return;
+        int selectedRow = selectedBlueprint / BLUEPRINT_COLUMNS;
+        if (selectedRow < blueprintScrollRow || selectedRow >= blueprintScrollRow + BLUEPRINT_ROWS)
+            selectedBlueprint = Math.min(size - 1, blueprintScrollRow * BLUEPRINT_COLUMNS);
     }
 
     private void updateButtons()
     {
-        if (previousButton == null || nextButton == null || craftButton == null)
+        if (craftButton == null || blueprintsUpButton == null)
             return;
-        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
-        previousButton.active = blueprintPage > 0;
-        nextButton.active = (blueprintPage + 1) * BLUEPRINTS_PER_PAGE < blueprints.size();
+        blueprintsUpButton.active = blueprintScrollRow > 0;
+        blueprintsDownButton.active = blueprintScrollRow < maxBlueprintScrollRow();
+        recipeUpButton.active = recipeScrollRow > 0;
+        recipeDownButton.active = recipeScrollRow < maxRecipeScrollRow();
         DriveableType selected = getSelectedBlueprint();
         craftButton.active = selected != null && menu.canCraft(selected);
     }
 
+    @Nullable
     private DriveableType getSelectedBlueprint()
     {
         List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
@@ -244,5 +395,32 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     private static boolean isInside(double mouseX, double mouseY, int x, int y, int width, int height)
     {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
+
+    /** The small scroll arrows drawn straight from the panel sheet, as in the legacy GUI. */
+    private static final class ArrowButton extends Button
+    {
+        private static final int SIZE = 10;
+        private static final int UP_ENABLED_U = 216;
+        private static final int UP_DISABLED_U = 196;
+        private static final int DOWN_ENABLED_U = 226;
+        private static final int DOWN_DISABLED_U = 206;
+
+        private final boolean up;
+
+        private ArrowButton(int x, int y, boolean up, OnPress onPress)
+        {
+            super(x, y, SIZE, SIZE, Component.empty(), onPress, DEFAULT_NARRATION);
+            this.up = up;
+        }
+
+        @Override
+        public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        {
+            int u = up
+                ? (active ? UP_ENABLED_U : UP_DISABLED_U)
+                : (active ? DOWN_ENABLED_U : DOWN_DISABLED_U);
+            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, getX(), getY(), u, 0, SIZE, SIZE, SHEET_SIZE, SHEET_SIZE);
+        }
     }
 }

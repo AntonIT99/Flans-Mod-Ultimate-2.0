@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "Antriebsart",
   "tooltip.flansmodultimate.physics.drivetype.awd": "Allradantrieb",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "Frontantrieb",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "Schiffsantrieb",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "Heckantrieb",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "Kettenantrieb",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "Effektiv rückwärts (Blöcke/Tick)",

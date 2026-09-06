@@ -136,10 +136,10 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     @Override
     protected void renderBg(GuiGraphics gg, float partialTick, int mouseX, int mouseY)
     {
-        RenderSystem.setShaderTexture(0, FlansMod.gunWorkbenchGuiTexture);
+        RenderSystem.setShaderTexture(0, FlansMod.TEXTURE_GUI_GUNWORKBENCH);
 
         // whole background
-        gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos, topPos, 0F, 0F, imageWidth, imageHeight, 512, 256);
+        gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos, topPos, 0F, 0F, imageWidth, imageHeight, 512, 256);
 
         ItemStack gunStack = menu.getGunStack();
         if (gunStack.isEmpty() || !(gunStack.getItem() instanceof GunItem gunItem))
@@ -152,7 +152,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         GunType type = gunItem.getConfigType();
 
         // flip button
-        gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 146, topPos + 63, 340F, 166F, 20, 10, 512, 256);
+        gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 146, topPos + 63, 340F, 166F, 20, 10, 512, 256);
 
         // stat bars
         float damage = getDamageStat(gunStack, gunItem);
@@ -175,14 +175,14 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         for (int m = 0; m < allow.length; m++)
         {
             if (allow[m])
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F, SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F, SLOT_SIZE, SLOT_SIZE, 512, 256);
         }
 
         // generic attachment slot backgrounds
         for (int x = 0; x < 8; x++)
         {
             if (x < type.getNumGenericAttachmentSlots())
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
         }
 
         List<Paintjob> applicable = type.getApplicablePaintjobs();
@@ -284,7 +284,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
                 int slotX = 181 + SLOT_SIZE * x;
                 int slotY = 150 + SLOT_SIZE * y;
 
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + slotX, topPos + slotY, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + slotX, topPos + slotY, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
 
                 Paintjob pj = applicable.get(idx);
 
@@ -352,7 +352,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
             int u = enough ? 358 : 340;
             int v = 118;
 
-            gg.blit(FlansMod.gunWorkbenchGuiTexture, startX + SLOT_SIZE * i, startY, u, v, SLOT_SIZE, SLOT_SIZE, 512, 256);
+            gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, startX + SLOT_SIZE * i, startY, u, v, SLOT_SIZE, SLOT_SIZE, 512, 256);
 
             // Render the dye icon at +1,+1 like vanilla slots
             int itemX = startX + SLOT_SIZE * i + 1;
@@ -382,7 +382,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         // grey bar backgrounds
         for (int y = 0; y < 5; y++)
         {
-            gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 239, topPos + 60 + (12 * y), 340F, 80F, BAR_W, BAR_H, 512, 256);
+            gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239, topPos + 60 + (12 * y), 340F, 80F, BAR_W, BAR_H, 512, 256);
         }
 
         for (int k = 0; k < 5; k++)
@@ -390,9 +390,9 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
             if (k == 4)
             {
                 // control stat
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 239, topPos + 60 + (12 * k), 340F, 80F, 32, BAR_H, 512, 256);
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 239 + 26, topPos + 60 + (12 * k), 341F, 90F, 28, BAR_H, 512, 256);
-                gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 239 + 26 + 28,topPos + 60 + (12 * k), 394F, 70F, 32, BAR_H, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239, topPos + 60 + (12 * k), 340F, 80F, 32, BAR_H, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239 + 26, topPos + 60 + (12 * k), 341F, 90F, 28, BAR_H, 512, 256);
+                gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239 + 26 + 28,topPos + 60 + (12 * k), 394F, 70F, 32, BAR_H, 512, 256);
                 continue;
             }
 
@@ -408,7 +408,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
 
             int width = Mth.clamp(lastStats[k], 0, BAR_W);
 
-            gg.blit(FlansMod.gunWorkbenchGuiTexture, leftPos + 239, topPos + 60 + (12 * k), 340F, 90F, width, BAR_H, 512, 256);
+            gg.blit(FlansMod.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239, topPos + 60 + (12 * k), 340F, 90F, width, BAR_H, 512, 256);
         }
     }
 

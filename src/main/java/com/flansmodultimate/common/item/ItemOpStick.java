@@ -27,6 +27,8 @@ import java.util.UUID;
 
 public final class ItemOpStick extends Item
 {
+    /** Vanilla operator level 2, the same gate the teams commands use. */
+    public static final int PERMISSION_LEVEL = 2;
     private static final String NBT_MODE = "teams_mode";
     private static final String NBT_CONNECTION = "teams_connection";
     private static final String NBT_CONNECTION_BASE = "teams_connection_is_base";
@@ -58,6 +60,12 @@ public final class ItemOpStick extends Item
         ItemStack stack = player.getItemInHand(hand);
         if (!player.isShiftKeyDown())
             return InteractionResultHolder.pass(stack);
+        if (!canUse(player))
+        {
+            if (!level.isClientSide)
+                player.displayClientMessage(Component.translatable("item.flansmodultimate.operator_stick.no_permission").withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
         if (!level.isClientSide)
         {
             Mode next = Mode.values()[(getMode(stack).ordinal() + 1) % Mode.values().length];
@@ -68,10 +76,19 @@ public final class ItemOpStick extends Item
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
+    /** Every operator stick action is reserved for server operators. */
+    public static boolean canUse(Player player)
+    {
+        return player.hasPermissions(PERMISSION_LEVEL);
+    }
+
     public void useOnTeamObject(ServerPlayer player, ITeamObject object, ItemStack stack)
     {
-        if (!player.hasPermissions(2))
+        if (!canUse(player))
+        {
+            player.displayClientMessage(Component.translatable("item.flansmodultimate.operator_stick.no_permission").withStyle(ChatFormatting.RED), true);
             return;
+        }
         switch (getMode(stack))
         {
             case OWNERSHIP -> changeOwnership(player, object);

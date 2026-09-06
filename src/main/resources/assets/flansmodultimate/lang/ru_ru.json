@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "Тип привода",
   "tooltip.flansmodultimate.physics.drivetype.awd": "Полный привод",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "Передний привод",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "Морской движитель",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "Задний привод",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "Гусеничный",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "Эффективная скорость заднего хода (блоков/тик)",

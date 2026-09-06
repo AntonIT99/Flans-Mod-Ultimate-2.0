@@ -7,6 +7,7 @@ import com.flansmodultimate.client.gui.DriveableCraftingScreen;
 import com.flansmodultimate.client.gui.DriveableInventoryScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
+import com.flansmodultimate.client.gui.MechaInventoryScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
@@ -26,6 +27,7 @@ import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
@@ -36,6 +38,7 @@ import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
+import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
@@ -94,19 +97,20 @@ public final class ModClientEventHandler
             {
                 if (item.get() instanceof IPaintableItem<?>)
                 {
-                    ItemProperties.register(item.get(), FlansMod.paintjob, (stack, level, entity, seed) -> {
+                    ItemProperties.register(item.get(), FlansMod.PAINTJOB, (stack, level, entity, seed) -> {
                         CompoundTag tag = stack.getTag();
                         return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
                     });
                 }
             }
-            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams_mode"),
+            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
 
             // Menus registration
             MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
             MenuScreens.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
             MenuScreens.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
+            MenuScreens.register(FlansMod.mechaInventoryMenu.get(), MechaInventoryScreen::new);
             MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
             MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
             MenuScreens.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
@@ -179,6 +183,8 @@ public final class ModClientEventHandler
     {
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
         event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "wounded_flash", ClientHudOverlays.WOUNDED_FLASH);
+        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "flash_bang", ClientHudOverlays.FLASH_BANG);
         event.registerAbove(VanillaGuiOverlay.ARMOR_LEVEL.id(), "damage_absorption", ClientHudOverlays.DAMAGE_ABSORPTION);
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
     }
@@ -203,9 +209,25 @@ public final class ModClientEventHandler
         event.registerSpriteSet(FlansMod.smokeGrenadeParticle.get(), SmokeGrenadeParticle.Provider::new);
     }
 
+    /** Team spawners paint their overlay decal in the colour of the team that owns them. */
+    @SubscribeEvent
+    public static void registerBlockColors(RegisterColorHandlersEvent.Block event)
+    {
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0 || level == null || pos == null)
+                return TeamSpawnerBlockEntity.UNOWNED_COLOUR;
+            return level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner
+                ? spawner.getTeamColour() : TeamSpawnerBlockEntity.UNOWNED_COLOUR;
+        }, FlansMod.playerSpawner.get(), FlansMod.itemSpawner.get(), FlansMod.vehicleSpawner.get());
+    }
+
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event)
     {
+        // A spawner in the inventory belongs to no team yet
+        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF,
+            FlansMod.playerSpawnerItem.get(), FlansMod.itemSpawnerItem.get(), FlansMod.vehicleSpawnerItem.get());
+
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
@@ -229,6 +251,7 @@ public final class ModClientEventHandler
     {
         event.registerReloadListener((ResourceManagerReloadListener) rm -> {
             ModelCache.reload();
+            PlayerSkinOverrides.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);
         });
     }

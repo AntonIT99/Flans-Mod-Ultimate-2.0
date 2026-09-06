@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks;
 
+import com.flansmodultimate.common.KillMessageData;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.core.BlockPos;
@@ -7,6 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -41,4 +43,8 @@ public interface IClientRenderHooks
     void updateHitMarker(int time, float penAmount, boolean headshot, boolean explosionHit);
 
     void updateFlash(boolean value, int time);
+
+    void updatePlayerClassSkins(Map<UUID, String> playerClasses);
+
+    void addKillMessage(KillMessageData message);
 }

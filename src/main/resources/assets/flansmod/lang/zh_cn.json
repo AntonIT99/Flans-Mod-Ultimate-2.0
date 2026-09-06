@@ -1,6 +1,7 @@
 {
   "block.flansmod.gunworkbench": "枪械改装台",
   "block.flansmod.paintjobtable": "涂装台",
+  "block.flansmod.vehiclecraftingtable": "载具制作台",
   "block.flansmod.teams_item_spawner": "物品生成器",
   "block.flansmod.teams_player_spawner": "士兵生成器",
   "block.flansmod.teams_vehicle_spawner": "载具生成器",

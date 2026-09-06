@@ -71,9 +71,10 @@ public final class TeamsLoadoutHubScreen extends Screen
 
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.teamsLandingPageGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
         graphics.drawCenteredString(font, state.getPoolName(), width / 2, top + 9, 0xFFFFFF);
         graphics.drawString(font, "Rank " + state.getRank(), left + 113, top + 150, 0xFFFFFF, false);
+        TeamsRankIcon.draw(graphics, state.getRank(), 0, left + 9, top + 146, false);
 
         int next = state.getExperienceForNextRank();
         String xp = next == Integer.MAX_VALUE ? "MAX" : state.getExperience() + " / " + next + " XP";

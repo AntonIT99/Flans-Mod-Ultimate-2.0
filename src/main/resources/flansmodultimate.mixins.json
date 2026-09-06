@@ -12,6 +12,7 @@
       "HumanoidArmorLayerMixin",
       "KeyMappingConflictMixin",
       "MountedRiderTurnMixin",
+      "PlayerSkinOverrideMixin",
       "SeatedPlayerRendererMixin"
   ],
   "server": [

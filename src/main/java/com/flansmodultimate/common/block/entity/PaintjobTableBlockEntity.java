@@ -97,7 +97,7 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player)
     {
         if (level != null)
-            return new PaintjobTableMenu(id, inv, worldPosition, this);
+            return new PaintjobTableMenu(id, inv, worldPosition);
         else
             return null;
     }

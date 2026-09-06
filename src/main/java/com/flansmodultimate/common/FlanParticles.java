@@ -2,6 +2,19 @@ package com.flansmodultimate.common;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlanParticles
@@ -72,4 +85,68 @@ public final class FlanParticles
     public static final String ICON_CRACK = "iconcrack";
     public static final String BLOCK_CRACK = "blockcrack";
     public static final String BLOCK_DUST = "blockdust";
+
+    /** Particles of this mod, named "flansmod.<name>" in content packs. */
+    private static final String FLANSMOD_PREFIX = "flansmod.";
+    /** These take a block or item id after an underscore, e.g. "blockcrack_minecraft:stone". */
+    private static final List<String> RESOURCE_PARTICLES = List.of(ICON_CRACK, BLOCK_CRACK, BLOCK_DUST);
+
+    private static final Set<String> NAMES = Arrays.stream(FlanParticles.class.getFields())
+        .filter(field -> field.getType() == String.class && Modifier.isStatic(field.getModifiers()))
+        .map(FlanParticles::readName)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toUnmodifiableSet());
+
+    /** Short forms of this mod's particles: "flare" for "flansmod.flare". */
+    private static final Map<String, String> SHORT_NAMES = NAMES.stream()
+        .filter(name -> name.startsWith(FLANSMOD_PREFIX))
+        .collect(Collectors.toUnmodifiableMap(name -> name.substring(FLANSMOD_PREFIX.length()), name -> name));
+
+    @Nullable
+    private static String readName(Field field)
+    {
+        try
+        {
+            return (String) field.get(null);
+        }
+        catch (IllegalAccessException ignored)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves a particle name as typed. The full name always wins, so a short form only
+     * applies when it is not already a particle of its own: "flare" becomes "flansmod.flare",
+     * while "flame" stays the vanilla particle rather than becoming "flansmod.fmflame".
+     *
+     * @return the canonical name, or empty when nothing of that name exists
+     */
+    public static Optional<String> resolve(@Nullable String raw)
+    {
+        if (raw == null || raw.isBlank())
+            return Optional.empty();
+
+        String name = raw.trim().toLowerCase(Locale.ROOT);
+        if (NAMES.contains(name))
+            return Optional.of(name);
+
+        String shortName = SHORT_NAMES.get(name);
+        if (shortName != null)
+            return Optional.of(shortName);
+
+        // Block and item variants carry their resource id in the name itself
+        for (String kind : RESOURCE_PARTICLES)
+        {
+            if (name.startsWith(kind + "_") && name.length() > kind.length() + 1)
+                return Optional.of(name);
+        }
+        return Optional.empty();
+    }
+
+    /** Every name the resolver accepts without a resource id, for command completion. */
+    public static Stream<String> suggestions()
+    {
+        return Stream.concat(NAMES.stream(), SHORT_NAMES.keySet().stream()).sorted();
+    }
 }

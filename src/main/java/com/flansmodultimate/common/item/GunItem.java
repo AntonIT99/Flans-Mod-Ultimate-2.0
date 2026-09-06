@@ -259,30 +259,60 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             {
                 tooltipComponents.add(Component.translatable(TooltipKeys.DAMAGE).append(": ").withStyle(ChatFormatting.BLUE));
 
-                if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
+                Map<ShootableType, DamageTooltipValues> damageValuesByType = new LinkedHashMap<>();
+                for (ShootableType shootableType : ammoTypes)
+                    damageValuesByType.put(shootableType, getDamageTooltipValues(shootableType, stack));
+
+                boolean anyLiving = damageValuesByType.values().stream().anyMatch(DamageTooltipValues::showLiving);
+                boolean anyPlayer = damageValuesByType.values().stream().anyMatch(DamageTooltipValues::showPlayer);
+                boolean anyVehicle = damageValuesByType.values().stream().anyMatch(DamageTooltipValues::showVehicle);
+                boolean anyPlane = damageValuesByType.values().stream().anyMatch(DamageTooltipValues::showPlane);
+
+                if (anyLiving || anyPlayer || anyVehicle || anyPlane)
                 {
-                    tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN))
-                        .append(" ").append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED))
-                        .append(" ").append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA))
-                        .append(" ").append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE)));
+                    MutableComponent header = Component.literal("  ");
+                    boolean first = true;
+                    if (anyLiving)
+                    {
+                        header.append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN));
+                        first = false;
+                    }
+                    if (anyPlayer)
+                    {
+                        if (!first)
+                            header.append(" ");
+                        header.append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED));
+                        first = false;
+                    }
+                    if (anyVehicle)
+                    {
+                        if (!first)
+                            header.append(" ");
+                        header.append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA));
+                        first = false;
+                    }
+                    if (anyPlane)
+                    {
+                        if (!first)
+                            header.append(" ");
+                        header.append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE));
+                    }
+                    tooltipComponents.add(header);
                 }
 
                 if (ammoTypes.size() > 10)
                 {
                     Map<DamageTooltipValues, List<String>> groupedDamageLines = new LinkedHashMap<>();
-                    for (ShootableType shootableType : ammoTypes)
-                    {
-                        DamageTooltipValues damageValues = getDamageTooltipValues(shootableType, stack);
-                        groupedDamageLines.computeIfAbsent(damageValues, ignored -> new ArrayList<>())
-                            .add(ModUtils.getItemLocalizedName(shootableType.getShortName()));
-                    }
+                    for (Map.Entry<ShootableType, DamageTooltipValues> entry : damageValuesByType.entrySet())
+                        groupedDamageLines.computeIfAbsent(entry.getValue(), ignored -> new ArrayList<>())
+                            .add(ModUtils.getItemLocalizedName(entry.getKey().getShortName()));
 
                     groupedDamageLines.forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
                 }
                 else
                 {
-                    for (ShootableType shootableType : ammoTypes)
-                        tooltipComponents.add(createDamageComponent(ModUtils.getItemLocalizedName(shootableType.getShortName()), getDamageTooltipValues(shootableType, stack)));
+                    for (Map.Entry<ShootableType, DamageTooltipValues> entry : damageValuesByType.entrySet())
+                        tooltipComponents.add(createDamageComponent(ModUtils.getItemLocalizedName(entry.getKey().getShortName()), entry.getValue()));
                 }
             }
 
@@ -294,16 +324,28 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
-                String sprintingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, true, false));
-                String sneakingControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, true));
-                String normalControl = IFlanItem.formatFloat(1F - configType.getRecoilControl(stack, false, false));
+                float sprintingControlValue = configType.getRecoilControl(stack, true, false);
+                float sneakingControlValue = configType.getRecoilControl(stack, false, true);
+                float normalControlValue = configType.getRecoilControl(stack, false, false);
 
-                tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
-                tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED))
-                    .append(" ").append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
-                tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
-                    .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
+                final float EPS = 0.0001F;
+                boolean isDefault = Math.abs(sprintingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SPRINTING) < EPS
+                    && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS
+                    && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
+
+                if (!isDefault)
+                {
+                    String sprintingControl = IFlanItem.formatFloat(1F - sprintingControlValue);
+                    String sneakingControl = IFlanItem.formatFloat(1F - sneakingControlValue);
+                    String normalControl = IFlanItem.formatFloat(1F - normalControlValue);
+
+                    tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
+                    tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED))
+                        .append(" ").append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
+                    tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
+                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
+                }
             }
 
             if (configType.isShowSpread())

@@ -11,6 +11,7 @@ import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
+import com.flansmodultimate.network.client.PacketPlayerClassSkins;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.Getter;
 import lombok.Setter;
@@ -149,6 +150,7 @@ public final class TeamsManager
     @Nullable 
     private TeamsSavedData savedData;
     private final Map<UUID, Flagpole> liveBases = new HashMap<>();
+    private Map<UUID, String> lastSyncedPlayerClassSkins = Map.of();
     private final Map<UUID, ITeamObject> liveObjects = new HashMap<>();
     private final Map<String, Integer> teamScores = new LinkedHashMap<>();
     @Getter
@@ -439,6 +441,7 @@ public final class TeamsManager
         if (server.getTickCount() % 20 == 0)
         {
             server.getPlayerList().getPlayers().forEach(player -> getStats(player).addPlayTime(20));
+            syncPlayerClassSkins(false);
             markDirty();
         }
         if (!enabled)
@@ -663,6 +666,8 @@ public final class TeamsManager
             data.setPlayerClass(playerClass);
             data.setNewPlayerClass(playerClass);
         }
+        // The joining client starts with no assignments at all, so resend them in full
+        syncPlayerClassSkins(true);
         if (roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) && getCurrentLoadoutPool().isPresent())
             syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
         else
@@ -986,6 +991,27 @@ public final class TeamsManager
     {
         if (server != null)
             server.getPlayerList().broadcastSystemMessage(message, false);
+    }
+
+    /**
+     * Tells every client which player class each player wears, so that classes with a
+     * SkinOverride can be drawn on them. Only sent when the assignment actually changed.
+     */
+    public void syncPlayerClassSkins(boolean force)
+    {
+        if (server == null)
+            return;
+        Map<UUID, String> current = new HashMap<>();
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
+        {
+            PlayerClass playerClass = PlayerData.getInstance(player).getPlayerClass();
+            if (playerClass != null && !playerClass.getSkinOverride().isBlank())
+                current.put(player.getUUID(), playerClass.getOriginalShortName());
+        }
+        if (!force && current.equals(lastSyncedPlayerClassSkins))
+            return;
+        lastSyncedPlayerClassSkins = current;
+        PacketHandler.sendToAll(new PacketPlayerClassSkins(current));
     }
 
     public void syncPlayer(ServerPlayer player, PacketTeamsState.OpenScreen openScreen)

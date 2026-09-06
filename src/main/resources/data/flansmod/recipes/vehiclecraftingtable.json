@@ -10,7 +10,7 @@
     "I": { "item": "minecraft:iron_ingot" }
   },
   "result": {
-    "item": "flansmod:gunworkbench",
+    "item": "flansmod:vehiclecraftingtable",
     "count": 1
   }
 }

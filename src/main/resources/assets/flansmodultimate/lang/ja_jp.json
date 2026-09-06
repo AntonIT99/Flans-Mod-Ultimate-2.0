@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "駆動方式",
   "tooltip.flansmodultimate.physics.drivetype.awd": "全輪駆動",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "前輪駆動",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "船舶推進",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "後輪駆動",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "履帯式",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "実効後退速度（ブロック/tick）",

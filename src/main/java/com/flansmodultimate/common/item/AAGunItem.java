@@ -105,12 +105,12 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
+            tooltipComponents.add(IFlanItem.healthLine(Component.translatable(TooltipKeys.HEALTH), configType.getHealth(), configType.getHealth()));
+
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
             tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
             return;
         }
-
-        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HEALTH), IFlanItem.formatFloat(configType.getHealth())));
 
         List<ShootableType> ammoTypes = configType.getAmmoTypes();
 

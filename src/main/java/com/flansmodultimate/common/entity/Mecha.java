@@ -13,6 +13,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -29,6 +30,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -43,6 +46,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -931,6 +935,19 @@ public class Mecha extends Driveable
     {
         return getConfigType() != null && getConfigType().getFuelTankSize() >= 0F
             && FlansMod.teamsManager.isVehiclesNeedFuel();
+    }
+
+    /** Mechas get their own window instead of the paged driveable one. */
+    @Override
+    public boolean openDriveableMenu(@NotNull ServerPlayer player)
+    {
+        if (!canPlayerAccessInventory(player) || getDriveableData() == null || getConfigType() == null)
+            return false;
+        NetworkHooks.openScreen(player,
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this),
+                Component.literal(getConfigType().getName())),
+            buffer -> buffer.writeVarInt(getId()));
+        return true;
     }
 
     private static float axis(int mask, int positive, int negative)

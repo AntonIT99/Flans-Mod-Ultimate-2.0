@@ -11,12 +11,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 /** Automatic intermission voting screen modelled after the 1.7.10 GUI. */
 public final class TeamsVotingScreen extends Screen
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/vote.png");
     private int panelHeight;
 
     public TeamsVotingScreen()
@@ -50,10 +48,10 @@ public final class TeamsVotingScreen extends Screen
             return;
         int left = width / 2 - 128;
         int top = height / 2 - panelHeight / 2;
-        graphics.blit(TEXTURE, left, top, 0, 0, 256, 22, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSVOTE, left, top, 0, 0, 256, 22, 256, 256);
         for (int row = 0; row < state.getVoteOptions().size(); row++)
-            graphics.blit(TEXTURE, left, top + 22 + 24 * row, 0, 23, 256, 24, 256, 256);
-        graphics.blit(TEXTURE, left, top + 22 + 24 * state.getVoteOptions().size(), 0, 73, 256, 7, 256, 256);
+            graphics.blit(FlansMod.TEXTURE_GUI_TEAMSVOTE, left, top + 22 + 24 * row, 0, 23, 256, 24, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSVOTE, left, top + 22 + 24 * state.getVoteOptions().size(), 0, 73, 256, 7, 256, 256);
         graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
         graphics.drawString(font, Integer.toString(Math.max(0, state.getIntermissionTicks() / 20)), left + 232, top + 7, 0xFFFFFF, true);
         for (int row = 0; row < state.getVoteOptions().size(); row++)

@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "Type de transmission",
   "tooltip.flansmodultimate.physics.drivetype.awd": "Quatre roues motrices",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "Traction",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "Propulsion marine",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "Propulsion",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "Chenilles",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "Marche arrière effective (blocs/tick)",

@@ -33,7 +33,7 @@ public final class TeamsMissionResultsScreen extends Screen
         renderBackground(graphics); int left = width / 2 - 128;
 
         int top = height / 2 - 100;
-        graphics.blit(FlansMod.teamsMissionResultsGuiTexture, left, top, 0, 0, 256, 200, 512, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSMISSIONRESULTS, left, top, 0, 0, 256, 200, 512, 256);
         PacketLoadoutState state = LoadoutClientState.get();
         graphics.drawCenteredString(font, title, width / 2, top + 12, 0xFFFFFF);
 
@@ -41,6 +41,9 @@ public final class TeamsMissionResultsScreen extends Screen
         {
             graphics.drawCenteredString(font, "Rank " + state.getRank(), width / 2, top + 74, 0xFFFFFF);
             graphics.drawCenteredString(font, state.getExperience() + " / " + state.getExperienceForNextRank() + " XP", width / 2, top + 92, 0xFFFFFF);
+            TeamsRankIcon.draw(graphics, state.getRank(), 0, left + 8, top + 123, true);
+            if (state.getExperienceForNextRank() != Integer.MAX_VALUE)
+                TeamsRankIcon.draw(graphics, state.getRank() + 1, 0, left + 216, top + 123, true);
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }

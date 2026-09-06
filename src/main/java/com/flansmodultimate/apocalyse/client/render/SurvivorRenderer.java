@@ -21,6 +21,6 @@ public class SurvivorRenderer extends HumanoidMobRenderer<SurvivorEntity, Humano
     @NotNull
     public ResourceLocation getTextureLocation(@NotNull SurvivorEntity entity)
     {
-        return ApocalypseContent.survivorTexture;
+        return ApocalypseContent.SURVIVOR_TEXTURE;
     }
 }

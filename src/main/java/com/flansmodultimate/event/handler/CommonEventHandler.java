@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.KillMessageData;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
@@ -12,15 +13,20 @@ import com.flansmodultimate.common.command.TeamsCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketKillMessage;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +44,9 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -354,8 +362,50 @@ public final class CommonEventHandler
     {
         LivingEntity entity = event.getEntity();
         if (entity instanceof ServerPlayer player)
+        {
             FlansMod.teamsManager.playerDied(player, event.getSource());
+            sendKillMessage(player, event.getSource());
+        }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
+    }
+
+    /** Announces a player killed by another player's Flan's weapon to the kill feed. */
+    private static void sendKillMessage(ServerPlayer victim, DamageSource source)
+    {
+        if (!(source.getEntity() instanceof ServerPlayer killer) || killer == victim)
+            return;
+        InfoType weapon = findKillingWeapon(source, killer);
+        if (weapon == null)
+            return;
+
+        PacketHandler.sendToDimension(victim.level().dimension(), new PacketKillMessage(new KillMessageData(
+            source.is(FlanDamageSources.HEADSHOT), weapon.getOriginalShortName(),
+            killer.getGameProfile().getName(), teamColour(killer),
+            victim.getGameProfile().getName(), teamColour(victim))));
+    }
+
+    /**
+     * The icon shown in the feed. Projectiles know the gun that fired them; thrown weapons and
+     * melee kills fall back to the weapon the killer is holding.
+     */
+    @Nullable
+    private static InfoType findKillingWeapon(DamageSource source, ServerPlayer killer)
+    {
+        if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null
+            && bullet.getFiredShot().getFireableGun() != null)
+            return bullet.getFiredShot().getFireableGun().getType();
+        if (source.getDirectEntity() instanceof Shootable shootable)
+            return shootable.getConfigType();
+        if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE)
+            && !source.is(FlanDamageSources.EXPLOSION))
+            return null;
+        return killer.getMainHandItem().getItem() instanceof GunItem gunItem ? gunItem.getConfigType() : null;
+    }
+
+    private static ChatFormatting teamColour(ServerPlayer player)
+    {
+        Team team = PlayerData.getInstance(player).getTeam();
+        return team == null ? ChatFormatting.WHITE : team.getTextColour();
     }
 }

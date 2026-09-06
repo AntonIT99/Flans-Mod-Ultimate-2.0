@@ -9,7 +9,9 @@ import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
@@ -340,6 +342,8 @@ public final class ClientEventHandler
         ModClient.clearTransientLighting();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        PlayerSkinOverrides.clear();
+        KillMessageFeed.clear();
     }
 
     @SubscribeEvent

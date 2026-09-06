@@ -3247,7 +3247,14 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return driveableData;
     }
 
+    /** Opens the inventory window this driveable uses by default. */
     public boolean openDriveableMenu(@NotNull ServerPlayer player)
+    {
+        return openDriveableInventoryMenu(player);
+    }
+
+    /** Opens the paged driveable inventory window, even for driveables with a window of their own. */
+    public boolean openDriveableInventoryMenu(@NotNull ServerPlayer player)
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;

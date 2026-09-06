@@ -7,77 +7,99 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
-/** Lightweight textured recreation of the legacy flag and three-block flagpole model. */
+/** Port of the legacy ModelFlagpole: the three-block pole and the flag that flies from it. */
 public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T>
 {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/entity/teams/flagpole.png");
+    private static final int TEXTURE_WIDTH = 64;
+    private static final int TEXTURE_HEIGHT = 32;
+    private static final float RIGHT_ANGLE = Mth.HALF_PI;
+    /** Degrees per tick a dropped flag turns on the spot. */
+    private static final float CARRIED_SPIN_SPEED = 2F;
+
+    private final ModelPart pole;
+    private final ModelPart flag;
 
     public TeamObjectRenderer(EntityRendererProvider.Context context)
     {
         super(context);
-        shadowRadius = 0.2F;
+        shadowRadius = 0.25F;
+        ModelPart root = createLayer().bakeRoot();
+        pole = root.getChild("pole");
+        flag = root.getChild("flag");
+    }
+
+    /** Legacy box list, kept in its original texture offsets on the 64x32 sheet. */
+    private static LayerDefinition createLayer()
+    {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+
+        PartDefinition poleRoot = root.addOrReplaceChild("pole", CubeListBuilder.create(), PartPose.ZERO);
+        poleRoot.addOrReplaceChild("upper", CubeListBuilder.create().texOffs(0, 16).addBox(-48F, -1F, -1F, 24, 2, 2),
+            PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
+        poleRoot.addOrReplaceChild("lower", CubeListBuilder.create().texOffs(0, 16).addBox(-24F, -1F, -1F, 24, 2, 2),
+            PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
+        poleRoot.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 20).addBox(-2F, -2F, -2F, 4, 2, 4), PartPose.ZERO);
+
+        root.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-8F, -16F, 0F, 16, 16, 0),
+            PartPose.offset(8F, 0F, 0F));
+
+        return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override
     public void render(@NotNull T entity, float yaw, float partialTick, @NotNull PoseStack poseStack,
                        @NotNull MultiBufferSource buffer, int packedLight)
     {
+        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(FlansMod.TEXTURE_FLAGPOLE));
         poseStack.pushPose();
-        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-        if (entity instanceof Flag flag)
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+
+        if (entity instanceof Flag flagEntity)
         {
-            poseStack.mulPose(Axis.YP.rotationDegrees(180F - entityRenderDispatcher.camera.getYRot()));
-            int colour = flag.getColour();
-            float red = (colour >> 16 & 255) / 255F;
-            float green = (colour >> 8 & 255) / 255F;
-            float blue = (colour & 255) / 255F;
-            quad(poseStack.last(), vertices, -0.5F, -0.25F, 0F, 0.5F, 0.75F, 0F,
-                0F, 0F, 0.25F, 0.5F, red, green, blue, packedLight);
+            // A flag on its pole hangs from the top; a dropped or carried one turns on the spot.
+            // Legacy lifted it by half a block because the flag rode the pole entity; here the
+            // flag entity already sits at the top of the pole, so it hangs straight down from there.
+            if (!flagEntity.isHome())
+            {
+                poseStack.mulPose(Axis.YP.rotationDegrees((entity.tickCount + partialTick) * CARRIED_SPIN_SPEED));
+                poseStack.translate(0.5F, 0F, 0F);
+            }
+
+            int colour = flagEntity.getColour();
+            poseStack.scale(-1F, -1F, 1F);
+            flag.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
+                (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
         }
         else
         {
-            // Two crossed strips remain legible from every camera angle and use
-            // the same pole section of the original 64x32 texture atlas.
-            quad(poseStack.last(), vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
-                0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, packedLight);
-            poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-            quad(poseStack.last(), vertices, -0.0625F, 0F, 0F, 0.0625F, 3F, 0F,
-                0F, 0.5F, 0.0625F, 1F, 1F, 1F, 1F, packedLight);
+            poseStack.scale(-1F, -1F, 1F);
+            pole.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
         }
+
         poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
-    }
-
-    private static void quad(PoseStack.Pose pose, VertexConsumer vertices,
-                             float x0, float y0, float z0, float x1, float y1, float z1,
-                             float u0, float v0, float u1, float v1,
-                             float red, float green, float blue, int light)
-    {
-        vertex(pose, vertices, x0, y1, z0, u0, v0, red, green, blue, light);
-        vertex(pose, vertices, x1, y1, z1, u1, v0, red, green, blue, light);
-        vertex(pose, vertices, x1, y0, z1, u1, v1, red, green, blue, light);
-        vertex(pose, vertices, x0, y0, z0, u0, v1, red, green, blue, light);
-    }
-
-    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float z,
-                               float u, float v, float red, float green, float blue, int light)
-    {
-        vertices.vertex(pose.pose(), x, y, z).color(red, green, blue, 1F).uv(u, v)
-            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(pose.normal(), 0F, 0F, 1F).endVertex();
     }
 
     @NotNull
     @Override
     public ResourceLocation getTextureLocation(@NotNull T entity)
     {
-        return TEXTURE;
+        return FlansMod.TEXTURE_FLAGPOLE;
     }
 }

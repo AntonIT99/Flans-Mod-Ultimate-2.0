@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
@@ -146,6 +147,16 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
                 tooltip.add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
             if (data.getEngine() != null)
                 tooltip.add(Component.translatable(TooltipKeys.ENGINE, data.getEngine().getName()).withStyle(ChatFormatting.DARK_BLUE));
+
+            float totalHealth = 0F;
+            float totalMaxHealth = 0F;
+            for (DriveablePart part : data.getParts().values())
+            {
+                totalHealth += part.getHealth();
+                totalMaxHealth += part.getMaxHealth();
+            }
+            if (totalMaxHealth > 0F)
+                tooltip.add(IFlanItem.healthLine(Component.translatable(TooltipKeys.HEALTH), totalHealth, totalMaxHealth));
 
             long damagedParts = data.getParts().values().stream()
                 .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();

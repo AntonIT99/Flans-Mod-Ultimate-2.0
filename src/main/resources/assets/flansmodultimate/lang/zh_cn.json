@@ -203,6 +203,7 @@
   "tooltip.flansmodultimate.physics.driveType": "驱动类型",
   "tooltip.flansmodultimate.physics.drivetype.awd": "全轮驱动",
   "tooltip.flansmodultimate.physics.drivetype.fwd": "前轮驱动",
+  "tooltip.flansmodultimate.physics.drivetype.marine": "船用推进",
   "tooltip.flansmodultimate.physics.drivetype.rwd": "后轮驱动",
   "tooltip.flansmodultimate.physics.drivetype.tracked": "履带",
   "tooltip.flansmodultimate.physics.effectiveReverseSpeed": "实际倒车 (方块/刻)",

@@ -164,7 +164,7 @@ public final class ResourceUtils
             {
                 overrides = paintableType.getPaintjobs().values().stream()
                     .filter(p -> !p.equals(paintableType.getDefaultPaintjob()))
-                    .map(p -> new Override(FlansMod.paintjob.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIcon()))
+                    .map(p -> new Override(FlansMod.PAINTJOB.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIcon()))
                     .toList();
             }
 

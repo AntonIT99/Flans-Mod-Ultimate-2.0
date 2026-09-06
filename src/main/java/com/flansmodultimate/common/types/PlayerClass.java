@@ -6,10 +6,13 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
@@ -33,6 +36,10 @@ public class PlayerClass extends InfoType
     private int unlockLevel;
     @Getter
     private String skinOverride = StringUtils.EMPTY;
+    /** Client-side location of the SkinOverride texture, before it is checked against the player model. */
+    @Getter
+    @Nullable
+    private ResourceLocation skinOverrideTexture;
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<StartingItem> startingItems = List.of();
     private List<ItemStack> previewItems;
@@ -50,7 +57,8 @@ public class PlayerClass extends InfoType
     {
         super.read(file);
         unlockLevel = Math.max(0, readValue("UnlockLevel", unlockLevel, file));
-        skinOverride = readValue("SkinOverride", skinOverride, file);
+        // Legacy packs write skin names like "Zombie"; texture paths must be sanitized
+        skinOverride = readResource("SkinOverride", skinOverride, file);
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");
         readArmour(file, EquipmentSlot.CHEST, "Chest", "Top");
         readArmour(file, EquipmentSlot.LEGS, "Legs", "Bottom");
@@ -65,6 +73,14 @@ public class PlayerClass extends InfoType
         }
         startingItems = List.copyOf(parsed);
         previewItems = null;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    protected void readClient(TypeFile file)
+    {
+        super.readClient(file);
+        skinOverrideTexture = StringUtils.isBlank(skinOverride) ? null : loadTexture(skinOverride, this);
     }
 
     private void readArmour(TypeFile file, EquipmentSlot slot, String primary, String alias)

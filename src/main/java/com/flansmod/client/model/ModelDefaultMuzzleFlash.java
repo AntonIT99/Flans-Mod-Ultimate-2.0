@@ -41,6 +41,6 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
     @Override
     public ResourceLocation getTexture()
     {
-        return FlansMod.defaultMuzzleFlashTexture;
+        return FlansMod.TEXTURE_DEFAULTMUZZLEFLASH;
     }
 }
