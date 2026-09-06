@@ -124,10 +124,18 @@ public class Wheel extends Entity
         setXRot(driveable.getEntityFacingPitch());
     }
 
+    /** A blown-off wheel leaves no hitbox behind until it is repaired. */
     @Override
     public boolean isPickable()
     {
-        return isAlive();
+        return isAlive() && (driveable == null || driveable.isPartIntact(getPart()));
+    }
+
+    private EnumDriveablePart getPart()
+    {
+        DriveablePosition definition = driveable == null || driveable.getConfigType() == null ? null
+            : driveable.getConfigType().getWheelPosition(getWheelIndex());
+        return definition == null ? EnumDriveablePart.CORE : definition.getPart();
     }
 
     @Override
@@ -141,8 +149,6 @@ public class Wheel extends Entity
             return true;
         if (level().isClientSide)
             return true;
-        DriveablePosition definition = driveable.getConfigType() == null ? null : driveable.getConfigType().getWheelPosition(getWheelIndex());
-        EnumDriveablePart part = definition == null ? EnumDriveablePart.CORE : definition.getPart();
-        return driveable.damagePart(part, amount, source);
+        return driveable.damagePart(getPart(), amount, source);
     }
 }

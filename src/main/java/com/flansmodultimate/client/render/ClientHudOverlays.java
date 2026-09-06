@@ -8,7 +8,6 @@ import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -730,12 +729,18 @@ public final class ClientHudOverlays
         DriveableData data = driveable.getDriveableData();
         if (data != null)
         {
-            DriveablePart core = data.getPart(EnumDriveablePart.CORE);
-            if (core != null && core.getMaxHealth() > 0F)
+            float totalHealth = 0F;
+            float totalMaxHealth = 0F;
+            for (DriveablePart part : data.getParts().values())
             {
-                int healthPercent = Mth.clamp(Math.round(core.getHealth() * 100F / core.getMaxHealth()), 0, 100);
+                totalHealth += part.getHealth();
+                totalMaxHealth += part.getMaxHealth();
+            }
+            if (totalMaxHealth > 0F)
+            {
+                int healthPercent = Mth.clamp(Math.round(totalHealth * 100F / totalMaxHealth), 0, 100);
                 g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent,
-                    Math.round(core.getHealth()), Math.round(core.getMaxHealth())),
+                    Math.round(totalHealth), Math.round(totalMaxHealth)),
                     LEGACY_HUD_LEFT, y, healthColor(healthPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }

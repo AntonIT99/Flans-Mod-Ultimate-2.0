@@ -244,7 +244,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
 
         for (Driveable candidate : level.getEntitiesOfClass(Driveable.class, broadPhase, Entity::isAlive))
         {
-            for (BulletHit hit : candidate.attackFromBullet(start, motion))
+            for (BulletHit hit : candidate.attackFromBullet(start, motion, true))
             {
                 float time = hit.getIntersectTime();
                 if (time >= 0F && time <= 1F && time < bestTime)

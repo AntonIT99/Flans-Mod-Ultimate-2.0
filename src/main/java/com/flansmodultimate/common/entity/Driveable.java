@@ -2787,6 +2787,18 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return state != null && !state.isDestroyed();
     }
 
+    /**
+     * Reports whether a part still occupies space in the world.
+     *
+     * <p>A destroyed part has been shot off, so it no longer stops projectiles,
+     * explosions or anything else until it is repaired. Parts without health
+     * defined are structural only and always count as present.</p>
+     */
+    public boolean isPartHitboxActive(@Nullable DriveablePart part)
+    {
+        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed());
+    }
+
     /** Damage penalty used by legacy vehicle acceleration and maximum throttle. */
     protected float getThrottleDamageNerf()
     {
@@ -2869,6 +2881,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     /** Precise ray trace against every configured local part box. */
     public List<BulletHit> attackFromBullet(Vec3 origin, Vec3 motion)
     {
+        return attackFromBullet(origin, motion, false);
+    }
+
+    /**
+     * Precise ray trace against every configured local part box.
+     *
+     * <p>A part whose health has reached zero is blown off the driveable, so its
+     * hitbox stops existing until the part is repaired: projectiles pass straight
+     * through the hole. Repair tools pass {@code includeDestroyedParts} so a
+     * player can still aim at the wreckage of the part they want back.</p>
+     */
+    public List<BulletHit> attackFromBullet(Vec3 origin, Vec3 motion, boolean includeDestroyedParts)
+    {
         if (driveableData == null || motion.lengthSqr() < 1.0E-12D)
             return Collections.emptyList();
         Vec3 localOrigin = worldToLocal(origin);
@@ -2882,7 +2907,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         for (DriveablePart part : driveableData.getParts().values())
         {
             CollisionBox box = part.getBox();
-            if (box == null || !canHitPart(part.getType()))
+            if (box == null || !canHitPart(part.getType())
+                || !includeDestroyedParts && !isPartHitboxActive(part))
                 continue;
             DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(
                 box.asAabb(), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
@@ -2991,7 +3017,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return false;
         Vec3 origin = player.getEyePosition();
         Vec3 motion = player.getLookAngle().scale(6D);
-        EnumDriveablePart selected = attackFromBullet(origin, motion).stream()
+        EnumDriveablePart selected = attackFromBullet(origin, motion, true).stream()
             .filter(DriveableHit.class::isInstance)
             .map(DriveableHit.class::cast)
             .map(DriveableHit::getPart)
