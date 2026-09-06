@@ -1,6 +1,5 @@
 General:
 - Optimize skills for token consumption
-- Fix Gloves (still not working)
 - Check if ConfigReference in Wiki is exhaustive / up to date
 - Check if all FMU featues are implemented in the mod
 - Implement TaP Flan's Mod Features
