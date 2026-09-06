@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -47,21 +48,36 @@ public class PacketFlanExplosionParticles implements IClientPacket
         radius = data.readFloat();
     }
 
+    /** Blast radius at which flare/debris particles reach their largest size. */
+    private static final float MAX_SCALE_RADIUS = 60.0F;
+    private static final float MAX_PARTICLE_SCALE = 4.0F;
+
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        spawn(level, FlanParticles.FM_FLARE, position, numSmoke, radius * 0.1F);
-        spawn(level, FlanParticles.FM_DEBRIS_1, position, numDebris, radius * 0.1F);
+        // Bigger blasts get bigger flares and debris rather than just more of them, both for
+        // the visual read (a huge charge should look huge, not just noisy) and because the
+        // particle count still comes from the content pack's flat FlareParticleCount /
+        // DebrisParticleCount, which does not scale with the blast on its own.
+        float t = Mth.clamp(radius / MAX_SCALE_RADIUS, 0.0F, 1.0F);
+        float particleScale = 1.0F + t * (MAX_PARTICLE_SCALE - 1.0F);
+
+        spawn(level, FlanParticles.FM_FLARE, position, numSmoke, radius * 0.12F, particleScale);
+        spawn(level, FlanParticles.FM_DEBRIS_1, position, numDebris, radius * 0.12F, particleScale);
     }
 
-    private void spawn(Level level, String particleType, Vec3 position, int count, float maxVelocity)
+    private void spawn(Level level, String particleType, Vec3 position, int count, float maxVelocity, float scale)
     {
         for (int i = 0; i < count; i++)
         {
-            float vx = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity;
-            float vy = level.random.nextFloat() * maxVelocity;
-            float vz = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity;
-            ClientHooks.RENDER.spawnParticle(particleType, position.x, position.y, position.z, vx, vy, vz, 1F);
+            // Individually randomised overshoot so particles are not strictly contained to the
+            // blast radius: most stay well inside it, but a realistic minority of fragments and
+            // embers fly out further, tapering off toward the edge rather than stopping dead.
+            float overshoot = 0.4F + level.random.nextFloat() * level.random.nextFloat() * 1.6F;
+            float vx = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity * overshoot;
+            float vy = level.random.nextFloat() * maxVelocity * overshoot;
+            float vz = (level.random.nextFloat() * 2.0F - 1.0F) * maxVelocity * overshoot;
+            ClientHooks.RENDER.spawnParticle(particleType, position.x, position.y, position.z, vx, vy, vz, scale);
         }
     }
 }

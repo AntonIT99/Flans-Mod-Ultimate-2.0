@@ -432,11 +432,16 @@ public abstract class ShootableType extends InfoType
 
     public float getExplosionRadius()
     {
-        if (useNewExplosionSystem())
-        {
-            return (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(getExplosiveMass()));
-        }
-        return explosionRadius;
+        float radius = useNewExplosionSystem()
+            ? (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(getExplosiveMass()))
+            : explosionRadius;
+
+        // Mirrors the cap FlanExplosion.Stats applies to every explosion it simulates, so a
+        // tooltip never advertises a crater bigger than what the server will actually carve.
+        float maxRadius = (float) ModCommonConfig.maxExplosionRadius();
+        if (Float.isFinite(maxRadius) && maxRadius > 0F)
+            radius = Math.min(radius, maxRadius);
+        return radius;
     }
 
     public float getBlastRadius()
@@ -445,7 +450,7 @@ public abstract class ShootableType extends InfoType
         {
             return (float) (ModCommonConfig.get().newDamageSystemBlastRadiusReference() * Math.cbrt(getExplosiveMass()));
         }
-        return explosionRadius;
+        return blastRadius;
     }
 
     public float getExplosionPower()

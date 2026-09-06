@@ -200,9 +200,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static MutableComponent healthLine(Component label, float health, float maxHealth)
     {
         return Component.empty()
-            .append(label.copy().withStyle(ChatFormatting.DARK_BLUE))
-            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_BLUE))
-            .append(Component.literal(formatFloat(health, 1) + " / " + formatFloat(maxHealth, 1)).withStyle(healthColor(health, maxHealth)));
+            .append("[" + label.copy() + "] ")
+            .append(Component.literal(formatFloat(health, 1) + " / " + formatFloat(maxHealth, 1))).withStyle(healthColor(health, maxHealth));
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)

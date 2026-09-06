@@ -205,8 +205,8 @@ public final class ModCommonConfig
             .comment("Whether explosions can break blocks")
             .define("explosionBreakBlocks", true);
         FLAN_EXPLOSIONS_DROP_BLOCKS = builder
-            .comment("Whether blocks broken by Flan's Mod explosions should drop items")
-            .define("flanExplosionsDropBlocks", true);
+            .comment("Whether blocks broken by Flan's Mod explosions should drop items. Off by default: ordnance obliterates blocks rather than harvesting them.")
+            .define("flanExplosionsDropBlocks", false);
         BONUS_REGEN_AMOUNT = builder
             .comment("Allows you to increase health regen, best used alongside increased max health")
             .defineInRange("bonusRegenAmount", 0, 0, 1000);

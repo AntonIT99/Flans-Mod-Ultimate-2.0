@@ -1,11 +1,12 @@
 General:
-- Fix gloves
+- Fix Gloves
 - Check if ConfigReference in Wiki is exhaustive / up to date
 - Check if all FMU featues are implemented in the mod
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
 
 Driveables:
+- differentiate reload time and shootdelay for vehicles
 - See if shooting points on vehicles can be directly inferred from models
 - Mecha does not rotate very smoothly
 - Display hitboxes for driveables in debug mode

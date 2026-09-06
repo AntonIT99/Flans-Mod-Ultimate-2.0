@@ -48,6 +48,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,10 @@ public class FlanExplosion extends Explosion
 {
     protected static final double EXPLOSION_PARTICLE_RANGE = 256;
     protected static final float KNOCKBACK_MULTIPLAYER = 1F;
+    /** Upper bound on ray-march steps per direction in {@link #doBreakBlocks()}, independent of radius. */
+    protected static final float MAX_RAY_STEPS = 100F;
+    /** Upper bound on per-block burst particles in {@link #finalizeExplosion(boolean)}, independent of blocks destroyed. */
+    protected static final int MAX_BLOCK_BURST_PARTICLES = 40;
     
     // Config
     protected final boolean causesFire;
@@ -92,6 +97,27 @@ public class FlanExplosion extends Explosion
     public record Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
                         float fragRadius, float fragIntensity, DamageStats fragDamage, float explosiveMassKg)
     {
+        /**
+         * Mass beyond which blast/frag radius growth starts bending over. Below it, both
+         * follow their reference's pure cube-root scaling untouched - every grenade, mine,
+         * tank shell and naval shell in the shipped categories sits well under it.
+         */
+        private static final float FLATTEN_KNEE_MASS_KG = 50F;
+        /**
+         * How slowly blast radius keeps growing once past the knee. Tuned so the heaviest
+         * conventional charge shipped (an ~11 t aerial bomb) lands at a blast radius in the
+         * low hundreds of blocks rather than the ~450 pure cbrt(mass) scaling would give it,
+         * while a nuclear-scale charge (Tsar Bomba is ~5*10^10 kg TNT-equivalent) still clearly
+         * out-blasts it, tapering in toward the configured cap instead of hitting it as a wall.
+         */
+        private static final float BLAST_FLATTEN_EXPONENT = 0.08F;
+        /**
+         * Fragmentation is allowed to keep reaching a bit further than blast overpressure at
+         * the same mass - real HE fragments often outrange blast lethality - so it flattens
+         * more gently than blast radius does.
+         */
+        private static final float FRAG_FLATTEN_EXPONENT = 0.14F;
+
         public Stats(float explosionRadius, float explosionPower, float blastRadius, DamageStats blastDamage,
                      float fragRadius, float fragIntensity, DamageStats fragDamage)
         {
@@ -101,6 +127,9 @@ public class FlanExplosion extends Explosion
 
         public Stats
         {
+            if (!Float.isFinite(explosiveMassKg) || explosiveMassKg < 0F)
+                explosiveMassKg = 0F;
+
             // Every radius is capped here, the one place all explosion statistics pass
             // through, so an extreme charge cannot ask the server to iterate a radius of
             // tens of thousands of blocks. The caps are a performance ceiling, not a
@@ -116,6 +145,18 @@ public class FlanExplosion extends Explosion
             if (Float.isFinite(maxCraterRadius) && maxCraterRadius > 0F)
                 explosionRadius = Math.min(explosionRadius, maxCraterRadius);
 
+            // Both radii follow cbrt(mass), the same growth curve as the crater, but with a
+            // much larger reference coefficient (overpressure lethality reaches far past
+            // cratering distance). That constant ratio means blast/frag keep outrunning the
+            // crater by the same multiple at every scale, so a heavy charge's damage radius
+            // grows in lockstep with cbrt(mass) far beyond what is plausible on Minecraft's
+            // scale before it ever reaches the (performance-motivated) config cap. Bending
+            // growth over past FLATTEN_KNEE_MASS_KG keeps light ordnance exactly as before
+            // and lets heavy ordnance still out-blast it, just with steeply diminishing
+            // returns instead of unbounded cbrt(mass) growth.
+            blastRadius = flattenAboveKnee(blastRadius, explosiveMassKg, BLAST_FLATTEN_EXPONENT);
+            fragRadius = flattenAboveKnee(fragRadius, explosiveMassKg, FRAG_FLATTEN_EXPONENT);
+
             float maxDamageRadius = (float) ModCommonConfig.maxBlastRadius();
             if (Float.isFinite(maxDamageRadius) && maxDamageRadius > 0F)
             {
@@ -125,8 +166,22 @@ public class FlanExplosion extends Explosion
             // Ensure blastRadius >= explosionRadius
             if (blastRadius < explosionRadius)
                 blastRadius = explosionRadius;
-            if (!Float.isFinite(explosiveMassKg) || explosiveMassKg < 0F)
-                explosiveMassKg = 0F;
+        }
+
+        /**
+         * {@code rawRadius} is assumed to already be {@code k * cbrt(massKg)} for some
+         * reference coefficient k that this method does not need to know. Below the knee mass
+         * it is returned unchanged; above it, the value that same formula would have given
+         * exactly at the knee is recovered algebraically (k cancels out), and growth continues
+         * from there at {@code exponent} instead of 1/3.
+         */
+        private static float flattenAboveKnee(float rawRadius, float massKg, float exponent)
+        {
+            if (rawRadius <= 0F || massKg <= FLATTEN_KNEE_MASS_KG)
+                return rawRadius;
+
+            float radiusAtKnee = rawRadius * (float) Math.cbrt(FLATTEN_KNEE_MASS_KG / massKg);
+            return radiusAtKnee * (float) Math.pow(massKg / FLATTEN_KNEE_MASS_KG, exponent);
         }
     }
 
@@ -234,9 +289,28 @@ public class FlanExplosion extends Explosion
 
         if (spawnParticles)
         {
-            PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, affectedBlockPositions), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
+            PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, sampleBlockBurstPositions(affectedBlockPositions)), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
             PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount, stats.blastRadius), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
         }
+    }
+
+    /**
+     * A huge explosion can destroy thousands of blocks; sending one particle burst per block
+     * would flood the network and the client's particle engine and buys nothing visually once
+     * the craters are already packed with debris. Bigger explosions instead get a bounded
+     * number of bursts scaled up in size client-side (see {@link PacketFlanExplosionBlockParticles}),
+     * which reads as "one bigger blast" rather than "the same tiny burst, just more of them".
+     */
+    protected List<BlockPos> sampleBlockBurstPositions(List<BlockPos> positions)
+    {
+        if (positions.size() <= MAX_BLOCK_BURST_PARTICLES)
+            return positions;
+
+        List<BlockPos> sampled = new ArrayList<>(MAX_BLOCK_BURST_PARTICLES);
+        float stride = positions.size() / (float) MAX_BLOCK_BURST_PARTICLES;
+        for (int i = 0; i < MAX_BLOCK_BURST_PARTICLES; i++)
+            sampled.add(positions.get(Mth.floor(i * stride)));
+        return sampled;
     }
 
     @Override
@@ -271,8 +345,12 @@ public class FlanExplosion extends Explosion
         Set<BlockPos> toBlow = new HashSet<>();
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
 
-        // Step size: smaller = more accurate, slower.
-        float step = 0.3F;
+        // Step size: smaller = more accurate, slower. Fixed at 0.3 for small/medium charges
+        // (unchanged from before), but a huge crater radius would otherwise march the same
+        // 0.3-block step all the way out, so cost against radius alone (not just sample count)
+        // would grow linearly with radius. Scaling the step with radius bounds the number of
+        // steps per ray to roughly MAX_RAY_STEPS regardless of how big the explosion gets.
+        float step = Math.max(0.3F, stats.explosionRadius / MAX_RAY_STEPS);
 
         // A "ray energy" budget. Since you set power ∝ cbrt(W) and radius ∝ cbrt(W),
         // power * radius ∝ W^(2/3), which is already strongly scaling.

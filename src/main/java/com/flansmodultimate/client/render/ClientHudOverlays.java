@@ -77,6 +77,8 @@ public final class ClientHudOverlays
     private static final int HUD_GREEN = 0x00FF00;
     private static final int HUD_AMMO_GREEN = 0x24FF62;
     private static final int HUD_GOLD = 0xDAA520;
+    private static final int HUD_YELLOW = 0xFFD700;
+    private static final int HUD_ORANGE = 0xFF8C00;
     private static final int HUD_RED = 0xFF0000;
     private static final int TEAM_INFO_HALF_WIDTH = 43;
     private static final int TEAM_INFO_HEIGHT = 27;
@@ -205,11 +207,11 @@ public final class ClientHudOverlays
     private static int healthColor(int healthPercent)
     {
         if (healthPercent >= 75)
-            return HUD_WHITE;
-        if (healthPercent >= 50)
             return HUD_GREEN;
+        if (healthPercent >= 50)
+            return HUD_YELLOW;
         if (healthPercent >= 25)
-            return HUD_GOLD;
+            return HUD_ORANGE;
         return HUD_RED;
     }
 
