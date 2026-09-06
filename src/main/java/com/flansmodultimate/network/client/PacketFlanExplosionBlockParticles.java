@@ -64,6 +64,8 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
     private static final float MAX_PARTICLE_SCALE = 5.0F;
     /** Above this crater radius, block bursts switch to the bigger smoke variant. */
     private static final float BIG_SMOKE_RADIUS = 16.0F;
+    /** Burst life at the smallest size, roughly the vanilla puff, extended in step with the scale. */
+    private static final float BASE_LIFETIME_TICKS = 20.0F;
 
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
@@ -75,15 +77,20 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
         float t = Mth.clamp((radius - MIN_SCALE_RADIUS) / (MAX_SCALE_RADIUS - MIN_SCALE_RADIUS), 0.0F, 1.0F);
         float particleScale = 1.0F + t * (MAX_PARTICLE_SCALE - 1.0F);
         String smokeParticle = radius >= BIG_SMOKE_RADIUS ? FlanParticles.FM_BIG_SMOKE : FlanParticles.SMOKE;
+        // Life tracks size for the same reason the fireball's does: a burst several blocks
+        // across that pops out in the vanilla puff's lifetime reads as a flicker. The
+        // explosion sprite animates off age/lifetime, so this plays out slower rather than
+        // holding a frame.
+        int lifetime = Mth.ceil(BASE_LIFETIME_TICKS * particleScale);
 
         for (long l : blockPosLongs)
         {
             BlockPos pos = BlockPos.of(l);
-            spawnBlockBurst(level, center, pos, radius, particleScale, smokeParticle);
+            spawnBlockBurst(level, center, pos, radius, particleScale, smokeParticle, lifetime);
         }
     }
 
-    private void spawnBlockBurst(Level level, Vec3 center, BlockPos pos, float radius, float particleScale, String smokeParticle)
+    private void spawnBlockBurst(Level level, Vec3 center, BlockPos pos, float radius, float particleScale, String smokeParticle, int lifetime)
     {
         double px = pos.getX() + level.random.nextDouble();
         double py = pos.getY() + level.random.nextDouble();
@@ -109,7 +116,9 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
         double vy = dy * scale;
         double vz = dz * scale;
 
-        ClientHooks.RENDER.spawnParticle(FlanParticles.LARGE_EXPLODE, (px + center.x) / 2.0D, (py + center.y) / 2.0D, (pz + center.z) / 2.0D, vx, vy, vz, particleScale);
-        ClientHooks.RENDER.spawnParticle(smokeParticle, px, py, pz, vx, vy, vz, particleScale);
+        // Jittered per burst so the crater thins out gradually instead of clearing on one tick.
+        int jittered = Math.max(1, Mth.ceil(lifetime * (0.75F + level.random.nextFloat() * 0.5F)));
+        ClientHooks.RENDER.spawnParticle(FlanParticles.LARGE_EXPLODE, (px + center.x) / 2.0D, (py + center.y) / 2.0D, (pz + center.z) / 2.0D, vx, vy, vz, particleScale, jittered);
+        ClientHooks.RENDER.spawnParticle(smokeParticle, px, py, pz, vx, vy, vz, particleScale, jittered);
     }
 }

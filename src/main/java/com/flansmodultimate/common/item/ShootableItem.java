@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -265,16 +266,21 @@ public abstract class ShootableItem extends Item
 
         if (configType.getExplosionRadius() > 0F)
         {
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_RADIUS), IFlanItem.formatFloat(configType.getExplosionRadius(), 1)));
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_POWER), IFlanItem.formatFloat(configType.getExplosionPower(), 1)));
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_BLAST_RADIUS), IFlanItem.formatFloat(configType.getBlastRadius(), 1)));
-            IFlanItem.appendDamageStats(tooltipComponents, configType.getExplosionBlastDamage(), TooltipKeys.EXPLOSION_BLAST_DAMAGE);
+            // Pulled from a real Stats object rather than the individual raw getters, so the
+            // tooltip shows exactly what FlanExplosion will simulate: the crater cap, and the
+            // blast/frag flattening curve for heavy charges, both applied.
+            FlanExplosion.Stats stats = configType.getExplosionStats(null);
 
-            if (configType.getFragRadius() > 0F)
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_RADIUS), IFlanItem.formatFloat(stats.explosionRadius(), 1)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_POWER), IFlanItem.formatFloat(stats.explosionPower(), 1)));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_BLAST_RADIUS), IFlanItem.formatFloat(stats.blastRadius(), 1)));
+            IFlanItem.appendDamageStats(tooltipComponents, stats.blastDamage(), TooltipKeys.EXPLOSION_BLAST_DAMAGE);
+
+            if (stats.fragRadius() > 0F)
             {
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_RADIUS), IFlanItem.formatFloat(configType.getFragRadius(), 1)));
-                IFlanItem.appendDamageStats(tooltipComponents, configType.getExplosionFragDamage(), TooltipKeys.EXPLOSION_FRAG_DAMAGE);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_INTENSITY), IFlanItem.formatFloat(configType.getFragIntensity(), 1)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_RADIUS), IFlanItem.formatFloat(stats.fragRadius(), 1)));
+                IFlanItem.appendDamageStats(tooltipComponents, stats.fragDamage(), TooltipKeys.EXPLOSION_FRAG_DAMAGE);
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_INTENSITY), IFlanItem.formatFloat(stats.fragIntensity(), 1)));
             }
         }
 

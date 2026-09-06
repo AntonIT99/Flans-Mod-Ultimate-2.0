@@ -20,6 +20,9 @@ public interface IClientRenderHooks
 
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);
 
+    /** As above, but overrides how many ticks the particle lives for. A lifetime of 0 keeps the particle's own. */
+    void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime);
+
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);

@@ -30,11 +30,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleHelper
 {
+    /** Passed as the lifetime to keep whatever lifetime the particle chose for itself. */
+    public static final int KEEP_LIFETIME = 0;
+
     private static final Map<String, Optional<ParticleOptions>> PARTICLE_OPTIONS_CACHE = new ConcurrentHashMap<>();
     private static long particleBudgetTick = Long.MIN_VALUE;
     private static int particlesCreatedThisTick;
 
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        spawnFromString(s, x, y, z, vx, vy, vz, scale, KEEP_LIFETIME);
+    }
+
+    public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime)
     {
         if (!shouldSpawn(x, y, z))
             return;
@@ -49,7 +57,7 @@ public final class ParticleHelper
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
         if (legacyRequest.isPresent())
         {
-            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale))
+            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale, lifetime))
                 warnCouldNotParse(s);
             return;
         }
@@ -63,6 +71,7 @@ public final class ParticleHelper
 
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
         scaleParticle(particle, scale);
+        applyLifetime(particle, lifetime);
     }
 
     public static void spawnFromString(String s, BlockState state, BlockPos sourcePos,
@@ -90,10 +99,10 @@ public final class ParticleHelper
             return;
 
         LegacyBlockParticle.Variant variant = request.get().kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
-        addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale);
+        addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale, KEEP_LIFETIME);
     }
 
-    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
+    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale, int lifetime)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -107,7 +116,7 @@ public final class ParticleHelper
                 Optional<ItemStack> stack = getLegacyItemStack(request.resourceId());
                 if (stack.isEmpty())
                     return false;
-                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale);
+                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale, lifetime);
                 return true;
             }
             case BLOCK_CRACK, BLOCK_DUST:
@@ -116,18 +125,19 @@ public final class ParticleHelper
                 if (state.isEmpty())
                     return false;
                 LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
-                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale);
+                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale, lifetime);
                 return true;
             }
         }
         return false;
     }
 
-    private static void addParticle(Particle particle, float scale)
+    private static void addParticle(Particle particle, float scale, int lifetime)
     {
         if (particle == null)
             return;
         scaleParticle(particle, scale);
+        applyLifetime(particle, lifetime);
         Minecraft.getInstance().particleEngine.add(particle);
     }
 
@@ -135,6 +145,16 @@ public final class ParticleHelper
     {
         if (particle != null && scale != 1.0F)
             particle.scale(scale);
+    }
+
+    /**
+     * Sprite-sheet particles map their frame from age/lifetime, so stretching the lifetime
+     * slows the animation down rather than freezing the last frame on screen.
+     */
+    private static void applyLifetime(Particle particle, int lifetime)
+    {
+        if (particle != null && lifetime > KEEP_LIFETIME)
+            particle.setLifetime(lifetime);
     }
 
     private static boolean shouldSpawn(double x, double y, double z)

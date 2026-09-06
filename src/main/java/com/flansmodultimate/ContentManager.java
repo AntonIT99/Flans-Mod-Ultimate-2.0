@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.GloveType;
 import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.IAmmoGroupUser;
 import com.flansmodultimate.common.types.InfoType;
@@ -127,7 +128,7 @@ public class ContentManager
     private static final String ARMOR_TEXTURES_ALIAS_FILE = "armor_textures_alias.json";
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
     private static final String GENERATED_ASSETS_VERSION_FILE = ".flans_generated_assets_version";
-    private static final String GENERATED_ASSETS_VERSION = "1";
+    private static final String GENERATED_ASSETS_VERSION = "2";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
     private static final String GENERATED_TEXTURES_MANIFEST_FILE = ".flansmod_generated_textures.json";
     private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
@@ -1218,7 +1219,7 @@ public class ContentManager
         }
 
         Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
-        writeGeneratedItemModelJson(outputFile, model);
+        writeGeneratedItemModelJson(outputFile, model, config);
 
         if (config instanceof PaintableType paintableType)
         {
@@ -1229,7 +1230,7 @@ public class ContentManager
                     outputFile = outputFolder.resolve(p.getIcon() + FileUtils.JSON_EXTENSION);
                     String icon = hasItemIcon(config.getContentPack(), p.getIcon()) ? p.getIcon() : config.getIcon();
                     model = ResourceUtils.ModelJson.createItemModel(config, p, icon);
-                    writeGeneratedItemModelJson(outputFile, model);
+                    writeGeneratedItemModelJson(outputFile, model, config);
                 }
             }
         }
@@ -1243,15 +1244,15 @@ public class ContentManager
             || Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEM).resolve(fileName));
     }
 
-    private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model)
+    private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model, InfoType config)
     {
-        if (shouldPreserveExistingItemModel(outputFile))
+        if (shouldPreserveExistingItemModel(outputFile, config))
             return;
 
         FileUtils.writeString(outputFile, gson.toJson(model));
     }
 
-    private static boolean shouldPreserveExistingItemModel(Path modelFile)
+    private static boolean shouldPreserveExistingItemModel(Path modelFile, InfoType config)
     {
         if (!Files.isRegularFile(modelFile))
             return false;
@@ -1259,7 +1260,7 @@ public class ContentManager
         try
         {
             JsonObject model = JsonParser.parseString(Files.readString(modelFile, StandardCharsets.UTF_8)).getAsJsonObject();
-            return !isGeneratedSimpleItemModel(model);
+            return !isGeneratedSimpleItemModel(model) && !isOutdatedGeneratedGloveModel(model, config);
         }
         catch (IOException | IllegalStateException | JsonSyntaxException e)
         {
@@ -1278,6 +1279,26 @@ public class ContentManager
         return parent.equals("minecraft:item/generated")
             || parent.equals("minecraft:item/handheld")
             || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
+    }
+
+    /**
+     * Earlier versions replaced the model shipped by the content pack with a hardcoded glove shape whose UVs were
+     * mapped onto the flat item icon, which rendered as garbage. Such a model is recognizable by its two texture
+     * slots both pointing at the item icon, and is regenerated instead of preserved.
+     */
+    private static boolean isOutdatedGeneratedGloveModel(JsonObject model, InfoType config)
+    {
+        if (!(config instanceof GloveType) || model.has("parent") || !model.has("elements"))
+            return false;
+        if (!model.has("textures") || !model.get("textures").isJsonObject())
+            return false;
+
+        JsonObject textures = model.getAsJsonObject("textures");
+        if (textures.size() != 2 || !textures.has("0") || !textures.has("particle"))
+            return false;
+
+        String icon = FlansMod.FLANSMOD_ID + ":" + FOLDER_TEXTURES_ITEM + "/" + ResourceUtils.sanitize(config.getIcon());
+        return icon.equals(textures.get("0").getAsString()) && icon.equals(textures.get("particle").getAsString());
     }
 
     private static void generateBlockModelJson(InfoType config, Path outputFolder)

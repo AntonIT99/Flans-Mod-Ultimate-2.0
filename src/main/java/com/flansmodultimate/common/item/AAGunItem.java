@@ -105,7 +105,7 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
-            tooltipComponents.add(IFlanItem.healthLine(Component.translatable(TooltipKeys.HEALTH), configType.getHealth(), configType.getHealth()));
+            tooltipComponents.add(IFlanItem.healthLine(TooltipKeys.HEALTH, configType.getHealth(), configType.getHealth()));
 
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
             tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));

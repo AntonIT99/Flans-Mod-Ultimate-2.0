@@ -184,7 +184,7 @@
   "tooltip.flansmodultimate.guidance.lock_on": "Lock-on",
   "tooltip.flansmodultimate.guidance.manual": "Manual",
   "tooltip.flansmodultimate.guidance.unguided": "Unguided",
-  "tooltip.flansmodultimate.health": "Health",
+  "tooltip.flansmodultimate.health": "[Health] %s/%s",
   "tooltip.flansmodultimate.hold_for_details": "Hold %s for details",
   "tooltip.flansmodultimate.horizontal_recoil": "Horizontal Recoil",
   "tooltip.flansmodultimate.item_holder": "Place items on display",

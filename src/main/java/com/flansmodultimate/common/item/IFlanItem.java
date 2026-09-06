@@ -195,13 +195,12 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
-     * "[Health]" style tooltip line, colored by the current/max ratio.
+     * "[Health] current/max" style tooltip line, colored by the current/max ratio.
      */
-    static MutableComponent healthLine(Component label, float health, float maxHealth)
+    static MutableComponent healthLine(String translationKey, float health, float maxHealth)
     {
-        return Component.empty()
-            .append("[" + label.copy() + "] ")
-            .append(Component.literal(formatFloat(health, 1) + " / " + formatFloat(maxHealth, 1))).withStyle(healthColor(health, maxHealth));
+        return Component.translatable(translationKey, formatFloat(health, 1), formatFloat(maxHealth, 1))
+            .withStyle(healthColor(health, maxHealth));
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)

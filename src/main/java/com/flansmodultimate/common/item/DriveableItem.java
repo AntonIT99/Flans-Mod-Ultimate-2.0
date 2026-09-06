@@ -156,7 +156,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
                 totalMaxHealth += part.getMaxHealth();
             }
             if (totalMaxHealth > 0F)
-                tooltip.add(IFlanItem.healthLine(Component.translatable(TooltipKeys.HEALTH), totalHealth, totalMaxHealth));
+                tooltip.add(IFlanItem.healthLine(TooltipKeys.HEALTH, totalHealth, totalMaxHealth));
 
             long damagedParts = data.getParts().values().stream()
                 .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
