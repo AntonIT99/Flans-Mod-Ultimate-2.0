@@ -395,14 +395,14 @@ def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
 
 def warfare44PackJar = tasks.register('warfare44Pack', Jar) {
     archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Warfare 44 Pack")
-    archiveVersion.set('3.2')
+    archiveVersion.set('4.0')
 
     from sourceSets.warfare44pack.output
 
     manifest {
         attributes(
                 'Implementation-Title': 'warfare44',
-                'Implementation-Version': '3.2'
+                'Implementation-Version': '4.0'
         )
     }
 }
