@@ -24,6 +24,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
+import com.flansmodultimate.network.server.PacketGunSwitchDelay;
 import com.flansmodultimate.util.ModUtils;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,9 @@ public class ClientGunHooksImpl implements IClientGunHooks
 {
     private static final int AA_GUN_BARREL_ORIGIN_SYNC_INTERVAL = 100;
     private static final Map<Integer, Long> aaGunBarrelOriginSyncTicks = new HashMap<>();
+    /** Last held gun per hand and last selected hotbar slot, used to detect weapon switches client side */
+    private static final Map<InteractionHand, GunItem> lastHeldGuns = new EnumMap<>(InteractionHand.class);
+    private static int lastSelectedSlot = -1;
 
     @Override
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
@@ -236,6 +241,9 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static void handleGunSwitchDelay(GunItem gunItem, @NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand)
     {
+        if (!hasSwitchedGun(gunItem, hand))
+            return;
+
         float animationLength = gunItem.getConfigType().getSwitchDelay();
         if (animationLength == 0)
         {
@@ -248,9 +256,27 @@ public class ClientGunHooksImpl implements IClientGunHooks
             animations.setSwitchAnimationLength(animationLength);
             ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
 
-            //TODO: data should be also updated on Server
             data.setShootTime(hand, Math.max(data.getShootTime(hand), animationLength));
+            // The server owns the shooting logic, so it has to know about the switch delay as well
+            PacketHandler.sendToServer(new PacketGunSwitchDelay(hand));
         }
+    }
+
+    /**
+     * @return whether the gun held in the given hand changed since the last check, which is what starts the switch delay
+     */
+    private static boolean hasSwitchedGun(GunItem gunItem, InteractionHand hand)
+    {
+        boolean switched = lastHeldGuns.put(hand, gunItem) != gunItem;
+
+        if (hand == InteractionHand.MAIN_HAND)
+        {
+            int selectedSlot = Minecraft.getInstance().player == null ? -1 : Minecraft.getInstance().player.getInventory().selected;
+            switched |= selectedSlot != lastSelectedSlot;
+            lastSelectedSlot = selectedSlot;
+        }
+
+        return switched;
     }
 
     public void accelerateMinigun(Player player, InteractionHand hand, float rotationSpeed)

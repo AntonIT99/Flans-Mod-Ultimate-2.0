@@ -710,6 +710,7 @@ public final class TeamsManager
         PlayerData data = PlayerData.getInstance(player);
         Team team = data.getTeam();
         PlayerClass playerClass = data.getPlayerClass();
+        data.setReloadedAfterRespawn(false);
         player.getInventory().clearContent();
         for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET))
         {

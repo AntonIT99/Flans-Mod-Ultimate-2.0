@@ -53,7 +53,7 @@ public class PlayerData
     private float shootTimeLeft;
     /** Stops player shooting immediately after swapping weapons */
     @Getter @Setter
-    private int shootClickDelay; //TODO: implement shootClick
+    private int shootClickDelay;
     /** True if this player is shooting */
     private boolean isShootingRight;
     private boolean isShootingLeft;
@@ -80,11 +80,13 @@ public class PlayerData
     @Getter @Setter
     private int meleeLength;
     /** When the player shoots a burst fire weapon, one shot is fired immediately and this counter keeps track of how many more should be fired */
-    private int burstRoundsRemainingLeft = 0; //TODO: implement burst
+    private int burstRoundsRemainingLeft = 0;
     @Getter @Setter
     private int burstRoundsRemainingRight = 0;
     private PendingReload pendingReload;
-    private boolean reloadedAfterRespawn; //TODO: implement
+    /** In a teams round, the first reload after respawning is instant so that players are not defenceless on spawn */
+    @Getter @Setter
+    private boolean reloadedAfterRespawn;
     @Getter
     private Vector3f[] lastMeleePositions;
 
@@ -338,5 +340,4 @@ public class PlayerData
         }
     }
 
-    //TODO: Events from PlayerHandler
 }

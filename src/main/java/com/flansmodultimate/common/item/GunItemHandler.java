@@ -25,6 +25,7 @@ import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -142,6 +143,9 @@ public class GunItemHandler
             actionRequested = shootEdgePressed;
 
         if (!actionRequested)
+            return EnumFireDecision.NO_ACTION;
+        // Stops the player shooting immediately after picking a gun up from the ground
+        if (data.getShootClickDelay() > 0)
             return EnumFireDecision.NO_ACTION;
         if (data.getShootTime(hand) > 0F)
             return EnumFireDecision.NO_ACTION;
@@ -294,9 +298,17 @@ public class GunItemHandler
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, otherHand);
 
+        // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
+        boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();
+        if (instantRespawnReload)
+            reloadTime = 0F;
+
         boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().ammoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
         if (reloaded)
         {
+            if (instantRespawnReload)
+                data.setReloadedAfterRespawn(true);
+
             EnchantmentModule.damageReloadModifier(player, otherHand);
 
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);

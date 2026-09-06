@@ -244,30 +244,33 @@ public final class ModUtils
         }
     }
 
+    /**
+     * Resolves a block from a registry name. Numeric ids are a 1.7.10 / 1.12 legacy syntax: since 1.13 numeric ids are
+     * a dynamic runtime palette, so resolving them would yield an arbitrary block. Such ids are therefore rejected.
+     */
     public static Optional<BlockState> getBlockState(String id)
     {
-        //Warning: Block.stateById() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
         if (isInteger(id))
         {
-            return Optional.of(Block.stateById(Integer.parseInt(id)));
+            FlansMod.log.warn("Numeric block id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            return Optional.empty();
         }
-        else
-        {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.BLOCKS::getValue).map(Block::defaultBlockState);
-        }
+
+        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.BLOCKS::getValue).map(Block::defaultBlockState);
     }
 
+    /**
+     * Resolves an item from a registry name. Numeric ids are rejected, see {@link #getBlockState(String)}.
+     */
     public static Optional<ItemStack> getItemStack(String id)
     {
-        //Warning: Item.byId() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
         if (isInteger(id))
         {
-            return Optional.of(new ItemStack(Item.byId(Integer.parseInt(id))));
+            FlansMod.log.warn("Numeric item id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            return Optional.empty();
         }
-        else
-        {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.ITEMS::getValue).map(ItemStack::new);
-        }
+
+        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.ITEMS::getValue).map(ItemStack::new);
     }
 
     public static boolean isGlass(BlockState state)
