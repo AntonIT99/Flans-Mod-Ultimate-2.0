@@ -313,6 +313,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected boolean engineRequested;
     protected boolean engineStarting;
     protected boolean driverWasPresent;
+    protected boolean wasRidden;
     protected boolean wasEngineActive;
     protected boolean placementEffectsPending;
     protected boolean destroyed;
@@ -367,6 +368,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         engineRequested = false;
         engineStarting = false;
         driverWasPresent = false;
+        wasRidden = false;
         placementEffectsPending = !level().isClientSide;
         recoilTicksRemaining = 0;
         recoilDuration = 0;
@@ -1109,9 +1111,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (configType == null)
             return;
         boolean occupied = isUnderCommand();
+        // A driver moving to a passenger seat keeps the engine running; it is only cut
+        // once the driveable is left entirely.
+        boolean ridden = occupied || hasRider();
         if (occupied && !driverWasPresent)
             engineRequested = true;
-        else if (!occupied && driverWasPresent)
+        else if (!ridden && wasRidden)
         {
             engineRequested = false;
             engineStarting = false;
@@ -1119,11 +1124,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             setThrottle(0F);
         }
         driverWasPresent = occupied;
+        wasRidden = ridden;
 
         boolean flooded = isUnderWater() && !configType.isWorksUnderWater();
         if (flooded)
             setThrottle(0F);
-        boolean canStart = occupied && !flooded && hasFuelForEngine();
+        boolean canStart = ridden && !flooded && hasFuelForEngine();
         if (!engineRequested || !canStart)
         {
             setFlag(FLAG_ENGINE, false);
@@ -2951,6 +2957,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         Seat driver = getDriverSeat();
         if (driver != null)
             driver.onMouseMoved(deltaX, deltaY);
+    }
+
+    /** Whether any seat still carries a rider, driver seat included. */
+    protected boolean hasRider()
+    {
+        for (Seat seat : seats)
+        {
+            if (seat != null && seat.getFirstPassenger() != null)
+                return true;
+        }
+        return false;
     }
 
     @Nullable
