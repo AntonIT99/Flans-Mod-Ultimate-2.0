@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public final class GunpowderRecipeCondition implements ICondition
 {
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "add_gunpowder_recipe");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "add_gunpowder_recipe");
     public static final Serializer SERIALIZER = new Serializer();
 
     @Override
