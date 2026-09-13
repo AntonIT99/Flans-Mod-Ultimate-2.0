@@ -72,12 +72,21 @@ public final class HelicopterPhysics
         return demand * rpm * rpm * Mth.clamp(finite(intactFraction), 0F, 1F);
     }
 
-    /** Tilt redirects the whole rotor force; no fixed-wing stall or automatic tilt compensation. */
+    /** Hover starts the horizontal speed range; full throttle unlocks full speed. */
+    public static double horizontalSpeedFraction(float throttle)
+    {
+        return Mth.clamp((finite(throttle) - 0.5D) * 2D, 0D, 1D);
+    }
+
+    /** Tilt redirects lift, with collective-scaled translation and no automatic tilt compensation. */
     public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
                             float collective, float rotorSpeed, float intactFraction)
     {
         double lift = lift(performance, collective, rotorSpeed, intactFraction);
-        Vec3 accelerated = velocity.add(up.scale(lift)).add(0D, -GRAVITY, 0D);
+        // Collective limits translation as well as lift, for fine low-speed handling.
+        double lever = horizontalSpeedFraction(collective);
+        Vec3 accelerated = velocity.add(up.x * lift * lever * lever,
+            up.y * lift - GRAVITY, up.z * lift * lever * lever);
         double horizontalDrag = performance.horizontalDrag();
         if (performance.terminalSpeed() > 0D)
         {
@@ -88,12 +97,33 @@ public final class HelicopterPhysics
             horizontalDrag = Math.max(0.001D, levelThrust / performance.terminalSpeed())
                 * velocity.horizontalDistance() / performance.terminalSpeed();
         }
-        double verticalDrag = performance.verticalDrag();
-        if (performance.climbSpeed() > 0D && accelerated.y > 0D)
-            verticalDrag = Math.max(0.001D,
-                (performance.maximumLift() - GRAVITY) / performance.climbSpeed());
-        return new Vec3(accelerated.x / (1D + horizontalDrag),
-            accelerated.y / (1D + verticalDrag), accelerated.z / (1D + horizontalDrag));
+        // Arrest drift when level; fade this assistance out by about 17 degrees
+        // of tilt so published full-power cruise remains a force equilibrium.
+        double levelBraking = 0.12D * (1D - Mth.clamp(up.horizontalDistance() / 0.3D, 0D, 1D));
+        horizontalDrag = Math.max(horizontalDrag, levelBraking);
+        double verticalDrag = Math.max(0.1D, performance.verticalDrag());
+        if (performance.climbSpeed() > 0D)
+            verticalDrag = Math.max(0.001D, (up.y * lift < GRAVITY
+                ? GRAVITY : Math.max(0D, performance.maximumLift() - GRAVITY)) / performance.climbSpeed());
+        // Increase the response rate of slow climb calibrations without changing
+        // their equilibrium speed. Apply the same gain to net force and drag.
+        double verticalResponse = Math.max(1D, 0.1D / verticalDrag);
+        Vec3 result = new Vec3(accelerated.x / (1D + horizontalDrag),
+            (velocity.y + (up.y * lift - GRAVITY) * verticalResponse)
+                / (1D + verticalDrag * verticalResponse), accelerated.z / (1D + horizontalDrag));
+        double fullSpeed = performance.terminalSpeed() > 0D ? performance.terminalSpeed()
+            : performance.maximumLift() / Math.max(0.001D, performance.horizontalDrag());
+        double targetSpeed = fullSpeed * lever;
+        double horizontalSpeed = result.horizontalDistance();
+        if (horizontalSpeed > targetSpeed)
+        {
+            // Bleed excess momentum smoothly when the pilot lowers the lever.
+            double limitedSpeed = Math.min(horizontalSpeed,
+                Math.max(targetSpeed, velocity.horizontalDistance() / 1.12D));
+            double scale = limitedSpeed / horizontalSpeed;
+            result = new Vec3(result.x * scale, result.y, result.z * scale);
+        }
+        return result;
     }
 
     /** Apply the authored speed before wrapping, including fractional and negative rotor ratios. */

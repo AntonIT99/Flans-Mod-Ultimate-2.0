@@ -438,9 +438,6 @@ public class Plane extends Driveable
 
         if (!powered)
             throttle = approach(throttle, 0F, 0.008F);
-        else if (getPlaneMode() == EnumPlaneMode.HELI && type.isHeliThrottlePull()
-            && !DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD | DriveableInput.BACKWARD))
-            throttle = Mth.lerp(0.01F, throttle, 0.5F);
         if (isUnderWater() && !type.isWorksUnderWater())
             throttle = 0F;
         setThrottle(throttle);
@@ -683,7 +680,7 @@ public class Plane extends Driveable
         Vec3 current = getDeltaMovement();
         float rotorFraction = rotorEfficiency(type);
         float throttle = isEngineActive() ? getThrottle() : 0F;
-        float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
+        float thrust = LegacyPlanePhysics.thrust(1F, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
             type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * 2F;
         ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
         RealWorldVehicleSpec spec = ModCommonConfig.forceLegacyPlanePhysics()

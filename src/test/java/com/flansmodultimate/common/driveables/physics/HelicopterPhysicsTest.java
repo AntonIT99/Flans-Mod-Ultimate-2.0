@@ -32,10 +32,67 @@ class HelicopterPhysicsTest
     }
 
     @Test
+    void horizontalSpeedRangeStartsAtHoverAndReachesFullSpeedAtFullThrottle()
+    {
+        assertEquals(0D, HelicopterPhysics.horizontalSpeedFraction(0.25F));
+        assertEquals(0D, HelicopterPhysics.horizontalSpeedFraction(0.5F));
+        assertEquals(0.25D, HelicopterPhysics.horizontalSpeedFraction(0.625F));
+        assertEquals(0.5D, HelicopterPhysics.horizontalSpeedFraction(0.75F));
+        assertEquals(1D, HelicopterPhysics.horizontalSpeedFraction(1F));
+    }
+
+    @Test
+    void levelingBrakesDriftWithoutAddingForwardMotion()
+    {
+        for (float throttle : new float[] {0F, 0.25F, 0.5F, 0.75F, 1F})
+        {
+            assertEquals(0D, HelicopterPhysics.step(Vec3.ZERO, UP, legacy(), throttle, 1F, 1F)
+                .horizontalDistance(), EPSILON);
+            Vec3 velocity = new Vec3(1D, 0D, -1D);
+            for (int tick = 0; tick < 40; tick++)
+                velocity = HelicopterPhysics.step(velocity, UP, legacy(), throttle, 1F, 1F);
+            assertTrue(velocity.horizontalDistance() < 0.02D);
+        }
+    }
+
+    @Test
+    void pitchDirectionAndThrottleDetermineTranslation()
+    {
+        for (var performance : new HelicopterPhysics.Performance[] {legacy(),
+            HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 1F, 0.08F, 1F, 1D)})
+        {
+            Vec3 low = Vec3.ZERO;
+            Vec3 high = Vec3.ZERO;
+            Vec3 backward = Vec3.ZERO;
+            for (int tick = 0; tick < 2000; tick++)
+            {
+                low = HelicopterPhysics.step(low, new Vec3(0.6D, 0.8D, 0D), performance, 0.625F, 1F, 1F);
+                high = HelicopterPhysics.step(high, new Vec3(0.6D, 0.8D, 0D), performance, 1F, 1F, 1F);
+                backward = HelicopterPhysics.step(backward, new Vec3(-0.6D, 0.8D, 0D), performance, 1F, 1F, 1F);
+            }
+            assertTrue(low.x > 0D && low.x <= high.x * 0.25D + EPSILON);
+            assertEquals(-high.x, backward.x, EPSILON);
+        }
+    }
+
+    @Test
+    void loweringCollectiveReversesClimbPromptly()
+    {
+        var performance = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 1F, 0.08F, 1F, 1D);
+        Vec3 velocity = new Vec3(0D, performance.climbSpeed(), 0D);
+        for (int tick = 0; tick < 20; tick++)
+            velocity = HelicopterPhysics.step(velocity, UP, performance, 0.25F, 1F, 1F);
+        assertTrue(velocity.y < 0D);
+        for (int tick = 0; tick < 20; tick++)
+            velocity = HelicopterPhysics.step(velocity, UP, performance, 0.75F, 1F, 1F);
+        assertTrue(velocity.y > 0D);
+    }
+
+    @Test
     void bankingRedirectsLiftAndRequiresMoreCollective()
     {
         Vec3 tilted = new Vec3(0.6D, 0.8D, 0D);
-        Vec3 velocity = HelicopterPhysics.step(Vec3.ZERO, tilted, legacy(), 0.5F, 1F, 1F);
+        Vec3 velocity = HelicopterPhysics.step(Vec3.ZERO, tilted, legacy(), 0.55F, 1F, 1F);
         assertTrue(velocity.x > 0D);
         assertTrue(velocity.y < 0D);
         assertTrue(HelicopterPhysics.step(Vec3.ZERO, UP.scale(-1D), legacy(), 0.5F, 1F, 1F).y
