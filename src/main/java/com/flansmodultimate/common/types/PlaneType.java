@@ -12,6 +12,8 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -23,6 +25,30 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class PlaneType extends DriveableType
 {
+    @Override
+    public String getEngineStartupSound()
+    {
+        return StringUtils.firstNonBlank(startEngineSound, startSound);
+    }
+
+    @Override
+    public int getEngineStartupSoundLength()
+    {
+        return StringUtils.isNotBlank(startEngineSound) ? startEngineSoundLength : startSoundLength;
+    }
+
+    @Override
+    public String getEngineIdleLoopSound()
+    {
+        return StringUtils.firstNonBlank(idleSound, engineSound);
+    }
+
+    @Override
+    public float getEngineIdleLoopPitchRange()
+    {
+        return StringUtils.isBlank(idleSound) ? engineSoundPitchRange : 0F;
+    }
+
     protected EnumPlaneMode mode = EnumPlaneMode.PLANE;
     protected float lookDownModifier = 1F;
     protected float lookUpModifier = 1F;

@@ -1621,6 +1621,30 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         return result;
     }
 
+    /** Sound played once when this driveable's engine finishes starting. */
+    public String getEngineStartupSound()
+    {
+        return startEngineSound;
+    }
+
+    /** Length of {@link #getEngineStartupSound()}, used to defer the continuous engine loop. */
+    public int getEngineStartupSoundLength()
+    {
+        return startEngineSoundLength;
+    }
+
+    /** Continuous sound used by a running engine while the throttle is neutral. */
+    public String getEngineIdleLoopSound()
+    {
+        return StringUtils.firstNonBlank(idleSound, startSound);
+    }
+
+    /** Pitch range for the neutral-throttle loop. Vehicles keep their idle loop at normal pitch. */
+    public float getEngineIdleLoopPitchRange()
+    {
+        return 0F;
+    }
+
     @FunctionalInterface private interface SeatVectorSetter { void set(SeatInfo seat, Vector3f value); }
     @FunctionalInterface private interface SeatBooleanSetter { void set(SeatInfo seat, boolean value); }
     @FunctionalInterface private interface SeatIntSetter { void set(SeatInfo seat, int value); }
