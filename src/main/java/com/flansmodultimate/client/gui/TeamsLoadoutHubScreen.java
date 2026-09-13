@@ -79,7 +79,10 @@ public final class TeamsLoadoutHubScreen extends Screen
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
         graphics.blit(FlansMod.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
-        graphics.drawCenteredString(font, state.getPoolName(), width / 2, top + 9, 0xFFFFFF);
+        // The server's greeting takes the header, as it did in 1.12.2, with the pool named
+        // underneath it so neither is lost.
+        graphics.drawCenteredString(font, state.getMotd(), width / 2, top + 6, 0xFFFFFF);
+        graphics.drawCenteredString(font, state.getPoolName(), width / 2, top + 16, 0xA0A0A0);
         graphics.drawString(font, "Rank " + state.getRank(), left + 113, top + 150, 0xFFFFFF, false);
         TeamsRankIcon.draw(graphics, state.getRank(), 0, left + 9, top + 146, false);
 

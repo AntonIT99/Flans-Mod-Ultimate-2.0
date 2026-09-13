@@ -15,6 +15,7 @@ import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.entity.AAGun;
@@ -139,6 +140,8 @@ public final class ClientEventHandler
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
+        OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(),
+            event.getCamera(), event.getPartialTick());
 
         if (ModClient.isDebug())
         {

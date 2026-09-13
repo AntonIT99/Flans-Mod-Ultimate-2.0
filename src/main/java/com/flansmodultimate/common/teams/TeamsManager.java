@@ -59,8 +59,11 @@ public final class TeamsManager
     private static final String NBT_ELAPSED = "elapsed";
     private static final String NBT_INTERMISSION = "intermission";
     private static final String NBT_INTERMISSION_VOTING_PHASE = "intermission_voting_phase";
+    private static final String NBT_INTERMISSION_PHASE = "intermission_phase";
     private static final String NBT_SCORE_DISPLAY_TIME = "score_display_time";
+    private static final String NBT_RANK_UPDATE_TIME = "rank_update_time";
     private static final String NBT_VOTING_TIME = "voting_time";
+    private static final String NBT_MOTD = "motd";
     private static final String NBT_AUTO_BALANCE_INTERVAL = "auto_balance_interval";
     private static final String NBT_VOTE_OPTIONS = "vote_options";
     private static final String NBT_ID = "id";
@@ -92,12 +95,28 @@ public final class TeamsManager
     private static final int DEFAULT_INTERMISSION_PHASE_TICKS = 200;
     private static final int DEFAULT_AUTO_BALANCE_INTERVAL_TICKS = 400;
     private static final int AUTO_BALANCE_WARNING_TICKS = 200;
-    
+    public static final String DEFAULT_MOTD = "Welcome to the Teams server";
+
     public enum EnumWeaponDrop
-    { 
-        NONE, 
-        DROPS, 
-        SMART_DROPS 
+    {
+        NONE,
+        DROPS,
+        SMART_DROPS
+    }
+
+    /**
+     * The stage the break between rounds is in.
+     *
+     * <p>They run in order: the scoreboard, then the rank and reward screen where a loadout
+     * pool is in play, then voting where it is enabled. Each stage has its own duration and
+     * any of them can be turned off by setting that duration to zero.</p>
+     */
+    public enum IntermissionPhase
+    {
+        NONE,
+        SCORES,
+        RANK_UPDATE,
+        VOTING
     }
 
     private static TeamsManager instance;
@@ -181,10 +200,16 @@ public final class TeamsManager
     @Getter
     private int scoreDisplayTimeTicks = DEFAULT_INTERMISSION_PHASE_TICKS;
     @Getter
+    private int rankUpdateTimeTicks = DEFAULT_INTERMISSION_PHASE_TICKS;
+    @Getter
     private int votingTimeTicks = DEFAULT_INTERMISSION_PHASE_TICKS;
     @Getter
     private int autoBalanceIntervalTicks = DEFAULT_AUTO_BALANCE_INTERVAL_TICKS;
-    private boolean intermissionVotingPhase;
+    @Getter
+    private IntermissionPhase intermissionPhase = IntermissionPhase.NONE;
+    /** Greeting shown to players on the loadout landing page. */
+    @Getter
+    private String motd = DEFAULT_MOTD;
     private final List<UUID> voteOptionIds = new ArrayList<>();
 
     public TeamsManager()
@@ -257,10 +282,27 @@ public final class TeamsManager
         saveRuntime();
     }
 
+    public void setRankUpdateTimeSeconds(int seconds)
+    {
+        rankUpdateTimeTicks = secondsToTicks(seconds);
+        saveRuntime();
+    }
+
     public void setVotingTimeSeconds(int seconds)
     {
         votingTimeTicks = secondsToTicks(seconds);
         saveRuntime();
+    }
+
+    /** Sets the greeting; a blank value restores the default rather than clearing it. */
+    public void setMotd(@Nullable String value)
+    {
+        motd = value == null || value.isBlank() ? DEFAULT_MOTD : value.strip();
+        saveRuntime();
+        if (server == null)
+            return;
+        server.getPlayerList().getPlayers().forEach(player ->
+            syncLoadouts(player, PacketLoadoutState.OpenScreen.NONE, 0, ""));
     }
 
     public void setAutoBalanceIntervalSeconds(int seconds)
@@ -478,7 +520,7 @@ public final class TeamsManager
         roundTimeLeftTicks = next.getTimeLimitTicks();
         roundElapsedTicks = 0;
         intermissionTicks = 0;
-        intermissionVotingPhase = false;
+        intermissionPhase = IntermissionPhase.NONE;
         roundRunning = true;
         voteOptionIds.clear();
         resetScores();
@@ -498,9 +540,13 @@ public final class TeamsManager
         next.getGametype().roundStarted(this);
         broadcast(Component.literal("Starting " + next.getGametype().getName() + " on " + getMap(next.getMapId()).orElseThrow().getName()));
         saveRuntime();
-        getServer().getPlayerList().getPlayers().forEach(player ->
+        getServer().getPlayerList().getPlayers().forEach(player -> {
+            // The break's own screens belong to the break: take down anything still showing
+            // results before the new round's team selection goes up.
+            syncLoadouts(player, PacketLoadoutState.OpenScreen.CLOSE, 0, "");
             syncPlayer(player, getPlayerTeam(player) == null || getPlayerTeam(player) == Team.SPECTATORS
-                ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.CLOSE));
+                ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.CLOSE);
+        });
         return true;
     }
 
@@ -523,7 +569,7 @@ public final class TeamsManager
         roundTimeLeftTicks = 0;
         roundElapsedTicks = 0;
         intermissionTicks = 0;
-        intermissionVotingPhase = false;
+        intermissionPhase = IntermissionPhase.NONE;
         voteOptionIds.clear();
         resetScores();
         saveRuntime();
@@ -581,39 +627,81 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         awardRoundStats();
         voteOptionIds.clear();
-        intermissionVotingPhase = false;
+        intermissionPhase = IntermissionPhase.NONE;
+        broadcast(Component.literal("Round over. " + nextRoundNotice()));
+        beginScoreDisplay();
+    }
+
+    /** Says when play resumes, counting every stage of the break that is switched on. */
+    private String nextRoundNotice()
+    {
+        int beforeVoting = scoreDisplayTimeTicks + rankUpdateTicksForRound();
+        if (voting)
+            return "Voting begins in " + beforeVoting / 20 + " seconds.";
+        return "Next round starts in " + beforeVoting / 20 + " seconds.";
+    }
+
+    /** The rank stage only applies while a loadout pool is giving out ranks and rewards. */
+    private int rankUpdateTicksForRound()
+    {
+        return getCurrentLoadoutPool().isPresent() ? rankUpdateTimeTicks : 0;
+    }
+
+    private void beginScoreDisplay()
+    {
+        intermissionPhase = IntermissionPhase.SCORES;
         intermissionTicks = scoreDisplayTimeTicks;
-        broadcast(Component.literal(voting
-            ? "Round over. Voting begins in " + scoreDisplayTimeTicks / 20 + " seconds."
-            : "Round over. Next round starts in " + scoreDisplayTimeTicks / 20 + " seconds."));
         saveRuntime();
         if (intermissionTicks == 0)
         {
             advanceIntermission();
             return;
         }
-        if (getCurrentLoadoutPool().isPresent())
-            getServer().getPlayerList().getPlayers().forEach(player -> syncLoadouts(player, PacketLoadoutState.OpenScreen.MISSION_RESULTS, 0, ""));
-        else
-            syncAll(PacketTeamsState.OpenScreen.SCOREBOARD);
+        syncAll(PacketTeamsState.OpenScreen.SCOREBOARD);
     }
 
-    private void advanceIntermission()
+    private void beginRankUpdate()
     {
-        if (!intermissionVotingPhase && voting)
+        intermissionPhase = IntermissionPhase.RANK_UPDATE;
+        intermissionTicks = rankUpdateTicksForRound();
+        saveRuntime();
+        if (intermissionTicks == 0)
         {
-            beginVoting();
+            advanceIntermission();
             return;
         }
-        if (intermissionVotingPhase)
-            startVotedRound();
-        else
-            startNextRound();
+        getServer().getPlayerList().getPlayers()
+            .forEach(player -> syncLoadouts(player, PacketLoadoutState.OpenScreen.MISSION_RESULTS, 0, ""));
+    }
+
+    /** Steps to the next stage of the break, skipping any that is switched off. */
+    private void advanceIntermission()
+    {
+        switch (intermissionPhase)
+        {
+            case NONE, SCORES ->
+            {
+                if (rankUpdateTicksForRound() > 0)
+                    beginRankUpdate();
+                else if (voting)
+                    beginVoting();
+                else
+                    startNextRound();
+            }
+            case RANK_UPDATE ->
+            {
+                if (voting)
+                    beginVoting();
+                else
+                    startNextRound();
+            }
+            case VOTING -> startVotedRound();
+        }
     }
 
     private void beginVoting()
     {
-        intermissionVotingPhase = true;
+        intermissionPhase = IntermissionPhase.VOTING;
         pickVoteOptions();
         intermissionTicks = votingTimeTicks;
         broadcast(Component.literal("Vote for the next round with /teams vote <number>."));
@@ -644,7 +732,7 @@ public final class TeamsManager
 
     public boolean castVote(ServerPlayer player, int option)
     {
-        if (!intermissionVotingPhase || intermissionTicks <= 0 || option < 1 || option > voteOptionIds.size())
+        if (intermissionPhase != IntermissionPhase.VOTING || intermissionTicks <= 0 || option < 1 || option > voteOptionIds.size())
             return false;
         PlayerData.getInstance(player).setVote(option);
         syncAll(PacketTeamsState.OpenScreen.NONE);
@@ -742,6 +830,72 @@ public final class TeamsManager
         getStats(player).setSelection(team.getOriginalShortName(), playerClass.getOriginalShortName());
         markDirty();
         return true;
+    }
+
+    /**
+     * Puts a player's pending team and class choice into effect.
+     *
+     * <p>What that costs depends on what changed. A player who has not taken the field yet
+     * simply spawns. Someone changing class on the team they are already fighting for keeps
+     * playing and gets the new kit at their next spawn, so the class menu cannot be used as a
+     * free resupply. Changing sides mid-round is a defection: it is announced and the player
+     * dies where they stand, coming back on their new team.</p>
+     */
+    public void confirmSelection(ServerPlayer player)
+    {
+        PlayerData data = PlayerData.getInstance(player);
+        Team current = data.getTeam();
+        Team next = data.getNewTeam();
+
+        // Waiting to respawn already: the respawn hook applies the choice when they come back.
+        if (!player.isAlive())
+            return;
+
+        // Not in play yet, so there is nothing to interrupt: take the field.
+        if (!roundRunning || current == null || next == null || current == Team.SPECTATORS)
+        {
+            respawnPlayer(player, true);
+            return;
+        }
+
+        if (current == next)
+        {
+            announcePendingKit(player, data);
+            return;
+        }
+
+        broadcast(Component.translatable("message.flansmodultimate.teams.switched_team",
+            player.getScoreboardName(), next.getName()));
+        getCurrentGameType().ifPresent(type -> type.playerDefected(this, player, current, next));
+
+        // Dying is what makes the change take hold: the respawn hook then applies the pending
+        // selection and places the player at their new team's spawn. A rider is put out of
+        // their seat first, because damage to anyone in a driveable is suppressed.
+        player.stopRiding();
+        if (!player.getAbilities().instabuild)
+            player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+        // Creative players, and anyone a game type shields from damage, change over directly.
+        if (player.isAlive())
+            respawnPlayer(player, true);
+    }
+
+    /**
+     * Tells a player still fighting for the same team that their new kit is queued.
+     *
+     * <p>It deliberately does not take effect now: applying it here would turn the class and
+     * loadout menus into a full heal and resupply in the middle of a firefight.</p>
+     */
+    private void announcePendingKit(ServerPlayer player, PlayerData data)
+    {
+        PlayerClass playerClass = data.getNewPlayerClass();
+        if (playerClass != null && playerClass != data.getPlayerClass())
+        {
+            getCurrentGameType().ifPresent(type -> type.playerChoseNewClass(this, player, playerClass));
+            player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.class_on_respawn", playerClass.getName()));
+            return;
+        }
+        if (getCurrentLoadoutPool().isPresent())
+            player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.loadout_on_respawn"));
     }
 
     private boolean wouldUnbalance(Team requested)
@@ -1234,10 +1388,11 @@ public final class TeamsManager
         roundTimeLeftTicks = tag.getInt(NBT_TIME_LEFT);
         roundElapsedTicks = tag.getInt(NBT_ELAPSED);
         intermissionTicks = tag.getInt(NBT_INTERMISSION);
-        intermissionVotingPhase = tag.contains(NBT_INTERMISSION_VOTING_PHASE)
-            ? tag.getBoolean(NBT_INTERMISSION_VOTING_PHASE) : !tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND).isEmpty();
+        intermissionPhase = readIntermissionPhase(tag);
         scoreDisplayTimeTicks = tag.contains(NBT_SCORE_DISPLAY_TIME) ? Math.max(0, tag.getInt(NBT_SCORE_DISPLAY_TIME)) : DEFAULT_INTERMISSION_PHASE_TICKS;
+        rankUpdateTimeTicks = tag.contains(NBT_RANK_UPDATE_TIME) ? Math.max(0, tag.getInt(NBT_RANK_UPDATE_TIME)) : DEFAULT_INTERMISSION_PHASE_TICKS;
         votingTimeTicks = tag.contains(NBT_VOTING_TIME) ? Math.max(0, tag.getInt(NBT_VOTING_TIME)) : DEFAULT_INTERMISSION_PHASE_TICKS;
+        motd = tag.contains(NBT_MOTD) ? tag.getString(NBT_MOTD) : DEFAULT_MOTD;
         autoBalanceIntervalTicks = tag.contains(NBT_AUTO_BALANCE_INTERVAL)
             ? Math.max(AUTO_BALANCE_WARNING_TICKS + 20, tag.getInt(NBT_AUTO_BALANCE_INTERVAL)) : DEFAULT_AUTO_BALANCE_INTERVAL_TICKS;
         voteOptionIds.clear();
@@ -1295,6 +1450,28 @@ public final class TeamsManager
             type.loadSettings(tag);
     }
 
+    /**
+     * Reads the intermission stage, understanding worlds saved before the stage was split.
+     *
+     * <p>Those only recorded whether voting had started, so a break in progress resumes at
+     * voting or at the scoreboard rather than restarting the whole sequence.</p>
+     */
+    private static IntermissionPhase readIntermissionPhase(CompoundTag tag)
+    {
+        if (tag.contains(NBT_INTERMISSION_PHASE, Tag.TAG_STRING))
+        {
+            String name = tag.getString(NBT_INTERMISSION_PHASE);
+            for (IntermissionPhase phase : IntermissionPhase.values())
+                if (phase.name().equals(name))
+                    return phase;
+        }
+        boolean legacyVoting = tag.contains(NBT_INTERMISSION_VOTING_PHASE)
+            ? tag.getBoolean(NBT_INTERMISSION_VOTING_PHASE) : !tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND).isEmpty();
+        if (legacyVoting)
+            return IntermissionPhase.VOTING;
+        return tag.getInt(NBT_INTERMISSION) > 0 ? IntermissionPhase.SCORES : IntermissionPhase.NONE;
+    }
+
     private void saveRuntime()
     {
         if (savedData == null)
@@ -1312,9 +1489,11 @@ public final class TeamsManager
         tag.putInt(NBT_TIME_LEFT, roundTimeLeftTicks);
         tag.putInt(NBT_ELAPSED, roundElapsedTicks);
         tag.putInt(NBT_INTERMISSION, intermissionTicks);
-        tag.putBoolean(NBT_INTERMISSION_VOTING_PHASE, intermissionVotingPhase);
+        tag.putString(NBT_INTERMISSION_PHASE, intermissionPhase.name());
         tag.putInt(NBT_SCORE_DISPLAY_TIME, scoreDisplayTimeTicks);
+        tag.putInt(NBT_RANK_UPDATE_TIME, rankUpdateTimeTicks);
         tag.putInt(NBT_VOTING_TIME, votingTimeTicks);
+        tag.putString(NBT_MOTD, motd);
         tag.putInt(NBT_AUTO_BALANCE_INTERVAL, autoBalanceIntervalTicks);
         ListTag voteOptions = new ListTag();
 

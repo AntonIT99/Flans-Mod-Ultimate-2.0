@@ -3,6 +3,7 @@ package com.flansmodultimate.common.teams;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
+import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -95,6 +96,17 @@ public abstract class GameType
             .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
         manager.awardExperience(attacker, xp);
     }
+
+    /**
+     * A player changed sides during a running round, having already played for {@code from}.
+     *
+     * <p>Called before the defection is applied, so both teams are still the ones the round
+     * has been scored against.</p>
+     */
+    public void playerDefected(TeamsManager manager, ServerPlayer player, Team from, Team to) {}
+
+    /** A player picked a class they will respawn with, without changing teams. */
+    public void playerChoseNewClass(TeamsManager manager, ServerPlayer player, PlayerClass playerClass) {}
 
     public void flagClicked(TeamsManager manager, ServerPlayer player, Flag flag) {}
 

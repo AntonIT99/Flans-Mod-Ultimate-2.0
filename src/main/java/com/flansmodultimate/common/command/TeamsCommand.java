@@ -49,6 +49,9 @@ public final class TeamsCommand
                     .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getOriginalShortName), builder))
                     .executes(TeamsCommand::selectClass)))
             .then(Commands.literal("score").executes(TeamsCommand::score))
+            .then(Commands.literal("motd").executes(TeamsCommand::showMotd)
+                .then(Commands.argument("text", StringArgumentType.greedyString()).requires(source -> source.hasPermission(2))
+                    .executes(TeamsCommand::setMotd)))
             .then(Commands.literal("vote")
                 .then(Commands.argument("option", IntegerArgumentType.integer(1, 5)).executes(TeamsCommand::vote)))
             .then(Commands.literal("stats").executes(context -> showStats(context.getSource(), context.getSource().getPlayerOrException()))
@@ -117,12 +120,22 @@ public final class TeamsCommand
                     manager(context).setScoreDisplayTimeSeconds(seconds);
                     return success(context, "Round results will be displayed for " + seconds + " seconds");
                 })))
+            .then(Commands.literal("rankUpdateTime")
+                .then(Commands.argument("seconds", IntegerArgumentType.integer(0, 86400)).executes(context -> {
+                    int seconds = IntegerArgumentType.getInteger(context, "seconds");
+                    manager(context).setRankUpdateTimeSeconds(seconds);
+                    return success(context, seconds == 0
+                        ? "The rank update screen is disabled"
+                        : "The rank update screen will appear for " + seconds + " seconds");
+                })))
             .then(Commands.literal("votingTime")
                 .then(Commands.argument("seconds", IntegerArgumentType.integer(0, 86400)).executes(context -> {
                     int seconds = IntegerArgumentType.getInteger(context, "seconds");
                     manager(context).setVotingTimeSeconds(seconds);
                     return success(context, "Round voting will last " + seconds + " seconds");
                 })))
+            .then(Commands.literal("motd")
+                .then(Commands.argument("text", StringArgumentType.greedyString()).executes(TeamsCommand::setMotd)))
             .then(Commands.literal("autobalancetime")
                 .then(Commands.argument("seconds", IntegerArgumentType.integer(11, 86400)).executes(context -> {
                     int seconds = IntegerArgumentType.getInteger(context, "seconds");
@@ -191,9 +204,9 @@ public final class TeamsCommand
 
     private static int help(CommandContext<CommandSourceStack> context)
     {
-        context.getSource().sendSuccess(() -> Component.literal("/teams loadouts, /teams join <team>, /teams class <class>, /teams vote <number>, /teams score, /teams stats, /teams list <gametypes|teams|classes|loadouts|rewardboxes|maps|rounds>"), false);
+        context.getSource().sendSuccess(() -> Component.literal("/teams loadouts, /teams join <team>, /teams class <class>, /teams vote <number>, /teams score, /teams motd, /teams stats, /teams list <gametypes|teams|classes|loadouts|rewardboxes|maps|rounds>"), false);
         if (context.getSource().hasPermission(2))
-            context.getSource().sendSuccess(() -> Component.literal("Administration: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom> <true|false>, /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|votingTime|autobalancetime|roundsGenerator|start|next|stop|arena|survival|kit|map|round|setvariable>"), false);
+            context.getSource().sendSuccess(() -> Component.literal("Administration: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom> <true|false>, /teams motd <text>, /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|stop|arena|survival|kit|map|round|setvariable>"), false);
         return 1;
     }
 
@@ -288,7 +301,20 @@ public final class TeamsCommand
         PlayerClass playerClass = PlayerClass.getPlayerClass(StringArgumentType.getString(context, "class"));
         if (!manager(context).selectClass(player, playerClass))
             return failure(context, "That class is unavailable for your selected team or rank");
+        manager(context).confirmSelection(player);
         return success(context, "Class selected: " + playerClass.getName());
+    }
+
+    private static int showMotd(CommandContext<CommandSourceStack> context)
+    {
+        return success(context, manager(context).getMotd());
+    }
+
+    private static int setMotd(CommandContext<CommandSourceStack> context)
+    {
+        String text = StringArgumentType.getString(context, "text");
+        manager(context).setMotd(text);
+        return success(context, "Message of the day: " + manager(context).getMotd());
     }
 
     private static int score(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException

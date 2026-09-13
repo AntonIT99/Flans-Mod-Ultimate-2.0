@@ -154,7 +154,7 @@ public final class PacketTeamsAction implements IServerPacket
             manager.syncPlayer(player, PacketTeamsState.OpenScreen.CLASS_SELECT);
             return;
         }
-        manager.respawnPlayer(player, true);
+        manager.confirmSelection(player);
         manager.syncPlayer(player, PacketTeamsState.OpenScreen.CLOSE);
     }
 }

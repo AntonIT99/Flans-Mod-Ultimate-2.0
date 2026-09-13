@@ -47,6 +47,7 @@ public final class PacketLoadoutState implements IClientPacket
     public record RewardView(String key, String typeId, String name, int rarity) {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
+    private String motd = "";
     private String poolId = "";
     private String poolName = "";
     private int rank;
@@ -68,6 +69,7 @@ public final class PacketLoadoutState implements IClientPacket
         packet.openScreen = screen;
         packet.editLoadout = Math.max(0, Math.min(LoadoutPool.LOADOUT_COUNT - 1, editLoadout));
         packet.revealedReward = revealedReward == null ? "" : revealedReward;
+        packet.motd = manager.getMotd();
         LoadoutPool pool = manager.getCurrentLoadoutPool().orElse(null);
         if (pool == null) return packet;
         PlayerStats stats = manager.getStats(player);
@@ -121,6 +123,7 @@ public final class PacketLoadoutState implements IClientPacket
     public void encodeInto(FriendlyByteBuf data)
     {
         data.writeByte(openScreen.ordinal());
+        data.writeUtf(motd, 256);
         data.writeUtf(poolId); data.writeUtf(poolName);
         data.writeVarInt(rank); data.writeVarInt(experience); data.writeVarInt(experienceForNextRank);
         data.writeVarInt(selectedLoadout); data.writeVarInt(editLoadout); data.writeUtf(revealedReward);
@@ -147,6 +150,7 @@ public final class PacketLoadoutState implements IClientPacket
     {
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
+        motd = data.readUtf(256);
         poolId = data.readUtf(); poolName = data.readUtf();
         rank = data.readVarInt(); experience = data.readVarInt(); experienceForNextRank = data.readVarInt();
         selectedLoadout = data.readVarInt(); editLoadout = data.readVarInt(); revealedReward = data.readUtf();

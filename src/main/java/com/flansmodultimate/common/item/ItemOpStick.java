@@ -20,9 +20,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class ItemOpStick extends Item
@@ -32,6 +34,13 @@ public final class ItemOpStick extends Item
     private static final String NBT_MODE = "teams_mode";
     private static final String NBT_CONNECTION = "teams_connection";
     private static final String NBT_CONNECTION_BASE = "teams_connection_is_base";
+    /**
+     * Where the selected endpoint stands.
+     *
+     * <p>Recorded alongside its id so the client can draw the pending link without having to
+     * hunt the world for an object it only knows by id.</p>
+     */
+    private static final String NBT_CONNECTION_POS = "teams_connection_pos";
 
     public enum Mode
     {
@@ -118,6 +127,10 @@ public final class ItemOpStick extends Item
         {
             tag.putUUID(NBT_CONNECTION, object.getObjectId());
             tag.putBoolean(NBT_CONNECTION_BASE, object instanceof ITeamBase);
+            Vec3 position = object.getTeamObjectPosition();
+            tag.putLongArray(NBT_CONNECTION_POS, new long[] {
+                Double.doubleToRawLongBits(position.x), Double.doubleToRawLongBits(position.y), Double.doubleToRawLongBits(position.z)
+            });
             player.displayClientMessage(Component.literal("First endpoint selected"), false);
             return;
         }
@@ -190,7 +203,26 @@ public final class ItemOpStick extends Item
         {
             tag.remove(NBT_CONNECTION);
             tag.remove(NBT_CONNECTION_BASE);
+            tag.remove(NBT_CONNECTION_POS);
         }
+    }
+
+    /**
+     * Where the endpoint waiting to be connected stands, if this stick is holding one.
+     *
+     * <p>Empty unless the stick is in connecting mode with a first endpoint chosen, so callers
+     * can use the result directly to decide whether there is a link to show.</p>
+     */
+    public static Optional<Vec3> getPendingConnection(ItemStack stack)
+    {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || getMode(stack) != Mode.CONNECTING || !tag.hasUUID(NBT_CONNECTION))
+            return Optional.empty();
+        long[] packed = tag.getLongArray(NBT_CONNECTION_POS);
+        if (packed.length != 3)
+            return Optional.empty();
+        return Optional.of(new Vec3(Double.longBitsToDouble(packed[0]),
+            Double.longBitsToDouble(packed[1]), Double.longBitsToDouble(packed[2])));
     }
 
     @Override
