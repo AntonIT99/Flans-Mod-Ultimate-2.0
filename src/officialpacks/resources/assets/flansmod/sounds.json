@@ -1355,6 +1355,12 @@
       "flansmod:rocketrumble"
     ]
   },
+  "shell": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shell"
+    ]
+  },
   "shotgunreload": {
     "category": "player",
     "sounds": [

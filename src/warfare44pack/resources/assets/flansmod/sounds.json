@@ -491,6 +491,12 @@
       "flansmod:rocketshoot"
     ]
   },
+  "shell": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shell"
+    ]
+  },
   "shoot_100mmussr": {
     "category": "player",
     "sounds": [
