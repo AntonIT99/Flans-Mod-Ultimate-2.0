@@ -78,7 +78,8 @@ public final class DriveableCollisionWorld
     /**
      * Resolves an entity's movement against blocks, entities and nearby
      * driveable hulls, or returns {@code null} to leave it to vanilla when no
-     * hull is in reach.
+     * hull is in reach. A hull the entity is trapped inside is not one of them,
+     * so it can move out again; see {@link DriveableHullEscape}.
      */
     @Nullable
     public static Vec3 collide(@NotNull Entity entity, @NotNull Vec3 movement)
@@ -248,7 +249,8 @@ public final class DriveableCollisionWorld
             {
                 DriveableCollisionHelper helper = liveHelper(index);
                 if (helper == null || !helper.geometry().mayTouch(reach.minX, reach.minY, reach.minZ, reach.maxX,
-                    reach.maxY, reach.maxZ) || helper.owner().isPartOfThis(entity))
+                    reach.maxY, reach.maxZ) || helper.owner().isPartOfThis(entity)
+                    || helper.escape().isSuspended(entity))
                     continue;
                 if (nearby.isEmpty())
                     nearby = new ArrayList<>(2);

@@ -25,6 +25,9 @@ import java.util.List;
  * each tick this helper poses the hull, carries entities that were standing on
  * it along with it, and pushes out entities it moved into. Candidate discovery
  * is a bounded spatial query and never scans the world's loaded-entity list.</p>
+ *
+ * <p>An entity the push cannot free, because terrain blocks every way out, is
+ * let out instead: see {@link DriveableHullEscape}.</p>
  */
 public final class DriveableCollisionHelper
 {
@@ -35,11 +38,24 @@ public final class DriveableCollisionHelper
     private static final double MAX_SEPARATION_PER_TICK = 0.75D;
     private static final double SEPARATION_THRESHOLD = 1.0E-3D;
     private static final double SEPARATION_SKIN = 1.0E-4D;
+    /** How fast an entity trapped inside a hull is eased out of it, in blocks per tick. */
+    private static final double ESCAPE_SPEED = 0.25D;
+    /** Directions tried, in order, when the shortest way out of a hull leads into terrain. */
+    private static final double[] ESCAPE_FALLBACKS = {
+        0D, 1D, 0D,
+        1D, 0D, 0D,
+        -1D, 0D, 0D,
+        0D, 0D, 1D,
+        0D, 0D, -1D,
+        0D, -1D, 0D
+    };
 
     private final DriveableCollisionProfile profile;
     private final DriveableHullGeometry geometry;
+    private final DriveableHullEscape escape = new DriveableHullEscape();
     private final double[] boundsScratch = new double[6];
     private final double[] vectorScratch = new double[4];
+    private final double[] escapeScratch = new double[4];
     @Nullable
     private Driveable owner;
     @Nullable
@@ -68,6 +84,11 @@ public final class DriveableCollisionHelper
     DriveableHullGeometry geometry()
     {
         return geometry;
+    }
+
+    DriveableHullEscape escape()
+    {
+        return escape;
     }
 
     @Nullable
@@ -156,10 +177,14 @@ public final class DriveableCollisionHelper
             int support = geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
             if (support >= 0)
             {
-                carry(entity, support);
+                // Standing on the hull is never being trapped, so an escape ends here and carrying resumes with it.
+                if (!escape.isSuspended(entity))
+                    carry(entity, support);
                 box = entity.getBoundingBox();
-                if (geometry.findPenetration(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, true,
-                    vectorScratch) && vectorScratch[3] > SEPARATION_THRESHOLD)
+                boolean overlaps = geometry.findPenetration(box.minX, box.minY, box.minZ, box.maxX, box.maxY,
+                    box.maxZ, true, vectorScratch) && vectorScratch[3] > SEPARATION_THRESHOLD;
+                escape.report(entity, overlaps ? vectorScratch[3] : 0D, true);
+                if (overlaps)
                     separate(entity, vectorScratch);
                 return;
             }
@@ -168,11 +193,76 @@ public final class DriveableCollisionHelper
         if (!geometry.findPenetration(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, false,
             vectorScratch) || vectorScratch[3] <= SEPARATION_THRESHOLD)
             return;
+        boolean trapped = escape.report(entity, vectorScratch[3], false);
         if (simulated)
-            separate(entity, vectorScratch);
-        if (!driveable.level().isClientSide && entity instanceof LivingEntity living
+        {
+            if (trapped)
+                easeOut(entity, vectorScratch);
+            else
+                separate(entity, vectorScratch);
+        }
+        // An entity sealed inside the hull would otherwise be run over once every tick until it dies.
+        if (!trapped && !driveable.level().isClientSide && entity instanceof LivingEntity living
             && Math.abs(vectorScratch[1]) < 0.6D)
             applyConfiguredImpactDamage(driveable, type, living);
+    }
+
+    /**
+     * Eases an entity trapped inside the hull towards the nearest way out,
+     * without the shove {@link #separate} gives. While an entity is trapped the
+     * hull is suspended for it, so this only has to keep it drifting free while
+     * it walks out itself rather than clear the whole overlap at once.
+     *
+     * <p>The shortest way out often leads into terrain, which is what trapped
+     * the entity in the first place. Every direction is therefore tried against
+     * the blocks around the entity, and the one actually leaving it least deep
+     * in the hull wins; if none does, it stays put and the suspended hull is
+     * what lets it walk out.</p>
+     */
+    private void easeOut(Entity entity, double[] push)
+    {
+        AABB box = entity.getBoundingBox();
+        double bestDepth = push[3];
+        Vec3 best = Vec3.ZERO;
+        Vec3 step = escapeStep(entity, box, push[0], push[1], push[2],
+            Math.min(ESCAPE_SPEED, push[3] + SEPARATION_SKIN));
+        double depth = depthAfter(box, step);
+        if (depth < bestDepth)
+        {
+            bestDepth = depth;
+            best = step;
+        }
+        for (int index = 0; index < ESCAPE_FALLBACKS.length; index += 3)
+        {
+            step = escapeStep(entity, box, ESCAPE_FALLBACKS[index], ESCAPE_FALLBACKS[index + 1],
+                ESCAPE_FALLBACKS[index + 2], ESCAPE_SPEED);
+            depth = depthAfter(box, step);
+            if (depth < bestDepth)
+            {
+                bestDepth = depth;
+                best = step;
+            }
+        }
+        if (best.lengthSqr() > 0D)
+            entity.setPos(entity.getX() + best.x, entity.getY() + best.y, entity.getZ() + best.z);
+        entity.resetFallDistance();
+    }
+
+    /** The part of one escape step that the blocks around the entity leave free. */
+    private static Vec3 escapeStep(Entity entity, AABB box, double x, double y, double z, double distance)
+    {
+        return Entity.collideBoundingBox(entity, new Vec3(x * distance, y * distance, z * distance), box,
+            entity.level(), List.of());
+    }
+
+    /** How deep in the hull the entity would still be after moving its box by {@code step}. */
+    private double depthAfter(AABB box, Vec3 step)
+    {
+        if (step.lengthSqr() < SEPARATION_SKIN * SEPARATION_SKIN)
+            return Double.POSITIVE_INFINITY;
+        AABB moved = box.move(step);
+        return geometry.findPenetration(moved.minX, moved.minY, moved.minZ, moved.maxX, moved.maxY, moved.maxZ,
+            false, escapeScratch) ? escapeScratch[3] : 0D;
     }
 
     /** Moves an entity with the surface it stood on, turning it with the hull as well. */
