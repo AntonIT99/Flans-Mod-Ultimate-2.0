@@ -127,10 +127,8 @@ public class ModelPlane extends ModelDriveable
                     ? helicopterModeParts : planeModeParts,
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.XP.rotationDegrees(-state.roll()));
-        renderPart(hudModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        poseStack.popPose();
+        renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         if (driveable.getConfigType() instanceof PlaneType planeType && planeType.isValkyrie() && valkyrie.length > 0)
         {
