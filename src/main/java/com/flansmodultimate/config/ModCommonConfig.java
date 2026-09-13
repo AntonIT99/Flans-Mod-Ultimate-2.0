@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.driveables.FluidFuel;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
@@ -177,6 +178,14 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue KINETIC_PENETRATION_REFERENCE;
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> PENETRABLE_BLOCKS_RAW;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> FLUID_FUELS_RAW;
+    /**
+     * BuildCraft's refined fuels carry roughly twice the energy of the crude oil they come
+     * from, the same ratio 1.7.10 used: one bucket of oil is worth a Fuel Can, one of fuel two.
+     */
+    private static final List<String> DEFAULT_FLUID_FUELS = List.of(
+        "buildcraftenergy:oil*; 1000",
+        "buildcraftenergy:fuel*; 2000");
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_DIGITAL_AMMO_SYSTEM;
     private static final ForgeConfigSpec.IntValue DIGITAL_AMMO_DEFAULT_AMOUNT;
@@ -187,6 +196,7 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.BooleanValue FORCE_LEGACY_PLANE_PHYSICS;
     private static final ForgeConfigSpec.BooleanValue FORCE_LEGACY_VEHICLE_PHYSICS;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final ForgeConfigSpec.DoubleValue REALISTIC_PLANE_SPEED_SCALE;
@@ -512,6 +522,11 @@ public final class ModCommonConfig
             .comment("Force all ground and water vehicles to use their legacy movement physics, even when Real* vehicle parameters are present.",
                 "This bypasses derived propulsion, turning loss, slope and reverse overrides, draft, movement scaling and speed caps.")
             .define("forceLegacyVehiclePhysics", false);
+        ENABLE_AIRCRAFT_ROLL_SELF_LEVELING = builder
+            .comment("Enable the weak airborne roll force that slowly returns planes, helicopters and VTOL hover mode toward horizontal.",
+                "Keyboard or mouse roll input overrides it immediately. Fixed-wing airflow, rotor authority, damage and available",
+                "real-world lifting-surface characteristics still determine its strength when enabled.")
+            .define("enableAircraftRollSelfLeveling", true);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder
             .comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
                 "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
@@ -590,6 +605,18 @@ public final class ModCommonConfig
             .comment("As fallbackGroundVehicleMassTons, but for AA guns without a RealMassKg.")
             .defineInRange("fallbackAAGunMassTons", DEFAULT_FALLBACK_AA_GUN_MASS_TONS,
                 MIN_FALLBACK_MASS_TONS, MAX_FALLBACK_MASS_TONS);
+        builder.pop();
+
+        builder.push("Vehicle Fuel Settings");
+        FLUID_FUELS_RAW = builder
+            .comment("Liquid fuels a driveable will burn out of its fuel or cargo slots.",
+                "Any container exposing Forge's fluid handler capability works, buckets included; no mod is required.",
+                "Format per line: <namespace:fluid>; <fuel per bucket>",
+                "A trailing * on the fluid path matches every fluid starting with it, which covers grade and heat variants.",
+                "For scale, the Parts pack Fuel Can holds 1000 fuel and vehicle tanks are usually 1000 to 6000.",
+                "The first matching line wins, so put a specific fluid above a wildcard to override it.",
+                "The defaults cover BuildCraft's oil and fuel families at their 1.7.10 values.")
+            .defineList("fluidFuels", DEFAULT_FLUID_FUELS, String.class::isInstance);
         builder.pop();
 
         builder.push("Vehicle Damage Settings");
@@ -726,6 +753,7 @@ public final class ModCommonConfig
 
             FORCE_LEGACY_PLANE_PHYSICS.get(),
             FORCE_LEGACY_VEHICLE_PHYSICS.get(),
+            ENABLE_AIRCRAFT_ROLL_SELF_LEVELING.get(),
             REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE.get(),
             REALISTIC_AIRCRAFT_THROTTLE_RESPONSE.get(),
             REALISTIC_PLANE_SPEED_SCALE.get(),
@@ -744,7 +772,9 @@ public final class ModCommonConfig
             MAX_EXPLOSION_RADIUS.get(),
             MAX_BLAST_RADIUS.get(),
 
-            ENCHANTMENT_MODULE_ENABLED.get()
+            ENCHANTMENT_MODULE_ENABLED.get(),
+
+            List.copyOf(FLUID_FUELS_RAW.get())
         );
     }
 
@@ -779,6 +809,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceLegacyVehiclePhysics();
+    }
+
+    /** Whether aircraft receive the weak server-authoritative roll restoring moment. */
+    public static boolean aircraftRollSelfLevelingEnabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.enableAircraftRollSelfLeveling();
     }
 
     /** Category-aware legacy movement override used by shared driveable collision and flotation code. */
@@ -1111,6 +1148,7 @@ public final class ModCommonConfig
     {
         serverOverride.set(config);
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
+        FluidFuel.rebuild(config.fluidFuelLines());
     }
 
     public static void clearServerOverride()
@@ -1118,7 +1156,10 @@ public final class ModCommonConfig
         serverOverride.set(null);
         CommonConfigSnapshot config = instance.get();
         if (config != null)
+        {
             rebuildPenetrableBlocks(config.penetrableBlocksLines());
+            FluidFuel.rebuild(config.fluidFuelLines());
+        }
     }
 
     public static void bake()
@@ -1126,6 +1167,7 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
+        FluidFuel.rebuild(config.fluidFuelLines());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 

@@ -32,12 +32,13 @@ class HelicopterPhysicsTest
     }
 
     @Test
-    void horizontalSpeedRangeStartsAtHoverAndReachesFullSpeedAtFullThrottle()
+    void horizontalSpeedRangeIsLinearAcrossTheWholeThrottleRange()
     {
-        assertEquals(0D, HelicopterPhysics.horizontalSpeedFraction(0.25F));
-        assertEquals(0D, HelicopterPhysics.horizontalSpeedFraction(0.5F));
-        assertEquals(0.25D, HelicopterPhysics.horizontalSpeedFraction(0.625F));
-        assertEquals(0.5D, HelicopterPhysics.horizontalSpeedFraction(0.75F));
+        assertEquals(0D, HelicopterPhysics.horizontalSpeedFraction(0F));
+        assertEquals(0.25D, HelicopterPhysics.horizontalSpeedFraction(0.25F));
+        assertEquals(0.49D, HelicopterPhysics.horizontalSpeedFraction(0.49F), EPSILON);
+        assertEquals(0.5D, HelicopterPhysics.horizontalSpeedFraction(0.5F));
+        assertEquals(0.75D, HelicopterPhysics.horizontalSpeedFraction(0.75F));
         assertEquals(1D, HelicopterPhysics.horizontalSpeedFraction(1F));
     }
 
@@ -66,7 +67,7 @@ class HelicopterPhysicsTest
             Vec3 backward = Vec3.ZERO;
             for (int tick = 0; tick < 2000; tick++)
             {
-                low = HelicopterPhysics.step(low, new Vec3(0.6D, 0.8D, 0D), performance, 0.625F, 1F, 1F);
+                low = HelicopterPhysics.step(low, new Vec3(0.6D, 0.8D, 0D), performance, 0.25F, 1F, 1F);
                 high = HelicopterPhysics.step(high, new Vec3(0.6D, 0.8D, 0D), performance, 1F, 1F, 1F);
                 backward = HelicopterPhysics.step(backward, new Vec3(-0.6D, 0.8D, 0D), performance, 1F, 1F, 1F);
             }

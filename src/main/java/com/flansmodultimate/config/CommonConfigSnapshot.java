@@ -97,6 +97,7 @@ public record CommonConfigSnapshot(
 
     boolean forceLegacyPlanePhysics,
     boolean forceLegacyVehiclePhysics,
+    boolean enableAircraftRollSelfLeveling,
     double realisticAircraftReferenceSpeedScale,
     double realisticAircraftThrottleResponse,
     double realisticPlaneSpeedScale,
@@ -115,10 +116,12 @@ public record CommonConfigSnapshot(
     double maxExplosionRadius,
     double maxBlastRadius,
 
-    boolean enchantmentModuleEnabled
+    boolean enchantmentModuleEnabled,
+
+    List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 29;
+    public static final int CURRENT_VERSION = 31;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -217,6 +220,7 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.forceLegacyPlanePhysics);
         buf.writeBoolean(s.forceLegacyVehiclePhysics);
+        buf.writeBoolean(s.enableAircraftRollSelfLeveling);
         buf.writeDouble(s.realisticAircraftReferenceSpeedScale);
         buf.writeDouble(s.realisticAircraftThrottleResponse);
         buf.writeDouble(s.realisticPlaneSpeedScale);
@@ -236,6 +240,10 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.maxBlastRadius);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
+
+        buf.writeVarInt(s.fluidFuelLines.size());
+        for (String line : s.fluidFuelLines)
+            buf.writeUtf(line, 32767);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -332,6 +340,7 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readBoolean(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
@@ -350,7 +359,9 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
 
-            buf.readBoolean()
+            buf.readBoolean(),
+
+            List.copyOf(readLines(buf))
         );
     }
 

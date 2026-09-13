@@ -278,7 +278,9 @@ public final class DriveableData implements Container
         PartType engine = getEngine();
         if (engine != null && engine.isUseRFPower())
             return stack.getCapability(ForgeCapabilities.ENERGY).isPresent();
-        return stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL;
+        if (stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL)
+            return true;
+        return FluidFuel.isFuelContainer(stack);
     }
 
     static boolean allowsAmmunitionInput(boolean filterAmmunition, boolean shootableItem)
@@ -293,6 +295,8 @@ public final class DriveableData implements Container
         if (stack.getItem() instanceof ShootableItem)
             return true;
         if (stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL)
+            return true;
+        if (FluidFuel.isFuelContainer(stack))
             return true;
         return mechaType.isAllowMechaToolsInRestrictedInv() && stack.getItem() instanceof MechaAddonItem;
     }

@@ -18,6 +18,7 @@ import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.FluidFuel;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatCycle;
@@ -64,6 +65,7 @@ import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,6 +73,9 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -761,6 +766,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         setThrottle(tag.getFloat(NBT_THROTTLE));
         setTurretAim(tag.getFloat(NBT_TURRET_YAW), tag.getFloat(NBT_TURRET_PITCH));
         entityData.set(DATA_FLAGS, tag.contains(NBT_FLAGS) ? tag.getInt(NBT_FLAGS) : FLAG_GEAR);
+        // Spawn data can describe an engine which was already running before this client began
+        // tracking it. Seed the edge detector so joining the area does not replay its startup.
+        wasEngineActive = isEngineActive();
         engineRequested = tag.contains(NBT_ENGINE_REQUESTED, Tag.TAG_BYTE)
             ? tag.getBoolean(NBT_ENGINE_REQUESTED) : isEngineActive();
         setDriveableMode(tag.getInt(NBT_MODE));
@@ -2252,29 +2260,31 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (configType == null)
             return;
 
-        boolean active = isEngineActive() && getControllingEntity() != null;
+        boolean engineActive = isEngineActive();
+        boolean active = engineActive && getControllingEntity() != null;
         boolean throttled = active && Math.abs(getThrottle()) > 0.001F;
 
         if (startSoundTicks > 0)
             --startSoundTicks;
 
-        if (active && !wasEngineActive && StringUtils.isNotBlank(configType.getStartEngineSound()))
+        if (engineActive && !wasEngineActive && StringUtils.isNotBlank(configType.getEngineStartupSound()))
         {
-            ClientHooks.SOUND.playEntitySound(this, configType.getStartEngineSound(), Math.max(1, configType.getStartSoundRange()));
-            startSoundTicks = Math.max(1, configType.getStartEngineSoundLength());
+            ClientHooks.SOUND.playEntitySound(this, configType.getEngineStartupSound(), Math.max(1, configType.getStartSoundRange()));
+            startSoundTicks = Math.max(1, configType.getEngineStartupSoundLength());
         }
-        if (!active)
+        if (!engineActive)
             startSoundTicks = 0;
-        wasEngineActive = active;
+        wasEngineActive = engineActive;
 
         // The engine and idle loops share a channel because they never play together, so switching
         // between them replaces the running loop instead of layering a second one on top.
         String engineLoop = null;
         if (startSoundTicks <= 0)
             engineLoop = throttled ? configType.getEngineSound()
-                : (active ? StringUtils.firstNonBlank(configType.getIdleSound(), configType.getStartSound()) : null);
+                : (active ? configType.getEngineIdleLoopSound() : null);
 
-        float pitchRange = throttled ? configType.getEngineSoundPitchRange() : 0F;
+        float pitchRange = throttled ? configType.getEngineSoundPitchRange()
+            : (active ? configType.getEngineIdleLoopPitchRange() : 0F);
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_ENGINE, engineLoop,
             Math.max(1, configType.getEngineSoundRange()), pitchRange);
 
@@ -3407,16 +3417,80 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             refuelFromEnergyItems(engine);
             return;
         }
-        if (refuelFromFuelSlot(driveableData.getFuelSlot()))
+        if (refuelFromSlot(driveableData.getFuelSlot()))
             return;
 
         int cargoStart = driveableData.getCargoInventoryStart();
         int cargoEnd = cargoStart + driveableData.getNumCargoSlots();
         for (int slot = cargoStart; slot < cargoEnd; slot++)
         {
-            if (refuelFromFuelSlot(slot))
+            if (refuelFromSlot(slot))
                 return;
         }
+    }
+
+    /** Burns whatever is in this slot: a fuel part, or a container of liquid fuel. */
+    private boolean refuelFromSlot(int slot)
+    {
+        return refuelFromFuelSlot(slot) || refuelFromFluidContainer(slot);
+    }
+
+    /**
+     * Empties one bucket's worth of liquid fuel out of a container in this slot.
+     *
+     * <p>Fuel is taken a bucket at a time and only when the tank has room for all of it, so a
+     * part-filled tank never swallows a bucket for less than it is worth. The emptied
+     * container is left behind, exactly where the full one was.</p>
+     */
+    private boolean refuelFromFluidContainer(int slot)
+    {
+        ItemStack stack = driveableData.getItem(slot);
+        IFluidHandlerItem handler = FluidFuel.handlerFor(stack);
+        if (handler == null)
+            return false;
+
+        FluidStack held = FluidFuel.firstBurnableTank(handler);
+        if (held.isEmpty())
+            return false;
+        int fuelPerBucket = FluidFuel.fuelPerBucket(held.getFluid());
+
+        int drawn = Math.min(held.getAmount(), FluidFuel.BUCKET);
+        float gain = drawn * fuelPerBucket / (float) FluidFuel.BUCKET;
+        if (getFuel() + gain > configType.getFuelTankSize())
+            return false;
+
+        // Named explicitly so a multi-tank container cannot hand back a different liquid.
+        FluidStack drained = handler.drain(new FluidStack(held, drawn), IFluidHandler.FluidAction.EXECUTE);
+        if (drained.isEmpty())
+            return false;
+
+        setFuel(getFuel() + drained.getAmount() * fuelPerBucket / (float) FluidFuel.BUCKET);
+        returnEmptiedContainer(slot, stack, handler.getContainer());
+        driveableData.setChanged();
+        return true;
+    }
+
+    /**
+     * Puts the emptied container back where the full one came from.
+     *
+     * <p>Buckets do not stack, so the usual case is a straight swap. A stackable container is
+     * consumed one at a time and its empty stowed anywhere it fits, or dropped if the
+     * driveable is full, rather than being destroyed.</p>
+     */
+    private void returnEmptiedContainer(int slot, ItemStack original, ItemStack emptied)
+    {
+        if (original.getCount() <= 1)
+        {
+            driveableData.setItem(slot, emptied);
+            return;
+        }
+
+        original.shrink(1);
+        driveableData.setItem(slot, original);
+        if (emptied.isEmpty())
+            return;
+        if (!InventoryHelper.addItemStackToContainer(driveableData, emptied, false, true, false, driveableData.getContainerSize()))
+            spawnAtLocation(emptied);
     }
 
     /** Transfers fuel from one inventory slot, preserving partial-can damage and stack state. */

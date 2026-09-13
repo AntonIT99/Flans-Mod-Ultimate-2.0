@@ -72,10 +72,10 @@ public final class HelicopterPhysics
         return demand * rpm * rpm * Mth.clamp(finite(intactFraction), 0F, 1F);
     }
 
-    /** Hover starts the horizontal speed range; full throttle unlocks full speed. */
+    /** Match the planes' default speed-linear response across the whole throttle range. */
     public static double horizontalSpeedFraction(float throttle)
     {
-        return Mth.clamp((finite(throttle) - 0.5D) * 2D, 0D, 1D);
+        return Mth.clamp(finite(throttle), 0D, 1D);
     }
 
     /** Tilt redirects lift, with collective-scaled translation and no automatic tilt compensation. */

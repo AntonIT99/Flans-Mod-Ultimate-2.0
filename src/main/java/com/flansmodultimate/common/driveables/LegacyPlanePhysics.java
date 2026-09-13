@@ -13,8 +13,10 @@ public final class LegacyPlanePhysics
     public static final float FULL_CONTROL_AUTHORITY_SPEED = 0.2F;
     /** Maximum pitch or roll recovery on the landing roll, in degrees per tick. */
     public static final float LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK = 0.25F;
-    /** Maximum extra sink below required airspeed, as a fraction of gravity. */
-    public static final double LOW_SPEED_EXTRA_SINK_GRAVITY_FRACTION = 1.0D;
+    /** Maximum passive airborne roll correction for a reference aircraft, in degrees per tick. */
+    public static final float PASSIVE_ROLL_LEVEL_MAX_DEG_PER_TICK = 0.12F;
+    /** Proportional roll correction below the maximum rate. */
+    private static final float PASSIVE_ROLL_LEVEL_PROPORTION = 0.01F;
     private static final double PROPELLER_FULL_THROTTLE_RADIANS = 1.5D;
     private static final double PROPELLER_THROTTLE_EXPONENT = 0.4D;
     private static final double ROTOR_THROTTLE_DIVISOR = 7D;
@@ -188,16 +190,40 @@ public final class LegacyPlanePhysics
     }
 
     /**
-     * Extra downward acceleration below the aircraft's required airspeed,
-     * expressed as a fraction of gravity. The linear deficit keeps the onset
-     * smooth and caps a fully stopped aircraft at one extra quarter-g.
+     * Airspeed along the aircraft's nose axis. A vertical fall past a level
+     * wing is not usable forward airflow and must not restore lift merely
+     * because the resulting world velocity is large.
      */
-    public static double lowSpeedSinkGravityFraction(double airspeed, double requiredAirspeed)
+    public static double forwardAirspeed(double velocityX, double velocityY, double velocityZ,
+                                         double forwardX, double forwardY, double forwardZ)
     {
-        if (!Double.isFinite(airspeed) || !Double.isFinite(requiredAirspeed) || requiredAirspeed <= 0D)
+        if (!Double.isFinite(velocityX) || !Double.isFinite(velocityY) || !Double.isFinite(velocityZ)
+            || !Double.isFinite(forwardX) || !Double.isFinite(forwardY) || !Double.isFinite(forwardZ))
             return 0D;
-        double deficit = 1D - Math.max(0D, Math.abs(airspeed)) / requiredAirspeed;
-        return Math.max(0D, deficit) * LOW_SPEED_EXTRA_SINK_GRAVITY_FRACTION;
+        double forwardLength = Math.sqrt(forwardX * forwardX + forwardY * forwardY + forwardZ * forwardZ);
+        if (forwardLength <= 1.0E-8D)
+            return 0D;
+        return Math.abs((velocityX * forwardX + velocityY * forwardY + velocityZ * forwardZ) / forwardLength);
+    }
+
+    /**
+     * Weak roll rate that eases an uncontrolled airborne aircraft toward level.
+     * Authority gates the effect on usable wing airflow or rotor lift, while the
+     * response factor lets lifting-surface span and mass slow or quicken it.
+     */
+    public static float passiveRollLevelingRate(float rollDegrees, boolean rollInputActive,
+                                                float authority, float responseFactor)
+    {
+        if (rollInputActive || !Float.isFinite(rollDegrees) || !Float.isFinite(authority)
+            || !Float.isFinite(responseFactor))
+            return 0F;
+        float usableAuthority = Mth.clamp(authority, 0F, 1F);
+        float usableResponse = Mth.clamp(responseFactor, VehiclePhysicsConstants.MIN_ROLL_INERTIA_FACTOR,
+            VehiclePhysicsConstants.MAX_ROLL_INERTIA_FACTOR);
+        float scale = usableAuthority * (float)Math.sqrt(usableResponse);
+        float maximum = PASSIVE_ROLL_LEVEL_MAX_DEG_PER_TICK * scale;
+        return Mth.clamp(Mth.wrapDegrees(rollDegrees) * PASSIVE_ROLL_LEVEL_PROPORTION * scale,
+            -maximum, maximum);
     }
 
     private static float finite(float value)

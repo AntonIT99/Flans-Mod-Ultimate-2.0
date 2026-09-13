@@ -4,8 +4,8 @@ Initial audit: 2026-09-12. Last updated: 2026-09-13. Direction is strictly refer
 
 - Reference: `C:/Users/alpha/Documents/Minecraft-Development/FlansMod`, Flan's Mod 5.10.0 / MC 1.12.2, HEAD `71ba7ed065d906d48f34ca471bbd0172b5192f6b`.
 - Target: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, Forge 1.20.1, HEAD `c7af2b0fb3cb85711796129fec789c51e96b999e` (clean tree).
-- Remaining: **1 MISSING, 0 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
-- Completed findings are removed as they are implemented, so this stays a backlog rather than a historical snapshot. The initial audit found 7 MISSING and 4 PARTIAL; the six Apocalypse findings and the four Teams findings were implemented on 2026-09-13.
+- Remaining: **none**. Every finding from this audit has been implemented.
+- Completed findings are removed as they are implemented, so this stays a backlog rather than a historical snapshot. The initial audit found 7 MISSING and 4 PARTIAL; all eleven were implemented on 2026-09-13.
 
 ## Scope and evidence conventions
 
@@ -19,27 +19,14 @@ Evidence paths use these roots:
 - `T/` = target `src/main/java/com/flansmodultimate`.
 - Resource paths explicitly identify their repository.
 
-`MISSING` means the described capability has no equivalent in the inspected target paths. `PARTIAL` means the broader mechanic exists but the stated behavior does not. Confidence concerns the narrow finding, not full subsystem equivalence. The audit itself changed nothing; the Apocalypse and Teams findings were implemented separately afterwards and removed from this backlog.
+`MISSING` means the described capability has no equivalent in the inspected target paths. `PARTIAL` means the broader mechanic exists but the stated behavior does not. Confidence concerns the narrow finding, not full subsystem equivalence. The audit itself changed nothing; the findings were implemented separately afterwards and removed from this backlog.
 
 Large, well-ported areas that produced no findings are deliberately not enumerated. Notable examples verified as present: mecha upgrade behaviors (including diamond detection, auto-repair, ore multipliers, rocket pack, item vacuum, waste compaction, forced light level), grenade behaviors (proximity triggers, stickiness, deployable bags, smoke/potion effects, heal amounts), AA gun and deployed-MG mechanics, CTF flag handling, smart weapon drops with ammo consolidation, team spawner vehicle/item spawning, dungeon-loot injection, creative paintjob variants, gun attribute modifiers, flashlight attachments, and the Mecha Parts pack contents (folded into the target's Titan pack).
 
-## Driveables
-
-### Fluid-bucket refueling — MISSING
-
-Reference: `R/common/FlansHooks.java`, `R/common/driveables/EntityDriveable.java:1210-1224`.
-When BuildCraft Energy is present, an oil bucket in a driveable's fuel slot adds 1000 × fuel multiplier and a fuel bucket adds 2000 × fuel multiplier to the tank, leaving an empty bucket behind.
-
-Target checked: `T/common/entity/Driveable.java:3398` (fuel consumption accepts only `PartType.Category.FUEL` part items) and `:3428` plus `T/common/driveables/DriveableData.java:280` (a Forge Energy path for RF-capable items), `T/common/inventory/DriveableInventoryMenu.java`, `T/client/gui/DriveableInventoryScreen.java` fuel page.
-The target refuels from fuel parts and charges from `ForgeCapabilities.ENERGY` items. There is no bucket or fluid handling of any kind — no `FluidUtil`, `IFluidHandler` or bucket-item branch — so no liquid fuel can be poured into a tank.
-
-Missing: Refueling a driveable from a liquid-fuel bucket. (BuildCraft itself has no 1.20.1 counterpart; the equivalent modern path would be a Forge fluid-capability branch alongside the existing energy branch.)
-
 ## Summary
 
-| Subsystem | Feature | Status | Confidence |
-| --------- | ------- | ------ | ---------- |
-| Driveables | Fluid-bucket refueling | MISSING | HIGH |
+No findings remain open. The areas below were never findings; they record where this
+audit stopped short and where a later pass should look.
 
 ## Areas requiring deeper audit
 

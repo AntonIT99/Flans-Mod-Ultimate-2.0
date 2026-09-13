@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,14 +108,37 @@ class LegacyPlanePhysicsTest
     }
 
     @Test
-    void fallingBelowRequiredSpeedAddsAModestSmoothSinkPenalty()
+    void verticalDescentDoesNotCountAsForwardAirspeed()
     {
-        assertEquals(0F, LegacyPlanePhysics.lowSpeedSinkGravityFraction(40D, 40D), EPSILON);
-        assertEquals(0F, LegacyPlanePhysics.lowSpeedSinkGravityFraction(50D, 40D), EPSILON);
-        assertEquals(0.125F, LegacyPlanePhysics.lowSpeedSinkGravityFraction(20D, 40D), EPSILON);
-        assertEquals(LegacyPlanePhysics.LOW_SPEED_EXTRA_SINK_GRAVITY_FRACTION,
-            LegacyPlanePhysics.lowSpeedSinkGravityFraction(0D, 40D), EPSILON,
-            "even a stopped aircraft gains only a restrained extra quarter-g");
+        assertEquals(0D, LegacyPlanePhysics.forwardAirspeed(0D, -1D, 0D, 1D, 0D, 0D), EPSILON);
+        assertEquals(1D, LegacyPlanePhysics.forwardAirspeed(1D, -4D, 0D, 1D, 0D, 0D), EPSILON);
+        assertEquals(1D, LegacyPlanePhysics.forwardAirspeed(-1D, 0D, 0D, 2D, 0D, 0D), EPSILON,
+            "reverse airflow still has dynamic pressure over the wing");
+    }
+
+    @Test
+    void passiveRollLevelingIsSlowProportionalAndYieldsToThePilot()
+    {
+        assertEquals(LegacyPlanePhysics.PASSIVE_ROLL_LEVEL_MAX_DEG_PER_TICK,
+            LegacyPlanePhysics.passiveRollLevelingRate(45F, false, 1F, 1F), EPSILON);
+        assertEquals(0.03F, LegacyPlanePhysics.passiveRollLevelingRate(3F, false, 1F, 1F), EPSILON,
+            "small banks ease gently rather than using the capped rate");
+        assertEquals(-LegacyPlanePhysics.PASSIVE_ROLL_LEVEL_MAX_DEG_PER_TICK,
+            LegacyPlanePhysics.passiveRollLevelingRate(-45F, false, 1F, 1F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.passiveRollLevelingRate(45F, true, 1F, 1F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.passiveRollLevelingRate(45F, false, 0F, 1F), EPSILON);
+    }
+
+    @Test
+    void passiveRollLevelingFollowsLiftingSurfaceRollResponse()
+    {
+        float slow = LegacyPlanePhysics.passiveRollLevelingRate(45F, false, 1F,
+            VehiclePhysicsConstants.MIN_ROLL_INERTIA_FACTOR);
+        float fallback = LegacyPlanePhysics.passiveRollLevelingRate(45F, false, 1F, 1F);
+        float agile = LegacyPlanePhysics.passiveRollLevelingRate(45F, false, 1F,
+            VehiclePhysicsConstants.MAX_ROLL_INERTIA_FACTOR);
+        assertTrue(slow < fallback);
+        assertTrue(fallback < agile);
     }
 
     @Test
