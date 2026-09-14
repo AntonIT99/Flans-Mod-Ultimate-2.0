@@ -1,6 +1,8 @@
 package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
@@ -9,6 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -55,6 +58,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     public void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter)
     {
         /* no-op */
+    }
+
+    @Override
+    public List<DerivedMuzzle> deriveMuzzles(DriveableType type)
+    {
+        return List.of();
     }
 
     @Override

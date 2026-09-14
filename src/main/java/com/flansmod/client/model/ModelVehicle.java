@@ -87,7 +87,8 @@ public class ModelVehicle extends ModelDriveable
     public boolean legSpeedChange = true;
 
     private transient DriveableType trackPathType;
-    @Nullable private transient DriveableType trackSideType;
+    @Nullable
+    private transient DriveableType trackSideType;
     private transient boolean trackMeshSidesSwapped;
     private transient boolean trackPathSidesSwapped;
     private transient TrackPath leftTrackPath = TrackPath.EMPTY;
@@ -97,6 +98,9 @@ public class ModelVehicle extends ModelDriveable
     private transient boolean barrelPitchPivotResolved;
     @Nullable
     private transient Vec3 primaryBarrelPitchPivot;
+    private transient boolean barrelMuzzleResolved;
+    @Nullable
+    private transient Vec3 primaryBarrelMuzzle;
 
     /** Called before world part culling begins, so the derived mesh contains the complete link. */
     public boolean selectTrackLinkLod(DriveableType type, float projectionPixels, double distance, float modelScale,
@@ -151,6 +155,34 @@ public class ModelVehicle extends ModelDriveable
             || (animBarrelModel != null && animBarrelModel.length > 0))
             primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, barrelAttach.z);
         return primaryBarrelPitchPivot;
+    }
+
+    /**
+     * Muzzle of this vehicle's main armament, in model pixels, measured from the
+     * barrel geometry the renderer draws.
+     *
+     * <p>Prefers {@code barrelModel}, which is where all but a few packs build the
+     * gun. The animated and special barrel groups are drawn translated to
+     * {@code barrelAttach}, so their measurement carries that offset, applied the
+     * same way {@link #translateToModelPoint} applies it.</p>
+     *
+     * @return the muzzle in model pixels, or {@code null} when this model has no barrel
+     */
+    @Nullable
+    public Vec3 getPrimaryBarrelMuzzle()
+    {
+        if (barrelMuzzleResolved)
+            return primaryBarrelMuzzle;
+        barrelMuzzleResolved = true;
+
+        primaryBarrelMuzzle = measureMuzzle(1F, barrelModel);
+        if (primaryBarrelMuzzle != null)
+            return primaryBarrelMuzzle;
+
+        Vec3 attached = measureMuzzle(1F, barrelSpecModel, animBarrelModel);
+        if (attached != null)
+            primaryBarrelMuzzle = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+        return primaryBarrelMuzzle;
     }
 
     @Override

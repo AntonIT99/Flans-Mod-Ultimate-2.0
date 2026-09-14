@@ -1,7 +1,9 @@
 package com.flansmodultimate.hooks.client;
 
 import com.flansmod.client.model.ModelAttachment;
+import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
@@ -14,10 +16,16 @@ import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.util.FileUtils;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -33,6 +41,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -198,6 +208,47 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     private static Vec3 toVec3(org.joml.Vector3f vector)
     {
         return new Vec3(vector.x, vector.y, vector.z);
+    }
+
+    @Override
+    public List<DerivedMuzzle> deriveMuzzles(DriveableType type)
+    {
+        if (type == null)
+            return List.of();
+        // In singleplayer this also runs on the server thread, for the debug
+        // command. Loading a model there would read the texture atlas off the
+        // render thread, so away from it take only what rendering has cached.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelDriveable model))
+            return List.of();
+
+        boolean planeFacing = type instanceof PlaneType;
+        List<DerivedMuzzle> derived = new ArrayList<>();
+        if (model instanceof ModelVehicle vehicleModel)
+        {
+            Vec3 barrel = vehicleModel.getPrimaryBarrelMuzzle();
+            if (barrel != null)
+                derived.add(new DerivedMuzzle(-1, "barrel",
+                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel, planeFacing)));
+        }
+
+        for (int seat = 1; seat <= type.getNumPassengers(); seat++)
+        {
+            SeatInfo info = type.getSeat(seat);
+            if (info == null || info.getGunType() == null)
+                continue;
+            Vec3 muzzle = model.getRegisteredGunMuzzle(info.getGunName());
+            if (muzzle == null)
+                continue;
+            // GunOrigin is not the muzzle: the firing path lifts it by the legacy
+            // mounted-gunner offset before spawning the round. Subtracting that here
+            // makes the suggested value land the shot on the measured barrel tip.
+            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle, planeFacing);
+            position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
+            derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position));
+        }
+        return List.copyOf(derived);
     }
 
     @Override

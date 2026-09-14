@@ -169,6 +169,112 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
+    void aHandsOffAircraftIsAskedForExactlyItsOwnWeight()
+    {
+        // Nose on the flight path is zero incidence, which is the whole point:
+        // an aircraft nobody is touching must trim at one g rather than balloon.
+        assertEquals(1D, AircraftPerformancePhysics.commandedLoadFactor(0D, 0D, 0.5D), 1.0E-9D);
+        assertEquals(1D, AircraftPerformancePhysics.commandedLoadFactor(0.5D, 0.5D, 0.5D), 1.0E-9D);
+        // Including in a steady climb, once the velocity vector has caught up.
+        assertEquals(1D, AircraftPerformancePhysics.commandedLoadFactor(-0.3D, -0.3D, 0.5D), 1.0E-9D);
+    }
+
+    @Test
+    void pullingLoadsTheWingAndPushingUnloadsIt()
+    {
+        double pull = AircraftPerformancePhysics.commandedLoadFactor(0.2D, 0.05D, 0.5D);
+        double push = AircraftPerformancePhysics.commandedLoadFactor(0.05D, 0.2D, 0.5D);
+        assertTrue(pull > 1D, "nose above the flight path is positive incidence");
+        assertTrue(push < 1D, "nose below the flight path unloads the wing");
+        // Symmetric about one g for equal and opposite incidence.
+        assertEquals(2D, pull + push, 1.0E-9D);
+    }
+
+    @Test
+    void theCommandedLoadFactorRespectsTheClimbRateAllowanceAndNeverGoesNegative()
+    {
+        double allowance = 0.3D;
+        assertEquals(1D + allowance,
+            AircraftPerformancePhysics.commandedLoadFactor(1D, -1D, allowance), 1.0E-9D);
+        // A wing can stop lifting but it cannot push the aircraft at the ground.
+        assertEquals(0D, AircraftPerformancePhysics.commandedLoadFactor(-1D, 1D, 4D), 1.0E-9D);
+        assertEquals(1D, AircraftPerformancePhysics.commandedLoadFactor(Double.NaN, 0D, 0.3D), 1.0E-9D);
+    }
+
+    @Test
+    void verticalLiftLeavesSpeedUntouchedOnceItsWorkIsRemoved()
+    {
+        // A 30-degree climb at 100 m/s. Lift applied on the world vertical
+        // lengthens the velocity vector; a real wing, acting perpendicular to
+        // the relative wind, does no work at all. Removing the along-path share
+        // restores the speed to first order in the per-tick impulse.
+        double speed = 100D;
+        double verticalSpeed = 50D;
+        double horizontal = Math.sqrt(speed * speed - verticalSpeed * verticalSpeed);
+        double lift = 0.5D;
+
+        double liftedVertical = verticalSpeed + lift;
+        double lifted = Math.hypot(horizontal, liftedVertical);
+        assertTrue(lifted > speed, "the naive integration really does create speed");
+
+        double leak = AircraftPerformancePhysics.liftWorkAlongPath(lift, liftedVertical, lifted);
+        assertEquals(speed, lifted - leak, 1.0E-3D);
+    }
+
+    @Test
+    void theLiftWorkTermReversesInADiveAndIsBounded()
+    {
+        // Descending, a vertical lift force opposes the flight path, so the
+        // correction hands back the speed it would otherwise have stolen.
+        assertTrue(AircraftPerformancePhysics.liftWorkAlongPath(2D, -50D, 100D) < 0D);
+        assertEquals(0D, AircraftPerformancePhysics.liftWorkAlongPath(2D, 0D, 100D), 1.0E-9D);
+        // Never large enough to reverse the aircraft, whatever the caller passes.
+        assertEquals(10D, AircraftPerformancePhysics.liftWorkAlongPath(1000D, 10D, 10D), 1.0E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.liftWorkAlongPath(2D, 10D, 0D), 1.0E-9D);
+    }
+
+    @Test
+    void aLoadedWingPaysTheSquareOfTheLoadFactorInInducedDrag()
+    {
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        double cruise = TERMINAL_MS * 0.5D;
+        double level = AircraftPerformancePhysics.dragNewtons(cruise, MASS_KG, SPAN_M, TERMINAL_MS, reference);
+        double pulling = AircraftPerformancePhysics.dragNewtons(cruise, MASS_KG, SPAN_M, TERMINAL_MS,
+            reference, 2D);
+        double unloaded = AircraftPerformancePhysics.dragNewtons(cruise, MASS_KG, SPAN_M, TERMINAL_MS,
+            reference, 0D);
+        assertTrue(pulling > level, "pulling two g costs more than flying level");
+        // Only the induced term moves, and it moves with n squared.
+        assertEquals(4D, (pulling - unloaded) / (level - unloaded), 1.0E-6D);
+    }
+
+    @Test
+    void theLoadFactorLeavesTheAuthoredTopSpeedAlone()
+    {
+        // Top speed is measured in level flight, so the one-g calibration must
+        // still balance exactly, and the load factor must not disturb it.
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, POWER_KW, TERMINAL_MS, TERMINAL_MS);
+        assertEquals(reference,
+            AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, MASS_KG, SPAN_M, TERMINAL_MS, reference, 1D),
+            1.0E-6D);
+        assertEquals(
+            AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, MASS_KG, SPAN_M, TERMINAL_MS, reference),
+            AircraftPerformancePhysics.dragNewtons(TERMINAL_MS, MASS_KG, SPAN_M, TERMINAL_MS, reference, 1D),
+            1.0E-9D);
+    }
+
+    @Test
+    void theDerivedModelBalancesAgainstRealGravityRatherThanMinecraftsOwn()
+    {
+        // Minecraft pulls at roughly four times standard gravity. Charging a
+        // climb against that, with a real mass and a real thrust, would leave
+        // every aircraft at a quarter of its true thrust-to-weight ratio.
+        double gravity = VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2
+            * VehiclePhysicsUnits.TICKS_PER_SECOND * VehiclePhysicsUnits.TICKS_PER_SECOND;
+        assertEquals(VehiclePhysicsUnits.STANDARD_GRAVITY, gravity, 1.0E-9D);
+    }
+
+    @Test
     void rollResponseFallsAsSpanAndMassRise()
     {
         float light = AircraftPerformancePhysics.rollInertiaFactor(9D, 1500D);
@@ -354,6 +460,22 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
+    void theGameplayMultiplierScalesTheAirBrakeAndNothingElse()
+    {
+        double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
+        double physical = 0.5D * VehiclePhysicsUnits.AIR_DENSITY * area
+            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * 100D * 100D;
+        assertEquals(physical * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS,
+            AircraftPerformancePhysics.airBrakeDragNewtons(100D, area), 1.0E-6D,
+            "the brake is the flat-plate drag times the playability multiplier");
+        // Manoeuvring speed is where a physically exact brake disappears into the
+        // coast floor, so that is where the multiplier has to earn its keep.
+        assertTrue(AircraftPerformancePhysics.airBrakeDecelerationMs2(100D, area, MASS_KG)
+            > 2D * VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2,
+            "at manoeuvring speed the brake clearly beats simply closing the throttle");
+    }
+
+    @Test
     void theAirBrakeDecelerationIsUsableAndBounded()
     {
         double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
@@ -373,7 +495,8 @@ class AircraftPerformancePhysicsTest
     {
         float fallback = AircraftPerformancePhysics.legacyAirBrakeDragFactor(0D, 0D);
         assertEquals(1D - VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION
-            * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE, fallback, 1.0E-6D,
+            * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE
+            * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS, fallback, 1.0E-6D,
             "with no researched areas the default proportion applies");
         assertTrue(fallback < 1F && fallback > 0.9F, "a multiplier that bleeds speed but does not stop it");
         assertTrue(AircraftPerformancePhysics.legacyAirBrakeDragFactor(2D, WING_AREA) < fallback,

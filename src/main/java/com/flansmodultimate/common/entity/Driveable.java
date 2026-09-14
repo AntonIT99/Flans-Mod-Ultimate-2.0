@@ -248,7 +248,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
      * move because a mob rather than a player took the seat, or because the
      * gunner crouched.</p>
      */
-    private static final double PASSENGER_GUN_MOUNTED_OFFSET = 1.35D;
+    public static final double PASSENGER_GUN_MOUNTED_OFFSET = 1.35D;
 
     protected Wheel[] wheels = new Wheel[0];
     protected int groundedWheelCount;
@@ -2103,7 +2103,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
      */
     private Vec3 getPassengerShootOrigin(@NotNull SeatInfo info)
     {
-        Vec3 local = attachmentModelLocal(info.getGunOrigin()).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        return getGunOriginWorldPosition(info.getGunOrigin());
+    }
+
+    /**
+     * World position an authored {@code GunOrigin} resolves to. Exposed so
+     * diagnostics can place a marker on a candidate value that no seat holds yet.
+     */
+    public Vec3 getGunOriginWorldPosition(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
+    {
+        Vec3 local = attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
         return position().add(modelLocalDirectionToWorld(local));
     }
 

@@ -107,6 +107,25 @@ public final class AircraftPerformancePhysics
     public static double dragNewtons(double airspeedMs, double massKg, double wingSpanM,
                                      double terminalSpeedMs, double referenceThrustNewtons)
     {
+        return dragNewtons(airspeedMs, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, 1D);
+    }
+
+    /**
+     * Total aerodynamic drag in newtons, with the induced term scaled by the
+     * square of the load factor the wing is actually carrying.
+     *
+     * <p>Induced drag is the price of lift, so pulling more than one g costs
+     * more than one g's worth of it: {@code D_i} scales with {@code n²}. Only
+     * the induced term moves. The parasitic coefficient is still back-solved at
+     * one g, which is what keeps the authored top speed authoritative in the
+     * level flight it was measured in.
+     *
+     * @param loadFactor lift as a multiple of weight; one is level flight
+     */
+    public static double dragNewtons(double airspeedMs, double massKg, double wingSpanM,
+                                     double terminalSpeedMs, double referenceThrustNewtons,
+                                     double loadFactor)
+    {
         if (!finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
@@ -117,6 +136,10 @@ public final class AircraftPerformancePhysics
             referenceThrustNewtons * VehiclePhysicsConstants.MAX_INDUCED_DRAG_SHARE * terminalSquared);
         double parasiticCoefficient = (referenceThrustNewtons - induced / terminalSquared) / terminalSquared;
         double drag = parasiticCoefficient * speed * speed;
+        // Calibration above is at one g; the wing pays n² of that once loaded.
+        double load = Double.isFinite(loadFactor)
+            ? Math.min(VehiclePhysicsConstants.MAX_MANEUVER_LOAD_FACTOR, Math.max(0D, loadFactor)) : 1D;
+        induced *= load * load;
         if (induced > 0D)
         {
             // Below the knee the 1/v² term diverges; hold it flat and fade it
@@ -157,11 +180,26 @@ public final class AircraftPerformancePhysics
                                          double terminalSpeedMs, double referenceThrustNewtons,
                                          double wingSpanM, double throttleDemand)
     {
+        return accelerationMs2(thrustNewtons, massKg, airspeedMs, terminalSpeedMs, referenceThrustNewtons,
+            wingSpanM, throttleDemand, 1D);
+    }
+
+    /**
+     * Longitudinal acceleration in m/s² with the wing carrying the given load
+     * factor, so that a hard pull costs speed through induced drag the way it
+     * physically must.
+     *
+     * @param loadFactor lift as a multiple of weight; one is level flight
+     */
+    public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs,
+                                         double terminalSpeedMs, double referenceThrustNewtons,
+                                         double wingSpanM, double throttleDemand, double loadFactor)
+    {
         if (!finitePositive(massKg) || !finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
         double thrust = Double.isFinite(thrustNewtons) ? Math.max(0D, thrustNewtons) : 0D;
-        double drag = dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons);
+        double drag = dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, loadFactor);
         double acceleration = (thrust - drag) / massKg;
         if (!Double.isFinite(acceleration))
             return 0D;
@@ -178,6 +216,66 @@ public final class AircraftPerformancePhysics
         }
         return Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             Math.min(acceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2));
+    }
+
+    /**
+     * The load factor the current attitude is asking the wing for, as a multiple
+     * of weight.
+     *
+     * <p>The derived model carries no angle-of-attack state, but the angle
+     * between the nose and the flight path is exactly that, and both vectors are
+     * already to hand. When the pilot pulls, the nose leads the velocity vector,
+     * the wing flies at positive incidence and makes more than trim lift; when
+     * the pilot pushes over, the nose falls below the path and it makes less.
+     * With the nose on the path — hands off, in steady flight — the wing is
+     * asked for the weight of the aircraft and nothing more, which is what stops
+     * an untouched aircraft from ballooning upward on its own.
+     *
+     * @param forwardY          vertical component of the unit nose vector
+     * @param flightPathY       vertical component of the unit velocity vector
+     * @param maxExcessFraction how far above one the wing may be asked to go
+     * @return the commanded load factor, never negative
+     */
+    public static double commandedLoadFactor(double forwardY, double flightPathY, double maxExcessFraction)
+    {
+        if (!Double.isFinite(forwardY) || !Double.isFinite(flightPathY))
+            return 1D;
+        double excess = Double.isFinite(maxExcessFraction) ? Math.max(0D, maxExcessFraction) : 0D;
+        double demand = VehiclePhysicsConstants.INCIDENCE_LOAD_FACTOR_GAIN * (forwardY - flightPathY);
+        if (!Double.isFinite(demand))
+            return 1D;
+        // Unloading is bounded at zero g; the wing cannot push the aircraft down.
+        return 1D + Math.max(-Math.min(excess, 1D), Math.min(excess, demand));
+    }
+
+    /**
+     * The share of a vertical lift force that acts along the flight path, which
+     * a real wing never produces and which the caller must therefore remove.
+     *
+     * <p>Lift acts perpendicular to the relative wind, so it does no work: it
+     * turns the flight path without changing speed. Applying it on the world
+     * vertical axis instead — as the tick integration must, since gravity lives
+     * there too — leaks a component along the velocity vector, and that
+     * component is free energy. In a climb it is positive and the aircraft
+     * accelerates for nothing; in a dive it is negative and the aircraft is
+     * robbed of speed it should have kept. Subtracting it along the velocity
+     * vector leaves gravity as the only force that may change speed, which is
+     * what makes a zoom climb cost exactly the height it buys.
+     *
+     * @param verticalLift the vertical lift applied this tick, in the caller's units
+     * @param verticalSpeed the vertical component of velocity, in the same units
+     * @param speed         the magnitude of velocity, in the same units
+     * @return the speed change to remove along the velocity vector, bounded so
+     *         that it can never reverse the aircraft
+     */
+    public static double liftWorkAlongPath(double verticalLift, double verticalSpeed, double speed)
+    {
+        if (!finitePositive(speed) || !Double.isFinite(verticalLift) || !Double.isFinite(verticalSpeed))
+            return 0D;
+        double component = verticalLift * (verticalSpeed / speed);
+        if (!Double.isFinite(component))
+            return 0D;
+        return Math.max(-speed, Math.min(speed, component));
     }
 
     /**
@@ -319,9 +417,10 @@ public final class AircraftPerformancePhysics
 
     /**
      * Drag in newtons contributed by a deployed air brake, from the flat-plate
-     * form {@code D = 0.5 * rho * S * Cd * v²}. It is a genuine extra force
-     * rather than a multiplier, so it is heaviest exactly where a speed brake
-     * matters — at high airspeed — and vanishes at a standstill.
+     * form {@code D = 0.5 * rho * S * Cd * v²}, times
+     * {@link VehiclePhysicsConstants#AIR_BRAKE_EFFECTIVENESS}. It is a genuine
+     * extra force rather than a multiplier, so it is heaviest exactly where a
+     * speed brake matters — at high airspeed — and vanishes at a standstill.
      */
     public static double airBrakeDragNewtons(double airspeedMs, double airBrakeAreaM2)
     {
@@ -329,7 +428,8 @@ public final class AircraftPerformancePhysics
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.abs(airspeedMs) : 0D;
         return 0.5D * VehiclePhysicsUnits.AIR_DENSITY * airBrakeAreaM2
-            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed;
+            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed
+            * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS;
     }
 
     /**
@@ -361,7 +461,8 @@ public final class AircraftPerformancePhysics
             ? airBrakeAreaM2 / wingAreaM2
             : VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION;
         double loss = Math.min(VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
-            fraction * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE);
+            fraction * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE
+                * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS);
         return (float) (1D - Math.max(0D, loss));
     }
 

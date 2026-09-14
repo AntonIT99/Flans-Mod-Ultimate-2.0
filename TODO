@@ -9,10 +9,10 @@ General:
 
 Driveables:
 - Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
-- See if shooting points on vehicles can be directly inferred from models
 - Optional Idee: When a track is broken, the vehicle should be able to turn around itself but not move forward or backward. Forward or backward make the vehicle turn around itself.
 
 Content Packs:
+- Fix shooting points on vehicles based on new debug commands
 - Add particles, sounds, visual affects to content packs just like Warfare 44:
 visuals for shootables, harmonize particles and sounds for vehicles / planes
 - Rewrite the official packs with the new gun and vehicle systems

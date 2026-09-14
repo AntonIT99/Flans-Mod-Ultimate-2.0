@@ -565,7 +565,7 @@ public class Plane extends Driveable
         applyDerivedControls(type, physics, current, terminalBlocksPerTick);
 
         if (type.getPropellers().isEmpty())
-            return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
+            return current.add(0D, -VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
         // On the wheels the aircraft rolls along its nose and neither gravity
@@ -594,10 +594,23 @@ public class Plane extends Driveable
         double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
             * throttleDemand * propellerFraction;
 
+        // The angle between the nose and the flight path is the angle of attack
+        // the model otherwise lacks, so it is what decides how hard the wing is
+        // being worked: hands off it asks for one g, a pull asks for more.
+        Float climbRate = physics.source().aircraft().climbRateMs();
+        double excessAllowance = AircraftPerformancePhysics.maxExcessLiftFraction(
+            climbRate == null ? 0D : climbRate, terminalMs);
+        // On the wheels the path is the runway, whatever the suspension is
+        // doing vertically, so rotating the nose is what unsticks the aircraft.
+        double flightPathY = rolling ? 0D
+            : airspeedBlocksPerTick > 1.0E-6D ? current.y / airspeedBlocksPerTick : forward.y;
+        double loadFactor = AircraftPerformancePhysics.commandedLoadFactor(forward.y, flightPathY,
+            excessAllowance);
+
         Float wingSpan = physics.source().aircraft().effectiveWingSpanM();
         double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
             airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
-            throttleDemand * propellerFraction);
+            throttleDemand * propellerFraction, loadFactor);
         accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             accelerationMs2 - AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs,
                 angularYaw, angularPitch, angularRoll));
@@ -621,12 +634,11 @@ public class Plane extends Driveable
             + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
         double referenceSpeedMs = physics.referenceSpeedMs(speedScale,
             ModCommonConfig.realisticAircraftReferenceSpeedScale());
+        // What the wing can make at this speed, which is what decides whether it
+        // is flying at all. It is deliberately not clamped to the commanded load
+        // factor: the alignment blend below reads it as how hard the wing bites.
         double liftFraction = AircraftPerformancePhysics.liftFraction(wingAirspeedMs, referenceSpeedMs)
             * intactWings * 0.5D;
-        Float climbRate = physics.source().aircraft().climbRateMs();
-        double excessAllowance = AircraftPerformancePhysics.maxExcessLiftFraction(
-            climbRate == null ? 0D : climbRate, terminalMs);
-        liftFraction = Math.min(liftFraction, 1D + excessAllowance);
 
         Vec3 velocity;
         if (rolling)
@@ -649,8 +661,22 @@ public class Plane extends Driveable
             velocity = current.scale(1D - alignment).add(forward.scale(alignment * newSpeed));
         }
 
-        double lift = liftFraction * LegacyPlanePhysics.GRAVITY * Math.abs(flightUpVector().y);
-        velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
+        // The wing supplies what it is asked for, up to what it can actually
+        // make, and only the vertical share survives a bank or a steep attitude.
+        double gravity = VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2;
+        double lift = Math.min(loadFactor, liftFraction) * gravity * Math.abs(flightUpVector().y);
+        velocity = velocity.add(0D, lift - gravity, 0D);
+        // Applying lift on the world vertical leaks a component along the flight
+        // path. A real wing has none: lift is perpendicular to the relative wind
+        // and does no work. Removing the leak leaves gravity as the only force
+        // here that may change speed, so a climb costs exactly the height it
+        // buys and a dive pays it back.
+        double pathSpeed = velocity.length();
+        if (pathSpeed > 1.0E-6D)
+        {
+            double leak = AircraftPerformancePhysics.liftWorkAlongPath(lift, velocity.y, pathSpeed);
+            velocity = velocity.subtract(velocity.scale(leak / pathSpeed));
+        }
         if (onGround() && velocity.y <= 0D)
             velocity = new Vec3(velocity.x, -0.01D, velocity.z);
         // Retained legacy trims: folded wings and an unoccupied airframe still

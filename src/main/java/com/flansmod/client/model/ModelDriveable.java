@@ -21,6 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Base for legacy driveable models.
@@ -428,6 +429,110 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
                 return part;
         }
         return null;
+    }
+
+    /**
+     * Distance, in model pixels, within which several boxes ending at about the
+     * same depth are treated as one muzzle face. A muzzle brake is usually built
+     * from a handful of boxes, and the single furthest one is often an asymmetric
+     * corner piece; averaging the group is what keeps the result on the bore axis.
+     */
+    private static final float MUZZLE_FACE_TOLERANCE = 3F;
+
+    /**
+     * Measures the muzzle of a group of model parts: the furthest point along the
+     * model's forward axis, centred laterally and vertically on every box that
+     * reaches within {@link #MUZZLE_FACE_TOLERANCE} of it.
+     *
+     * <p>Reads the parts as the renderer sees them, after any constructor-time
+     * {@code flipAll} and {@code translateAll}, so the result is directly
+     * comparable with the pivots {@link #getRegisteredGunAimPivot} returns.</p>
+     *
+     * @param scale factor the renderer applies to this group before drawing it
+     * @return the muzzle in model pixels, or {@code null} when the group carries no geometry
+     */
+    @Nullable
+    protected static Vec3 measureMuzzle(float scale, ModelRendererTurbo[]... groups)
+    {
+        float furthestForward = Float.NEGATIVE_INFINITY;
+        for (ModelRendererTurbo[] group : groups)
+            furthestForward = Math.max(furthestForward, forwardEnd(group));
+        if (furthestForward == Float.NEGATIVE_INFINITY)
+            return null;
+
+        float threshold = furthestForward - MUZZLE_FACE_TOLERANCE;
+        double[] face = new double[] {
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+        };
+        for (ModelRendererTurbo[] group : groups)
+            accumulateMuzzleFace(group, threshold, face);
+        if (face[0] == Double.POSITIVE_INFINITY)
+            return null;
+
+        return new Vec3(furthestForward * scale,
+            (face[0] + face[2]) * 0.5D * scale,
+            (face[1] + face[3]) * 0.5D * scale);
+    }
+
+    private static float forwardEnd(ModelRendererTurbo[] parts)
+    {
+        float furthest = Float.NEGATIVE_INFINITY;
+        if (parts == null)
+            return furthest;
+        for (ModelRendererTurbo part : parts)
+        {
+            double[] bounds = emptyBounds();
+            if (part == null || !part.appendFaceBounds(bounds))
+                continue;
+            furthest = Math.max(furthest, (float) (part.rotationPointX + bounds[3]));
+        }
+        return furthest;
+    }
+
+    /** Unions the Y and Z extents of every part reaching {@code threshold} into {@code face}. */
+    private static void accumulateMuzzleFace(ModelRendererTurbo[] parts, float threshold, double[] face)
+    {
+        if (parts == null)
+            return;
+        for (ModelRendererTurbo part : parts)
+        {
+            double[] bounds = emptyBounds();
+            if (part == null || !part.appendFaceBounds(bounds)
+                || part.rotationPointX + bounds[3] < threshold)
+                continue;
+            face[0] = Math.min(face[0], part.rotationPointY + bounds[1]);
+            face[1] = Math.min(face[1], part.rotationPointZ + bounds[2]);
+            face[2] = Math.max(face[2], part.rotationPointY + bounds[4]);
+            face[3] = Math.max(face[3], part.rotationPointZ + bounds[5]);
+        }
+    }
+
+    private static double[] emptyBounds()
+    {
+        return new double[] {
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+        };
+    }
+
+    /** Measurements are a full vertex walk, and diagnostics ask for them every tick. */
+    private final transient HashMap<String, Optional<Vec3>> gunMuzzles = new HashMap<>();
+
+    /**
+     * Muzzle of a registered passenger gun, in model pixels, or {@code null} when
+     * the gun name is not registered or its rows carry no geometry.
+     */
+    @Nullable
+    public Vec3 getRegisteredGunMuzzle(String gunName)
+    {
+        return gunMuzzles.computeIfAbsent(gunName, name -> {
+            ModelRendererTurbo[][] gun = gunModels.get(name);
+            if (gun == null || gun.length == 0)
+                return Optional.empty();
+            float gunScale = type == null ? 1F : Math.max(0.001F, type.getVehicleGunModelScale());
+            return Optional.ofNullable(measureMuzzle(gunScale, gun));
+        }).orElse(null);
     }
 
     protected void flip(ModelRendererTurbo[] model)

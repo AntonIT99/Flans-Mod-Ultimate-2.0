@@ -11,6 +11,7 @@ import com.flansmodultimate.common.command.DigitalAmmoCommand;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.FlanEntityCommand;
 import com.flansmodultimate.common.command.GunAttachmentsCommand;
+import com.flansmodultimate.common.command.ShootPointDebugCommand;
 import com.flansmodultimate.common.command.TeamsCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
@@ -132,6 +133,7 @@ public final class CommonEventHandler
         FMParticleCommand.register(event.getDispatcher());
         FlanEntityCommand.register(event.getDispatcher());
         GunAttachmentsCommand.register(event.getDispatcher());
+        ShootPointDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();

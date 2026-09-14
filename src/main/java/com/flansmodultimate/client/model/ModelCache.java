@@ -99,6 +99,21 @@ public final class ModelCache
         return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type, null, type.getTexture());
     }
 
+    /**
+     * The model for this type if it is already cached, without loading it.
+     *
+     * <p>For callers that are not on the render thread. Loading a model fits it to
+     * its texture, which reads the atlas, so off-thread callers must take what is
+     * already there and do without when there is nothing.</p>
+     */
+    @Nullable
+    public static IModelBase getLoadedTypeModel(InfoType type)
+    {
+        ModelCacheKey key = new ModelCacheKey(type.getModelClassName(), type.getShortName(),
+            type.getContentPack().getName());
+        return cache.getOrDefault(key, Optional.empty()).orElse(null);
+    }
+
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {

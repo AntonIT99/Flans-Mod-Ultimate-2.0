@@ -9,16 +9,20 @@ import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.client.model.TrackLinkAnimation;
 import com.flansmod.client.model.TrackLinkLod;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
+import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
@@ -33,6 +37,7 @@ import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -54,6 +59,15 @@ import java.util.WeakHashMap;
 public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T>
 {
     private static final float TRANSITION_PER_TICK = 0.16F;
+
+    /** Marker colours for the authored shoot points of each weapon bank, as red, green, blue. */
+    private static final float[] PRIMARY_MARKER = { 0F, 1F, 1F };
+    private static final float[] SECONDARY_MARKER = { 1F, 0.5F, 0F };
+    private static final float[] GUN_ORIGIN_MARKER = { 0F, 1F, 0.25F };
+    /** A point the shoot-point debug command has moved, so it reads apart from an authored one. */
+    private static final float[] OVERRIDDEN_MARKER = { 1F, 1F, 0F };
+    /** A muzzle measured off the model rather than read from the type file. */
+    private static final float[] MEASURED_MARKER = { 1F, 1F, 1F };
 
     /** Weak keys avoid retaining entities after a world unload. Render-thread only. */
     private final Map<Driveable, AnimationHistory> animationStates = new WeakHashMap<>();
@@ -269,6 +283,48 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
     }
 
+    private static void renderShootPointMarkers(Driveable driveable, DriveableType type, boolean secondary,
+                                                float[] authoredColour)
+    {
+        for (var point : type.shootPoints(secondary))
+        {
+            float[] colour = point.isDebugOverride() ? OVERRIDDEN_MARKER : authoredColour;
+            Vec3 muzzle = driveable.getDebugShootOrigin(point);
+            DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
+            DebugHelper.spawnDebugVector(muzzle, driveable.getDebugShootDirection(point, secondary).scale(2D),
+                2, colour[0], colour[1], colour[2]);
+        }
+    }
+
+    /**
+     * Draws where the loaded model puts each muzzle, next to where the type file
+     * does. The gap between the two markers is the correction a definition needs,
+     * and seeing it on the vehicle is quicker to judge than reading the delta out
+     * of {@code /flandebug shootpoint list}.
+     */
+    private static void renderMeasuredMuzzles(Driveable driveable, DriveableType type)
+    {
+        for (DerivedMuzzle muzzle : ClientHooks.RENDER.deriveMuzzles(type))
+        {
+            Vector3f blocks = new Vector3f(muzzle.position().x / 16F, muzzle.position().y / 16F,
+                muzzle.position().z / 16F);
+            Vec3 position;
+            if (muzzle.isBarrel())
+            {
+                // Follow whichever part the authored point is mounted on, so the
+                // measured marker tracks the turret exactly as the real one does.
+                var authored = type.shootPoints(false);
+                EnumDriveablePart part = authored.isEmpty() ? EnumDriveablePart.TURRET
+                    : authored.get(0).getRootPos().getPart();
+                position = driveable.getDebugShootOrigin(
+                    new ShootPoint(new DriveablePosition(blocks, part), new Vector3f()));
+            }
+            else
+                position = driveable.getGunOriginWorldPosition(blocks);
+            DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
+        }
+    }
+
     private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
     {
         if (!ModClient.isDebug())
@@ -279,20 +335,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             return;
         diagnosticMarkerTicks.put(driveable, driveable.tickCount);
 
-        for (var point : type.shootPoints(false))
-        {
-            Vec3 muzzle = driveable.getDebugShootOrigin(point);
-            DebugHelper.spawnDebugDot(muzzle, 2, 0F, 1F, 1F);
-            DebugHelper.spawnDebugVector(muzzle,
-                driveable.getDebugShootDirection(point, false).scale(2D), 2, 0F, 1F, 1F);
-        }
-        for (var point : type.shootPoints(true))
-        {
-            Vec3 muzzle = driveable.getDebugShootOrigin(point);
-            DebugHelper.spawnDebugDot(muzzle, 2, 1F, 0.5F, 0F);
-            DebugHelper.spawnDebugVector(muzzle,
-                driveable.getDebugShootDirection(point, true).scale(2D), 2, 1F, 0.5F, 0F);
-        }
+        renderShootPointMarkers(driveable, type, false, PRIMARY_MARKER);
+        renderShootPointMarkers(driveable, type, true, SECONDARY_MARKER);
+        renderMeasuredMuzzles(driveable, type);
 
         for (int seat = 0; seat <= type.getNumPassengers(); seat++)
         {
@@ -316,8 +361,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 Vec3 direction = driveable.getPassengerShootDirection(seat);
                 if (muzzle != null && direction != null)
                 {
-                    DebugHelper.spawnDebugDot(muzzle, 2, 0F, 1F, 0.25F);
-                    DebugHelper.spawnDebugVector(muzzle, direction.scale(2D), 2, 0F, 1F, 0.25F);
+                    float[] colour = type.isGunOriginOverridden(seat) ? OVERRIDDEN_MARKER : GUN_ORIGIN_MARKER;
+                    DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
+                    DebugHelper.spawnDebugVector(muzzle, direction.scale(2D), 2, colour[0], colour[1], colour[2]);
                 }
             }
         }

@@ -1,6 +1,8 @@
 package com.flansmodultimate.hooks;
 
 import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.types.DriveableType;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.core.BlockPos;
@@ -8,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -37,6 +40,16 @@ public interface IClientRenderHooks
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);
+
+    /**
+     * Muzzle positions measured from the loaded model of {@code type}, in type-file
+     * units and convention, for comparison against its authored shoot points.
+     *
+     * <p>Model geometry only exists on the client, so a dedicated server returns an
+     * empty list. In singleplayer the integrated server reaches the client's own
+     * loaded models through this hook.</p>
+     */
+    List<DerivedMuzzle> deriveMuzzles(DriveableType type);
 
     boolean isDebugMode();
 

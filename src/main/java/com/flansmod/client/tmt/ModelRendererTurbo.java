@@ -1905,6 +1905,47 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     /**
+     * Bounds of the geometry this part actually draws, accumulated into
+     * {@code bounds} as min x, y, z then max x, y, z.
+     *
+     * <p>Differs from {@link #appendVertexBounds} after a mirror.
+     * {@link #addRectShape} gives each polygon its own textured copies of the
+     * corner vertices, and {@link #doMirror} walks the polygons, so the vertex
+     * array a shape was built from keeps its original positions on every axis
+     * the mirror touched. Legacy driveable models mirror themselves in Y and Z
+     * at the end of their constructor, which makes this the only reading that
+     * matches the rendered result.</p>
+     *
+     * @return false when this part draws nothing
+     */
+    public boolean appendFaceBounds(double[] bounds)
+    {
+        if (faces == null || faces.length == 0)
+            return false;
+
+        boolean found = false;
+        for (TexturedPolygon face : faces)
+        {
+            if (face == null || face.vertexPositions == null)
+                continue;
+            for (PositionTextureVertex vertex : face.vertexPositions)
+            {
+                if (vertex == null)
+                    continue;
+                Vec3 vector = vertex.vector3D;
+                bounds[0] = Math.min(bounds[0], vector.x);
+                bounds[1] = Math.min(bounds[1], vector.y);
+                bounds[2] = Math.min(bounds[2], vector.z);
+                bounds[3] = Math.max(bounds[3], vector.x);
+                bounds[4] = Math.max(bounds[4], vector.y);
+                bounds[5] = Math.max(bounds[5], vector.z);
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    /**
      * Mirrors the model in any direction.
      *
      * @param x whether the model should be mirrored in the x-direction

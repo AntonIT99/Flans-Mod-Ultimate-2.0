@@ -115,6 +115,27 @@ public final class LegacyDriveableCoordinates
     /** Vanilla camera angles: yaw and pitch aim the view, roll tilts the screen. */
     public record ViewAngles(float yaw, float pitch, float roll) {}
 
+    /**
+     * Converts a point measured off a loaded model into the type-file coordinates
+     * that resolve back to it, so a value read from geometry can be compared with
+     * an authored one or written into a type file unchanged.
+     *
+     * <p>Model pixels map to the driveable-local basis the same way a type-file
+     * vector does, which is what lets the barrel pitch pivot be read straight off
+     * a model part. Attachment points additionally take the lateral mirror, and
+     * aircraft the model-facing half-turn, so undoing those is the whole of the
+     * conversion: inverting {@code (-z, y, -x)} for a driveable and
+     * {@code (-z, y, x)} for a plane.</p>
+     *
+     * @param modelPixels  the measured point, in model pixels as the renderer draws it
+     * @param planeModelFacing whether the owning type is authored in the plane flight basis
+     */
+    public static Vector3f modelPixelsToTypeFile(@NotNull Vec3 modelPixels, boolean planeModelFacing)
+    {
+        return new Vector3f((float) (planeModelFacing ? -modelPixels.x : modelPixels.x),
+            (float) modelPixels.y, (float) -modelPixels.z);
+    }
+
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */
     public static Vec3 rotateBarrelPitchLocal(@NotNull Vec3 vector, float pitchDegrees)
     {

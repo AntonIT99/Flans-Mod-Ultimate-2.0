@@ -34,6 +34,7 @@ import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.LootTableLoadEvent;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -125,6 +127,15 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected final List<ShootPoint> shootPointsPrimary = new ArrayList<>();
     protected final List<ShootPoint> shootPointsSecondary = new ArrayList<>();
     protected final List<PilotGun> pilotGuns = new ArrayList<>();
+    /**
+     * Authored weapon geometry set aside while the shoot-point debug command has
+     * overrides installed, so {@code reset} can put the type back the way its file
+     * describes it without re-reading the file. Empty until the first override.
+     */
+    @Getter(AccessLevel.NONE)
+    private final Map<Boolean, List<ShootPoint>> authoredShootPoints = new HashMap<>();
+    @Getter(AccessLevel.NONE)
+    private final Map<Integer, Vector3f> authoredGunOrigins = new HashMap<>();
     protected int reloadTimePrimary;
     protected int reloadTimeSecondary;
     protected String reloadSoundPrimary = StringUtils.EMPTY;
@@ -1058,6 +1069,101 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     public List<ShootPoint> shootPoints(boolean secondaryWeapon)
     {
         return secondaryWeapon ? Collections.unmodifiableList(shootPointsSecondary) : Collections.unmodifiableList(shootPointsPrimary);
+    }
+
+    /**
+     * Moves one shoot point to {@code modelPixels}, for the shoot-point debug command.
+     *
+     * <p>Rewrites the point's offset rather than its root so the mount itself is
+     * left alone: a root that is a {@link PilotGun} stays the same object, keeps
+     * its ammunition and stays out of {@link #pilotGuns} twice. Since the firing
+     * path reads root plus offset as the muzzle, the point lands exactly where
+     * asked either way.</p>
+     *
+     * @param modelPixels the new muzzle, in the units and convention of a type file
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean setDebugShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        rememberAuthoredShootPoints(secondaryWeapon);
+
+        DriveablePosition root = points.get(index).getRootPos();
+        Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x,
+            modelPixels.y / 16F - root.getPosition().y,
+            modelPixels.z / 16F - root.getPosition().z);
+        points.set(index, new ShootPoint(root, offset, true));
+        return true;
+    }
+
+    /**
+     * Appends a shoot point at {@code modelPixels}, for the shoot-point debug command.
+     * Needed because a definition that declares none, as a {@code BarrelPosition}-only
+     * tank does for its secondary bank, has nothing to move.
+     *
+     * @return the index of the new point
+     */
+    public int addDebugShootPoint(boolean secondaryWeapon, Vector3f modelPixels, @Nullable EnumDriveablePart part)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        rememberAuthoredShootPoints(secondaryWeapon);
+
+        Vector3f position = new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F);
+        points.add(new ShootPoint(new DriveablePosition(position, part), new Vector3f(), true));
+        return points.size() - 1;
+    }
+
+    /**
+     * Moves one seat's {@code GunOrigin}, for the shoot-point debug command.
+     *
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean setDebugGunOrigin(int seatIndex, Vector3f modelPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        authoredGunOrigins.computeIfAbsent(seatIndex, ignored -> seat.getGunOrigin());
+        seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
+        return true;
+    }
+
+    public boolean isGunOriginOverridden(int seatIndex)
+    {
+        return authoredGunOrigins.containsKey(seatIndex);
+    }
+
+    public boolean hasDebugOverrides()
+    {
+        return !authoredShootPoints.isEmpty() || !authoredGunOrigins.isEmpty();
+    }
+
+    /** Restores every shoot point and {@code GunOrigin} the debug command has moved. */
+    public void resetDebugOverrides()
+    {
+        for (Map.Entry<Boolean, List<ShootPoint>> entry : authoredShootPoints.entrySet())
+        {
+            List<ShootPoint> points = Boolean.TRUE.equals(entry.getKey()) ? shootPointsSecondary : shootPointsPrimary;
+            points.clear();
+            points.addAll(entry.getValue());
+        }
+        authoredShootPoints.clear();
+
+        for (Map.Entry<Integer, Vector3f> entry : authoredGunOrigins.entrySet())
+        {
+            SeatInfo seat = getSeat(entry.getKey());
+            if (seat != null)
+                seat.setGunOrigin(entry.getValue());
+        }
+        authoredGunOrigins.clear();
+    }
+
+    private void rememberAuthoredShootPoints(boolean secondaryWeapon)
+    {
+        authoredShootPoints.computeIfAbsent(secondaryWeapon,
+            secondary -> List.copyOf(secondary ? shootPointsSecondary : shootPointsPrimary));
     }
 
     public boolean alternate(boolean secondaryWeapon)

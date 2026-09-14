@@ -78,6 +78,22 @@ public final class VehiclePhysicsConstants
     // ---------------------------------------------------------------- aircraft
 
     /**
+     * Gravity for the derived fixed-wing model, in blocks per tick squared.
+     *
+     * <p>Minecraft pulls at roughly four times standard gravity. That is
+     * invisible while lift is free, but the moment a climb is made to cost the
+     * energy it should, an airframe carrying its real mass and its real thrust
+     * is flying at a quarter of its true thrust-to-weight ratio and can barely
+     * climb at all. Since every other figure in this model is a real-world one,
+     * the weight it is balanced against is real too, and the authored climb rate
+     * then falls out of thrust and drag instead of needing a fudge.
+     *
+     * <p>The legacy flight model, helicopters and every other driveable keep
+     * Minecraft's own pull; only the derived fixed-wing path uses this.
+     */
+    public static final double DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2 = VehiclePhysicsUnits.STANDARD_GRAVITY
+        / (VehiclePhysicsUnits.TICKS_PER_SECOND * VehiclePhysicsUnits.TICKS_PER_SECOND);
+    /**
      * Propeller efficiency used when converting shaft power to thrust. A single
      * representative value; modelling a real propeller map is out of scope.
      */
@@ -110,6 +126,24 @@ public final class VehiclePhysicsConstants
      */
     public static final double INDUCED_DRAG_KNEE_FRACTION = 0.12D;
     /**
+     * Load factor gained per unit of vertical incidence, where incidence is the
+     * difference between the vertical component of the nose vector and that of
+     * the flight path.
+     *
+     * <p>The derived model carries no angle-of-attack state, but the angle
+     * between the nose and the velocity vector is exactly that, and it is
+     * already available. This gain turns it into the load factor the wing is
+     * being asked for, so that pulling the nose above the flight path loads the
+     * wing and pushing it below unloads it, while an aircraft flying straight is
+     * asked for its own weight and nothing more.
+     */
+    public static final double INCIDENCE_LOAD_FACTOR_GAIN = 4D;
+    /**
+     * Ceiling on the load factor used to scale induced drag, so a momentary
+     * attitude spike cannot produce an unbounded drag figure.
+     */
+    public static final double MAX_MANEUVER_LOAD_FACTOR = 3D;
+    /**
      * Throttle-lever position at or below which the aircraft counts as coasting
      * and the deceleration floor applies.
      */
@@ -137,6 +171,20 @@ public final class VehiclePhysicsConstants
      * deceleration at combat speeds.
      */
     public static final double AIR_BRAKE_WING_AREA_FRACTION = 0.025D;
+    /**
+     * Gameplay multiplier on air brake drag, kept separate from the physical
+     * coefficient and area so that {@code RealAirBrakeAreaM2} stays an honest
+     * researched dimension and a researched plane never brakes worse than an
+     * unresearched one.
+     *
+     * <p>Drag rises with the square of speed, so a physically exact brake that
+     * feels right at top speed all but disappears at manoeuvring speed, where it
+     * barely exceeds the idle-coast floor the model already applies. Doubling puts
+     * the effective wing-referenced increment at {@code Cd * fraction * 2 = 0.06},
+     * against the 0.05 that experiment and CFD measure at 60 degrees of deflection
+     * — the top of the real envelope rather than past it.
+     */
+    public static final double AIR_BRAKE_EFFECTIVENESS = 2D;
     /**
      * How much of the air-brake-to-wing area ratio becomes per-tick velocity loss
      * on the legacy flight model, which has no force budget to add a drag term to.
