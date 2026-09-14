@@ -56,10 +56,13 @@ public final class HelicopterPhysics
             1D / Math.max(0.01D, drag) - 1D, terminal, climb);
     }
 
-    public static float spool(float current, boolean powered)
+    /** Smoothly approach the requested rotor-speed fraction without overshooting it. */
+    public static float spool(float current, float target)
     {
         float speed = Mth.clamp(finite(current), 0F, 1F);
-        return powered ? Math.min(1F, speed + 1F / 60F) : Math.max(0F, speed - 1F / 100F);
+        float requested = Mth.clamp(finite(target), 0F, 1F);
+        return speed < requested ? Math.min(requested, speed + 1F / 60F)
+            : Math.max(requested, speed - 1F / 100F);
     }
 
     public static double lift(Performance performance, float collective, float rotorSpeed, float intactFraction)

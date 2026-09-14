@@ -328,4 +328,58 @@ class AircraftPerformancePhysicsTest
             + VehiclePhysicsConstants.GROUND_BRAKING_DECELERATION_MS2, closed, 1.0E-9D);
         assertTrue(closed > open, "closing the throttle on the roll-out brakes the aircraft");
     }
+    @Test
+    void anUnresearchedAirBrakeIsSizedFromWingArea()
+    {
+        assertEquals(WING_AREA * VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION,
+            AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA), 1.0E-9D,
+            "without RealAirBrakeAreaM2 the brake scales with the aircraft");
+        assertEquals(0.86D, AircraftPerformancePhysics.airBrakeAreaM2(0.86D, WING_AREA), 1.0E-9D,
+            "an authored area always wins");
+        assertEquals(0D, AircraftPerformancePhysics.airBrakeAreaM2(0D, 0D), 1.0E-9D,
+            "with neither figure there is nothing to derive a brake from");
+    }
+
+    @Test
+    void airBrakeDragRisesWithTheSquareOfAirspeed()
+    {
+        double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
+        double slow = AircraftPerformancePhysics.airBrakeDragNewtons(50D, area);
+        double fast = AircraftPerformancePhysics.airBrakeDragNewtons(100D, area);
+        assertEquals(0D, AircraftPerformancePhysics.airBrakeDragNewtons(0D, area), 1.0E-9D,
+            "a parked aircraft is not braked by the airflow");
+        assertEquals(4D, fast / slow, 1.0E-6D, "twice the speed is four times the drag");
+        assertEquals(0D, AircraftPerformancePhysics.airBrakeDragNewtons(100D, 0D), 1.0E-9D,
+            "a stowed or absent brake contributes nothing");
+    }
+
+    @Test
+    void theAirBrakeDecelerationIsUsableAndBounded()
+    {
+        double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
+        double deceleration = AircraftPerformancePhysics.airBrakeDecelerationMs2(160D, area, MASS_KG);
+        // A speed brake worth having is a fraction of a g, not a wall.
+        assertTrue(deceleration > 1D && deceleration < 9.81D,
+            "expected a fraction of a g but got " + deceleration);
+        assertEquals(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            AircraftPerformancePhysics.airBrakeDecelerationMs2(2000D, area, 1D), 1.0E-9D,
+            "absurd inputs still respect the shared acceleration ceiling");
+        assertEquals(0D, AircraftPerformancePhysics.airBrakeDecelerationMs2(160D, area, 0D), 1.0E-9D,
+            "no mass means no derived deceleration");
+    }
+
+    @Test
+    void theLegacyAirBrakeFactorBleedsSpeedWithoutStoppingThePlane()
+    {
+        float fallback = AircraftPerformancePhysics.legacyAirBrakeDragFactor(0D, 0D);
+        assertEquals(1D - VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION
+            * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE, fallback, 1.0E-6D,
+            "with no researched areas the default proportion applies");
+        assertTrue(fallback < 1F && fallback > 0.9F, "a multiplier that bleeds speed but does not stop it");
+        assertTrue(AircraftPerformancePhysics.legacyAirBrakeDragFactor(2D, WING_AREA) < fallback,
+            "a larger researched brake bites harder than the default");
+        assertEquals(1D - VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
+            AircraftPerformancePhysics.legacyAirBrakeDragFactor(WING_AREA, WING_AREA), 1.0E-6D,
+            "an absurd brake area is capped");
+    }
 }

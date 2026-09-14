@@ -120,6 +120,14 @@ public class PlaneType extends DriveableType
      * on it switches the doors off everywhere.
      */
     protected boolean hasDoor = true;
+    /**
+     * Air brakes are standard equipment on this model: every fixed-wing type has
+     * them unless a pack opts out with {@code HasAirBrake False}. A helicopter has
+     * no airframe surface to stand into the airflow, so {@code Mode Heli} defaults
+     * the other way. The deployed brake area itself comes from
+     * {@code RealAirBrakeAreaM2}, or from wing area when that is not researched.
+     */
+    protected boolean hasAirBrake = true;
     protected boolean hasWing;
     protected boolean foldWingForLand;
     protected boolean flyWithOpenDoor;
@@ -165,6 +173,8 @@ public class PlaneType extends DriveableType
         hasGear = readValue("HasGear", hasGear, file);
         hasGear = readValue("HasLandingGear", hasGear, file);
         hasDoor = readValue("HasDoor", hasDoor, file);
+        hasAirBrake = readValue("HasAirBrake", mode != EnumPlaneMode.HELI, file);
+        hasAirBrake = readValue("AirBrake", hasAirBrake, file);
         hasWing = readValue("HasWing", hasWing, file);
         foldWingForLand = readValue("FoldWingForLand", foldWingForLand, file);
         flyWithOpenDoor = readValue("FlyWithOpenDoor", flyWithOpenDoor, file);

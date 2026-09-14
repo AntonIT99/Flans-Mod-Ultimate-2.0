@@ -184,6 +184,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
     /** Countermeasures have finished deploying but are not ready to fire again. */
     protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
+    /** Aircraft air brakes are extended. Toggled by the pilot, never automatic. */
+    protected static final int FLAG_AIR_BRAKE = 1 << 8;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -667,9 +669,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public boolean isVarFlare() { return getFlag(FLAG_FLARE); }
     public boolean isCountermeasureReloading() { return getFlag(FLAG_COUNTERMEASURE_RELOADING); }
     public boolean isEngineActive() { return getFlag(FLAG_ENGINE); }
+    public boolean isAirBrakeDeployed() { return getFlag(FLAG_AIR_BRAKE); }
     public void setGearDeployed(boolean value) { setFlag(FLAG_GEAR, value); }
     public void setDoorOpen(boolean value) { setFlag(FLAG_DOOR, value); }
     public void setWingFolded(boolean value) { setFlag(FLAG_WING, value); }
+    public void setAirBrakeDeployed(boolean value) { setFlag(FLAG_AIR_BRAKE, value); }
 
     public void setEntityMarker(int ticks)
     {
@@ -1902,8 +1906,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected static boolean isTurretMountedPart(@Nullable EnumDriveablePart part)
     {
-        return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
-            || part != null && part.name().startsWith("TURRET_");
+        return EnumDriveablePart.isTurretMounted(part);
     }
 
     /**
@@ -2839,6 +2842,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             toggleDriveableMode(player);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_ENGINE))
             toggleEngine();
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_AIR_BRAKE))
+            toggleAirBrake(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
@@ -2865,6 +2870,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         setDoorOpen(!isDoorOpen());
     }
+
+    /**
+     * Air brake toggle. Only aircraft carry the surfaces, so the base driveable
+     * ignores the bind entirely rather than tracking a flag nothing reads.
+     */
+    protected void toggleAirBrake(@NotNull Player player) {}
 
     protected void toggleDriveableMode(@NotNull Player player)
     {

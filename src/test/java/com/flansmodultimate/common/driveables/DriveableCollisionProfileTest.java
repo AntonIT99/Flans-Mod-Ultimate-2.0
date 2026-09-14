@@ -87,6 +87,18 @@ class DriveableCollisionProfileTest
         assertEquals(-2D, converted.z, EPSILON);
     }
 
+    @Test
+    void krishnaTurretArmorAndWeakSpotBoxesFollowTheTurret()
+    {
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_ARMOR));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.MORE_TURRET_ARMOR));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_SIDE));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_SKIRT));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_WEAK));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_WEAK_2));
+        assertFalse(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.COMPOSITE));
+    }
+
     private static CollisionMesh mesh(Vector3f position, Vector3f size, List<Vector3f> modifiers)
     {
         return new CollisionMesh(position, size, modifiers, EnumDriveablePart.CORE);

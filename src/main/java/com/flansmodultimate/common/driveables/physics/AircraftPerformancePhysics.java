@@ -296,6 +296,76 @@ public final class AircraftPerformancePhysics
     }
 
     /**
+     * Reference area of a deployed air brake in square metres.
+     *
+     * <p>{@code RealAirBrakeAreaM2} is the authored figure: the total frontal
+     * area a type's speed brake panels present when fully out, which is a
+     * researchable dimension for a real aircraft. Where it is absent the brake
+     * is sized as a fixed fraction of wing area, so every aircraft that has not
+     * been researched yet still decelerates in proportion to how big it is.
+     *
+     * @param authoredAreaM2 authored brake area, or a non-positive value if unavailable
+     * @param wingAreaM2     wing reference area, used for the fallback
+     * @return the brake area, or zero when neither figure is usable
+     */
+    public static double airBrakeAreaM2(double authoredAreaM2, double wingAreaM2)
+    {
+        if (finitePositive(authoredAreaM2))
+            return authoredAreaM2;
+        if (finitePositive(wingAreaM2))
+            return wingAreaM2 * VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION;
+        return 0D;
+    }
+
+    /**
+     * Drag in newtons contributed by a deployed air brake, from the flat-plate
+     * form {@code D = 0.5 * rho * S * Cd * v²}. It is a genuine extra force
+     * rather than a multiplier, so it is heaviest exactly where a speed brake
+     * matters — at high airspeed — and vanishes at a standstill.
+     */
+    public static double airBrakeDragNewtons(double airspeedMs, double airBrakeAreaM2)
+    {
+        if (!finitePositive(airBrakeAreaM2))
+            return 0D;
+        double speed = Double.isFinite(airspeedMs) ? Math.abs(airspeedMs) : 0D;
+        return 0.5D * VehiclePhysicsUnits.AIR_DENSITY * airBrakeAreaM2
+            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed;
+    }
+
+    /**
+     * Deceleration in m/s² from a deployed air brake, capped by the same ceiling
+     * every other derived acceleration shares. Always zero or positive; the
+     * caller subtracts it.
+     */
+    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg)
+    {
+        if (!finitePositive(massKg))
+            return 0D;
+        double deceleration = airBrakeDragNewtons(airspeedMs, airBrakeAreaM2) / massKg;
+        if (!Double.isFinite(deceleration) || deceleration <= 0D)
+            return 0D;
+        return Math.min(deceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2);
+    }
+
+    /**
+     * Per-tick velocity multiplier standing in for a deployed air brake on the
+     * legacy flight model, which carries drag as a multiplier rather than a force.
+     *
+     * <p>Both areas are used only as a ratio, so a pack that states neither, or
+     * only one of them, falls back to the same default proportion the derived
+     * model uses rather than mixing a real dimension with a gameplay number.
+     */
+    public static float legacyAirBrakeDragFactor(double airBrakeAreaM2, double wingAreaM2)
+    {
+        double fraction = finitePositive(airBrakeAreaM2) && finitePositive(wingAreaM2)
+            ? airBrakeAreaM2 / wingAreaM2
+            : VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION;
+        double loss = Math.min(VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
+            fraction * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE);
+        return (float) (1D - Math.max(0D, loss));
+    }
+
+    /**
      * Additional aerodynamic deceleration while changing attitude.
      *
      * <p>The simulation has no angle-of-attack or sideslip state, so ordinary

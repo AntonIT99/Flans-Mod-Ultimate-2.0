@@ -173,6 +173,12 @@ Every aircraft category requires:
 
 Aircraft categories do not use the ground-vehicle armour keys.
 
+Optional, and researched only where a source actually states it:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealAirBrakeAreaM2` | m², finite and > 0 | Total frontal area the speed brake panels present when fully deployed. Omit it and the air brake is sized at a fixed small fraction of wing area; author `HasAirBrake False` for a type that carries no such surfaces at all. |
+
 Aircraft cadence follows [Mounted weapon cadence](#mounted-weapon-cadence) unchanged.
 Most fighters mount their guns as `PilotGun` entries and therefore need no cadence
 key at all: `ReadWeaponsFromGunTypes: "true"` pulls the rate from the researched gun

@@ -230,8 +230,9 @@ public final class VehicleArmorSpecReader
         // The side of the hull. leftsideArmor/rightsideArmor are the generic
         // side boxes a naval definition uses for its belt when it has no
         // dedicated belt part.
-        families.put(ARMOR_BELT, List.of(EnumDriveablePart.BELT, EnumDriveablePart.PORT,
-            EnumDriveablePart.STARBOARD, EnumDriveablePart.LEFTSIDE_ARMOR,
+        families.put(ARMOR_BELT, List.of(EnumDriveablePart.BELT, EnumDriveablePart.BELT_LEFT,
+            EnumDriveablePart.BELT_RIGHT, EnumDriveablePart.PORT, EnumDriveablePart.STARBOARD,
+            EnumDriveablePart.LEFT, EnumDriveablePart.RIGHT, EnumDriveablePart.LEFTSIDE_ARMOR,
             EnumDriveablePart.RIGHTSIDE_ARMOR));
         families.put(ARMOR_DECK, List.of(EnumDriveablePart.DECK, EnumDriveablePart.DECK_2,
             EnumDriveablePart.DECK_3));
@@ -241,7 +242,8 @@ public final class VehicleArmorSpecReader
             EnumDriveablePart.CONNING_TOWER_AFT, EnumDriveablePart.BRIDGE));
         families.put(ARMOR_TORPEDO_BULGE, List.of(EnumDriveablePart.TORPEDO_BULGE,
             EnumDriveablePart.TORPEDO_BULGE_2, EnumDriveablePart.TORPEDO_BULGE_3,
-            EnumDriveablePart.TORPEDO_BULGE_4));
+            EnumDriveablePart.TORPEDO_BULGE_4, EnumDriveablePart.BULGE,
+            EnumDriveablePart.BULGE_LEFT, EnumDriveablePart.BULGE_RIGHT));
         families.put(ARMOR_SUPERSTRUCTURE, List.of(EnumDriveablePart.SUPERSTRUCTURE));
         families.put(ARMOR_BOW, List.of(EnumDriveablePart.BOW));
         families.put(ARMOR_STERN, List.of(EnumDriveablePart.STERN));

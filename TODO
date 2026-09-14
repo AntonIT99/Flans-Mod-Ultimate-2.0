@@ -1,17 +1,15 @@
 General:
 - Optimize research categories skill for token consumption
 - Check if ConfigReference in Wiki is exhaustive / up to date -> create a skill for this
-- Check if all FMU featues are implemented in the mod -> use the skills
+- Check if all FMU features are implemented in the mod -> use the skills
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
 - Check penetrating power balance
 - Investigate if we can remove experimental settings
 
 Driveables:
-- Fix some turret hitboxes not moving (TaP vehicles)
 - Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
 - See if shooting points on vehicles can be directly inferred from models
-- Plane air breaks
 - Optional Idee: When a track is broken, the vehicle should be able to turn around itself but not move forward or backward. Forward or backward make the vehicle turn around itself.
 
 Content Packs:
@@ -25,6 +23,8 @@ WW2
 - Remove Minigun Mode for some guns
 MW
 - Check all modern warfare helicopters
+- See if we can fix the tail rotor not centered arround rotation point for the Apache
+- Fix Chinook model: no rotors moving at all
 
 Feature Ideas:
 - Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.

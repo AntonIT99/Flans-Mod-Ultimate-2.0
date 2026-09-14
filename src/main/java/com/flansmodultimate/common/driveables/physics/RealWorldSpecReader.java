@@ -31,6 +31,9 @@ public final class RealWorldSpecReader
     public static final String KEY_WING_SPAN = "RealWingSpanM";
     public static final String KEY_WING_AREA = "RealWingAreaM2";
     public static final String KEY_CLIMB_RATE = "RealClimbRateMs";
+    // Total frontal area the speed brake panels present when fully deployed. Published
+    // or measurable for real aircraft, and the only figure the air brake drag term needs.
+    public static final String KEY_AIR_BRAKE_AREA = "RealAirBrakeAreaM2";
     // Rotorcraft geometry. A helicopter has no wing, so its rotor disc stands in as
     // the lifting surface; both figures are published for every real helicopter.
     public static final String KEY_ROTOR_DIAMETER = "RealRotorDiameterM";
@@ -82,7 +85,8 @@ public final class RealWorldSpecReader
             readPositive(file, KEY_WING_AREA, warnings, "square metres"),
             readPositive(file, KEY_CLIMB_RATE, warnings, "metres per second"),
             readPositive(file, KEY_ROTOR_DIAMETER, warnings, "metres"),
-            readRotorCount(file, warnings));
+            readRotorCount(file, warnings),
+            readPositive(file, KEY_AIR_BRAKE_AREA, warnings, "square metres"));
 
         RealWorldVehicleSpec.Ground ground = new RealWorldVehicleSpec.Ground(
             readDriveType(file, warnings),
@@ -281,6 +285,7 @@ public final class RealWorldSpecReader
     {
         return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS,
             KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
+            KEY_AIR_BRAKE_AREA,
             KEY_ROTOR_DIAMETER, KEY_ROTOR_COUNT,
             KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT,
             KEY_DISPLACEMENT_TONNES, KEY_DISPLACEMENT_LONG_TONS,

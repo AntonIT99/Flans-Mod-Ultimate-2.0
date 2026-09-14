@@ -801,6 +801,14 @@ public final class ClientHudOverlays
             String.format(Locale.ROOT, "%.1f", speed), ModClientConfig.get().driveableSpeedUnit.getSymbol()),
             LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
+        if (driveable instanceof Plane)
+        {
+            double verticalSpeed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().y * 20D);
+            g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.vertical_speed",
+                String.format(Locale.ROOT, "%+.1f", verticalSpeed), ModClientConfig.get().driveableSpeedUnit.getSymbol()),
+                LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+            y += LEGACY_HUD_LINE_HEIGHT;
+        }
 
         Component gear = Component.translatable(driveable.isGearDeployed()
             ? "hud.flansmodultimate.driveable.gear.down" : "hud.flansmodultimate.driveable.gear.up");
@@ -809,6 +817,17 @@ public final class ClientHudOverlays
         g.drawString(font, gear, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
         g.drawString(font, door, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        // Air brakes are a pilot-held state with no model animation to read, so
+        // the HUD is the only place the setting is visible.
+        if (driveable instanceof Plane plane && plane.getPlaneType() != null && plane.getPlaneType().isHasAirBrake())
+        {
+            boolean airBrakeOn = plane.isAirBrakeDeployed();
+            y += LEGACY_HUD_LINE_HEIGHT;
+            g.drawString(font, Component.translatable(airBrakeOn
+                    ? "hud.flansmodultimate.driveable.air_brake.on"
+                    : "hud.flansmodultimate.driveable.air_brake.off"),
+                LEGACY_HUD_LEFT, y, airBrakeOn ? HUD_GOLD : HUD_WHITE, false);
+        }
 
         boolean isVehicle = driveable instanceof Vehicle;
         boolean isPlane = driveable instanceof Plane;

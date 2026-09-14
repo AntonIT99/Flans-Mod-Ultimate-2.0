@@ -61,6 +61,23 @@ class DriveableTypeArmorHealthTest
         assertEquals(0F, type.getHealth().get(EnumDriveablePart.BARREL).getHealth());
     }
 
+    @Test
+    void krishnaPartNamesRetainIndependentHitboxes()
+    {
+        VehicleType type = vehicle(
+            "SetupPart core 100 0 0 0 16 16 16",
+            "SetupPart generic0 10 16 0 0 16 16 16",
+            "SetupPart generic1 20 32 0 0 16 16 16",
+            "SetupPart turretarmor 30 48 0 0 16 16 16",
+            "SetupPart moreturretarmor 40 64 0 0 16 16 16");
+
+        assertEquals(5, type.getHealth().size());
+        assertEquals(10F, type.getHealth().get(EnumDriveablePart.GENERIC_0).getHealth());
+        assertEquals(20F, type.getHealth().get(EnumDriveablePart.GENERIC_1).getHealth());
+        assertEquals(30F, type.getHealth().get(EnumDriveablePart.TURRET_ARMOR).getHealth());
+        assertEquals(40F, type.getHealth().get(EnumDriveablePart.MORE_TURRET_ARMOR).getHealth());
+    }
+
     private static VehicleType vehicle(String... lines)
     {
         List<String> definition = new ArrayList<>(List.of("Driver 0 0 0"));

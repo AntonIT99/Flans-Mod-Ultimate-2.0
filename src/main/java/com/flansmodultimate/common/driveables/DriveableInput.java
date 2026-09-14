@@ -41,8 +41,10 @@ public final class DriveableInput
     public static final int CHANGE_SEAT = 1 << 21;
     /** Toggle a vehicle or aircraft engine. The server owns the resulting engine state. */
     public static final int TOGGLE_ENGINE = 1 << 22;
+    /** Toggle the air brakes of an aircraft. The server owns the resulting state. */
+    public static final int TOGGLE_AIR_BRAKE = 1 << 23;
 
-    public static final int VALID_MASK = (1 << 23) - 1;
+    public static final int VALID_MASK = (1 << 24) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
         | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
         | THROTTLE_INCREASE | THROTTLE_DECREASE;

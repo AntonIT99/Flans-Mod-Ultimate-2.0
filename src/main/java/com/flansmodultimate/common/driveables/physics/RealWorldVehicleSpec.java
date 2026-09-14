@@ -30,19 +30,26 @@ public record RealWorldVehicleSpec(
         @Nullable Float wingAreaM2,
         @Nullable Float climbRateMs,
         @Nullable Float rotorDiameterM,
-        @Nullable Integer rotorCount)
+        @Nullable Integer rotorCount,
+        @Nullable Float airBrakeAreaM2)
     {
-        public static final Aircraft EMPTY = new Aircraft(null, null, null, null, null);
+        public static final Aircraft EMPTY = new Aircraft(null, null, null, null, null, null);
 
         public Aircraft(@Nullable Float wingSpanM, @Nullable Float wingAreaM2, @Nullable Float climbRateMs)
         {
-            this(wingSpanM, wingAreaM2, climbRateMs, null, null);
+            this(wingSpanM, wingAreaM2, climbRateMs, null, null, null);
+        }
+
+        public Aircraft(@Nullable Float wingSpanM, @Nullable Float wingAreaM2, @Nullable Float climbRateMs,
+                        @Nullable Float rotorDiameterM, @Nullable Integer rotorCount)
+        {
+            this(wingSpanM, wingAreaM2, climbRateMs, rotorDiameterM, rotorCount, null);
         }
 
         public boolean isEmpty()
         {
             return wingSpanM == null && wingAreaM2 == null && climbRateMs == null
-                && rotorDiameterM == null && rotorCount == null;
+                && rotorDiameterM == null && rotorCount == null && airBrakeAreaM2 == null;
         }
 
         /** Number of main rotors, defaulting to the single rotor of a conventional helicopter. */

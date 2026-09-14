@@ -295,4 +295,19 @@ class RealWorldSpecReaderTest
         IContentProvider pack = new ContentPack("test", Path.of("build", "test-packs", "test"));
         return RealWorldSpecReader.read(new TypeFile("testVehicle", EnumType.VEHICLE, pack, List.of(lines)));
     }
+    @Test
+    void theAirBrakeAreaIsReadAndValidatedLikeEveryOtherAircraftDimension()
+    {
+        RealWorldSpecReader.Result result = read("RealAirBrakeAreaM2 0.86");
+        assertEquals(0.86F, result.spec().aircraft().airBrakeAreaM2());
+        assertFalse(result.hasWarnings());
+
+        RealWorldSpecReader.Result absent = read("Model Spitfire");
+        assertNull(absent.spec().aircraft().airBrakeAreaM2(),
+            "an undeclared brake area stays unset so the wing-area fallback applies");
+
+        RealWorldSpecReader.Result malformed = read("RealAirBrakeAreaM2 huge");
+        assertNull(malformed.spec().aircraft().airBrakeAreaM2());
+        assertTrue(malformed.hasWarnings());
+    }
 }

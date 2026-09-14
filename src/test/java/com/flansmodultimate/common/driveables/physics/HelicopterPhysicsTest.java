@@ -167,17 +167,20 @@ class HelicopterPhysicsTest
     }
 
     @Test
-    void spinUpAndCoastDownRemainBoundedAndCannotReverse()
+    void rotorSpeedSpoolsTowardThrottleAndCannotReverse()
     {
         float rpm = 0F;
         for (int tick = 0; tick < 61; tick++)
-            rpm = HelicopterPhysics.spool(rpm, true);
+            rpm = HelicopterPhysics.spool(rpm, 1F);
         assertEquals(1F, rpm);
-        assertTrue(HelicopterPhysics.spool(rpm, false) > 0F);
+        for (int tick = 0; tick < 100; tick++)
+            rpm = HelicopterPhysics.spool(rpm, 0.4F);
+        assertEquals(0.4F, rpm);
+        assertTrue(HelicopterPhysics.spool(rpm, 0F) > 0F);
         for (int tick = 0; tick < 101; tick++)
-            rpm = HelicopterPhysics.spool(rpm, false);
+            rpm = HelicopterPhysics.spool(rpm, 0F);
         assertEquals(0F, rpm);
-        assertEquals(0F, HelicopterPhysics.spool(Float.NaN, false));
+        assertEquals(0F, HelicopterPhysics.spool(Float.NaN, Float.NaN));
     }
 
     @Test

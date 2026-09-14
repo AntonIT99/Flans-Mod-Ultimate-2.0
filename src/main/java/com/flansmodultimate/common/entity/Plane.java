@@ -215,6 +215,53 @@ public class Plane extends Driveable
     }
 
     /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
+    /**
+     * Air brake toggle. A plane that declares {@code HasAirBrake False} has no
+     * such surfaces and silently ignores the bind, exactly as a fixed-gear type
+     * ignores the gear bind.
+     */
+    @Override
+    protected void toggleAirBrake(@NotNull Player player)
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isHasAirBrake())
+            return;
+        setAirBrakeDeployed(!isAirBrakeDeployed());
+        player.displayClientMessage(Component.translatable(isAirBrakeDeployed()
+            ? "message.flansmodultimate.driveable.air_brake.on"
+            : "message.flansmodultimate.driveable.air_brake.off"), true);
+    }
+
+    /**
+     * Reference area of this plane's deployed air brake in square metres, or zero
+     * while it is stowed or absent. {@code RealAirBrakeAreaM2} is authoritative;
+     * without it the brake is sized from the aircraft's own wing area.
+     */
+    private double deployedAirBrakeAreaM2(PlaneType type)
+    {
+        if (!isAirBrakeDeployed() || !type.isHasAirBrake())
+            return 0D;
+        RealWorldVehicleSpec.Aircraft aircraft = type.getResolvedPhysics().source().aircraft();
+        Float authored = aircraft.airBrakeAreaM2();
+        Float wingArea = aircraft.effectiveWingAreaM2();
+        return AircraftPerformancePhysics.airBrakeAreaM2(authored == null ? 0D : authored,
+            wingArea == null ? 0D : wingArea);
+    }
+
+    /**
+     * Per-tick velocity multiplier for deployed air brakes on the legacy flight
+     * model. Both areas come from the real-world keys, since the legacy
+     * {@code WingArea} is a gameplay coefficient and not a dimension in metres.
+     */
+    private float legacyAirBrakeDragFactor(PlaneType type)
+    {
+        RealWorldVehicleSpec.Aircraft aircraft = type.getResolvedPhysics().source().aircraft();
+        Float authored = aircraft.airBrakeAreaM2();
+        Float wingArea = aircraft.effectiveWingAreaM2();
+        return AircraftPerformancePhysics.legacyAirBrakeDragFactor(authored == null ? 0D : authored,
+            wingArea == null ? 0D : wingArea);
+    }
+
     @Override
     public boolean canHitPart(@Nullable EnumDriveablePart part)
     {
@@ -379,8 +426,9 @@ public class Plane extends Driveable
             IDLE_ENGINE_ANIMATION_THROTTLE);
         propellerAngle = Mth.wrapDegrees(propellerAngle + LegacyPlanePhysics.propellerStep(animationThrottle));
         PlaneType type = getPlaneType();
-        rotorSpeed = HelicopterPhysics.spool(rotorSpeed,
-            isEngineActive() && type != null && rotorEfficiency(type) > 0F);
+        float targetRotorSpeed = isEngineActive() && type != null && rotorEfficiency(type) > 0F
+            ? Math.max(0F, getThrottle()) : 0F;
+        rotorSpeed = HelicopterPhysics.spool(rotorSpeed, targetRotorSpeed);
         previousRotorPhase = rotorPhase;
         rotorPhase += LegacyPlanePhysics.rotorStep(rotorSpeed);
         rotorAngle = HelicopterPhysics.rotorAngle(rotorPhase, rotorPhase, 1F, 1F);
@@ -464,6 +512,10 @@ public class Plane extends Driveable
             type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
         float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag())
             - (float)Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
+        // The legacy model carries drag as a per-tick multiplier rather than a
+        // force, so the air brake folds into that same multiplier.
+        if (isAirBrakeDeployed() && type.isHasAirBrake())
+            drag *= legacyAirBrakeDragFactor(type);
         double speed = Math.min(current.length(), type.isNewFlightControl() ? type.getMaxSpeed() : 2D);
         Vec3 forward = flightForwardVector();
         double wingAirspeed = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z,
@@ -551,6 +603,11 @@ public class Plane extends Driveable
                 angularYaw, angularPitch, angularRoll));
         if (rolling)
             accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
+        // Deployed air brakes are a real extra drag force, so they bite hardest
+        // at speed and do nothing at a standstill.
+        accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            accelerationMs2 - AircraftPerformancePhysics.airBrakeDecelerationMs2(airspeedMs,
+                deployedAirBrakeAreaM2(type), physics.massKg()));
         double newSpeed = Math.max(0D, airspeedBlocksPerTick
             + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
         newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));

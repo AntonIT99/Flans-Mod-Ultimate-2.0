@@ -263,8 +263,7 @@ public final class DriveableCollisionProfile
     /** Shared turret classification for collision, projectile hits and armour precedence. */
     public static boolean isTurretMountedPart(EnumDriveablePart part)
     {
-        return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
-            || part != null && part.name().startsWith("TURRET_");
+        return EnumDriveablePart.isTurretMounted(part);
     }
 
     /** Damageable gun/barrel boxes follow both turret yaw and barrel pitch. */

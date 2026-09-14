@@ -67,6 +67,28 @@ class VehicleArmorResolverTest
         assertEquals(15F, armor.plate(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.FRONT).authored().thicknessMm());
     }
 
+    @Test
+    void krishnaTurretPartsUseTurretArmorWhileOtherExtraArmorUsesHullArmor()
+    {
+        VehicleArmorSpec spec = new VehicleArmorSpec(
+            Map.of(EnumArmorFacing.FRONT, new ArmorPlate(40F, 0F)),
+            Map.of(EnumArmorFacing.FRONT, new ArmorPlate(100F, 0F)), Map.of());
+        ResolvedVehicleArmor armor = VehicleArmorResolver.resolve(spec, List.of(
+            EnumDriveablePart.TURRET_ARMOR, EnumDriveablePart.MORE_TURRET_ARMOR,
+            EnumDriveablePart.TURRET_SIDE, EnumDriveablePart.TURRET_SKIRT,
+            EnumDriveablePart.TURRET_WEAK, EnumDriveablePart.TURRET_WEAK_2,
+            EnumDriveablePart.COMPOSITE));
+
+        assertEquals(100F, armor.plate(EnumDriveablePart.TURRET_ARMOR, EnumArmorFacing.FRONT)
+            .authored().thicknessMm());
+        assertEquals(100F, armor.plate(EnumDriveablePart.MORE_TURRET_ARMOR, EnumArmorFacing.FRONT)
+            .authored().thicknessMm());
+        assertEquals(100F, armor.plate(EnumDriveablePart.TURRET_WEAK_2, EnumArmorFacing.FRONT)
+            .authored().thicknessMm());
+        assertEquals(40F, armor.plate(EnumDriveablePart.COMPOSITE, EnumArmorFacing.FRONT)
+            .authored().thicknessMm());
+    }
+
     private static ResolvedVehicleArmor resolved(ArmorPlate front)
     {
         return VehicleArmorResolver.resolve(new VehicleArmorSpec(

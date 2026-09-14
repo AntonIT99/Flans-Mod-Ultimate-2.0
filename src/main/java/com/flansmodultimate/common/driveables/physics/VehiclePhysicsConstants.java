@@ -125,6 +125,28 @@ public final class VehiclePhysicsConstants
      */
     public static final double COAST_DECELERATION_RAMP_FRACTION = 0.1D;
     /**
+     * Drag coefficient of a deployed air brake, referenced to its own frontal
+     * area. A speed brake panel stood square into the airflow is very close to a
+     * flat plate, which is where the 1.2 comes from.
+     */
+    public static final double AIR_BRAKE_DRAG_COEFFICIENT = 1.2D;
+    /**
+     * Air brake area as a fraction of wing area, used when a pack does not state
+     * {@code RealAirBrakeAreaM2}. Real speed brake installations sit in the low
+     * single-digit percent of wing area, which yields roughly a third of a g of
+     * deceleration at combat speeds.
+     */
+    public static final double AIR_BRAKE_WING_AREA_FRACTION = 0.025D;
+    /**
+     * How much of the air-brake-to-wing area ratio becomes per-tick velocity loss
+     * on the legacy flight model, which has no force budget to add a drag term to.
+     * The default ratio lands near a third of the legacy airframe drag, which is
+     * the same order the derived model produces for the same aircraft.
+     */
+    public static final double LEGACY_AIR_BRAKE_DRAG_SCALE = 0.6D;
+    /** Ceiling on the legacy per-tick air brake velocity loss, so it cannot stop a plane dead. */
+    public static final double MAX_LEGACY_AIR_BRAKE_DRAG = 0.06D;
+    /**
      * Per-axis multipliers on the derived control authority, relative to the
      * legacy sensitivity the fixed-wing model inherited.
      *

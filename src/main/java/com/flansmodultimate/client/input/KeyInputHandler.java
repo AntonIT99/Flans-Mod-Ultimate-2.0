@@ -111,6 +111,7 @@ public final class KeyInputHandler
     private static final KeyMapping throttleDownKey = key("plane.throttle_down", InputConstants.KEY_LCONTROL, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping controlModeKey = key("plane.control_mode", InputConstants.KEY_C, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping gearKey = key("plane.gear", InputConstants.KEY_G, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping airBrakeKey = key("plane.air_brake", InputConstants.KEY_V, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping modeKey = key("plane.mode", InputConstants.KEY_J, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping driveablePlayerInventoryKey = key("driveable.player_inventory", InputConstants.KEY_Z, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
@@ -127,7 +128,7 @@ public final class KeyInputHandler
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey,
         yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey,
-        controlModeKey, gearKey, modeKey,
+        controlModeKey, gearKey, airBrakeKey, modeKey,
         driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
         changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
@@ -146,7 +147,7 @@ public final class KeyInputHandler
      * would fire the moment the player mounts. These are drained instead.
      */
     private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey,
-        flareKey, controlModeKey, gearKey, modeKey, driveablePlayerInventoryKey, vehicleZoomKey);
+        flareKey, controlModeKey, gearKey, airBrakeKey, modeKey, driveablePlayerInventoryKey, vehicleZoomKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18};
 
@@ -212,6 +213,7 @@ public final class KeyInputHandler
         event.register(throttleDownKey);
         event.register(controlModeKey);
         event.register(gearKey);
+        event.register(airBrakeKey);
         event.register(modeKey);
         event.register(driveablePlayerInventoryKey);
     }
@@ -467,6 +469,7 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.MENU;
             if (changeSeatKey.consumeClick()) edgeMask |= DriveableInput.CHANGE_SEAT;
             if (gearKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_GEAR;
+            if (airBrakeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_AIR_BRAKE;
             if (doorKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_DOOR;
             if (engineKey.consumeClick() && (driveable instanceof Vehicle || driveable instanceof Plane))
                 edgeMask |= DriveableInput.TOGGLE_ENGINE;
