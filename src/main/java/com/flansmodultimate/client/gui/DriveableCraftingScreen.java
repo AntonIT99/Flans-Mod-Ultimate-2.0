@@ -162,7 +162,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
             return;
         }
 
-        graphics.drawString(font, font.plainSubstrByWidth(selected.getName(), MAX_NAME_WIDTH), STATS_LEFT, STATS_TOP, WHITE, false);
+        graphics.drawString(font, font.plainSubstrByWidth(ModUtils.getDisplayNameString(selected), MAX_NAME_WIDTH), STATS_LEFT, STATS_TOP, WHITE, false);
         graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()),
             STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE, false);
         graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()),

@@ -3718,7 +3718,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return false;
         NetworkHooks.openScreen(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
-                Component.literal(configType.getName())),
+                ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()));
         return true;
     }

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
@@ -150,7 +151,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
             if (configType.getFuelTankSize() > 0)
                 tooltip.add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
             if (data.getEngine() != null)
-                tooltip.add(Component.translatable(TooltipKeys.ENGINE, data.getEngine().getName()).withStyle(ChatFormatting.DARK_BLUE));
+                tooltip.add(Component.translatable(TooltipKeys.ENGINE, ModUtils.getDisplayName(data.getEngine())).withStyle(ChatFormatting.DARK_BLUE));
 
             float totalHealth = 0F;
             float totalMaxHealth = 0F;

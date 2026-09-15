@@ -433,9 +433,9 @@ public final class AircraftPerformancePhysics
     }
 
     /**
-     * Deceleration in m/s² from a deployed air brake, capped by the same ceiling
-     * every other derived acceleration shares. Always zero or positive; the
-     * caller subtracts it.
+     * Deceleration in m/s² from a deployed air brake, capped by its own ceiling
+     * so the quadratic term stays decisive without becoming a wall at the top of
+     * the speed range. Always zero or positive; the caller subtracts it.
      */
     public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg)
     {
@@ -444,7 +444,7 @@ public final class AircraftPerformancePhysics
         double deceleration = airBrakeDragNewtons(airspeedMs, airBrakeAreaM2) / massKg;
         if (!Double.isFinite(deceleration) || deceleration <= 0D)
             return 0D;
-        return Math.min(deceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2);
+        return Math.min(deceleration, VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2);
     }
 
     /**

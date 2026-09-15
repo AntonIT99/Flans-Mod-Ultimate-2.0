@@ -26,7 +26,7 @@ import java.util.Map;
  * runtime physics reads, so the tooltip cannot drift from the simulation.
  *
  * <p>Authored real-world source values, independently-usable overrides, and the
- * minimum flight speed pilots need during play are shown here; a vehicle still
+ * full-lift speed pilots need during play are shown here; a vehicle still
  * on legacy physics is labelled as such and shown the legacy fields that are
  * genuinely driving it. Other derived and Minecraft-effective values are left
  * out to keep the tooltip short — they remain available through
@@ -114,9 +114,12 @@ public final class DriveablePhysicsTooltip
     {
         RealWorldVehicleSpec source = resolved.source();
 
-        // Most lines are authored real-world source values. Minimum flight speed
+        // Most lines are authored real-world source values. The full-lift speed
         // is the deliberate exception because pilots need the effective,
-        // server-configured threshold during ordinary play.
+        // server-configured figure during ordinary play. It is the airspeed at
+        // which the wing carries the whole aircraft, not a floor below which
+        // flight stops: below it lift falls off with the square of speed and the
+        // aircraft sinks and mushes, so the number is an advisory, not a limit.
         tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_MASS), formatMass(resolved.massKg())));
         if (resolved.baselineThrustKn() > 0F)
             tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_ENGINE_THRUST), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1) + " kN"));
@@ -133,10 +136,10 @@ public final class DriveablePhysicsTooltip
                 tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_WING_AREA), IFlanItem.formatFloat(aircraft.effectiveWingAreaM2(), 2) + " m²"));
             if (aircraft.climbRateMs() != null)
                 tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_CLIMB_RATE), IFlanItem.formatFloat(aircraft.climbRateMs(), 1) + " m/s"));
-            double minimumFlightSpeedKmh = resolved.referenceSpeedMs(
+            double fullLiftSpeedKmh = resolved.referenceSpeedMs(
                 speedScale, aircraftReferenceSpeedScale) * VehiclePhysicsUnits.KMH_PER_METRE_PER_SECOND;
             tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_REFERENCE_SPEED),
-                IFlanItem.formatDouble(minimumFlightSpeedKmh, 0) + " km/h"));
+                IFlanItem.formatDouble(fullLiftSpeedKmh, 0) + " km/h"));
         }
 
         // Legacy fields that remain in force as deliberate gameplay trims.

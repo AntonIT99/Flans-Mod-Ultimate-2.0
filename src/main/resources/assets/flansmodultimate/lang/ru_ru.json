@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "Устаревшая + реальные переопределения",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "Рассчитано по реальным данным",
   "tooltip.flansmodultimate.physics.powerToWeight": "Мощность / масса (кВт/кг)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "Минимальная скорость полёта",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "Скорость полной подъёмной силы",
   "tooltip.flansmodultimate.physics.reverseSpeed": "Скорость заднего хода",
   "tooltip.flansmodultimate.physics.speedScale": "Скорости масштабированы до %sx настройкой сервера",
   "tooltip.flansmodultimate.physics.thrustToWeight": "Тяга / вес",

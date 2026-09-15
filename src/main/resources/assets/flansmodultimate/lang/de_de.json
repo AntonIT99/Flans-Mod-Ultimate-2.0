@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "Klassisch + reale Überschreibungen",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "Aus Realdaten abgeleitet",
   "tooltip.flansmodultimate.physics.powerToWeight": "Leistung / Masse (kW/kg)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "Mindestfluggeschwindigkeit",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "Geschwindigkeit für vollen Auftrieb",
   "tooltip.flansmodultimate.physics.reverseSpeed": "Rückwärtsgeschwindigkeit",
   "tooltip.flansmodultimate.physics.speedScale": "Geschwindigkeiten per Server-Konfiguration auf %sx skaliert",
   "tooltip.flansmodultimate.physics.thrustToWeight": "Schub / Gewicht",

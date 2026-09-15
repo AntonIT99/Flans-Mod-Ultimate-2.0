@@ -81,7 +81,7 @@ public final class ModCommonConfig
     private static final double MIN_REALISTIC_CLASS_SPEED_SCALE = 0.1D;
     private static final double MAX_REALISTIC_CLASS_SPEED_SCALE = 1.0D;
     private static final double MIN_HARD_SPEED_CAP_KMH = 1.0D;
-    private static final double MAX_HARD_SPEED_CAP_KMH = 100000.0D;
+    private static final double MAX_HARD_SPEED_CAP_KMH = 1000.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
     private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
     private static final double MIN_KNOCKBACK_REFERENCE_MASS_KG = 1.0D;

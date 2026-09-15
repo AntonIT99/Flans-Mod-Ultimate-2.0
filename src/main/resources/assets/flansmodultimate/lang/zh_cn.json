@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "传统 + 真实数据覆盖",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "真实数据推导",
   "tooltip.flansmodultimate.physics.powerToWeight": "功重比 (kW/kg)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "最低飞行速度",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "满升力速度",
   "tooltip.flansmodultimate.physics.reverseSpeed": "倒车速度",
   "tooltip.flansmodultimate.physics.speedScale": "服务器配置将速度缩放为 %sx",
   "tooltip.flansmodultimate.physics.thrustToWeight": "推重比",

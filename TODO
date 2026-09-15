@@ -8,6 +8,8 @@ General:
 - Investigate if we can remove experimental settings
 
 Driveables:
+- Vehicle scopes
+- Command to load passenger guns and bombs and shells automatically
 - Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
 - Optional Idee: When a track is broken, the vehicle should be able to turn around itself but not move forward or backward. Forward or backward make the vehicle turn around itself.
 

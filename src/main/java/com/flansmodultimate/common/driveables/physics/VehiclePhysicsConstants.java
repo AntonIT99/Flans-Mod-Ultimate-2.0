@@ -179,12 +179,25 @@ public final class VehiclePhysicsConstants
      *
      * <p>Drag rises with the square of speed, so a physically exact brake that
      * feels right at top speed all but disappears at manoeuvring speed, where it
-     * barely exceeds the idle-coast floor the model already applies. Doubling puts
-     * the effective wing-referenced increment at {@code Cd * fraction * 2 = 0.06},
-     * against the 0.05 that experiment and CFD measure at 60 degrees of deflection
-     * — the top of the real envelope rather than past it.
+     * barely exceeds the idle-coast floor the model already applies. That is
+     * where the lever is actually used, so the multiplier is sized for it: at
+     * four, a closed-throttle brake deployment at manoeuvring speed pulls several
+     * times the coast floor instead of a barely perceptible fraction more.
+     *
+     * <p>This is openly a playability figure and no longer claims to sit inside
+     * the measured envelope. What keeps it from becoming a wall at the other end
+     * of the speed range is {@link #AIR_BRAKE_MAX_DECELERATION_MS2}, not a
+     * conservative multiplier that would make the brake useless where it matters.
      */
-    public static final double AIR_BRAKE_EFFECTIVENESS = 2D;
+    public static final double AIR_BRAKE_EFFECTIVENESS = 4D;
+    /**
+     * Ceiling on air brake deceleration, in m/s². The quadratic drag term would
+     * otherwise keep climbing past anything a pilot can fly through once the
+     * gameplay multiplier is applied, so the brake saturates just under one g:
+     * decisive, still short of a mid-air wall, and well inside the shared
+     * {@link #MAX_DERIVED_ACCELERATION_MS2} the total is clamped to afterwards.
+     */
+    public static final double AIR_BRAKE_MAX_DECELERATION_MS2 = 9D;
     /**
      * How much of the air-brake-to-wing area ratio becomes per-tick velocity loss
      * on the legacy flight model, which has no force budget to add a drag term to.
@@ -192,8 +205,13 @@ public final class VehiclePhysicsConstants
      * the same order the derived model produces for the same aircraft.
      */
     public static final double LEGACY_AIR_BRAKE_DRAG_SCALE = 0.6D;
-    /** Ceiling on the legacy per-tick air brake velocity loss, so it cannot stop a plane dead. */
-    public static final double MAX_LEGACY_AIR_BRAKE_DRAG = 0.06D;
+    /**
+     * Ceiling on the legacy per-tick air brake velocity loss, so it cannot stop a
+     * plane dead. It sits clear of what the default brake proportion produces, so
+     * the cap only ever trims an unusually large researched brake rather than
+     * flattening every aircraft onto the same figure.
+     */
+    public static final double MAX_LEGACY_AIR_BRAKE_DRAG = 0.12D;
     /**
      * Per-axis multipliers on the derived control authority, relative to the
      * legacy sensitivity the fixed-wing model inherited.

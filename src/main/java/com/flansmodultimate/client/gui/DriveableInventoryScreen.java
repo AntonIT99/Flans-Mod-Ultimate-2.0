@@ -429,7 +429,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         lines.add(header);
         if (!hasShiftDown())
         {
-            ammo.forEach(type -> lines.add(Component.literal("> " + type.getName())));
+            ammo.forEach(type -> lines.add(Component.literal("> ").append(ModUtils.getDisplayName(type))));
             if (!ammo.isEmpty() && minecraft != null)
             {
                 Component keyName = minecraft.options.keyShift.getTranslatedKeyMessage().copy()
@@ -496,7 +496,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private List<Component> ammoDetails(ShootableType type, @Nullable AmmoStatContext context, @Nullable String roundName)
     {
         List<Component> block = new ArrayList<>();
-        block.add(Component.literal("> " + type.getName() + (roundName == null ? "" : " - " + roundName))
+        block.add(Component.literal("> ").append(ModUtils.getDisplayName(type))
+            .append(roundName == null ? "" : " - " + roundName)
             .withStyle(ChatFormatting.YELLOW));
 
         List<Component> stats = new ArrayList<>();
@@ -520,7 +521,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     {
         GunType gun = row.type();
         List<Component> lines = new ArrayList<>();
-        lines.add(Component.literal(gun.getName()).withStyle(ChatFormatting.YELLOW));
+        lines.add(ModUtils.getDisplayName(gun).copy().withStyle(ChatFormatting.YELLOW));
 
         if (!hasShiftDown())
         {
@@ -566,7 +567,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             Function<ShootableType, AmmoStatContext> contexts = gunContext(row);
             lines.add(Component.translatable(TooltipKeys.DAMAGE).append(":").withStyle(ChatFormatting.BLUE));
             for (ShootableType type : ammo)
-                lines.add(IFlanItem.indentedStatLine(type.getName(), mountedAmmoDamage(type, contexts.apply(type))));
+                lines.add(IFlanItem.indentedStatLine(ModUtils.getDisplayName(type), mountedAmmoDamage(type, contexts.apply(type))));
         }
         return lines;
     }
@@ -724,7 +725,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int end = visibleRepairEnd(parts);
         graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLEREPAIR, left, top, 0, 0, 202, 23);
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString() : menu.getDriveable().getConfigType().getName();
+            ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
         int y = 23;
         for (int index = repairOffset; index < end; index++)
@@ -765,7 +766,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
     {
         String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString() : menu.getDriveable().getConfigType().getName();
+            ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         if (menu.getPage() == Page.REPAIR)
             return;
 

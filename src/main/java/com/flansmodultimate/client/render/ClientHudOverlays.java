@@ -174,7 +174,7 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        g.drawString(font, Component.literal(type.getName()), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
+        g.drawString(font, ModUtils.getDisplayName(type), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
         int healthPercent = type.getHealth() <= 0
             ? 0
             : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
@@ -757,7 +757,7 @@ public final class ClientHudOverlays
 
         Font font = mc.font;
         int y = LEGACY_HUD_TOP;
-        g.drawString(font, Component.literal(driveable.getConfigType().getName()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.drawString(font, ModUtils.getDisplayName(driveable.getConfigType()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
 
         DriveableData data = driveable.getDriveableData();

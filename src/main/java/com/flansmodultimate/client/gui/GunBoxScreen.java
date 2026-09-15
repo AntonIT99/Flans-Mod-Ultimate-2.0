@@ -358,9 +358,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
     private String getDisplayName(GunBoxType.GunBoxEntry entry)
     {
         InfoType entryType = entry.getType();
-        return ModUtils.getItemStack(entryType)
-            .map(stack -> stack.getHoverName().getString())
-            .orElseGet(() -> entryType == null ? entry.getItemShortName() : entryType.getName());
+        return entryType == null ? entry.getItemShortName() : ModUtils.getDisplayNameString(entryType);
     }
 
     private int hexColor(String color)

@@ -97,9 +97,7 @@ public final class GunAttachmentsCommand
     private static void sendAttachment(CommandSourceStack source, int index, AttachmentType attachment)
     {
         ItemStack stack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
-        Component name = stack.isEmpty()
-            ? Component.literal(attachment.getName())
-            : stack.getHoverName();
+        Component name = ModUtils.getDisplayName(attachment);
         ResourceLocation id = stack.isEmpty() ? null : ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (id == null)
             id = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, attachment.getShortName());

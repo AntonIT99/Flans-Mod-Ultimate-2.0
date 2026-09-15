@@ -62,6 +62,8 @@ public class Plane extends Driveable
     private static final float PARKED_THROTTLE = 0.05F;
     /** Visual engine idle speed; it does not contribute thrust or consume throttle-based fuel. */
     private static final float IDLE_ENGINE_ANIMATION_THROTTLE = 0.08F;
+    /** Slowest the visible rotor disc turns while the governor holds it at speed. */
+    private static final float GOVERNED_ROTOR_ANIMATION_IDLE = 0.6F;
     /** Rudder deflection forced on a SpinWithoutTail plane once its tail is gone. */
     private static final float SPIN_WITHOUT_TAIL_FLAP_YAW = 15F;
 
@@ -72,6 +74,7 @@ public class Plane extends Driveable
     private double rotorPhase;
     private double previousRotorPhase;
     private float rotorSpeed;
+    private float rotorAnimationSpeed;
     @Getter protected float flapYaw;
     @Getter protected float flapPitchLeft;
     @Getter protected float flapPitchRight;
@@ -426,11 +429,18 @@ public class Plane extends Driveable
             IDLE_ENGINE_ANIMATION_THROTTLE);
         propellerAngle = Mth.wrapDegrees(propellerAngle + LegacyPlanePhysics.propellerStep(animationThrottle));
         PlaneType type = getPlaneType();
-        float targetRotorSpeed = isEngineActive() && type != null && rotorEfficiency(type) > 0F
-            ? Math.max(0F, getThrottle()) : 0F;
-        rotorSpeed = HelicopterPhysics.spool(rotorSpeed, targetRotorSpeed);
+        // A running rotor is governed to constant RPM: the lever sets blade
+        // pitch, not shaft speed, so hover lift and control authority must not
+        // fall away with the throttle. Only the engine and rotor damage change
+        // the RPM the physics sees.
+        boolean rotorTurning = isEngineActive() && type != null && rotorEfficiency(type) > 0F;
+        rotorSpeed = HelicopterPhysics.spool(rotorSpeed, rotorTurning ? 1F : 0F);
+        // The visible disc still quickens with the lever, between a governed
+        // idle and full speed, so the animation keeps its throttle feedback.
+        rotorAnimationSpeed = HelicopterPhysics.spool(rotorAnimationSpeed, rotorTurning
+            ? Mth.lerp(Mth.clamp(getThrottle(), 0F, 1F), GOVERNED_ROTOR_ANIMATION_IDLE, 1F) : 0F);
         previousRotorPhase = rotorPhase;
-        rotorPhase += LegacyPlanePhysics.rotorStep(rotorSpeed);
+        rotorPhase += LegacyPlanePhysics.rotorStep(rotorAnimationSpeed);
         rotorAngle = HelicopterPhysics.rotorAngle(rotorPhase, rotorPhase, 1F, 1F);
         prevFlapYaw = flapYaw;
         prevFlapPitchLeft = flapPitchLeft;
@@ -438,7 +448,12 @@ public class Plane extends Driveable
         int input = getInputMask();
         float yaw = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
         float pitch = axis(input, DriveableInput.ASCEND, DriveableInput.DESCEND);
-        float roll = axis(input, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
+        // Banking an aircraft that is resting on its gear or its skids would
+        // drive a wingtip or a rotor disc through the ground, so the roll axis
+        // is locked out until it is airborne. The ailerons ease back to neutral
+        // through the same flap response, so nothing snaps on touchdown.
+        boolean rollLocked = isSupportedByGround();
+        float roll = rollLocked ? 0F : axis(input, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
         flapYaw = LegacyPlanePhysics.flap(flapYaw, yaw);
         if (isMouseControlEnabled())
         {
@@ -447,7 +462,8 @@ public class Plane extends Driveable
             // the same legacy flap response so mouse roll cannot be more than
             // twice as fast and WASD remains fully effective in mouse mode.
             float combinedPitch = LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), pitch);
-            float combinedRoll = LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), roll);
+            float combinedRoll = rollLocked ? 0F
+                : LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), roll);
             flapPitchLeft = LegacyPlanePhysics.flap(flapPitchLeft, combinedPitch - combinedRoll);
             flapPitchRight = LegacyPlanePhysics.flap(flapPitchRight, combinedPitch + combinedRoll);
         }
@@ -1109,6 +1125,9 @@ public class Plane extends Driveable
 
     private float rollInput(int mask)
     {
+        // A landed aircraft has no roll authority; see advanceAnimations.
+        if (isSupportedByGround())
+            return 0F;
         float keyboard = axis(mask, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
         return isMouseControlEnabled()
             ? LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), keyboard) : keyboard;

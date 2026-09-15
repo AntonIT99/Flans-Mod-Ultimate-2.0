@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "旧式 + 実車値上書き",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "実データから算出",
   "tooltip.flansmodultimate.physics.powerToWeight": "出力 / 質量（kW/kg）",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "最低飛行速度",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "全揚力速度",
   "tooltip.flansmodultimate.physics.reverseSpeed": "後退速度",
   "tooltip.flansmodultimate.physics.speedScale": "サーバー設定により速度を %sx にスケーリング",
   "tooltip.flansmodultimate.physics.thrustToWeight": "推力 / 重量",

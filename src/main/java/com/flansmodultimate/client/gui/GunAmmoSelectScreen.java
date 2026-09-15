@@ -69,7 +69,7 @@ public final class GunAmmoSelectScreen extends Screen
         for (int row = 0; row < count; row++)
         {
             AmmoChoice choice = choices.get(first + row);
-            String name = choice.type().getName();
+            String name = ModUtils.getDisplayNameString(choice.type());
             Component label = Component.literal(name.isBlank() ? choice.type().getOriginalShortName() : name);
             Button button = Button.builder(label, ignored -> select(choice.type().getOriginalShortName()))
                 .bounds(width / 2 - 70, top + 24 + row * ROW_HEIGHT, 166, 20).build();

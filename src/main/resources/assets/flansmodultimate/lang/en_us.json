@@ -275,7 +275,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "Legacy + real-world overrides",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "Real-world derived",
   "tooltip.flansmodultimate.physics.powerToWeight": "Power / Mass (kW/kg)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "Minimum Flight Speed",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "Full Lift Speed",
   "tooltip.flansmodultimate.physics.reverseSpeed": "Reverse Speed",
   "tooltip.flansmodultimate.physics.speedScale": "Speeds scaled to %sx by the server config",
   "tooltip.flansmodultimate.physics.thrustToWeight": "Thrust / Weight",

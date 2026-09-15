@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "레거시 + 실제 값 덮어쓰기",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "실제 데이터에서 산출",
   "tooltip.flansmodultimate.physics.powerToWeight": "출력 / 질량 (kW/kg)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "최저 비행 속도",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "완전 양력 속도",
   "tooltip.flansmodultimate.physics.reverseSpeed": "후진 속도",
   "tooltip.flansmodultimate.physics.speedScale": "서버 설정에 따라 속도가 %sx로 조정됨",
   "tooltip.flansmodultimate.physics.thrustToWeight": "추력 / 중량",

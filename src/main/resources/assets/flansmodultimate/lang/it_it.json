@@ -251,7 +251,7 @@
   "tooltip.flansmodultimate.physics.mode.legacy_with_overrides": "Legacy + override reali",
   "tooltip.flansmodultimate.physics.mode.real_world_profile": "Derivato da dati reali",
   "tooltip.flansmodultimate.physics.powerToWeight": "Potenza / massa (kW/kg)",
-  "tooltip.flansmodultimate.physics.referenceSpeed": "Velocità minima di volo",
+  "tooltip.flansmodultimate.physics.referenceSpeed": "Velocità di portanza piena",
   "tooltip.flansmodultimate.physics.reverseSpeed": "Velocità in retromarcia",
   "tooltip.flansmodultimate.physics.speedScale": "Velocità scalate a %sx dalla configurazione del server",
   "tooltip.flansmodultimate.physics.thrustToWeight": "Spinta / peso",

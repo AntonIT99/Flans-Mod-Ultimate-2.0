@@ -483,9 +483,12 @@ class AircraftPerformancePhysicsTest
         // A speed brake worth having is a fraction of a g, not a wall.
         assertTrue(deceleration > 1D && deceleration < 9.81D,
             "expected a fraction of a g but got " + deceleration);
-        assertEquals(VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+        assertEquals(VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2,
             AircraftPerformancePhysics.airBrakeDecelerationMs2(2000D, area, 1D), 1.0E-9D,
-            "absurd inputs still respect the shared acceleration ceiling");
+            "absurd inputs still respect the air brake ceiling");
+        assertTrue(VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2
+            < VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            "the brake saturates before the shared acceleration ceiling does");
         assertEquals(0D, AircraftPerformancePhysics.airBrakeDecelerationMs2(160D, area, 0D), 1.0E-9D,
             "no mass means no derived deceleration");
     }

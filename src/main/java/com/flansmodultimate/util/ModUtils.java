@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -174,6 +175,28 @@ public final class ModUtils
             return Optional.of(stack);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Display name of a content pack type, exactly as the player reads it in their own inventory.
+     * The generated language file is the single source of truth: it is keyed by shortname and seeded from the
+     * content pack's own {@code .lang} files, falling back to the type definition's {@code Name} line only where
+     * the pack ships no translation. Types without an item (player classes, teams, loadout pools) have no
+     * translation key, so those keep the {@code Name} line.
+     *
+     * @see com.flansmodultimate.ContentManager
+     */
+    public static Component getDisplayName(@Nullable InfoType infoType)
+    {
+        return getItemStack(infoType)
+            .map(ItemStack::getHoverName)
+            .orElseGet(() -> Component.literal(infoType == null ? StringUtils.EMPTY : infoType.getName()));
+    }
+
+    /** {@link #getDisplayName(InfoType)} as plain text, for the string-based font and layout helpers. */
+    public static String getDisplayNameString(@Nullable InfoType infoType)
+    {
+        return getDisplayName(infoType).getString();
     }
 
     public static Optional<Item> getItem(@Nullable InfoType infoType)
