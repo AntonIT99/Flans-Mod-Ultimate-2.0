@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -619,6 +620,27 @@ public abstract class ShootableType extends InfoType
             if (getAmmoGroup(groupName) == null)
                 FlansMod.log.warn("UseAmmoGroup refers to unknown ammo group '{}' in {}", groupName, source);
         }
+    }
+
+    /**
+     * Every registered ammunition type, ordered by content pack name and then by shortname.
+     *
+     * <p>The registry behind this is a hash map, so an unordered walk would pick a different
+     * type from one load to the next. Callers that fall back to "any ammunition of this kind",
+     * as rearming a driveable whose definition declares none has to, need that pick to be the
+     * same on every load.</p>
+     */
+    public static List<ShootableType> registeredAmmoTypes()
+    {
+        List<ShootableType> all = new ArrayList<>();
+        registeredAmmoList.values().forEach(byShortname -> all.addAll(byShortname.values()));
+        all.sort(Comparator.comparing(ShootableType::contentPackName).thenComparing(ShootableType::getOriginalShortName));
+        return all;
+    }
+
+    private static String contentPackName(ShootableType type)
+    {
+        return type.getContentPack() == null ? StringUtils.EMPTY : StringUtils.defaultString(type.getContentPack().getName());
     }
 
     public static List<ShootableType> findAmmoTypes(Set<String> shortnames, IContentProvider contentPack)
