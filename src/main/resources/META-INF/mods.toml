@@ -1,15 +1,15 @@
 modLoader="javafml"
 loaderVersion="36.2.0"
-license="MIT"
+license="CC BY-NC-SA 3.0"
 
 [[mods]]
 modId="flansmodultimate"
 version="2.0-beta-5"
 displayName="Flan's Mod Ultimate 2"
 logoFile="flansmodultimate2.png"
-credits="All code contributors."
-authors="Wolff, Jamioflan"
-description='''Unofficial continuation of Flan's Mod to load content packs designed for legacy versions'''
+credits="Based on Flan's Mod by Jamioflan and contributors, and the legacy Flan's Mod Ultimate Stability Edition project. See the bundled license and repository attribution for details."
+authors="Wolff"
+description='''Unofficial and independently maintained modern continuation/reimplementation of the Flan's Mod ecosystem, with compatibility for legacy content packs.'''
 
 [[dependencies.flansmodultimate]]
     modId="forge"

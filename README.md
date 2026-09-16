@@ -103,7 +103,6 @@ For local development, `packsManagerJar` copies the contents of `run/flan` into 
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
 - Keep loader-specific APIs, metadata, event registration, networking, and Java toolchain appropriate to the checked-out branch. The 26.1.2 and 26.2 branches use NeoForge's modern rendering/extraction APIs and Mojang's deobfuscated names; 26.2 additionally uses the feature-rendering pipeline introduced in that release.
-- `README.txt` contains legacy Forge MDK setup notes; use this file for the current project guidance.
 
 ## Documentation
 
