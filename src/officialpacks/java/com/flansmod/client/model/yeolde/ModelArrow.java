@@ -21,15 +21,14 @@ public class ModelArrow extends ModelBase
     @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
     {
-        byte var11 = 0;
-        float var12 = 0.0F;
+        float var12 = 0F;
         float var13 = 0.5F;
-        float var14 = (var11 * 10) / 32.0F;
-        float var15 = (5 + var11 * 10) / 32.0F;
-        float var16 = 0.0F;
+        float var14 = 0F;
+        float var15 = 0.15625F;
+        float var16 = 0F;
         float var17 = 0.15625F;
-        float var18 = (5 + var11 * 10) / 32.0F;
-        float var19 = (10 + var11 * 10) / 32.0F;
+        float var18 = 0.15625F;
+        float var19 = 0.3125F;
         float var20 = 0.05625F;
 
         poseStack.pushPose();
@@ -69,9 +68,5 @@ public class ModelArrow extends ModelBase
             .uv2(packedLight)
             .normal(pose.normal(), normalX, normalY, normalZ)
             .endVertex();
-    }
-
-    public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5)
-    {
     }
 }
