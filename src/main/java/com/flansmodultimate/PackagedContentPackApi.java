@@ -71,7 +71,6 @@ public final class PackagedContentPackApi
 
     /**
      * Registers packaged content with optional display-name overrides keyed by logical pack ID.
-     * Pack IDs without an override retain the generated {@code "Name (Official)"} label.
      */
     public static synchronized void register(FMLJavaModLoadingContext context, String modId,
                                              String contentRoot, String modelsRoot,
@@ -293,7 +292,7 @@ public final class PackagedContentPackApi
     {
         if (packId.isBlank())
             return packId;
-        return Character.toUpperCase(packId.charAt(0)) + packId.substring(1) + " (Official)";
+        return Character.toUpperCase(packId.charAt(0)) + packId.substring(1);
     }
 
     private static String[] splitPath(String path)
