@@ -14,7 +14,7 @@ description=''''''
 [[dependencies.flansmodultimate_wolffstarwars]]
     modId="forge"
     mandatory=true
-    versionRange="[47.4.0,)"
+    versionRange="[47.4.10,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.flansmodultimate_wolffstarwars]]

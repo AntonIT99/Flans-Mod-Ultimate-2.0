@@ -4,7 +4,7 @@ license="CC BY-NC-SA 3.0"
 
 [[mods]]
 modId="flansmodultimate"
-version="2.0-beta-5"
+version="2.0-beta-6"
 displayName="Flan's Mod Ultimate 2"
 logoFile="flansmodultimate2.png"
 credits="Based on Flan's Mod by Jamioflan and contributors, and the legacy Flan's Mod Ultimate Stability Edition project. See the bundled license and repository attribution for details."
@@ -14,7 +14,7 @@ description='''Unofficial and independently maintained modern continuation/reimp
 [[dependencies.flansmodultimate]]
     modId="forge"
     mandatory=true
-    versionRange="[47.4.0,)"
+    versionRange="[47.4.10,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.flansmodultimate]]
@@ -26,7 +26,7 @@ description='''Unofficial and independently maintained modern continuation/reimp
 [[dependencies.flansmodultimate]]
     modId="flansmodultimate_packs_manager"
     mandatory=false
-    versionRange="[0,)"
+    versionRange="*"
     ordering="AFTER"
     side="BOTH"
 

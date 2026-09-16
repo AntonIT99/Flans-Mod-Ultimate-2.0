@@ -13,7 +13,7 @@ description='''Companion mod for Flan's Mod Ultimate 2 that lets mod authors bun
 [[dependencies.flansmodultimate_packs_manager]]
     modId="forge"
     mandatory=true
-    versionRange="[47.4.0,)"
+    versionRange="[47.4.10,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.flansmodultimate_packs_manager]]
@@ -25,6 +25,6 @@ description='''Companion mod for Flan's Mod Ultimate 2 that lets mod authors bun
 [[dependencies.flansmodultimate_packs_manager]]
     modId="flansmodultimate"
     mandatory=true
-    versionRange="[2.0-beta-5,)"
+    versionRange="*"
     ordering="BEFORE"
     side="BOTH"
