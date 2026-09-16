@@ -1,0 +1,9 @@
+registerFmuModule(
+    sourceSet: 'warfare44pack',
+    modId: 'flansmodultimate_warfare44',
+    jarTask: 'warfare44Pack',
+    archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Warfare 44 Pack",
+    archiveVersion: '4.0',
+    implementationTitle: 'warfare44',
+    javaCompileJvmArgs: ['-Xmx4g']
+)

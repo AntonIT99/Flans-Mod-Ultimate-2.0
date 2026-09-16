@@ -1,0 +1,8 @@
+registerFmuModule(
+    sourceSet: 'officialpacks',
+    modId: 'flansmodultimate_officialpacks',
+    jarTask: 'officialPacksJar',
+    archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Official Packs",
+    archiveVersion: '1.0',
+    implementationTitle: 'officialpacks'
+)

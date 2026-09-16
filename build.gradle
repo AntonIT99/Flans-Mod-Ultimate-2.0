@@ -21,92 +21,35 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
 minecraft {
-    // The mappings can be changed at any time and must be in the following format.
-    // Channel:   Version:
-    // official   MCVersion             Official field/method names from Mojang mapping files
-    // parchment  YYYY.MM.DD-MCVersion  Open community-sourced parameter names and javadocs layered on top of official
-    //
-    // You must be aware of the Mojang license when using the 'official' or 'parchment' mappings.
-    // See more information here: https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
-    //
-    // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
-    // Additional setup is needed to use their mappings: https://parchmentmc.org/docs/getting-started
-    //
-    // Use non-default mappings at your own risk. They may not always work.
-    // Simply re-run your setup task after changing the mappings to update your workspace.
     mappings channel: mapping_channel, version: mapping_version
 
-    // When true, this property will have all Eclipse/IntelliJ IDEA run configurations run the "prepareX" task for the given run configuration before launching the game.
-    // In most cases, it is not necessary to enable.
-    // enableEclipsePrepareRuns = true
-    // enableIdeaPrepareRuns = true
-
-    // This property allows configuring Gradle's ProcessResources task(s) to run on IDE output locations before launching the game.
-    // It is REQUIRED to be set to true for this template to function.
-    // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
     copyIdeResources = true
 
-    // When true, this property will add the folder name of all declared run configurations to generated IDE run configurations.
-    // The folder name can be set on a run configuration using the "folderName" property.
-    // By default, the folder name of a run configuration is the name of the Gradle project containing it.
-    // generateRunFolders = true
-
-    // This property enables access transformers for use in development.
-    // They will be applied to the Minecraft artifact.
-    // The access transformer file can be anywhere in the project.
-    // However, it must be at "META-INF/accesstransformer.cfg" in the final mod jar to be loaded by Forge.
-    // This default location is a best practice to automatically put the file in the right place in the final jar.
-    // See https://docs.minecraftforge.net/en/latest/advanced/accesstransformers/ for more information.
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    // Default run configurations.
-    // These can be tweaked, removed, or duplicated as needed.
     runs {
-        // applies to all the run configs below
         configureEach {
             workingDirectory project.file('run')
 
             ideaModule "${project.name.replace('.', '_')}.main"
 
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             property 'forge.logging.console.level', 'debug'
 
-            // Enable colored Forge/Minecraft console output in IntelliJ
             property 'terminal.ansi', 'true'
             property 'terminal.jline', 'true'
             property 'terminal.keepMinecraftFormatting', 'true'
 
+            // Only the fixed main module is declared here.
+            // Additional modules register themselves from src/*/fmu-module.gradle.
             mods {
                 "${mod_id}" {
                     source sourceSets.main
-                }
-                "flansmodultimate_officialpacks" {
-                    source sourceSets.maybeCreate('officialpacks')
-                }
-                "flansmodultimate_wolffstarwars" {
-                    source sourceSets.maybeCreate('wolffstarwarspack')
-                }
-                "flansmodultimate_warfare44" {
-                    source sourceSets.maybeCreate('warfare44pack')
-                }
-                "flansmodultimate_manuspacks" {
-                    source sourceSets.maybeCreate('manuspacks')
                 }
             }
         }
 
         client {
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
@@ -115,49 +58,35 @@ minecraft {
             args '--nogui'
         }
 
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        // By default, the server will crash when no gametests are provided.
-        // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
         data {
-            // example of overriding the workingDirectory set in configureEach above
             workingDirectory project.file('run-data')
-
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
 }
 
 configurations {
-    // Create the library configuration, where our non-mod libraries will be added to
+    // Create the library configuration, where our non-mod libraries will be added to.
     library
-    // Any dependency in the library configuration will also be added to the implementation configuration
     implementation.extendsFrom library
+
+    // packsmanager stays a fixed source set.
     packsManagerImplementation.extendsFrom implementation
     packsManagerRuntimeOnly.extendsFrom runtimeOnly
-    officialpacksImplementation.extendsFrom implementation
-    officialpacksRuntimeOnly.extendsFrom runtimeOnly
-    warfare44packImplementation.extendsFrom implementation
-    warfare44packRuntimeOnly.extendsFrom runtimeOnly
-    wolffstarwarspackImplementation.extendsFrom implementation
-    wolffstarwarspackRuntimeOnly.extendsFrom runtimeOnly
-    manuspacksImplementation.extendsFrom implementation
-    manuspacksRuntimeOnly.extendsFrom runtimeOnly
 }
 
-// Configure all runs with the following
+// Configure all runs with the following.
 minecraft.runs.all {
-    // Set the minecraft_classpath token to the paths of all jars in the library configuration
-    // This is added with the actual Minecraft classpath to get the real classpath information later on
     lazyToken('minecraft_classpath') {
         configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
     }
 }
 
+// Fixed source sets. All optional/public/private pack modules are discovered dynamically below.
 sourceSets {
     main {
         java {
@@ -166,8 +95,8 @@ sourceSets {
         resources {
             srcDirs = ['src/main/resources']
         }
-
     }
+
     packsManager {
         java {
             srcDirs = ['src/packsmanager/java']
@@ -176,46 +105,137 @@ sourceSets {
             srcDirs = ['src/packsmanager/resources']
         }
     }
-    officialpacks {
+
+    test {
         java {
-            srcDirs = ['src/officialpacks/java']
+            srcDirs = ['src/test/java']
         }
         resources {
-            srcDirs = ['src/officialpacks/resources']
-        }
-    }
-    manuspacks {
-        java {
-            srcDirs = ['src/manuspacks/java']
-        }
-        resources {
-            srcDirs = ['src/manuspacks/resources']
-        }
-    }
-    warfare44pack {
-        java {
-            srcDirs = ['src/warfare44pack/java']
-        }
-        resources {
-            srcDirs = ['src/warfare44pack/resources']
-        }
-    }
-    wolffstarwarspack {
-        java {
-            srcDirs = ['src/wolffstarwarspack/java']
-        }
-        resources {
-            srcDirs = ['src/wolffstarwarspack/resources']
+            srcDirs = ['src/test/resources']
         }
     }
 }
 
-repositories {
-    // Put repositories for dependencies here
-    // ForgeGradle automatically adds the Forge maven and Maven Central for you
+/*
+ * Registers an FMU module described by a src/<module>/fmu-module.gradle script.
+ *
+ * Required properties:
+ *   sourceSet       - Gradle source-set name. Usually identical to the directory name.
+ *   modId           - Forge mod id used in development runs.
+ *   jarTask         - Name of the Jar task to create.
+ *   archiveBaseName - Output jar base name.
+ *   archiveVersion  - Output jar version.
+ *
+ * Optional properties:
+ *   directory          - Directory below src/. Defaults to sourceSet.
+ *   implementationTitle - Manifest Implementation-Title. Defaults to sourceSet.
+ *   javaCompileJvmArgs - JVM arguments for this source set's javac process.
+ */
+ext.registerFmuModule = { Map module ->
+    def requiredKeys = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion']
+    def missingKeys = requiredKeys.findAll { !module.containsKey(it) || module[it] == null || module[it].toString().isBlank() }
 
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
+    if (!missingKeys.isEmpty()) {
+        throw new GradleException("FMU module definition is missing required properties: ${missingKeys.join(', ')}")
+    }
+
+    String sourceSetName = module.sourceSet.toString()
+    String moduleDirectoryName = (module.directory ?: sourceSetName).toString()
+    String moduleModId = module.modId.toString()
+    String jarTaskName = module.jarTask.toString()
+    String moduleArchiveBaseName = module.archiveBaseName.toString()
+    String moduleArchiveVersion = module.archiveVersion.toString()
+    String implementationTitle = (module.implementationTitle ?: sourceSetName).toString()
+
+    File moduleDirectory = file("src/${moduleDirectoryName}")
+
+    if (!moduleDirectory.isDirectory()) {
+        throw new GradleException("FMU module directory does not exist: ${moduleDirectory}")
+    }
+
+    if (sourceSets.findByName(sourceSetName) != null) {
+        throw new GradleException("FMU module source set '${sourceSetName}' is already registered")
+    }
+
+    def moduleSourceSet = sourceSets.create(sourceSetName) {
+        java {
+            srcDirs = [new File(moduleDirectory, 'java')]
+        }
+        resources {
+            srcDirs = [new File(moduleDirectory, 'resources')]
+        }
+    }
+
+    // Creating a SourceSet also creates its Implementation/RuntimeOnly configurations.
+    configurations.named(moduleSourceSet.implementationConfigurationName) {
+        extendsFrom configurations.implementation
+    }
+    configurations.named(moduleSourceSet.runtimeOnlyConfigurationName) {
+        extendsFrom configurations.runtimeOnly
+    }
+
+    // Pack modules can compile against classes produced by the main mod.
+    dependencies.add(moduleSourceSet.implementationConfigurationName, sourceSets.main.output)
+
+    // Make the module available in every ForgeGradle development run.
+    minecraft.runs.configureEach { runConfig ->
+        def modConfig = runConfig.mods.maybeCreate(moduleModId)
+        modConfig.source(moduleSourceSet)
+    }
+
+    def moduleJar = tasks.register(jarTaskName, Jar) {
+        archiveBaseName.set(moduleArchiveBaseName)
+        archiveVersion.set(moduleArchiveVersion)
+
+        from moduleSourceSet.output
+
+        manifest {
+            attributes(
+                    'Implementation-Title': implementationTitle,
+                    'Implementation-Version': moduleArchiveVersion
+            )
+        }
+    }
+
+    artifacts.add('archives', moduleJar)
+
+    if (module.javaCompileJvmArgs) {
+        tasks.named(moduleSourceSet.compileJavaTaskName, JavaCompile).configure {
+            options.fork = true
+            options.forkOptions.jvmArgs.addAll(module.javaCompileJvmArgs.collect { it.toString() })
+        }
+    }
+
+    return moduleSourceSet
+}
+
+/*
+ * Discover optional modules without naming them in the root build.
+ *
+ * main, packsmanager and test stay fixed. Any other directory directly below src/
+ * becomes a module only if it contains fmu-module.gradle.
+ *
+ * This also allows a private nested Git repository to live under src/: its directory
+ * and module metadata never need to appear in this public build.gradle.
+ */
+def fixedSourceDirectories = ['main', 'packsmanager', 'test'] as Set
+File srcDirectory = file('src')
+
+if (srcDirectory.isDirectory()) {
+    srcDirectory.listFiles()
+            .findAll { it.isDirectory() && !fixedSourceDirectories.contains(it.name) }
+            .sort { a, b -> a.name <=> b.name }
+            .each { moduleDirectory ->
+                File moduleScript = new File(moduleDirectory, 'fmu-module.gradle')
+                if (moduleScript.isFile()) {
+                    apply from: moduleScript
+                }
+            }
+}
+
+repositories {
+    // Put repositories for dependencies here.
+    // ForgeGradle automatically adds the Forge maven and Maven Central for you.
     flatDir {
         dir 'libs'
     }
@@ -229,31 +249,7 @@ mixin {
 }
 
 dependencies {
-    // Specify the version of Minecraft to use.
-    // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
-    // The "userdev" classifier will be requested and setup by ForgeGradle.
-    // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
-    // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    officialpacksImplementation sourceSets.main.output
-    manuspacksImplementation sourceSets.main.output
-    wolffstarwarspackImplementation sourceSets.main.output
-    warfare44packImplementation sourceSets.main.output
-
-    // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
-    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
-    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
-
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.6:processor'
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
@@ -277,9 +273,6 @@ shadowJar {
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-// When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
-// See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
@@ -297,13 +290,13 @@ tasks.named('processResources', ProcessResources).configure {
     exclude 'config/AGENTS.md'
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
+// Main mod jar.
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,
                 'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1', // We are version 1 of ourselves
+                'Specification-Version'   : '1',
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
@@ -312,15 +305,10 @@ tasks.named('jar', Jar).configure {
         ])
     }
 
-    // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
 }
 
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:
-// tasks.named('publish').configure {
-//     dependsOn 'reobfJar'
-// }
-
+// packsmanager remains fixed because it has special copy/build behavior.
 def copyFlanPacksToManager = tasks.register('copyFlanPacksToManager') {
     doFirst {
         def targetDir = file('src/packsmanager/resources/flan')
@@ -347,77 +335,16 @@ def packsManagerJar = tasks.register('packsManagerJar', Jar) {
 
     manifest {
         attributes(
-            'Implementation-Title': 'packsManager',
-            'Implementation-Version': packs_manager_version
-        )
-    }
-}
-
-def officialPacksJar = tasks.register('officialPacksJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Official Packs")
-    archiveVersion.set('1.0')
-
-    from sourceSets.officialpacks.output
-
-    manifest {
-        attributes(
-            'Implementation-Title': 'officialpacks',
-            'Implementation-Version': '1.0'
-        )
-    }
-}
-
-def manusPacksJar = tasks.register('manusPacksJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Manus Packs")
-    archiveVersion.set('1.0')
-
-    from sourceSets.manuspacks.output
-
-    manifest {
-        attributes(
-                'Implementation-Title': 'manuspacks',
-                'Implementation-Version': '1.0'
-        )
-    }
-}
-
-def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Wolff's Star Wars Pack")
-    archiveVersion.set('3.0')
-
-    from sourceSets.wolffstarwarspack.output
-
-    manifest {
-        attributes(
-            'Implementation-Title': 'wolffstarwarspack',
-            'Implementation-Version': '3.0'
-        )
-    }
-}
-
-def warfare44PackJar = tasks.register('warfare44Pack', Jar) {
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Warfare 44 Pack")
-    archiveVersion.set('4.0')
-
-    from sourceSets.warfare44pack.output
-
-    manifest {
-        attributes(
-                'Implementation-Title': 'warfare44',
-                'Implementation-Version': '4.0'
+                'Implementation-Title': 'packsManager',
+                'Implementation-Version': packs_manager_version
         )
     }
 }
 
 artifacts {
     archives packsManagerJar
-    archives officialPacksJar
-    archives manusPacksJar
-    archives wolffStarWarsPackJar
-    archives warfare44PackJar
 }
 
-// Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
@@ -432,14 +359,7 @@ publishing {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-// The Warfare 44 pack ships some very large generated model classes (~1MB each) and runs out of
-// heap in-process alongside the Gradle daemon. Fork it into its own javac process with a bigger heap.
-tasks.named('compileWarfare44packJava', JavaCompile).configure {
-    options.fork = true
-    options.forkOptions.jvmArgs << '-Xmx4g'
+    options.encoding = 'UTF-8'
 }
 
 idea {
