@@ -108,6 +108,27 @@ For local development, `packsManagerJar` copies the contents of `run/flan` into 
 
 Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki).
 
-## Credits
+## Upstream Projects, Attribution & License
 
-Flan's Mod Ultimate 2 builds on the Flan's Mod concept created by Jamioflan.
+Flan's Mod Ultimate 2 is an unofficial and independently maintained
+modern continuation and reimplementation of the Flan's Mod ecosystem.
+
+The project's primary legacy source and reference implementation was
+**Flan's Mod Ultimate Stability Edition (FMUSE)**:
+https://github.com/Unknown025/Flans-Mod-Plus
+
+FMUSE itself continues the lineage of Flan's Mod Ultimate and the original
+Flan's Mod.
+
+Flan's Mod Ultimate 2 is not affiliated with, sponsored by, or endorsed by
+Jamioflan, the current Flan's Mod developers, Flan's Mod: Reloaded, or the
+maintainers of the upstream projects.
+
+For detailed upstream attribution and project lineage, see
+[ATTRIBUTION.md](ATTRIBUTION.md).
+
+Flan's Mod Ultimate 2 is distributed under the
+**Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported
+(CC BY-NC-SA 3.0)** license.
+
+See [LICENSE](LICENSE) for the complete license terms.
