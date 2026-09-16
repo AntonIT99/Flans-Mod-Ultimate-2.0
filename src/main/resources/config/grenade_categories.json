@@ -198,6 +198,7 @@
             "Fuse": 100
         },
         "items": [
+            "germangeballteladung3kg",
             "geballteladung3kg"
         ]
     },
@@ -496,6 +497,7 @@
             "Fuse": 80
         },
         "items": [
+            "germangeballteladung",
             "geballteladung",
             "44_stielhandgranateATBundle"
         ]

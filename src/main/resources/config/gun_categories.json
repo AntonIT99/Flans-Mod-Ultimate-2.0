@@ -5114,6 +5114,7 @@
             "Dispersion": 0.16
         },
         "items": [
+            "germanpanzerbuechse39",
             "panzerbuechse39"
         ]
     },
@@ -5860,9 +5861,13 @@
         "items": [
             "romanaquila",
             "flaggermanww2",
+            "flagspecial",
             "flagss",
+            "flaghistoryunit",
             "flagssdasreich",
+            "flagguard",
             "flagssleibstandarte",
+            "historybook",
             "meinkampfbuch"
         ]
     },
