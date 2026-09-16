@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Pack Parameter Audit"
+  short_description: "Find ineffective parameters used by installed packs"
+  default_prompt: "Use $content-pack-parameter-audit to audit content-pack definition parameters that are unparsed or parsed without an effective feature."
