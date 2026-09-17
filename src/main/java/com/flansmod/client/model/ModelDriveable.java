@@ -304,7 +304,9 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             if (gun == null || seat == null)
                 continue;
 
-            float aimYaw = interpolatedYaw(seat, state.partialTick(), state.turretYaw());
+            float aimYaw = !seatInfo.isDriver() && !seat.isVehicle()
+                ? seatInfo.getYawCentre()
+                : interpolatedYaw(seat, state.partialTick(), state.turretYaw());
             if (mountFilter == GunMountFilter.TURRET)
                 aimYaw = Mth.wrapDegrees(aimYaw - driverYaw);
             float aimPitch = Mth.lerp(state.partialTick(), seat.getPrevAimPitch(), seat.getAimPitch());

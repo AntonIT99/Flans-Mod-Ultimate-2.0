@@ -81,8 +81,14 @@ public final class SeatInfo
         float halfSpan = (maxYaw - minYaw) * 0.5F;
         if (halfSpan >= 180F)
             return Mth.wrapDegrees(yaw);
-        float centre = (minYaw + maxYaw) * 0.5F;
+        float centre = getYawCentre();
         return centre + Mth.clamp(Mth.wrapDegrees(yaw - centre), -halfSpan, halfSpan);
+    }
+
+    /** The authored neutral bearing at the middle of this seat's yaw traverse. */
+    public float getYawCentre()
+    {
+        return (minYaw + maxYaw) * 0.5F;
     }
 
     /**

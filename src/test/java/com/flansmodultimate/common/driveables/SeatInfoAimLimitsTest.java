@@ -26,6 +26,7 @@ class SeatInfoAimLimitsTest
         // The SdKfz 251's rear MG: "Passenger 2 ... core 135 225 -10 40".
         SeatInfo rearMg = seat(135F, 225F);
 
+        assertEquals(180F, rearMg.getYawCentre(), EPSILON);
         assertEquals(179F, rearMg.clampYaw(179F), EPSILON);
         assertEquals(180F, rearMg.clampYaw(180F), EPSILON);
         assertEquals(181F, rearMg.clampYaw(181F), EPSILON);
