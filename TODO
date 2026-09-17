@@ -3,22 +3,21 @@ General:
 - Check if ConfigReference in Wiki is exhaustive / up to date -> create a skill for this
 - Check if all FMU features are implemented in the mod -> use the skills
 - Implement TaP Flan's Mod Features
-- Make SkinOverride compatible with old skin format
 
 Driveables:
 - Vehicle scopes
 - Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
 
 Content Packs:
-- Check vehicle sided ammo parameters
 - run flans-category-research to add missing fields to categories
-- Fix shooting points on vehicles based on new debug commands
-- Add particles, sounds, visual affects to content packs just like Warfare 44:
+- Check vehicle sided ammo parameters
+- Create a skill and add particles, sounds, visual affects to content packs just like Warfare 44:
 visuals for shootables, harmonize particles and sounds for vehicles / planes
 - Create a skill:
 Rewrite all packs with the new gun and vehicle systems using categories as source
 Reorganize parameters, remove one parameter comments, make groups
-- missing ammo groups for shells in categories
+- Create a skill: missing ammo groups for shells in categories
+- Fix shooting points on vehicles based on new debug commands
 Manus
 - Add shell types
 WW2
