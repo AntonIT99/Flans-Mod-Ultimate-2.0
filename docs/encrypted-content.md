@@ -3,8 +3,10 @@
 Flan packaged-content modules can provide optional uncensored translations and
 textures. The client setting `enableUncensoredContent` is `false` by default.
 Changing it while the game is running reloads client resources. At startup, the
-saved setting is read during Minecraft's normal initial resource load, so no
-additional reload or manual `F3+T` is required.
+saved setting is read directly from `config/flansmodultimate-client.toml` if
+Forge has not loaded the client config yet. The encrypted overlay therefore joins
+Minecraft's normal initial resource load without an additional reload or manual
+`F3+T`.
 
 ## Authoring location
 

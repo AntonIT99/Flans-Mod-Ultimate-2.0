@@ -1,5 +1,8 @@
 package com.flansmodultimate.config;
 
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.toml.TomlFormat;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.UncensoredResources;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
@@ -9,12 +12,19 @@ import com.flansmodultimate.common.types.InfoType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModClientConfig
 {
+    private static final String CONFIG_FILE_NAME = FlansMod.MOD_ID + "-client.toml";
+    private static final String UNCENSORED_CONTENT_CONFIG_PATH = "General Settings.enableUncensoredContent";
     public static final ForgeConfigSpec configSpec;
+
+    private static volatile Boolean startupUncensoredContentEnabled;
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean enableUncensoredContent;
@@ -429,11 +439,46 @@ public final class ModClientConfig
 
     public static boolean isUncensoredContentEnabled()
     {
+        ModClientConfig config = get();
+        if (config != null)
+            return config.enableUncensoredContent;
+
         if (configSpec.isLoaded())
             return ENABLE_UNCENSORED_CONTENT.get();
 
-        ModClientConfig config = get();
-        return config != null && config.enableUncensoredContent;
+        Boolean startupValue = startupUncensoredContentEnabled;
+        if (startupValue == null)
+        {
+            synchronized (ModClientConfig.class)
+            {
+                startupValue = startupUncensoredContentEnabled;
+                if (startupValue == null)
+                {
+                    Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE_NAME);
+                    startupValue = readUncensoredContentSetting(configPath);
+                    startupUncensoredContentEnabled = startupValue;
+                }
+            }
+        }
+        return startupValue;
+    }
+
+    static boolean readUncensoredContentSetting(Path configPath)
+    {
+        if (!Files.isRegularFile(configPath))
+            return false;
+
+        try (CommentedFileConfig config = CommentedFileConfig.of(configPath, TomlFormat.instance()))
+        {
+            config.load();
+            Object value = config.get(UNCENSORED_CONTENT_CONFIG_PATH);
+            return value instanceof Boolean enabled && enabled;
+        }
+        catch (Exception e)
+        {
+            FlansMod.log.warn("Could not read {} before the initial client resource load; encrypted content will remain disabled for this launch.", CONFIG_FILE_NAME, e);
+            return false;
+        }
     }
 
     public boolean useTranslucentRendering(InfoType type)
