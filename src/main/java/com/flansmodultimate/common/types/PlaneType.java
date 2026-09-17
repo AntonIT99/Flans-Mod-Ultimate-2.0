@@ -259,14 +259,6 @@ public class PlaneType extends DriveableType
         }
     }
 
-    private static float parseLegacyFloat(String raw)
-    {
-        String value = raw.trim();
-        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
-            value = value.replace(',', '.');
-        return Float.parseFloat(value);
-    }
-
     @Override
     public int numEngines()
     {

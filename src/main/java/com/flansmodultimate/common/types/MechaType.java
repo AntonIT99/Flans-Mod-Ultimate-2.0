@@ -124,12 +124,35 @@ public class MechaType extends DriveableType
         finishDerivedValues();
     }
 
-    public float getLeftHandModifierX() { return leftHandModifier.x; }
-    public float getLeftHandModifierY() { return leftHandModifier.y; }
-    public float getLeftHandModifierZ() { return leftHandModifier.z; }
-    public float getRightHandModifierX() { return rightHandModifier.x; }
-    public float getRightHandModifierY() { return rightHandModifier.y; }
-    public float getRightHandModifierZ() { return rightHandModifier.z; }
+    public float getLeftHandModifierX()
+    {
+        return leftHandModifier.x;
+    }
+
+    public float getLeftHandModifierY()
+    {
+        return leftHandModifier.y;
+    }
+
+    public float getLeftHandModifierZ()
+    {
+        return leftHandModifier.z;
+    }
+
+    public float getRightHandModifierX()
+    {
+        return rightHandModifier.x;
+    }
+
+    public float getRightHandModifierY()
+    {
+        return rightHandModifier.y;
+    }
+
+    public float getRightHandModifierZ()
+    {
+        return rightHandModifier.z;
+    }
 
     private static Vector3f modelVector(String key, Vector3f fallback, TypeFile file)
     {

@@ -383,7 +383,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         it1Stage = 8;
         it1ReloadDelay = 0;
         setIT1Angles(0F, 0F, 0F, true);
-        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1());
+        setFlag(FLAG_IT1_CAN_FIRE, type.isIt1());
         setFlag(FLAG_IT1_RELOADING, false);
         setShortName(type.getShortName());
         sourceStack = stack.copy();
@@ -798,8 +798,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ? Math.max(0, tag.getInt(NBT_IT1_RELOAD_DELAY)) : 0;
         setIT1Angles(tag.getFloat(NBT_IT1_DOOR_ANGLE), tag.getFloat(NBT_IT1_ARM_ANGLE),
             tag.getFloat(NBT_IT1_RAIL_ANGLE), true);
-        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE)));
-        setFlag(FLAG_IT1_RELOADING, type.isIT1() && tag.getBoolean(NBT_IT1_RELOADING));
+        setFlag(FLAG_IT1_CAN_FIRE, type.isIt1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE)));
+        setFlag(FLAG_IT1_RELOADING, type.isIt1() && tag.getBoolean(NBT_IT1_RELOADING));
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
         resizeProxyArrays();
@@ -1235,13 +1235,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
-        return !configType.isIT1() || configType.weaponType(secondary) != EnumWeaponType.MISSILE || isCanFireIT1();
+        return !configType.isIt1() || configType.weaponType(secondary) != EnumWeaponType.MISSILE || isCanFireIT1();
     }
 
     protected void tickWeaponAnimations()
     {
         tickRecoilAnimation();
-        if (configType != null && configType.isIT1())
+        if (configType != null && configType.isIt1())
             tickIT1Reload();
     }
 
@@ -1604,7 +1604,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             playBankEffects(secondary, firedPoints);
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
-            if (configType.isIT1() && weapon == EnumWeaponType.MISSILE)
+            if (configType.isIt1() && weapon == EnumWeaponType.MISSILE)
                 beginIT1Reload();
         }
         return fired;

@@ -38,6 +38,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.LootTableLoadEvent;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +53,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -264,7 +266,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected final List<Vector3f> leftTrackPoints = new ArrayList<>();
     protected final List<Vector3f> rightTrackPoints = new ArrayList<>();
     protected float trackLinkLength;
-    protected boolean IT1;
+    protected boolean it1;
     protected final List<CollisionMesh> collisionMeshes = new ArrayList<>();
     protected boolean fancyCollision;
     private transient volatile DriveableCollisionProfile collisionProfile;
@@ -617,7 +619,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
 
         setPlayerInvisible = readValue("SetPlayerInvisible", setPlayerInvisible, file);
-        IT1 = readValue("IT1", IT1, file);
+        it1 = readValue("IT1", it1, file);
         fixedPrimaryFire = readValue("FixedPrimary", fixedPrimaryFire, file);
         fixedSecondaryFire = readValue("FixedSecondary", fixedSecondaryFire, file);
         primaryFireAngle = readVector("PrimaryAngle", primaryFireAngle, file);
@@ -898,8 +900,8 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
      * Length, width and height come from the core collision box; the wheelbase and
      * track come from the spread of the declared wheel positions, whose legacy X
      * is the fore-aft axis and legacy Z the lateral one.
-     */
-    /** Parts whose collision boxes describe where a driveable meets the ground. */
+     * <p>
+     * Parts whose collision boxes describe where a driveable meets the ground. */
     private static final Set<EnumDriveablePart> GROUND_CONTACT_PARTS = EnumSet.of(
         EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.FRONT_WHEEL, EnumDriveablePart.BACK_WHEEL,
         EnumDriveablePart.FRONT_LEFT_WHEEL, EnumDriveablePart.FRONT_RIGHT_WHEEL,
@@ -1010,7 +1012,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
 
     public boolean isValidAmmo(@Nullable BulletType bulletType, @Nullable EnumWeaponType weaponType)
     {
-        return isValidAmmo(bulletType) && weaponType != null && bulletType.getWeaponType() == weaponType;
+        return isValidAmmo(bulletType) && weaponType != null && Objects.requireNonNull(bulletType).getWeaponType() == weaponType;
     }
 
     public int getNumAmmoSlots()
@@ -1162,8 +1164,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
 
     private void rememberAuthoredShootPoints(boolean secondaryWeapon)
     {
-        authoredShootPoints.computeIfAbsent(secondaryWeapon,
-            secondary -> List.copyOf(secondary ? shootPointsSecondary : shootPointsPrimary));
+        authoredShootPoints.computeIfAbsent(secondaryWeapon, s -> List.copyOf(BooleanUtils.isTrue(s) ? shootPointsSecondary : shootPointsPrimary));
     }
 
     public boolean alternate(boolean secondaryWeapon)
@@ -1254,12 +1255,6 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     public float getRecommendedScale()
     {
         return 100F / Math.max(1F, cameraDistance);
-    }
-
-    /** Legacy-capitalized alias retained for model code and older extensions. */
-    public float GetRecommendedScale()
-    {
-        return getRecommendedScale();
     }
 
     public List<ItemStack> getDriveableRecipe()
@@ -1607,10 +1602,11 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         }
     }
 
-    private static float parseLegacyFloat(String raw)
+    protected static float parseLegacyFloat(String raw)
     {
         String value = raw.trim();
-        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
+        int commaIndex = value.indexOf(',');
+        if (commaIndex >= 0 && commaIndex == value.lastIndexOf(',') && value.indexOf('.') < 0)
             value = value.replace(',', '.');
         return Float.parseFloat(value);
     }
