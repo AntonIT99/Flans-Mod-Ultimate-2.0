@@ -187,7 +187,8 @@
             "FragType": "LOW_FRAG"
         },
         "items": [
-            "moab"
+            "moab",
+            "throwablemoab"
         ]
     },
 
