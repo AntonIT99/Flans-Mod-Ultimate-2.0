@@ -30,4 +30,35 @@ class DriveableTypeSeatTest
         assertEquals(5F, seat.getGunOrigin().y);
         assertEquals(6F, seat.getGunOrigin().z);
     }
+
+    @Test
+    void vehicleTurretRotationSpeedProvidesConvertedDriverYawFallback()
+    {
+        VehicleType type = readVehicle(
+            "Driver 0 0 0",
+            "TurretRotationSpeed 0.06");
+
+        assertEquals(2F, type.getSeat(0).getAimingSpeed().x, 0.0001F);
+        assertEquals(2F, type.getSeat(0).getAimingSpeed().y);
+    }
+
+    @Test
+    void driverAimSpeedHasPriorityOverTurretRotationSpeed()
+    {
+        VehicleType type = readVehicle(
+            "Driver 0 0 0",
+            "TurretRotationSpeed 0.06",
+            "DriverAimSpeed 0.75 0.5 0");
+
+        assertEquals(0.75F, type.getSeat(0).getAimingSpeed().x);
+        assertEquals(0.5F, type.getSeat(0).getAimingSpeed().y);
+    }
+
+    private static VehicleType readVehicle(String... lines)
+    {
+        IContentProvider pack = new ContentPack("test", Path.of("build", "test-packs", "seats"));
+        VehicleType type = new VehicleType();
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, pack, List.of(lines)));
+        return type;
+    }
 }

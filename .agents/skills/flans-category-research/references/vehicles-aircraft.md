@@ -93,6 +93,13 @@ engine-power value are valid. Never leave an accidental half-profile.
 
 Additional properties:
 
+- `DriverAimSpeed`: for an armed ground vehicle whose driver controls the turret or
+  gun, research the traverse rate and, where applicable, elevation rate. The vector
+  is `<yaw pitch roll>` in degrees per tick, so divide a sourced degrees-per-second
+  rate by `20`. Prefer exact powered/manual rates for the represented configuration
+  and disclose estimates. An explicit `DriverAimSpeed` overrides the legacy
+  `TurretRotationSpeed`; do not convert that older mouse-input coefficient as though
+  it were an angular-rate unit.
 - Cadence keys for a bank with no gun mount, as set out in
   [Mounted weapon cadence](#mounted-weapon-cadence): `ShootDelayPrimarySeconds` for a
   shell-firing main gun, `RoundsPerMinPrimary` for an autocannon or machine gun.

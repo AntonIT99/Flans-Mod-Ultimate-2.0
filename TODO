@@ -5,18 +5,24 @@ General:
 - Implement TaP Flan's Mod Features
 - Make SkinOverride compatible with old skin format
 - Check penetrating power balance
-- Investigate if we can remove experimental settings
 
 Driveables:
 - Vehicle scopes
 - Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
 
 Content Packs:
+- Check vehicle sided ammo parameters
+- run flans-category-research to add missing fields to categories
 - Fix shooting points on vehicles based on new debug commands
 - Add particles, sounds, visual affects to content packs just like Warfare 44:
 visuals for shootables, harmonize particles and sounds for vehicles / planes
-- Rewrite the official packs with the new gun and vehicle systems
+- Create a skill:
+Rewrite all packs with the new gun and vehicle systems using categories as source
+Reorganize parameters, remove one parameter comments, make groups
 - missing ammo groups for shells in categories
+Manus
+- Check allowAllAmmo
+- Add shell types
 WW2
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check

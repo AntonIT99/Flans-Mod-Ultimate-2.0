@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -18,6 +19,12 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class VehicleType extends DriveableType
 {
+    /**
+     * Legacy turret speed is a mouse-turn coefficient. The smooth aiming replacement used
+     * {@code DriverAimSpeed 2} for vehicles that previously used {@code TurretRotationSpeed 0.06}.
+     */
+    private static final float LEGACY_TURRET_ROTATION_TO_AIM_SPEED = 100F / 3F;
+
     public record SmokePoint(Vector3f position, Vector3f direction, int detonationTime, EnumDriveablePart part) {}
 
     protected float turnLeftModifier = 1F;
@@ -59,6 +66,7 @@ public class VehicleType extends DriveableType
     protected void read(TypeFile file)
     {
         super.read(file);
+        applyLegacyTurretRotationSpeed(file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
         squashMobs = readValue("SquashMobs", squashMobs, file);
@@ -104,6 +112,26 @@ public class VehicleType extends DriveableType
         // Re-run finalization now that Tank, FourWheelDrive and the rest are read,
         // so physics resolution sees the complete definition.
         finishDerivedValues();
+    }
+
+    private void applyLegacyTurretRotationSpeed(TypeFile file)
+    {
+        if (file.hasConfigLine("DriverAimSpeed") || !file.hasConfigLine("TurretRotationSpeed"))
+            return;
+
+        SeatInfo driver = getSeat(0);
+        if (driver == null)
+            return;
+
+        float legacySpeed = readOptionalValue("TurretRotationSpeed", Float.NaN, file);
+        if (!Float.isFinite(legacySpeed))
+            return;
+
+        Vector3f aimingSpeed = driver.getAimingSpeed();
+        driver.setAimingSpeed(new Vector3f(
+            legacySpeed * LEGACY_TURRET_ROTATION_TO_AIM_SPEED,
+            aimingSpeed.y,
+            aimingSpeed.z));
     }
 
     /**
