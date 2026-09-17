@@ -44,7 +44,11 @@ class FiredShotVelocityTest
         VehicleType vehicle = vehicle("BulletSpeed 3");
         BulletType shell = bullet("Mass 6800");
 
-        assertEquals(3F, shot(vehicle, shell, 3F).getMuzzleVelocity(), 1.0E-4F);
+        FiredShot firedShot = shot(vehicle, shell, 3F);
+        assertEquals(3F, firedShot.getMuzzleVelocity(), 1.0E-4F);
+        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 3F),
+            firedShot.getPenetratingPower(), 1.0E-4F,
+            "kinetic penetration must use the firing weapon's velocity when the ammunition declares none");
     }
 
     @Test

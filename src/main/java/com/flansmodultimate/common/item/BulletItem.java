@@ -74,8 +74,13 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
             return penetration > 0F ? IFlanItem.formatFloat(penetration) + "mm" : null;
         });
 
-        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER),
-            IFlanItem.formatFloat(penetratingPower(configType, 0, context))));
+        // Kinetic penetrating power cannot be stated meaningfully until both mass and launch velocity are known.
+        // In a standalone ammo tooltip there may be no weapon context to provide the missing velocity.
+        boolean hasUnresolvedKineticPower = projectileMass(configType, 0, context) > 0F
+            && muzzleVelocity(configType, 0, context) <= 0F;
+        if (!hasUnresolvedKineticPower)
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER),
+                IFlanItem.formatFloat(penetratingPower(configType, 0, context))));
 
         if (hasLockOn())
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.GUIDANCE), Component.translatable(TooltipKeys.GUIDANCE_LOCK_ON)));
