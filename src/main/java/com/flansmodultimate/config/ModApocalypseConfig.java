@@ -62,7 +62,9 @@ public final class ModApocalypseConfig
         APOCALYPSE_DIMENSION_ENABLED = builder
             .comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",
                 "Requires a full game/server restart after changing because datapack repositories are built before worlds load.",
-                "Existing worlds can also remember enabled datapacks in level.dat; disable this before loading the world if you want the dimension datapack unavailable.")
+                "Only affects newly created worlds. Minecraft stores a world's dimension list in level.dat and merges it",
+                "back in on load, so a world that already contains the Apocalypse dimension keeps it even when this is off;",
+                "the gameplay features gated by this option are still disabled for that world.")
             .define("apocalypseDimensionEnabled", true);
         APOCALYPSE_PORTALS_ENABLED = builder
             .comment("Enable power-cube portal activation and portal entity teleporting.")

@@ -16,6 +16,16 @@ import net.minecraft.server.packs.repository.RepositorySource;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+/**
+ * Registers the toggleable datapack that supplies the Apocalypse {@code level_stem}.
+ *
+ * <p>Only the dimension itself lives here. Its {@code dimension_type}, biomes and
+ * {@code noise_settings} ship in the always-loaded {@code data/flansmodapocalypse} folder
+ * on purpose: Minecraft writes a world's whole {@code LEVEL_STEM} registry into level.dat, and
+ * those entries are stored as plain registry keys. If the referenced definitions disappeared when
+ * this pack was disabled, decoding level.dat would fail and the world would refuse to load.
+ * Keeping them always present means disabling this pack only affects newly created worlds.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseDatapackSource
 {
