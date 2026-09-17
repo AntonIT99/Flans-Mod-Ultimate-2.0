@@ -23,8 +23,6 @@ RollRightSpeed 1
 Drag 0.98
 //Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
 Lift 3.2
-//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
-MomentOfInertia 10.0
 //Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
 RestingPitch 0.0
 //Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)

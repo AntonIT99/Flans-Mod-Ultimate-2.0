@@ -1204,7 +1204,7 @@ Confidence: HIGH
 
 ### VEHICLE / Bounciness — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/Auto_SanicMobile.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/TNK-SPG_SturmTiger.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/TNK-Tism_TrollSherman.txt; 107 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/Auto_SanicMobile.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/TNK-SPG_SturmTiger.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/TNK-Tism_TrollSherman.txt; 107 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1853,14 +1853,6 @@ Confidence: HIGH
 ### VEHICLE / transport — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/vehicles/Wagon.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A Universal Carrier.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0p5S CV Ark Royal.txt; 23 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### VEHICLE / TurretRotationSpeed — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A M45Quad.txt; run/flan/Wolff's Germany WW2 Pack 2.3.2.zip!/vehicles/Tiger Snow.txt; 2 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.

@@ -15,8 +15,6 @@ TurnLeftSpeed 1
 TurnRightSpeed 1
 //Drag
 Drag 1.0
-//Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
-MomentOfInertia 10.0
 //For calculating whether wheels are on the ground or not for driving
 WheelRadius 1.0
 //If true, then all wheels will apply drive forces

@@ -16,6 +16,7 @@
 
 ## DriveableType
 - NumWheels (Removed)
+- MomentOfInertia (Removed)
 
 ## GunBoxType
 - GunBoxID (Removed)
