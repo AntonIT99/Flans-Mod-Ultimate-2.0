@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public final class EncryptedResourcePack implements PackResources
 {
-    public static final String BUNDLE_FILE_NAME = "encrypted-content.fmu";
+    public static final String BUNDLE_RESOURCE_PATH = "flans_content/content.fmu";
 
     private static final byte[] ENCRYPTED_MAGIC = "FMUENC01".getBytes(StandardCharsets.US_ASCII);
     private static final int ENCRYPTED_VERSION = 1;

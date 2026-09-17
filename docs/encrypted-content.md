@@ -40,8 +40,10 @@ replace. PNG animation metadata can be placed beside a texture as the matching
 Every pack's `resources/encrypted/` directory is gitignored and explicitly
 excluded from normal resource processing, so its plaintext files are never
 added to a module JAR. The module's encryption task writes
-`encrypted-content.fmu` into a generated resources directory, and only that
-authenticated encrypted bundle is packaged.
+`flans_content/content.fmu` into a generated resources directory, and only that
+authenticated encrypted bundle is packaged. An encryption task is registered
+only when the pack's `resources/encrypted/` directory exists and contains at
+least one file.
 
 For an Example module, generate or package it with:
 

@@ -51,7 +51,7 @@ public final class PackagedContentRepositorySource
     private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
                                                  PackagedContentPackApi.RegisteredModule module)
     {
-        Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_FILE_NAME);
+        Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
         if (!java.nio.file.Files.isRegularFile(bundlePath))
             return;
 
