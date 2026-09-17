@@ -2,7 +2,9 @@
 
 Flan packaged-content modules can provide optional uncensored translations and
 textures. The client setting `enableUncensoredContent` is `false` by default.
-Changing it reloads client resources.
+Changing it reloads client resources. When the saved setting is already `true`,
+the initial config load applies it automatically; no manual `F3+T` reload is
+required after launching the game.
 
 ## Authoring location
 

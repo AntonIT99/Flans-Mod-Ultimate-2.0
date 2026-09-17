@@ -486,12 +486,13 @@ public final class ModClientConfig
         ModClientConfig old = instance.get();
         instance.set(new ModClientConfig());
 
-        if (old == null)
-            return;
-
-        if (old.enableUncensoredContent != get().enableUncensoredContent
+        if ((old == null && get().enableUncensoredContent
+            || old != null && old.enableUncensoredContent != get().enableUncensoredContent)
             && FMLEnvironment.dist == Dist.CLIENT)
             UncensoredResources.reload();
+
+        if (old == null)
+            return;
 
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.preferBuiltInModelClasses != get().preferBuiltInModelClasses
