@@ -55,7 +55,10 @@ public final class PackagedContentRepositorySource
         if (!java.nio.file.Files.isRegularFile(bundlePath))
             return;
 
-        String id = module.modId() + ":uncensored_assets";
+        // PackRepository stores discovered packs in a sorted map and inserts required TOP packs
+        // in reverse key order. The leading underscore makes this pack sort before ":assets",
+        // which places the encrypted overlay after the normal assets in the effective stack.
+        String id = encryptedPackId(module.modId());
         int packFormat = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
         Pack.Info info = new Pack.Info(Component.literal("Optional uncensored Flan content"),
             packFormat, packFormat, FeatureFlagSet.of(), false);
@@ -63,6 +66,11 @@ public final class PackagedContentRepositorySource
         Pack pack = Pack.create(id, Component.literal("Optional uncensored Flan content"), true, resources,
             info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true, PackSource.BUILT_IN);
         acceptor.accept(pack);
+    }
+
+    static String encryptedPackId(String modId)
+    {
+        return modId + ":_encrypted_assets";
     }
 
     private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,
