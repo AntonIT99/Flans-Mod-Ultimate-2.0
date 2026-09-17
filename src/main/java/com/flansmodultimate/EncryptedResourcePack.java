@@ -135,8 +135,7 @@ public final class EncryptedResourcePack implements PackResources
 
     private static boolean isEnabled()
     {
-        ModClientConfig config = ModClientConfig.get();
-        return config != null && config.enableUncensoredContent;
+        return ModClientConfig.isUncensoredContentEnabled();
     }
 
     private Map<ResourceLocation, byte[]> getEntries()

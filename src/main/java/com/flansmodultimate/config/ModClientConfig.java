@@ -427,6 +427,15 @@ public final class ModClientConfig
         return instance.get();
     }
 
+    public static boolean isUncensoredContentEnabled()
+    {
+        if (configSpec.isLoaded())
+            return ENABLE_UNCENSORED_CONTENT.get();
+
+        ModClientConfig config = get();
+        return config != null && config.enableUncensoredContent;
+    }
+
     public boolean useTranslucentRendering(InfoType type)
     {
         if (type.getRenderOptions().translucentRendering())
@@ -486,8 +495,7 @@ public final class ModClientConfig
         ModClientConfig old = instance.get();
         instance.set(new ModClientConfig());
 
-        if ((old == null && get().enableUncensoredContent
-            || old != null && old.enableUncensoredContent != get().enableUncensoredContent)
+        if (old != null && old.enableUncensoredContent != get().enableUncensoredContent
             && FMLEnvironment.dist == Dist.CLIENT)
             UncensoredResources.reload();
 
