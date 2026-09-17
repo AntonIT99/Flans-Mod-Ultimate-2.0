@@ -24,6 +24,7 @@ Manus
 - Check allowAllAmmo
 - Add shell types
 WW2
+- Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
 - Remove Minigun Mode for some guns
@@ -33,6 +34,7 @@ MW
 - Fix Chinook model: no rotors moving at all
 
 Feature Ideas:
+- Muzzle Flashes for deployed guns
 - Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.
 - Banners
 - Block with GUI to convert bullets to magazines and vice versa + Mapping for bullets and magazines

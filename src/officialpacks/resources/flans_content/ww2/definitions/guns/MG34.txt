@@ -22,7 +22,7 @@ Texture SkinMG34
 //SoundLength 15
 DistortSound True
 ReloadSound MG42Reload
-Mode Minigun
+Mode FullAuto
 //Bullet speed, default 3.0
 BulletSpeed 100.0
 Scope None
