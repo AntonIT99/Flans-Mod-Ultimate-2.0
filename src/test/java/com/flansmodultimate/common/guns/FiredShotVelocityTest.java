@@ -52,6 +52,28 @@ class FiredShotVelocityTest
     }
 
     @Test
+    void kineticAmmunitionForcesPenetrationDespiteTheLegacyFlag()
+    {
+        VehicleType vehicle = vehicle("BulletSpeed 3");
+        BulletType shell = bullet("Mass 6800", "MuzzleVelocity 770", "Penetrates false");
+        FiredShot firedShot = shot(vehicle, shell, 3F);
+
+        assertTrue(shell.isPenetrates());
+        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 38.5F),
+            firedShot.getPenetratingPower(), 1.0E-4F);
+    }
+
+    @Test
+    void aKineticRoundBeltAlsoForcesPenetration()
+    {
+        BulletType belt = bullet("RoundsPerItem 2", "Penetrates false",
+            "AddRound AP 1 162 0 800 45",
+            "AddRound HE 1 135 16 835 0");
+
+        assertTrue(belt.isPenetrates());
+    }
+
+    @Test
     void anAmmoMuzzleVelocityOverrideTakesTheShellBack()
     {
         VehicleType vehicle = vehicle("BulletSpeed 3", "AmmoMuzzleVelocity syntheticShell 990");

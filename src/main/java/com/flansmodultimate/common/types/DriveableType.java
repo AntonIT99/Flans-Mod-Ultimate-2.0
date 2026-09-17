@@ -76,7 +76,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected final Map<EnumDriveablePart, List<RecipeIngredient>> partwiseRecipe = new EnumMap<>(EnumDriveablePart.class);
     protected final List<RecipeIngredient> driveableRecipe = new ArrayList<>();
 
-    protected boolean acceptAllAmmo = true;
+    protected boolean acceptAllAmmo = false;
     protected final Set<String> ammo = new LinkedHashSet<>();
     /**
      * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these

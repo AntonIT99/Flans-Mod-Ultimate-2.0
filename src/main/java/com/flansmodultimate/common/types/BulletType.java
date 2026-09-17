@@ -290,9 +290,6 @@ public class BulletType extends ShootableType
         blockHitFXScale = readValue("BlockHitFXScale", blockHitFXScale, file);
         readBlockHitFXScale = file.hasConfigLine("BlockHitFXScale");
 
-        if (!penetrates)
-            penetratingPower = DEFAULT_PENETRATING_POWER;
-
         // Clamp to [0, 1]
         dragInAir = Math.max(0, Math.min(1, dragInAir));
         dragInWater = Math.max(0, Math.min(1, dragInWater));
@@ -313,6 +310,14 @@ public class BulletType extends ShootableType
             }));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
+
+        // Mass-based ammunition always uses the kinetic penetration system. Legacy packs commonly mark shells as
+        // non-penetrating to disable entity pass-through, but retaining that flag would also bypass their kinetic
+        // penetrating-power calculation entirely.
+        if (useKineticDamageSystem())
+            penetrates = true;
+        else if (!penetrates)
+            penetratingPower = DEFAULT_PENETRATING_POWER;
     }
 
     @Override
@@ -342,8 +347,9 @@ public class BulletType extends ShootableType
      *
      * <p>Ammunition that uses the kinetic damage system, meaning it declares a projectile {@code Mass}, derives its
      * penetrating power from muzzle kinetic energy instead of from {@code Penetration} / {@code PenetratingPower},
-     * so that mass and muzzle velocity alone determine both damage and penetration. Ammunition without a mass, and
-     * ammunition explicitly declared as {@code Penetrates false}, keeps its authored value.
+     * so that mass and muzzle velocity alone determine both damage and penetration. Kinetic ammunition is always
+     * penetrating, even when a legacy definition declares {@code Penetrates false}. Ammunition without a mass keeps
+     * its authored value.
      *
      * @param shotsFired                    position in the magazine, which selects the round of an {@code AddRound} belt
      * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon gives the projectile, used only when neither the
